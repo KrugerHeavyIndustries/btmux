@@ -1,0 +1,11 @@
+*.o
+*~
+Makefile
+configure
+configure.status
+config.log
+cscope.in.out
+cscope.out
+cscope.po.out
+buildnum.data
+

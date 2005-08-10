@@ -1,0 +1,40 @@
+
+                             Coding Style
+
+The Battletech MUX (and MUSE) source has always been a mess. Part of this is
+because of the codebases they built on, others are because writing readable
+code is damned hard. However, I would still like to try :) When submitting
+patches or commiting changes, please consider the following guidelines:
+
+   - Most of the code is indented using the following indent options:
+	indent -kr -i4 -bad -bbb -bap -nbbo -nlp -hnl -br -brs
+     (K&R style, 4-space indents, see the indent manpage for the rest.)
+     Try to keep your changes in the same style.
+
+   - Try not to combine whitespace/indent changes and code changes in a
+     single patch/commit. This makes it very hard to see what actually
+     changed. Use two separate patches/commits.
+
+   - For commiters: commit only one fix at a time, with a sensible comment;
+     preferably what bug/problem is being fixed, why, how and where.
+
+   - For patch submittors: try to provide sensible information with any
+     patches: preferably what bug/problem it fixes, why, how and where.
+
+   - Keep code in easy-to-read chunks. Avoid long if/else clauses or
+     multiple flags to carry information from one section of a function to
+     another. Today's optimizers are better than what we can hand-hack into
+     the code, and a few lines of code duplications are better than stunned
+     looks on other people's faces when they try to follow the code.
+
+   - Avoid long C preprocessor macros; more than two lines is generally a
+     sign it should really be a function. Don't use function-local data that
+     isn't in the argument list for the macro -- this makes rewriting it
+     into a function harder.
+
+   - Comments should be ANSI C (C89) comments, '/* */', not C++/C99's '//'.
+
+A lot of the code still violates these, especially the latter two. Fix them
+if you happen to touch the code, or take a look at mech.sensor.functions.c or
+mech.tech.*.c to see what they can turn into.
+

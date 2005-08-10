@@ -1,0 +1,21 @@
+
+This directory holds documentation files that are useful to site admins.
+Some of the information in here is date, the most recent can always
+be found on the BattletechMUX Wiki at:
+
+	http://docs.btmux.com
+
+DIRECTORY CONTENTS
+------------------
+hudinfo.spec		Specifications for the 'hudinfo' command and its
+			responses.
+
+exilemerge.txt          The changes that were made to the 3030MUX base
+                        during the merge with the Exile tree.
+
+FURTHER SUPPORT
+---------------
+For further documentation, support, and information, see the SUPPORT file
+in the root btechmux directory. The resources there will be kept current
+and represent your best bet for learning more about this codebase and
+interacting with the community.

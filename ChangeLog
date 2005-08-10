@@ -1,0 +1,139 @@
+btonline-btechmux 0.2:
+    - Bugfixes
+        * Fixed ArtemisV's abbreviation to be AV rather than AIV which
+	  is already taken (Greg Taylor)
+	* Changed the version string to be a little shorter. (Greg Taylor)
+	* Removed BT_COMPLEXREPAIRS from defines. Most sites won't
+	  want such granular parts, see btconfig.h if you are curious
+	  and want per-tonnage actuators and assorted parts.
+	* Also removed BT_FREETECHTIME from the default compile
+	  flags. This allows for instant repairs which again, most sites
+	  probably won't use. (Greg Taylor)
+
+btonline-btechmux 0.1:
+    Extensive revisions/additions. See docs/exilemerge.txt for details.
+
+btechmux 1.4.3:
+    - New Features
+	* Rocket Launchers from FM: Periphery (Cord)
+	* HUDINFO version 0.6 (optional, default on) (Focus)
+	* Part weight (optional, configure in btconfig.h) (Greg Taylor)
+	* New connect.txt's for the MUXample DB (Greg Taylor, Focus)
+	* Variable Recycle Time (optional, configure in btconfig.h) (Cord)
+	* New Stagger code: stagger only once a turn (Focus)
+	* add Clan MicroPulseLaser weapon from BMR (Focus)
+	* Rework 'status short' to show more useful info (NC, Focus)
+	* Fusion VTOLs no longer need fuel (Cord)
+	* Add 'None' to argument for 'settype' (Greg Taylor)
+	* @log and logf() to log to arbitrary files in the 'log'
+	  directory (optional in config.h, default on) (Kevin Stevens)
+	* Rework hcode.db loading code so XCODE structs are growable,
+	  reducing the need for hcode.db wipes in the future (Focus)
+	* 'enterbay' command to AUTOPILOTs, in both radio-controlled
+	  and programmed modes. (Focus)
+	* Use building or dropship hangar's @FAIL attribute as 'failure'
+	  message when trying to enter a base or bay (Focus)
+	* MechWarrior Companion advantages (Bloodname, Combat_Sense,
+	  Contact, Dropship and EI_Implant) and skills (Drive-Naval,
+	  Piloting-Battlesuit, Riding, Technician-Battlesuit,
+	  Technician-Spacecraft and Zero-G_Operations.)
+	  Piloting-Battlesuit differs from Piloting-BSuit in that it is an
+	  Atheltic skill, rather than a Physical one, and also in that it
+	  isn't used in actual code yet. (Focus)
+	
+    - Bugfixes
+	* Rewrite (template) weight calculation code to be more correct for
+	  both 'mechs and tanks. The main impact is on tanks, however, as
+	  the weight calculation for those was very wrong. Also fix many
+	  templates to comply to the new rules. (Focus)
+	* Rewrite weapon weight calculation so Long Toms and Clan
+	  MachineGuns have their actual weight. (Focus)
+	* Lots of C3/C3i fixes (Cord)
+	* Lots of Battlesuit fixes (Cord)
+	* Report the correct 'mech on MechXP when fixing, removing or
+	  replacing guns (Cord & Focus at the same time)
+	* Use the correct cargo type when repairing Compact, Light and XXL
+	  Engines (Focus)
+	* Fix (very old) comparison between pointer and integer that had
+	  potential to crash the MUX when using Extended Range. (Focus)
+	* Fix weight of IS Ultra AC/2 (was 6, should be 7 tons) (Focus)
+	* Prevent Death-XP-removal code from handing out XP if the
+	  btech_xploss config setting is too high (Focus)
+	* Ignore whitespace in config file rather than complaining about
+	  'unknown directives' (Focus)
+	* Robustify mkindx to deal with long lines (Focus)
+	* Take Pilot skills into account when doing BV calculations for XP
+	  gain (Cord, bug found by Marcus Hazen@3030)
+	* Prevent jumping 'mechs from being picked up (Cord)
+	* Disallow enterbase until unit speed is close to 0 kph,
+	  not 10.75 kph (1MP) (Cord)
+	* Sanitized weapon-arc handling, giving tanks and 'mechs the
+	  same (FASA) weapon arcs (Focus)
+	* Fix tank 'ammoboom' critical hits (Cord)
+	* Fix 'stores' and 'manifest' to show '1k' (or higher) rather than
+	  always 999 for values over 999 (Focus)
+	* Lots of removal of dead code (Focus)
+	* Lots of code cleanup (Cord, Focus, NC)
+
+btechmux 1.4.2:
+    - New features
+	* Add compile-time setting (DO_PARSE_WIZNEWS) to enable %-parsing of
+	  the 'wiznews' file. (Greg Taylor & Focus, SF patch #500268)
+	* Allow 'who' and 'last' on channels that you currently do not have
+	  'on', if you are a Wizard or the @admin allow_chanlurking is on
+	  (defaults to off) (Focus)
+	* Allow 'setteam' to set the team num to any int, rather than up to
+	  and including 26. (Focus)
+	* Add 'b' (for BattleSuits) as argument to 'settype'
+	  (Greg Taylor, SF patch #500269)
+	* Add a number of maps from Greg Taylor (SF patch #500071)
+	* Reworked build mechanism so GDBM is no longer needed. dbconvert is
+	  not built by default now; use regular TinyMUX dbconvert if you
+	  need it. (Focus)
+	* Add player-customizable tactical/navigate/lrs colors, using
+	  the MAPCOLOR attribute. (Focus)
+	* Allow 'repairs' and 'damages' commands outside of stalls if
+	  btech_limitedrepairs is false. (Cord)
+
+    - Bugfixes
+	* Fix a longstanding crashing bug in regmatch() (Focus & Null)
+	* Fix crashing bug in AUTOPILOTs if any are 'active' during
+	  @restart/startup. (Focus)
+	* Big overhaul on the comsystem, removing numerous crashing bugs
+	  without introducing too many new ones (hopefully) (Focus)
+	* Fix a few of the checks in configure so crypt() is properly
+	  detected. (Focus)
+	* Fix buglet in @mechstatus support that caused armor/internal
+	  numbers to always show up in highlighted-black, even if the
+	  section was destroyed. (Focus)
+	* Fix SF bug #500646: spurious DAMAGED weaponstatus for large
+	  (multi-crit) weapons in vehicles. (Focus)
+	* Set speed of dropped-off units to 0 (NC)
+	* Plug buffer-overrun in 'loadnew' command and a few others that
+	  use it. (Focus)
+	* Fix spurious warnings about empty lines in the MUX .conf file.
+	  (Focus)
+	* Fix SF bug #502112, the sizes of Aerodyne and Spheroid dropships
+	  for hexlos-tracing were swapped. (Focus & Null)
+	* Fix bug where a tank driving off a cliff into water wouldn't get
+	  auto-killed (missing water checks.) (Cord)
+	* Fix weapon destruction for 'damaged' weapons. (Cord)
+	* Add missing '<item> destroyed!' messages for damaged items;
+	  this could cause CRITICAL HIT!! messages without saying what was
+	  critically hit. (Cord)
+	* General code cleanup and removal of dead code (NC, Focus)
+
+btechmux 1.4.1:
+	* Re-package slightly differently, to avoid broken downloads
+	* Mark the game/data/ files as 'binary' in CVS, as they are
+	* Add CodingStyle document
+	* Guard against possible 'out of map' problem in artillery (NC)
+	* Make @mechstatus (custom 'status' template settable from scode) 
+	  working again. (Focus)
+	* Fix bug in 'status' where ')' in the 'status' template script was
+	  incorrectly handled. (Focus)
+	* Make the MechPer() (perception modifier) value of a 'mech visible
+	  and changeable from scode. (Focus)
+
+btechmux 1.4.0: baseline release
+

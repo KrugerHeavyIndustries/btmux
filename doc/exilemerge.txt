@@ -1,0 +1,391 @@
+This is a document made on the fly during merging of the Exile tree back into
+the btechmux tree. As many notes, documents, and todo's added here. I also
+decided to give some section headers of sorts for categorization.
+
+Please note that there are no guarantee's as to which combinations of the new
+BT_* flags will work together. They will fail at compile time if bad.
+Personally, any site running should just run with all the options on, a
+simsite prolly turning off the BT_ADVANCED_ECON code and such. If it's a big
+deal BT_MOVEMENT_MODES can be expanded and split up some.
+
+The config definition ONLY really exist to show where the merge is diverging
+new code from Exile. I personally will run all config defines on and so will
+testing. In the coming months's or year I might remove all the defines and
+merge most of the code into the stock source, leaving a few for where it would
+be neede/wanted (like BT_ADVANCED_ECON perhaps).
+
+Since the project is tentatively "on it's own" as a merge this was all done. I
+cannot get in contact with Foo (btechmux administrator) to find out if he just
+wants to start merging ALL this code in btechmux (really need all of it and
+even then preprocessor config's are soooo cumbersome to manage and can cause
+inefficiency when so many will interact with the same systems.) tree or wether
+we'd maintain 2 projects.
+
+If we merge the projects, the definitions exist to help patching the merge. If
+we maintain a seperate project and fully branch (more like take over given
+active dev on the old tree) we'll merge 9/10 of it into the base source. Even
+if the later, I will leave them in for awhile for to help Foo port any
+features into btechmux easier and such.
+
+</spam>
+
+------------------------------------------------------------------------------
+- General	                                                             -
+------------------------------------------------------------------------------
+- General autoconf/autoheader/etc.. compilation fixes and expansions
+  compliments of Cadellin. In general, cleaning up of libdbi searching/SQL
+  cofniguring.
+
+
+------------------------------------------------------------------------------
+- MUX : SQL (@query)                                                         -
+------------------------------------------------------------------------------
+Ported the SQL_SUPPORT configuration for sqlslave. Automake now has -ldbi
+(libdbi) required. (http://libdbi.sourceforge.net and it's drivers project)
+
+Added sqlslave.c and sqlslave.h. If you enable SQL_SUPPORT you must make sure
+sqlslave program is in /bin when running netmux. It is the default anyhow.
+-
+TODO :
+As per notes in comments, update sqldb_slotval and sqldb_slotinit is bsd.c.
+Remove them and replace with arrays in a global or mudconf access mechanism.
+
+Create a HOWTO doc on how to just include libdbi locally when wanted/needed.
+
+Priority : Fix sqlslave.c itself to properly handle some signals like slave
+does. Currently on crash's sqlslave (and fileslave both) seem to get left
+running (and new ones spawned). Should be easy.
+
+-
+Cut n Paste from Exile's dez.changes.txt :
+(6/12/2004)
+Added SQL support via 'sqlslave' process and @query command. :
+- @startsqlslave works same as @startslave. Note sqlslave does NOT use children processes inheritly to itself. Yet.
+        - (Might someday merge all possible (now 2, soon 3) slave processes into one threaded slave process. Original slave needs rewrite tho.
+- @query command added. Requires /sql swtich (only one for now) and is used in the format -> @querysql OBJ/ATTR=QUERY
+        - OBJ/ATTR is obj/attr combo like normal commands for what to TRIGGER when completed. %0 of trigger is the FULL return data.
+                - Someday we can possibly make %0-%9 used for different return content, but never can support tuple spreading.
+- Data output is in format 'OPERATION RESULT}ROW1FIELD1:ROW1FIELD2|ROW2FIELD1:ROW2FIELD2' and so on. In case of NO resulting tuple structure expect the return to be just 'OPERATION RESULT'.OPERATION RESULT is either 'Success', a sqlslave error message, or a DB error message. All items after } are only sent (including the }) if an actuall tuple response is acquired from the query.
+- sqlslave killing and communication pipe seems to work fine so far across @restart's and crash's.
+- With further use I am expecting to minorly or majorly modify the @query/sql output syntax.
+- @query/* can support any external query we want to support. If anyone gets me the external query type and a pointer to a library that uses it, I will rename 'sqlslave' to 'queryslave' andadd them. I am highly debating merging DNS queries into 'queryslave' and adding @query/dns.
+- For some odd reason libdbi considered 'text' database datatypes as 'binary' types. A caveat to be aware of is that ANY 'binary' data type (BLOB) is interpretted as TEXT when coming into the MUX. So be carefull if it's not really a 'text' type. Avoid SELECT's on any binary type other than 'text'. We protect the buffer overflow possibility, but you might get tons of gibberish where you expect text.
+- So far there does seem to be a problem with the MUX process's I/O pipes to SQLslave gettign jumbled up with some very large instant spamn of @query. Most notably, not responses seem to read up when I '@dolist lnum(50)=@dbquery/sql blah'. Try to @wait space all your queries reasonably in automated code till I have time to address this. When this does occur, though, running @startsqlslave (and maybe killing old sqlslave at shell) works fine to get @query working again.
+
+(6/16/2004)
+Modified @query/sql for the best and hopefully final format :
+There are now A-E slot identifier for DB connections (formating of conf files required it, else I woulda coded relative unlimited) with config directives : (Consider 'SLOT' to be A, B, C, D, or E.)
+sqlDB_hostname_SLOT             hostname of the database
+sqlDB_username_SLOT             username to login
+sqlDB_password_SLOT             password to login
+sqlDB_dbname_SLOT               dbname for the slot
+sqlDB_type_SLOT                 DB type, currently just 'mysql' is hardwired in code to support. Libdbi drivers required on server installation so I didn't bother installiong all the other DB's to compile them. Once I care to modify it will take 5 minutes to do and I can support 'postgres' 'sqllite' 'msql' and maybe 'oracle'
+
+@query command changes to format : @query/sql SLOT_LETTER/OBJ_TRIGER/ATTRIBUTE_TRIGGER/PRESERVE_DATA=QUERY. This is same as before expect for inserting a DB SLOT identifier and adding a preserve string. This is any user defined data that will be returned alongside the trigger arguements so you can pass 'reminders' for anything in your softcode you want. (These are capped to same length as all the others, an LBUF at 16k characters currently).
+
+Triger response now has 3 arguements (%0,%1,%2) identifier : %0 is a general status message (Success, libdbi error, or SQL database error string), %1 is the result, if any, of a select statement (you can check it for being empty easily with ifelse(%1,X,Y)), and %2 which is whatver PRESERVE_DATA was passed to @query. This is usefull to pass DBrefs or other attribute points or any kinda of parseable data you want to let the trigger attribute now more about what to do in detail.
+
+------------------------------------------------------------------------------
+- MUX : File Slave (Extended @log/logf()                                     -
+------------------------------------------------------------------------------
+Ported fileslave in via changing ARBITRARY_LOGFILES to
+ARBITRARY_LOGFILES_MODE, information updated in config.h to show settings.
+Basically, 0 for no arbitrary logs, 1 for old style ARBITRARY_LOGS, and 2 for
+new ARBITRARY_LOGS using Fileslave from Exile. Information below is concerning
+using the 2 option.
+
+This uses @log and logf() as per old ARBITRARY_LOGFILES but also adds
+@startfileslave (a la @startslave and @startsqlslave) to restart it manually.
+
+Essentially this a load balancer for the blocking nature of arbitrary
+logfiles. Unlike (but like sqlslave) normal slave, fileslave only runs one
+instance of itself so there isn't much worry about creating too many children.
+File slave allows more use of @log/logf() w/o adversely blocking the MUX
+process heavily with more use.
+
+If you use mode 0 or 1, fileslave program is still made but not expected in
+/bin (SQL is the same way if unused). Using option 2 you need to make sure to
+have fileslave in the /bin dir.
+
+------------------------------------------------------------------------------
+- MUX : Misc Tweaks/Minor Features                                           -
+------------------------------------------------------------------------------
+Patched shovechars in bsd.c in it's use of select by properly tracking the
+maxfds value as it shoves things in and out. Previous mode caused slave
+processes (noticeble after file and sql slave were added) to not be read by
+the loop until enough logins raised the maxfds count.
+----
+Updated version.c to support showing enabled "modules" at compile time.
+So far just +HUD, +SQL, +FSL, and +ALG  added to end for SQL_SUPPORT, HUD_SUPPORT,
+ARBITRARY_LOGFILES_MODE:2 (Fileslave), and ARBITRARY_LOGFILES_MODE:1.
+----
+Added to config.h definition for EXTENDED_DEFAULT_PARENTS to use config params
+for exit_parent and room_parent to be default object creation parents for room
+types. Default is 0, which is none. Helps builders.
+----
+Fixed my cobj() and the existing cwho() and clist() to properly function parse
+correctly when their evaluation []'s were prepended with data. The lines doing
+an arbitrary "*buff = '\0'" where blowing the buffer. This was stock btechmux
+and not a port bug so prolly needs fixed in the main tree for the peeps also.
+----
+Fixed cemit to not have a buffer overflow in it's *BUF_SIZE settings.
+---
+EXILE_FUNCS_SUPPORT switches in the btech_ooc_comsys to bypass checks to
+CA_NO_IC commands for blocking in an IC location. (Comsys and @mail as of
+now). Patch compliments of cmarney, modified by Null.
+
+------------------------------------------------------------------------------
+- MUX : Extra Functions                                                      -
+------------------------------------------------------------------------------
+In Makefile.in there is now a -DEXILE_FUNCS_SUPPORT, remove it if you don't
+want it.  This controls new MUX softcode funtions for BT and normal mux stuff.
+For more info later see exilefuncs.txt for a listing with detailed info.
+
+- cobj() - Take channel name get it's object association back.
+- doing() - Get a players @doing. Compliments of Cadellin ported from MUX2
+- config() - Gets a global config parameter. Compliments of Cadellin.
+- poll() - Gets the @poll set on top of @doing. Ported from MUX2 by Cadellin.
+
+------------------------------------------------------------------------------
+- BT/MUX : HUDINFO                                                           -
+------------------------------------------------------------------------------
+Under HUDINFO_SUPPORT definitions I slipped in a cofig param for
+hudinfo_enabled and added a check for it in netcommon.c to enabled flipping
+hudinfo off for the server at runtime. More intended for @admin command use in
+acse of problems.
+
+------------------------------------------------------------------------------
+- BT/MUX : BT Functions                                                      -
+------------------------------------------------------------------------------
+In Makefile.in there is now a -DEXILE_FUNCS_SUPPORT, remove it if you don't
+want it.  This controls new MUX softcode funtions for BT and normal mux stuff.
+For more info later see exilefuncs.txt for a listing with detailed info.
+
+Added 'heatsinks' to the xcode listing (@viewxcode, setxcodevalue(), etc...).
+This is the real heatsinks total, not accountign for heatsinks being disabled
+and such.
+
+The following list is from the inital copy, paste, and compare of contents in
+functions.c switch via EXILE_FUNCS_SUPPORT. At any given time during beta
+testing any number of them might be inoperable. If new ones are added they
+should get safely added to this list, though.
+
+Existing name changes :
+btgetrefxcodevalue	->	btgetxcodevalue_ref	
+btarmorref		->	btarmorstatus_ref
+btcritref		->	btcritstatus_ref
+btweaponref		->	btweaponstatus_ref
+bttechref		->	bttech_ref *
+btgetreftech		->	btgetreftech_ref *
+btgetdbreffromid	->	btid2db
+btlostohex		->	bthexlos
+btlostomech		->	btlosm2m
+bthexlosbroadcast	->	bthexemit
+
+Added completely new (or redundant) :
+btgetweight
+btpartweight
+btaddstores
+btremovestores
+bttechtime
+btcritslot
+btcritslot_ref
+btgetrange
+btsetmaxspeed
+btgetrealmaxspeed
+btgetbv
+btgetbv_ref
+bttechlist
+bttechlist_ref
+btshowstatus_ref
+btshowwspecs_ref
+btshowcritstatus_ref
+btengrate
+btengrate_ref
+btfasabasecost_ref
+btweapstat
+btnumrepjobs
+btsetxy
+btmapemit
+btparttype
+btgetpartcost
+btsetpartcost
+btunitfixable
+btlistblz
+bthexinblz
+btcharlist
+
+------------------------------------------------------------------------------
+- BT : Econ Code                                                             -
+------------------------------------------------------------------------------
+Modified BT_PART_WEIGHTS definition from btconfig.h to allow
+btgetweight/btpartweight to not thrice duplicate the weight logic switch.
+mech.utils.c now has 'int GetPartWeight(int part)' to replace existing
+duplicate calls.  Can also be used by anything in the future also.
+
+TODO ? : Update same code @weight looks up for crit weight
+(mech.custom.c->crit_weight()) to be used via this code either to not maintain
+the internalsweight structure? Might not be feasible.
+
+Aded BT_ADVACNED_ECON to btconfig.h to switch code to maintain memory space
+for cash costs for parts in the game. Hope to expand it more later.
+
+Currently btfasabasecost_ref(), btgetpartcost(), and btsetpartcost() utilize
+this functionality and do not exist if BT_ADVANCED_ECON is off. They read up
+from data/econ.db.
+
+TODO : Expand more integer fields for data like btgetpartrarity(),
+btgetparttech(), etc... to eliminate scode DB on it completely. Why? Various
+reason. Doesn't hurt much and binds the package up for less local admin work.
+
+TODO : Expand some default population and loaddb/savedb commands for econ
+work. Currently scode must populate it. Default popluation with FASA stock
+stuff more or less would be nice.
+
+TODO : Find a way to cleanly not require BT_ADVANCED_ECON in Makefile as -D.
+A global /src include of btconfig.h but research it more.
+
+------------------------------------------------------------------------------
+- BT : Battlevalue Code                                                      -
+------------------------------------------------------------------------------
+Added to btconfig.h BT_CALCLATE_BV. Up to once per 30 secs CalculateBV() will
+recalculate up to date BV on a mech. It is calculated on instances of damage.
+The formulae was ported from Exile style ammo and such and this code at the
+time did not haev all the others, and may or may not have extended ammo modes
+and at least has caseless and such as weapons not modes. This will need
+patching and overlooks.
+
+btgetbv() and btgetbv_ref() do exist also to call this function for a number.
+btgetbv() will also update and force a bv recalculation on the mech as if
+damage was hit.
+
+TODO : Since weapons.h had no abattlevalue (for ammo) the bv for ammo was
+hardwired to 1/10 the weapons BV instead. This needs fixed but it a lot of fat
+finger work so hacked as such for now.
+
+------------------------------------------------------------------------------
+- BT : MW3-like Stats                                                        -
+------------------------------------------------------------------------------
+Added to btconfig.h BT_EXILE_MW3STATS. This gradiates Piloting-* and Gunnery-*
+into more finite chunks, but not full MW3 cuz that's not good for the game but
+can be added later, and switches required skills for stats/XP gain in pilot
+and combat. It also utilizes the Computer stats for BTH mod on shutdown rolls.
+
+------------------------------------------------------------------------------
+- BT : Extended Advantages                                                   -
+------------------------------------------------------------------------------
+Added to btconfig.h BT_EXTENDED_ADVANTAGES. This adds the following advantages
+(Some nede BT_MOVEMENT_MODES on to be worth anything)
+Speed_Demon - Faster acceleration, +1MP on sprint, +1 BTH to be hit when
+evading, lessens turn rate lowering when sprinting.
+Pain_resistance - Ammo explodes do 1 damage instead of 2.
+Maneuvering_Ace - -1 BTH on sideslip rolls and lessens the speed mods from
+sideslip style laterals.
+Melee_specialist - Reduces target movement mods by 1 (no less than total of 0)
+for physical attacks and does +1 damage with physicals.
+Dodge_Maneuver - Allows dodge movement mode. Cannot physical when using it but
++2 to be hit with a physical.
+Tech_aptitude - uses best 2 of 3 rolls for tech code. Use with caution.
+
+------------------------------------------------------------------------------
+- BT : Movement Modes                                                        -
+------------------------------------------------------------------------------
+Addes the following movement modes (some of which are affected by new
+advantages) :
+Evade - No attack, slower turn, +1 BTH to be hit.
+Sprinting - runspeed * 1.5, no attack, -4BTH to be hit, lower turn rate.
+Dodging - As dodge maneuver in Extended Advantages.
+Sideslipping - Any VTOL or Hover can also lateral, but a roll per turn of spin
+out (speed 0 and random direction). Meneuvering_Ace gives -1BTH to this roll.
+
+------------------------------------------------------------------------------
+- BT : Exile Skills                                                          -
+------------------------------------------------------------------------------
+Adds 'Research' as a new skills, not called in hcode jsut for scode to use for
+now. This is left as a placeholder for if I add more skills or functionality
+to it via it's BT_EXILE_SKILLS flag in btconfig.h
+
+------------------------------------------------------------------------------
+- BT : Misc Tweaks/Minor Features                                            -
+------------------------------------------------------------------------------
+Finished porting of the carrier code. It entails :
+CARRIER_TECH tech flag added (Addtech Carrier_Tech)
+Embark switchng to logicaly check for carriers vs bsuits.
+sdisembark changed to udisembark, along with updated.
+SETCARGOSPACE <TONNAGE
+
+------------------------------------------------------------------------------
+- BT : Cargo and Part Name changes                                           -
+------------------------------------------------------------------------------
+Following is a listing of all cargo/partname/etc... changes for various
+reasons. It was decided to not try to support name compatibility to the old
+naming system. For one, more Exile-codebase sites will be using this. For two,
+some of the old naming conventions were softcode problematic when used with
+more advanced programming than old sites used. For three, we are just getting
+tired of preprocessor definition switching in SO many things and to preserve
+old setup would just waste time. It's also been decided this won't cause to
+many hassles of the main btechmux tree wishes to port code. These are just the
+string name changes, the preproccessor defines won't change.
+NullSignatureSystem		->		NullSig_Device
+AllAmmoWith ()'s		->		Removed ()'s.
+Ammo_AC*_(AP)			->		Ammo_AC*_Pierce
+Men				->		Slaves
+Women				->		Timbiqui_Dark
+Boys				->		Cocaine
+Girls				->		Heroine
+Sillicon (typo)			->		Marijuana
+More cargo will be added via Ammo Modes code. Will try to add it here, if I
+remember to.
+
+------------------------------------------------------------------------------
+- BT : Complex (Near FASA-literal) Repairs                                   -
+------------------------------------------------------------------------------
+This makes a new subset of Cargo items with _# classes prepended to them.
+Engines increments of 20 at 20-200.
+Gyros increments of 1 at 1-4.
+Sensors, Internals, and the rest increments of 10 at 10-100.
+
+Basically, engine size... unit tonnage... etc.. dictate the class of part type
+required for repairs.
+
+Added btech_complexrepair config param to runtime disable/enable switching
+also.
+
+------------------------------------------------------------------------------
+- BT : Misc Tweaks/Minor Features                                            -
+------------------------------------------------------------------------------
+Added to btconfig.h the BT_MECHDEST_TRIGGER definition to switch on old A_UNUSED1
+in attrs.h to be A_MECHDEST (Amechdest, AMechDest, @amechdest, blah) to be
+triggered via ChannelEmitKill() calls on mech deaths. %# is the killer, the
+%! is the killee.
+
+TODO : Find a way to cleanly not require BT_MECHDEST_TRIGGER in Makefile as -D.
+A global /src include of btconfig.h but research it more.
+----
+Added to btconfig.h the BT_FREETECHTIME definition to enable code to give near
+instant techtime. It enabled btech_freetechtime config parameter for runtime
+switching and puts a hack into event timer in mech.tech.h.
+
+TODO : Find a way to cleanly not require BT_FREETECHTIME in Makefile as -D.
+A global /src include of btconfig.h but research it more.
+----
+Added to btconfig.h the BT_TARGCOMP_MODES definition to enable the usefull
+list of maxtech targeting modes (not Targeting Computer per templating). The
+new xcode value is 'targcomp' and set it to one of the following :
+0 - None (default)
+1 - Short (-1 SR, +1 LR)
+2 - Long (-1 LR, +1 SR)
+3 - Multi (no secondary or locking BTH mods, but all side arcs are +1)
+4 - AA (-2 BTH to air, -3 if you have radar already. +1 against ground)
+---
+Added btech_usedmechstore to set a dbref for where IC death mechs go to die.
+---
+Removed the old misspelled cargo item Sillicon (left Silicon in) and replaced
+it (easier than fat fignering the number changes)... Marijuana.
+---
+Removed all vestiage of @luck code, including the A_LUCK and @luck attrib tags
+in MUX /src tree. Replaced old attribs with A_UNUSED1. No more @luck in game,
+and all macros calling it are chagned to normal 'Roll()' for a die roll.
+Cadellin contributed the macros.h and /btech changes, I (Null) went ahead and
+finished the attrib stuff. This is the same (can't be different :P) as it was
+done in Exile codebase.

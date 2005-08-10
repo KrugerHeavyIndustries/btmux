@@ -1,0 +1,17 @@
+
+This directory contains some helper Python scripts for reading, parsing and
+writing (eventually) the various .db files that MUX writes. Currently, there
+is:
+
+flatfiledb.py		Reads and parses the main 'MUXample.db' file
+hcodedb.py		Reads and parses the 'hcode.db' file
+
+All scripts can be imported as modules, see their docstrings for usage. They
+can also be executed as scripts, though they only load up the respective .db
+file into a database called 'db' and then exit; you can use python's "-i" to
+keep the interpreter running after that:
+
+python -i flatfiledb.py ../game/data/MUXample.db
+python -i hcodedb.py ../game/data/hcode.db
+
+

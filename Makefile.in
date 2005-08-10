@@ -1,0 +1,236 @@
+#!/usr/bin/make -f
+
+CC             = @CC@
+MAKEDEPEND     = gcc -MM
+CFLAGS         = -g -Wall -Wno-unused
+CPPFLAGS       = @CPPFLAGS@
+
+INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
+LIBS           = @LIBS@
+LDFLAGS		   = @LDFLAGS@
+
+VERSION_FLAGS  = -DMUX_BUILD_DATE="\"`date`\""              \
+                 -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
+BUILDFLAGS     = -DMYFIFO -DMEMORY_BASED -DBT_ENABLED
+ALLFLAGS       = $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(LDFLAGS) $(BUILDFLAGS)
+
+PROTOMAKER     = bin/protomaker.sh
+
+MISC_OBJECTS   = misc/myfifo.o
+
+EVENT_OBJECTS  = event/event.o
+
+TREE_OBJECTS   = tree/mux_tree.o \
+                 tree/tree.o     \
+
+MUX_OBJECTS    = src/alloc.o       \
+                 src/boolexp.o     \
+                 src/bsd.o         \
+                 src/commac.o      \
+                 src/command.o     \
+                 src/compat.o      \
+                 src/comsys.o      \
+                 src/conf.o        \
+                 src/cque.o        \
+                 src/create.o      \
+                 src/db.o          \
+                 src/db_rw.o       \
+                 src/eval.o        \
+                 src/file_c.o      \
+                 src/flags.o       \
+                 src/funceval.o    \
+                 src/functions.o   \
+                 src/game.o        \
+                 src/help.o        \
+                 src/htab.o        \
+                 src/log.o         \
+                 src/look.o        \
+                 src/macro.o       \
+                 src/mail.o        \
+                 src/match.o       \
+                 src/mguests.o     \
+                 src/move.o        \
+                 src/netcommon.o   \
+                 src/object.o      \
+                 src/player.o      \
+                 src/player_c.o    \
+                 src/powers.o      \
+                 src/predicates.o  \
+                 src/python.o      \
+                 src/regexp.o      \
+				 src/rbtree.o	   \
+                 src/rob.o         \
+                 src/set.o         \
+                 src/speech.o      \
+                 src/strhandler.o  \
+                 src/stringutil.o  \
+                 src/timer.o       \
+                 src/unparse.o     \
+                 src/vattr.o       \
+                 src/walkdb.o      \
+                 src/wild.o        \
+                 src/wiz.o         \
+
+HCODE_OBJECTS =  src/hcode/coolmenu.o        \
+                 src/hcode/debug.o           \
+                 src/hcode/events.o          \
+                 src/hcode/glue.hcode.o      \
+                 src/hcode/glue.o            \
+                 src/hcode/glue.scode.o      \
+                 src/hcode/mech.lostracer.o  \
+                 src/hcode/mechfile.o        \
+                 src/hcode/spath.o           \
+
+BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
+                 src/hcode/btech/aero.move.o                \
+                 src/hcode/btech/ai.o                       \
+                 src/hcode/btech/artillery.o                \
+                 src/hcode/btech/autogun.o                  \
+                 src/hcode/btech/autopilot.o                \
+                 src/hcode/btech/autopilot_command.o        \
+                 src/hcode/btech/autopilot_commands.o       \
+                 src/hcode/btech/bsuit.o                    \
+                 src/hcode/btech/btech.o                    \
+                 src/hcode/btech/btechstats.o               \
+                 src/hcode/btech/btspath.o                  \
+                 src/hcode/btech/crit.o                     \
+                 src/hcode/btech/ds.bay.o                   \
+                 src/hcode/btech/ds.turret.o                \
+                 src/hcode/btech/econ.o                     \
+                 src/hcode/btech/econ_cmds.o                \
+                 src/hcode/btech/eject.o                    \
+                 src/hcode/btech/failures.o                 \
+                 src/hcode/btech/hudinfo.o                  \
+                 src/hcode/btech/map.bits.o                 \
+                 src/hcode/btech/map.coding.o               \
+                 src/hcode/btech/map.conditions.o           \
+                 src/hcode/btech/map.dynamic.o              \
+                 src/hcode/btech/map.los.o                  \
+                 src/hcode/btech/map.o                      \
+                 src/hcode/btech/map.obj.o                  \
+                 src/hcode/btech/mech.advanced.o            \
+                 src/hcode/btech/mech.ammodump.o            \
+                 src/hcode/btech/mech.avail.o               \
+                 src/hcode/btech/mech.bth.o                 \
+                 src/hcode/btech/mech.build.o               \
+                 src/hcode/btech/mech.c3.misc.o             \
+                 src/hcode/btech/mech.c3.o                  \
+                 src/hcode/btech/mech.c3i.o                 \
+                 src/hcode/btech/mech.combat.misc.o         \
+                 src/hcode/btech/mech.combat.missile.o      \
+                 src/hcode/btech/mech.combat.o              \
+                 src/hcode/btech/mech.consistency.o         \
+                 src/hcode/btech/mech.contacts.o            \
+                 src/hcode/btech/mech.custom.o              \
+                 src/hcode/btech/mech.damage.o              \
+                 src/hcode/btech/mech.ecm.o                 \
+                 src/hcode/btech/mech.enhanced.criticals.o  \
+                 src/hcode/btech/mech.events.o              \
+                 src/hcode/btech/mech.fire.o                \
+                 src/hcode/btech/mech.hitloc.o              \
+                 src/hcode/btech/mech.ice.o                 \
+                 src/hcode/btech/mech.lite.o                \
+                 src/hcode/btech/mech.los.o                 \
+                 src/hcode/btech/mech.maps.o                \
+                 src/hcode/btech/mech.mechref_ident.o       \
+                 src/hcode/btech/mech.move.o                \
+                 src/hcode/btech/mech.notify.o              \
+                 src/hcode/btech/mech.ood.o                 \
+                 src/hcode/btech/mech.partnames.o           \
+                 src/hcode/btech/mech.physical.o            \
+                 src/hcode/btech/mech.pickup.o              \
+                 src/hcode/btech/mech.restrict.o            \
+                 src/hcode/btech/mech.scan.o                \
+                 src/hcode/btech/mech.sensor.functions.o    \
+                 src/hcode/btech/mech.sensor.o              \
+                 src/hcode/btech/mech.spot.o                \
+                 src/hcode/btech/mech.startup.o             \
+                 src/hcode/btech/mech.stat.o                \
+                 src/hcode/btech/mech.status.o              \
+                 src/hcode/btech/mech.tag.o                 \
+                 src/hcode/btech/mech.tech.commands.o       \
+                 src/hcode/btech/mech.tech.damages.o        \
+                 src/hcode/btech/mech.tech.do.o             \
+                 src/hcode/btech/mech.tech.events.o         \
+                 src/hcode/btech/mech.tech.o                \
+                 src/hcode/btech/mech.tech.repairs.o        \
+                 src/hcode/btech/mech.tech.saverepair.o     \
+                 src/hcode/btech/mech.tic.o                 \
+                 src/hcode/btech/mech.update.o              \
+                 src/hcode/btech/mech.utils.o               \
+                 src/hcode/btech/mechrep.o                  \
+                 src/hcode/btech/mine.o                     \
+                 src/hcode/btech/pcombat.o                  \
+                 src/hcode/btech/scen.o                     \
+                 src/hcode/btech/template.o                 \
+
+ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
+          $(MUX_OBJECTS) $(HCODE_OBJECTS) $(BTECH_OBJECTS)
+
+ALLSRCS = $(ALLOBJS:.o=.c)
+
+TARGETS = src/netmux src/mkindx src/unsplit src/slave @SQLSLAVE@ src/fileslave
+
+all: $(TARGETS)
+
+# Install copies the 'game' directory to game.run, after trying to get all
+# files from bk. If the bk command fails, we don't really care.
+install: $(TARGETS)
+	if [ ! -d game ]; then \
+	    echo No game directory. Please acquire one from http://sourceforge.net/projects/btonline-btech.; \
+	    exit 1; \
+	fi
+	if [ ! -d game.run ]; then \
+	    cp -a game game.run || exit 1; \
+	    chmod -R u+w game.run || exit 1; \
+	fi
+	if [ ! -d game.run/bin ]; then \
+	    mkdir game.run/bin/; \
+	fi
+	mv -f $(TARGETS) game.run/bin/
+
+update:
+	cvs update -dP;
+
+netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
+	$(CC) $(ALLFLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version.o
+	$(CC) $(ALLFLAGS) -o src/netmux $(ALLOBJS) src/version.o $(LIBS)
+
+clean:
+	rm -f $(ALLOBJS) src/version.o $(TARGETS)
+
+slave src/slave: src/slave.c
+	$(CC) $(ALLFLAGS) -o src/slave src/slave.c
+
+sqlslave src/sqlslave: src/sqlslave.c
+	$(CC) $(ALLFLAGS) -o src/sqlslave src/sqlslave.c $(LIBS)
+
+fileslave src/fileslave: src/fileslave.c
+	$(CC) $(ALLFLAGS) -o src/fileslave src/fileslave.c $(LIBS)
+
+mkindx src/mkindx: src/mkindx.c
+	$(CC) $(ALLFLAGS) -o src/mkindx src/mkindx.c
+
+unsplit src/unsplit: src/unsplit.c
+	$(CC) $(ALLFLAGS) -o src/unsplit src/unsplit.c
+
+dbconvert src/dbconvert:
+	echo "dbconvert is no longer supported." && exit 1;
+
+$(ALLOBJS): %.o: %.c
+	$(CC) $(ALLFLAGS) -c $< -o $@
+
+# Removed protomaker because it doesn't work and if
+# we used it would wreck lots of things
+#protos: $(PROTOMAKER)
+#	$(PROTOMAKER) "$(INCLUDES)" $(ALLSRCS)
+
+.depend:
+	$(MAKEDEPEND) $(ALLFLAGS) $(ALLSRCS) > .depend
+
+depend dep: .depend
+
+.PHONY: clean protos
+
+include .depend
+

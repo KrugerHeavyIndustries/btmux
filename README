@@ -1,0 +1,117 @@
+Btech-Online BattletechMUX v0.x Beta
+------------------------------------
+____________________
+=     Contents     =
+====================
+* S1: Introduction *
+* S2: History      *
+* S3: Credits      *
+* S4: License      *
+====================
+
+S1: INTRODUCTION
+--- ------------
+Battletech MUX is a TinyMUX 1.6 based MUX server with special Battletech
+extentions. These extensions allow for site admins to configure and run a 
+persistent warfare simulation using a rule set that is adapted for our 
+real-time environment from the turn based nature of the original board 
+game by FASA.
+
+Before continuing any further, it is strongly recommended that you at the 
+very least have experience with Battletech. While prior MUX experience is 
+not a must, it will also make your life as an admin substantially easier. 
+It is usually a good idea to try out a variety of the different 
+BattletechMUX sites running before crafting your own. You learn a lot 
+about how things are done and you may get some ideas for your own content. 
+You may view a complete listing of active sites on the BattletechMUX wiki 
+which is located at http://docs.btmux.com 
+
+To find out how to install this piece of software, see the INSTALL file. The
+rest of this README describes the history of the code, in rough outlines, as
+well as the rationale behind the license (which can be found in the file
+LICENSE)
+
+Note that there are many resources available if you are in need of help or 
+would like to contribute to the community. You may view the SUPPORT file 
+for details on these matters.
+
+S2: HISTORY
+-----------
+This MUX is the result of nearly 10 years of development in one form or
+another. It started with a TinyMUSE based server, in '92 or '93. Its primary
+site was also the most popular BattleTech MU* to date, 3056MUSE. After that
+the code was ported to/reimplemented with TinyMUSH by the Animudiacs crew,
+who ran, among other servers, 3034-II (which later turned into 3035) and
+Varxsis (a non-battletech universe with similar technology.) Somewhat
+simultaneously, Markus Stenberg (aka Fingon) ported the original MUSE code
+to TinyMUX, implementing a lot of ideas from the Animudiacs sites and
+implementing a lot more from scratch, both official Battletech rules and
+brandnew ideas. The main MUX site has always been 3030MUX.
+
+Fingon continued development until about '98, after which he released the
+source to public in a restricted license and retired. Development for 3030
+was continued by several of the 3030MUX Wizards, most notably Thomas Wouters
+(Focus) and Cord Awtry (Spectre). 
+
+In 1999, a new BattletechMUX using the restricted licensed source opens up 
+under the banner of 'Exile: Exodus', with development efforts lead by Null 
+(Kevin Stevens). Exile took an aggressive approach to development and many 
+modifications, rewrites, and additions were made to the now ancient 
+source. Although some parallel development was done in coordination with 
+the staff of 3030, the two trees stayed largely seperate due to licensing.
+
+After some prods from people running their own spinoffs from the original 
+'public' release by Fingon, Fingon, Spectre, and Focus wrote a new licence: 
+the 3030MUX Artistic License, and released the actual 3030MUX source tree 
+under it. The MUX source also moved to SourceForge for its main development.
+
+Still limited by the licensing on the old release, the Exile tree was
+unable to release source. Attempts were made to contact Fingon to get the
+old tree re-licensed, but over the span of several years nothing was heard
+from him. 
+
+In late 2004 and early 2005, Null begins to port his changes to the Exile
+base to the open-sourced 3030 branch. His modifications, enhancements.
+and additions are now publicly available to all under this release which
+is maintained by the original Exile staff with the assistance of the
+public.
+
+S3: CREDITS
+-----------
+We would like to give credit where it's due. Unfortunately, because of the
+long and confusing history of this actual source as well as the ideas in
+other MUSEs, MUSHes and MUXes that inspired the MUX code, we cannot.
+Basically, it means anyone who worked on TinyMUSE, TinyMUSH and TinyMUX,
+both with and without battletech extentions, as well as those people who
+actually built and ran the Battletech MUSE, MUSH and MUX worlds out there.
+If you're one of them, and you want to be listed in a CREDITS file, let us
+know.
+
+S4: LICENSE
+-----------
+This code is distributed under the 3030MUX Artistic License, a modified
+Artistic License, which you should find in a file 'LICENSE' accompanying the
+actual source code. The changes to the Artistic License are minimal:
+sections 3.b, 3.c, 4.b and 7 are scrapped, and the rest of the sections were
+renumbered to fill the gaps. No other changes were made. The net result of
+these changes is that if you want to host a game with a modified version of
+this source, you HAVE TO make that source available. Either by publically
+putting it up a website, or by sending it back to the original authors (a
+SourceForge patch submission will do.) You do not, however, have to wait for
+the authors to incorporate the changes before you use them; making them
+available is enough.
+
+The rest of the Artistic License restrictions are the same: You cannot
+charge money for this source, though you can charge money for supporting
+this source. MUX 'softcode' that you use in a game is considered part of the
+configuration/scripting of the MUX, and does not fall under the 3030MUX
+Artistic License: you can do anything you like with it, including selling
+it. 
+
+The original authors of the code retain their copyright. The source is not
+yours. You are given permission to use it. Actual authors are listed in the
+files themselves. When attribution in the 'src/' directory is missing,
+assuem David Passmore. When attribution in src/hcode or any other directory
+is missing, assume Markus Stenberg. If you see code of your own
+unattributed, please let us know.
+
