@@ -1,6 +1,6 @@
 
 /*
- * $Id: bsuit.c,v 1.1 2005/06/13 20:50:49 murrayma Exp $
+ * $Id: bsuit.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -27,12 +27,16 @@
 #include "p.mech.move.h"
 #include "p.crit.h"
 #include "p.mech.bth.h"
+#include "p.mech.update.h"
+
+/*! \todo {The Bsuit code needs an overhaul} */
 
 /* 2 battlesuit-specific attacks:
    - attackleg
    - swarm
  */
 
+#define MyHiddenTurns(mech) ((MechType(mech) == CLASS_MW ? 1 : MechType(mech) == CLASS_BSUIT ? 3 : MechType(mech) == CLASS_VTOL ? 4 : 5) * ((MechSpecials2(mech) & CAMO_TECH) ? 1 : 2))
 
 /* Stops everyone who's swarming this poor guy */
 
@@ -629,8 +633,47 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
 static void mech_hide_event(EVENT * e)
 {
     MECH *mech = (MECH *) e->data;
+    MECH *t;
+    MAP *map = getMap(mech->mapindex);
+    int fail = 0, i;
+    int tic = (int) e->data2;
 
-    MechCritStatus(mech) |= HIDDEN;
+    if (!map)
+        return;
+
+    for (i = 0; i < map->first_free; i++) {
+        if (map->mechsOnMap[i] <= 0)
+            continue;
+        if (!(t = getMech(map->mechsOnMap[i])))
+            continue;
+        if (MechCritStatus(t) & (CLAIRVOYANT|OBSERVATORIC|INVISIBLE))
+            continue;
+        if (MechTeam(t) == MechTeam(mech))
+            continue;
+        if (!Started(t))
+            continue;
+        if (Destroyed(t))
+            continue;
+        if (InLineOfSight(t, mech, MechX(mech), MechY(mech), 
+                FaMechRange(t, mech)))
+            fail = 1;
+    }
+
+    if (MechsElevation(mech))
+        fail = 1;
+
+    if (fail) {
+        mech_notify(mech, MECHALL,
+            "Your spidey sense tingles, telling you this isn't going to work......");
+        return;
+    } else if (tic < (MyHiddenTurns(mech) * HIDE_TICK)) {
+        tic++;
+        MECHEVENT(mech, EVENT_HIDE, mech_hide_event, 1, tic);
+    } else if (!fail) {
+        mech_notify(mech, MECHALL, "You are now hidden!");
+        MechCritStatus(mech) |= HIDDEN;
+    }
+    return;
 }
 
 void bsuit_hide(dbref player, void *data, char *buffer)
@@ -639,58 +682,45 @@ void bsuit_hide(dbref player, void *data, char *buffer)
     MECH *mech = data;
     MECH *t;
     MAP *map = FindObjectsData(mech->mapindex);
-    int fail = 0;
     int terrain;
 
     cch(MECH_USUALO);
+    DOCHECK(((HasCamo(mech)) || (Wizard(player))) ? 0 : MechType(mech) != CLASS_BSUIT && 
+            MechType(mech) != CLASS_MW, "Your not capable of such curious things.");
 
     if (!map) {
-	mech_notify(mech, MECHALL, "You are not on a map!");
-	return;
+        mech_notify(mech, MECHALL, "You are not on a map!");
+        return;
     }
-
-    terrain = GetRTerrain(map, MechX(mech), MechY(mech));
 
     DOCHECK(Jumping(mech), "It's hard to hide while you're jumping!");
     DOCHECK((fabs(MechSpeed(mech)) > MP1), "Moving and hiding don't mix!");
+    DOCHECK(Hiding(mech), "You are looking for cover already!");
+    DOCHECK(MechMove(mech) == MOVE_VTOL && !Landed(mech), "You must be landed!");
+
+    terrain = GetRTerrain(map, MechX(mech), MechY(mech));
 
     if (IsForest(terrain)) {
-	mech_notify(mech, MECHALL,
-	    "You start to hide amongst the trees...");
+        mech_notify(mech, MECHALL,
+            "You start to hide amongst the trees...");
     } else if (IsMountains(terrain)) {
-	mech_notify(mech, MECHALL,
-	    "You hide behind several rocky outcroppings...");
+        mech_notify(mech, MECHALL,
+            "You start to hide behind some rocky outcroppings...");
     } else if (IsRough(terrain)) {
-	mech_notify(mech, MECHALL,
-	    "You find several boulders to hide behind...");
+        mech_notify(mech, MECHALL,
+            "You find some boulders to try to hide behind...");
+    } else if ((IsBuilding(terrain)) && (MechType(mech) == CLASS_BSUIT)) {
+        mech_notify(mech, MECHALL,
+            "You break into a building and look for a spot to hide...");
     } else {
-	mech_notify(mech, MECHALL,
-	    "You begin to hide in clear terrain...");
-	mech_notify(mech, MECHALL,
-	    "... then realize that just isn't going to work!");
-	return;
+        mech_notify(mech, MECHALL,
+            "You begin to hide in this terrain...");
+        mech_notify(mech, MECHALL,
+            "... then realize that just isn't going to work!");
+        return;
     }
 
-    for (i = 0; i < map->first_free; i++) {
-	if (map->mechsOnMap[i] <= 0) {
-	    continue;
-	}
-
-	if (!(t = FindObjectsData(map->mechsOnMap[i]))) {
-	    continue;
-	}
-
-	if (InLineOfSight(t, mech, MechX(mech), MechY(mech), FaMechRange(t,
-		    mech)) && (MechTeam(t) != MechTeam(mech))) {
-	    fail = 1;
-	    SendDebug(tprintf
-		("%d tried to hide (BSUIT) but was seen by %d", mech, t));
-	}
-    }
-
-    if (!fail) {
-	MECHEVENT(mech, EVENT_HIDE, mech_hide_event, HIDE_TICK, 0);
-    }
+    MECHEVENT(mech, EVENT_HIDE, mech_hide_event, 1, 0);
 }
 
 void JettisonPacks(dbref player, void *data, char *buffer)

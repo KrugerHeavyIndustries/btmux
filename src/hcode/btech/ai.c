@@ -1,6 +1,6 @@
 
 /*
- * $Id: ai.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: ai.c,v 1.2 2005/08/03 21:40:53 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -28,6 +28,7 @@
 #include "p.map.obj.h"
 #include "spath.h"
 #include "p.mech.combat.h"
+#include "p.glue.hcode.h"
 
 #define SCORE_MOD 100
 #define SAFE_SCORE SCORE_MOD * 1000
@@ -47,7 +48,7 @@ typedef struct {
 enum {
     SP_OPT_NORM, SP_OPT_FASTER, SP_OPT_SLOWER, SP_OPT_C
 };
-int sp_opt[SP_OPT_C] = { 0, 1, -1 };	/* We prefer to keep at same speed, however */
+int sp_opt[SP_OPT_C] = { 0, 1, -1 };    /* We prefer to keep at same speed, however */
 
 #define MNORM_COUNT 37
 
@@ -63,7 +64,7 @@ int move_norm_opt[MNORM_COUNT][2] = {
     {3, SP_OPT_NORM},
     {-5, SP_OPT_NORM},
     {5, SP_OPT_NORM},
-    {10, SP_OPT_NORM},
+    {-10, SP_OPT_NORM},
     {10, SP_OPT_NORM},
     {-15, SP_OPT_NORM},
     {15, SP_OPT_NORM},
@@ -707,7 +708,7 @@ void ai_stop(MECH * mech, AUTO * a)
     }
 }
 
-
+#if 0
 void ai_set_speed(MECH * mech, AUTO * a, int s)
 {
     float ms;
@@ -727,6 +728,23 @@ void ai_set_speed(MECH * mech, AUTO * a, int s)
     if (MechDesiredSpeed(mech) != ms) {
 	sprintf(buf, "%f", ms);
 	mech_speed(a->mynum, mech, buf);
+    }
+}
+#endif
+
+void ai_set_speed(MECH * mech, AUTO *a, float spd)
+{
+    char buf[SBUF_SIZE];
+    float newspeed;
+
+    if (!mech || !a)
+        return;
+
+    newspeed = FBOUNDED(0, spd, ((MMaxSpeed(mech) * a->speed) / 100.0));
+
+    if (MechDesiredSpeed(mech) != newspeed) {
+        sprintf(buf, "%f", newspeed);
+        mech_speed(a->mynum, mech, buf);
     }
 }
 
@@ -758,15 +776,15 @@ void ai_adjust_move(AUTO * a, MECH * m, char *text, int hmod, int smod,
 	    text, hmod, b_score);
 	ms = MMaxSpeed(m);
 	ai_set_speed(m, a,
-	    (int) (100.0 * (MechDesiredSpeed(m) <
-		    MP1 ? MP1 : MechDesiredSpeed(m)) * 4.0 / 3.0 / ms));
+	    (float) ((MechDesiredSpeed(m) <
+		    MP1 ? MP1 : MechDesiredSpeed(m)) * 4.0 / 3.0));
 	break;
     case SP_OPT_SLOWER:
 	SendAI("%s state: %s+decelerating (hmod:%d) sc:%d", AI_Info(m, a),
 	    text, hmod, b_score);
 	ms = MMaxSpeed(m);
 	ai_set_speed(m, a,
-	    (int) (100.0 * MechDesiredSpeed(m) * 2.0 / 3.0 / ms));
+	    (int) (MechDesiredSpeed(m) * 2.0 / 3.0));
 	break;
     }
 }
@@ -846,14 +864,17 @@ int ai_check_path(MECH * m, AUTO * a, float dx, float dy, float delx,
     return 0;
 }
 
-void ai_init(AUTO * a, MECH * m)
-{
+void ai_init(AUTO * a, MECH * m) {
+
     /* XXX Analyze our unit type ; set basic combat tactic */
-    a->auto_cmode = 1;		/* CHARGE! */
-    a->auto_cdist = 2;		/* Attempt to avoid kicking distance */
+    a->auto_cmode = 1;      /* CHARGE! */
+    a->auto_cdist = 2;      /* Attempt to avoid kicking distance */
     a->auto_nervous = 0;
-    a->auto_goweight = 44;	/* We're mainly concentrating on fighting */
+    a->auto_goweight = 44;  /* We're mainly concentrating on fighting */
     a->auto_fweight = 55;
+    a->speed = 100;         /* Reset to full speed */
+    a->flags = 0;
+    a->targ = -1; 
 }
 
 static MECH *target_mech;

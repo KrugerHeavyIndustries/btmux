@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.ammodump.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.ammodump.c,v 1.1.1.1 2005/01/11 21:18:10 kstevens Exp $
  *
  * Author: Cord Awtry <kipsta@mediaone.net>
  * Author: Cord Awtry <kipsta@mediaone.net>

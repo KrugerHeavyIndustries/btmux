@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.consistency.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.consistency.c,v 1.4 2005/06/24 04:39:07 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.custom.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.custom.c,v 1.1.1.1 2005/01/11 21:18:14 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

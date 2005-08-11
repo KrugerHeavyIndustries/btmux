@@ -1,6 +1,6 @@
 
 /*
-* $Id: mech.damage.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+* $Id: mech.damage.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
 *
 * Author: Cord Awtry <kipsta@mediaone.net>
 *  Copyright (c) 2000-2002 Cord Awtry
@@ -430,6 +430,12 @@ void DamageMech(MECH * wounded,
 		damage = 1;
 	}
 
+    if (MechCritStatus(wounded) & HIDDEN) {
+        mech_notify(wounded, MECHALL, "Your cover is ruined as you take damage!");
+        MechLOSBroadcast(wounded, "loses it's cover as it takes damage.");
+        MechCritStatus(wounded) &= ~HIDDEN;
+    }
+
 	if (!global_physical_flag)
 	    AccumulateGunXP(attackPilot, attacker, wounded, damage, 1,
 		cause, bth);
@@ -592,10 +598,10 @@ void DamageMech(MECH * wounded,
 		    hitloc == RTORSO)) {
 		/* Possibly destroy the light */
 		if (Roll() > 6) {
-		    if ((MechSpecialsStatus(wounded) & SLITE_ON) ||
+		    if ((MechStatus2(wounded) & SLITE_ON) ||
 			(Roll() > 5)) {
 			MechCritStatus(wounded) |= SLITE_DEST;
-			MechSpecialsStatus(wounded) &= ~SLITE_ON;
+			MechStatus2(wounded) &= ~SLITE_ON;
 			MechLOSBroadcast(wounded,
 			    "'s searchlight is blown apart!");
 			mech_notify(wounded, MECHALL,
@@ -610,10 +616,10 @@ void DamageMech(MECH * wounded,
 		(hitloc == FSIDE)) {
 		/* Possibly destroy the light */
 		if (Roll() > 6) {
-		    if ((MechSpecialsStatus(wounded) & SLITE_ON) ||
+		    if ((MechStatus2(wounded) & SLITE_ON) ||
 			(Roll() > 5)) {
 			MechCritStatus(wounded) |= SLITE_DEST;
-			MechSpecialsStatus(wounded) &= ~SLITE_ON;
+			MechStatus2(wounded) &= ~SLITE_ON;
 			MechLOSBroadcast(wounded,
 			    "'s searchlight is blown apart!");
 			mech_notify(wounded, MECHALL,
@@ -825,7 +831,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
         for (i = 0; i < NUM_SECTIONS; i++)
             if (GetSectOInt(wounded, i) && GetSectInt(wounded, i))
                 return;
-        if (muxevent_count_type_Data(EVENT_NUKEMECH, (void *) wounded)) {
+        if (muxevent_count_type_data(EVENT_NUKEMECH, (void *) wounded)) {
             fprintf(stderr, "And nuke event already existed.\n");
             return;
         }

@@ -1,4 +1,3 @@
-
 /*
  * bsd.c 
  */
@@ -552,6 +551,7 @@ void fileslave_dolog(dbref thing, const char *fname, const char *fdata) {
 /*
  * get a result from the slave 
  */
+
 static int get_slave_result() {
     char *buf;
     char *token;
@@ -847,12 +847,8 @@ void accept_fileslave_input(int fd, short event, void *arg) {
 #endif
 
 void shovechars(int port) {
-    fd_set input_set, output_set;
     struct timeval last_slice, current_time, next_slice, timeout,
                    slice_timeout;
-    int found, check;
-    DESC *d, *dnext, *newd;
-    int avail_descriptors, maxfds;
 
     mudstate.debug_cmd = (char *) "< shovechars >";
     if (!mudstate.restarting) {
@@ -863,14 +859,6 @@ void shovechars(int port) {
         event_add(&listen_sock_ev, NULL);
     }
     get_tod(&last_slice);
-
-#ifdef HAVE_GETDTABLESIZE
-    maxfds = getdtablesize();
-#else
-    maxfds = sysconf(_SC_OPEN_MAX);
-#endif
-
-    avail_descriptors = maxfds - 7;
 
     while (mudstate.shutdown_flag == 0) {
         get_tod(&current_time);

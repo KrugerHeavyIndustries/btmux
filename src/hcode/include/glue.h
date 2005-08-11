@@ -565,7 +565,7 @@ CommandsStruct mechcommands[] = {
 
     {64, "ATTACKLEG [<TARGET-ID>]",
 	"Attacks legs of the target battlemech", bsuit_attackleg},
-    {64, "HIDE",
+    {0, "HIDE",
 	    "Attempts to hide your team ; doesn't work if any hostiles have their eyeballs on you",
 	bsuit_hide},
     {64, "SWARM [<TARGET-ID> | -]",

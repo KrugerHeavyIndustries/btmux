@@ -19,6 +19,7 @@ void silly_atr_set(int id, int flag, char *dat);
 void bt_set_attr(dbref obj, char *attri, char *value);
 void KillText(char **mapt);
 void ShowText(char **mapt, dbref player);
+float FBOUNDED(float min, float val, float max);
 int BOUNDED(int min, int val, int max);
 int MAX(int v1, int v2);
 int MIN(int v1, int v2);

@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.pickup.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.pickup.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -21,6 +21,8 @@
 
 #include "mech.h"
 #include "mech.events.h"
+#include "muxevent.h"
+#include "p.event.h"
 #include "p.mech.utils.h"
 #include "p.mech.los.h"
 #include "p.eject.h"
@@ -80,6 +82,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 	"You can't grab hold!");
     DOCHECK(MechTons(mech) < 5 || (!In_Character(target->mynum) &&
 	    !Towable(target)), "You can't tow that!");
+    DOCHECK(MechCritStatus(target) & HIDDEN, "You cannot pickup hiding targets....");
     DOCHECK(Burning(target), "You can't tow a burning unit!");
     if (MechType(target) == CLASS_MW) {
 	pickup_mw(mech, target);

@@ -16,6 +16,7 @@
 #include "externs.h"
 #include "debug.h"
 #include "glue.h"
+#include "muxevent.h"
 #include "mech.h"
 #include "create.h"
 #include "mux_tree.h"

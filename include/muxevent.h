@@ -12,8 +12,8 @@
  *
  */
 
-#ifndef EVENT_H
-#define EVENT_H
+#ifndef MUXEVENT_H
+#define MUXEVENT_H
 
 /* EVENT_DEBUG adds some useful debugging information to the structure
    / allows more diverse set of error messages to be shown. However,
@@ -115,4 +115,4 @@ void event_gothru_type(int type, void (*func) (EVENT *));
 
 /* Did I mention cproto is braindead? */
 
-#endif				/* EVENT_H */
+#endif				/* MUXEVENT_H */

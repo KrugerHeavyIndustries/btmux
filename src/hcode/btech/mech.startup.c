@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.startup.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.startup.c,v 1.2 2005/06/23 18:31:42 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -241,9 +241,9 @@ void mech_shutdown(dbref player, void *data, char *buffer)
      * Fixed by Kipsta so searchlights shutoff when the mech shuts down
      */
 
-    if (MechSpecialsStatus(mech) & SLITE_ON) {
+    if (MechStatus2(mech) & SLITE_ON) {
 	mech_notify(mech, MECHALL, "Your searchlight shuts off.");
-	MechSpecialsStatus(mech) &= ~SLITE_ON;
+	MechStatus2(mech) &= ~SLITE_ON;
 	MechCritStatus(mech) &= ~SLITE_LIT;
     }
 

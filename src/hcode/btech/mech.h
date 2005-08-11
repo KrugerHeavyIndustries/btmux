@@ -1,7 +1,7 @@
 
 
 /*
- * $Id: mech.h,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.h,v 1.10 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -20,12 +20,13 @@
 #ifndef MECH_H
 #define MECH_H
 
-#include "config.h"
 #include "externs.h"
 #include "db.h"
 #include "attrs.h"
 #include "powers.h"
 #include "mech.stat.h"
+#include "muxevent.h"
+#include "p.event.h"
 
 #include "btconfig.h"
 #include "mymath.h"
@@ -775,7 +776,7 @@ typedef struct {
 				   is used as _base_ of random element in each sensor type, altered
 				   once every heat update (and when mech's sensor mode changes) */
     char chargetimer;		/* # of movement ticks since 'charge' command */
-    char chargedist;		/* # of hexes moved since 'charge' command */
+    float chargedist;		/* # of hexes moved since 'charge' command */
     char staggerstamp;		/* When in last turn this 'mech staggered */
 
     short mech_prefs;		/* Mech preferences */
@@ -963,26 +964,29 @@ struct repair_data {
 /* status2 element */
 
 /* Specials status element */
-#define ECM_ENABLED		0x00000001	/* set if this unit is using ECM */
-#define ECCM_ENABLED		0x00000002	/* set if this unit is using ECCM */
-#define ECM_DISTURBANCE		0x00000004	/* set if this unit is disturbed by ECM */
-#define ECM_PROTECTED		0x00000008	/* set if this unit is protected by ECM */
-#define ECM_COUNTERED		0x00000010	/* set if this units ECM is countered by ECCM. This only happens if an enemy ECCM is within range. */
-#define SLITE_ON		0x00000020	/* See if this person's SLITE is on */
-#define STH_ARMOR_ON		0x00000040	/* see if this unit is using stealth armor */
-#define NULLSIGSYS_ON		0x00000080	/* see if this unit is using a null signature system */
-#define ANGEL_ECM_ENABLED	0x00000100	/* set if this unit is using ECM */
-#define ANGEL_ECCM_ENABLED	0x00000200	/* set if this unit is using ECCM */
-#define ANGEL_ECM_PROTECTED	0x00000400	/* set if this unit is protected by an Angel ECM suite */
-#define ANGEL_ECM_DISTURBED	0x00000800	/* set if this unit is disturbed by an Angel ECM suite */
-#define PER_ECM_ENABLED		0x00001000	/* set if this unit is using Personal ECM */
-#define PER_ECCM_ENABLED	0x00002000	/* set if this unit is using Personal ECCM */
-#define AUTOTURN_TURRET		0x00004000	/* auto-turn the turret to the locked target */
+#define ECM_ENABLED         0x00000001	/* set if this unit is using ECM */
+#define ECCM_ENABLED        0x00000002	/* set if this unit is using ECCM */
+#define ECM_DISTURBANCE     0x00000004	/* set if this unit is disturbed by ECM */
+#define ECM_PROTECTED       0x00000008	/* set if this unit is protected by ECM */
+#define ECM_COUNTERED       0x00000010	/* set if this units ECM is countered by 
+                                           ECCM. This only happens if an enemy ECCM 
+                                           is within range. */
+#define SLITE_ON            0x00000020	/* See if this person's SLITE is on */
+#define STH_ARMOR_ON        0x00000040	/* see if this unit is using stealth armor */
+#define NULLSIGSYS_ON       0x00000080	/* see if this unit is using a null signature system */
+#define ANGEL_ECM_ENABLED   0x00000100	/* set if this unit is using ECM */
+#define ANGEL_ECCM_ENABLED  0x00000200	/* set if this unit is using ECCM */
+#define ANGEL_ECM_PROTECTED 0x00000400	/* set if this unit is protected by an Angel ECM suite */
+#define ANGEL_ECM_DISTURBED 0x00000800	/* set if this unit is disturbed by an Angel ECM suite */
+#define PER_ECM_ENABLED     0x00001000	/* set if this unit is using Personal ECM */
+#define PER_ECCM_ENABLED    0x00002000	/* set if this unit is using Personal ECCM */
+#define AUTOTURN_TURRET     0x00004000	/* auto-turn the turret to the locked target */
 #ifdef BT_MOVEMENT_MODES
-#define SPRINTING		0x00010000	/* set if this unit is sprinting */
-#define EVADING			0x00020000	/* set if this unit is evading */
-#define DODGING			0x00040000	/* set if this unit is dodging */
+#define SPRINTING           0x00010000	/* set if this unit is sprinting */
+#define EVADING             0x00020000	/* set if this unit is evading */
+#define DODGING             0x00040000	/* set if this unit is dodging */
 #endif
+#define ATTACKEMIT_MECH     0x00080000  /* set to be able to watch a unit and what it attacks */
 
 #ifdef BT_MOVEMENT_MODES
 /* Grouping masks */
@@ -1091,32 +1095,34 @@ struct repair_data {
 /* 0x80000000 can not be used. */
 
 /* specials2 element: used to tell quickly what type of tech the mech has */
-#define STEALTH_ARMOR_TECH	0x01	/* Stealth armor */
-#define HVY_FF_ARMOR_TECH	0x02	/* Heavy FF. 1.24 armor multi. 21 slots. */
-#define LASER_REF_ARMOR_TECH	0x04	/* Not yet implemented */
-#define REACTIVE_ARMOR_TECH	0x08	/* Not yet implemented */
-#define NULLSIGSYS_TECH		0x10	/* Null signature system */
-#define C3I_TECH		0x20	/* Improved C3 */
-#define SUPERCHARGER_TECH	0x40	/* Not yet implemented */
-#define IMPROVED_JJ_TECH	0x80	/* Not yet implemented */
-#define MECHANICAL_JJ_TECH	0x100	/* Not yet implemented */
-#define COMPACT_HS_TECH		0x200	/* Not yet implemented */
-#define LASER_HS_TECH		0x400	/* Not yet implemented */
-#define BLOODHOUND_PROBE_TECH	0x800	/* BLoodhound Active Probe */
-#define ANGEL_ECM_TECH		0x1000	/* Angel ECM suite */
-#define WATCHDOG_TECH		0x2000	/* Not yet implemented */
-#define LT_FF_ARMOR_TECH	0x4000	/* Heavy FF. 1.06 armor multi. 7 slots. */
-#define TAG_TECH		0x8000	/* Target Aquisition Gear */
-#define OMNIMECH_TECH		0x10000	/* Is an omni mech */
-#define ARTEMISV_TECH		0x20000	/* Not yet implemented */
+#define STEALTH_ARMOR_TECH      0x01        /* Stealth armor */
+#define HVY_FF_ARMOR_TECH       0x02        /* Heavy FF. 1.24 armor multi. 21 slots. */
+#define LASER_REF_ARMOR_TECH    0x04        /* Not yet implemented */
+#define REACTIVE_ARMOR_TECH     0x08        /* Not yet implemented */
+#define NULLSIGSYS_TECH         0x10        /* Null signature system */
+#define C3I_TECH                0x20        /* Improved C3 */
+#define SUPERCHARGER_TECH       0x40        /* Not yet implemented */
+#define IMPROVED_JJ_TECH        0x80        /* Not yet implemented */
+#define MECHANICAL_JJ_TECH      0x100       /* Not yet implemented */
+#define COMPACT_HS_TECH         0x200       /* Not yet implemented */
+#define LASER_HS_TECH           0x400       /* Not yet implemented */
+#define BLOODHOUND_PROBE_TECH   0x800       /* BLoodhound Active Probe */
+#define ANGEL_ECM_TECH          0x1000      /* Angel ECM suite */
+#define WATCHDOG_TECH           0x2000      /* Not yet implemented */
+#define LT_FF_ARMOR_TECH        0x4000      /* Heavy FF. 1.06 armor multi. 7 slots. */
+#define TAG_TECH                0x8000      /* Target Aquisition Gear */
+#define OMNIMECH_TECH           0x10000     /* Is an omni mech */
+#define ARTEMISV_TECH           0x20000     /* Not yet implemented */
 #ifdef BT_CARRIERS
-#define CARRIER_TECH		0x40000 /* Can be used as a carrier of mechs */
+#define CARRIER_TECH            0x40000     /* Can be used as a carrier of mechs */
 #endif
 #ifdef BT_COMPLEXREPAIRS
-#define XLGYRO_TECH		0x80000
-#define HDGYRO_TECH		0x100000
-#define CGYRO_TECH		0x200000
+#define XLGYRO_TECH             0x80000
+#define HDGYRO_TECH             0x100000
+#define CGYRO_TECH              0x200000
 #endif
+#define CAMO_TECH               0x400000    /* Allows any unit to 'hide' */
+
 /* Infantry specials */
 #define INF_SWARM_TECH			0x01	/* Infantry/BSuits can swarm unfriendlies */
 #define INF_MOUNT_TECH			0x02	/* Infantry/BSuits can mount friendlies */
@@ -1279,7 +1285,6 @@ extern void *FindObjectsData(dbref key);
 
 #define WDUMP_MASK	"%-24s %2d     %2d           %2d  %2d    %2d  %3d  %2d  %2d %d"
 #define WDUMP_MASKS	"%%cgWeapon Name             Heat  Damage  Range: Min Short Med Long VRT C  ApT"
-
 #include "btmacros.h"
 #include "p.glue.hcode.h"
 #include "map.h"

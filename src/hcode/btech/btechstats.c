@@ -1,6 +1,6 @@
 
 /*
- * $Id: btechstats.c,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: btechstats.c,v 1.8 2005/06/27 19:27:30 gregtaylor Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -18,7 +18,6 @@
    is same. */
 
 #include "config.h"
-
 #include <stdio.h>
 #include <math.h>
 #define BTECHSTATS
@@ -27,6 +26,7 @@
 #include "mycool.h"
 #include "mech.events.h"
 #define BTECHSTATS_C
+#include "btmacros.h"
 #include "btechstats.h"
 #include "mux_tree.h"
 #include "htab.h"
@@ -435,7 +435,7 @@ int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
 	roll = char_rollunskilled();
     else
 	roll = char_rollskilled();
-#ifndef BT_EXILE_MW3STATS
+#ifdef BT_EXILE_MW3STATS
     if (loud)
         {
         notify(player, tprintf("You make a %s skill roll!", name));
@@ -1102,14 +1102,23 @@ void AccumulateTechXP(dbref pilot, MECH * mech, int reason)
     static char *techw = "technician-weapons";
 
     if (mech) {
-	if (!(skname = FindTechSkillName(mech)))
-	    return;
+	    if (!(skname = FindTechSkillName(mech)))
+	        return;
     } else
-	skname = techw;
+	    skname = techw;
+
     xp = MAX(1, reason);
+    /* Using Exile method of spliting the xp off to different
+     * channels for monitoring. TechXP goes to MechTechXP
+     */
     if (char_gainxp(pilot, skname, xp))
-	SendXP(tprintf("%s gained %d %s XP (changing mech #%d)",
-		Name(pilot), xp, skname, mech ? mech->mynum : -1));
+	    SendTechXP(tprintf("%s gained %d %s XP (changing mech #%d)",
+		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
+/*
+    if (char_gainxp(pilot, skname, xp))
+	    SendXP(tprintf("%s gained %d %s XP (changing mech #%d)",
+		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
+*/
 }
 
 void AccumulateTechWeaponsXP(dbref pilot, MECH * mech, int reason)
@@ -1120,9 +1129,17 @@ void AccumulateTechWeaponsXP(dbref pilot, MECH * mech, int reason)
 
     skname = techw;
     xp = MAX(1, reason);
+    /* Using Exile method of spliting the xp off to different
+     * channels for monitoring. TechXP goes to MechTechXP
+     */
+    if (char_gainxp(pilot, skname, xp))
+	    SendTechXP(tprintf("%s gained %d %s XP (changing mech #%d)",
+		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
+/*
     if (char_gainxp(pilot, skname, xp))
 	SendXP(tprintf("%s gained %d %s XP (changing mech #%d)",
 		Name(pilot), xp, skname, mech ? mech->mynum : -1));
+*/
 }
 
 void AccumulateCommXP(dbref pilot, MECH * mech)
@@ -1147,21 +1164,32 @@ void AccumulatePilXP(dbref pilot, MECH * mech, int reason, int addanyway)
     int xp;
 
     if (!In_Character(mech->mynum))
-	return;
-    if (!RGotPilot(mech))
-	return;
-    if (!(skname = FindPilotingSkillName(mech)))
-	return;
-    if (!addanyway) {
-	if (MechLX(mech) != MechX(mech) || MechLY(mech) != MechY(mech)) {
-	    MechLX(mech) = MechX(mech);
-	    MechLY(mech) = MechY(mech);
-	} else
 	    return;
+
+    if (!RGotPilot(mech))
+	    return;
+
+    if (!(skname = FindPilotingSkillName(mech)))
+	    return;
+
+    if (!addanyway) {
+	    if (MechLX(mech) != MechX(mech) || MechLY(mech) != MechY(mech)) {
+	        MechLX(mech) = MechX(mech);
+	        MechLY(mech) = MechY(mech);
+	    } else
+	        return;
     }
     xp = MAX(1, reason);
+
+    /* Switching to Exile method of tracking xp, where we split
+     * Attacking and Piloting xp into two different channels
+     */
     if (char_gainxp(pilot, skname, xp))
-	SendXP(tprintf("%s gained %d %s XP", Name(pilot), xp, skname));
+	    SendPilotXP(tprintf("%s gained %d %s XP", Name(pilot), xp, skname));
+/*
+    if (char_gainxp(pilot, skname, xp))
+	    SendXP(tprintf("%s gained %d %s XP", Name(pilot), xp, skname));
+*/
 }
 
 void AccumulateSpotXP(dbref pilot, MECH * attacker, MECH * wounded)
@@ -1212,22 +1240,41 @@ void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded)
 {
     int xp = 1;
 
+    /* If not in character ie: like in simulator - no xp */
     if (!In_Character(attacker->mynum))
-	return;
+	    return;
+
     if (!RGotGPilot(attacker))
-	return;
+	    return;
+
     if (GunPilot(attacker) != pilot)
-	return;
+	    return;
+
+    /* No xp for shooting yourself */
     if (attacker == wounded)
-	return;
+	    return;
+
+    /* No xp for shooting destroyed units */
     if (Destroyed(wounded))
-	return;
+	    return;
+
+    /* No xp if both on same team */
     if (MechTeam(wounded) == MechTeam(attacker))
-	return;
+	    return;
+
+    /* If target not in character ie: in simulator - no xp */
     if (!In_Character(wounded->mynum))
-	return;
+	    return;
+
+    /* Switching to Exile method of tracking xp, where we split
+     * Attacking and Piloting xp into two different channels
+     */
     if (char_gainxp(pilot, "Gunnery-Artillery", xp))
-	SendXP(tprintf("%s gained %d artillery XP", Name(pilot), xp));
+	    SendAttackXP(tprintf("%s gained %d artillery XP", Name(pilot), xp));
+/*
+    if (char_gainxp(pilot, "Gunnery-Artillery", xp))
+	    SendXP(tprintf("%s gained %d artillery XP", Name(pilot), xp));
+*/
 }
 
 #ifdef BT_EXILE_MW3STATS
@@ -1336,31 +1383,50 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	    multiplier, weapindx, bth);
 	return;
     }
+
+    /* Is attacker in character ie: not in simulator */
     if (!In_Character(attacker->mynum))
-	return;
+	    return;
+
     if (!RGotGPilot(attacker))
-	return;
+	    return;
+
     if (GunPilot(attacker) != pilot)
-	return;
+	    return;
+
+    /* No xp for shooting yourself */
     if (attacker == wounded)
-	return;
+	    return;
+
+    /* No xp for shooting destroyed mechs */
     if (Destroyed(wounded))
-	return;
+	    return;
+
+    /* No xp for shooting a teammate */
     if (MechTeam(wounded) == MechTeam(attacker))
-	return;
+	    return;
+
+    /* Is the target in character ie: in simulators */
     if (!In_Character(wounded->mynum))
-	return;
+	    return;
+
+    /* ? */
     if (!(skname = FindGunnerySkillName(attacker, weapindx)))
-	return;
+	    return;
+
+    /* No xp for shooting mechwarriors if you not a mechwarrior */
     if (MechType(wounded) == CLASS_MW && MechType(attacker) != CLASS_MW)
-	return;
+	    return;
+
+    /* bth to high so no way to hit */
     if (!(bth <= 12))
-	return;
+	    return;
+
     multiplier = multiplier * mudconf.btech_xp_modifier;
     if (mudconf.btech_xp_bthmod) {
-	if (!(bth >= 3 && bth <= 12))
-	    return;		/* sure hits aren't interesting */
-	multiplier = 2 * multiplier * bth_modifier[bth - 3] / 36;
+	    if (!(bth >= 3 && bth <= 12))
+	        return;		/* sure hits aren't interesting */
+	    multiplier = 2 * multiplier * bth_modifier[bth - 3] / 36;
     }
 
     omul = multiplier;
@@ -1369,41 +1435,40 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
     th_BV = MechBV(wounded);
 
     if (mudconf.btech_xp_usePilotBVMod) {
-	myPilotBVMod = getPilotBVMod(attacker, weapindx);
-	theirPilotBVMod = getPilotBVMod(wounded, weapindx);
+	    myPilotBVMod = getPilotBVMod(attacker, weapindx);
+	    theirPilotBVMod = getPilotBVMod(wounded, weapindx);
 
-	my_BV = my_BV * myPilotBVMod;
-	th_BV = th_BV * theirPilotBVMod;
+	    my_BV = my_BV * myPilotBVMod;
+	    th_BV = th_BV * theirPilotBVMod;
 
 #ifdef XP_DEBUG
-	SendDebug(tprintf
-	    ("Using skill modified battle value for mechs %d and %d with skill mods of %2.2f and %2.2f",
-		attacker->mynum, wounded->mynum, myPilotBVMod,
-		theirPilotBVMod));
+	    SendDebug(tprintf
+	        ("Using skill modified battle value for mechs %d and %d "
+             "with skill mods of %2.2f and %2.2f", attacker->mynum, 
+             wounded->mynum, myPilotBVMod, theirPilotBVMod));
 #endif
     }
 
     my_speed = NewMoveValue(attacker) + 1;
     th_speed = NewMoveValue(wounded) + 1;
     if (MechWeapons[weapindx].type == TMISSILE)
-	missilemod = mudconf.btech_xp_missilemod;
+	    missilemod = mudconf.btech_xp_missilemod;
     else if (MechWeapons[weapindx].type == TAMMO)
-	missilemod = mudconf.btech_xp_ammomod;
+	    missilemod = mudconf.btech_xp_ammomod;
 
     if (mudconf.btech_defaultweapdam > 1)
-	damagemod = numOccurences;
+	    damagemod = numOccurences;
     else
-	damagemod = 1;
+	    damagemod = 1;
 
     if (mudconf.btech_xp_vrtmod)
-	vrtmod =
-	    (MechWeapons[weapindx].vrt <
-	    30 ? sqrt((double) MechWeapons[weapindx].vrt / 30.0) : 1);
+	    vrtmod = (MechWeapons[weapindx].vrt <
+	        30 ? sqrt((double) MechWeapons[weapindx].vrt / 30.0) : 1);
     else
-	vrtmod = 1.0;
+	    vrtmod = 1.0;
 
     multiplier =
-	(vrtmod * missilemod * multiplier * sqrt((double) (th_BV +
+	    (vrtmod * missilemod * multiplier * sqrt((double) (th_BV +
 		1) * th_speed * mudconf.btech_defaultweapbv /
 	    mudconf.btech_defaultweapdam)) / (sqrt((double) (my_BV +
 		1) * my_speed * MechWeapons[weapindx].battlevalue /
@@ -1412,11 +1477,21 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
     xp = BOUNDED(1, (multiplier * numOccurences / 100), 50);
 
     strcpy(buf, Name(wounded->mynum));
+    /* Switching to Exile method of tracking xp, where we split
+     * Attacking and Piloting xp into two different channels
+     */
     if (char_gainxp(pilot, skname, xp))
-	SendXP(tprintf
-	    ("%s gained %d gun XP from feat of %d %% difficulty (%d occurences) against %s",
-		Name(pilot), xp, multiplier, numOccurences, buf));
+	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
+            "(%d occurences) against %s", Name(pilot), xp, multiplier, 
+            numOccurences, buf));
+/*
+    if (char_gainxp(pilot, skname, xp))
+	    SendXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
+            "(%d occurences) against %s", Name(pilot), xp, multiplier, 
+            numOccurences, buf));
+*/
 }
+
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
     int numOccurences, int multiplier, int weapindx, int bth)
 {
@@ -1424,57 +1499,85 @@ void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
     char *skname;
     char buf[MBUF_SIZE];
 
+    /* Is the attacker in character ie: in simulators */
     if (!In_Character(attacker->mynum))
-	return;
+	    return;
+
     if (!RGotGPilot(attacker))
-	return;
+	    return;
+
     if (GunPilot(attacker) != pilot)
-	return;
+	    return;
+    
+    /* No xp for shooting yourself */
     if (attacker == wounded)
-	return;
+	    return;
+
+    /* No xp for shooting destroyed units */
     if (Destroyed(wounded))
-	return;
+	    return;
+
+    /* No xp for shooting teammate */
     if (MechTeam(wounded) == MechTeam(attacker))
-	return;
+	    return;
+
+    /* if target is in character ie: in simulators or something */
     if (!In_Character(wounded->mynum))
-	return;
+	    return;
+
     if (!(skname = FindGunnerySkillName(attacker, weapindx)))
-	return;
+	    return;
+   
+    /* No xp for shooting a mechwarrior unless you a mechwarrior */
     if (MechType(wounded) == CLASS_MW && MechType(attacker) != CLASS_MW)
-	return;
+	    return;
+
     if (!(bth >= 3 && bth <= 12))
-	return;			/* sure hits aren't interesting */
+	    return;			/* sure hits aren't interesting */
+
     omul = multiplier;
     if (MechTons(attacker) > 0)
-	multiplier =
-	    multiplier * BOUNDED(50,
-	    100 * TonValue(wounded) / TonValue(attacker), 150);
+	    multiplier = multiplier * BOUNDED(50,
+	        100 * TonValue(wounded) / TonValue(attacker), 150);
     else {
 	/* Bring this to the attention of the admins */
-	SendError(tprintf
-	    ("AccumulateGunXP: Weird tonnage for IC mech #%d (%s): %d",
-		attacker->mynum, Name(attacker->mynum),
-		(short) MechTons(attacker)));
-	return;
+	    SendError(tprintf
+	        ("AccumulateGunXP: Weird tonnage for IC mech #%d (%s): %d",
+		    attacker->mynum, Name(attacker->mynum),
+		    (short) MechTons(attacker)));
+	    return;
     }
+
     /* Hmm.. we have to figure the speed differences as well */
     {
-	int my_speed = MoveValue(attacker);
-	int th_speed = MoveValue(wounded);
+	    int my_speed = MoveValue(attacker);
+	    int th_speed = MoveValue(wounded);
 
-	multiplier =
-	    multiplier * th_speed * th_speed / my_speed / my_speed;
+	    multiplier =
+	        multiplier * th_speed * th_speed / my_speed / my_speed;
     }
+
     multiplier = multiplier * bth_modifier[bth - 3] / 36;
     multiplier = multiplier * 2;	/* For average shot */
+    
     if (Number(1, 50) > (multiplier * numOccurences))
-	return;			/* Nothing for truly twinky stuff, occasionally */
+	    return;			/* Nothing for truly twinky stuff, occasionally */
+
     xp = BOUNDED(1, (multiplier * numOccurences) / 100, 50);	/*Hardcoded limit */
     strcpy(buf, Name(wounded->mynum));
+    /* Switching to Exile method of tracking xp, where we split
+     * Attacking and Piloting xp into two different channels
+     */ 
+    if (char_gainxp(pilot, skname, xp))
+	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% "
+            "difficulty (%d occurences) against %s", Name(pilot), xp, 
+            multiplier, numOccurences, buf));
+/*
     if (char_gainxp(pilot, skname, xp))
 	SendXP(tprintf
 	    ("%s gained %d gun XP from feat of %d %% difficulty (%d occurences) against %s",
 		Name(pilot), xp, multiplier, numOccurences, buf));
+*/
 }
 
 FUNCTION(fun_btgetcharvalue)
@@ -1907,7 +2010,7 @@ void debug_setxplevel(dbref player, void *data, char *buffer)
     }
 }
 
-int btthreshhold_func(char *skillname)
+int btthreshold_func(char *skillname)
 {
     int code;
 

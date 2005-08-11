@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.utils.c,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.utils.c,v 1.9 2005/08/03 21:40:54 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -37,6 +37,7 @@
 #include "p.bsuit.h"
 #include "p.mech.los.h"
 #include "p.aero.bomb.h"
+#include "p.autopilot.h"
 
 #ifdef BT_ADVANCED_ECON
 #include "p.mech.custom.h"
@@ -241,6 +242,9 @@ static int Leave_Hangar(MAP * map, MECH * mech)
 	    "%ch%cr%cfAutomatic self-destruct sequence initiated...%c");
 	mech_shutdown(GOD, (void *) mech, "");
     }
+    CalAutoMapindex(mech);
+    if (MechSpeed(mech) > MMaxSpeed(mech))
+        MechSpeed(mech) = MMaxSpeed(mech);
     return 1;
 }
 
@@ -2430,10 +2434,8 @@ void ChannelEmitKill(MECH * mech, MECH * attacker)
     if (IsDS(mech))
         SendDSInfo(tprintf("#%d has been killed by #%d", mech->mynum,
                            attacker->mynum));
-#ifdef BT_MECHDEST_TRIGGER
    if (mech->mynum > 0 && attacker->mynum > 0)
         did_it(attacker->mynum, mech->mynum, 0, NULL, 0, NULL, A_AMECHDEST, (char **) NULL, 0);
-#endif
 }
 
 #define NUM_NEIGHBORS	6
@@ -3249,3 +3251,57 @@ int part;
 return Cargo(part);
 }
 #endif
+
+/* Function to return a value of how much heat a unit is putting out*/
+/* TODO: Double check how Stealth Armor and Null Sig are coded */
+int HeatFactor(MECH * mech) {
+
+    int factor = 0;
+    char buf[LBUF_SIZE];
+
+    if (MechType(mech) != CLASS_MECH) {
+        factor = (((MechSpecials(mech) & ICE_TECH)) ? -1 : 21);
+        return factor;
+    } else {
+        factor = (MechPlusHeat(mech) + (2 * (MechPlusHeat(mech) - MechMinusHeat(mech))));
+        return ((NullSigSysActive(mech) || HasWorkingECMSuite(mech) ||
+                    StealthArmorActive(mech)) ? -1 : factor);
+    }
+    snprintf(buf, LBUF_SIZE, "HeatFactor : Invalid heat factor calculation on #%d.",
+            mech->mynum);
+    SendDebug(buf);
+}
+
+/* Function to determine if a weapon is functional or not
+   Returns 0 if fully functional.
+   Returns 1 if non functional.
+   Returns 2 if fully damaged.
+   Returns -(# of crits) if partially damaged.
+   remember that values 3 means the weapon IS NOT destroyed.  */
+int WeaponIsNonfunctional(MECH * mech, int section, int crit, int numcrits)
+{
+    int sum = 0, disabled = 0, dested = 0;
+
+    if (numcrits <= 0)
+        numcrits = GetWeaponCrits(mech, Weapon2I(GetPartType(mech, section, crit)));
+
+    while (sum < numcrits) {
+        if (PartIsDestroyed(mech, section, crit + sum))
+            dested++;
+        else if (PartIsDisabled(mech, section, crit + sum))
+            disabled++;
+        sum++;
+    }
+
+    if (disabled > 0)
+        return 1;
+
+    if ((numcrits == 1 && (dested || disabled)) || 
+            (numcrits > 1 && (dested + disabled) >= numcrits / 2))
+        return 2;
+
+    if (dested)
+        return 0 - (dested + disabled);
+
+    return 0;
+}

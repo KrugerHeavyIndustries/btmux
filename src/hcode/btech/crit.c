@@ -1,6 +1,6 @@
 
 /*
- * $Id: crit.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: crit.c,v 1.1.1.1 2005/01/11 21:18:06 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -18,6 +18,7 @@
 #include "externs.h"
 #include "db.h"
 #include "mech.h"
+#include "btmacros.h"
 #include "mech.events.h"
 #include "mech.sensor.h"
 #include "failures.h"

@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.tech.c,v 1.3 2005/07/29 04:48:46 murrayma Exp $
+ * $Id: mech.tech.c,v 1.2 2005/01/15 16:57:14 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -129,11 +129,11 @@ int tech_addtechtime(dbref player, int time)
     char *olds = silly_atr_get(player, A_TECHTIME);
 
     if (olds) {
-        old = (time_t) atoi(olds);
-        if (old < mudstate.now)
-            old = mudstate.now;
+	old = (time_t) atoi(olds);
+	if (old < mudstate.now)
+	    old = mudstate.now;
     } else
-        old = mudstate.now;
+	old = mudstate.now;
     old += time * TECH_TICK;
     silly_atr_set(player, A_TECHTIME, tprintf("%u", old));
     tech_status(player, old);

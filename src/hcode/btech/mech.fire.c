@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.fire.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.fire.c,v 1.1.1.1 2005/01/11 21:18:15 kstevens Exp $
  *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *
@@ -41,7 +41,7 @@ void inferno_burn(MECH * mech, int time)
     }
 
     l = muxevent_last_type_data(EVENT_BURN, (void *) mech) + time;
-    muxevent_remote_type_data(EVENT_BURN, (void *) mech);
+    muxevent_remove_type_data(EVENT_BURN, (void *) mech);
     MECHEVENT(mech, EVENT_BURN, inferno_end_event, l, 0);
 }
 
@@ -156,7 +156,7 @@ void water_extinguish_inferno(MECH * mech)
         !Jellied(mech) || (elev == -1 && !Fallen(mech)))
            return;
 
-    muxevent_remote_type_data(EVENT_BURN, (void *) mech);
+    muxevent_remove_type_data(EVENT_BURN, (void *) mech);
     MechCritStatus(mech) &= ~JELLIED;
 
     mech_notify(mech, MECHALL, "The flames extinguish in a roar of steam!");

@@ -1,6 +1,6 @@
 
 /*
- * $Id: chargen.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: chargen.c,v 1.1.1.1 2005/01/11 21:18:04 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

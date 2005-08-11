@@ -1,11 +1,12 @@
 
 /*
- * $Id: mechrep.c,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mechrep.c,v 1.5 2005/07/02 19:02:23 av1-op Exp $
  *
  * Last modified: Thu Aug 13 23:41:12 1998 fingon
  * Copyright (c) 1999-2005 Kevin Stevens
  *   All right reserved
  */
+
 #include "config.h"
 
 #include <stdio.h>
@@ -17,7 +18,6 @@
 
 #define MECH_STAT_C		/* want to use the POSIX stat() call. */
 
-#include "config.h"
 #include "externs.h"
 #include "mech.h"
 #include "mechrep.h"
@@ -1351,25 +1351,120 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
 {
     int i, j;
     int Type;
+    int nv, nv2;
 
     MECHREP_COMMON(1);
-    for (i = 0; i < NUM_SECTIONS; i++)
-	if ((MechSections(mech)[i].config & CASE_TECH)
-	    || (MechSpecials(mech) & TRIPLE_MYOMER_TECH)
-	    || (MechSpecials(mech) & MASC_TECH)) {
-	    for (j = 0; j < NUM_CRITICALS; j++) {
-		Type = MechSections(mech)[i].criticals[j].type;
-		if (Type == I2Special((CASE))
-		    || Type == I2Special((TRIPLE_STRENGTH_MYOMER))
-		    || Type == I2Special((MASC)))
-		    MechSections(mech)[i].criticals[j].type = EMPTY;
-	    }
-	    MechSections(mech)[i].config &= ~CASE_TECH;
-	}
+    /* Compare what the user gave to our specials lists */
+    nv = BuildBitVector(specials, buffer);
+    nv2 = BuildBitVector(specials2, buffer);
 
-    MechSpecials(mech) = 0;
-    MechSpecials2(mech) = 0;
-    notify(player, "Advanced Technology Deleted");
+    /* Make sure what they gave was valid */
+    if (((nv < 0) && (nv2 < 0)) && (strcmp(buffer, "All") != 0) && 
+            (strcmp(buffer, "Case") != 0)) {
+	    notify(player, "Invalid tech: Available techs:");
+        notify(player, "\tAll");
+        notify(player, "\tCase");
+
+	    for (nv = 0; specials[nv]; nv++)
+	        notify(player, tprintf("\t%s", specials[nv]));
+
+	    for (nv = 0; specials2[nv]; nv++)
+	        notify(player, tprintf("\t%s", specials2[nv]));
+
+	    return;
+    }
+
+    /* Check to see if user specified anything */
+    if (((!nv) && (!nv2)) && (strcmp(buffer, "All") != 0) && 
+            (strcmp(buffer, "Case") != 0)) {
+	    notify(player, "Nothing specified");
+	    return;
+    }
+
+    /* Check to see if user specified 'ALL' */
+    if (strcmp(buffer, "All") == 0) {
+
+        for (i = 0; i < NUM_SECTIONS; i++) {
+
+	        if ((MechSections(mech)[i].config & CASE_TECH)
+	            || (MechSpecials(mech) & TRIPLE_MYOMER_TECH)
+	            || (MechSpecials(mech) & MASC_TECH)) {
+	            
+                for (j = 0; j < NUM_CRITICALS; j++) {
+		            Type = MechSections(mech)[i].criticals[j].type;
+
+		            if (Type == I2Special((CASE))
+		                || Type == I2Special((TRIPLE_STRENGTH_MYOMER))
+		                || Type == I2Special((MASC))) {
+		                MechSections(mech)[i].criticals[j].type = EMPTY;
+                    }
+                }
+	            MechSections(mech)[i].config &= ~CASE_TECH;
+
+            }
+        }
+
+        MechSpecials(mech) = 0;
+        MechSpecials2(mech) = 0;
+        notify(player, "All Advanced Technology Removed");
+        return;
+    }
+
+    if (strcmp(buffer, "Case") == 0) {
+        for (i = 0; i < NUM_SECTIONS; i++) {
+	        if (MechSections(mech)[i].config & CASE_TECH) { 
+                for (j = 0; j < NUM_CRITICALS; j++) {
+	                Type = MechSections(mech)[i].criticals[j].type;
+
+		            if (Type == I2Special((CASE))) {
+		                MechSections(mech)[i].criticals[j].type = EMPTY;
+                    }
+                }
+	            MechSections(mech)[i].config &= ~CASE_TECH;
+            }
+        }
+        notify(player, "Case Technology Removed");
+        return;
+    }
+
+    if (nv > 0) {
+
+        if (strcmp(buffer, "TripleMyomerTech") == 0) {
+            if (MechSpecials(mech) & TRIPLE_MYOMER_TECH) {
+                for (i = 0; i < NUM_SECTIONS; i++) {
+                    for (j = 0; j < NUM_CRITICALS; j++) {
+		                Type = MechSections(mech)[i].criticals[j].type;
+
+		                if (Type == I2Special((TRIPLE_STRENGTH_MYOMER))) {
+		                    MechSections(mech)[i].criticals[j].type = EMPTY;
+                        }
+                    }
+                }
+            }
+        } else if (strcmp(buffer, "Masc") == 0) {
+            if (MechSpecials(mech) & MASC_TECH) {
+                for (i = 0; i < NUM_SECTIONS; i++) {
+                    for (j = 0; j < NUM_CRITICALS; j++) {
+		                Type = MechSections(mech)[i].criticals[j].type;
+
+		                if (Type == I2Special((MASC))) {
+		                    MechSections(mech)[i].criticals[j].type = EMPTY;
+                        }
+                    }
+                }
+            }
+        }
+
+	    MechSpecials(mech) &= ~nv;
+    	notify(player, tprintf("%s Technology Removed", buffer));
+        
+    } else {
+
+	    MechSpecials2(mech) &= ~nv2;
+	    notify(player, tprintf("%s Technology Removed", buffer));
+
+    }
+    return;
 }
 
 void mechrep_Raddtech(dbref player, void *data, char *buffer)

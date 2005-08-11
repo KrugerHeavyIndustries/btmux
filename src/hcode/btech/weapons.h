@@ -1,8 +1,8 @@
 
 /*
- * $Id: weapons.h,v 1.1 2005/06/13 20:50:52 murrayma Exp $
+ * $Id: weapons.h,v 1.1.1.1 2005/01/11 21:18:33 kstevens Exp $
  *
- * Last modified: $Date: 2005/06/13 20:50:52 $
+ * Last modified: $Date: 2005/01/11 21:18:33 $
  *
  * Header file for weapons, includes specific featured lists.
  */

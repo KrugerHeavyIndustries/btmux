@@ -24,7 +24,10 @@ int ai_max_speed(MECH * m, AUTO * a);
 int ai_opponents(AUTO * a, MECH * m);
 void ai_run_speed(MECH * mech, AUTO * a);
 void ai_stop(MECH * mech, AUTO * a);
+#if 0
 void ai_set_speed(MECH * mech, AUTO * a, int s);
+#endif
+void ai_set_speed(MECH * mech, AUTO * a, float s);
 void ai_set_heading(MECH * mech, AUTO * a, int dir);
 void ai_adjust_move(AUTO * a, MECH * m, char *text, int hmod, int smod,
     int b_score);

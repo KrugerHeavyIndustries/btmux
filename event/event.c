@@ -32,7 +32,7 @@ void muxevent_run()
    Runs one 'tick' of events (second, 1/10sec, whatever)
 
 int muxevent_count_type(int type)
-int muxevent_count_type_Data(int type, void *data)
+int muxevent_count_type_data(int type, void *data)
 int muxevent_count_data(void *data)
    Counts pending events (count_type is fast ; count_type_data relatively
    slow and count_data a dog)
@@ -225,7 +225,7 @@ void muxevent_remove_data(void *data)
 	    e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remote_type_data(int type, void *data)
+void muxevent_remove_type_data(int type, void *data)
 {
     EVENT *e;
 
@@ -236,7 +236,7 @@ void muxevent_remote_type_data(int type, void *data)
 	    e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remote_type_data2(int type, void *data)
+void muxevent_remove_type_data2(int type, void *data)
 {
     EVENT *e;
 
@@ -247,7 +247,7 @@ void muxevent_remote_type_data2(int type, void *data)
 	    e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remote_type_data_data(int type, void *data, void *data2)
+void muxevent_remove_type_data_data(int type, void *data, void *data2)
 {
     EVENT *e;
 
@@ -284,7 +284,7 @@ int muxevent_count_type(int type)
 }
 
 
-int muxevent_count_type_Data(int type, void *data)
+int muxevent_count_type_data(int type, void *data)
 {
     EVENT *e;
     int count = 0;
@@ -297,7 +297,7 @@ int muxevent_count_type_Data(int type, void *data)
     return count;
 }
 
-int muxevent_count_type_Data2(int type, void *data)
+int muxevent_count_type_data2(int type, void *data)
 {
     EVENT *e;
     int count = 0;
@@ -310,7 +310,7 @@ int muxevent_count_type_Data2(int type, void *data)
     return count;
 }
 
-int muxevent_count_type_Data_data(int type, void *data, void *data2)
+int muxevent_count_type_data_data(int type, void *data, void *data2)
 {
     EVENT *e;
     int count = 0;
@@ -396,7 +396,7 @@ int muxevent_first_type_data(int type, void *data)
     return last;
 }
 
-int muxevent_count_type_Data_firstev(int type, void *data)
+int muxevent_count_type_data_firstev(int type, void *data)
 {
     EVENT *e;
 

@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.advanced.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.advanced.c,v 1.3 2005/06/23 18:31:42 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -46,21 +46,21 @@ MechStatus(mech) |= (setstatus); } } else notify(player, donthave)
 
 #define TOGGLE_SPECIALS_MACRO_CHECK(neededspecial,setstatus,offstatus,msgon,msgoff,donthave) \
 if (MechSpecials(mech) & (neededspecial)) \
-{ if (MechSpecialsStatus(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
-MechSpecialsStatus(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
-MechSpecialsStatus(mech) |= (setstatus); MechSpecialsStatus(mech) &= ~(offstatus); } } else notify(player, donthave)
+{ if (MechStatus2(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
+MechStatus2(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
+MechStatus2(mech) |= (setstatus); MechStatus2(mech) &= ~(offstatus); } } else notify(player, donthave)
 
 #define TOGGLE_SPECIALS_MACRO_CHECK2(neededspecial,setstatus,offstatus,msgon,msgoff,donthave) \
 if (MechSpecials2(mech) & (neededspecial)) \
-{ if (MechSpecialsStatus(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
-MechSpecialsStatus(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
-MechSpecialsStatus(mech) |= (setstatus); MechSpecialsStatus(mech) &= ~(offstatus); } } else notify(player, donthave)
+{ if (MechStatus2(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
+MechStatus2(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
+MechStatus2(mech) |= (setstatus); MechStatus2(mech) &= ~(offstatus); } } else notify(player, donthave)
 
 #define TOGGLE_INFANTRY_MACRO_CHECK(neededspecial,setstatus,offstatus,msgon,msgoff,donthave) \
 if (MechInfantrySpecials(mech) & (neededspecial)) \
-{ if (MechSpecialsStatus(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
-MechSpecialsStatus(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
-MechSpecialsStatus(mech) |= (setstatus); MechSpecialsStatus(mech) &= ~(offstatus); } } else notify(player, donthave)
+{ if (MechStatus2(mech) & (setstatus)) { mech_notify(mech, MECHALL, msgoff); \
+MechStatus2(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
+MechStatus2(mech) |= (setstatus); MechStatus2(mech) &= ~(offstatus); } } else notify(player, donthave)
 
 /* Toggles ECM on / off */
 void mech_ecm(dbref player, MECH * mech, char *buffer)
@@ -147,20 +147,20 @@ void MechSliteChangeEvent(EVENT * e)
 	return;
 
     if (!Started(mech)) {
-	MechSpecialsStatus(mech) &= ~SLITE_ON;
+	MechStatus2(mech) &= ~SLITE_ON;
 	MechCritStatus(mech) &= ~SLITE_LIT;
 	return;
     }
 
     if (wType == 1) {
-	MechSpecialsStatus(mech) |= SLITE_ON;
+	MechStatus2(mech) |= SLITE_ON;
 	MechCritStatus(mech) |= SLITE_LIT;
 
 	mech_notify(mech, MECHALL,
 	    "Your searchlight comes on to full power.");
 	MechLOSBroadcast(mech, "turns on a searchlight!");
     } else {
-	MechSpecialsStatus(mech) &= ~SLITE_ON;
+	MechStatus2(mech) &= ~SLITE_ON;
 	MechCritStatus(mech) &= ~SLITE_LIT;
 
 	mech_notify(mech, MECHALL, "Your searchlight shuts off.");
@@ -184,7 +184,7 @@ void mech_slite(dbref player, MECH * mech, char *buffer)
 	"Your searchlight has been destroyed already!");
 
     if (SearchlightChanging(mech)) {
-	if (MechSpecialsStatus(mech) & SLITE_ON)
+	if (MechStatus2(mech) & SLITE_ON)
 	    mech_notify(mech, MECHALL,
 		"Your searchlight is already in the process of turning off.");
 	else
@@ -194,7 +194,7 @@ void mech_slite(dbref player, MECH * mech, char *buffer)
 	return;
     }
 
-    if (MechSpecialsStatus(mech) & SLITE_ON) {
+    if (MechStatus2(mech) & SLITE_ON) {
 	mech_notify(mech, MECHALL,
 	    "Your searchlight starts to cool down.");
 	MECHEVENT(mech, EVENT_SLITECHANGING, MechSliteChangeEvent, 5, 0);

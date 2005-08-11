@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.move.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.move.c,v 1.6 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -283,67 +283,85 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
     MECH *c;
     MAP *map;
 
-    if (MechCarrying(mech) > 0) {	/* Ug-lee! */
-	MECH *t;
+    if (MechCarrying(mech) > 0) {   /* Ug-lee! */
+        MECH *t;
 
-	if ((t = getMech(MechCarrying(mech))))
-	    if (!(MechCritStatus(t) & OWEIGHT_OK))
-		MechCritStatus(mech) &= ~LOAD_OK;
+        if ((t = getMech(MechCarrying(mech))))
+            if (!(MechCritStatus(t) & OWEIGHT_OK))
+                MechCritStatus(mech) &= ~LOAD_OK;
+
     }
-    if ((MechCritStatus(mech) & LOAD_OK) &&
-	(MechCritStatus(mech) & OWEIGHT_OK) &&
-	(MechCritStatus(mech) & SPEED_OK)) {
-	mspeed = MechRMaxSpeed(mech);
-#ifndef BT_MOVEMENT_MODES
-	if ((MechStatus(mech) & MASC_ENABLED) &&
-	    (MechStatus(mech) & SCHARGE_ENABLED))
-	    mspeed = ceil((rint(mspeed / 1.5) / MP1) * 2.5) * MP1;
-	else if (MechStatus(mech) & MASC_ENABLED)
-	    mspeed *= 4. / 3.;
-	else if (MechStatus(mech) & SCHARGE_ENABLED)
-	    mspeed *= 4. / 3.;
 
-	if (InSpecial(mech) && InGravity(mech))
-	    if ((map = FindObjectsData(mech->mapindex)))
-		mspeed = mspeed * 100 / MAX(50, MapGravity(map));
+    /*! \todo {Fix this calculation to include gravity and TSM for
+     * when BT_MOVMENT_MODES is enabled} */
+    if ((MechCritStatus(mech) & LOAD_OK) &&
+            (MechCritStatus(mech) & OWEIGHT_OK) &&
+            (MechCritStatus(mech) & SPEED_OK)) {
+
+        mspeed = MechRMaxSpeed(mech);
+#ifndef BT_MOVEMENT_MODES
+
+        /* Is masc and/or scharge on */
+        if ((MechStatus(mech) & MASC_ENABLED) &&
+                (MechStatus(mech) & SCHARGE_ENABLED))
+            mspeed = ceil((rint(mspeed / 1.5) / MP1) * 2.5) * MP1;
+        else if (MechStatus(mech) & MASC_ENABLED)
+            mspeed *= 4. / 3.;
+        else if (MechStatus(mech) & SCHARGE_ENABLED)
+            mspeed *= 4. / 3.;
+
+        if (InSpecial(mech) && InGravity(mech))
+            if ((map = FindObjectsData(mech->mapindex)))
+                mspeed = mspeed * 100 / MAX(50, MapGravity(map));
+
 #else
-	if (MechStatus(mech) & (MASC_ENABLED|SCHARGE_ENABLED) ||
-		MechStatus2(mech) & SPRINTING)
-	    mspeed = WalkingSpeed(mspeed) * (1.5 +
-			(MechStatus(mech) & MASC_ENABLED ? 0.5 : 0.0) +
-			(MechStatus(mech) & SCHARGE_ENABLED ? 0.5 : 0.0) +
-			(!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING ? 0.5 : 0.0));
-        if (!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
+        /* Is masc and/or scharge and/or sprinting on */
+        if (MechStatus(mech) & (MASC_ENABLED|SCHARGE_ENABLED) ||
+                MechStatus2(mech) & SPRINTING)
+            mspeed = WalkingSpeed(mspeed) * (1.5 +
+                (MechStatus(mech) & MASC_ENABLED ? 0.5 : 0.0) +
+                (MechStatus(mech) & SCHARGE_ENABLED ? 0.5 : 0.0) +
+                (!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING ? 0.5 : 0.0));
+       
+        /* if the player has speed demon give him his boost in speed */
+        if (!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING 
+                && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
             mspeed += MP1;
 #endif
-	return mspeed;
+        return mspeed;
     }
     MechRTonsV(mech) = get_weight(mech);
+   
+    /*! \todo {Check some of this math better} */
     if (!(MechCritStatus(mech) & LOAD_OK)) {
-	if (MechCarrying(mech) > 0)
-	    if ((c = getMech(MechCarrying(mech)))) {
-		lugged = get_weight(c) * 2;
-		if (MechSpecials(mech) & SALVAGE_TECH)
-		    lugged = lugged / 2;
+        if (MechCarrying(mech) > 0)
+            if ((c = getMech(MechCarrying(mech)))) {
+                lugged = get_weight(c) * 2;
+                if (MechSpecials(mech) & SALVAGE_TECH)
+                    lugged = lugged / 2;
 #ifndef BT_CARRIERS
-		else if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-		    (MechHeat(mech) >= 9.))
-		    lugged = lugged / 2;
+                else if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
+                        (MechHeat(mech) >= 9.))
+                    lugged = lugged / 2;
 #else
-		if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-		    (MechHeat(mech) >= 9.))
-		    lugged = lugged / 2;
-		if (MechSpecials2(mech) & CARRIER_TECH)
-		    lugged = lugged / 2;
+                if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
+                        (MechHeat(mech) >= 9.))
+                    lugged = lugged / 2;
+
+                if (MechSpecials2(mech) & CARRIER_TECH)
+                    lugged = lugged / 2;
 #endif
-	    }
-	if (MechSpecials(mech) & CARGO_TECH)
-	    mod = 1;
-	if (MechType(mech) == CLASS_MECH)
-	    mod = mod * 2;
-	lugged += MechCarriedCargo(mech) * mod / 2;
-	MechRCTonsV(mech) = lugged;
-	MechCritStatus(mech) |= LOAD_OK;
+       }
+
+        if (MechSpecials(mech) & CARGO_TECH)
+	        mod = 1;
+	
+        if (MechType(mech) == CLASS_MECH)
+	        mod = mod * 2;
+	
+        lugged += MechCarriedCargo(mech) * mod / 2;
+        MechRCTonsV(mech) = lugged;
+	    MechCritStatus(mech) |= LOAD_OK;
     }
     if (Destroyed(mech))
 	mspeed = 0.0;
@@ -819,8 +837,10 @@ void mech_speed(dbref player, void *data, char *buffer)
     MechDesiredSpeed(mech) = newspeed;
     MaybeMove(mech);
     if (fabs(newspeed) > 0.1) {
-	if (MechSwarmTarget(mech) > 0)
+	if (MechSwarmTarget(mech) > 0) {
 	    StopSwarming(mech, 1);
+        MechCritStatus(mech) &= ~HIDDEN;
+    }
 	if (Digging(mech)) {
 	    mech_notify(mech, MECHALL,
 		"You cease your attempts at digging in.");

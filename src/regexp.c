@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "regexp.h"
 
 #ifndef MBUF_SIZE

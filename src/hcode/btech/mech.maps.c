@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.maps.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.maps.c,v 1.7 2005/08/03 21:40:54 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -34,6 +34,7 @@
 #include "p.ds.bay.h"
 #include "p.bsuit.h"
 #include "p.mech.utils.h"
+#include "p.autopilot.h"
 
 void mech_findcenter(dbref player, void *data, char *buffer)
 {
@@ -278,7 +279,7 @@ void mech_navigate(dbref player, void *data, char *buffer)
            /           \          HEX Location: 254, 122    \`1/``\""/``\""/
      300  /             \  60     Terrain: Light Forest     /``\``/""\`3/""\
          /               \        Elevation:  0             \`2/``\"1/``\""/
-        /                 \                                 /""\``/**\`3/""\
+        /                 \                                 /""\``|**\`3/""\
    270 (                   )  90  Speed: 0.0                \"4/``\"4/``\""/
         \                 /       Vertical Speed: 0.0       /""\`3/""\`3/""\
          \               /        Heading: 0                \"4/``\"4/``\""/
@@ -748,11 +749,25 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
     int sy, int wx, int wy, int dispcols, int top_offset, int left_offset,
     int docolour, int dohexlos)
 {
+#if 0
     static char const hexrow[2][76] = {
 	"\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/",
 	"/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\"
     };
-
+#else
+    static char const hexrow[2][310] = {    
+        "\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/]["
+        "\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/]["
+        "\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/]["
+        "\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/]["
+        "\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/",
+        "/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\]["
+        "/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\]["
+        "/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\]["
+        "/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\]["
+        "/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\][/][\\"
+    };
+#endif
     int x, y;
     int oddcol1 = is_oddcol(sx);	/* One iff first hex col is odd */
     char *pos;
@@ -1290,15 +1305,15 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
     char *base;
     int oddcol1;
     enum {
-	MAX_WIDTH = MAP_DISPLAY_WIDTH,
+	MAX_WIDTH = 40,
 	MAX_HEIGHT = 24,
 	TOP_LABEL = 3,
 	LEFT_LABEL = 4,
 	RIGHT_LABEL = 3
     };
-    static char sketch_buf[(LEFT_LABEL + 1 + MAX_WIDTH * 3 + RIGHT_LABEL +
-	    1) * (TOP_LABEL + 1 + MAX_HEIGHT * 2) + 2];
-    static char *lines[TOP_LABEL + 1 + MAX_HEIGHT * 2 + 1];
+    static char sketch_buf[((LEFT_LABEL + 1 + MAX_WIDTH * 3 + RIGHT_LABEL +
+	    1) * (TOP_LABEL + 1 + MAX_HEIGHT * 2) + 2) * 5];
+    static char *lines[(TOP_LABEL + 1 + MAX_HEIGHT * 2 + 1) * 5];
 
     if (labels & 4) {
 	navigate = 1;
@@ -1480,6 +1495,9 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
     return lines;
 }
 
+/* Draws the map for the player when they use the 
+ * TACTICAL [C | T | L] [<BEARING> <RANGE> | <TARGET-ID>]
+ * command inside a unit */
 void mech_tacmap(dbref player, void *data, char *buffer)
 {
     MECH *mech = (MECH *) data;
@@ -1489,45 +1507,54 @@ void mech_tacmap(dbref player, void *data, char *buffer)
     char *args_vec[4];
     char **args = args_vec;
     MAP *mech_map;
-    int displayHeight;
+    int displayHeight = MAP_DISPLAY_HEIGHT, displayWidth = MAP_DISPLAY_WIDTH;
     char *str;
     char **maptext;
     int flags = 3, dohexlos = 0;
 
+    /* Basic checks for pilot and mech */
     cch(MECH_USUAL);
+
+    /* Get the map info */
     mech_map = getMap(mech->mapindex);
     mapx = MechX(mech);
     mapy = MechY(mech);
+
+    /* Various checks for conditions and system of mech */
     argc = mech_parseattributes(buffer, args, 4);
     DOCHECK(!MechTacRange(mech), "Your system seems to be inoperational.");
 
     if (MapIsDark(mech_map) || (MechType(mech) == CLASS_MW &&
     				mudconf.btech_mw_losmap))
-	dohexlos = 1;
-
-    if (argc > 0 && isalpha((unsigned char) args[0][0])
-	&& args[0][1] == '\0') {
-	switch (tolower((unsigned char) args[0][0])) {
-	case 'c':
-	    flags |= 8;		/* Show cliffs */
-	    break;
-
-	case 't':
-	    flags |= 16;	/* Show tank cliffs */
-	    break;
-
-	case 'l':
 	    dohexlos = 1;
-	    break;
 
-	case 'b':
-	    flags |= 32;
-	    break;
+    /* Check to see which type of tactical to display 
+     * if they specified a particular one */
+    if (argc > 0 && isalpha((unsigned char) args[0][0])
+	    && args[0][1] == '\0') {
+	    
+        switch (tolower((unsigned char) args[0][0])) {
+	        case 'c':
+	            flags |= 8;		/* Show cliffs */
+	            break;
 
-	default:
-	    notify(player, "Invalid tactical map flag.");
-	    return;
-	}
+	        case 't':
+	            flags |= 16;	/* Show tank cliffs */
+	            break;
+
+	        case 'l':
+	            dohexlos = 1;
+	            break;
+
+	        case 'b':
+	            flags |= 32;
+	            break;
+
+	        default:
+	            notify(player, "Invalid tactical map flag.");
+	            return;
+	    }
+
 	args++;
 	argc--;
     }
@@ -1535,30 +1562,49 @@ void mech_tacmap(dbref player, void *data, char *buffer)
     DOCHECK(dohexlos && (flags & (8|16|32)), "You can't see that much here!");
 
     if (!parse_tacargs(player, mech, args, argc, MechTacRange(mech), &x, &y))
-	return;
+	    return;
 
+    /* Get the Tacsize attribute 'even tho it says tacheight' from
+     * the player, if doesn't exist set the height and width to
+     * default params. If it does exist, check the values and
+     * make sure they are legit. */
     str = silly_atr_get(player, A_TACHEIGHT);
-    if (!*str)
-	displayHeight = MAP_DISPLAY_HEIGHT;
-    else if (sscanf(str, "%d", &displayHeight) != 1 || displayHeight > 24
-	|| displayHeight < 5) {
-	notify(player,
-	    "Illegal TacHeight attribute.  Must be between 5 and 24");
-	displayHeight = MAP_DISPLAY_HEIGHT;
+    if (!*str) {
+	    displayHeight = MAP_DISPLAY_HEIGHT;
+        displayWidth = MAP_DISPLAY_WIDTH;
+    } else if (sscanf(str, "%d %d", &displayHeight, &displayWidth) != 2 || 
+            displayHeight > 24 || displayHeight < 5 || displayWidth > 40 || 
+            displayWidth < 5) {
+	
+        notify(player,
+            "Illegal Tacsize attribute. Must be in format "
+            "'Height Width' . Height : 5-24 Width : 5-40");
+	    displayHeight = MAP_DISPLAY_HEIGHT;
+        displayWidth = MAP_DISPLAY_WIDTH;
     }
+
+    /* Everything worked but lets check the mech's tac range
+     * and the map size */
     displayHeight = (displayHeight <= 2 * MechTacRange(mech)
-	? displayHeight : 2 * MechTacRange(mech));
+	    ? displayHeight : 2 * MechTacRange(mech));
+    displayWidth = (displayWidth <= 2 * MechTacRange(mech)
+        ? displayWidth : 2 * MechTacRange(mech));
 
     displayHeight = (displayHeight <= mech_map->map_height)
-	? displayHeight : mech_map->map_height;
+	    ? displayHeight : mech_map->map_height;
+    displayWidth = (displayWidth <= mech_map->map_width)
+        ? displayWidth : mech_map->map_width;
 
     set_colorscheme(player);
 
+    /* Get the data to draw the map */
     maptext =
-	MakeMapText(player, mech, mech_map, x, y, MAP_DISPLAY_WIDTH,
-	displayHeight, flags, dohexlos);
+	    MakeMapText(player, mech, mech_map, x, y, displayWidth,
+	    displayHeight, flags, dohexlos);
+
+    /* Draw the map for the player */
     for (i = 0; maptext[i]; i++)
-	notify(player, maptext[i]);
+	    notify(player, maptext[i]);
 }
 
 
@@ -1616,6 +1662,7 @@ static void mech_enter_event(EVENT * e)
 	mech_Rsetxy(GOD, (void *) tmpm, tprintf("%d %d", x, y));
 	loud_teleport(tmpm->mynum, mapo->obj);
     }
+    CalAutoMapindex(mech);
 }
 
 

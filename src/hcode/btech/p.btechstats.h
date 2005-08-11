@@ -76,7 +76,7 @@ void fun_btcharlist(char *buff, char **bufc, dbref player, dbref cause,
 #endif
 void debug_xptop(dbref player, void *data, char *buffer);
 void debug_setxplevel(dbref player, void *data, char *buffer);
-int btthreshhold_func(char *skillname);
+int btthreshold_func(char *skillname);
 struct chargen_struct *retrieve_chargen_struct(dbref player);
 int lowest_bit(int num);
 int recursive_add(int lev);

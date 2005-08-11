@@ -1,6 +1,6 @@
 
 /*
- * $Id: ds.bay.c,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: ds.bay.c,v 1.4 2005/06/24 04:39:07 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -213,7 +213,7 @@ static int DS_Bay_Is_EnterOK(MECH * mech, MECH * ds, dbref bayref)
     for (i = 0; i < NUM_BAYS; i++)
 	if (AeroBay(ds, i) > 0)
 	    if (AeroBay(ds, i) == bayref)
-		return muxevent_count_type_Data2(EVENT_ENTER_HANGAR,
+		return muxevent_count_type_data2(EVENT_ENTER_HANGAR,
 		    (void *) bayref) > 0 ? 0 : 1;
     return 0;
 }

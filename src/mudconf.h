@@ -118,6 +118,7 @@ struct confdata {
     int btech_vhltacthreshold;	/* threshold for vehicle TACs. If it's <= 0, we ignore any armor level and do normal tacs, else we only TAC if the armor percent is <= to the value. */
     int btech_mechtacthreshold;	/* threshold for Mech TACs. If it's <= 0, we ignore any armor level and do normal tacs, else we only TAC if the armor percent is <= to the value. */
     int btech_newcharge;
+    int btech_tl3_charge;
     int btech_tankfriendly;	/* Some tank friendly changes if fasacrit is too harsh */
     int btech_skidcliff;	/* skidroll to check for cliffs and falldamage for mechs  */
     int btech_xp_bthmod;	/* Use bth modifier in new xp code */

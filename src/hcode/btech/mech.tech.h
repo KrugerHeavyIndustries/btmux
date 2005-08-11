@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.tech.h,v 1.5 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.tech.h,v 1.5 2005/06/24 04:39:08 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -119,7 +119,6 @@ DOCHECK(mudconf.btech_limitedrepairs && !isds && !MechStall(mech) && !Wiz(player
      FIXEVENT(tech_addtechtime(player, (time * mod) / 2),d1,d2,fu,type)
 #define STARTIREPAIR(time,d1,d2,fu,type,amount) \
      FIXEVENT((tech_addtechtime(player, (time * mod) / 2) - (amount > 0 ? TECH_TICK * (time * (amount - 1) / (amount)) : 0)), d1, d2, fu, type)
-
 #define FAKEREPAIR(time,type,d1,d2) \
      FIXEVENT(tech_addtechtime(player, (time * mod) / 2),d1,d2,very_fake_func,type)
 
@@ -251,21 +250,21 @@ ECMD(tech_fix);
    (t == Special(HEAT_SINK) && MechHasDHS(m) ? Cargo(DOUBLE_HEAT_SINK) : t)))
 #endif
 
-ETECHEVENT(event_mech_reattach);
-ETECHEVENT(event_mech_reseal);
-ETECHEVENT(event_mech_reload);
-ETECHEVENT(event_mech_removegun);
-ETECHEVENT(event_mech_removepart);
-ETECHEVENT(event_mech_removesection);
-ETECHEVENT(event_mech_repairarmor);
-ETECHEVENT(event_mech_repairgun);
-ETECHEVENT(event_mech_repairenhcrit);
-ETECHEVENT(event_mech_repairinternal);
-ETECHEVENT(event_mech_repairpart);
-ETECHEVENT(event_mech_replacegun);
-ETECHEVENT(event_mech_mountbomb);
-ETECHEVENT(event_mech_umountbomb);
-ETECHEVENT(event_mech_replacesuit);
+ETECHEVENT(muxevent_tickmech_reattach);
+ETECHEVENT(muxevent_tickmech_reseal);
+ETECHEVENT(muxevent_tickmech_reload);
+ETECHEVENT(muxevent_tickmech_removegun);
+ETECHEVENT(muxevent_tickmech_removepart);
+ETECHEVENT(muxevent_tickmech_removesection);
+ETECHEVENT(muxevent_tickmech_repairarmor);
+ETECHEVENT(muxevent_tickmech_repairgun);
+ETECHEVENT(muxevent_tickmech_repairenhcrit);
+ETECHEVENT(muxevent_tickmech_repairinternal);
+ETECHEVENT(muxevent_tickmech_repairpart);
+ETECHEVENT(muxevent_tickmech_replacegun);
+ETECHEVENT(muxevent_tickmech_mountbomb);
+ETECHEVENT(muxevent_tickmech_umountbomb);
+ETECHEVENT(muxevent_tickmech_replacesuit);
 ETECHEVENT(very_fake_func);
 
 void loadrepairs(FILE * f);

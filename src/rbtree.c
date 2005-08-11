@@ -6,7 +6,7 @@
  */
 
 /*
- * $Id:
+ * $Id: $
  */
 
 #include <stdio.h>

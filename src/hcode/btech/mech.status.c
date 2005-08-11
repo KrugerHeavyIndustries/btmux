@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.status.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.status.c,v 1.5 2005/06/24 04:39:08 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -1139,7 +1139,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 	if (MechSpecials(mech) & ECM_TECH) {
 	    sprintf(tempbuff + strlen(tempbuff), "ECM(%s)  ",
-		(MechSpecialsStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
+		(MechStatus2(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 		: ECMEnabled(mech) ? (ECMActive(mech) ? "%ch%cgECM%cn" :
 		    "%ch%crECM%cn") : ECCMEnabled(mech) ? "%ch%cgECCM%cn" :
 		ECMCountered(mech) ? "%crOff%cn" : "%cgOff%cn");
@@ -1167,7 +1167,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 	if (MechSpecials2(mech) & STEALTH_ARMOR_TECH) {
 	    sprintf(tempbuff + strlen(tempbuff), "SthArmor(%s)  ",
-		(MechSpecialsStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
+		(MechStatus2(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 		: StealthArmorActive(mech) ? "%ch%cgOn%cn" : "%cgRdy%cn");
 	}
 
@@ -1180,7 +1180,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	if (MechSpecials(mech) & SLITE_TECH) {
 	    sprintf(tempbuff + strlen(tempbuff), "SLITE(%s)  ",
 		(MechCritStatus(mech) & SLITE_DEST) ? "%cr%chXX%cn"
-		: (MechSpecialsStatus(mech) & SLITE_ON) ? "%ch%cgOn%cn" :
+		: (MechStatus2(mech) & SLITE_ON) ? "%ch%cgOn%cn" :
 		"%cgOff%cn");
 	}
 

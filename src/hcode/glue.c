@@ -363,7 +363,7 @@ static int load_update1(Node * tmp)
 	}
 	MechCocoon(mech) = 0;
 	MechStatus(mech) &= ~(BLINDED | UNCONSCIOUS | JUMPING | TOWED);
-	MechSpecialsStatus(mech) &=
+	MechSpecials2(mech) &=
 	    ~(ECM_ENABLED | ECM_DISTURBANCE | ECM_PROTECTED |
 	    ECCM_ENABLED | ANGEL_ECM_ENABLED | ANGEL_ECCM_ENABLED |
 	    ANGEL_ECM_PROTECTED | ANGEL_ECM_DISTURBED);
@@ -515,7 +515,7 @@ void LoadSpecialObjects(void)
     void *tmpdat;
 
     muxevent_initialize();
-    event_count_initialize();
+    muxevent_count_initialize();
 #ifdef BT_ENABLED
     init_stat();
     initialize_partname_tables();
@@ -945,8 +945,11 @@ int IsMech(dbref num)
     return WhichSpecial(num) == GTYPE_MECH;
 }
 
-int IsMap(dbref num)
-{
+int IsAuto(dbref num) {
+    return WhichSpecial(num) == GTYPE_AUTO;
+}
+
+int IsMap(dbref num) {
     return WhichSpecial(num) == GTYPE_MAP;
 }
 

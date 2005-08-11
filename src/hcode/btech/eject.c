@@ -1,6 +1,6 @@
 
 /*
- * $Id: eject.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: eject.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -386,6 +386,11 @@ void mech_udisembark(dbref player, void *data, char *buffer)
     if ((MechZ(mech) > (Elevation(mymap, MechX(mech), MechY(mech)) + 1)) &&
 	(MechZ(mech) > 0))
 #else
+    if (MechCritStatus(target) & HIDDEN) {
+        MechCritStatus(target) &= ~HIDDEN;
+        MechLOSBroadcast(target, "becomes visible as it is disembarked from.");
+    }
+
     if (!FlyingT(mech) &&
         MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) &&
         MechZ(mech) > 0)
@@ -536,6 +541,7 @@ void mech_embark(dbref player, void *data, char *buffer)
     DOCHECK(Jumping(mech), "You cannot do that while jumping!");
     DOCHECK(Jumping(target), "You cannot do that while it is jumping!");
     DOCHECK(MechSpecials2(mech) & CARRIER_TECH && (IsDS(target) ? IsDS(mech) : 1), "You're a bit bulky to do that yourself.");
+    DOCHECK(MechCritStatus(mech) & HIDDEN, "You cannot embark while hidden.");
     DOCHECK(MechTons(mech) > CarMaxTon(target), "You are too large for that class of carrier.");
     DOCHECK(MechType(mech) != CLASS_BSUIT && !(MechSpecials2(target) & CARRIER_TECH),
 	"This unit can't handle your mass.");
@@ -597,6 +603,13 @@ void mech_embark(dbref player, void *data, char *buffer)
     }
 #endif
     MarkForLOSUpdate(mech);
+    MarkForLOSUpdate(target);
+
+    if (MechCritStatus(target) & HIDDEN) {
+        MechCritStatus(target) &= ~HIDDEN;
+        MechLOSBroadcast(target, "becomes visible as it is embarked into.");
+    }
+
     mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
     remove_mech_from_map(newmap, mech);

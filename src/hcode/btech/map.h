@@ -1,6 +1,6 @@
 
 /*
- * $Id: map.h,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: map.h,v 1.2 2005/06/22 15:08:04 av1-op Exp $
  *
  * Last modified: Sat Jun  6 20:30:40 1998 fingon
  *
@@ -41,7 +41,7 @@
 #define DEFAULT_MAP_WIDTH 21
 #define DEFAULT_MAP_HEIGHT 11
 #define MAP_DISPLAY_WIDTH 21
-#define MAP_DISPLAY_HEIGHT 9
+#define MAP_DISPLAY_HEIGHT 14 
 #define MAX_ELEV 9
 #define GRASSLAND ' '
 #define HEAVY_FOREST '"'

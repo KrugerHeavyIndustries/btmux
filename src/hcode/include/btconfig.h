@@ -1,6 +1,6 @@
 
 /*
- * $Id: btconfig.h,v 1.3 2005/08/08 09:43:10 murrayma Exp $
+ * $Id: btconfig.h,v 1.9 2005/06/24 04:39:08 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -28,8 +28,7 @@
 /*
  * Define this if you want carrier support added.
  */
-/* No need to define it here because its part of the configure
- * system now
+/* No need to define here, its part of the configure system now
  * #define BT_CARRIERS
  */
 
@@ -38,7 +37,9 @@
  * BT_EXTENDED_ADVANTAGES is defined since it can only be used by
  * the Dodge_Maneuver advantage therein.
  */
-#define BT_MOVEMENT_MODES
+/* No need to define here, its part of the configure system now
+ * #define BT_MOVEMENT_MODES
+ */
 
 /* Define this if you want to use some of Exile's extended skills
  * added. At this time it is just 'Research'. None of these skills
@@ -56,34 +57,32 @@
  * project to make this a #define with a # for parsing to switch out
  * MW3-literal skill spreads and fullfill thsi optionally.
  */
-#define BT_EXILE_MW3STATS
+/* No need to define here, its part of the configure system now
+ * #define BT_EXILE_MW3STATS
+ */
 
 /* Define this if you want to use extended advantages merged from the
  * Exile tree. This will make charstats in the DB not portable w/o
  * a +charclear to binaries running w/o this option.
  */
-#define BT_EXTENDED_ADVANTAGES
+/* No need to define here, its part of the configure system now
+ * #define BT_EXTENDED_ADVANTAGES
+ */
 
 /* Define this if you want Exile style targeting computers on. This is just
  * a XCode value called 'targcomp'. (0 None, 1 Short, 2, Long, 3 Multi, 4 AA)
  * An extrapolation of some maxtech tweaks.
  */
-#define BT_TARGCOMP_MODES
+/* No need to define here, its part of the configure system now
+ * #define BT_TARGCOMP_MODES
+ */
 
 /* Define this if you are wanting to have near instant techtime as a config
  * parameter name btech_freetechtime. Could be left at the base level but as
  * part of merge trying to keep defined segregation over new stuff
  */
-/* No need to define here its part of the configure system now
+/* No need to define here, its part of the configure system now
  * #define BT_FREETECHTIME
- */
-
-/* Define this if you are wanting to use the AMechDest (@amechdest.. etc..)
- * to be triggered (@tr with %# as the mech killing it and %! being the dead
- * mech) upon a mech's death.
- */
-/* No need to define here its part of the configure system now
- * #define BT_MECHDEST_TRIGGER
  */
 
 /* Define if you want BV calculation functions. This include btgetbv()
@@ -96,7 +95,7 @@
  * At this moment btsetpartcost(), btgetpartcost(), and btfasabasecost()
  * exist to interact with this. Maybe more later.
  */
-/* No need to define here its part of the configure system now
+/* No need to define here, its part of the configure system now
  * #define BT_ADVANCED_ECON
  */
 
@@ -118,16 +117,26 @@
 #define BT_PART_WEIGHTS
 
 /* Define if you want speed to be calculated on real weight, allowing
-   'mechs to go faster than they were templated to */
-/* #define WEIGHT_OVERSPEEDING */
+ * 'mechs to go faster than they were templated to 
+ */
+/* No need to define here, its part of the configure system now
+ * #define WEIGHT_OVERSPEEDING 
+ */
 
 /* Define if you want 'mech frequencies to be copied to MechWarriors when
    they eject, autoeject or disembark */
-#define COPY_CHANS_ON_EJECT 
+/* No need to define here, its part of the configure system now
+ * #define COPY_CHANS_ON_EJECT 
+ */
 
 /* Define if you want 'mech frequencies *not* to be copied to MechWarriors
    but would rather see a random frequency. */
-/*#define RANDOM_CHAN_ON_EJECT */
+/* \todo If COPY_CHANS_ON_EJECT isn't defined, assume RANDOM_CHAN_ON_EJECT.
+ * this makes a little more sense and is less configuration 
+ */
+/*
+ * #define RANDOM_CHAN_ON_EJECT 
+ */
 
 /* Define for heatsink on/off msgs when using heatcutoff */
 /* #define HEATCUTOFF_DEBUG */
@@ -160,7 +169,6 @@
 /* Where dead pilots go */
 #define AFTERLIFE_DBREF mudconf.afterlife_dbref
 #define AFTERSCEN_DBREF mudconf.afterscen_dbref
-
 
 /* Where used MW templates go to wait for reincarnation (<g>) */
 #define USED_MW_STORE   mudconf.btech_usedmechstore

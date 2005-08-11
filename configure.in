@@ -24,20 +24,8 @@ AC_CHECK_LIB(event, event_init, [],
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
-AC_CHECK_HEADER([arpa/inet.h])
-AC_CHECK_HEADER([fcntl.h])
-AC_CHECK_HEADER([limits.h])
-AC_CHECK_HEADER([memory.h])
-AC_CHECK_HEADER([netdb.h])
-AC_CHECK_HEADER([netinet/in.h])
-AC_CHECK_HEADER([strings.h])
-AC_CHECK_HEADER([sys/file.h])
-AC_CHECK_HEADER([sys/ioctl.h])
-AC_CHECK_HEADER([sys/param.h])
-AC_CHECK_HEADER([sys/socket.h])
-AC_CHECK_HEADER([sys/time.h])
-AC_CHECK_HEADER([unistd.h])
-AC_CHECK_HEADER([errno.h])
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([arpa/inet.h errno.h fcntl.h limits.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h time.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
@@ -63,35 +51,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_FUNC_WAIT3
-AC_CHECK_FUNC([bzero])
-AC_CHECK_FUNC([dup2])
-AC_CHECK_FUNC([floor])
-AC_CHECK_FUNC([gethostbyaddr])
-AC_CHECK_FUNC([gethostbyname])
-AC_CHECK_FUNC([getpagesize])
-AC_CHECK_FUNC([gettimeofday])
-AC_CHECK_FUNC([inet_ntoa])
-AC_CHECK_FUNC([isascii])
-AC_CHECK_FUNC([memmove])
-AC_CHECK_FUNC([memset])
-AC_CHECK_FUNC([pow])
-AC_CHECK_FUNC([regcomp])
-AC_CHECK_FUNC([rint])
-AC_CHECK_FUNC([select])
-AC_CHECK_FUNC([socket])
-AC_CHECK_FUNC([sqrt])
-AC_CHECK_FUNC([stpcpy])
-AC_CHECK_FUNC([strcasecmp])
-AC_CHECK_FUNC([strchr])
-AC_CHECK_FUNC([strcspn])
-AC_CHECK_FUNC([strdup])
-AC_CHECK_FUNC([strerror])
-AC_CHECK_FUNC([strncasecmp])
-AC_CHECK_FUNC([strndup])
-AC_CHECK_FUNC([strrchr])
-AC_CHECK_FUNC([strstr])
-AC_CHECK_FUNC([strtol])
-AC_CHECK_FUNC([tzset])
+AC_CHECK_FUNCS([alarm bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getpagesize getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strrchr strstr strtol timelocal tzset])
 
 AC_MSG_CHECKING(for linger)
 AC_COMPILE_IFELSE(
@@ -112,13 +72,13 @@ if test "$ac_cv_func_gethostbyaddr" = "yes"; then
 fi
 
 # Check the various enable code sections
-AC_MSG_CHECKING([Should we enable support for huds [[default=yes]]])
+AC_MSG_CHECKING([Should we enable support for graphical HUDs [[default=yes]]])
 AC_ARG_ENABLE(hudinfo-support,
-    [  --disable-hudinfo-support      Disable the code to support btech huds [[default=enabled]]],
+    [  --disable-hudinfo-support      Disable the code to support graphical HUDs [[default=enabled]]],
     [AC_MSG_RESULT([no])],
     [
         AC_MSG_RESULT([yes])
-        AC_DEFINE([HUDINFO_SUPPORT], [1], [Should the hudinfo code be enabled])
+        AC_DEFINE([HUDINFO_SUPPORT], [1], [Should the HUDINFO code be enabled])
     ]
 )
 
@@ -152,9 +112,59 @@ AC_ARG_ENABLE(bt_carriers,
     ]
 )
 
+AC_MSG_CHECKING([Should we enable MW3-like stats and skills [[default=yes]]])
+AC_ARG_ENABLE(bt-mw3stats,
+    [  --disable-bt-mw3stats          Disable MW3-like stats and skills [[default=enabled]]],
+    [AC_MSG_RESULT([no])],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([BT_EXILE_MW3STATS], [1], [Should MW3-like stats and skills be enabled])
+    ]
+)
+
+AC_MSG_CHECKING([Should we enable advanced movement modes [[default=yes]]])
+AC_ARG_ENABLE(bt-movement-modes,
+    [  --disable-bt-movement-modes    Disable advanced movement modes [[default=enabled]]],
+    [AC_MSG_RESULT([no])],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should the advanced movement modes be enabled])
+    ]
+)
+
+AC_MSG_CHECKING([Should we enable extended advantages [[default=yes]]])
+AC_ARG_ENABLE(bt-ext-advantages,
+    [  --disable-bt-ext-advantages    Disable extended advantages [[default=enabled]]],
+    [AC_MSG_RESULT([no])],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
+    ]
+)
+
+AC_MSG_CHECKING([Should we enable targcomp modes [[default=yes]]])
+AC_ARG_ENABLE(bt-targcomp-modes,
+    [  --disable-bt-targcomp-modes    Disable targeting computer modes [[default=enabled]]],
+    [AC_MSG_RESULT([no])],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([BT_TARGCOMP_MODES], [1], [Should targeting computer modes be enabled])
+    ]
+)
+
+AC_MSG_CHECKING([Should we copy freqs to MW on disembark [[default=yes]]])
+AC_ARG_ENABLE(bt-mwfreqs,
+    [  --disable-bt-mwfreqs           Disable MW freq copying [[default=enabled]]],
+    [AC_MSG_RESULT([no])],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
+    ]
+)
+
 AC_MSG_CHECKING([Should we enable the code for complex repairs [[default=no]]])
 AC_ARG_ENABLE(bt-complexrepairs,
-    [  --enable-bt-complexrepairs     Enable code for complex repairs [[default=no]]],
+    [  --enable-bt-complexrepairs     Enable code for complex repairs [[default=disabled]]],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_COMPLEXREPAIRS], [1], [Should complex repairs be enabled])
@@ -162,9 +172,19 @@ AC_ARG_ENABLE(bt-complexrepairs,
     [AC_MSG_RESULT([no])]
 )
 
+AC_MSG_CHECKING([Should we allow mech overspeeding [[default=no]]])
+AC_ARG_ENABLE(bt-overspeeding,
+    [  --enable-bt-overspeeding       Enable mech overspeeding [[default=disabled]]],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([WEIGHT_OVERSPEEDING], [1], [Should mech overspeeding be enabled])
+    ],
+    [AC_MSG_RESULT([no])]
+)
+
 AC_MSG_CHECKING([Should we enable the code for freetechtime [[default=no]]])
 AC_ARG_ENABLE(bt-freetechtime,
-    [  --enable-bt-freetechtime       Enable code to give near instant techtime [[default=no]]],
+    [  --enable-bt-freetechtime       Enable code to give near instant techtime [[default=disabled]]],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_FREETECHTIME], [1], [Should the freetechtime code be enabled])
@@ -175,7 +195,7 @@ AC_ARG_ENABLE(bt-freetechtime,
 AC_MSG_CHECKING([Should we enable sql support [[default=no]]])
 AC_ARG_ENABLE(sql-support,
     [  --enable-sql-support           Enable support for sql. 
-                                      Needs libdbi with mysql [[default=no]]],
+                                      Needs libdbi with mysql driver [[default=disabled]]],
     [AC_MSG_RESULT([yes])
         AC_CHECK_HEADER([dbi/dbi.h])
         AC_CHECK_LIB(dbi, dbi_conn_new)

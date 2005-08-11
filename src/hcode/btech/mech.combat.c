@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.combat.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.combat.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -393,10 +393,17 @@ int FireWeaponNumber(dbref player,
     int ishex = 0;
     int wcDeadLegs = 0;
 
-    if (!sight) {
-	MechCritStatus(mech) &= ~HIDDEN;
-	StopHiding(mech);
+    if (!sight && (MechCritStatus(mech) & HIDDEN)) {
+        mech_notify(mech, MECHALL,
+            "You break out of your cover to initiate weapons fire!");
+        MechLOSBroadcast(mech, "breaks out of its cover and begins firing rabidly!");
+        MechCritStatus(mech) &= ~HIDDEN;
     }
+
+    if (!sight) {
+	    StopHiding(mech);
+    }
+
 #ifdef BT_MOVEMENT_MODES
     DOCHECK0(MoveModeLock(mech), "You cannot fire while using a special movement mode.");
 #endif
@@ -858,30 +865,84 @@ void FireWeapon(MECH * mech,
 	    return;
 	}
     }
+
     if (target && !ishex) {
-	sendC3TrackEmit(mech, c3Ref, c3Mech);
+	    sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-	mech_notify(mech, MECHALL,
-	    tprintf("You fire %s at %s%s - BTH: %d  %s%s",
-		&MechWeapons[weapindx].name[3],
-		GetMechToMechID(mech, target), buf2, baseToHit,
-		buf,
-		MechStatus(target) & PARTIAL_COVER ?
-		"(Partial cover)" : ""));
-	SendXP(tprintf
-	    ("#%i attacks #%i (weapon) (%i/%i)", mech->mynum,
-		target->mynum, baseToHit, roll));
+	    mech_notify(mech, MECHALL,
+	        tprintf("You fire %s at %s%s - BTH: %d  %s%s",
+		    &MechWeapons[weapindx].name[3],
+		    GetMechToMechID(mech, target), buf2, baseToHit,
+		    buf,
+		    MechStatus(target) & PARTIAL_COVER ?
+		    "(Partial cover)" : ""));
+    
+        /* Switching to Exile method of tracking xp, where we split
+         * Attacking and Piloting xp into two different channels
+         * And since this is neither it goes to its own channel
+         */
+	    SendAttacks(tprintf("#%i attacks #%i (weapon) (%i/%i)", 
+            mech->mynum, target->mynum, baseToHit, roll));
+/*    
+	    SendXP(tprintf("#%i attacks #%i (weapon) (%i/%i)", mech->mynum,
+		    target->mynum, baseToHit, roll));
+*/
+        /* If the target has the ATTACKEMIT_MECH flag on have it
+         * output this info as well
+         */
+        if (MechStatus2(target) & ATTACKEMIT_MECH)
+            SendAttackEmits(tprintf("#%i attacks #%i (weapon) (%i/%i)", 
+                mech->mynum, target->mynum, baseToHit, roll));
+
     } else {
-	sendC3TrackEmit(mech, c3Ref, c3Mech);
+	    sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-	mech_notify(mech, MECHALL,
-	    tprintf("You fire %s %s (%d,%d) - BTH: %d  %s",
-		&MechWeapons[weapindx].name[3],
-		hex_target_id(mech), mapx, mapy, baseToHit, buf));
-	SendXP(tprintf
-	    ("#%i attacks %d,%d (%s) (weapon) (%i/%i)",
-		mech->mynum, mapx, mapy, short_hextarget(mech),
-		baseToHit, roll));
+	    mech_notify(mech, MECHALL,
+	        tprintf("You fire %s %s (%d,%d) - BTH: %d  %s",
+		    &MechWeapons[weapindx].name[3],
+		    hex_target_id(mech), mapx, mapy, baseToHit, buf));
+
+        /* Switching to Exile method of tracking xp, where we split
+         * Attacking and Piloting xp into two different channels
+         * And since this is neither it goes to its own channel
+         */
+	    SendAttacks(tprintf("#%i attacks %d,%d (%s) (weapon) (%i/%i)",
+		    mech->mynum, mapx, mapy, short_hextarget(mech),
+		    baseToHit, roll));
+/*
+	    SendXP(tprintf("#%i attacks %d,%d (%s) (weapon) (%i/%i)",
+		    mech->mynum, mapx, mapy, short_hextarget(mech),
+		    baseToHit, roll));
+*/
+
+        /* Big Block of code here. Basicly it checks all the targets
+         * in the hex the attacker is firing at. For each one that
+         * has ATTACKEMIT_MECH set, it broadcasts that info
+         */
+        {   
+            MECH *tmpmech;
+            int foo;
+
+            for (foo = 0; foo < mech_map->first_free; foo++) {
+
+                if (mech_map->mechsOnMap[foo] >= 0) {
+
+                    if (!(tmpmech = getMech(mech_map->mechsOnMap[foo])))
+                        continue;
+                    if (mech->mynum == tmpmech->mynum)
+                        continue;
+                    if (MechX(tmpmech) != mapx && MechY(tmpmech) != mapy)
+                        continue;
+                    if (MechStatus2(tmpmech) & ATTACKEMIT_MECH)
+                        SendAttackEmits(tprintf("#%i attacks %d,%d (%s) (weapon)"
+                            " (%i/%i)", mech->mynum, mapx, mapy, 
+                            short_hextarget(mech), baseToHit, roll));
+                }
+
+            }
+
+        }
+
     }
 
 		/****************************************

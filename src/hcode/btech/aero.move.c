@@ -1,6 +1,6 @@
 
 /*
- * $Id: aero.move.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: aero.move.c,v 1.2 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -16,6 +16,7 @@
 #define MIN_TAKEOFF_SPEED 3
 
 #include <math.h>
+#include "muxevent.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.sensor.h"
@@ -144,6 +145,11 @@ static void aero_takeoff_event(EVENT * e)
 	SendDSInfo(tprintf("DS #%d has lifted off at %d %d "
 		"on map #%d", mech->mynum, MechX(mech), MechY(mech),
 		map->mynum));
+    if (MechCritStatus(mech) & HIDDEN) {
+        mech_notify(mech, MECHALL, "You move too much and break your cover!");
+        MechLOSBroadcast(mech, "breaks its cover in the brush.");
+        MechCritStatus(mech) &= ~(HIDDEN);
+    }
     if (MechType(mech) != CLASS_VTOL) {
 	MechDesiredAngle(mech) = 90;
 	MechDesiredSpeed(mech) = MechMaxSpeed(mech) * 2 / 3;
@@ -198,6 +204,12 @@ void aero_takeoff(dbref player, void *data, char *buffer)
     if (IsDS(mech))
         SendDSInfo(tprintf("DS #%d has started takeoff at %d %d on map #%d",
             mech->mynum, MechX(mech), MechY(mech), map->mynum));
+    if (MechCritStatus(mech) & HIDDEN) {
+        mech_notify(mech, MECHALL, "You break your cover to takeoff!");
+        MechLOSBroadcast(mech, "breaks its cover as it begins takeoff.");
+        MechCritStatus(mech) &= ~(HIDDEN);
+    }
+    StopHiding(mech);
     MECHEVENT(mech, EVENT_TAKEOFF, aero_takeoff_event, 1, (void *)
 	j ? j : land_data[i].launchtime);
 }

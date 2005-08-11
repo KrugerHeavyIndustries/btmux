@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.update.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.update.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -152,9 +152,11 @@ int collision_check(MECH * mech, int mode, int le, int lt)
 
 void CheckNavalHeight(MECH * mech, int oz);
 
+/*! \todo {Need to clean up move_mech} */
 void move_mech(MECH * mech)
 {
     float newx = 0.0, newy = 0.0, dax, day;
+    float xy_charge_dist, xscale;
     float jump_pos;
 
 #ifdef ODDJUMP
@@ -294,6 +296,12 @@ void move_mech(MECH * mech)
 	    MechFX(mech) += newx;
 	    MechFY(mech) += newy;
 	    upd_z = 1;
+        if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
+            xscale = 1.0 / SCALEMAP;
+            xscale = xscale * xscale;
+            xy_charge_dist = sqrt(xscale * newx * newx + YSCALE2 * newy * newy);
+            MechChargeDistance(mech) += xy_charge_dist;
+        }
 	} else
 	    return;
 	break;
@@ -310,6 +318,12 @@ void move_mech(MECH * mech)
 	    MechFX(mech) += newx;
 	    MechFY(mech) += newy;
 	    upd_z = 1;
+        if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
+            xscale = 1.0 / SCALEMAP;
+            xscale = xscale * xscale;
+            xy_charge_dist = sqrt(xscale * newx * newx + YSCALE2 * newy * newy);
+            MechChargeDistance(mech) += xy_charge_dist;
+        }
 	} else
 	    return;
 	break;
@@ -325,6 +339,12 @@ void move_mech(MECH * mech)
 	    MechFX(mech) += newx;
 	    MechFY(mech) += newy;
 	    upd_z = 1;
+        if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
+            xscale = 1.0 / SCALEMAP;
+            xscale = xscale * xscale;
+            xy_charge_dist = sqrt(xscale * newx * newx + YSCALE2 * newy * newy);
+            MechChargeDistance(mech) += xy_charge_dist;
+        }
 	} else
 	    return;
 	break;
@@ -423,9 +443,34 @@ void move_mech(MECH * mech)
 	mech_map = getMap(mech->mapindex);
 
     if (oi != mech->mapindex || MechLastX(mech) != MechX(mech) ||
-	MechLastY(mech) != MechY(mech)) {
-	MechCritStatus(mech) &= ~(HIDDEN);
-	StopHiding(mech);
+            MechLastY(mech) != MechY(mech)) {
+
+        if (MechCritStatus(mech) & HIDDEN) {
+            mech_notify(mech, MECHALL, "You move too much and break your cover!");
+            MechLOSBroadcast(mech, "breaks from its cover.");
+            MechCritStatus(mech) &= ~(HIDDEN);
+        }
+    
+        if (!mech || !mech_map) {
+            SendError(tprintf("Invalid pointer (%s) in move_mech()", 
+                    (!mech ? "mech" : !mech_map ? "mech_map" : "wierd....")));
+            if (mech) {
+                mech_notify(mech, MECHALL, "You are on an invalid map! Map index reset!");
+                MechCocoon(mech) = 0;
+
+                if (Jumping(mech))
+                    mech_land(MechPilot(mech), (void *) mech, "");
+
+                mech_shutdown(MechPilot(mech), (void *) mech, "");
+                SendError(tprintf("move_mech:invalid map:Mech: %d  Index: %d", 
+                        mech->mynum, mech->mapindex));
+                mech->mapindex = -1;
+            }
+            return;
+        }
+
+        StopHiding(mech);
+
 	x = MechX(mech);
 	y = MechY(mech);
 	MechTerrain(mech) = GetTerrain(mech_map, x, y);
@@ -453,8 +498,10 @@ void move_mech(MECH * mech)
 	    MechFloods(mech);
 	    water_extinguish_inferno(mech);
 	    steppable_base_check(mech, x, y);
+/*
 	    if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge)
 		MechChargeDistance(mech)++;
+*/
 	    if (In_Character(mech->mynum)) {
 		MechHexes(mech)++;
 		if (!(MechHexes(mech) % PIL_XP_EVERY_N_STEPS))
@@ -469,20 +516,20 @@ void move_mech(MECH * mech)
     if (MechType(mech) == CLASS_VEH_NAVAL)
 	CheckNavalHeight(mech, oz);
     if (MechChargeTarget(mech) != -1) {	/* CHARGE!!! */
-	target = getMech(MechChargeTarget(mech));
-	if (target) {
-	    if (FaMechRange(mech, target) < .6) {
-		ChargeMech(mech, target);
-		MechChargeTarget(mech) = -1;
-		MechChargeTimer(mech) = 0;
-		MechChargeDistance(mech) = 0;
+	    target = getMech(MechChargeTarget(mech));
+	    if (target) {
+	        if (FaMechRange(mech, target) < .6) {
+		        ChargeMech(mech, target);
+		        MechChargeTarget(mech) = -1;
+		        MechChargeTimer(mech) = 0;
+		        MechChargeDistance(mech) = 0;
+	        }
+	    } else {
+	        mech_notify(mech, MECHPILOT, "Invalid CHARGE target!");
+	        MechChargeTarget(mech) = -1;
+	        MechChargeDistance(mech) = 0;
+	        MechChargeTimer(mech) = 0;
 	    }
-	} else {
-	    mech_notify(mech, MECHPILOT, "Invalid CHARGE target!");
-	    MechChargeTarget(mech) = -1;
-	    MechChargeDistance(mech) = 0;
-	    MechChargeTimer(mech) = 0;
-	}
     }
     if (MechCarrying(mech) > 0) {
 	target = getMech(MechCarrying(mech));

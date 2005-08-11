@@ -13,7 +13,7 @@
 #define _P_EVENTS_H
 
 /* events.c */
-void event_count_initialize(void);
+void muxevent_count_initialize(void);
 void debug_EventTypes(dbref player, void *data, char *buffer);
 void prerun_event(EVENT * e);
 void postrun_event(EVENT * e);

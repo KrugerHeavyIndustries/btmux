@@ -214,11 +214,7 @@ ATTR attr[] = {
     {"Ofail", A_OFAIL, AF_ODARK | AF_NOPROG, NULL},
     {"Ogfail", A_OGFAIL, AF_ODARK | AF_NOPROG, NULL},
     {"Okill", A_OKILL, AF_ODARK, NULL},
-#ifdef BT_MECHDEST_TRIGGER
     {"Amechdest", A_AMECHDEST, AF_MDARK, NULL},
-#else
-    {"OldUnusedAttributeDoNotUse", A_UNUSED2, AF_MDARK, NULL},
-#endif
     {"Oleave", A_OLEAVE, AF_ODARK, NULL},
     {"Olfail", A_OLFAIL, AF_ODARK | AF_NOPROG, NULL},
     {"Omove", A_OMOVE, AF_ODARK, NULL},
@@ -589,7 +585,7 @@ INLINE char *Name(dbref thing) {
     int aflags;
     char *buff;
     static char *tbuff[MBUF_SIZE];
-    char *buffer[MBUF_SIZE];
+    char buffer[MBUF_SIZE];
 
     if (mudconf.cache_names) {
         if (thing > mudstate.db_top || thing < 0) {

@@ -54,4 +54,5 @@ void DumpWeapons(dbref player);
 #ifdef EXILE_FUNCS_SUPPORT
 char *techlist_func(MECH * mech);
 #endif
+char *payloadlist_func(MECH * mech);
 #endif				/* _P_TEMPLATE_H */

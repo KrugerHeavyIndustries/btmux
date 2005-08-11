@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.bth.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.bth.c,v 1.2 2005/06/23 15:27:04 av1-op Exp $
  *
  * Author: Cord Awtry <kipsta@mediaone.net>
  * Author: Cord Awtry <kipsta@mediaone.net>
@@ -33,7 +33,7 @@
 #else
 #define BTHBASE(m,t,n)  do { if (t) sprintf(buf, "#%d -> #%d: Base %d", m->mynum, t->mynum, n); else sprintf(buf, "#%d -> (hex): Base %d", m->mynum, n); baseToHit = n; } while (0)
 #define BTHADD(desc,n)  do { i = n ; if (i) { sprintf(buf+strlen(buf), ", %s: %s%d", desc, i>0 ? "+" : "", i); baseToHit += i; } } while (0)
-#define BTHEND(m)       SendDebug(tprintf("%s.", buf))
+#define BTHEND(m)       SendBTHDebug(tprintf("%s.", buf))
 #endif
 
 int arc_override;

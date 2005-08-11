@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.partnames.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.partnames.c,v 1.4 2005/06/30 18:37:37 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -77,6 +77,7 @@ static int create_brandname(int id, int b)
 	    return 0;
     temp_brand_flag = b;
     Create(p, PN, 1);
+/* \todo Remove this stupid #define and make the code readable */
 #define SILLINESS(fun,val,fl) \
   if (!(c=fun(id))) \
     { free ((void *) p->val); free((void *) p); return 0; } \
@@ -160,16 +161,18 @@ int find_matching_vlong_part(char *wc, int *ind, int *id, int *brand)
     int *i;
 
     if (ind && *ind >= 0)
-	return 0;
-    for (tmpc1 = wc, tmpc2 = tmpbuf; *tmpc1; tmpc1++, tmpc2++)
-	*tmpc2 = ToLower(*tmpc1);
+	    return 0;
+    for (tmpc1 = wc, tmpc2 = tmpbuf; *tmpc1; tmpc1++, tmpc2++) {
+	    *tmpc2 = ToLower(*tmpc1);
+    }
     *tmpc2 = 0;
-    if ((i = hashfind(tmpbuf, &vlong_hash)))
-	if ((p = short_sorted[((int) i) - 1])) {
-	    if (ind)
-		*ind = ((int) i);
-	    UNPACK_PART(p->index, *id, *brand);
-	    return 1;
+    if ((i = hashfind(tmpbuf, &vlong_hash))) {
+	    if ((p = short_sorted[((int) i) - 1])) {
+            if (ind)
+		        *ind = ((int) i);
+	        UNPACK_PART(p->index, *id, *brand);
+	        return 1;
+        }
 	}
     return 0;
 }
@@ -194,16 +197,18 @@ int find_matching_short_part(char *wc, int *ind, int *id, int *brand)
     int *i;
 
     if (*ind >= 0)
-	return 0;
-    for (tmpc1 = wc, tmpc2 = tmpbuf; *tmpc1; tmpc1++, tmpc2++)
-	*tmpc2 = ToLower(*tmpc1);
+	    return 0;
+    for (tmpc1 = wc, tmpc2 = tmpbuf; *tmpc1; tmpc1++, tmpc2++) {
+	    *tmpc2 = ToLower(*tmpc1);
+    }
     *tmpc2 = 0;
-    if ((i = hashfind(tmpbuf, &short_hash)))
-	if ((p = short_sorted[((int) i) - 1])) {
-	    *ind = ((int) i);
-	    UNPACK_PART(p->index, *id, *brand);
-	    return 1;
-	}
+    if ((i = hashfind(tmpbuf, &short_hash))) {
+	    if ((p = short_sorted[((int) i) - 1])) {
+	        *ind = ((int) i);
+	        UNPACK_PART(p->index, *id, *brand);
+	        return 1;
+	    }
+    }
     return 0;
 }
 
@@ -223,23 +228,39 @@ FUNCTION(fun_btpartmatch)
 {
     /* fargs[0] = name to match on
      */
-    
+
+    /* Added check to see if anything was found, if not
+     * send error message
+     * Dany - 06/2005
+     */
+
     int partindex = 0, id = 0, brand = 0;
-    
+    int part_count = 0;
+
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
     FUNCHECK(strlen(fargs[0]) >= MBUF_SIZE, "#-1 PARTNAME TOO LONG");
     FUNCHECK(!fargs[0], "#-1 NEED PARTNAME");
 
-    while (find_matching_short_part(fargs[0], &partindex, &id, &brand))
+    partindex = -1;
+    while (find_matching_short_part(fargs[0], &partindex, &id, &brand)) {
         safe_tprintf_str(buff, bufc, "%d ", PACKED_PART(id, brand));
+        part_count++;
+    }
 
     partindex = 0; 
-    while (find_matching_long_part(fargs[0], &partindex, &id, &brand))
+    while (find_matching_long_part(fargs[0], &partindex, &id, &brand)) {
         safe_tprintf_str(buff, bufc, "%d ", PACKED_PART(id, brand));
+        part_count++;
+    }
 
-    partindex = 0;
-    while (find_matching_vlong_part(fargs[0], &partindex, &id, &brand))
+    partindex = -1;
+    while (find_matching_vlong_part(fargs[0], &partindex, &id, &brand)) {
         safe_tprintf_str(buff, bufc, "%d ", PACKED_PART(id, brand));
+        part_count++;
+    }
+
+    if (part_count == 0)
+        safe_tprintf_str(buff, bufc, "#-1 INVALID PARTNAME");
 }
 
 FUNCTION(fun_btpartname)
@@ -248,36 +269,54 @@ FUNCTION(fun_btpartname)
      * fargs[1] = 'short', 'long' or 'vlong'
      */
      
-    int index, id, brand;
+    int index;
     char *cptr;
-    PN *p;
-     
+    char *infostr;
+
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
     FUNCHECK(!fargs[0], "#-1 NEED PARTNAME");
     index = strtol(fargs[0], &cptr, 10);
     FUNCHECK(cptr == fargs[0], "#-1 INVALID PART NUMBER");
-    
+
+    infostr = partname_func(index, fargs[1][0]);
+    safe_tprintf_str(buff, bufc, "%s", infostr);
+}
+
+char *partname_func(int index, int size) {
+  
+    static char buffer[MBUF_SIZE];
+    int id, brand;
+    PN *p;
+
     UNPACK_PART(index, id, brand);
-    FUNCHECK(brand < 0 || brand > BRANDCOUNT || id < 0,
-             "#-1 INVALID PART NUMBER");
+    if (brand < 0 || brand > BRANDCOUNT || id < 0) {
+        snprintf(buffer, MBUF_SIZE, "%s", "#-1 INVALID PART NUMBER");
+        return buffer;
+    }
+
     p = index_sorted[brand][id];
-    FUNCHECK(!p, "#-1 INVALID PART NUMBER");
+    if (!p) {
+        snprintf(buffer, MBUF_SIZE, "%s", "#-1 INVALID PART NUMBER");
+        return buffer;
+    }
     
-    switch (fargs[1][0]) {
+    switch (size) {
     case 's':
     case 'S':
-    	safe_tprintf_str(buff, bufc, "%s", p->shorty);
+        snprintf(buffer, MBUF_SIZE, "%s", p->shorty);
     	break;
     case 'l':
     case 'L':
-    	safe_tprintf_str(buff, bufc, "%s", p->longy);
+        snprintf(buffer, MBUF_SIZE, "%s", p->longy);
     	break;
     case 'v':
     case 'V':
-    	safe_tprintf_str(buff, bufc, "%s", p->vlongy);
+        snprintf(buffer, MBUF_SIZE, "%s", p->vlongy);
     	break;
     default:
-        safe_tprintf_str(buff, bufc, "#-1 INVALID NAME TYPE");
+        snprintf(buffer, MBUF_SIZE, "%s", "#-1 INVALID NAME TYPE");
         break;
     }
+
+    return buffer;
 }

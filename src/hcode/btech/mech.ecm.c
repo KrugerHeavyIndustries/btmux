@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.ecm.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.ecm.c,v 1.2 2005/06/23 18:31:42 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -173,7 +173,7 @@ void checkECM(MECH * objMech)
 	}
     }
 
-    if ((MechSpecialsStatus(objMech) & STH_ARMOR_ON) ||
+    if ((MechStatus2(objMech) & STH_ARMOR_ON) ||
 	checkAllSections(objMech, INARC_ECM_ATTACHED))
 	wUnFriendlyECM += 1000;
 

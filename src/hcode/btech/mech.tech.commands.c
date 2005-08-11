@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.tech.commands.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.tech.commands.c,v 1.1.1.1 2005/01/11 21:18:25 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -245,7 +245,7 @@ TECHCOMMANDH(tech_removegun)
     START("You start removing the gun..");
     STARTREPAIR(REMOVEG_TIME * ClanMod(GetWeaponCrits(mech,
 		Weapon2I(GetPartType(mech, loc, part)))), mech,
-	PACK_LOCPOS_E(loc, part, mod), event_mech_removegun,
+	PACK_LOCPOS_E(loc, part, mod), muxevent_tickmech_removegun,
 	EVENT_REPAIR_SCRG);
 }
 
@@ -288,7 +288,7 @@ TECHCOMMANDH(tech_removepart)
 	}
     }
     STARTREPAIR(REMOVEP_TIME, mech, PACK_LOCPOS_E(loc, part, mod),
-	event_mech_removepart, EVENT_REPAIR_SCRP);
+	muxevent_tickmech_removepart, EVENT_REPAIR_SCRP);
 }
 
 #define CHECK_S(nloc) \
@@ -337,7 +337,7 @@ TECHCOMMANDH(tech_removesection)
 	mod = 3;
     START("You start removing the section..");
     STARTREPAIR(REMOVES_TIME, mech, PACK_LOCPOS_E(loc, 0, mod),
-	event_mech_removesection, EVENT_REPAIR_SCRL);
+	muxevent_tickmech_removesection, EVENT_REPAIR_SCRL);
 }
 
 
@@ -370,7 +370,7 @@ TECHCOMMANDH(tech_replacegun)
 	replaceg_succ, replace_econ,
 	REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech,
 		Weapon2I(GetPartType(mech, loc, part)))), mech,
-	PACK_LOCPOS_E(loc, part, brand), event_mech_replacegun,
+	PACK_LOCPOS_E(loc, part, brand), muxevent_tickmech_replacegun,
 	EVENT_REPAIR_REPLG, "You start replacing the gun..", 1);
     if (brand)
 	SetPartBrand(mech, loc, part, ob);
@@ -416,7 +416,7 @@ TECHCOMMANDH(tech_repairgun)
     DOTECH_LOCPOS(REPAIR_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,
 		loc, part)) + extra_hard, repairg_fail, repairg_succ,
 	repair_econ, REPAIRGUN_TIME, mech, PACK_LOCPOS(loc, part),
-	event_mech_repairgun, EVENT_REPAIR_REPAP,
+	muxevent_tickmech_repairgun, EVENT_REPAIR_REPAP,
 	"You start repairing the weapon..", 1);
 }
 
@@ -454,7 +454,7 @@ TECHCOMMANDH(tech_fixenhcrit)
 	REPAIRENHCRIT_TIME,
 	mech,
 	PACK_LOCPOS(loc, part),
-	event_mech_repairenhcrit,
+	muxevent_tickmech_repairenhcrit,
 	EVENT_REPAIR_REPENHCRIT, "You start repairing the weapon...", 1);
 }
 
@@ -483,7 +483,7 @@ TECHCOMMANDH(tech_replacepart)
     DOTECH_LOCPOS(REPLACE_DIFFICULTY +
 	PARTTYPE_DIFFICULTY(GetPartType(mech, loc, part)), replacep_fail,
 	replacep_succ, replace_econ, REPLACEPART_TIME, mech,
-	PACK_LOCPOS(loc, part), event_mech_repairpart, EVENT_REPAIR_REPL,
+	PACK_LOCPOS(loc, part), muxevent_tickmech_repairpart, EVENT_REPAIR_REPL,
 	"You start replacing the part..", 0);
 }
 
@@ -515,7 +515,7 @@ TECHCOMMANDH(tech_repairpart)
     DOTECH_LOCPOS(REPAIR_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech,
 		loc, part)), repairp_fail, repairp_succ, repair_econ,
 	REPAIRPART_TIME, mech, PACK_LOCPOS(loc, part),
-	event_mech_repairpart, EVENT_REPAIR_REPAP,
+	muxevent_tickmech_repairpart, EVENT_REPAIR_REPAP,
 	"You start repairing the part..", 0);
 }
 
@@ -581,7 +581,7 @@ TECHCOMMANDH(tech_reload)
     change = 0;
     DOTECH_LOCPOS_VAL(RELOAD_DIFFICULTY, reload_fail, reload_succ,
 	reload_econ, &change, RELOAD_TIME, mech, PACK_LOCPOS_E(loc, part,
-	    change), event_mech_reload, EVENT_REPAIR_RELO,
+	    change), muxevent_tickmech_reload, EVENT_REPAIR_RELO,
 	"You start reloading the ammo compartment..");
 }
 
@@ -616,7 +616,7 @@ TECHCOMMANDH(tech_unload)
 	mod = 3;
     START("You start unloading the ammo compartment..");
     STARTREPAIR(RELOAD_TIME, mech, PACK_LOCPOS_E(loc, part, change),
-	event_mech_reload, EVENT_REPAIR_RELO);
+	muxevent_tickmech_reload, EVENT_REPAIR_RELO);
 }
 
 TECHCOMMANDH(tech_fixarmor)
@@ -654,7 +654,7 @@ TECHCOMMANDH(tech_fixarmor)
 	fixarmor_econ, &change, FIXARMOR_TIME * ochange, loc,
 	EVENT_REPAIR_FIX, mech, "You start fixing the armor..");
     STARTIREPAIR(FIXARMOR_TIME * change, mech, (change * 16 + loc),
-	event_mech_repairarmor, EVENT_REPAIR_FIX, change);
+	muxevent_tickmech_repairarmor, EVENT_REPAIR_FIX, change);
 }
 
 TECHCOMMANDH(tech_fixinternal)
@@ -681,7 +681,7 @@ TECHCOMMANDH(tech_fixinternal)
 	FIXINTERNAL_TIME * ochange, loc, EVENT_REPAIR_FIX, mech,
 	"You start fixing the internals..");
     STARTIREPAIR(FIXINTERNAL_TIME * change, mech, (change * 16 + loc),
-	event_mech_repairinternal, EVENT_REPAIR_FIXI, change);
+	muxevent_tickmech_repairinternal, EVENT_REPAIR_FIXI, change);
 }
 
 
@@ -742,7 +742,7 @@ TECHCOMMANDH(tech_reattach)
     DOCHECK(!unit_is_fixable(mech),
 	"You see nothing to reattach it to (read:unit is cored).");
     DOTECH_LOC(REATTACH_DIFFICULTY, reattach_fail, reattach_succ,
-	reattach_econ, REATTACH_TIME, mech, loc, event_mech_reattach,
+	reattach_econ, REATTACH_TIME, mech, loc, muxevent_tickmech_reattach,
 	EVENT_REPAIR_REAT, "You start replacing the section..");
 }
 
@@ -777,7 +777,7 @@ TECHCOMMANDH(tech_replacesuit)
 	"You are unable to replace the suits here! None of the buggers are still alive!");
     DOTECH_LOC(REPLACESUIT_DIFFICULTY, replacesuit_fail, replacesuit_succ,
 	replacesuit_econ, REPLACESUIT_TIME, mech, loc,
-	event_mech_replacesuit, EVENT_REPAIR_REPSUIT,
+	muxevent_tickmech_replacesuit, EVENT_REPAIR_REPSUIT,
 	"You start replacing the missing suit.");
 }
 
@@ -800,7 +800,7 @@ TECHCOMMANDH(tech_reseal)
     DOCHECK(SomeoneResealing(mech, loc),
 	"Someone's sealing that section already!");
     DOTECH_LOC(RESEAL_DIFFICULTY, reseal_fail, reseal_succ, reseal_econ,
-	RESEAL_TIME, mech, loc, event_mech_reseal, EVENT_REPAIR_RESE,
+	RESEAL_TIME, mech, loc, muxevent_tickmech_reseal, EVENT_REPAIR_RESE,
 	"You start resealing the section.");
 }
 

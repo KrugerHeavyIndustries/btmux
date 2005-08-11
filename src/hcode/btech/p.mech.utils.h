@@ -139,4 +139,6 @@ int ProperInternal(MECH * mech);
 int alias_part(MECH * mech, int t, int loc);
 int ProperMyomer(MECH * mech);
 #endif
+int HeatFactor(MECH * mech);
+int WeaponIsNonfunctional(MECH * mech, int section, int crit, int numcrits);
 #endif				/* _P_MECH_UTILS_H */

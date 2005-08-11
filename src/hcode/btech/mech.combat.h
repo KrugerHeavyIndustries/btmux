@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.combat.h,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.combat.h,v 1.1.1.1 2005/01/11 21:18:13 kstevens Exp $
  *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2000-2002 Cord Awtry

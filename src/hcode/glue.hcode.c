@@ -96,6 +96,14 @@ int BOUNDED(int min, int val, int max)
     return val;
 }
 
+float FBOUNDED(float min, float val, float max) {
+    if(val < min)
+        return min;
+    if(val > max)
+        return max;
+    return val;
+}
+
 int MAX(int v1, int v2)
 {
     if (v1 > v2)
@@ -113,7 +121,7 @@ int MIN(int v1, int v2)
 
 int silly_parseattributes(char *buffer, char **args, int max)
 {
-    static char bufferi[LBUF_SIZE], foobuff[LBUF_SIZE];
+    char bufferi[LBUF_SIZE], foobuff[LBUF_SIZE];
     char *a, *b;
     int count = 0;
     char *parsed = buffer;

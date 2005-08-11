@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.events.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.events.c,v 1.1.1.1 2005/01/11 21:18:15 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -158,7 +158,7 @@ void ProlongUncon(MECH * mech, int len)
 	return;
     }
     l = muxevent_last_type_data(EVENT_RECOVERY, (void *) mech) + len;
-    muxevent_remote_type_data(EVENT_RECOVERY, (void *) mech);
+    muxevent_remove_type_data(EVENT_RECOVERY, (void *) mech);
     MECHEVENT(mech, EVENT_RECOVERY, mech_recovery_event, l, 0);
 }
 

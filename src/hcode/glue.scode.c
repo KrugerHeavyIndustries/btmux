@@ -462,9 +462,9 @@ static GMV xcode_data[] = {
     MeEntry("heading", MechRFacing, TYPE_SHORT),
     MeEntry("stall", MechStall, TYPE_INT),
     MeEntry("status", MechStatus, TYPE_BV),
+    MeEntry("status2", MechStatus2, TYPE_BV),
     MeEntry("critstatus", MechCritStatus, TYPE_BV),
     MeEntry("tankcritstatus", MechTankCritStatus, TYPE_BV),
-    MeEntry("specialsstatus", MechSpecialsStatus, TYPE_BV),
     MeEntry("target", MechTarget, TYPE_DBREF),
     MeEntry("team", MechTeam, TYPE_INT),
     MeEntry("tons", MechTons, TYPE_INT),
@@ -923,6 +923,7 @@ FUNCTION(fun_btmapterr)
     MAP *map;
     int x, y;
     int spec;
+    char terr;
 
     it = match_thing(player, fargs[0]);
     FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1");
@@ -933,7 +934,11 @@ FUNCTION(fun_btmapterr)
     FUNCHECK(Readnum(y, fargs[2]), "#-2");
     FUNCHECK(x < 0 || y < 0 || x >= map->map_width ||
 	y >= map->map_height, "?");
-    safe_tprintf_str(buff, bufc, "%c", GetTerrain(map, x, y));
+    terr = GetTerrain(map, x, y);
+    if(terr == GRASSLAND)
+        terr = '.';
+    
+    safe_tprintf_str(buff, bufc, "%c", terr);
 }
 
 FUNCTION(fun_btmapelev)
@@ -1137,7 +1142,7 @@ FUNCTION(fun_btsetarmorstatus)
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-FUNCTION(fun_btthreshhold)
+FUNCTION(fun_btthreshold)
 {
     /*
      * fargs[0] = skill to query
@@ -1145,7 +1150,7 @@ FUNCTION(fun_btthreshhold)
     int xpth;
 
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    xpth = btthreshhold_func(fargs[0]);
+    xpth = btthreshold_func(fargs[0]);
     safe_tprintf_str(buff, bufc, xpth < 0 ? "#%d ERROR" : "%d", xpth);
 }
 
@@ -1807,6 +1812,21 @@ FUNCTION(fun_bttechlist_ref)
     FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
 
     infostr = techlist_func(mech);
+    safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1");
+}
+
+/* Function to return the 'payload' of a unit
+ * ie: the Guns and Ammo
+ * in a list format like <item_1> <# of 1>|...|<item_n> <# of n>
+ * Dany - 06/2005 */
+FUNCTION(fun_btpayload_ref) {
+    MECH *mech;
+    char *infostr;
+    
+    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+    FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
+
+    infostr = payloadlist_func(mech);
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1");
 }
 

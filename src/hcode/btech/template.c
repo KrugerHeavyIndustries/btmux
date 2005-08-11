@@ -7,7 +7,7 @@
    Code to read and write mech and vehicle templates
    Created by Nim 9/16/96
 
-   $Id: template.c,v 1.3 2005/08/08 09:43:10 murrayma Exp $
+   $Id: template.c,v 1.9 2005/08/10 14:09:34 av1-op Exp $
    Last modified: Fri Sep 18 13:02:31 1998 fingon
  */
 
@@ -1154,6 +1154,12 @@ char *specials2[] = {
 #ifdef BT_CARRIERS
     "Carrier_Tech",
 #endif
+#ifdef BT_COMPLEXREPAIRS
+    "XLGyro_Tech",
+    "HDGyro_Tech",
+    "CompactGyro_Tech",
+#endif 
+    "Camo_Tech",
     NULL
 };
 
@@ -1161,6 +1167,13 @@ char *specialsabrev2[] = {
     "STHA", "HFF", "LRARM", "REACTARM", "NULL", "C3I","SCHARGE",
     "IJJ", "MJJ", "CHS", "LHS", "BLP", "AECM", "WDOG", "LFF",
     "TAG", "OMNI", "AV",
+#ifdef BT_CARRIERS
+    "CART",
+#endif
+#ifdef BT_COMPLEXREPAIRS
+    "XLGRYO", "HDGYRO", "CGYRO",
+#endif
+    "CAMO",
     NULL
 };
 
@@ -2684,4 +2697,132 @@ char *techlist_func(MECH * mech)
 
     return buffer;
 }
-#endif
+
+#endif 
+
+/* Function to return the payload of a unit
+ * Used by the btpayload_ref() scode function
+ * Dany - 06/2005 */
+char *payloadlist_func(MECH * mech)
+{
+    static char buffer[MBUF_SIZE];
+
+    unsigned char weaparray[MAX_WEAPS_SECTION];
+    unsigned char weapdata[MAX_WEAPS_SECTION];
+    int critical[MAX_WEAPS_SECTION];
+    short ammomode;
+    int temp_crit;
+
+    int count, weap_count, ammo_count, section_loop, weap_loop, put_loop;
+    char payloadbuff[120];
+
+    unsigned short payload_items[8 * MAX_WEAPS_SECTION];
+    unsigned short payload_items_count[8 * MAX_WEAPS_SECTION]; 
+
+    /* Clear the buffer */
+    snprintf(buffer, MBUF_SIZE, "%s", "");
+
+    /* Count each 'unique' item */
+    weap_count = 0;
+    ammo_count = 0;
+
+    /* Initialize array */
+    for (put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
+        payload_items[put_loop] = 0;
+        payload_items_count[put_loop] = 0;
+    }
+
+    /* Get the weapons for each sections */
+    for (section_loop = 0; section_loop < NUM_SECTIONS; section_loop++) {
+
+        /* Get all the weapons for that section */
+        count = FindWeapons(mech, section_loop, weaparray, weapdata, critical);
+        /* Check if any weapons in that section */
+        if (count <= 0)
+            continue;
+
+        /* Loop through all the weapons found and store their values */
+        for (weap_loop = 0; weap_loop < count; weap_loop++) {
+
+            /* Loop to put weapons in the temp array and keep count */
+            for (put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
+
+                /* Check to see if there is already an entry */
+                if (payload_items[put_loop] == weaparray[weap_loop]) {
+                    payload_items_count[put_loop]++;
+                    break;
+                /* Ok, see if there is no entry */
+                } else if (payload_items[put_loop] == 0) {
+                    payload_items[put_loop] = weaparray[weap_loop];
+                    payload_items_count[put_loop]++;
+                    weap_count++;
+                    break;
+                }
+
+            } /* End of put loop */
+
+        } /* End of weap count loop */
+
+    } /* End of section loop */
+
+    /* Loop through all the sections */
+    for (section_loop = 0; section_loop < NUM_SECTIONS; section_loop++) {
+
+        /* Loop through all the crits in a section */
+        for (count = 0; count < MAX_WEAPS_SECTION; count++) {
+
+            /* Get the Part at that spot */
+            temp_crit = GetPartType(mech, section_loop, count);
+
+            /* Is it Ammo? */
+            if (IsAmmo(temp_crit)) {
+                
+                /* Loop to put weapons in the temp array and keep count */
+                for (put_loop = weap_count; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
+
+                    /* Check to see if there is already an entry */
+                    if (payload_items[put_loop] == temp_crit) {
+                        payload_items_count[put_loop]++;
+                        break;
+                    /* Ok, see if there is no entry */
+                    } else if (payload_items[put_loop] == 0) {
+                        payload_items[put_loop] = temp_crit;
+                        payload_items_count[put_loop]++;
+                        ammo_count++;
+                        break;
+                    }
+
+                } /* End of put loop */
+
+            } /* End of is it Ammo if Statement */
+            
+        } /* End of Crit Slot Loop */
+
+    } /* End of Section Loop */
+
+    /* Final loop to print out the full payload to the buffer and return it */
+    for (put_loop = 0; put_loop < (weap_count + ammo_count); put_loop++) {
+
+        /* If its a weapon use this method of printing it out
+         * Else use the part method */
+        if (put_loop < weap_count ) {
+            sprintf(payloadbuff, "%s:%d", 
+                &MechWeapons[payload_items[put_loop]].name[0],
+                payload_items_count[put_loop]);
+        } else {
+            sprintf(payloadbuff, "%s:%d", partname_func(payload_items[put_loop], 'V'),
+                payload_items_count[put_loop]);
+        }
+
+        /* If we are not at the end, then put a | as a spacer */
+        if (put_loop < (weap_count + ammo_count - 1)) {
+            strncat(payloadbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
+        }
+
+        /* Adding it to the main buffer */
+        strncat(buffer, payloadbuff, sizeof(buffer) - strlen(buffer) - 1);
+
+    } /* End of printing loop */
+
+    return buffer;
+}

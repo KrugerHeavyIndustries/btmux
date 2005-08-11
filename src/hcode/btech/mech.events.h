@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.events.h,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: mech.events.h,v 1.2 2005/08/03 21:40:54 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -20,6 +20,7 @@
 
 #include "mech.h"
 #include "muxevent.h"
+#include "p.event.h"
 
 /* Semi-combat-related events */
 #define EVENT_MOVE         1	/* mech */
@@ -57,74 +58,75 @@
 #define EVENT_MASC_REGEN  21	/* MASC recovery during non-use */
 #define EVENT_AMMOWARN    22	/* Warn of running out of ammo */
 
-#define FIRST_AUTO_EVENT  23
-#define EVENT_AUTOGOTO    23	/* Autopilot goto */
-#define EVENT_AUTOLEAVE   24	/* Autopilot leavebase */
-#define EVENT_AUTOCOM     25	/* Autopilot next command */
-#define EVENT_AUTOGUN     26	/* Autopilot gun control */
-#define EVENT_AUTOGS      27	/* Autopilot gun/sensor change */
-#define EVENT_AUTOFOLLOW  28	/* Autopilot follow */
-#define LAST_AUTO_EVENT   28
+#define FIRST_AUTO_EVENT    23
+#define EVENT_AUTOGOTO      23  /* Autopilot goto */
+#define EVENT_AUTOLEAVE     24  /* Autopilot leavebase */
+#define EVENT_AUTOCOM       25  /* Autopilot next command */
+#define EVENT_AUTOGUN       26  /* Autopilot gun control */
+#define EVENT_AUTOGS        27  /* Autopilot gun/sensor change */
+#define EVENT_AUTOFOLLOW    28  /* Autopilot follow */
+#define EVENT_AUTOENTERBASE 29  /* Autopilot enterbase */
+#define EVENT_AUTO_REPLY    30  /* Autopilot reply */
+#define LAST_AUTO_EVENT     30
 
-#define EVENT_MRECOVERY   29	/* mech */
-#define EVENT_BLINDREC    30
-#define EVENT_BURN        31
-#define EVENT_SS          32
+#define EVENT_MRECOVERY     31  /* mech */
+#define EVENT_BLINDREC      32
+#define EVENT_BURN          33
+#define EVENT_SS            34
 
-#define EVENT_HIDE        33
-#define EVENT_OOD         34
-#define EVENT_NUKEMECH    35
-#define EVENT_LATERAL     36
-#define EVENT_EXPLODE     37
-#define EVENT_AUTO_REPLY  38
-#define EVENT_DIG         39
+#define EVENT_HIDE          35
+#define EVENT_OOD           36
+#define EVENT_NUKEMECH      37
+#define EVENT_LATERAL       38
+#define EVENT_EXPLODE       39
+#define EVENT_DIG           40
 
-#define FIRST_TECH_EVENT  40
+#define FIRST_TECH_EVENT    41
 
-#define EVENT_REPAIR_REPL  FIRST_TECH_EVENT	/* mech,<part> */
-#define EVENT_REPAIR_REPLG (FIRST_TECH_EVENT+1)	/* mech,<part> */
-#define EVENT_REPAIR_REAT  (FIRST_TECH_EVENT+2)	/* mech,<location> */
-#define EVENT_REPAIR_RELO  (FIRST_TECH_EVENT+3)	/* mech,<part/amount> */
-#define EVENT_REPAIR_FIX   (FIRST_TECH_EVENT+4)	/* mech,<loc/amount/type> */
-#define EVENT_REPAIR_FIXI  (FIRST_TECH_EVENT+5)	/* mech,<loc/amount/type> */
-#define EVENT_REPAIR_SCRL  (FIRST_TECH_EVENT+6)	/* mech, loc */
-#define EVENT_REPAIR_SCRP  (FIRST_TECH_EVENT+7)	/* mech, loc, part */
-#define EVENT_REPAIR_SCRG  (FIRST_TECH_EVENT+8)	/* mech, loc, part */
-#define EVENT_REPAIR_REPAG (FIRST_TECH_EVENT+9)	/* mech,<part> */
-#define EVENT_REPAIR_REPAP (FIRST_TECH_EVENT+10)	/* mech,<part> */
-#define EVENT_REPAIR_MOB   (FIRST_TECH_EVENT+11)	/* mech,<part> */
-#define EVENT_REPAIR_UMOB  (FIRST_TECH_EVENT+12)	/* mech,<part> */
-#define EVENT_REPAIR_RESE  (FIRST_TECH_EVENT+13)	/* mech,<location> */
-#define EVENT_REPAIR_REPSUIT (FIRST_TECH_EVENT+14)	/* mech */
-#define EVENT_REPAIR_REPENHCRIT (FIRST_TECH_EVENT+15)	/* mech */
+#define EVENT_REPAIR_REPL       FIRST_TECH_EVENT        /* mech,<part> */
+#define EVENT_REPAIR_REPLG      (FIRST_TECH_EVENT+1)    /* mech,<part> */
+#define EVENT_REPAIR_REAT       (FIRST_TECH_EVENT+2)    /* mech,<location> */
+#define EVENT_REPAIR_RELO       (FIRST_TECH_EVENT+3)    /* mech,<part/amount> */
+#define EVENT_REPAIR_FIX        (FIRST_TECH_EVENT+4)    /* mech,<loc/amount/type> */
+#define EVENT_REPAIR_FIXI       (FIRST_TECH_EVENT+5)    /* mech,<loc/amount/type> */
+#define EVENT_REPAIR_SCRL       (FIRST_TECH_EVENT+6)    /* mech, loc */
+#define EVENT_REPAIR_SCRP       (FIRST_TECH_EVENT+7)    /* mech, loc, part */
+#define EVENT_REPAIR_SCRG       (FIRST_TECH_EVENT+8)    /* mech, loc, part */
+#define EVENT_REPAIR_REPAG      (FIRST_TECH_EVENT+9)    /* mech,<part> */
+#define EVENT_REPAIR_REPAP      (FIRST_TECH_EVENT+10)   /* mech,<part> */
+#define EVENT_REPAIR_MOB        (FIRST_TECH_EVENT+11)   /* mech,<part> */
+#define EVENT_REPAIR_UMOB       (FIRST_TECH_EVENT+12)   /* mech,<part> */
+#define EVENT_REPAIR_RESE       (FIRST_TECH_EVENT+13)   /* mech,<location> */
+#define EVENT_REPAIR_REPSUIT    (FIRST_TECH_EVENT+14)   /* mech */
+#define EVENT_REPAIR_REPENHCRIT (FIRST_TECH_EVENT+15)   /* mech */
 
 #define LAST_TECH_EVENT    EVENT_REPAIR_REPENHCRIT
 
-#define EVENT_STANDFAIL			53
-#define EVENT_SLITECHANGING		54
-#define EVENT_HEATCUTOFFCHANGING	55
-#define EVENT_VEHICLEBURN		56	/* Burn a side of a vehicle */
-#define EVENT_UNSTUN_CREW		57	/* Unstun the crew */
-#define EVENT_UNJAM_TURRET		58
-#define EVENT_UNJAM_AMMO		59
-#define EVENT_STEALTH_ARMOR		60
-#define EVENT_NSS 			61
-#define EVENT_TAG_RECYCLE		62
-#define EVENT_REMOVE_PODS		63
-#define EVENT_VEHICLE_EXTINGUISH	64
-#define EVENT_ENTER_HANGAR		65
-#define EVENT_CHANGING_HULLDOWN		66
+#define EVENT_STANDFAIL             60 
+#define EVENT_SLITECHANGING         61 
+#define EVENT_HEATCUTOFFCHANGING    62 
+#define EVENT_VEHICLEBURN           63  /* Burn a side of a vehicle */
+#define EVENT_UNSTUN_CREW           64  /* Unstun the crew */
+#define EVENT_UNJAM_TURRET          65 
+#define EVENT_UNJAM_AMMO            66
+#define EVENT_STEALTH_ARMOR         67
+#define EVENT_NSS                   68
+#define EVENT_TAG_RECYCLE           69
+#define EVENT_REMOVE_PODS           70
+#define EVENT_VEHICLE_EXTINGUISH    71
+#define EVENT_ENTER_HANGAR          72
+#define EVENT_CHANGING_HULLDOWN     73
 
 /* Not used in the stable branch, just devel */
-/* EVENT_BOGDOWNWAIT			67 */
+/* EVENT_BOGDOWNWAIT                74 */
 
-#define EVENT_SCHARGE_FAIL		68	/* SCHARGE roll for failure of stuff */
-#define EVENT_SCHARGE_REGEN		69	/* SCHARGE recovery during non-use */
+#define EVENT_SCHARGE_FAIL          75  /* SCHARGE roll for failure of stuff */
+#define EVENT_SCHARGE_REGEN         76  /* SCHARGE recovery during non-use */
 
-#define EVENT_CHECK_STAGGER		70
+#define EVENT_CHECK_STAGGER         77
 #ifdef BT_MOVEMENT_MODES
-#define EVENT_MOVEMODE			71
-#define EVENT_SIDESLIP			72
+#define EVENT_MOVEMODE              78
+#define EVENT_SIDESLIP              79
 #endif
 
 #define ETEMPL(a) void a (EVENT *e)

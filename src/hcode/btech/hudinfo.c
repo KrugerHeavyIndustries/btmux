@@ -1,6 +1,6 @@
 
 /*
- * $Id: hudinfo.c,v 1.3 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: hudinfo.c,v 1.2 2005/06/24 04:39:07 av1-op Exp $
  *
  * Copyright (c) 2002 Thomas Wouters <thomas@xs4all.net>
  *
@@ -10,7 +10,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "config.h"
 #include "config.h"
 #include "externs.h"
 #include "interface.h"

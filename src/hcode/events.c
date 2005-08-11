@@ -15,33 +15,34 @@
  */
 
 
+#include "muxevent.h"
 #include "mech.h"
 #include "mech.events.h"
 
 #define MAX_EVENTS 100
 
-int event_exec_count[MAX_EVENTS];
+int muxevent_exec_count[MAX_EVENTS];
 
-void event_count_initialize()
+void muxevent_count_initialize()
 {
     int i;
 
     for (i = 0; i < MAX_EVENTS; i++)
-	event_exec_count[i] = 0;
+	muxevent_exec_count[i] = 0;
 }
-static int event_mech_event[] = {
+static int muxevent_mech_event[] = {
     0, 1, 0, 1, 1, 1, 1, 1, 1, 0,	/* 0-9 */
     1, 0, 1, 1, 0, 1, 1, 0, 0, 1,	/*10-19 */
     1, 1, 1, 0, 0, 0, 0, 0, 0, 1,	/*20-29 */
     1, 0, 1, 1, 1, 0, 1, 1, 0, 1,	/*30-39 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,	/*40-49 */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   /*50-59 */
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   /*60-69 */
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0,   /*70-79 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
-static char *event_names[] = {
+static char *muxevent_names[] = {
     "NONAME",			/* 0 - */
     "Move",			/* 1 */
     "DHIT",			/* 2 */
@@ -117,6 +118,19 @@ static char *event_names[] = {
     "64",
     "65",
     "66",
+    "67",
+    "68",
+    "69",
+    "70",
+    "71",
+    "72",
+    "73",
+    "74",
+    "75",
+    "76",
+    "77",
+    "78",
+    "79",
     NULL
 };
 
@@ -130,11 +144,11 @@ void debug_EventTypes(dbref player, void *data, char *buffer)
 
 	for (i = 0; i < MAX_EVENTS; i++) {
 	    t[i] = i;
-	    tot_ev += event_exec_count[i];
+	    tot_ev += muxevent_exec_count[i];
 	}
 	for (i = 0; i < (MAX_EVENTS - 1); i++)
 	    for (j = i + 1; j < MAX_EVENTS; j++)
-		if (event_exec_count[t[i]] > event_exec_count[t[j]]) {
+		if (muxevent_exec_count[t[i]] > muxevent_exec_count[t[j]]) {
 		    int s = t[i];
 
 		    t[i] = t[j];
@@ -143,10 +157,10 @@ void debug_EventTypes(dbref player, void *data, char *buffer)
 	/* Then, display */
 	notify(player, "Event history (by use)");
 	for (i = 0; i < MAX_EVENTS; i++)
-	    if (event_exec_count[t[i]])
+	    if (muxevent_exec_count[t[i]])
 		notify(player, tprintf("%-3d%-20s%10d %.3f%%", t[i],
-			event_names[t[i]], event_exec_count[t[i]],
-			((float) 100.0 * event_exec_count[t[i]] /
+			muxevent_names[t[i]], muxevent_exec_count[t[i]],
+			((float) 100.0 * muxevent_exec_count[t[i]] /
 			    (tot_ev ? tot_ev : 1))));
 
 	return;
@@ -159,7 +173,7 @@ void debug_EventTypes(dbref player, void *data, char *buffer)
 	if (!j)
 	    continue;
 	tot += j;
-	notify(player, tprintf("%-20s%d", event_names[i], j));
+	notify(player, tprintf("%-20s%d", muxevent_names[i], j));
     }
     if (tot)
 	notify(player, "-------------------------------");
@@ -184,14 +198,14 @@ void prerun_event(EVENT * e)
     /* Magic 2-hour uptime means that we are 'supposedly' stable
        [ read: crashy as hell, but.. :> you never know ] */
     if (muxevent_tick <= 7200) {
-	if (event_mech_event[(int) e->type])
+	if (muxevent_mech_event[(int) e->type])
 	    sprintf(buf, "< %s event for #%d[%s] driven by #%d[%s] >",
-		event_names[(int) e->type], mech->mynum, GetMechID(mech),
+		muxevent_names[(int) e->type], mech->mynum, GetMechID(mech),
 		MechPilot(mech),
 		Good_obj(MechPilot(mech)) ? Name(MechPilot(mech)) :
 		"Nobody");
 	else
-	    sprintf(buf, "< %s event >", event_names[(int) e->type]);
+	    sprintf(buf, "< %s event >", muxevent_names[(int) e->type]);
 	mudstate.debug_cmd = buf;
     }
 #endif
@@ -199,5 +213,5 @@ void prerun_event(EVENT * e)
 
 void postrun_event(EVENT * e)
 {
-    event_exec_count[(int) e->type]++;
+    muxevent_exec_count[(int) e->type]++;
 }

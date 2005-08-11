@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.tech.do.c,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: mech.tech.do.c,v 1.4 2005/06/24 04:39:08 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -15,7 +15,6 @@
  */
 
 /* All the *_{succ|fail|econ} functions belong here */
-
 #include "config.h"
 
 #include "mech.h"

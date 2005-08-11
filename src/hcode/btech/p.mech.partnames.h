@@ -22,5 +22,5 @@ int find_matching_vlong_part(char *wc, int *ind, int *id, int *brand);
 int find_matching_long_part(char *wc, int *i, int *id, int *brand);
 int find_matching_short_part(char *wc, int *ind, int *id, int *brand);
 void ListForms(dbref player, void *data, char *buffer);
-
+char *partname_func(int index, int size);
 #endif				/* _P_MECH_PARTNAMES_H */

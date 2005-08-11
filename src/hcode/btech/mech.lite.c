@@ -1,6 +1,6 @@
 
 /*
- * $Id: mech.lite.c,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+ * $Id: mech.lite.c,v 1.1.1.1 2005/01/11 21:18:17 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

@@ -1,6 +1,6 @@
 
 /*
- * $Id: btmacros.h,v 1.4 2005/08/08 09:43:09 murrayma Exp $
+ * $Id: btmacros.h,v 1.8 2005/08/10 14:09:34 av1-op Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
@@ -25,6 +25,7 @@
 #include <math.h>
 #include "macros.h"
 #include "floatsim.h"
+#include "mech.h"
 #include "muxevent.h"
 #include "p.event.h"
 
@@ -39,6 +40,8 @@
 #define IsMountainsHex(map,x,y) (IsMountains(GetRTerrain(map,x,y)))
 #define IsRough(t) (t == ROUGH)
 #define IsRoughHex(map,x,y) (IsRough(GetRTerrain(map,x,y)))
+#define IsBuilding(t) (t == BUILDING)
+#define IsBuildingHex(map,x,y) (IsBuilding(GetRTerrain(map,x,y)))
 #define BaseElev(terr,elev) ((terr) == WATER ? -(elev) : (terr) == ICE ? -(elev) : (elev))
 #define Elevation(mech_map,x,y) \
   BaseElev(GetRTerrain(mech_map,x,y),GetElevation(mech_map,x,y))
@@ -194,9 +197,10 @@
 #define MechStartFY(a)	 	(a)->rd.startfy
 #define MechStartFZ(a)	 	(a)->rd.startfz
 #define MechStartSpin(a)	(a)->rd.sspin
-#define MechStatus(a)			(a)->rd.status
-#define MechStatus2(a)		(a)->rd.status2
-#define MechSpecialsStatus(a)		(a)->rd.specialsstatus
+#define MechStatus(a)       (a)->rd.status
+/* Adding in Exile's status2 and removing 3030's specialsstatus */
+#define MechStatus2(a)      (a)->rd.status2
+/* #define MechSpecialsStatus(a)		(a)->rd.specialsstatus */
 #define MechSwarmTarget(a) 	(a)->rd.swarming
 #define MechTacRange(a)	 	(a)->ud.tac_range
 #define MechTankCritStatus(a)	(a)->rd.tankcritstatus
@@ -269,7 +273,7 @@
 
 #define MAPEVENT(map,type,func,time,data) \
   muxevent_add(time, 0, type, func, (void *) (map), (void *) (data))
-#define StopDec(a)    muxevent_remote_type_data2(EVENT_DECORATION, (void *) a)
+#define StopDec(a)    muxevent_remove_type_data2(EVENT_DECORATION, (void *) a)
 
 #define OBJEVENT(obj,type,func,time,data) \
   muxevent_add(time, 0, type, func, (void *) obj, (void *) (data))
@@ -359,40 +363,41 @@ do { MechSections(a)[b].config &= ~SECTION_BREACHED ; SetWCheck(a); } while (0)
 
 #define CanJump(a) (!(Stabilizing(a)) && !(Jumping(a)))
 
-/* #define Jumping(a)           muxevent_count_type_Data(EVENT_JUMP,(void *) a) */
+/* #define Jumping(a)           muxevent_count_type_data(EVENT_JUMP,(void *) a) */
 
 /* crew stunned related events and macros */
-#define CrewStunned(a)			 muxevent_count_type_Data(EVENT_UNSTUN_CREW, (void *) a)
+#define CrewStunned(a)			 muxevent_count_type_data(EVENT_UNSTUN_CREW, (void *) a)
 #define StunCrew(a)					 MECHEVENT(a, EVENT_UNSTUN_CREW, unstun_crew_event, 60, 0)
 
-#define Burning(a)           muxevent_count_type_Data(EVENT_VEHICLEBURN, (void *) a)
-#define BurningSide(a,side)  muxevent_count_type_Data_data(EVENT_VEHICLEBURN, (void *) a, (void *) side)
-#define StopBurning(a)       muxevent_remote_type_data(EVENT_VEHICLEBURN, (void *) a)
-#define StopBurningSide(a,side) muxevent_remote_type_data_data(EVENT_VEHICLEBURN, (void *) a, (void *) side)
-#define Extinguishing(a)     muxevent_count_type_Data(EVENT_VEHICLE_EXTINGUISH, (void *) a)
+#define Burning(a)           muxevent_count_type_data(EVENT_VEHICLEBURN, (void *) a)
+#define BurningSide(a,side)  muxevent_count_type_data_data(EVENT_VEHICLEBURN, (void *) a, (void *) side)
+#define StopBurning(a)       muxevent_remove_type_data(EVENT_VEHICLEBURN, (void *) a)
+#define StopBurningSide(a,side) muxevent_remove_type_data_data(EVENT_VEHICLEBURN, (void *) a, (void *) side)
+#define Extinguishing(a)     muxevent_count_type_data(EVENT_VEHICLE_EXTINGUISH, (void *) a)
 #define Jellied(a)           (MechCritStatus(a) & JELLIED)
-#define Exploding(a)         muxevent_count_type_Data(EVENT_EXPLODE, (void *) a)
-#define Dumping(a)           muxevent_count_type_Data(EVENT_DUMP, (void *) a)
-#define Dumping_Type(a,type) (muxevent_count_type_Data_data(EVENT_DUMP, (void *) a, (void *) type) || muxevent_count_type_Data_data(EVENT_DUMP, (void *) a, (void *) 0))
+#define Exploding(a)         muxevent_count_type_data(EVENT_EXPLODE, (void *) a)
+#define Dumping(a)           muxevent_count_type_data(EVENT_DUMP, (void *) a)
+#define Dumping_Type(a,type) (muxevent_count_type_data_data(EVENT_DUMP, (void *) a, (void *) type) || muxevent_count_type_data_data(EVENT_DUMP, (void *) a, (void *) 0))
 #define DumpingData(a,data2) muxevent_get_type_data(EVENT_DUMP, (void *) a, (void *) data2)
-#define ChangingLateral(a)   muxevent_count_type_Data(EVENT_LATERAL,(void *) a)
-#define Seeing(a)            muxevent_count_type_Data(EVENT_PLOS,(void *) a)
-#define Locking(a)           muxevent_count_type_Data(EVENT_LOCK,(void *) a)
-#define Hiding(a)            muxevent_count_type_Data(EVENT_HIDE,(void *) a)
+#define ChangingLateral(a)   muxevent_count_type_data(EVENT_LATERAL,(void *) a)
+#define Seeing(a)            muxevent_count_type_data(EVENT_PLOS,(void *) a)
+#define Locking(a)           muxevent_count_type_data(EVENT_LOCK,(void *) a)
+#define Hiding(a)            muxevent_count_type_data(EVENT_HIDE,(void *) a)
+#define HasCamo(a)           (MechSpecials2(a) & CAMO_TECH)
 #define Digging(a)           (MechTankCritStatus(a) & DIGGING_IN)
 #define MechDugIn(a)         (MechTankCritStatus(mech) & DUG_IN)
-#define ChangingHulldown(a)  muxevent_count_type_Data(EVENT_CHANGING_HULLDOWN,(void *) a)
+#define ChangingHulldown(a)  muxevent_count_type_data(EVENT_CHANGING_HULLDOWN,(void *) a)
 #define IsHulldown(a)	     (MechStatus(a) & HULLDOWN)
-#define Falling(a)           muxevent_count_type_Data(EVENT_FALL,(void *) a)
-#define Moving(a)            muxevent_count_type_Data(EVENT_MOVE,(void *) a)
-#define RemovingPods(a)      muxevent_count_type_Data(EVENT_REMOVE_PODS,(void *) a)
-#define SensorChange(a)      muxevent_count_type_Data(EVENT_SCHANGE,(void *) a)
-#define Stabilizing(a)       muxevent_count_type_Data(EVENT_JUMPSTABIL,(void *) a)
-#define Standrecovering(a)   muxevent_count_type_Data(EVENT_STANDFAIL, (void *) a)
-#define Standing(a)          muxevent_count_type_Data(EVENT_STAND,(void *) a)
-#define Starting(a)          muxevent_count_type_Data(EVENT_STARTUP,(void *) a)
-#define Recovering(a)        muxevent_count_type_Data(EVENT_RECOVERY,(void *) a)
-#define TakingOff(a)         muxevent_count_type_Data(EVENT_TAKEOFF,(void *) a)
+#define Falling(a)           muxevent_count_type_data(EVENT_FALL,(void *) a)
+#define Moving(a)            muxevent_count_type_data(EVENT_MOVE,(void *) a)
+#define RemovingPods(a)      muxevent_count_type_data(EVENT_REMOVE_PODS,(void *) a)
+#define SensorChange(a)      muxevent_count_type_data(EVENT_SCHANGE,(void *) a)
+#define Stabilizing(a)       muxevent_count_type_data(EVENT_JUMPSTABIL,(void *) a)
+#define Standrecovering(a)   muxevent_count_type_data(EVENT_STANDFAIL, (void *) a)
+#define Standing(a)          muxevent_count_type_data(EVENT_STAND,(void *) a)
+#define Starting(a)          muxevent_count_type_data(EVENT_STARTUP,(void *) a)
+#define Recovering(a)        muxevent_count_type_data(EVENT_RECOVERY,(void *) a)
+#define TakingOff(a)         muxevent_count_type_data(EVENT_TAKEOFF,(void *) a)
 #define NextRecycle(a)       muxevent_first_type_data(EVENT_RECYCLE,(void *) a)
 #define Recycling(a)         (NextRecycle(a) >= 0 ? 1 : 0)
 #define FlyingT(a)           (is_aero(a) || MechMove(a) == MOVE_VTOL)
@@ -408,29 +413,29 @@ do { MaybeRecycle(a,c) ; (a)->ud.sections[b].recycle=c; } while (0)
 #define UpdateRecycling(a) \
 do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_tick) \
     recycle_weaponry(a); } while (0)
-#define StopExploding(a)    muxevent_remote_type_data(EVENT_EXPLODE, (void *) a)
-#define StopLateral(a)      muxevent_remote_type_data(EVENT_LATERAL,(void *) a)
-#define StopMasc(a)         muxevent_remote_type_data(EVENT_MASC_FAIL,(void *) a)
-#define StopMascR(a)        muxevent_remote_type_data(EVENT_MASC_REGEN,(void *) a)
-#define StopSCharge(a)      muxevent_remote_type_data(EVENT_SCHARGE_FAIL,(void *) a)
-#define StopSChargeR(a)     muxevent_remote_type_data(EVENT_SCHARGE_REGEN,(void *) a)
-#define StopDump(a)          muxevent_remote_type_data(EVENT_DUMP, (void *) a)
-#define StopJump(a)          muxevent_remote_type_data(EVENT_JUMP, (void *) a)
-#define StopOOD(a)          muxevent_remote_type_data(EVENT_OOD, (void *) a)
-#define StopMoving(a)        muxevent_remote_type_data(EVENT_MOVE, (void *) a)
-#define StopStand(a)         muxevent_remote_type_data(EVENT_STAND, (void *) a)
-#define StopStabilization(a) muxevent_remote_type_data(EVENT_JUMPSTABIL, (void *) a)
-#define StopSensorChange(a)  muxevent_remote_type_data(EVENT_SCHANGE,(void *) a)
-#define StopStartup(a)       muxevent_remote_type_data(EVENT_STARTUP, (void *) a)
-#define StopHiding(a)          muxevent_remote_type_data(EVENT_HIDE, (void *) a)
-#define StopDigging(a)          muxevent_remote_type_data(EVENT_DIG, (void *) a);MechTankCritStatus(a) &= ~DIGGING_IN
-#define StopHullDown(a)      muxevent_remote_type_data(EVENT_CHANGING_HULLDOWN, (void *) a)
-#define StopTakeOff(a)       muxevent_remote_type_data(EVENT_TAKEOFF, (void *) a)
-#define UnjammingTurret(a)   muxevent_count_type_Data(EVENT_UNJAM_TURRET, (void *) a)
-#define UnJammingAmmo(a)		 muxevent_count_type_Data(EVENT_UNJAM_AMMO, (void *) a)
+#define StopExploding(a)    muxevent_remove_type_data(EVENT_EXPLODE, (void *) a)
+#define StopLateral(a)      muxevent_remove_type_data(EVENT_LATERAL,(void *) a)
+#define StopMasc(a)         muxevent_remove_type_data(EVENT_MASC_FAIL,(void *) a)
+#define StopMascR(a)        muxevent_remove_type_data(EVENT_MASC_REGEN,(void *) a)
+#define StopSCharge(a)      muxevent_remove_type_data(EVENT_SCHARGE_FAIL,(void *) a)
+#define StopSChargeR(a)     muxevent_remove_type_data(EVENT_SCHARGE_REGEN,(void *) a)
+#define StopDump(a)          muxevent_remove_type_data(EVENT_DUMP, (void *) a)
+#define StopJump(a)          muxevent_remove_type_data(EVENT_JUMP, (void *) a)
+#define StopOOD(a)          muxevent_remove_type_data(EVENT_OOD, (void *) a)
+#define StopMoving(a)        muxevent_remove_type_data(EVENT_MOVE, (void *) a)
+#define StopStand(a)         muxevent_remove_type_data(EVENT_STAND, (void *) a)
+#define StopStabilization(a) muxevent_remove_type_data(EVENT_JUMPSTABIL, (void *) a)
+#define StopSensorChange(a)  muxevent_remove_type_data(EVENT_SCHANGE,(void *) a)
+#define StopStartup(a)       muxevent_remove_type_data(EVENT_STARTUP, (void *) a)
+#define StopHiding(a)          muxevent_remove_type_data(EVENT_HIDE, (void *) a)
+#define StopDigging(a)          muxevent_remove_type_data(EVENT_DIG, (void *) a);MechTankCritStatus(a) &= ~DIGGING_IN
+#define StopHullDown(a)      muxevent_remove_type_data(EVENT_CHANGING_HULLDOWN, (void *) a)
+#define StopTakeOff(a)       muxevent_remove_type_data(EVENT_TAKEOFF, (void *) a)
+#define UnjammingTurret(a)   muxevent_count_type_data(EVENT_UNJAM_TURRET, (void *) a)
+#define UnJammingAmmo(a)		 muxevent_count_type_data(EVENT_UNJAM_AMMO, (void *) a)
 #define UnJammingAmmoData(a,type) muxevent_get_type_data(EVENT_UNJAM_AMMO, (void *) a, (void *) type)
-#define WeaponUnJammingAmmo(a,type) muxevent_count_type_Data_data(EVENT_UNJAM_AMMO, (void *) a, (void *) type)
-#define EnteringHangar(a)		 muxevent_count_type_Data(EVENT_ENTER_HANGAR, (void *) a)
+#define WeaponUnJammingAmmo(a,type) muxevent_count_type_data_data(EVENT_UNJAM_AMMO, (void *) a, (void *) type)
+#define EnteringHangar(a)		 muxevent_count_type_data(EVENT_ENTER_HANGAR, (void *) a)
 #define OODing(a)            MechCocoon(a)
 #define C_OODing(a)          (MechCocoon(a) > 0)
 #define InSpecial(a)         (MechStatus(a) & UNDERSPECIAL)
@@ -451,17 +456,17 @@ do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_ti
 #define FallCentersTorso(a)  MechStatus(a) &= ~(TORSO_RIGHT|TORSO_LEFT|FLIPPED_ARMS)
 #define MakeMechStand(a)     MechStatus(a) &= ~FALLEN;MarkForLOSUpdate(a)
 #define StandMechTime(a)     (30 / BOUNDED(1,(MechMaxSpeed(a)/MP2),30))
-#define StopLock(a)          muxevent_remote_type_data(EVENT_LOCK, (void *) a);\
+#define StopLock(a)          muxevent_remove_type_data(EVENT_LOCK, (void *) a);\
 MechStatus(a) &= ~LOCK_MODES
-#define SearchlightChanging(a)	muxevent_count_type_Data(EVENT_SLITECHANGING, (void *) a)
-#define HeatcutoffChanging(a)	muxevent_count_type_Data(EVENT_HEATCUTOFFCHANGING, (void *) a)
+#define SearchlightChanging(a)	muxevent_count_type_data(EVENT_SLITECHANGING, (void *) a)
+#define HeatcutoffChanging(a)	muxevent_count_type_data(EVENT_HEATCUTOFFCHANGING, (void *) a)
 
 #define SeeWhenShutdown(a)	(MechStatus(mech) & AUTOCON_WHEN_SHUTDOWN)
 
 #define LoseLock(a)         StopLock(a);MechTarget(a)=-1;MechTargX(a)=-1;MechTargY(a)=-1;if (MechAim(a) != NUM_SECTIONS) { mech_notify(a, MECHALL, "Location-specific targeting powers down."); MechAim(a) = NUM_SECTIONS; }
 #ifdef ADVANCED_LOS
 #define StartSeeing(a) \
-MECHEVENT(a,EVENT_PLOS,mech_plos_event,INITIAL_PLOS_TICK,0)
+    MECHEVENT(a,EVENT_PLOS,mech_plos_event,INITIAL_PLOS_TICK,0)
 #else
 #define StartSeeing(a)
 #endif
@@ -473,7 +478,7 @@ MECHEVENT(a,EVENT_PLOS,mech_plos_event,INITIAL_PLOS_TICK,0)
 #define Shutdown(a)          \
 	do { if (!Destroyed(a)) { UpdateRecycling(a); MechSpeed(a) = 0.0; \
 		MechCritStatus(a) &= ~(HEATCUTOFF); MechStatus(a) &= ~(STARTED|MASC_ENABLED); \
-		MechSpecialsStatus(a) &= ~(ECM_ENABLED|ECCM_ENABLED|PER_ECM_ENABLED|PER_ECCM_ENABLED|ANGEL_ECM_ENABLED|ANGEL_ECCM_ENABLED|NULLSIGSYS_ON|STH_ARMOR_ON);\
+		MechStatus2(a) &= ~(ECM_ENABLED|ECCM_ENABLED|PER_ECM_ENABLED|PER_ECCM_ENABLED|ANGEL_ECM_ENABLED|ANGEL_ECCM_ENABLED|NULLSIGSYS_ON|STH_ARMOR_ON);\
 		MechDesiredSpeed(a) = 0.0; }; \
 		MechPilot(a) = -1; MechTarget(a) = -1; StopStartup(a); \
 		StopMoveMode(a); MechStatus2(a) &= ~(MOVE_MODES); \
@@ -539,6 +544,17 @@ MECHEVENT(a,EVENT_PLOS,mech_plos_event,INITIAL_PLOS_TICK,0)
 #define SendTrigger(msg)         send_channel("MineTriggers",msg)
 #define SendXP(msg)              send_channel("MechXP",msg)
 #define SendDSInfo(msg)          send_channel("DSInfo",msg)
+
+/*
+ * Exile Added Channel Message Emits
+ */
+#define SendAttackEmits(msg)     send_channel("MechAttackEmits",msg)
+#define SendAttacks(msg)         send_channel("MechAttacks",msg)
+#define SendAttackXP(msg)        send_channel("MechAttackXP",msg)
+#define SendBTHDebug(msg)        send_channel("MechBTHDebug",msg)
+#define SendFreqs(msg)           send_channel("MechFreqs",msg)
+#define SendPilotXP(msg)         send_channel("MechPilotXP",msg)
+#define SendTechXP(msg)          send_channel("MechTechXP",msg)
 
 /*
  * This is the prototype for functions
@@ -670,7 +686,7 @@ if (FlyingT(mech)) { \
 #define StartSpinning(mech) (MechCritStatus(mech) |= SPINNING)
 
 #define MechLit(mech)		(MechCritStatus(mech) & SLITE_LIT)
-#define MechLites(mech)		(MechSpecialsStatus(mech) & SLITE_ON)
+#define MechLites(mech)		(MechStatus2(mech) & SLITE_ON)
 #define IsLit(mech)		(MechLit(mech) || MechLites(mech))
 
 #define OkayCritSect(sect,num,ok) OkayCritSect2(mech,sect,num,ok)
@@ -695,84 +711,90 @@ if (FlyingT(mech)) { \
 #define ECMActive(mech)				(ECMEnabled(mech) && !ECMCountered(mech))
 #define ECCMActive(mech)			ECCMEnabled(mech)
 
-#define ECMEnabled(mech)			(MechSpecialsStatus(mech) & ECM_ENABLED)
-#define ECCMEnabled(mech)			(MechSpecialsStatus(mech) & ECCM_ENABLED)
+#define ECMEnabled(mech)			(MechStatus2(mech) & ECM_ENABLED)
+#define ECCMEnabled(mech)			(MechStatus2(mech) & ECCM_ENABLED)
 
-#define EnableECM(mech) 			(MechSpecialsStatus(mech) |= ECM_ENABLED)
-#define EnableECCM(mech) 			(MechSpecialsStatus(mech) |= ECCM_ENABLED)
+#define EnableECM(mech) 			(MechStatus2(mech) |= ECM_ENABLED)
+#define EnableECCM(mech) 			(MechStatus2(mech) |= ECCM_ENABLED)
 
-#define DisableECM(mech) 			(MechSpecialsStatus(mech) &= ~ECM_ENABLED)
-#define DisableECCM(mech)			(MechSpecialsStatus(mech) &= ~ECCM_ENABLED)
+#define DisableECM(mech) 			(MechStatus2(mech) &= ~ECM_ENABLED)
+#define DisableECCM(mech)			(MechStatus2(mech) &= ~ECCM_ENABLED)
 
 #define PerECMActive(mech)		(PerECMEnabled(mech) && !ECMCountered(mech))
 #define PerECCMActive(mech)		PerECCMEnabled(mech)
 
-#define PerECMEnabled(mech)		(MechSpecialsStatus(mech) & PER_ECM_ENABLED)
-#define PerECCMEnabled(mech)	(MechSpecialsStatus(mech) & PER_ECCM_ENABLED)
+#define PerECMEnabled(mech)		(MechStatus2(mech) & PER_ECM_ENABLED)
+#define PerECCMEnabled(mech)	(MechStatus2(mech) & PER_ECCM_ENABLED)
 
-#define EnablePerECM(mech) 		(MechSpecialsStatus(mech) |= PER_ECM_ENABLED)
-#define EnablePerECCM(mech) 	(MechSpecialsStatus(mech) |= PER_ECCM_ENABLED)
+#define EnablePerECM(mech) 		(MechStatus2(mech) |= PER_ECM_ENABLED)
+#define EnablePerECCM(mech) 	(MechStatus2(mech) |= PER_ECCM_ENABLED)
 
-#define DisablePerECM(mech) 	(MechSpecialsStatus(mech) &= ~PER_ECM_ENABLED)
-#define DisablePerECCM(mech)	(MechSpecialsStatus(mech) &= ~PER_ECCM_ENABLED)
+#define DisablePerECM(mech) 	(MechStatus2(mech) &= ~PER_ECM_ENABLED)
+#define DisablePerECCM(mech)	(MechStatus2(mech) &= ~PER_ECCM_ENABLED)
 
 #define AnyECMDisturbed(mech)		(ECMDisturbed(mech) || AngelECMDisturbed(mech))
 #define AnyECMProtected(mech)		(ECMProtected(mech) || AngelECMProtected(mech))
 #define AnyECMActive(mech)		(ECMActive(mech) || AngelECMActive(mech))
 #define AnyECCMActive(mech)		(ECCMActive(mech) || AngelECCMActive(mech))
 
-#define ECMDisturbed(mech)		(MechSpecialsStatus(mech) & ECM_DISTURBANCE)
-#define ECMProtected(mech)		((MechSpecialsStatus(mech) & ECM_PROTECTED) || ECMActive(mech) || PerECMActive(mech))
+#define ECMDisturbed(mech)		(MechStatus2(mech) & ECM_DISTURBANCE)
+#define ECMProtected(mech)		((MechStatus2(mech) & ECM_PROTECTED) || ECMActive(mech) || PerECMActive(mech))
 
-#define ECMCountered(mech)		(MechSpecialsStatus(mech) & ECM_COUNTERED)
-#define SetECMCountered(mech)		(MechSpecialsStatus(mech) |= ECM_COUNTERED)
-#define UnSetECMCountered(mech)	(MechSpecialsStatus(mech) &= ~ECM_COUNTERED)
+#define ECMCountered(mech)		(MechStatus2(mech) & ECM_COUNTERED)
+#define SetECMCountered(mech)		(MechStatus2(mech) |= ECM_COUNTERED)
+#define UnSetECMCountered(mech)	(MechStatus2(mech) &= ~ECM_COUNTERED)
 
-#define SetECMDisturbed(mech)		(MechSpecialsStatus(mech) |= ECM_DISTURBANCE)
-#define UnSetECMDisturbed(mech)	(MechSpecialsStatus(mech) &= ~ECM_DISTURBANCE)
+#define SetECMDisturbed(mech)		(MechStatus2(mech) |= ECM_DISTURBANCE)
+#define UnSetECMDisturbed(mech)	(MechStatus2(mech) &= ~ECM_DISTURBANCE)
 
-#define SetECMProtected(mech)		(MechSpecialsStatus(mech) |= ECM_PROTECTED)
-#define UnSetECMProtected(mech)	(MechSpecialsStatus(mech) &= ~ECM_PROTECTED)
+#define SetECMProtected(mech)		(MechStatus2(mech) |= ECM_PROTECTED)
+#define UnSetECMProtected(mech)	(MechStatus2(mech) &= ~ECM_PROTECTED)
 
-#define HasWorkingECMSuite(mech)	(((MechSpecials(mech) & ECM_TECH) && !(MechSpecialsStatus(mech) & ECM_DESTROYED)) || ((MechSpecials2(mech) & ANGEL_ECM_TECH) && !(MechSpecialsStatus(mech) & ANGEL_ECM_DESTROYED)) || (MechInfantrySpecials(mech) & FC_INFILTRATORII_STEALTH_TECH))
+/* Macro to check for ALL ECM types */
+#define HasWorkingECMSuite(mech)    (((MechSpecials(mech) & ECM_TECH) && \
+                                    !(MechStatus2(mech) & ECM_DESTROYED)) || \
+                                    ((MechSpecials2(mech) & ANGEL_ECM_TECH) && \
+                                    !(MechStatus2(mech) & ANGEL_ECM_DESTROYED)) || \
+                                    (MechInfantrySpecials(mech) & FC_INFILTRATORII_STEALTH_TECH))
 
 /* Angel ECM macros */
 
 #define AngelECMActive(mech)		(AngelECMEnabled(mech) && !ECMCountered(mech))
 #define AngelECCMActive(mech)		AngelECCMEnabled(mech)
 
-#define AngelECMEnabled(mech)		(MechSpecialsStatus(mech) & ANGEL_ECM_ENABLED)
-#define AngelECCMEnabled(mech)	(MechSpecialsStatus(mech) & ANGEL_ECCM_ENABLED)
+#define AngelECMEnabled(mech)		(MechStatus2(mech) & ANGEL_ECM_ENABLED)
+#define AngelECCMEnabled(mech)	(MechStatus2(mech) & ANGEL_ECCM_ENABLED)
 
-#define EnableAngelECM(mech) 		(MechSpecialsStatus(mech) |= ANGEL_ECM_ENABLED)
-#define EnableAngelECCM(mech) 	(MechSpecialsStatus(mech) |= ANGEL_ECCM_ENABLED)
+#define EnableAngelECM(mech) 		(MechStatus2(mech) |= ANGEL_ECM_ENABLED)
+#define EnableAngelECCM(mech) 	(MechStatus2(mech) |= ANGEL_ECCM_ENABLED)
 
-#define DisableAngelECM(mech) 	(MechSpecialsStatus(mech) &= ~ANGEL_ECM_ENABLED)
-#define DisableAngelECCM(mech)	(MechSpecialsStatus(mech) &= ~ANGEL_ECCM_ENABLED)
+#define DisableAngelECM(mech) 	(MechStatus2(mech) &= ~ANGEL_ECM_ENABLED)
+#define DisableAngelECCM(mech)	(MechStatus2(mech) &= ~ANGEL_ECCM_ENABLED)
 
-#define AngelECMProtected(mech)	((MechSpecialsStatus(mech) & ANGEL_ECM_PROTECTED) || AngelECMActive(mech))
-#define AngelECMDisturbed(mech)	(MechSpecialsStatus(mech) & ANGEL_ECM_DISTURBED)
+#define AngelECMProtected(mech)	((MechStatus2(mech) & ANGEL_ECM_PROTECTED) || AngelECMActive(mech))
+#define AngelECMDisturbed(mech)	(MechStatus2(mech) & ANGEL_ECM_DISTURBED)
 
-#define SetAngelECMDisturbed(mech)	 (MechSpecialsStatus(mech) |= ANGEL_ECM_DISTURBED)
-#define UnSetAngelECMDisturbed(mech) (MechSpecialsStatus(mech) &= ~ANGEL_ECM_DISTURBED)
+#define SetAngelECMDisturbed(mech)	 (MechStatus2(mech) |= ANGEL_ECM_DISTURBED)
+#define UnSetAngelECMDisturbed(mech) (MechStatus2(mech) &= ~ANGEL_ECM_DISTURBED)
 
-#define SetAngelECMProtected(mech)	 (MechSpecialsStatus(mech) |= ANGEL_ECM_PROTECTED)
-#define UnSetAngelECMProtected(mech) (MechSpecialsStatus(mech) &= ~ANGEL_ECM_PROTECTED)
+#define SetAngelECMProtected(mech)	 (MechStatus2(mech) |= ANGEL_ECM_PROTECTED)
+#define UnSetAngelECMProtected(mech) (MechStatus2(mech) &= ~ANGEL_ECM_PROTECTED)
 
-#define HasWorkingAngelECMSuite(mech) ((MechSpecials2(mech) & ANGEL_ECM_TECH) && !(MechSpecialsStatus(mech) & ANGEL_ECM_DESTROYED))
+#define HasWorkingAngelECMSuite(mech)   ((MechSpecials2(mech) & ANGEL_ECM_TECH) && \
+                                        !(MechStatus2(mech) & ANGEL_ECM_DESTROYED))
 
 /* Stealth system macros */
-#define StealthArmorActive(mech)		(MechSpecialsStatus(mech) & STH_ARMOR_ON)
-#define EnableStealthArmor(mech)		(MechSpecialsStatus(mech) |= STH_ARMOR_ON)
-#define DisableStealthArmor(mech)		(MechSpecialsStatus(mech) &= ~STH_ARMOR_ON)
-#define StealthArmorChanging(mech)	muxevent_count_type_Data(EVENT_STEALTH_ARMOR, (void *) mech)
+#define StealthArmorActive(mech)		(MechStatus2(mech) & STH_ARMOR_ON)
+#define EnableStealthArmor(mech)		(MechStatus2(mech) |= STH_ARMOR_ON)
+#define DisableStealthArmor(mech)		(MechStatus2(mech) &= ~STH_ARMOR_ON)
+#define StealthArmorChanging(mech)	muxevent_count_type_data(EVENT_STEALTH_ARMOR, (void *) mech)
 
 #define DestroyNullSigSys(mech)	(MechCritStatus(mech) |= NSS_DESTROYED)
 #define NullSigSysDest(mech)	  (MechCritStatus(mech) & NSS_DESTROYED)
-#define NullSigSysActive(mech)  (MechSpecialsStatus(mech) & NULLSIGSYS_ON)
-#define EnableNullSigSys(mech)  (MechSpecialsStatus(mech) |= NULLSIGSYS_ON)
-#define DisableNullSigSys(mech) (MechSpecialsStatus(mech) &= ~NULLSIGSYS_ON)
-#define NullSigSysChanging(mech) muxevent_count_type_Data(EVENT_NSS, (void *) mech)
+#define NullSigSysActive(mech)  (MechStatus2(mech) & NULLSIGSYS_ON)
+#define EnableNullSigSys(mech)  (MechStatus2(mech) |= NULLSIGSYS_ON)
+#define DisableNullSigSys(mech) (MechStatus2(mech) &= ~NULLSIGSYS_ON)
+#define NullSigSysChanging(mech) muxevent_count_type_data(EVENT_NSS, (void *) mech)
 
 /* C3 macros */
 
@@ -799,7 +821,7 @@ if (FlyingT(mech)) { \
 #define HasTAG(mech)						( (MechSpecials2(mech) & TAG_TECH) || HasC3m(mech) )
 #define TAGTarget(mech)					(mech)->sd.tagTarget
 #define TaggedBy(mech)			    (mech)->sd.taggedBy
-#define TagRecycling(a)          muxevent_count_type_Data(EVENT_TAG_RECYCLE,(void *) a)
+#define TagRecycling(a)          muxevent_count_type_data(EVENT_TAG_RECYCLE,(void *) a)
 
 /* Club stuff */
 #define CarryingClub(mech)			( (MechSections(mech)[RARM].specials & CARRYING_CLUB) || (MechSections(mech)[LARM].specials & CARRYING_CLUB))
@@ -807,9 +829,9 @@ if (FlyingT(mech)) { \
 
 /* New stagger stuff */
 #define Staggering(mech)        ( StaggerLevel(mech) > 0 )
-#define CheckingStaggerDamage(mech) muxevent_count_type_Data(EVENT_CHECK_STAGGER,(void *) mech)
+#define CheckingStaggerDamage(mech) muxevent_count_type_data(EVENT_CHECK_STAGGER,(void *) mech)
 #define StartStaggerCheck(mech)   do { MECHEVENT(mech, EVENT_CHECK_STAGGER, check_stagger_event, 30, 0); SendDebug(tprintf("Starting stagger check for %d.", mech->mynum)); } while (0)
-#define StopStaggerCheck(mech)    do { muxevent_remote_type_data(EVENT_CHECK_STAGGER, (void *) mech); (mech)->rd.staggerDamage=0; (mech)->rd.lastStaggerNotify=0; SendDebug(tprintf("Stopping stagger check for %d.", mech->mynum)); } while (0)
+#define StopStaggerCheck(mech)    do { muxevent_remove_type_data(EVENT_CHECK_STAGGER, (void *) mech); (mech)->rd.staggerDamage=0; (mech)->rd.lastStaggerNotify=0; SendDebug(tprintf("Stopping stagger check for %d.", mech->mynum)); } while (0)
 #define StaggerDamage(mech)     ( (mech)->rd.staggerDamage )
 #define LastStaggerNotify(mech) ( (mech)->rd.lastStaggerNotify )
 #define StaggerLevel(mech)      ( (mech)->rd.staggerDamage / 20 )
@@ -826,15 +848,15 @@ if (FlyingT(mech)) { \
 			((map)->LOSinfo[from->mapnumber][to->mapnumber])
 
 #ifdef BT_MOVEMENT_MODES
-#define MoveModeChange(a)	muxevent_count_type_Data(EVENT_MOVEMODE,(void *) a)
+#define MoveModeChange(a)	muxevent_count_type_data(EVENT_MOVEMODE,(void *) a)
 #define MoveModeLock(a)		(MechStatus2(a) & MOVE_MODES_LOCK || (MoveModeChange(a) && !(MechStatus2(a) & DODGING)))
-#define MoveModeData(a)		muxevent_count_type_Data_firstev(EVENT_MOVEMODE, (void *) a)
-#define StopMoveMode(a)		muxevent_remote_type_data(EVENT_MOVEMODE, (void *) a)
+#define MoveModeData(a)		muxevent_count_type_data_firstev(EVENT_MOVEMODE, (void *) a)
+#define StopMoveMode(a)		muxevent_remove_type_data(EVENT_MOVEMODE, (void *) a)
 #define Sprinting(a)		(MechStatus2(a) & SPRINTING)
 #define Evading(a)		(MechStatus2(a) & EVADING)
 #define Dodging(a)		(MechStatus2(a) & DODGING)
-#define SideSlipping(a)		muxevent_count_type_Data(EVENT_SIDESLIP, (void *) a)
-#define StopSideslip(a)		muxevent_remote_type_data(EVENT_SIDESLIP, (void *) a)
+#define SideSlipping(a)		muxevent_count_type_data(EVENT_SIDESLIP, (void *) a)
+#define StopSideslip(a)		muxevent_remove_type_data(EVENT_SIDESLIP, (void *) a)
 #endif
 											   
 #endif				/* BTMACROS_H */

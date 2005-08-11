@@ -4,7 +4,7 @@
  */
 
 /*
- * $Id: functions.c,v 1.4 2005/08/08 09:43:07 murrayma Exp $ 
+ * $Id: functions.c,v 1.11 2005/07/01 14:01:02 av1-op Exp $ 
  */
 
 #include "copyright.h"
@@ -14,7 +14,6 @@
 #include <math.h>
 
 #include "mudconf.h"
-#include "config.h"
 #include "db.h"
 #include "flags.h"
 #include "powers.h"
@@ -38,7 +37,8 @@ extern NAMETAB indiv_attraccess_nametab[];
 
 extern int game_lag(void);
 
-extern void cf_log_notfound(dbref player, char *cmd, const char *thingname, char *thing);
+extern void cf_log_notfound(dbref player, char *cmd,
+	const char *thingname, char *thing);
 
 /*
  * Function definitions from funceval.c 
@@ -67,7 +67,7 @@ XFUNCTION(fun_btcritstatus);
 XFUNCTION(fun_btarmorstatus);
 XFUNCTION(fun_btsetarmorstatus);
 XFUNCTION(fun_btweaponstatus);
-XFUNCTION(fun_btthreshhold);
+XFUNCTION(fun_btthreshold);
 XFUNCTION(fun_btdamagemech);
 XFUNCTION(fun_bttechstatus);
 XFUNCTION(fun_btpartmatch);
@@ -117,6 +117,7 @@ XFUNCTION(fun_btgetbv);
 XFUNCTION(fun_btgetbv_ref);
 XFUNCTION(fun_bttechlist);
 XFUNCTION(fun_bttechlist_ref);
+XFUNCTION(fun_btpayload_ref);
 XFUNCTION(fun_btshowstatus_ref);
 XFUNCTION(fun_btshowwspecs_ref);
 XFUNCTION(fun_btshowcritstatus_ref);
@@ -5201,6 +5202,106 @@ FUNCTION(fun_poll)
 {
     safe_str(mudstate.doing_hdr, buff, bufc);
 }
+
+/* ----------------------------------------------------------------------
+ ** fun_pairs: take an attr off an object and count the # of
+ ** {[()]} in that attribute and return it as a list
+ ** Modified from fun_get
+ ** Dany - 06/2005
+ */
+FUNCTION(fun_pairs)
+{
+    dbref thing, aowner;
+    int attrib, free_buffer, aflags;
+    ATTR *attr;
+    char *atr_gotten;
+    struct boolexp *bool;
+
+    char *tmp_char;
+    int right_brace = 0, left_brace = 0, right_square_bracket = 0,
+        left_square_bracket = 0, right_parenthesis = 0,
+        left_parenthesis = 0;
+
+    if (!parse_attrib(player, fargs[0], &thing, &attrib)) {
+	    safe_str("#-1 NO MATCH", buff, bufc);
+	    return;
+    }
+    if (attrib == NOTHING) {
+	    return;
+    }
+    free_buffer = 1;
+    attr = atr_num(attrib);	/*
+				             * We need the attr's flags for this: 
+				             */
+    if (!attr) {
+	    return;
+    }
+    if (attr->flags & AF_IS_LOCK) {
+	    atr_gotten = atr_get(thing, attrib, &aowner, &aflags);
+	    if (Read_attr(player, thing, attr, aowner, aflags)) {
+	        bool = parse_boolexp(player, atr_gotten, 1);
+	        free_lbuf(atr_gotten);
+	        atr_gotten = unparse_boolexp(player, bool);
+	        free_boolexp(bool);
+	    } else {
+	        free_lbuf(atr_gotten);
+	        atr_gotten = (char *) "#-1 PERMISSION DENIED";
+	    }
+	    free_buffer = 0;
+    } else {
+	    atr_gotten = atr_pget(thing, attrib, &aowner, &aflags);
+    }
+
+    /*
+     * Perform access checks.  c_r_p fills buff with an error message * * 
+     * 
+     * *  * * if needed. 
+     */
+
+    if (check_read_perms(player, thing, attr, aowner, aflags, buff, bufc)) {
+
+        /* Scan through the attribute and count the various brackets */
+        for(tmp_char = atr_gotten; *tmp_char; tmp_char++) {
+       
+            switch(*tmp_char) {
+                case '{':
+                    left_brace++;
+                    break;
+                case '[':
+                    left_square_bracket++;
+                    break;
+                case '(':
+                    left_parenthesis++;
+                    break;
+                case '}':
+                    right_brace++;
+                    break;
+                case ']':
+                    right_square_bracket++;
+                    break;
+                case ')':
+                    right_parenthesis++;
+                    break;
+                default:
+                    break;
+            }
+
+        }
+
+        snprintf(atr_gotten, LBUF_SIZE, "%d %d %d %d %d %d",
+                left_brace,
+                left_square_bracket,
+                left_parenthesis,
+                right_parenthesis,
+                right_square_bracket,
+                right_brace);
+	    safe_str(atr_gotten, buff, bufc);
+    }
+
+    if (free_buffer)
+	    free_lbuf(atr_gotten);
+    return;
+}
 #endif
 /* *INDENT-OFF* */
 
@@ -5226,64 +5327,110 @@ FUN flist[] = {
 {"BEEP",        fun_beep,       0,  0,          CA_BUILDER},
 {"BEFORE",	fun_before,	0,  FN_VARARGS,	CA_PUBLIC},
 #ifdef BT_ENABLED
-{"BTDESIGNEX",  fun_btdesignex, 1,  0,		CA_PUBLIC},
-{"BTTHRESHHOLD",fun_btthreshhold, 1, 0,		CA_WIZARD},
-{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0,	CA_WIZARD},
-{"BTLAG",       fun_lag,        0,  0,		CA_WIZARD},
-{"BTMAKEMECHS", fun_btmakemechs,0,  FN_VARARGS,	CA_WIZARD},
-{"BTMAPELEV",   fun_btmapelev,  3,  0,		CA_WIZARD},
-{"BTMAPTERR",   fun_btmapterr,  3,  0,		CA_WIZARD},
-{"BTSETCHARVALUE", fun_btsetcharvalue, 4, 0,	CA_WIZARD},
-{"BTGETXCODEVALUE", fun_btgetxcodevalue, 2, 0,	CA_WIZARD},
-{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0,	CA_WIZARD},
-{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0,	CA_WIZARD},
-{"BTSTORES",    fun_btstores,   0, FN_VARARGS,	CA_WIZARD},
-{"BTDAMAGES",	fun_btdamages,	1, 0,		CA_WIZARD},
-{"BTCRITSTATUS",fun_btcritstatus,2,0,		CA_WIZARD},
-{"BTWEAPONSTATUS",fun_btweaponstatus,0,FN_VARARGS,	CA_WIZARD},
-{"BTARMORSTATUS",fun_btarmorstatus,2,0,		CA_WIZARD},
-{"BTSETARMORSTATUS",fun_btsetarmorstatus,4,0,	CA_WIZARD},
-{"BTDAMAGEMECH",fun_btdamagemech,7, 0, 		CA_WIZARD},
-{"BTTECHSTATUS",fun_bttechstatus,1, 0,		CA_WIZARD},
-{"BTUNDERREPAIR",    fun_btunderrepair,   1, 0, CA_BUILDER},
-{"BTPARTMATCH",	fun_btpartmatch, 1, 0,		CA_WIZARD},
-{"BTPARTNAME",	fun_btpartname, 2, 0,		CA_WIZARD},
 {"BTADDPARTS",	fun_btaddparts, 3, 0,		CA_WIZARD},
+{"BTARMORSTATUS",fun_btarmorstatus,2,0,		CA_WIZARD},
+{"BTCRITSTATUS",fun_btcritstatus,2,0,		CA_WIZARD},
+{"BTDAMAGEMECH",fun_btdamagemech,7, 0, 		CA_WIZARD},
+{"BTDAMAGES",	fun_btdamages,	1, 0,		CA_WIZARD},
+{"BTDESIGNEX",  fun_btdesignex, 1,  0,		CA_PUBLIC},
+{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0,	CA_WIZARD},
+{"BTGETXCODEVALUE", fun_btgetxcodevalue, 2, 0,	CA_WIZARD},
+{"BTLAG",       fun_lag,        0,  0,		CA_WIZARD},
 {"BTLOADMAP",	fun_btloadmap,	2,  FN_VARARGS,	CA_WIZARD},
 {"BTLOADMECH",	fun_btloadmech, 2,  0,		CA_WIZARD},
+{"BTMAKEMECHS", fun_btmakemechs,0,  FN_VARARGS,	CA_WIZARD},
+{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0,	CA_WIZARD},
+{"BTMAPELEV",   fun_btmapelev,  3,  0,		CA_WIZARD},
+{"BTMAPTERR",   fun_btmapterr,  3,  0,		CA_WIZARD},
 {"BTMECHFREQS",	fun_btmechfreqs, 1, 0,		CA_WIZARD},
+{"BTPARTMATCH",	fun_btpartmatch, 1, 0,		CA_WIZARD},
+{"BTPARTNAME",	fun_btpartname, 2, 0,		CA_WIZARD},
+{"BTSETARMORSTATUS",fun_btsetarmorstatus,4,0,	CA_WIZARD},
+{"BTSETCHARVALUE", fun_btsetcharvalue, 4, 0,	CA_WIZARD},
+{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0,	CA_WIZARD},
+{"BTSTORES",    fun_btstores,   0, FN_VARARGS,	CA_WIZARD},
+{"BTTECHSTATUS",fun_bttechstatus,1, 0,		CA_WIZARD},
+{"BTTHRESHOLD", fun_btthreshold, 1, 0,		CA_WIZARD},
+{"BTUNDERREPAIR",    fun_btunderrepair,   1, 0, CA_BUILDER},
+{"BTWEAPONSTATUS",fun_btweaponstatus,0,FN_VARARGS,	CA_WIZARD},
 #ifndef EXILE_FUNCS_SUPPORT
-{"BTGETREFXCODEVALUE", fun_btgetrefxcodevalue, 2, 0, CA_WIZARD},
 {"BTARMORREF",	fun_btarmorref,	2, 0,		CA_WIZARD},
 {"BTCRITREF",	fun_btcritref,	2, 0,		CA_WIZARD},
-{"BTWEAPONREF", fun_btweaponref,0, FN_VARARGS,		CA_WIZARD},
-{"BTTECHREF",   fun_bttechref,	1, 0,		CA_WIZARD},
-{"BTGETREFTECH", fun_btgetreftech, 1, 0,	CA_WIZARD},
 {"BTGETDBREFFROMID", fun_btgetdbreffromid, 2, 0, CA_WIZARD},
+{"BTGETREFTECH", fun_btgetreftech, 1, 0,	CA_WIZARD},
+{"BTGETREFXCODEVALUE", fun_btgetrefxcodevalue, 2, 0, CA_WIZARD},
+{"BTHEXLOSBROADCAST", fun_bthexlosbroadcast, 4, 0, CA_WIZARD},
 {"BTLOSTOHEX", fun_btlostohex, 3, 0,		CA_WIZARD},
 {"BTLOSTOMECH", fun_btlostomech, 2, 0, 		CA_WIZARD},
-{"BTHEXLOSBROADCAST", fun_bthexlosbroadcast, 4, 0, CA_WIZARD},
+{"BTTECHREF",   fun_bttechref,	1, 0,		CA_WIZARD},
+{"BTWEAPONREF", fun_btweaponref,0, FN_VARARGS,		CA_WIZARD},
 #else
-{"BTGETXCODEVALUE_REF", 	fun_btgetxcodevalue_ref,	2, 0,		CA_WIZARD},
+{"BTADDSTORES",			fun_btaddstores,		3, 0,		CA_WIZARD},
 {"BTARMORSTATUS_REF", 		fun_btarmorstatus_ref,		2, 0,		CA_WIZARD},
+{"BTCHARLIST",			fun_btcharlist,			1, FN_VARARGS,	CA_WIZARD},
+{"BTCRITSLOT",			fun_btcritslot,			0, FN_VARARGS,	CA_WIZARD},
+{"BTCRITSLOT_REF",		fun_btcritslot_ref,		0, FN_VARARGS,	CA_WIZARD},
 {"BTCRITSTATUS_REF", 		fun_btcritstatus_ref,		2, 0,		CA_WIZARD},
-{"BTWEAPONSTATUS_REF", 		fun_btweaponstatus_ref,		0, FN_VARARGS,	CA_WIZARD},
-{"BTTECH_REF",   		fun_bttech_ref,			1, 0,		CA_WIZARD},
+{"BTENGRATE",			fun_btengrate,			1, 0,		CA_WIZARD},
+{"BTENGRATE_REF",		fun_btengrate_ref,		1, 0,		CA_WIZARD},
+#ifdef BT_ADVANCED_ECON
+{"BTFASABASECOST_REF",		fun_btfasabasecost_ref,		1, 0,		CA_WIZARD},
+#endif
+{"BTGETBV",			fun_btgetbv,			1, 0,		CA_WIZARD},
+{"BTGETBV_REF",			fun_btgetbv_ref,		1, 0,		CA_WIZARD},
+#ifdef BT_ADVANCED_ECON
+{"BTGETPARTCOST",		fun_btgetpartcost,		1, 0,		CA_WIZARD},
+#endif
+{"BTGETRANGE",			fun_btgetrange,			0, FN_VARARGS,  CA_WIZARD},
+{"BTGETREALMAXSPEED",		fun_btgetrealmaxspeed,		1, 0,		CA_WIZARD},
 {"BTGETREFTECH_REF", 		fun_btgetreftech_ref, 		1, 0,		CA_WIZARD},
-{"BTID2DB",			fun_btid2db, 			2, 0, 		CA_WIZARD},
-{"BTHEXLOS", 			fun_bthexlos, 			3, 0,		CA_WIZARD},
-{"BTLOSM2M", 			fun_btlosm2m, 			2, 0, 		CA_WIZARD},
+{"BTGETWEIGHT",			fun_btgetweight, 		1, 0,		CA_WIZARD},
+{"BTGETXCODEVALUE_REF", 	fun_btgetxcodevalue_ref,	2, 0,		CA_WIZARD},
 {"BTHEXEMIT", 			fun_bthexemit, 			4, 0, 		CA_WIZARD},
+{"BTHEXINBLZ",			fun_bthexinblz,			3, 0,		CA_WIZARD},
+{"BTHEXLOS", 			fun_bthexlos, 			3, 0,		CA_WIZARD},
+{"BTID2DB",			fun_btid2db, 			2, 0, 		CA_WIZARD},
+{"BTLISTBLZ",			fun_btlistblz,			1, 0,		CA_WIZARD},
+{"BTLOSM2M", 			fun_btlosm2m, 			2, 0, 		CA_WIZARD},
+{"BTMAPEMIT",			fun_btmapemit,			2, 0,		CA_WIZARD},
+{"BTNUMREPJOBS",		fun_btnumrepjobs,		1, 0,		CA_WIZARD},
+{"BTPARTTYPE",			fun_btparttype,			1, 0,		CA_WIZARD},
+{"BTPARTWEIGHT",		fun_btgetweight, 		1, 0,		CA_WIZARD},
+{"BTPAYLOAD_REF",       fun_btpayload_ref,      1, 0,       CA_WIZARD},
+{"BTREMOVESTORES",		fun_btremovestores,		3, 0,		CA_WIZARD},
+{"BTSETMAXSPEED",		fun_btsetmaxspeed,		2, 0,		CA_WIZARD},
+#ifdef BT_ADVANCED_ECON
+{"BTSETPARTCOST",		fun_btsetpartcost,		2, 0,		CA_WIZARD},
+#endif
+{"BTSETXY",			fun_btsetxy,			5, 0,		CA_WIZARD},
+{"BTSHOWCRITSTATUS_REF",	fun_btshowcritstatus_ref,	3, 0,		CA_WIZARD},
+{"BTSHOWSTATUS_REF",		fun_btshowstatus_ref,		2, 0,		CA_WIZARD},
+{"BTSHOWWSPECS_REF",		fun_btshowwspecs_ref,		2, 0,		CA_WIZARD},
+{"BTTECH_REF",   		fun_bttech_ref,			1, 0,		CA_WIZARD},
+{"BTTECHLIST",			fun_bttechlist,			1, 0,		CA_WIZARD},
+{"BTTECHLIST_REF",		fun_bttechlist_ref,		1, 0,		CA_WIZARD},
+{"BTTECHTIME",			fun_bttechtime, 		0, 0,           CA_WIZARD},
+{"BTUNITFIXABLE",		fun_btunitfixable,		1, 0,		CA_WIZARD},
+{"BTWEAPONSTATUS_REF", 		fun_btweaponstatus_ref,		0, FN_VARARGS,	CA_WIZARD},
+{"BTWEAPSTAT",			fun_btweapstat,			2, 0,		CA_WIZARD},
 #endif
 #endif
 {"CAPSTR",	fun_capstr,	-1, 0,		CA_PUBLIC},
+{"CASE",	fun_case,	0,  FN_VARARGS|FN_NO_EVAL,
+						CA_PUBLIC},
 {"CAT",		fun_cat,	0,  FN_VARARGS,	CA_PUBLIC},
 {"CEIL",	fun_ceil,	1,  0,		CA_PUBLIC},
 {"CENTER",	fun_center,	0,  FN_VARARGS,	CA_PUBLIC},
 {"CHILDREN",    fun_children,   1,  0,          CA_PUBLIC},
+#ifdef EXILE_FUNCS_SUPPORT
+{"COBJ",	fun_cobj,	1,  0,		CA_PUBLIC},
+#endif
 {"COLUMNS",	fun_columns,	0,  FN_VARARGS, CA_PUBLIC},
 {"COMP",	fun_comp,	2,  0,		CA_PUBLIC},
 {"CON",		fun_con,	1,  0,		CA_PUBLIC},
+#ifdef EXILE_FUNCS_SUPPORT
+{"CONFIG", 	fun_config,	1,  0,		CA_WIZARD},
+#endif
 {"CONN",	fun_conn,	1,  0,		CA_PUBLIC},
 {"CONTROLS", 	fun_controls,	2,  0,		CA_PUBLIC},
 {"CONVSECS",    fun_convsecs,   1,  0,		CA_PUBLIC},
@@ -5291,45 +5438,6 @@ FUN flist[] = {
 {"CONVUPTIME",  fun_convuptime, 1,  0,		CA_PUBLIC},
 {"COS",		fun_cos,	1,  0,		CA_PUBLIC},
 {"CREATE",      fun_create,     0,  FN_VARARGS, CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
-/* BT Functions */
-{"BTGETWEIGHT",			fun_btgetweight, 		1, 0,		CA_WIZARD},
-{"BTPARTWEIGHT",		fun_btgetweight, 		1, 0,		CA_WIZARD},
-{"BTADDSTORES",			fun_btaddstores,		3, 0,		CA_WIZARD},
-{"BTREMOVESTORES",		fun_btremovestores,		3, 0,		CA_WIZARD},
-{"BTTECHTIME",			fun_bttechtime, 		0, 0,           CA_WIZARD},
-{"BTCRITSLOT",			fun_btcritslot,			0, FN_VARARGS,	CA_WIZARD},
-{"BTCRITSLOT_REF",		fun_btcritslot_ref,		0, FN_VARARGS,	CA_WIZARD},
-{"BTGETRANGE",			fun_btgetrange,			0, FN_VARARGS,  CA_WIZARD},
-{"BTSETMAXSPEED",		fun_btsetmaxspeed,		2, 0,		CA_WIZARD},
-{"BTGETREALMAXSPEED",		fun_btgetrealmaxspeed,		1, 0,		CA_WIZARD},
-{"BTGETBV",			fun_btgetbv,			1, 0,		CA_WIZARD},
-{"BTGETBV_REF",			fun_btgetbv_ref,		1, 0,		CA_WIZARD},
-{"BTTECHLIST",			fun_bttechlist,			1, 0,		CA_WIZARD},
-{"BTTECHLIST_REF",		fun_bttechlist_ref,		1, 0,		CA_WIZARD},
-{"BTSHOWSTATUS_REF",		fun_btshowstatus_ref,		2, 0,		CA_WIZARD},
-{"BTSHOWWSPECS_REF",		fun_btshowwspecs_ref,		2, 0,		CA_WIZARD},
-{"BTSHOWCRITSTATUS_REF",	fun_btshowcritstatus_ref,	3, 0,		CA_WIZARD},
-{"BTENGRATE",			fun_btengrate,			1, 0,		CA_WIZARD},
-{"BTENGRATE_REF",		fun_btengrate_ref,		1, 0,		CA_WIZARD},
-{"BTWEAPSTAT",			fun_btweapstat,			2, 0,		CA_WIZARD},
-{"BTNUMREPJOBS",		fun_btnumrepjobs,		1, 0,		CA_WIZARD},
-{"BTSETXY",			fun_btsetxy,			5, 0,		CA_WIZARD},
-{"BTMAPEMIT",			fun_btmapemit,			2, 0,		CA_WIZARD},
-{"BTPARTTYPE",			fun_btparttype,			1, 0,		CA_WIZARD},
-#ifdef BT_ADVANCED_ECON
-{"BTGETPARTCOST",		fun_btgetpartcost,		1, 0,		CA_WIZARD},
-{"BTSETPARTCOST",		fun_btsetpartcost,		2, 0,		CA_WIZARD},
-{"BTFASABASECOST_REF",		fun_btfasabasecost_ref,		1, 0,		CA_WIZARD},
-#endif
-{"BTUNITFIXABLE",		fun_btunitfixable,		1, 0,		CA_WIZARD},
-{"BTLISTBLZ",			fun_btlistblz,			1, 0,		CA_WIZARD},
-{"BTHEXINBLZ",			fun_bthexinblz,			3, 0,		CA_WIZARD},
-{"BTCHARLIST",			fun_btcharlist,			1, FN_VARARGS,	CA_WIZARD},
-
-/* Normal MUX */
-{"COBJ",	fun_cobj,	1,  0,		CA_PUBLIC},
-#endif
 {"CWHO",        fun_cwho,       1,  0,          CA_PUBLIC},
 {"CLIST",	fun_clist,	1,  0,		CA_PUBLIC},
 {"CEMIT",	fun_cemit,	2,  0,		CA_PUBLIC},
@@ -5343,8 +5451,6 @@ FUN flist[] = {
 {"DIV",		fun_div,	2,  0,		CA_PUBLIC},
 #ifdef EXILE_FUNCS_SUPPORT
 {"DOING",       fun_doing,      1,  0,          CA_WIZARD},
-{"CONFIG", 	fun_config,	1,  0,		CA_WIZARD},
-{"POLL",        fun_poll,       0,  0,          CA_WIZARD},
 #endif
 {"E",		fun_e,		0,  0,		CA_PUBLIC},
 {"EDEFAULT",	fun_edefault,	2,  FN_NO_EVAL, CA_PUBLIC},
@@ -5359,7 +5465,6 @@ FUN flist[] = {
 {"EXP",		fun_exp,	1,  0,		CA_PUBLIC},
 {"EXTRACT",	fun_extract,	0,  FN_VARARGS,	CA_PUBLIC},
 {"EVAL",        fun_eval,       0,  FN_VARARGS, CA_PUBLIC},
-{"SUBEVAL",  	fun_subeval,	1,  0,		CA_PUBLIC},
 {"FDIV",	fun_fdiv,	2,  0,		CA_PUBLIC},
 {"FILTER",	fun_filter,	0,  FN_VARARGS,	CA_PUBLIC},
 {"FINDABLE",	fun_findable,	2,  0,		CA_PUBLIC},
@@ -5395,6 +5500,7 @@ FUN flist[] = {
 {"ISDBREF",	fun_isdbref,	1,  0,		CA_PUBLIC},
 {"ISNUM",	fun_isnum,	1,  0,		CA_PUBLIC},
 {"ISWORD",	fun_isword,	1,  0,		CA_PUBLIC},
+{"ITEMS",	fun_items,	0,  FN_VARARGS, CA_PUBLIC},
 {"ITER",	fun_iter,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
 {"LAST",	fun_last,	0,  FN_VARARGS,	CA_PUBLIC},
@@ -5444,13 +5550,15 @@ FUN flist[] = {
 {"NEXT",	fun_next,	1,  0,		CA_PUBLIC},
 {"NOT",		fun_not,	1,  0,		CA_PUBLIC},
 {"NUM",		fun_num,	1,  0,		CA_PUBLIC},
-{"ITEMS",	fun_items,	0,  FN_VARARGS, CA_PUBLIC},
 {"OBJ",		fun_obj,	1,  0,		CA_PUBLIC},
 {"OBJEVAL",     fun_objeval,    2,  FN_NO_EVAL, CA_PUBLIC},
 {"OBJMEM",	fun_objmem,	1,  0,		CA_PUBLIC},
 {"OR",		fun_or,		0,  FN_VARARGS,	CA_PUBLIC},
 {"ORFLAGS",	fun_orflags,	2,  0,		CA_PUBLIC},
 {"OWNER",	fun_owner,	1,  0,		CA_PUBLIC},
+#ifdef EXILE_FUNCS_SUPPORT
+{"PAIRS",   fun_pairs,	1,  0,		CA_PUBLIC},
+#endif
 {"PARENT",	fun_parent,	1,  0,		CA_PUBLIC},
 {"PARSE",	fun_parse,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
@@ -5459,6 +5567,9 @@ FUN flist[] = {
 {"PI",		fun_pi,		0,  0,		CA_PUBLIC},
 {"PLAYMEM",	fun_playmem,	1,  0,		CA_PUBLIC},
 {"PMATCH",	fun_pmatch,	1,  0,		CA_PUBLIC},
+#ifdef EXILE_FUNCS_SUPPORT
+{"POLL",        fun_poll,       0,  0,          CA_WIZARD},
+#endif
 {"POP",		fun_pop,	0,  FN_VARARGS, CA_PUBLIC},
 {"PORTS",	fun_ports,	1,  0,		CA_PUBLIC},
 {"POS",		fun_pos,	2,  0,		CA_PUBLIC},
@@ -5469,8 +5580,6 @@ FUN flist[] = {
 {"PYTHON",	fun_python,	1,  FN_NO_EVAL,	CA_WIZARD},
 {"PYTHONCALL",	fun_pythoncall,	0,  FN_VARARGS,	CA_WIZARD},
 #endif
-{"CASE",	fun_case,	0,  FN_VARARGS|FN_NO_EVAL,
-						CA_PUBLIC},
 {"R",		fun_r,		1,  0,		CA_PUBLIC},
 {"RAND",	fun_rand,	1,  0,		CA_PUBLIC},
 {"REGMATCH",    fun_regmatch,   0,  FN_VARARGS, CA_PUBLIC},
@@ -5515,6 +5624,7 @@ FUN flist[] = {
 {"STRMATCH",	fun_strmatch,	2,  0,		CA_PUBLIC},
 {"STRTRUNC",    fun_strtrunc,   2,  0,          CA_PUBLIC},
 {"SUB",		fun_sub,	2,  0,		CA_PUBLIC},
+{"SUBEVAL",  	fun_subeval,	1,  0,		CA_PUBLIC},
 {"SUBJ",	fun_subj,	1,  0,		CA_PUBLIC},
 {"SWITCH",	fun_switch,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
@@ -5557,8 +5667,7 @@ FUN flist[] = {
 
 
 
-void init_functab(void)
-{
+void init_functab() {
     FUN *fp;
     char *buff, *cp, *dp;
 

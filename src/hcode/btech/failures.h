@@ -6,7 +6,7 @@
    
    Parts copyright (c) 2002 Thomas Wouters
 
-   $Id: failures.h,v 1.1 2005/06/13 20:50:50 murrayma Exp $
+   $Id: failures.h,v 1.1.1.1 2005/01/11 21:18:07 kstevens Exp $
    Last modified: Sat Jun  6 20:27:26 1998 fingon
  */
 

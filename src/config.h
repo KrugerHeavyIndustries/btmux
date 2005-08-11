@@ -36,6 +36,12 @@ typedef int     POWER;
 typedef char	boolexp_type;
 typedef char	IBUF[16];
 
+#ifdef HAVE_SYS_RUSAGE_H
+#include <sys/rusage.h>
+#endif
+#if defined(HAVE_SETRLIMIT) || defined(HAVE_GETRUSAGE)
+#include <sys/resource.h>
+#endif
 
 /* TEST_MALLOC:	Defining this makes a malloc that keeps track of the number
  *		of blocks allocated.  Good for testing for Memory leaks.

@@ -1,6 +1,6 @@
 
 /*
- * $Id: aero.bomb.c,v 1.2 2005/06/22 22:07:17 murrayma Exp $
+ * $Id: aero.bomb.c,v 1.1.1.1 2005/01/11 21:18:00 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

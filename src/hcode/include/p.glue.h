@@ -30,6 +30,7 @@ void DumpMechs(dbref player);
 void DumpMaps(dbref player);
 int WhichSpecial(dbref key);
 int IsMech(dbref num);
+int IsAuto(dbref num);
 int IsMap(dbref num);
 void *FindObjectsData(dbref key);
 char *center_string(char *c, int len);

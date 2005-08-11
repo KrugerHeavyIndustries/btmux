@@ -1,6 +1,6 @@
 
 /*
- * $Id: map.conditions.c,v 1.2 2005/06/22 22:07:18 murrayma Exp $
+ * $Id: map.conditions.c,v 1.2 2005/01/15 16:57:14 kstevens Exp $
  *
  * Author: Markus Stenberg <fingon@iki.fi>
  *

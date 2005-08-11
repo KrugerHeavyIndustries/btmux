@@ -199,11 +199,7 @@
 #define A_PCEQUIP       245	/* PCombat equipment */
 
 #define A_HOURLY        246
-#ifdef BT_MECHDEST_TRIGGER
 #define A_AMECHDEST     247
-#else
-#define A_UNUSED2	247
-#endif
 
 #define A_VRML_URL	250	/* URL of the VRML scene for this object */
 #define A_HTDESC	251	/* HTML @desc */
