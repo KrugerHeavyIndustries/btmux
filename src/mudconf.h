@@ -419,7 +419,7 @@ struct statedata {
     HASHTAB vattr_name_htab;	/* User attribute names hashtable */
     HASHTAB player_htab;	/* Player name->number hashtable */
 //    NHSHTAB desc_htab;		/* Socket descriptor hashtable */
-    rb_tree *desctree;
+    rbtree *desctree;
     NHSHTAB fwdlist_htab;	/* Room forwardlists */
     NHSHTAB parent_htab;	/* Parent $-command exclusion */
 #ifdef PARSE_TREES
