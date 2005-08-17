@@ -33,35 +33,35 @@
         __FUNCTION__, __FILE__, __LINE__); abort(); } while (0)
 
 
-rb_tree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
-    rb_tree *temp;
+rbtree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
+    rbtree *temp;
 
-    temp = malloc(sizeof(rb_tree));
+    temp = malloc(sizeof(rbtree));
     if(temp == NULL) return NULL;
-    memset(temp, 0, sizeof(rb_tree));
+    memset(temp, 0, sizeof(rbtree));
     temp->compare_function = compare_function;
     temp->token = token;
     return temp;
 }
 
-static rb_tree_node *rb_find_minimum(rb_tree_node *node) {
-    rb_tree_node *child;
+static rbtree_node *rb_find_minimum(rbtree_node *node) {
+    rbtree_node *child;
     assert(node != NULL);
     child = node;
     while(child->left != NULL) child = child->left;
     return child;
 }
 
-static rb_tree_node *rb_find_maximum(rb_tree_node *node) {
-    rb_tree_node *child;
+static rbtree_node *rb_find_maximum(rbtree_node *node) {
+    rbtree_node *child;
     assert(node != NULL);
     child = node;
     while(child->right != NULL) child = child->right;
     return child;
 }
 
-static rb_tree_node *rb_find_successor_node(rb_tree_node *node) {
-    rb_tree_node *child;
+static rbtree_node *rb_find_successor_node(rbtree_node *node) {
+    rbtree_node *child;
     assert(node!=NULL);
     if(node->left == NULL && node->right == NULL) return NULL;
     if(node->right == NULL) return node->left;
@@ -70,8 +70,8 @@ static rb_tree_node *rb_find_successor_node(rb_tree_node *node) {
     return child;
 }
 
-static rb_tree_node *rb_find_predessor_node(rb_tree_node *node) {
-    rb_tree_node *child, *parent;
+static rbtree_node *rb_find_predessor_node(rbtree_node *node) {
+    rbtree_node *child, *parent;
     assert(node!=NULL);
     if(node->left != NULL) {
         child = node->left;
@@ -89,8 +89,8 @@ static rb_tree_node *rb_find_predessor_node(rb_tree_node *node) {
     return NULL;
 }
 
-void rb_destroy(rb_tree *bt) {
-    rb_tree_node *node, *parent;
+void rb_destroy(rbtree *bt) {
+    rbtree_node *node, *parent;
     node = bt->head;
     while(node != NULL) {
         if(node->left != NULL) {
@@ -112,18 +112,18 @@ void rb_destroy(rb_tree *bt) {
     return;
 }
 
-static rb_tree_node *rb_allocate(rb_tree_node *parent, void *key, void *data) {
-    rb_tree_node *temp;
-    temp = malloc(sizeof(rb_tree_node));
-    memset(temp, 0, sizeof(rb_tree_node));
+static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
+    rbtree_node *temp;
+    temp = malloc(sizeof(rbtree_node));
+    memset(temp, 0, sizeof(rbtree_node));
     temp->parent = parent;
     temp->key = key;
     temp->data = data;
     return temp;
 }
 
-static void rb_rotate_right(rb_tree *bt, rb_tree_node *pivot) {
-    rb_tree_node *child, *parent, *subchild;
+static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
+    rbtree_node *child, *parent, *subchild;
     parent = pivot->parent;
     child = pivot->left;
 
@@ -143,8 +143,8 @@ static void rb_rotate_right(rb_tree *bt, rb_tree_node *pivot) {
     } else bt->head = child;
 }
 
-static void rb_rotate_left(rb_tree *bt, rb_tree_node *pivot) {
-    rb_tree_node *child, *parent, *subchild;
+static void rb_rotate_left(rbtree *bt, rbtree_node *pivot) {
+    rbtree_node *child, *parent, *subchild;
     parent = pivot->parent;
     child = pivot->right;
 
@@ -166,9 +166,9 @@ static void rb_rotate_left(rb_tree *bt, rb_tree_node *pivot) {
 
 
 
-void rb_insert(rb_tree *bt, void *key, void *data) {
-    rb_tree_node *node;
-    rb_tree_node *iter;
+void rb_insert(rbtree *bt, void *key, void *data) {
+    rbtree_node *node;
+    rbtree_node *iter;
     int compare_result;
 
     if(!bt->head) {
@@ -259,8 +259,8 @@ void rb_insert(rb_tree *bt, void *key, void *data) {
     bt->head->color = NODE_BLACK;
 }
 
-void *rb_find(rb_tree *bt, void *key) {
-    rb_tree_node *node;
+void *rb_find(rbtree *bt, void *key) {
+    rbtree_node *node;
     int compare_result;
 
     if(!bt->head) {
@@ -290,8 +290,8 @@ void *rb_find(rb_tree *bt, void *key) {
     assert(0);
 }
 
-int rb_exists(rb_tree *bt, void *key) {
-    rb_tree_node *node;
+int rb_exists(rbtree *bt, void *key) {
+    rbtree_node *node;
     int compare_result;
     if(!bt->head) {
         return 0;
@@ -321,8 +321,8 @@ int rb_exists(rb_tree *bt, void *key) {
 }
 
 
-void *rb_delete(rb_tree *bt, void *key) {
-    rb_tree_node *node, *child;
+void *rb_delete(rbtree *bt, void *key) {
+    rbtree_node *node, *child;
     void *data;
     int compare_result;
     if(!bt->head) {
@@ -401,9 +401,9 @@ void *rb_delete(rb_tree *bt, void *key) {
     }
 }
 
-void rb_walk(rb_tree *bt, int how, 
+void rb_walk(rbtree *bt, int how, 
         void (*callback)(void *, void *, int, void *), void *arg) {
-    rb_tree_node *last, *node, *end;
+    rbtree_node *last, *node, *end;
     int depth = 0;
     if(!bt->head)
         return;

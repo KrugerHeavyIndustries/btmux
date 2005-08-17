@@ -27,28 +27,28 @@
 #define WALK_INORDER    0x101
 #define WALK_POSTORDER  0x102
 
-typedef struct rb_tree_node_t {
-    struct rb_tree_node_t *left, *right, *parent;
+typedef struct rbtree_node_t {
+    struct rbtree_node_t *left, *right, *parent;
     void *key;
     void *data;
     int color;
-} rb_tree_node;
+} rbtree_node;
 
-typedef struct rb_tree_head_t {
-    struct rb_tree_node_t *head;
+typedef struct rbtree_head_t {
+    struct rbtree_node_t *head;
     int (*compare_function)(void *, void *, void *);
     void *token;
-} rb_tree;
+} rbtree;
 
-rb_tree *rb_init(int (*)(void *, void *, void *), void *);
-void rb_destroy(rb_tree *);
+rbtree *rb_init(int (*)(void *, void *, void *), void *);
+void rb_destroy(rbtree *);
 
-void rb_insert(rb_tree *, void *key, void *data); 
-void *rb_find(rb_tree *, void *key);
-int rb_exists(rb_tree *, void *key);
-void *rb_delete(rb_tree *, void *key);
+void rb_insert(rbtree *, void *key, void *data); 
+void *rb_find(rbtree *, void *key);
+int rb_exists(rbtree *, void *key);
+void *rb_delete(rbtree *, void *key);
 
-void rb_walk(rb_tree *, int, void (*)(void *, void *, int, void *), 
+void rb_walk(rbtree *, int, void (*)(void *, void *, int, void *), 
         void *);
 
 #endif
