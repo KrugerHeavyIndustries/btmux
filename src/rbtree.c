@@ -1,8 +1,10 @@
 /* 
  * rbtree.c - a redblack tree implementation
  *
- * Copyright (c) 2004 Martin Murray <mmurray@monkey.org>
+ * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
  * All rights reserved.
+ * 
+ * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *

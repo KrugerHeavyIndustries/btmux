@@ -1,3 +1,12 @@
+/*
+ * rbtree.h
+ *
+ * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
+ * All rights reserved.
+ *
+ * $Id$
+ */
+
 #ifndef __FOREST_RB_TREE__
 #define __FOREST_RB_TREE__
 
