@@ -83,7 +83,7 @@ if (!delim_check(fargs, nfargs, xnargs, &sep, buff, bufc, 0,		\
 return;
 
 #ifdef EXILE_FUNCS_SUPPORT
-void fun_cobj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_cobj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;
     struct comuser *user;
@@ -107,7 +107,7 @@ void fun_cobj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
 }
 #endif
 
-void fun_cwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_cwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;
     struct comuser *user;
@@ -143,7 +143,7 @@ void fun_cwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     }
 }
 
-void fun_clist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_clist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;
     struct comuser *user;
@@ -183,7 +183,7 @@ void fun_clist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
     }
 }
 
-void fun_beep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_beep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_chr(BEEP_CHAR, buff, bufc);
 }
@@ -192,7 +192,7 @@ void fun_beep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
  * This function was originally taken from PennMUSH 1.50 
  */
 
-void fun_ansi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_ansi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s = fargs[0];
 
@@ -308,7 +308,7 @@ void fun_ansi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     safe_str(ANSI_NORMAL, buff, bufc);
 }
 
-void fun_zone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_zone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -325,17 +325,17 @@ void fun_zone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
 
 #ifdef SIDE_EFFECT_FUNCTIONS
 
-void fun_link(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_link(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_link(player, cause, 0, fargs[0], fargs[1]);
 }
 
-void fun_tel(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_tel(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_teleport(player, cause, 0, fargs[0], fargs[1]);
 }
 
-void fun_pemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_pemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_pemit_list(player, fargs[0], fargs[1]);
 }
@@ -358,7 +358,7 @@ static int check_command(player, name, buff, bufc)
     return (0);
 }
 
-void fun_create(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_create(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing;
     int cost;
@@ -452,7 +452,7 @@ char **bufc;
     }
 }
 
-void fun_set(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_set(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, thing2, aowner;
     char *p, *buff2;
@@ -666,7 +666,7 @@ static char *crypt_code(code, text, type)
 /*
  * Borrowed from DarkZone 
  */
-void fun_zwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_zwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it = match_thing(player, fargs[0]);
     dbref i;
@@ -697,7 +697,7 @@ void fun_zwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
         }
 }
 
-void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it = match_thing(player, fargs[0]);
     dbref i;
@@ -732,7 +732,7 @@ void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from DarkZone 
  */
-void fun_inzone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_inzone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it = match_thing(player, fargs[0]);
     dbref i;
@@ -765,7 +765,7 @@ void fun_inzone(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
 /*
  * Borrowed from DarkZone 
  */
-void fun_children(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_children(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it = match_thing(player, fargs[0]);
     dbref i;
@@ -794,12 +794,12 @@ void fun_children(char *buff, char **bufc, dbref player, dbref cause, char *farg
         }
 }
 
-void fun_encrypt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_encrypt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str(crypt_code(fargs[1], fargs[0], 1), buff, bufc);
 }
 
-void fun_decrypt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_decrypt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str(crypt_code(fargs[1], fargs[0], 0), buff, bufc);
 }
@@ -818,7 +818,7 @@ static void noquotes(clean, dirty)
 }
 #endif
 
-void fun_objeval(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_objeval(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref obj;
     char *name, *bp, *str;
@@ -843,7 +843,7 @@ void fun_objeval(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     free_lbuf(name);
 }
 
-void fun_squish(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_squish(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *p, *q, *bp;
 
@@ -864,7 +864,7 @@ void fun_squish(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
     free_lbuf(bp);
 }
 
-void fun_stripansi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_stripansi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str((char *) strip_ansi(fargs[0]), buff, bufc);
 }
@@ -872,7 +872,7 @@ void fun_stripansi(char *buff, char **bufc, dbref player, dbref cause, char *far
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_zfun(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_zfun(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner;
     int aflags;
@@ -912,7 +912,7 @@ void fun_zfun(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     free_lbuf(tbuf1);
 }
 
-void fun_columns(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_columns(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int spaces, number, ansinumber, count, i;
     static char buf[LBUF_SIZE];
@@ -1021,7 +1021,7 @@ static int mem_usage(thing)
     return k;
 }
 
-void fun_objmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_objmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing;
 
@@ -1033,7 +1033,7 @@ void fun_objmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
     safe_tprintf_str(buff, bufc, "%d", mem_usage(thing));
 }
 
-void fun_playmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_playmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int tot = 0;
     dbref thing;
@@ -1159,19 +1159,19 @@ static int handle_flaglists(player, name, fstr, type)
     return (ret);
 }
 
-void fun_orflags(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_orflags(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", handle_flaglists(player, fargs[0],
                 fargs[1], 0));
 }
 
-void fun_andflags(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_andflags(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", handle_flaglists(player, fargs[0],
                 fargs[1], 1));
 }
 
-void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int number, count = 0;
     static char buf[LBUF_SIZE];
@@ -1211,7 +1211,7 @@ void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause, char *farg
     safe_str(buf, buff, bufc);
 }
 
-void fun_ifelse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_ifelse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* This function now assumes that its arguments have not been
        evaluated. */
@@ -1236,7 +1236,7 @@ void fun_ifelse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
     free_lbuf(mbuff);
 }
 
-void fun_inc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_inc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int number;
 
@@ -1248,7 +1248,7 @@ void fun_inc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
     safe_tprintf_str(buff, bufc, "%d", (++number));
 }
 
-void fun_dec(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_dec(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int number;
 
@@ -1263,7 +1263,7 @@ void fun_dec(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * Mail functions borrowed from DarkZone 
  */
-void fun_mail(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_mail(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * This function can take one of three formats: 1.  mail(num)  --> *
@@ -1342,7 +1342,7 @@ void fun_mail(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     safe_str("#-1 NO SUCH MESSAGE", buff, bufc);
 }
 
-void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * This function can take these formats: 1) mailfrom(<num>) 2) * * *
@@ -1400,7 +1400,7 @@ void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause, char *farg
  * * TinyMUSH 2.2. 
  */
 
-void fun_hasattr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_hasattr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int aflags;
@@ -1433,7 +1433,7 @@ void fun_hasattr(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     }
 }
 
-void fun_hasattrp(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_hasattrp(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int aflags;
@@ -1479,7 +1479,7 @@ void fun_hasattrp(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * default(), edefault(), and udefault() borrowed from TinyMUSH 2.2 
  */
-void fun_default(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_default(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, aflags;
@@ -1528,7 +1528,7 @@ void fun_default(char *buff, char **bufc, dbref player, dbref cause, char *fargs
             &str, cargs, ncargs);
 }
 
-void fun_edefault(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_edefault(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, aflags;
@@ -1579,7 +1579,7 @@ void fun_edefault(char *buff, char **bufc, dbref player, dbref cause, char *farg
             &str, cargs, ncargs);
 }
 
-void fun_udefault(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_udefault(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int aflags, anum;
@@ -1651,7 +1651,7 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_findable(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_findable(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref obj = match_thing(player, fargs[0]);
     dbref victim = match_thing(player, fargs[1]);
@@ -1672,7 +1672,7 @@ void fun_findable(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_isword(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_isword(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *p;
 
@@ -1696,7 +1696,7 @@ void fun_isword(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_visible(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_visible(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, thing, aowner;
     int aflags, atr;
@@ -1736,7 +1736,7 @@ void fun_visible(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_elements(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_elements(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int nwords, cur;
     char *ptrs[LBUF_SIZE / 2];
@@ -1785,7 +1785,7 @@ void fun_elements(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_grab(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_grab(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *r, *s, sep;
 
@@ -1813,7 +1813,7 @@ void fun_grab(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_scramble(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_scramble(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int n, i, j;
     char c, *old;
@@ -1859,7 +1859,7 @@ static void swap(p, q)
     *q = temp;
 }
 
-void fun_shuffle(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_shuffle(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *words[LBUF_SIZE];
     int n, i, j;
@@ -2003,7 +2003,7 @@ loop:
     }
 }
 
-void fun_sortby(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_sortby(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *atext, *list, *ptrs[LBUF_SIZE / 2], sep;
     int nptrs, aflags, anum;
@@ -2061,7 +2061,7 @@ void fun_sortby(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
 /*
  * Borrowed from TinyMUSH 2.2 
  */
-void fun_last(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_last(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *last, sep;
     int len, i;
@@ -2098,7 +2098,7 @@ void fun_last(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
 /*
  * Borrowed from TinyMUSH 2.2 
  */
-void fun_matchall(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_matchall(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int wcount;
     char *r, *s, *old, sep, tbuf[8];
@@ -2137,7 +2137,7 @@ void fun_matchall(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from TinyMUSH 2.2 
  */
-void fun_ports(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_ports(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref target;
 
@@ -2160,7 +2160,7 @@ void fun_ports(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_mix(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_mix(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum;
@@ -2232,7 +2232,7 @@ void fun_mix(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * Borrowed from TinyMUSH 2.2 
  */
-void fun_foreach(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_foreach(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum, flag = 0;
@@ -2323,7 +2323,7 @@ void fun_foreach(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 /*
  * Borrowed from TinyMUSH 2.2 
  */
-void fun_munge(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_munge(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum, nptrs1, nptrs2, nresults, i, j;
@@ -2447,7 +2447,7 @@ int getrandom(x)
     return (n % x);
 }
 
-void fun_die(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_die(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int n, die, count;
     int total = 0;
@@ -2475,7 +2475,7 @@ void fun_die(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_lit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_lit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * Just returns the argument, literally 
@@ -2486,7 +2486,7 @@ void fun_lit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * shl() and shr() borrowed from PennMUSH 1.50 
  */
-void fun_shl(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_shl(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     if (is_number(fargs[0]) && is_number(fargs[1]))
         safe_tprintf_str(buff, bufc, "%d",
@@ -2495,7 +2495,7 @@ void fun_shl(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
         safe_str("#-1 ARGUMENTS MUST BE NUMBERS", buff, bufc);
 }
 
-void fun_shr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_shr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     if (is_number(fargs[0]) && is_number(fargs[1]))
         safe_tprintf_str(buff, bufc, "%d",
@@ -2515,7 +2515,7 @@ void fun_shr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
  */
 #define MAXDIM	20
 
-void fun_vadd(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vadd(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *v1[LBUF_SIZE], *v2[LBUF_SIZE];
     char vres[MAXDIM][LBUF_SIZE];
@@ -2552,7 +2552,7 @@ void fun_vadd(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     arr2list(v1, n, buff, bufc, sep);
 }
 
-void fun_vsub(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vsub(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *v1[LBUF_SIZE], *v2[LBUF_SIZE];
     char vres[MAXDIM][LBUF_SIZE];
@@ -2589,7 +2589,7 @@ void fun_vsub(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     arr2list(v1, n, buff, bufc, sep);
 }
 
-void fun_vmul(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vmul(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *v1[LBUF_SIZE], *v2[LBUF_SIZE];
     char vres[MAXDIM][LBUF_SIZE];
@@ -2651,7 +2651,7 @@ void fun_vmul(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     arr2list(v1, n, buff, bufc, sep);
 }
 
-void fun_vmag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vmag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *v1[LBUF_SIZE];
     int n, i;
@@ -2686,7 +2686,7 @@ void fun_vmag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
         safe_str("0", buff, bufc);
 }
 
-void fun_vunit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vunit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *v1[LBUF_SIZE];
     char vres[MAXDIM][LBUF_SIZE];
@@ -2729,7 +2729,7 @@ void fun_vunit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
     arr2list(v1, n, buff, bufc, sep);
 }
 
-void fun_vdim(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_vdim(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
 
@@ -2741,7 +2741,7 @@ void fun_vdim(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     }
 }
 
-void fun_strcat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_strcat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
 
@@ -2804,7 +2804,7 @@ char *grep_util(player, thing, pattern, lookfor, len, insensitive)
     return tbuf1;
 }
 
-void fun_grep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_grep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *tp;
 
@@ -2833,7 +2833,7 @@ void fun_grep(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     free_lbuf(tp);
 }
 
-void fun_grepi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_grepi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *tp;
 
@@ -2865,7 +2865,7 @@ void fun_grepi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_art(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_art(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 
     /*
@@ -2882,7 +2882,7 @@ void fun_art(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_alphamax(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_alphamax(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *amax;
     int i = 1;
@@ -2904,7 +2904,7 @@ void fun_alphamax(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_alphamin(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_alphamin(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *amin;
     int i = 1;
@@ -2927,7 +2927,7 @@ void fun_alphamin(char *buff, char **bufc, dbref player, dbref cause, char *farg
  * Borrowed from PennMUSH 1.50 
  */
 
-void fun_valid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_valid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 
     /*
@@ -2946,7 +2946,7 @@ void fun_valid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_hastype(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_hastype(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it = match_thing(player, fargs[0]);
 
@@ -2984,7 +2984,7 @@ void fun_hastype(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 /*
  * Borrowed from PennMUSH 1.50 
  */
-void fun_lparent(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_lparent(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     dbref par;
@@ -3023,7 +3023,7 @@ int stacksize(doer)
     return i;
 }
 
-void fun_lstack(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_lstack(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     STACK *sp;
     dbref doer;
@@ -3052,7 +3052,7 @@ void fun_lstack(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
         (*bufc)--;
 }
 
-void fun_empty(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_empty(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     STACK *sp, *next;
     dbref doer;
@@ -3081,7 +3081,7 @@ void fun_empty(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
     s_Stack(doer, NULL);
 }
 
-void fun_items(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_items(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref doer;
 
@@ -3103,7 +3103,7 @@ void fun_items(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
     safe_tprintf_str(buff, bufc, "%d", stacksize(doer));
 }
 
-void fun_peek(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_peek(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     STACK *sp;
     dbref doer;
@@ -3149,7 +3149,7 @@ void fun_peek(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     safe_str(sp->data, buff, bufc);
 }
 
-void fun_pop(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_pop(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     STACK *sp, *prev = NULL;
     dbref doer;
@@ -3210,7 +3210,7 @@ void fun_pop(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
     }
 }
 
-void fun_push(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_push(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     STACK *sp;
     dbref doer;
@@ -3257,7 +3257,7 @@ void fun_push(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
  *
  */
 
-void fun_regmatch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_regmatch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, nqregs, curq, len;
     char *qregs[10];
@@ -3320,7 +3320,7 @@ void fun_regmatch(char *buff, char **bufc, dbref player, dbref cause, char *farg
  * they're converted to percent substitutions.
  */
 
-void fun_translate(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs)
+void fun_translate(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int type = 0;
 
@@ -3341,7 +3341,7 @@ void fun_translate(char *buff, char **bufc, dbref player, dbref cause, char *far
 
 extern NAMETAB lock_sw;
 
-void fun_setlock(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], char *cargs[], int nfargs, int ncargs) {
+void fun_setlock(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs) {
     int switchkey = 0;
     dbref thing, aowner;
     int atr, aflags;
