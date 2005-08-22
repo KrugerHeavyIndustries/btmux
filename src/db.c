@@ -2922,6 +2922,8 @@ void dump_restart_db()
     fclose(f);
 }
 
+void accept_client_input(int fd, short event, void *arg);
+
 void load_restart_db() {
     FILE *f;
     DESC *d;
@@ -3021,6 +3023,10 @@ void load_restart_db() {
             d->prev = &descriptor_list;
             descriptor_list = d;
         }
+
+        event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
+                accept_client_input, d);
+        event_add(&d->sock_ev, NULL);
 
         if (d->descriptor >= maxd)
             maxd = d->descriptor + 1;
