@@ -21,7 +21,7 @@
 #include "p.mech.partnames.h"
 #include "p.mech.utils.h"
 
-static void mech_dump_event(EVENT * ev)
+static void mech_dump_event(MUXEVENT * ev)
 {
     MECH *mech = (MECH *) ev->data;
     int arg = (int) ev->data2;

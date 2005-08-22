@@ -208,7 +208,7 @@ mapobj *add_mapobj(MAP * map, mapobj ** to, mapobj * from, int flag)
     return realto;
 }
 
-static void smoke_dissipation_event(EVENT * e)
+static void smoke_dissipation_event(MUXEVENT * e)
 {
     MAP *map = (MAP *) e->data;
     mapobj *o = (mapobj *) e->data2;
@@ -216,7 +216,7 @@ static void smoke_dissipation_event(EVENT * e)
     del_mapobj(map, o, TYPE_SMOKE, 0);
 }
 
-static void fire_dissipation_event(EVENT * e)
+static void fire_dissipation_event(MUXEVENT * e)
 {
     MAP *map = (MAP *) e->data;
     mapobj *o = (mapobj *) e->data2;
@@ -465,7 +465,7 @@ static void FindMyCoord(MAP * map, int tx, int ty, int i, int wdir, int *x,
     *y = dy;
 }
 
-static void fire_spreading_event(EVENT * e)
+static void fire_spreading_event(MUXEVENT * e)
 {
     MAP *map = (MAP *) e->data;
     mapobj *o = (mapobj *) e->data2;
@@ -1004,7 +1004,7 @@ static void set_building_cf(dbref obj, int i1, int i2)
     map->cfmax = i2;
 }
 
-static void building_regen_event(EVENT * e)
+static void building_regen_event(MUXEVENT * e)
 {
 #ifdef BUILDINGS_REPAIR_THEMSELVES
     dbref d = (dbref) e->data;
@@ -1021,7 +1021,7 @@ static void building_regen_event(EVENT * e)
 }
 
 
-static void building_rebuild_event(EVENT * e)
+static void building_rebuild_event(MUXEVENT * e)
 {
 #ifdef BUILDINGS_REBUILD_FROM_DESTRUCTION
     dbref d = (dbref) e->data;

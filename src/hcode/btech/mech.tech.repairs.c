@@ -27,7 +27,7 @@
 
 static coolmenu *c;
 
-static void describe_repairs(EVENT * e)
+static void describe_repairs(MUXEVENT * e)
 {
     int type = e->type;
     MECH *mech = (MECH *) e->data;

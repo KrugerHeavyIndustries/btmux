@@ -13,8 +13,8 @@
 #define _P_AUTOGUN_H
 
 /* autogun.c */
-void auto_gun_sensor_event(EVENT * e);
-void auto_gun_event(EVENT * e);
+void auto_gun_sensor_event(MUXEVENT * e);
+void auto_gun_event(MUXEVENT * e);
 int SearchLightInRange(MECH * mech, MAP *map);
 int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target);
 int AverageWpnRange(MECH * mech);

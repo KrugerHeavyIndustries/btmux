@@ -15,7 +15,7 @@
 /* autopilot_command.c */
 int auto_parse_command_sub(AUTO * a, MECH * mech, char *buffer,
     char ***gargs, int *argc_n);
-void auto_reply_event(EVENT * e);
+void auto_reply_event(MUXEVENT * e);
 void auto_reply(MECH * mech, char *buf);
 void auto_replyA(MECH * mech, char *buf);
 void auto_parse_command(AUTO * a, MECH * mech, int chn, char *buffer);

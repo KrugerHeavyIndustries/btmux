@@ -296,7 +296,7 @@ void mech_listtic(dbref player, void *data, char *buffer)
     listtic_sub(player, mech, buffer);
 }
 
-void heat_cutoff_event(EVENT * e)
+void heat_cutoff_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 

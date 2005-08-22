@@ -39,7 +39,7 @@ int IsArtyMech(MECH * mech)
     return 0;
 }
 
-static void mech_check_range(EVENT * e)
+static void mech_check_range(MUXEVENT * e)
 {
     MECH *spotter = (MECH *) e->data2, *mech = (MECH *) e->data;
     float range;
@@ -68,7 +68,7 @@ static void mech_check_range(EVENT * e)
 	spotter);
 }
 
-static void mech_spot_event(EVENT * e)
+static void mech_spot_event(MUXEVENT * e)
 {
     MECH *target, *mech = (MECH *) e->data;
     struct spot_data *sd = (struct spot_data *) e->data2;

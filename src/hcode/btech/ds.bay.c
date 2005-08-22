@@ -140,7 +140,7 @@ static int Find_Single_DS_In_MechHex(MECH * mech, int *ref, int *bayn)
 }
 
 
-static void mech_enterbay_event(EVENT * e)
+static void mech_enterbay_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data, *ds, *tmpm = NULL;
     int ref = (int) e->data2;

@@ -330,7 +330,7 @@ void autopilot_enterbase(MECH * mech, int dir)
 }
 
 /* See what command we should be executing now, and execute it. */
-void auto_com_event(EVENT * e)
+void auto_com_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     MECH *mech = a->mymech;
@@ -589,7 +589,7 @@ void figure_out_range_and_bearing(MECH * mech, int tx, int ty,
 /* Basically, all we need to do is course correction now and then.
    In case we get disabled, we call for help now and then */
 
-void auto_goto_event(EVENT * e)
+void auto_goto_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int tx, ty;
@@ -628,7 +628,7 @@ void auto_goto_event(EVENT * e)
 }
 
 /* ROAMMODE is a funky beast */
-void auto_roam_event(EVENT * e)
+void auto_roam_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int tx, ty;
@@ -685,7 +685,7 @@ void auto_roam_event(EVENT * e)
     }
 }
 
-void auto_dumbgoto_event(EVENT * e)
+void auto_dumbgoto_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int tx, ty;
@@ -715,7 +715,7 @@ void auto_dumbgoto_event(EVENT * e)
             AUTOPILOT_GOTO_TICK, 0);
 }
 
-void auto_follow_event(EVENT * e)
+void auto_follow_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     float fx, fy, newx, newy;
@@ -743,7 +743,7 @@ void auto_follow_event(EVENT * e)
 }
 
 /* Make the AI follow (ID) 'dumb version' */
-void auto_dumbfollow_event(EVENT * e)
+void auto_dumbfollow_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int tx, ty, x, y;
@@ -794,7 +794,7 @@ void auto_dumbfollow_event(EVENT * e)
     AUTOPILOT_FOLLOW_TICK, 0);
 }
 
-void auto_leave_event(EVENT * e)
+void auto_leave_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int dir;
@@ -823,7 +823,7 @@ void auto_leave_event(EVENT * e)
             AUTOPILOT_LEAVE_TICK, 0);
 }
 
-void auto_enter_event(EVENT * e)
+void auto_enter_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     int dir;

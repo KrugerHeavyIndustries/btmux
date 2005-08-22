@@ -1187,7 +1187,7 @@ void mech_jump(dbref player, void *data, char *buffer)
     MECHEVENT(mech, EVENT_JUMP, mech_jump_event, JUMP_TICK, 0);
 }
 
-static void mech_hulldown_event(EVENT * e)
+static void mech_hulldown_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int type = (int) e->data2;

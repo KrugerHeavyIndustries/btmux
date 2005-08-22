@@ -156,7 +156,7 @@ char *ss_messages[] = {
 #define SSDistMod(r) ((r < 9) ? 0 : ((r < 20) ? 1 : 2))
 #define SSTonMod(d)  ((d <= -20) ? 0 : (d >= 20) ? 2 : 1)
 
-static void mech_ss_event(EVENT * ev)
+static void mech_ss_event(MUXEVENT * ev)
 {
     MECH *mech = (MECH *) ev->data;
     int i = (int) ev->data2;

@@ -133,7 +133,7 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
 
 /* EVENT system to let the AI rotate through different sets
  * of sensors depending on the conditions and target */
-void auto_gun_sensor_event(EVENT * e)
+void auto_gun_sensor_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     MECH *mech = (MECH *) a->mymech;
@@ -330,7 +330,7 @@ int TargetScore(MECH * mech, MECH * target, int range) {
 }
 
 /* Event system to for the AI to constantly shoot at stuff */
-void auto_gun_event(EVENT * e)
+void auto_gun_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
     MECH *mech = (MECH *) a->mymech;

@@ -135,7 +135,7 @@ void mech_angeleccm(dbref player, MECH * mech, char *buffer)
     MarkForLOSUpdate(mech);
 }
 
-void MechSliteChangeEvent(EVENT * e)
+void MechSliteChangeEvent(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int wType = (int) e->data2;
@@ -772,7 +772,7 @@ void mech_mine(dbref player, void *data, char *buffer)
 	"Invalid weapon type!");
 }
 
-static void mech_mascr_event(EVENT * e)
+static void mech_mascr_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 
@@ -782,7 +782,7 @@ static void mech_mascr_event(EVENT * e)
     }
 }
 
-static void mech_masc_event(EVENT * e)
+static void mech_masc_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 #ifndef BT_MOVEMENT_MODES
@@ -848,7 +848,7 @@ void mech_masc(dbref player, void *data, char *buffer)
     MECHEVENT(mech, EVENT_MASC_FAIL, mech_masc_event, 1, 0);
 }
 
-static void mech_scharger_event(EVENT * e)
+static void mech_scharger_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 
@@ -859,7 +859,7 @@ static void mech_scharger_event(EVENT * e)
     }
 }
 
-static void mech_scharge_event(EVENT * e)
+static void mech_scharge_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 #ifndef BT_MOVEMENT_MODES
@@ -968,7 +968,7 @@ void mech_scharge(dbref player, void *data, char *buffer)
 
 int doing_explode = 0;
 
-static void mech_explode_event(EVENT * e)
+static void mech_explode_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     MAP *map;
@@ -1082,7 +1082,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	    "The reactor will blow up", time));
 }
 
-static void mech_dig_event(EVENT * e)
+static void mech_dig_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 
@@ -1123,7 +1123,7 @@ void mech_dig(dbref player, void *data, char *buffer)
 	"You start digging yourself in a nice hole..");
 }
 
-static void mech_unjam_turret_event(EVENT * e)
+static void mech_unjam_turret_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 
@@ -1236,7 +1236,7 @@ int FindMainWeapon(MECH * mech, int (*callback) (MECH *, int, int, int,
 	return 0;
 }
 
-void changeStealthArmorEvent(EVENT * e)
+void changeStealthArmorEvent(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int wType = (int) e->data2;
@@ -1302,7 +1302,7 @@ void mech_stealtharmor(dbref player, MECH * mech, char *buffer)
     }
 }
 
-void changeNullSigSysEvent(EVENT * e)
+void changeNullSigSysEvent(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int wType = (int) e->data2;
@@ -1585,7 +1585,7 @@ void remove_inarc_pods_mech(dbref player, MECH * mech, char *buffer)
     SetRecycleLimb(mech, wArmToUse, PHYSICAL_RECYCLE_TIME);
 }
 
-void removeiNarcPodsTank(EVENT * e)
+void removeiNarcPodsTank(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int i;

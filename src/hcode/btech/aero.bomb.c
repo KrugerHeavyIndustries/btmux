@@ -185,7 +185,7 @@ static void bomb_hit(bomb_shot * s)
     }
 }
 
-static void bomb_hit_event(EVENT * e)
+static void bomb_hit_event(MUXEVENT * e)
 {
     bomb_shot *s = (bomb_shot *) e->data;
 

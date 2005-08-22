@@ -21,11 +21,6 @@
 
 /* #undef EVENT_DEBUG */
 
-#define LOOKAHEAD_STACK_SIZE 70
-
-/* Larger the stack, better ; this one's right now used to
-   prevent general silliness [ if event's time is >= L_A_S_S, things
-   turn _nasty_ */
 #define FLAG_FREE_DATA      1	/* Free the 1st data segment after execution */
 #define FLAG_FREE_DATA2     2	/* Free the 2nd data segment after execution */
 #define FLAG_ZOMBIE         4	/* Exists there just because we're too
@@ -34,8 +29,6 @@
 /* ZOMBIE events aren't moved during reschedule, they instead die then.
    Killing them outside event_run is kinda unhealthy, therefore we set things
    just ZOMBIE and delete if it's convenient for us. */
-#define FLAG_IMPORTANT      16	/* Too important to be moved during
-				   load balancing */
 
 /* Main idea: Events are arranged as follows:
    - next 1-60sec (depending on present timing) each their own
@@ -54,25 +47,15 @@ typedef struct my_event_type {
     void *data2;
     int tick;			/* The tick this baby was first scheduled to go off */
     char type;
-#ifdef EVENT_DEBUG
-    int tick_scheduled;
-    int count_0_scheduled_at;
-    int count_1_scheduled_at;
-    int count_0_scheduled_to;
-    int count_1_scheduled_to;
-#endif
     struct my_event_type *next;
     struct my_event_type *next_in_main;
     struct my_event_type *prev_in_main;
     struct my_event_type *prev_in_type;
     struct my_event_type *next_in_type;
-} EVENT;
+} MUXEVENT;
 
 /* Some external things _do_ use this one */
 extern int muxevent_tick;
-extern int events_scheduled;
-extern int events_executed;
-extern int events_zombies;
 
 #include "p.event.h"
 
@@ -87,7 +70,7 @@ extern int events_zombies;
    field, d = next field (c = next field in case of single-linked
    model */
 
-#define REMOVE_FROM_LIST(a,c,b) if (a == b ) a = b->c; else { EVENT *t; \
+#define REMOVE_FROM_LIST(a,c,b) if (a == b ) a = b->c; else { MUXEVENT *t; \
 for (t=a;t->c != b;t=t->c); t->c = b->c; }
 #define REMOVE_FROM_BIDIR_LIST(a,c,d,b) if (b->c) b->c->d = b->d; \
  if (b->d) b->d->c = b->c; if (a==b) { a=b->d; if (a) a->c=NULL; }
@@ -106,10 +89,10 @@ for (t=a;t->c != b;t=t->c); t->c = b->c; }
 #define debug(a...)
 #endif
 
-void muxevent_add(int time, int flags, int type, void (*func) (EVENT *),
+void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
     void *data, void *data2);
-void muxevent_gothru_type_data(int type, void *data, void (*func) (EVENT *));
-void event_gothru_type(int type, void (*func) (EVENT *));
+void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *));
+void event_gothru_type(int type, void (*func) (MUXEVENT *));
 
 
 

@@ -1609,7 +1609,7 @@ void mech_tacmap(dbref player, void *data, char *buffer)
 
 
 /* XXX Fix 'enterbase <dir>' */
-static void mech_enter_event(EVENT * e)
+static void mech_enter_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data, *tmpm = NULL;
     mapobj *mapo;

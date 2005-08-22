@@ -129,7 +129,7 @@
 #define EVENT_SIDESLIP              79
 #endif
 
-#define ETEMPL(a) void a (EVENT *e)
+#define ETEMPL(a) void a (MUXEVENT *e)
 
 #include "p.aero.move.h"
 #include "p.mech.move.h"

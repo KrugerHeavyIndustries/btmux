@@ -1019,29 +1019,29 @@ int dodamage_func(dbref player,
     int *dummy1 = &dummy, *dummy2 = &dummy;
 
     if (direction < 8) {
-	hitloc = direction;
+        hitloc = direction;
     } else if (direction < 16) {
-	hitloc = direction - 8;
-	isrear = 1;
+        hitloc = direction - 8;
+        isrear = 1;
     } else if (direction > 21) {
-	return 0;
+        return 0;
     }
 
     if (mechmsg && *mechmsg)
-	mech_notify(mech, MECHALL, mechmsg);
+        mech_notify(mech, MECHALL, mechmsg);
     if (mechbroadcast && *mechbroadcast)
-	MechLOSBroadcast(mech, mechbroadcast);
+        MechLOSBroadcast(mech, mechbroadcast);
     while (totaldam) {
-	if (direction > 18)
-	    isrear = 1;
-	if (direction > 15)
-	    hitloc =
-		FindHitLocation(mech, ((direction - 1) & 3) + 1, dummy1,
-		dummy2);
-	this_time = MIN(clustersize, totaldam);
-	DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical,
-	    this_time, 0, 0, 0, -1, 0, 1);
-	totaldam -= this_time;
+        if (direction > 18)
+            isrear = 1;
+        if (direction > 15)
+            hitloc =
+                FindHitLocation(mech, ((direction - 1) & 3) + 1, dummy1,
+                        dummy2);
+        this_time = MIN(clustersize, totaldam);
+        DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical,
+                this_time, 0, 0, 0, -1, 0, 1);
+        totaldam -= this_time;
     }
     return 1;
 }

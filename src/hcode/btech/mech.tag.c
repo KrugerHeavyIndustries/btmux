@@ -20,7 +20,7 @@
 #define TAG_MED   10
 #define TAG_LONG  15
 
-static void tag_recycle_event(EVENT * e)
+static void tag_recycle_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int data = (int) e->data2;

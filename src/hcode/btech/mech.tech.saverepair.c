@@ -24,7 +24,7 @@ static int ev_type;
 #define CHESA(var) fwrite(&var, sizeof(var), 1, cheat_file)
 #define CHELO(var)  if (!fread(&var, sizeof(var), 1, f)) return
 
-static void save_event(EVENT * e)
+static void save_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int data = (int) e->data2;

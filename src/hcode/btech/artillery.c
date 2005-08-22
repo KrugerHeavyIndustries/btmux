@@ -93,7 +93,7 @@ int artillery_round_flight_time(float fx, float fy, float tx, float ty)
 }
 
 
-static void artillery_hit_event(EVENT * e)
+static void artillery_hit_event(MUXEVENT * e)
 {
     artillery_shot *s = (artillery_shot *) e->data;
 

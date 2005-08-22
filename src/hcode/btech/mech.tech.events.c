@@ -40,7 +40,7 @@ static int completely_intact_int(MECH * mech)
     return 1;
 }
 
-void muxevent_tickmech_removesection(EVENT * e)
+void muxevent_tickmech_removesection(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -78,7 +78,7 @@ void muxevent_tickmech_removesection(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_removegun(EVENT * e)
+void muxevent_tickmech_removegun(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -128,7 +128,7 @@ void muxevent_tickmech_removegun(EVENT * e)
 }
 
 
-void muxevent_tickmech_removepart(EVENT * e)
+void muxevent_tickmech_removepart(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -176,7 +176,7 @@ void muxevent_tickmech_removepart(EVENT * e)
     }
 }
 
-void muxevent_tickmech_repairarmor(EVENT * e)
+void muxevent_tickmech_repairarmor(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -233,7 +233,7 @@ void muxevent_tickmech_repairarmor(EVENT * e)
 	muxevent_tickmech_repairarmor, EVENT_REPAIR_FIX);
 }
 
-void muxevent_tickmech_repairinternal(EVENT * e)
+void muxevent_tickmech_repairinternal(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -269,7 +269,7 @@ void muxevent_tickmech_repairinternal(EVENT * e)
 	muxevent_tickmech_repairinternal, EVENT_REPAIR_FIXI);
 }
 
-void muxevent_tickmech_reattach(EVENT * e)
+void muxevent_tickmech_reattach(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -294,7 +294,7 @@ void muxevent_tickmech_reattach(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_replacesuit(EVENT * e)
+void muxevent_tickmech_replacesuit(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -312,7 +312,7 @@ void muxevent_tickmech_replacesuit(EVENT * e)
  * 8/4/99
  */
 
-void muxevent_tickmech_reseal(EVENT * e)
+void muxevent_tickmech_reseal(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -323,7 +323,7 @@ void muxevent_tickmech_reseal(EVENT * e)
     mech_notify(mech, MECHALL, tprintf("%s has been resealed.", buf));
 }
 
-void muxevent_tickmech_replacegun(EVENT * e)
+void muxevent_tickmech_replacegun(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -354,7 +354,7 @@ void muxevent_tickmech_replacegun(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_repairgun(EVENT * e)
+void muxevent_tickmech_repairgun(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -382,7 +382,7 @@ void muxevent_tickmech_repairgun(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_repairenhcrit(EVENT * e)
+void muxevent_tickmech_repairenhcrit(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -409,7 +409,7 @@ void muxevent_tickmech_repairenhcrit(EVENT * e)
     SetPartTempNuke(mech, loc, wFirstCrit, 0);
 }
 
-void muxevent_tickmech_repairpart(EVENT * e)
+void muxevent_tickmech_repairpart(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -432,7 +432,7 @@ void muxevent_tickmech_repairpart(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_reload(EVENT * e)
+void muxevent_tickmech_reload(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int earg = (int) (e->data2) % PLAYERPOS;
@@ -466,7 +466,7 @@ void muxevent_tickmech_reload(EVENT * e)
     } while (0);
 }
 
-void muxevent_tickmech_mountbomb(EVENT * e)
+void muxevent_tickmech_mountbomb(MUXEVENT * e)
 {
 
 /*    MECH *mech = (MECH *) e->data; */
@@ -474,7 +474,7 @@ void muxevent_tickmech_mountbomb(EVENT * e)
 /*    int earg = (int) (e->data2) % PLAYERPOS; */
 }
 
-void muxevent_tickmech_umountbomb(EVENT * e)
+void muxevent_tickmech_umountbomb(MUXEVENT * e)
 {
 
 /*    MECH *mech = (MECH *) e->data; */

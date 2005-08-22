@@ -50,7 +50,7 @@ void mech_ood_damage(MECH * wounded, MECH * attacker, int damage)
     }
 }
 
-void mech_ood_event(EVENT * e)
+void mech_ood_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 

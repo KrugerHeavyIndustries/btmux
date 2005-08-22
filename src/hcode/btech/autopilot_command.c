@@ -683,7 +683,7 @@ int auto_parse_command_sub(AUTO * a, MECH * mech, char *buffer,
     return -1;
 }
 
-void auto_reply_event(EVENT * e) {
+void auto_reply_event(MUXEVENT * e) {
 
     MECH *mech = (MECH *) e->data;
     char *buf = (char *) e->data2;

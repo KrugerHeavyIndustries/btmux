@@ -985,7 +985,6 @@ ECMD(debug_setxplevel);
 
 CommandsStruct debugcommands[] = {
     {0, "EVENTSTATS", "@Shows event statistics", debug_EventTypes},
-
     {0, "MEMSTATS [LONG]",
 	    "@Shows memory statistics (optionally in long form)",
 	debug_memory},

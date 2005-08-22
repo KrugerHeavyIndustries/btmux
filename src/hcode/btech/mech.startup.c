@@ -37,71 +37,71 @@
 #define BOOTCOUNT 6
 
 char *bsuit_bootmsgs[BOOTCOUNT] = {
-    "%cg->         Initializing powerpack       <-%c",
-    "%cg->          Powerpack operational       <-%c",
-    "%cg->             Suit sealed              <-%c",
-    "%cg->  Computer system is now operational  <-%c",
-    "%cg->         Air pressure steady          <-%c",
-    "       %cg- %cr-=>%ch%cw All systems go!%c %cr<= %cg-%c"
+    "%%cg->         Initializing powerpack       <-%%c",
+    "%%cg->          Powerpack operational       <-%%c",
+    "%%cg->             Suit sealed              <-%%c",
+    "%%cg->  Computer system is now operational  <-%%c",
+    "%%cg->         Air pressure steady          <-%%c",
+    "       %%cg- %%cr-=>%%ch%%cw All systems go!%%c %%cr<= %%cg-%%c"
 };
 
 char *aero_bootmsgs[BOOTCOUNT] = {
-    "%cg->       Main reactor is now online    <-%c",
-    "%cg->            Thrusters online         <-%c",
-    "%cg->  Main computer system is now online <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "       %cg- %cr-=>%ch%cw All systems go!%c %cr<= %cg-%c"
+    "%%cg->       Main reactor is now online    <-%%c",
+    "%%cg->            Thrusters online         <-%%c",
+    "%%cg->  Main computer system is now online <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "       %%cg- %%cr-=>%%ch%%cw All systems go!%%c %%cr<= %%cg-%%c"
 };
 
 char *bootmsgs[BOOTCOUNT] = {
-    "%cg->       Main reactor is now online    <-%c",
-    "%cg->         Gyros are now stable        <-%c",
-    "%cg->  Main computer system is now online <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "   %cg- %cr-=>%ch%cw All systems operational!%c %cr<=- %cg-%c"
+    "%%cg->       Main reactor is now online    <-%%c",
+    "%%cg->         Gyros are now stable        <-%%c",
+    "%%cg->  Main computer system is now online <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
 char *hover_bootmsgs[BOOTCOUNT] = {
-    "%cg->  Powerplant initialized and online  <-%c",
-    "%cg->   Checking plenum chamber status    <-%c",
-    "%cg->         Verifying fan status        <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "   %cg- %cr-=>%ch%cw All systems operational!%c %cr<=- %cg-%c"
+    "%%cg->  Powerplant initialized and online  <-%%c",
+    "%%cg->   Checking plenum chamber status    <-%%c",
+    "%%cg->         Verifying fan status        <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
 char *track_bootmsgs[BOOTCOUNT] = {
-    "%cg->  Powerplant initialized and online  <-%c",
-    "%cg->      Auto-aligning drive wheels     <-%c",
-    "%cg->       Adjusting track tension       <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "   %cg- %cr-=>%ch%cw All systems operational!%c %cr<=- %cg-%c"
+    "%%cg->  Powerplant initialized and online  <-%%c",
+    "%%cg->      Auto-aligning drive wheels     <-%%c",
+    "%%cg->       Adjusting track tension       <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
 char *wheel_bootmsgs[BOOTCOUNT] = {
-    "%cg->  Powerplant initialized and online  <-%c",
-    "%cg->  Performing steering system checks  <-%c",
-    "%cg->        Checking wheel status        <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "   %cg- %cr-=>%ch%cw All systems operational!%c %cr<=- %cg-%c"
+    "%%cg->  Powerplant initialized and online  <-%%c",
+    "%%cg->  Performing steering system checks  <-%%c",
+    "%%cg->        Checking wheel status        <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
 char *vtol_bootmsgs[BOOTCOUNT] = {
-    "%cg->     Initializing main powerplant    <-%c",
-    "%cg-> Main turbine online and operational <-%c",
-    "%cg->      Rotor transmission engaged     <-%c",
-    "%cg->     Scanners are now operational    <-%c",
-    "%cg-> Targeting system is now operational <-%c",
-    "   %cg- %cr-=>%ch%cw All systems operational!%c %cr<=- %cg-%c"
+    "%%cg->     Initializing main powerplant    <-%%c",
+    "%%cg-> Main turbine online and operational <-%%c",
+    "%%cg->      Rotor transmission engaged     <-%%c",
+    "%%cg->     Scanners are now operational    <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
 #define SSLEN MechType(mech) == CLASS_BSUIT ? 1 : (STARTUP_TIME / BOOTCOUNT)
 
-static void mech_startup_event(EVENT * e)
+static void mech_startup_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int timer = (int) e->data2;

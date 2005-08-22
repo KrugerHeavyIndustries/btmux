@@ -43,6 +43,8 @@ typedef char	IBUF[16];
 #include <sys/resource.h>
 #endif
 
+#include <event.h>
+
 /* TEST_MALLOC:	Defining this makes a malloc that keeps track of the number
  *		of blocks allocated.  Good for testing for Memory leaks.
  * ATR_NAME:	Define if you want name to be stored as an attribute on the

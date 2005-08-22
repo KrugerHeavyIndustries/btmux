@@ -711,9 +711,9 @@ static int UpdateSpecialObject_func(Node * tmp)
 
     i = WhichType(tmp);
     if (!SpecialObjects[i].updateTime)
-	return 1;
-    if ((muxevent_tick % SpecialObjects[i].updateTime))
-	return 1;
+        return 1;
+    if ((mudstate.now % SpecialObjects[i].updateTime))
+        return 1;
     SpecialObjects[i].updatefunc(NodeKey(tmp), NodeData(tmp));
     return 1;
 }
@@ -731,14 +731,13 @@ void UpdateSpecialObjects(void)
     int times = lastrun ? (mudstate.now - lastrun) : 1;
 
     if (times > 20)
-	times = 20;		/* Machine's hopelessly lagged,
-				   we don't want to make it [much] worse */
+        times = 20;		/* Machine's hopelessly lagged,
+                           we don't want to make it [much] worse */
     cmdsave = mudstate.debug_cmd;
     for (i = 0; i < times; i++) {
-	mudstate.debug_cmd = (char *) "< Generic hcode event handler>";
-	muxevent_run();
-	mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
-	GoThruTree(xcode_tree, UpdateSpecialObject_func);
+        muxevent_run();
+        mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
+        GoThruTree(xcode_tree, UpdateSpecialObject_func);
     }
     lastrun = mudstate.now;
     mudstate.debug_cmd = cmdsave;

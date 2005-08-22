@@ -51,7 +51,7 @@ static int tmp_flag = 0;
 static int tmp_loc;
 static int tmp_part;
 
-static void tech_check_locpart(EVENT * e)
+static void tech_check_locpart(MUXEVENT * e)
 {
     int loc, pos;
     int l = (int) e->data2;
@@ -61,7 +61,7 @@ static void tech_check_locpart(EVENT * e)
 	tmp_flag++;
 }
 
-static void tech_check_loc(EVENT * e)
+static void tech_check_loc(MUXEVENT * e)
 {
     int loc;
 

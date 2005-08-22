@@ -21,10 +21,7 @@
  * * hashval: Compute hash value of a string for a hash table.
  */
 
-int hashval(str, hashmask)
-char *str;
-int hashmask;
-{
+int hashval(char *str, int hashmask) {
     int hash;
     char *sp;
 

@@ -41,7 +41,7 @@
 #define LONG_TIME            2
 
 
-void hellow(EVENT * e)
+void hellow(MUXEVENT * e)
 {
     int n;
     int d = (int) e->data;

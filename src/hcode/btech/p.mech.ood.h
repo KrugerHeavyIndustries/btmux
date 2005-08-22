@@ -14,7 +14,7 @@
 
 /* mech.ood.c */
 void mech_ood_damage(MECH * wounded, MECH * attacker, int damage);
-void mech_ood_event(EVENT * e);
+void mech_ood_event(MUXEVENT * e);
 void initiate_ood(dbref player, MECH * mech, char *buffer);
 
 #endif				/* _P_MECH_OOD_H */

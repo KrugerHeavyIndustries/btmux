@@ -98,12 +98,12 @@ DOCHECK(mudconf.btech_limitedrepairs && !isds && !MechStall(mech) && !Wiz(player
 #define PLAYERPOS (LOCMAX*POSMAX*EXTMAX)
 
 #define TECHEVENT(a) \
-   void a (EVENT *e) \
+   void a (MUXEVENT *e) \
      { MECH *mech = (MECH *) e->data;  \
        int earg = (int) (e->data2) % PLAYERPOS;
 
 #define ETECHEVENT(a) \
-   extern void a (EVENT *e)
+   extern void a (MUXEVENT *e)
 
 #define START(a) notify(player, a)
 #ifndef BT_FREETECHTIME

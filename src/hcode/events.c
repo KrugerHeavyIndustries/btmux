@@ -134,84 +134,55 @@ static char *muxevent_names[] = {
     NULL
 };
 
-void debug_EventTypes(dbref player, void *data, char *buffer)
-{
+void debug_EventTypes(dbref player, void *data, char *buffer) {
     int i, j, k, tot = 0;
 
     if (buffer && *buffer) {
-	int t[MAX_EVENTS];
-	int tot_ev = 0;
+        int t[MAX_EVENTS];
+        int tot_ev = 0;
 
-	for (i = 0; i < MAX_EVENTS; i++) {
-	    t[i] = i;
-	    tot_ev += muxevent_exec_count[i];
-	}
-	for (i = 0; i < (MAX_EVENTS - 1); i++)
-	    for (j = i + 1; j < MAX_EVENTS; j++)
-		if (muxevent_exec_count[t[i]] > muxevent_exec_count[t[j]]) {
-		    int s = t[i];
+        for (i = 0; i < MAX_EVENTS; i++) {
+            t[i] = i;
+            tot_ev += muxevent_exec_count[i];
+        }
+        for (i = 0; i < (MAX_EVENTS - 1); i++)
+            for (j = i + 1; j < MAX_EVENTS; j++)
+                if (muxevent_exec_count[t[i]] > muxevent_exec_count[t[j]]) {
+                    int s = t[i];
 
-		    t[i] = t[j];
-		    t[j] = s;
-		}
-	/* Then, display */
-	notify(player, "Event history (by use)");
-	for (i = 0; i < MAX_EVENTS; i++)
-	    if (muxevent_exec_count[t[i]])
-		notify(player, tprintf("%-3d%-20s%10d %.3f%%", t[i],
-			muxevent_names[t[i]], muxevent_exec_count[t[i]],
-			((float) 100.0 * muxevent_exec_count[t[i]] /
-			    (tot_ev ? tot_ev : 1))));
+                    t[i] = t[j];
+                    t[j] = s;
+                }
+        /* Then, display */
+        notify(player, "Event history (by use)");
+        for (i = 0; i < MAX_EVENTS; i++)
+            if (muxevent_exec_count[t[i]])
+                notify(player, tprintf("%-3d%-20s%10d %.3f%%", t[i],
+                            muxevent_names[t[i]], muxevent_exec_count[t[i]],
+                            ((float) 100.0 * muxevent_exec_count[t[i]] /
+                             (tot_ev ? tot_ev : 1))));
 
-	return;
+        return;
     }
     notify(player, "Events by type: ");
     notify(player, "-------------------------------");
     k = muxevent_last_type();
     for (i = 0; i <= k; i++) {
-	j = muxevent_count_type(i);
-	if (!j)
-	    continue;
-	tot += j;
-	notify(player, tprintf("%-20s%d", muxevent_names[i], j));
+        j = muxevent_count_type(i);
+        if (!j)
+            continue;
+        tot += j;
+        notify(player, tprintf("%-20s%d", muxevent_names[i], j));
     }
     if (tot)
-	notify(player, "-------------------------------");
+        notify(player, "-------------------------------");
     notify(player, tprintf("%d total", tot));
-    notify(player, tprintf("%d scheduled - %d executed / %d zombies.",
-	    events_scheduled, events_executed, events_zombies));
-    if ((i = abs(events_scheduled - (j =
-		    (tot + events_executed + events_zombies)))))
-	notify(player, tprintf("ERROR: %d events %s!", i,
-		events_scheduled > j ? "missing" : "too many"));
-    else
-	notify(player, "Events seem to have been executed perfectly.");
 }
 
-
-void prerun_event(EVENT * e)
+void prerun_event(MUXEVENT * e)
 {
-#if 1
-    static char buf[LBUF_SIZE];
-    MECH *mech = (MECH *) e->data;
-
-    /* Magic 2-hour uptime means that we are 'supposedly' stable
-       [ read: crashy as hell, but.. :> you never know ] */
-    if (muxevent_tick <= 7200) {
-	if (muxevent_mech_event[(int) e->type])
-	    sprintf(buf, "< %s event for #%d[%s] driven by #%d[%s] >",
-		muxevent_names[(int) e->type], mech->mynum, GetMechID(mech),
-		MechPilot(mech),
-		Good_obj(MechPilot(mech)) ? Name(MechPilot(mech)) :
-		"Nobody");
-	else
-	    sprintf(buf, "< %s event >", muxevent_names[(int) e->type]);
-	mudstate.debug_cmd = buf;
-    }
-#endif
 }
 
-void postrun_event(EVENT * e)
+void postrun_event(MUXEVENT * e)
 {
-    muxevent_exec_count[(int) e->type]++;
 }

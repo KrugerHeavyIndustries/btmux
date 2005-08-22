@@ -1220,12 +1220,6 @@ int last_bug = -1;
 int last_bugc = 0;		/* If 4+ bugs per second, and/or 3 bugs per 2sec, *bang* */
 
 int fatal_bug() {
-    if (muxevent_tick != last_bug) {
-        last_bug2 = last_bug;
-        last_bug = muxevent_tick;
-        last_bugc = 1;
-        return 0;
-    }
     last_bugc++;
     if (last_bugc == 4)
         return 1;

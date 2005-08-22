@@ -797,22 +797,22 @@ int ai_check_path(MECH * m, AUTO * a, float dx, float dy, float delx,
     MAP *map = getMap(m->mapindex);
 
     o = ai_opponents(a, m);
-    if (a->last_upd > muxevent_tick || (muxevent_tick - a->last_upd) > AUTO_GOET) {
-	if ((muxevent_tick - a->last_upd) > AUTO_GOTT) {
-	    a->b_msc = MAGIC_NUM;
-	    a->w_msc = MAGIC_NUM;
-	    a->b_bsc = MAGIC_NUM;
-	    a->w_bsc = MAGIC_NUM;
-	    a->b_dan = MAGIC_NUM;
-	    a->b_dan = (40 + 20 * 29 + 100) * 30;	/* To stay focused */
-	} else {
-	    /* Slight update ; Un-refine the goals somewhat */
-	    UNREF(a->w_msc, a->b_msc, 3);
-	    UNREF(a->w_bsc, a->b_bsc, 5);
-	    UNREF(a->w_dan, a->b_dan, 8);
-	    a->b_dan = MAX(a->b_dan, (40 + 20 * 29 + 100) * 30);	/* To stay focused */
-	}
-	a->last_upd = muxevent_tick;
+    if (a->last_upd > mudstate.now || (mudstate.now - a->last_upd) > AUTO_GOET) {
+        if ((muxevent_tick - a->last_upd) > AUTO_GOTT) {
+            a->b_msc = MAGIC_NUM;
+            a->w_msc = MAGIC_NUM;
+            a->b_bsc = MAGIC_NUM;
+            a->w_bsc = MAGIC_NUM;
+            a->b_dan = MAGIC_NUM;
+            a->b_dan = (40 + 20 * 29 + 100) * 30;	/* To stay focused */
+        } else {
+            /* Slight update ; Un-refine the goals somewhat */
+            UNREF(a->w_msc, a->b_msc, 3);
+            UNREF(a->w_bsc, a->b_bsc, 5);
+            UNREF(a->w_dan, a->b_dan, 8);
+            a->b_dan = MAX(a->b_dan, (40 + 20 * 29 + 100) * 30);	/* To stay focused */
+        }
+        a->last_upd = mudstate.now;
     }
     /* Got either opponents (nasty) or [possibly] blocked path (slightly nasty), i.e. 12sec */
     if (MechType(m) == CLASS_MECH)

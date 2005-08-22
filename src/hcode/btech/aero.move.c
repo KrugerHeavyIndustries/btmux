@@ -69,7 +69,7 @@ struct land_data_type {
 
 #define NUM_LAND_TYPES (sizeof(land_data)/sizeof(struct land_data_type))
 
-static void aero_takeoff_event(EVENT * e)
+static void aero_takeoff_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     MAP *map = getMap(mech->mapindex);
@@ -396,7 +396,7 @@ void aero_ControlEffect(MECH * mech)
     mech_notify(mech, MECHALL, "You lose control of your craft!");
     MechLOSBroadcast(mech, "spins out of control!");
     StartSpinning(mech);
-    MechStartSpin(mech) = muxevent_tick;
+    MechStartSpin(mech) = mudstate.now;
 }
 
 void ds_BridgeHit(MECH * mech)
@@ -595,7 +595,7 @@ void aero_update(MECH * mech)
     }
     if (Started(mech) || MechPlusHeat(mech) > 0.)
 	UpdateHeat(mech);
-    if (!(muxevent_tick / 3 % 5)) {
+    if (!(mudstate.now / 3 % 5)) {
 	if (!Spinning(mech))
 	    return;
 	if (Destroyed(mech))
@@ -603,7 +603,7 @@ void aero_update(MECH * mech)
 	if (Landed(mech))
 	    return;
 	if (MadePilotSkillRoll(mech,
-		(MechStartSpin(mech) - muxevent_tick) / 15 + 8)) {
+		(MechStartSpin(mech) - mudstate.now) / 15 + 8)) {
 	    mech_notify(mech, MECHALL,
 		"You recover control of your craft.");
 	    StopSpinning(mech);

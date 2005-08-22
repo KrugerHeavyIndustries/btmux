@@ -92,6 +92,7 @@ struct bque {
     char *env[NUM_ENV_VARS];	/* environment vars */
     char *scr[NUM_ENV_VARS];	/* temp vars */
     int nargs;			/* How many args I have */
+    struct event ev;   /* event structure for wait queue */
 };
 
 extern void hashinit(HASHTAB *, int);

@@ -15,7 +15,7 @@
 /* events.c */
 void muxevent_count_initialize(void);
 void debug_EventTypes(dbref player, void *data, char *buffer);
-void prerun_event(EVENT * e);
-void postrun_event(EVENT * e);
+void prerun_event(MUXEVENT * e);
+void postrun_event(MUXEVENT * e);
 
 #endif				/* _P_EVENTS_H */

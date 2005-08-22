@@ -630,7 +630,7 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
     StartBSuitRecycle(mech, RECYCLE_ATTACKLEG);
 }
 
-static void mech_hide_event(EVENT * e)
+static void mech_hide_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     MECH *t;

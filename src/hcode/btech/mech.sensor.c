@@ -614,7 +614,7 @@ static int tmp_prim;
 static int tmp_sec;
 static int tmp_found;
 
-static void sensor_check(EVENT * e)
+static void sensor_check(MUXEVENT * e)
 {
     int d = ((int) e->data2);
 
@@ -659,7 +659,7 @@ static void show_sensor(dbref player, MECH * mech, int verbose)
     }
 }
 
-static void mech_sensorchange_event(EVENT * e)
+static void mech_sensorchange_event(MUXEVENT * e)
 {
     int d = (int) e->data2;
     MECH *mech = (MECH *) e->data;
@@ -855,7 +855,7 @@ void possibly_see_mech(MECH * mech)
 }
 
 
-static void mech_unblind_event(EVENT * e)
+static void mech_unblind_event(MUXEVENT * e)
 {
     MECH *m = (MECH *) e->data;
 

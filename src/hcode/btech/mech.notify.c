@@ -1521,10 +1521,13 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 
 extern int arc_override;
 
-void mech_notify(MECH * mech, int type, char *buffer)
+void mech_notify(MECH * mech, int type, char *format, ...)
 {
+    char buffer[8192];
     int i;
+    va_list ap;
 
+    
     if (Uncon(mech))
 	return;
     if (Blinded(mech))
@@ -1532,19 +1535,25 @@ void mech_notify(MECH * mech, int type, char *buffer)
     if (mech->mynum < 0)
 	return;
     /* Let's do colorization too, just in case. */
+
+    fprintf(stderr, "mech_notify input: '%s'\n", format);
+    va_start(ap, format);
+    vsnprintf(buffer, 8192, format, ap);
+    va_end(ap);
+    
     if (type == MECHPILOT) {
-	if (GotPilot(mech))
-	    notify(MechPilot(mech), buffer);
-	else
-	    mech_notify(mech, MECHALL, buffer);
+        if (GotPilot(mech))
+            notify(MechPilot(mech), buffer);
+        else
+            mech_notify(mech, MECHALL, buffer);
     } else if ((type == MECHALL && !Destroyed(mech)) ||
-	(type == MECHSTARTED && Started(mech))) {
-	notify_except(mech->mynum, NOSLAVE, mech->mynum, buffer);
-	if (arc_override)
-	    for (i = 0; i < NUM_TURRETS; i++)
-		if (AeroTurret(mech, i) > 0)
-		    notify_except(AeroTurret(mech, i), NOSLAVE,
-			AeroTurret(mech, i), buffer);
+            (type == MECHSTARTED && Started(mech))) {
+        notify_except(mech->mynum, NOSLAVE, mech->mynum, buffer);
+        if (arc_override)
+            for (i = 0; i < NUM_TURRETS; i++)
+                if (AeroTurret(mech, i) > 0)
+                    notify_except(AeroTurret(mech, i), NOSLAVE,
+                            AeroTurret(mech, i), buffer);
     }
 }
 

@@ -74,7 +74,7 @@ void FailureRadioStatic(MECH * mech, int weapnum, int weaptype,
     *type = FAIL_STATIC;
 }
 
-static void mech_rrec_event(EVENT * e)
+static void mech_rrec_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int val = (int) e->data2;
@@ -84,7 +84,7 @@ static void mech_rrec_event(EVENT * e)
 	mech_notify(mech, MECHALL, "Your radio is now operational again.");
 }
 
-static void mech_srec_event(EVENT * e)
+static void mech_srec_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int val = (int) e->data2;

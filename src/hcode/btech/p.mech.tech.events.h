@@ -13,20 +13,20 @@
 #define _P_MECH_TECH_EVENTS_H
 
 /* mech.tech.events.c */
-void muxevent_tickmech_removesection(EVENT * e);
-void muxevent_tickmech_removegun(EVENT * e);
-void muxevent_tickmech_removepart(EVENT * e);
-void muxevent_tickmech_repairarmor(EVENT * e);
-void muxevent_tickmech_repairinternal(EVENT * e);
-void muxevent_tickmech_reattach(EVENT * e);
-void muxevent_tickmech_replacesuit(EVENT * e);
-void muxevent_tickmech_replacegun(EVENT * e);
-void muxevent_tickmech_repairgun(EVENT * e);
-void event_mech_repairenhcrit(EVENT * e);
-void muxevent_tickmech_repairpart(EVENT * e);
-void muxevent_tickmech_reload(EVENT * e);
-void muxevent_tickmech_mountbomb(EVENT * e);
-void muxevent_tickmech_umountbomb(EVENT * e);
-void muxevent_tickmech_replacesuit(EVENT * e);
+void muxevent_tickmech_removesection(MUXEVENT * e);
+void muxevent_tickmech_removegun(MUXEVENT * e);
+void muxevent_tickmech_removepart(MUXEVENT * e);
+void muxevent_tickmech_repairarmor(MUXEVENT * e);
+void muxevent_tickmech_repairinternal(MUXEVENT * e);
+void muxevent_tickmech_reattach(MUXEVENT * e);
+void muxevent_tickmech_replacesuit(MUXEVENT * e);
+void muxevent_tickmech_replacegun(MUXEVENT * e);
+void muxevent_tickmech_repairgun(MUXEVENT * e);
+void event_mech_repairenhcrit(MUXEVENT * e);
+void muxevent_tickmech_repairpart(MUXEVENT * e);
+void muxevent_tickmech_reload(MUXEVENT * e);
+void muxevent_tickmech_mountbomb(MUXEVENT * e);
+void muxevent_tickmech_umountbomb(MUXEVENT * e);
+void muxevent_tickmech_replacesuit(MUXEVENT * e);
 
 #endif				/* _P_MECH_TECH_EVENTS_H */

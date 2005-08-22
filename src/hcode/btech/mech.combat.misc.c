@@ -116,7 +116,7 @@ void decrement_ammunition(MECH * mech,
     }
 }
 
-void mech_ammowarn_event(EVENT * e)
+void mech_ammowarn_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     int data = (int) e->data2;

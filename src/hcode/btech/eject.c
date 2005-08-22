@@ -66,7 +66,7 @@ int tele_contents(dbref from, dbref to, int flag)
 }
 
 /* Delayed blast event, for various reasons */
-static void mech_discard_event(EVENT * e)
+static void mech_discard_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
     dbref i = mech->mynum;

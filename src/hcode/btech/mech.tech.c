@@ -233,7 +233,7 @@ int tech_parsegun(MECH * mech, char *buffer, int *loc, int *pos,
 
 int cheated_last = 0;
 
-static void cheat_find_last(EVENT * e)
+static void cheat_find_last(MUXEVENT * e)
 {
     int ofs = e->tick - muxevent_tick;
     int amount = (((int) e->data2) % PLAYERPOS) / 16 - 1;

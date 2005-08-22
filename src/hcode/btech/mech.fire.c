@@ -21,7 +21,7 @@
 #define VEHICLEBURN_TICK 60
 #define VEHICLE_EXTINGUISH_TICK 120
 
-static void inferno_end_event(EVENT * e)
+static void inferno_end_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
 
@@ -45,7 +45,7 @@ void inferno_burn(MECH * mech, int time)
     MECHEVENT(mech, EVENT_BURN, inferno_end_event, l, 0);
 }
 
-static void vehicle_burn_event(EVENT * objEvent)
+static void vehicle_burn_event(MUXEVENT * objEvent)
 {
     MECH *objMech = (MECH *) objEvent->data;	/* get the mech */
     int wLoc = (int) objEvent->data2;	/* and now the loc to damage */
@@ -111,7 +111,7 @@ void vehicle_start_burn(MECH * objMech, MECH * objAttacker)
     }
 }
 
-void vehicle_extinquish_fire_event(EVENT * e)
+void vehicle_extinquish_fire_event(MUXEVENT * e)
 {
     MECH *objMech = (MECH *) e->data;
 
