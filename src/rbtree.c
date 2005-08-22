@@ -41,6 +41,7 @@ rbtree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
     memset(temp, 0, sizeof(rbtree));
     temp->compare_function = compare_function;
     temp->token = token;
+    temp->size = 0;
     return temp;
 }
 
@@ -119,6 +120,7 @@ static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
     temp->parent = parent;
     temp->key = key;
     temp->data = data;
+    
     return temp;
 }
 
@@ -189,6 +191,7 @@ void rb_insert(rbtree *bt, void *key, void *data) {
             if(node->left != NULL) {
                 node = node->left;
             } else {
+                bt->size++;
                 node->left = rb_allocate(node, key, data);
                 node = node->left;
                 break;
@@ -197,6 +200,7 @@ void rb_insert(rbtree *bt, void *key, void *data) {
             if(node->right != NULL) {
                 node = node->right;
             } else {
+                bt->size++;
                 node->right = rb_allocate(node, key, data);
                 node = node->right;
                 break;
@@ -356,6 +360,7 @@ void *rb_delete(rbtree *bt, void *key) {
                 node->parent->right = NULL;
         else
             bt->head = NULL;
+        bt->size--;
         free(node);
         return data;
     } else if(node->left == NULL) {
@@ -366,6 +371,7 @@ void *rb_delete(rbtree *bt, void *key) {
                 node->parent->right = node->right;
         else 
             bt->head = node->right;
+        bt->size--;
         free(node);
         return data;
     } else if(node->right == NULL) {
@@ -376,6 +382,7 @@ void *rb_delete(rbtree *bt, void *key) {
                 node->parent->right = node->left;
         else
             bt->head = node->left;
+        bt->size--;
         free(node);
         return data;
     } else {
@@ -396,6 +403,7 @@ void *rb_delete(rbtree *bt, void *key) {
 
         node->data = child->data;
         node->key = child->key;
+        bt->size--;
         free(child);
         return data;
     }
@@ -437,4 +445,8 @@ void rb_walk(rbtree *bt, int how,
         last = node;
         node = node->parent;
     }
+}
+
+unsigned int rb_size(rbtree *bt) {
+    return bt->size;
 }

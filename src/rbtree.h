@@ -38,6 +38,7 @@ typedef struct rbtree_head_t {
     struct rbtree_node_t *head;
     int (*compare_function)(void *, void *, void *);
     void *token;
+    unsigned int size;
 } rbtree;
 
 rbtree *rb_init(int (*)(void *, void *, void *), void *);
@@ -50,5 +51,7 @@ void *rb_delete(rbtree *, void *key);
 
 void rb_walk(rbtree *, int, void (*)(void *, void *, int, void *), 
         void *);
+
+unsigned int rb_size(rbtree *);
 
 #endif
