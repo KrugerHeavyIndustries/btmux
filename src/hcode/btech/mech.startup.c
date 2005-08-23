@@ -99,6 +99,15 @@ char *vtol_bootmsgs[BOOTCOUNT] = {
     "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
 
+char *naval_bootmsgs[BOOTCOUNT] = {
+    "%%cg->       Main reactor is now online    <-%%c",
+    "%%cg->  Main computer system is now online <-%%c",
+    "%%cg->  Hull Integrity Monitoring Enabled  <-%%c",
+    "%%cg-> Ballast and Propulsion are Nominal  <-%%c",
+    "%%cg-> Targeting system is now operational <-%%c",
+    "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
+};
+
 #define SSLEN MechType(mech) == CLASS_BSUIT ? 1 : (STARTUP_TIME / BOOTCOUNT)
 
 static void mech_startup_event(MUXEVENT * e)
@@ -108,21 +117,43 @@ static void mech_startup_event(MUXEVENT * e)
     MAP *mech_map;
     int i;
 
-    mech_notify(mech, MECHALL,
-	is_aero(mech) ? aero_bootmsgs[timer] : MechType(mech) ==
-	CLASS_BSUIT ? bsuit_bootmsgs[timer] : MechMove(mech) ==
-	MOVE_HOVER ? hover_bootmsgs[timer] : MechMove(mech) ==
-	MOVE_TRACK ? track_bootmsgs[timer] : MechMove(mech) ==
-	MOVE_WHEEL ? wheel_bootmsgs[timer] : MechMove(mech) ==
-	MOVE_VTOL ? vtol_bootmsgs[timer] : bootmsgs[timer]);
+    if(is_aero(mech)) {
+        mech_printf(mech, MECHALL, aero_bootmsgs[timer]);
+    } else if(MechType(mech) == CLASS_BSUIT) {
+        mech_printf(mech, MECHALL, bsuit_bootmsgs[timer]);
+    } else switch(MechMove(mech)) {
+        case MOVE_HOVER:
+            mech_printf(mech, MECHALL, hover_bootmsgs[timer]);
+            break;
+        case MOVE_TRACK:
+            mech_printf(mech, MECHALL, track_bootmsgs[timer]);
+            break;
+        case MOVE_WHEEL:
+            mech_printf(mech, MECHALL, wheel_bootmsgs[timer]);
+            break;
+        case MOVE_VTOL:
+            mech_printf(mech, MECHALL, vtol_bootmsgs[timer]);
+            break;
+        case MOVE_BIPED:
+            mech_printf(mech, MECHALL, bootmsgs[timer]);
+            break;
+        case MOVE_HULL:
+        case MOVE_FOIL:
+        case MOVE_SUB:
+            mech_printf(mech, MECHALL, naval_bootmsgs[timer]);
+            break;
+        default:
+            mech_printf(mech, MECHALL, bootmsgs[timer]);
+            break;
+    }
     timer++;
     if (timer < BOOTCOUNT) {
-	MECHEVENT(mech, EVENT_STARTUP, mech_startup_event, SSLEN, timer);
-	return;
+        MECHEVENT(mech, EVENT_STARTUP, mech_startup_event, SSLEN, timer);
+        return;
     }
     if ((mech_map = getMap(mech->mapindex)))
-	for (i = 0; i < mech_map->first_free; i++)
-	    mech_map->LOSinfo[mech->mapnumber][i] = 0;
+        for (i = 0; i < mech_map->first_free; i++)
+            mech_map->LOSinfo[mech->mapnumber][i] = 0;
     initialize_pc(MechPilot(mech), mech);
     Startup(mech);
     MarkForLOSUpdate(mech);
@@ -131,31 +162,31 @@ static void mech_startup_event(MUXEVENT * e)
     MechLOSBroadcast(mech, "powers up!");
     MechVerticalSpeed(mech) = 0;
     EvalBit(MechSpecials(mech), SS_ABILITY, ((MechPilot(mech) > 0 &&
-		isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
-		"Sixth_Sense") : 0));
+                    isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
+                    "Sixth_Sense") : 0));
     if (FlyingT(mech)) {
-	if (MechZ(mech) <= MechElevation(mech))
-	    MechStatus(mech) |= LANDED;
+        if (MechZ(mech) <= MechElevation(mech))
+            MechStatus(mech) |= LANDED;
     }
     MechComm(mech) = DEFAULT_COMM;
     if (isPlayer(MechPilot(mech)) && !Quiet(mech->mynum)) {
-	MechComm(mech) =
-	    char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
-	MechPer(mech) =
-	    char_getskilltarget(MechPilot(mech), "Perception", 0);
+        MechComm(mech) =
+            char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
+        MechPer(mech) =
+            char_getskilltarget(MechPilot(mech), "Perception", 0);
     } else {
-	MechComm(mech) = 6;
-	MechPer(mech) = 6;
+        MechComm(mech) = 6;
+        MechPer(mech) = 6;
     }
     MechCommLast(mech) = 0;
     MechLastStartup(mech) = mudstate.now;
     if (is_aero(mech) && !Landed(mech)) {
-	MechDesiredAngle(mech) = -90;
-	MechStartFX(mech) = 0.0;
-	MechStartFY(mech) = 0.0;
-	MechStartFZ(mech) = 0.0;
-	MechDesiredSpeed(mech) = MechMaxSpeed(mech);
-	MaybeMove(mech);
+        MechDesiredAngle(mech) = -90;
+        MechStartFX(mech) = 0.0;
+        MechStartFY(mech) = 0.0;
+        MechStartFZ(mech) = 0.0;
+        MechDesiredSpeed(mech) = MechMaxSpeed(mech);
+        MaybeMove(mech);
     }
     UnZombifyMech(mech);
 }
