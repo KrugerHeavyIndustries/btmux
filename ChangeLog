@@ -1,6 +1,143 @@
+btonline-btechmux 0.5:
+	- Changes
+	* Replaced the muxevent event queue's with evtimer callbacks.
+	  (Martin Murray)
+	* Added mech_printf() to replace mech_notify(xxx, tprintf(xxx))
+	  construction. (Martin Murray)
+	* Replaced @wait command queue system with libevent evtimer
+	  callbacks. (Martin Murray)
+
+btonline-btechmux 0.4:
+	- Changes
+	* Merged with the unstable branch's revision #38 + the patch
+	  for @restart and the rbtree. Includes some updates to the 
+	  event code including the need for libevent to be installed 
+	  on the system. (Dany)
+	* Changed btech_tl3_charge to default on. (Dany)
+	* Added btech_use_tech_bsuit config parameter with default on.
+	  When enabled it uses the Technician-BSuit skill for fixing
+	  BattleSuits, if off uses Technician-Battlemech. (Dany)
+	* Replaced the select() loop in bsd.c with Niels Provos' 
+	  libevent system. Libevent is now necessary. (Martin Murray)
+	* Renamed the mux event system muxevent to prevent collisions
+	  with libevent functions. (Martin Murray)
+	* Added HIDDEN flag to status and scan so you can tell if a
+	  unit is hidden. (Dany)
+	* Changed how AIs do physical attacks. Physical weapon attacks 
+	  first, then kicking and finally they try to punch. (Dany)
+	* Can no longer DFA airborne targets. (Dany)
+	* Tanks can now charge 'ram' other tanks.
+	* Added TL3 FASA charge rules. Can be enabled/disabled by
+	  adding btech_tl3_charge 1 or 0 to the MUX config file. (Dany)
+	* Changed the charge distance recoder to record actual distance
+	  traveled instead of number of hexes entered. Fixed a cheat
+	  were a unit traveling 0/180 could double their charge
+	  distance. (Dany)
+	* Changes to the SQL Stuff, Cleaning up some of the SQL Code
+	  made it more readable. (Dany)
+	* Added the ability to specify the port number as well as the
+	  unix socket for the mysql database. (Dany)
+	* Made a compile time flag NO_SQLSLAVE. If you define this
+	  in config.h and compile with SQL_SUPPORT on, it will
+	  build the sql code directly into the MUX and will not use
+	  the sqlslave program. This was to help us debug sqlslave
+	  as well as giving people other options. This will be added
+	  to the configure system whenever I get a chance. (Dany)
+	* Added logging to both sqlslave and the sql in the mux.
+	  The files generated are sqlslave.log (for when using
+	  sqlslave) and sql.log (for when using built in sql).
+	  These files get big fast if you do a lot of queries, I
+	  will have to add some way of specifying the logging level
+	  later. (Dany)
+
+	- Merge
+	* Added Exile's AI Roam stuff. (Dany)
+	* Added Exile's hide tech (CAMO_TECH in this case) so any
+	  unit set with CAMO_TECH can hide. (Dany)
+	* Added a whole bunch of AI commands from Exile. Check the
+	  AI help for the whole list. (Dany)
+	* AIs now score their targets like Exile. Using a combo of
+	  BV and BTH. (Dany)
+	* Added parts of Exile's autogun code. (Dany)
+	* Added Exile's autosensor code for the AIs. (Dany)
+
+	- BugFixes
+	* Changed the name of the skill 'Technician-BattleSuit' to
+	  'Technician-BSuit' to fix a bug when setting and getting the xp
+	  of that skill. (Dany)
+	* Should now see more emits when trying to hide and when you break
+	  your cover. (Dany)
+	* AIs should now limit their speed if the user specifies a
+	  speed percentage. (Dany)
+	* Fixed an issue were commands sent over the radio to AIs were
+	  losing pieces and not making it to all the AIs. (Dany)
+	* Cleaned up and added some more checks to the dfa code. (Dany)
+	* Cleaned up and added some more checks to the charge code. (Dany)
+	* Fixed a crash bug with LOS. (Martin Murray)
+
+btonline-btechmux 0.3:
+	* New version of deltech that supports 'all' or specific
+	  tech to be removed. Shows a list of techs if none or bad
+	  name for one is supplied. (Dany)
+	* Added the scode function pairs(). Give it the parameter
+	  obj/attr and it will count the # of {[()]} and return a
+	  string like 0 0 0 0 0 0 showing the # of each found.
+	* Added the scode function btpayload_ref(). Give it the REF 
+	  of a unit and it will return the weapons + ammo (no melee
+	  weaps) of the unit in a special format.
+	  <item 1>:<amt>|...|<item n>:<amt> (Dany)
+	* Broke the fun_btpartname function into two pieces,
+	  fun_btpartname and partname_func. partname_func will accept
+	  a part index value & name type, and it will return the name
+	  of the part as a string. Only for use in the hardcode. (Dany)
+	* Changed the function btmapterr() so that when it finds a
+	  GRASSLAND hex, instead of returning a space ' ' it returns
+	  a period '.'. Which is whats stored in the .map files
+	  anyways (Dany)
+	* Rewrote the configure script to allow easy selection of
+	  features. (Dany)
+	* Made the code more dependent on autoconf.h so no more of
+	  those -D compile time flags in Makefile (Dany)
+	* Default tactical screen size is now 14 21 (Dany)
+	* Switched the specialsstatus xcode variable to status2 so
+	  its more like Exile (Dany)
+
+	- Merge
+	* Changed @tacheight to @tacsize so player can specify height
+	  and width for their tactical with a max size of 24 40 and a
+	  min size of 5 5 (Dany)
+	* Added and changed some of the Monitor channels around. New
+	  Channels are...
+	  	  MechAttackEmits : if a target has the ATTACKEMIT_MECH flag
+							set, emit the attack info here 
+	  	  MechAttacks     : Any attacks are displayed here 
+	      MechAttackXP    : Any attack xp is displayed here 
+		  MechBTHDebug    : If BTH_DEBUG is on at compile time this
+							outputs useful info
+		  MechFreqs       : If people from different teams set the
+							same freq this emits info
+		  MechPilotXP     : Any pilot xp is displayed here
+		  MechTechXP	  : Any tech xp is displayed here
+
+	  The MechXP channel is only used for other skills now. (Dany)
+	* Added the ATTACKEMIT_MECH flag from Exile. When set on a
+	  target it emits info to the MechAttackEmits channel when
+	  the target is attacked. Its part of the status2 xcode
+	  flag as 't'. (Dany)
+
+	- Bugfixes
+	* Fixed the scode function btpartmatch(). It was not returning
+	  part number values if you used either the short or vlong name
+	  for a part. (Dany)
+	* Fixed the function btpartmatch() so that when the user
+	  puts in a bad partname it returns "#-1 INVALID PARTNAME"
+	  instead of nothing. (Dany)
+	* Fixed a small bug with src/attrs.h and src/db.c leftover
+	  from when the luck system was removed. (Dany)
+
 btonline-btechmux 0.2:
     - Bugfixes
-        * Fixed ArtemisV's abbreviation to be AV rather than AIV which
+    * Fixed ArtemisV's abbreviation to be AV rather than AIV which
 	  is already taken (Greg Taylor)
 	* Changed the version string to be a little shorter. (Greg Taylor)
 	* Removed BT_COMPLEXREPAIRS from defines. Most sites won't

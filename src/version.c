@@ -87,11 +87,11 @@ strcat(mux_version, "+ALG");
 
 #ifdef BETA
 #if PATCHLEVEL > 0
-    snprintf(mudstate.version, 128, "TinyMUX Beta %s patchlevel %d #%s",
-	mux_version, PATCHLEVEL, MUX_BUILD_NUM);
+    snprintf(mudstate.version, 128, "TinyMUX Beta %s patchlevel %d #%s with %s",
+	mux_version, PATCHLEVEL, MUX_BUILD_NUM, PACKAGE_STRING);
 #else
-    snprintf(mudstate.version, 128, "TinyMUX Beta %s #%s", mux_version,
-	MUX_BUILD_NUM);
+    snprintf(mudstate.version, 128, "TinyMUX Beta %s #%s with %s", mux_version,
+	MUX_BUILD_NUM, PACKAGE_STRING);
 #endif				/*
 				 * PATCHLEVEL 
 				 */
@@ -99,11 +99,11 @@ strcat(mux_version, "+ALG");
 				 * not BETA 
 				 */
 #if PATCHLEVEL > 0
-    snprintf(mudstate.version, 128, "TinyMUX %s patchlevel %d #%s [%s]",
-	mux_version, PATCHLEVEL, MUX_BUILD_NUM, MUX_RELEASE_DATE);
+    snprintf(mudstate.version, 128, "TinyMUX %s patchlevel %d #%s [%s] with %s",
+	mux_version, PATCHLEVEL, MUX_BUILD_NUM, MUX_RELEASE_DATE, PACKAGE_STRING);
 #else
-    snprintf(mudstate.version, 128, "TinyMUX %s #%s [%s]", mux_version,
-	MUX_BUILD_NUM, MUX_RELEASE_DATE);
+    snprintf(mudstate.version, 128, "TinyMUX %s #%s [%s] with %s", mux_version,
+	MUX_BUILD_NUM, MUX_RELEASE_DATE, PACKAGE_STRING);
 #endif				/*
 				 * PATCHLEVEL 
 				 */
