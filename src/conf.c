@@ -1862,18 +1862,11 @@ void list_cf_access(player)
  * This is the prototype for functions 
  */
 
-#define	FUNCTION(x)	\
-    void x(buff, bufc, player, cause, fargs, nfargs, cargs, ncargs) \
-char *buff, **bufc; \
-dbref player, cause; \
-char *fargs[], *cargs[]; \
-int nfargs, ncargs;
-
 
 /* ----------------------------------------------------------------------
  ** fun_config: returns the option set in mudconf
  */
-FUNCTION(fun_config)
+void fun_config(char *buff, char **bufc, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     CONF *cp;
 

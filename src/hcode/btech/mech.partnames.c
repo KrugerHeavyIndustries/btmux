@@ -19,7 +19,6 @@
 
 #include "mech.h"
 #include "htab.h"
-#include "extern.h"
 #include "create.h"
 #include "mech.partnames.h"
 
@@ -224,7 +223,7 @@ void ListForms(dbref player, void *data, char *buffer)
 
 }
 
-FUNCTION(fun_btpartmatch)
+void fun_btpartmatch(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = name to match on
      */
@@ -263,7 +262,7 @@ FUNCTION(fun_btpartmatch)
         safe_tprintf_str(buff, bufc, "#-1 INVALID PARTNAME");
 }
 
-FUNCTION(fun_btpartname)
+void fun_btpartname(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = partnumer to find name for
      * fargs[1] = 'short', 'long' or 'vlong'

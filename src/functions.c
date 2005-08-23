@@ -44,203 +44,194 @@ extern void cf_log_notfound(dbref player, char *cmd,
  * Function definitions from funceval.c 
  */
 
-#define	XFUNCTION(x)	\
-	extern void x();
 /* EXILE_FUNCS_SUPPORT below is where a name is changed for exile DB's.
  * Perhaps with time someday it can be changed and a @function can be defined
  * on the sites in question. For now I rather do this.
  */
 
-XFUNCTION(fun_btdesignex);
-XFUNCTION(fun_btgetcharvalue);
-XFUNCTION(fun_btmakemechs);
-XFUNCTION(fun_btmapelev);
-XFUNCTION(fun_btmapterr);
-XFUNCTION(fun_btsetcharvalue);
-XFUNCTION(fun_btgetxcodevalue);
-XFUNCTION(fun_btmakepilotroll);
-XFUNCTION(fun_btsetxcodevalue);
-XFUNCTION(fun_btstores);
-XFUNCTION(fun_btunderrepair);
-XFUNCTION(fun_btdamages);
-XFUNCTION(fun_btcritstatus);
-XFUNCTION(fun_btarmorstatus);
-XFUNCTION(fun_btsetarmorstatus);
-XFUNCTION(fun_btweaponstatus);
-XFUNCTION(fun_btthreshold);
-XFUNCTION(fun_btdamagemech);
-XFUNCTION(fun_bttechstatus);
-XFUNCTION(fun_btpartmatch);
-XFUNCTION(fun_btpartname);
-XFUNCTION(fun_btloadmap)
-XFUNCTION(fun_btloadmech)
-XFUNCTION(fun_btmechfreqs)
-XFUNCTION(fun_btaddparts)
+extern void fun_btdesignex();
+extern void fun_btgetcharvalue();
+extern void fun_btmakemechs();
+extern void fun_btmapelev();
+extern void fun_btmapterr();
+extern void fun_btsetcharvalue();
+extern void fun_btgetxcodevalue();
+extern void fun_btmakepilotroll();
+extern void fun_btsetxcodevalue();
+extern void fun_btstores();
+extern void fun_btunderrepair();
+extern void fun_btdamages();
+extern void fun_btcritstatus();
+extern void fun_btarmorstatus();
+extern void fun_btsetarmorstatus();
+extern void fun_btweaponstatus();
+extern void fun_btthreshold();
+extern void fun_btdamagemech();
+extern void fun_bttechstatus();
+extern void fun_btpartmatch();
+extern void fun_btpartname();
+extern void fun_btloadmap();
+extern void fun_btloadmech();
+extern void fun_btmechfreqs();
+extern void fun_btaddparts();
 #ifndef EXILE_FUNCS_SUPPORT
-XFUNCTION(fun_btgetrefxcodevalue);
-XFUNCTION(fun_btarmorref);
-XFUNCTION(fun_btcritref);
-XFUNCTION(fun_btweaponref);
-XFUNCTION(fun_bttechref);
-XFUNCTION(fun_btgetreftech);
-XFUNCTION(fun_btgetdbreffromid)
-XFUNCTION(fun_btlostohex)
-XFUNCTION(fun_btlostomech)
-XFUNCTION(fun_bthexlosbroadcast);
+extern void fun_btgetrefxcodevalue();
+extern void fun_btarmorref();
+extern void fun_btcritref();
+extern void fun_btweaponref();
+extern void fun_bttechref();
+extern void fun_btgetreftech();
+extern void fun_btgetdbreffromid();
+extern void fun_btlostohex();
+extern void fun_btlostomech();
+extern void fun_bthexlosbroadcast();
 #else
-XFUNCTION(fun_btgetxcodevalue_ref);
-XFUNCTION(fun_btarmorstatus_ref);
-XFUNCTION(fun_btcritstatus_ref);
-XFUNCTION(fun_btweaponstatus_ref);
-XFUNCTION(fun_bttech_ref);
-XFUNCTION(fun_btgetreftech_ref);
-XFUNCTION(fun_btid2db);
-XFUNCTION(fun_bthexlos);
-XFUNCTION(fun_btlosm2m);
-XFUNCTION(fun_bthexemit);
+extern void fun_btgetxcodevalue_ref();
+extern void fun_btarmorstatus_ref();
+extern void fun_btcritstatus_ref();
+extern void fun_btweaponstatus_ref();
+extern void fun_bttech_ref();
+extern void fun_btgetreftech_ref();
+extern void fun_btid2db();
+extern void fun_bthexlos();
+extern void fun_btlosm2m();
+extern void fun_bthexemit();
 #endif
 
 /* These are the new added functions */
 #ifdef EXILE_FUNCS_SUPPORT
 /* Exile BTFunctiosn */
-XFUNCTION(fun_btgetweight);
-XFUNCTION(fun_btpartweight);
-XFUNCTION(fun_btaddstores);
-XFUNCTION(fun_btremovestores);
-XFUNCTION(fun_bttechtime);
-XFUNCTION(fun_btcritslot);
-XFUNCTION(fun_btcritslot_ref);
-XFUNCTION(fun_btgetrange);
-XFUNCTION(fun_btsetmaxspeed);
-XFUNCTION(fun_btgetrealmaxspeed);
-XFUNCTION(fun_btgetbv);
-XFUNCTION(fun_btgetbv_ref);
-XFUNCTION(fun_bttechlist);
-XFUNCTION(fun_bttechlist_ref);
-XFUNCTION(fun_btpayload_ref);
-XFUNCTION(fun_btshowstatus_ref);
-XFUNCTION(fun_btshowwspecs_ref);
-XFUNCTION(fun_btshowcritstatus_ref);
-XFUNCTION(fun_btengrate);
-XFUNCTION(fun_btengrate_ref);
-XFUNCTION(fun_btweapstat);
-XFUNCTION(fun_btnumrepjobs);
-XFUNCTION(fun_btsetxy);
-XFUNCTION(fun_btmapemit);
-XFUNCTION(fun_btparttype);
+extern void fun_btgetweight();
+extern void fun_btpartweight();
+extern void fun_btaddstores();
+extern void fun_btremovestores();
+extern void fun_bttechtime();
+extern void fun_btcritslot();
+extern void fun_btcritslot_ref();
+extern void fun_btgetrange();
+extern void fun_btsetmaxspeed();
+extern void fun_btgetrealmaxspeed();
+extern void fun_btgetbv();
+extern void fun_btgetbv_ref();
+extern void fun_bttechlist();
+extern void fun_bttechlist_ref();
+extern void fun_btpayload_ref();
+extern void fun_btshowstatus_ref();
+extern void fun_btshowwspecs_ref();
+extern void fun_btshowcritstatus_ref();
+extern void fun_btengrate();
+extern void fun_btengrate_ref();
+extern void fun_btweapstat();
+extern void fun_btnumrepjobs();
+extern void fun_btsetxy();
+extern void fun_btmapemit();
+extern void fun_btparttype();
 #ifdef BT_ADVANCED_ECON
-XFUNCTION(fun_btgetpartcost);
-XFUNCTION(fun_btsetpartcost);
-XFUNCTION(fun_btfasabasecost_ref);
+extern void fun_btgetpartcost();
+extern void fun_btsetpartcost();
+extern void fun_btfasabasecost_ref();
 #endif
-XFUNCTION(fun_btunitfixable);
-XFUNCTION(fun_btlistblz);
-XFUNCTION(fun_bthexinblz);
-XFUNCTION(fun_btcharlist);
+extern void fun_btunitfixable();
+extern void fun_btlistblz();
+extern void fun_bthexinblz();
+extern void fun_btcharlist();
 
 /* Extra normal MUX functions I added */
-XFUNCTION(fun_cobj);
-XFUNCTION(fun_config);
+extern void fun_cobj();
+extern void fun_config();
 #endif
 	
-XFUNCTION(fun_cwho);
-XFUNCTION(fun_clist);
-XFUNCTION(fun_cemit);
-XFUNCTION(fun_beep);
-XFUNCTION(fun_ansi);
-XFUNCTION(fun_zone);
-XFUNCTION(fun_frank2num);
-XFUNCTION(fun_fnum2rank);
+extern void fun_cwho();
+extern void fun_clist();
+extern void fun_cemit();
+extern void fun_beep();
+extern void fun_ansi();
+extern void fun_zone();
+extern void fun_frank2num();
+extern void fun_fnum2rank();
 #ifdef SIDE_EFFECT_FUNCTIONS
-XFUNCTION(fun_link);
-XFUNCTION(fun_tel);
-XFUNCTION(fun_pemit);
-XFUNCTION(fun_create);
-XFUNCTION(fun_set);
-XFUNCTION(fun_setlock);
+extern void fun_link();
+extern void fun_tel();
+extern void fun_pemit();
+extern void fun_create();
+extern void fun_set();
+extern void fun_setlock();
 #endif
-XFUNCTION(fun_last);
-XFUNCTION(fun_matchall);
-XFUNCTION(fun_ports);
-XFUNCTION(fun_mix);
-XFUNCTION(fun_foreach);
-XFUNCTION(fun_munge);
-XFUNCTION(fun_visible);
-XFUNCTION(fun_elements);
-XFUNCTION(fun_grab);
-XFUNCTION(fun_scramble);
-XFUNCTION(fun_shuffle);
-XFUNCTION(fun_sortby);
-XFUNCTION(fun_default);
-XFUNCTION(fun_edefault);
-XFUNCTION(fun_udefault);
-XFUNCTION(fun_findable);
-XFUNCTION(fun_isword);
-XFUNCTION(fun_hasattr);
-XFUNCTION(fun_hasattrp);
-XFUNCTION(fun_zwho);
-XFUNCTION(fun_zplayers);
-XFUNCTION(fun_inzone);
-XFUNCTION(fun_children);
-XFUNCTION(fun_encrypt);
-XFUNCTION(fun_decrypt);
-XFUNCTION(fun_objeval);
-XFUNCTION(fun_squish);
-XFUNCTION(fun_stripansi);
-XFUNCTION(fun_zfun);
-XFUNCTION(fun_columns);
-XFUNCTION(fun_playmem);
+extern void fun_last();
+extern void fun_matchall();
+extern void fun_ports();
+extern void fun_mix();
+extern void fun_foreach();
+extern void fun_munge();
+extern void fun_visible();
+extern void fun_elements();
+extern void fun_grab();
+extern void fun_scramble();
+extern void fun_shuffle();
+extern void fun_sortby();
+extern void fun_default();
+extern void fun_edefault();
+extern void fun_udefault();
+extern void fun_findable();
+extern void fun_isword();
+extern void fun_hasattr();
+extern void fun_hasattrp();
+extern void fun_zwho();
+extern void fun_zplayers();
+extern void fun_inzone();
+extern void fun_children();
+extern void fun_encrypt();
+extern void fun_decrypt();
+extern void fun_objeval();
+extern void fun_squish();
+extern void fun_stripansi();
+extern void fun_zfun();
+extern void fun_columns();
+extern void fun_playmem();
 #ifdef USE_PYTHON
-XFUNCTION(fun_python);
-XFUNCTION(fun_pythoncall);
+extern void fun_python();
+extern void fun_pythoncall();
 #endif
-XFUNCTION(fun_objmem);
-XFUNCTION(fun_orflags);
-XFUNCTION(fun_andflags);
-XFUNCTION(fun_strtrunc);
-XFUNCTION(fun_ifelse);
-XFUNCTION(fun_inc);
-XFUNCTION(fun_dec);
-XFUNCTION(fun_mail);
-XFUNCTION(fun_mailfrom);
-XFUNCTION(fun_die);
-XFUNCTION(fun_lit);
-XFUNCTION(fun_shl);
-XFUNCTION(fun_shr);
-XFUNCTION(fun_vadd);
-XFUNCTION(fun_vsub);
-XFUNCTION(fun_vmul);
-XFUNCTION(fun_vmag);
-XFUNCTION(fun_vunit);
-XFUNCTION(fun_vdim);
-XFUNCTION(fun_strcat);
-XFUNCTION(fun_grep);
-XFUNCTION(fun_grepi);
-XFUNCTION(fun_art);
-XFUNCTION(fun_alphamax);
-XFUNCTION(fun_alphamin);
-XFUNCTION(fun_valid);
-XFUNCTION(fun_hastype);
-XFUNCTION(fun_lparent);
-XFUNCTION(fun_empty);
-XFUNCTION(fun_push);
-XFUNCTION(fun_peek);
-XFUNCTION(fun_pop);
-XFUNCTION(fun_items);
-XFUNCTION(fun_lstack);
-XFUNCTION(fun_regmatch);
-XFUNCTION(fun_translate);
+extern void fun_objmem();
+extern void fun_orflags();
+extern void fun_andflags();
+extern void fun_strtrunc();
+extern void fun_ifelse();
+extern void fun_inc();
+extern void fun_dec();
+extern void fun_mail();
+extern void fun_mailfrom();
+extern void fun_die();
+extern void fun_lit();
+extern void fun_shl();
+extern void fun_shr();
+extern void fun_vadd();
+extern void fun_vsub();
+extern void fun_vmul();
+extern void fun_vmag();
+extern void fun_vunit();
+extern void fun_vdim();
+extern void fun_strcat();
+extern void fun_grep();
+extern void fun_grepi();
+extern void fun_art();
+extern void fun_alphamax();
+extern void fun_alphamin();
+extern void fun_valid();
+extern void fun_hastype();
+extern void fun_lparent();
+extern void fun_empty();
+extern void fun_push();
+extern void fun_peek();
+extern void fun_pop();
+extern void fun_items();
+extern void fun_lstack();
+extern void fun_regmatch();
+extern void fun_translate();
 
 /*
  * This is the prototype for functions 
  */
-
-#define	FUNCTION(x)	\
-	static void x(buff, bufc, player, cause, fargs, nfargs, cargs, ncargs) \
-	char *buff, **bufc; \
-	dbref player, cause; \
-	char *fargs[], *cargs[]; \
-	int nfargs, ncargs;
 
 /*
  * This is for functions that take an optional delimiter character 
@@ -614,7 +605,7 @@ char *str, sep;
     return n;
 }
 
-FUNCTION(fun_words)
+static void fun_words(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
 
@@ -631,7 +622,7 @@ FUNCTION(fun_words)
  * Because @switch is case-insensitive, not quite as useful as it could be.
  */
 
-FUNCTION(fun_flags)
+static void fun_flags(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     char *buff2;
@@ -652,7 +643,7 @@ FUNCTION(fun_flags)
  * * fun_rand: Return a random number from 0 to arg1-1
  */
 
-FUNCTION(fun_rand)
+static void fun_rand(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int num;
 
@@ -668,7 +659,7 @@ FUNCTION(fun_rand)
  * * fun_abs: Returns the absolute value of its argument.
  */
 
-FUNCTION(fun_abs)
+static void fun_abs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double num;
 
@@ -687,7 +678,7 @@ FUNCTION(fun_abs)
  * * fun_sign: Returns -1, 0, or 1 based on the the sign of its argument.
  */
 
-FUNCTION(fun_sign)
+static void fun_sign(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double num;
 
@@ -723,7 +714,7 @@ time_t mytime(dbref player)
  * * fun_time: Returns nicely-formatted time.
  */
 
-FUNCTION(fun_time)
+static void fun_time(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *temp;
 
@@ -737,7 +728,7 @@ FUNCTION(fun_time)
  * * fun_time: Seconds since 0:00 1/1/70
  */
 
-FUNCTION(fun_secs)
+static void fun_secs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", mudstate.now);
 }
@@ -747,7 +738,7 @@ FUNCTION(fun_secs)
  * * fun_convsecs: converts seconds to time string, based off 0:00 1/1/70
  */
 
-FUNCTION(fun_convsecs)
+static void fun_convsecs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *temp;
     time_t tt;
@@ -913,7 +904,7 @@ struct tm *ttm;
 #undef LEAPYEAR_1900
 }
 
-FUNCTION(fun_convtime)
+static void fun_convtime(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct tm *ttm;
 
@@ -1031,7 +1022,7 @@ char *get_uptime_to_short_string(int uptime)
     return buf;
 }
 
-FUNCTION(fun_convuptime)
+static void fun_convuptime(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *uptimestring = get_uptime_to_string(atoi(fargs[0]));
 
@@ -1041,7 +1032,7 @@ FUNCTION(fun_convuptime)
 
 
 #ifdef BT_ENABLED
-FUNCTION(fun_lag)
+static void fun_lag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char buf[256];
 
@@ -1055,7 +1046,7 @@ FUNCTION(fun_lag)
  * * fun_starttime: What time did this system last reboot?
  */
 
-FUNCTION(fun_starttime)
+static void fun_starttime(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *temp;
 
@@ -1113,7 +1104,7 @@ char *buff, **bufc;
     return 0;
 }
 
-FUNCTION(fun_get)
+static void fun_get(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, free_buffer, aflags;
@@ -1122,33 +1113,33 @@ FUNCTION(fun_get)
     struct boolexp *bool;
 
     if (!parse_attrib(player, fargs[0], &thing, &attrib)) {
-	safe_str("#-1 NO MATCH", buff, bufc);
-	return;
+        safe_str("#-1 NO MATCH", buff, bufc);
+        return;
     }
     if (attrib == NOTHING) {
-	return;
+        return;
     }
     free_buffer = 1;
     attr = atr_num(attrib);	/*
-				 * We need the attr's flags for this: 
-				 */
+                             * We need the attr's flags for this: 
+                             */
     if (!attr) {
-	return;
+        return;
     }
     if (attr->flags & AF_IS_LOCK) {
-	atr_gotten = atr_get(thing, attrib, &aowner, &aflags);
-	if (Read_attr(player, thing, attr, aowner, aflags)) {
-	    bool = parse_boolexp(player, atr_gotten, 1);
-	    free_lbuf(atr_gotten);
-	    atr_gotten = unparse_boolexp(player, bool);
-	    free_boolexp(bool);
-	} else {
-	    free_lbuf(atr_gotten);
-	    atr_gotten = (char *) "#-1 PERMISSION DENIED";
-	}
-	free_buffer = 0;
+        atr_gotten = atr_get(thing, attrib, &aowner, &aflags);
+        if (Read_attr(player, thing, attr, aowner, aflags)) {
+            bool = parse_boolexp(player, atr_gotten, 1);
+            free_lbuf(atr_gotten);
+            atr_gotten = unparse_boolexp(player, bool);
+            free_boolexp(bool);
+        } else {
+            free_lbuf(atr_gotten);
+            atr_gotten = (char *) "#-1 PERMISSION DENIED";
+        }
+        free_buffer = 0;
     } else {
-	atr_gotten = atr_pget(thing, attrib, &aowner, &aflags);
+        atr_gotten = atr_pget(thing, attrib, &aowner, &aflags);
     }
 
     /*
@@ -1158,13 +1149,13 @@ FUNCTION(fun_get)
      */
 
     if (check_read_perms(player, thing, attr, aowner, aflags, buff, bufc))
-	safe_str(atr_gotten, buff, bufc);
+        safe_str(atr_gotten, buff, bufc);
     if (free_buffer)
-	free_lbuf(atr_gotten);
+        free_lbuf(atr_gotten);
     return;
 }
 
-FUNCTION(fun_xget)
+static void fun_xget(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, free_buffer, aflags;
@@ -1219,7 +1210,7 @@ FUNCTION(fun_xget)
     return;
 }
 
-FUNCTION(fun_get_eval)
+static void fun_get_eval(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, free_buffer, aflags, eval_it;
@@ -1275,7 +1266,7 @@ FUNCTION(fun_get_eval)
     return;
 }
 
-FUNCTION(fun_subeval)
+static void fun_subeval(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *str;
 
@@ -1291,7 +1282,7 @@ FUNCTION(fun_subeval)
 	(char **) NULL, 0);
 }
 
-FUNCTION(fun_eval)
+static void fun_eval(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, free_buffer, aflags, eval_it;
@@ -1465,12 +1456,12 @@ int nfargs, ncargs, is_local;
     }
 }
 
-FUNCTION(fun_u)
+static void fun_u(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_ufun(buff, bufc, player, cause, fargs, nfargs, cargs, ncargs, 0);
 }
 
-FUNCTION(fun_ulocal)
+static void fun_ulocal(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_ufun(buff, bufc, player, cause, fargs, nfargs, cargs, ncargs, 1);
 }
@@ -1480,7 +1471,7 @@ FUNCTION(fun_ulocal)
  * * fun_parent: Get parent of object.
  */
 
-FUNCTION(fun_parent)
+static void fun_parent(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -1500,7 +1491,7 @@ FUNCTION(fun_parent)
  * * NOTE: This function expects that its arguments have not been evaluated.
  */
 
-FUNCTION(fun_parse)
+static void fun_parse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *curr, *objstring, *buff2, *buff3, *cp, sep;
     char *dp, *str;
@@ -1541,7 +1532,7 @@ FUNCTION(fun_parse)
  * * fun_mid: mid(foobar,2,3) returns oba
  */
 
-FUNCTION(fun_mid)
+static void fun_mid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int l, len;
     char *oldp;
@@ -1566,7 +1557,7 @@ FUNCTION(fun_mid)
  * * fun_first: Returns first word in a string
  */
 
-FUNCTION(fun_first)
+static void fun_first(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *first, sep;
 
@@ -1593,7 +1584,7 @@ FUNCTION(fun_first)
  */
 
 
-FUNCTION(fun_rest)
+static void fun_rest(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *first, sep;
 
@@ -1619,7 +1610,7 @@ FUNCTION(fun_rest)
  * * fun_v: Function form of %-substitution
  */
 
-FUNCTION(fun_v)
+static void fun_v(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner;
     int aflags;
@@ -1671,7 +1662,7 @@ FUNCTION(fun_v)
  * * fun_s: Force substitution to occur.
  */
 
-FUNCTION(fun_s)
+static void fun_s(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *str;
 
@@ -1685,7 +1676,7 @@ FUNCTION(fun_s)
  * * fun_con: Returns first item in contents list of object/room
  */
 
-FUNCTION(fun_con)
+static void fun_con(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -1705,7 +1696,7 @@ FUNCTION(fun_con)
  * * fun_exit: Returns first exit in exits list of room.
  */
 
-FUNCTION(fun_exit)
+static void fun_exit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, exit;
     int key;
@@ -1733,7 +1724,7 @@ FUNCTION(fun_exit)
  * * fun_next: return next thing in contents or exits chain
  */
 
-FUNCTION(fun_next)
+static void fun_next(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, loc, exit, ex_here;
     int key;
@@ -1770,7 +1761,7 @@ FUNCTION(fun_next)
  * * fun_loc: Returns the location of something
  */
 
-FUNCTION(fun_loc)
+static void fun_loc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -1787,7 +1778,7 @@ FUNCTION(fun_loc)
  * * fun_where: Returns the "true" location of something
  */
 
-FUNCTION(fun_where)
+static void fun_where(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -1804,7 +1795,7 @@ FUNCTION(fun_where)
  * * fun_rloc: Returns the recursed location of something (specifying #levels)
  */
 
-FUNCTION(fun_rloc)
+static void fun_rloc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, levels;
     dbref it;
@@ -1831,7 +1822,7 @@ FUNCTION(fun_rloc)
  * * fun_room: Find the room an object is ultimately in.
  */
 
-FUNCTION(fun_room)
+static void fun_room(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     int count;
@@ -1861,7 +1852,7 @@ FUNCTION(fun_room)
  * * fun_owner: Return the owner of an object.
  */
 
-FUNCTION(fun_owner)
+static void fun_owner(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, aowner;
     int atr, aflags;
@@ -1886,7 +1877,7 @@ FUNCTION(fun_owner)
  * * fun_controls: Does x control y?
  */
 
-FUNCTION(fun_controls)
+static void fun_controls(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref x, y;
 
@@ -1908,7 +1899,7 @@ FUNCTION(fun_controls)
  * * fun_fullname: Return the fullname of an object (good for exits)
  */
 
-FUNCTION(fun_fullname)
+static void fun_fullname(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -1930,7 +1921,7 @@ FUNCTION(fun_fullname)
  * * fun_name: Return the name of an object
  */
 
-FUNCTION(fun_name)
+static void fun_name(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     char *s, *temp;
@@ -1961,7 +1952,7 @@ FUNCTION(fun_name)
  * * index of first match, or against the whole string.
  */
 
-FUNCTION(fun_match)
+static void fun_match(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int wcount;
     char *r, *s, sep;
@@ -1987,7 +1978,7 @@ FUNCTION(fun_match)
     safe_str("0", buff, bufc);
 }
 
-FUNCTION(fun_strmatch)
+static void fun_strmatch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * Check if we match the whole string.  If so, return 1 
@@ -2010,7 +2001,7 @@ FUNCTION(fun_strmatch)
  * * Now takes optional separator extract(foo-bar-baz,1,2,-) returns 'foo-bar'
  */
 
-FUNCTION(fun_extract)
+static void fun_extract(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int start, len;
     char *r, *s, *t, sep;
@@ -2093,7 +2084,7 @@ char *arg;
  * * index(a b | c d e | f gh | ij k, |, 2, 2) => c d e | f g h
  */
 
-FUNCTION(fun_index)
+static void fun_index(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int start, end;
     char c, *s, *p;
@@ -2156,7 +2147,7 @@ FUNCTION(fun_index)
 }
 
 
-FUNCTION(fun_cat)
+static void fun_cat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
 
@@ -2167,23 +2158,23 @@ FUNCTION(fun_cat)
     }
 }
 
-FUNCTION(fun_version)
+static void fun_version(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str(mudstate.version, buff, bufc);
 }
 
-FUNCTION(fun_strlen)
+static void fun_strlen(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d",
 	(int) strlen((char *) strip_ansi(fargs[0])));
 }
 
-FUNCTION(fun_num)
+static void fun_num(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "#%d", match_thing(player, fargs[0]));
 }
 
-FUNCTION(fun_pmatch)
+static void fun_pmatch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing;
 
@@ -2198,37 +2189,37 @@ FUNCTION(fun_pmatch)
 	safe_str("#-1 NO MATCH", buff, bufc);
 }
 
-FUNCTION(fun_gt)
+static void fun_gt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) > atof(fargs[1])));
 }
 
-FUNCTION(fun_gte)
+static void fun_gte(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) >= atof(fargs[1])));
 }
 
-FUNCTION(fun_lt)
+static void fun_lt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) < atof(fargs[1])));
 }
 
-FUNCTION(fun_lte)
+static void fun_lte(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) <= atof(fargs[1])));
 }
 
-FUNCTION(fun_eq)
+static void fun_eq(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) == atof(fargs[1])));
 }
 
-FUNCTION(fun_neq)
+static void fun_neq(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", (atof(fargs[0]) != atof(fargs[1])));
 }
 
-FUNCTION(fun_and)
+static void fun_and(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, val;
 
@@ -2244,7 +2235,7 @@ FUNCTION(fun_and)
     safe_tprintf_str(buff, bufc, "%d", val);
 }
 
-FUNCTION(fun_or)
+static void fun_or(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, val;
 
@@ -2260,7 +2251,7 @@ FUNCTION(fun_or)
     safe_tprintf_str(buff, bufc, "%d", val);
 }
 
-FUNCTION(fun_xor)
+static void fun_xor(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, val;
 
@@ -2277,12 +2268,12 @@ FUNCTION(fun_xor)
     safe_tprintf_str(buff, bufc, "%d", val);
 }
 
-FUNCTION(fun_not)
+static void fun_not(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%d", !xlate(fargs[0]));
 }
 
-FUNCTION(fun_sqrt)
+static void fun_sqrt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
 
@@ -2296,7 +2287,7 @@ FUNCTION(fun_sqrt)
     }
 }
 
-FUNCTION(fun_add)
+static void fun_add(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double sum = 0;
     int i;
@@ -2311,12 +2302,12 @@ FUNCTION(fun_add)
     fval(buff, bufc, sum);
 }
 
-FUNCTION(fun_sub)
+static void fun_sub(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, atof(fargs[0]) - atof(fargs[1]));
 }
 
-FUNCTION(fun_mul)
+static void fun_mul(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
     double prod;
@@ -2333,17 +2324,17 @@ FUNCTION(fun_mul)
     fval(buff, bufc, prod);
 }
 
-FUNCTION(fun_floor)
+static void fun_floor(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%.0f", floor(atof(fargs[0])));
 }
 
-FUNCTION(fun_ceil)
+static void fun_ceil(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%.0f", ceil(atof(fargs[0])));
 }
 
-FUNCTION(fun_round)
+static void fun_round(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     const char *fstr;
     char *oldp;
@@ -2383,12 +2374,12 @@ FUNCTION(fun_round)
     }
 }
 
-FUNCTION(fun_trunc)
+static void fun_trunc(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_tprintf_str(buff, bufc, "%.0f", atof(fargs[0]));
 }
 
-FUNCTION(fun_div)
+static void fun_div(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int bot;
 
@@ -2400,7 +2391,7 @@ FUNCTION(fun_div)
     }
 }
 
-FUNCTION(fun_fdiv)
+static void fun_fdiv(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double bot;
 
@@ -2412,7 +2403,7 @@ FUNCTION(fun_fdiv)
     }
 }
 
-FUNCTION(fun_mod)
+static void fun_mod(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int bot;
 
@@ -2422,37 +2413,37 @@ FUNCTION(fun_mod)
     safe_tprintf_str(buff, bufc, "%d", atoi(fargs[0]) % bot);
 }
 
-FUNCTION(fun_pi)
+static void fun_pi(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str("3.141592654", buff, bufc);
 }
 
-FUNCTION(fun_e)
+static void fun_e(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str("2.718281828", buff, bufc);
 }
 
-FUNCTION(fun_sin)
+static void fun_sin(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, sin(atof(fargs[0])));
 }
 
-FUNCTION(fun_cos)
+static void fun_cos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, cos(atof(fargs[0])));
 }
 
-FUNCTION(fun_tan)
+static void fun_tan(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, tan(atof(fargs[0])));
 }
 
-FUNCTION(fun_exp)
+static void fun_exp(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, exp(atof(fargs[0])));
 }
 
-FUNCTION(fun_power)
+static void fun_power(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val1, val2;
 
@@ -2465,7 +2456,7 @@ FUNCTION(fun_power)
     }
 }
 
-FUNCTION(fun_ln)
+static void fun_ln(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
 
@@ -2476,7 +2467,7 @@ FUNCTION(fun_ln)
 	safe_str("#-1 LN OF NEGATIVE OR ZERO", buff, bufc);
 }
 
-FUNCTION(fun_log)
+static void fun_log(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
 
@@ -2488,7 +2479,7 @@ FUNCTION(fun_log)
     }
 }
 
-FUNCTION(fun_asin)
+static void fun_asin(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
 
@@ -2500,7 +2491,7 @@ FUNCTION(fun_asin)
     }
 }
 
-FUNCTION(fun_acos)
+static void fun_acos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
 
@@ -2512,12 +2503,12 @@ FUNCTION(fun_acos)
     }
 }
 
-FUNCTION(fun_atan)
+static void fun_atan(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     fval(buff, bufc, atan(atof(fargs[0])));
 }
 
-FUNCTION(fun_dist2d)
+static void fun_dist2d(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int d;
     double r;
@@ -2530,7 +2521,7 @@ FUNCTION(fun_dist2d)
     safe_tprintf_str(buff, bufc, "%d", d);
 }
 
-FUNCTION(fun_dist3d)
+static void fun_dist3d(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int d;
     double r;
@@ -2552,7 +2543,7 @@ FUNCTION(fun_dist3d)
  * * fun_comp: string compare.
  */
 
-FUNCTION(fun_comp)
+static void fun_comp(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int x;
 
@@ -2570,7 +2561,7 @@ FUNCTION(fun_comp)
  * * fun_lcon: Return a list of contents.
  */
 
-FUNCTION(fun_lcon)
+static void fun_lcon(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, it;
     char *tbuf;
@@ -2599,7 +2590,7 @@ FUNCTION(fun_lcon)
  * * fun_lexits: Return a list of exits.
  */
 
-FUNCTION(fun_lexits)
+static void fun_lexits(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, it, parent;
     char *tbuf;
@@ -2659,7 +2650,7 @@ FUNCTION(fun_lexits)
  * * fun_home: Return an object's home 
  */
 
-FUNCTION(fun_home)
+static void fun_home(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -2682,7 +2673,7 @@ FUNCTION(fun_home)
  * * fun_money: Return an object's value
  */
 
-FUNCTION(fun_money)
+static void fun_money(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -2698,7 +2689,7 @@ FUNCTION(fun_money)
  * * fun_pos: Find a word in a string 
  */
 
-FUNCTION(fun_pos)
+static void fun_pos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i = 1;
     char *s, *t, *u;
@@ -2860,7 +2851,7 @@ int el, flag;
 }
 
 
-FUNCTION(fun_ldelete)
+static void fun_ldelete(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {				/*
 				 * delete a word at position X of a list 
 				 */
@@ -2871,7 +2862,7 @@ FUNCTION(fun_ldelete)
 	IF_DELETE);
 }
 
-FUNCTION(fun_replace)
+static void fun_replace(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {				/*
 				 * replace a word at position X of a list 
 				 */
@@ -2882,7 +2873,7 @@ FUNCTION(fun_replace)
 	IF_REPLACE);
 }
 
-FUNCTION(fun_insert)
+static void fun_insert(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {				/*
 				 * insert a word at position X of a list 
 				 */
@@ -2898,7 +2889,7 @@ FUNCTION(fun_insert)
  * * fun_remove: Remove a word from a string
  */
 
-FUNCTION(fun_remove)
+static void fun_remove(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *sp, *word;
     char sep;
@@ -2938,7 +2929,7 @@ FUNCTION(fun_remove)
  * * fun_member: Is a word in a string
  */
 
-FUNCTION(fun_member)
+static void fun_member(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int wcount;
     char *r, *s, sep;
@@ -2962,7 +2953,7 @@ FUNCTION(fun_member)
  * * fun_secure, fun_escape: escape [, ], %, \, and the beginning of the string.
  */
 
-FUNCTION(fun_secure)
+static void fun_secure(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s;
 
@@ -2989,7 +2980,7 @@ FUNCTION(fun_secure)
     }
 }
 
-FUNCTION(fun_ansi_secure)
+static void fun_ansi_secure(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s;
 
@@ -3022,7 +3013,7 @@ FUNCTION(fun_ansi_secure)
     }
 }
 
-FUNCTION(fun_escape)
+static void fun_escape(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *d;
 
@@ -3052,7 +3043,7 @@ FUNCTION(fun_escape)
  * Take a character position and return which word that char is in. 
  * wordpos(<string>, <charpos>)
  */
-FUNCTION(fun_wordpos)
+static void fun_wordpos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int charpos, i;
     char *cp, *tp, *xp, sep;
@@ -3077,7 +3068,7 @@ FUNCTION(fun_wordpos)
     return;
 }
 
-FUNCTION(fun_type)
+static void fun_type(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -3105,7 +3096,7 @@ FUNCTION(fun_type)
     return;
 }
 
-FUNCTION(fun_hasflag)
+static void fun_hasflag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -3124,7 +3115,7 @@ FUNCTION(fun_hasflag)
     }
 }
 
-FUNCTION(fun_haspower)
+static void fun_haspower(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
 
@@ -3143,7 +3134,7 @@ FUNCTION(fun_haspower)
     }
 }
 
-FUNCTION(fun_delete)
+static void fun_delete(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s, *temp, *bp;
     int i, start, nchars, len;
@@ -3169,7 +3160,7 @@ FUNCTION(fun_delete)
     free_lbuf(temp);
 }
 
-FUNCTION(fun_lock)
+static void fun_lock(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, aowner;
     int aflags;
@@ -3199,7 +3190,7 @@ FUNCTION(fun_lock)
 	free_lbuf(tbuf);
 }
 
-FUNCTION(fun_elock)
+static void fun_elock(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it, victim, aowner;
     int aflags;
@@ -3244,7 +3235,7 @@ FUNCTION(fun_elock)
  * * fun_lwho: Return list of connected users.
  */
 
-FUNCTION(fun_lwho)
+static void fun_lwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     make_ulist(player, buff, bufc);
 }
@@ -3254,7 +3245,7 @@ FUNCTION(fun_lwho)
  * * fun_nearby: Return whether or not obj1 is near obj2.
  */
 
-FUNCTION(fun_nearby)
+static void fun_nearby(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref obj1, obj2;
 
@@ -3291,22 +3282,22 @@ const char *token;
     }
 }
 
-FUNCTION(fun_obj)
+static void fun_obj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     process_sex(player, fargs[0], "%o", buff, bufc);
 }
 
-FUNCTION(fun_poss)
+static void fun_poss(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     process_sex(player, fargs[0], "%p", buff, bufc);
 }
 
-FUNCTION(fun_subj)
+static void fun_subj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     process_sex(player, fargs[0], "%s", buff, bufc);
 }
 
-FUNCTION(fun_aposs)
+static void fun_aposs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     process_sex(player, fargs[0], "%a", buff, bufc);
 }
@@ -3316,7 +3307,7 @@ FUNCTION(fun_aposs)
  * * fun_mudname: Return the name of the mud.
  */
 
-FUNCTION(fun_mudname)
+static void fun_mudname(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str(mudconf.mud_name, buff, bufc);
 }
@@ -3326,7 +3317,7 @@ FUNCTION(fun_mudname)
  * * fun_lcstr, fun_ucstr, fun_capstr: Lowercase, uppercase, or capitalize str.
  */
 
-FUNCTION(fun_lcstr)
+static void fun_lcstr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *ap;
 
@@ -3338,7 +3329,7 @@ FUNCTION(fun_lcstr)
     }
 }
 
-FUNCTION(fun_ucstr)
+static void fun_ucstr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *ap;
 
@@ -3350,7 +3341,7 @@ FUNCTION(fun_ucstr)
     }
 }
 
-FUNCTION(fun_capstr)
+static void fun_capstr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *s;
 
@@ -3365,7 +3356,7 @@ FUNCTION(fun_capstr)
  * * fun_lnum: Return a list of numbers.
  */
 
-FUNCTION(fun_lnum)
+static void fun_lnum(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char tbuff[10];
     int ctr, limit, llimit = 0, over;
@@ -3396,7 +3387,7 @@ FUNCTION(fun_lnum)
  * * fun_lattr: Return list of attributes I can see on the object.
  */
 
-FUNCTION(fun_lattr)
+static void fun_lattr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing;
     int ca, first;
@@ -3444,13 +3435,13 @@ char *from, *to;
     }
 }
 
-FUNCTION(fun_reverse)
+static void fun_reverse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     do_reverse(fargs[0], *bufc);
     *bufc += strlen(fargs[0]);
 }
 
-FUNCTION(fun_revwords)
+static void fun_revwords(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *temp, *tp, *t1, sep;
     int first;
@@ -3495,7 +3486,7 @@ FUNCTION(fun_revwords)
  * * fun_after, fun_before: Return substring after or before a specified string.
  */
 
-FUNCTION(fun_after)
+static void fun_after(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *bp, *cp, *mp;
     int mlen;
@@ -3569,7 +3560,7 @@ FUNCTION(fun_after)
     return;
 }
 
-FUNCTION(fun_before)
+static void fun_before(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *bp, *cp, *mp, *ip;
     int mlen;
@@ -3652,7 +3643,7 @@ FUNCTION(fun_before)
  * * fun_max, fun_min: Return maximum (minimum) value.
  */
 
-FUNCTION(fun_max)
+static void fun_max(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, j, got_one;
     double max;
@@ -3675,7 +3666,7 @@ FUNCTION(fun_max)
     return;
 }
 
-FUNCTION(fun_min)
+static void fun_min(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i, j, got_one;
     double min;
@@ -3704,7 +3695,7 @@ FUNCTION(fun_min)
  * * fun_search: Search the db for things, returning a list of what matches
  */
 
-FUNCTION(fun_search)
+static void fun_search(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing;
     char *bp, *nbuf;
@@ -3742,7 +3733,7 @@ FUNCTION(fun_search)
  * * fun_stats: Get database size statistics.
  */
 
-FUNCTION(fun_stats)
+static void fun_stats(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref who;
     STATS statinfo;
@@ -3773,7 +3764,7 @@ FUNCTION(fun_stats)
  * *   The strings must be of the same length.
  */
 
-FUNCTION(fun_merge)
+static void fun_merge(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *str, *rep;
     char c;
@@ -3828,7 +3819,7 @@ FUNCTION(fun_merge)
  * * fun_splice: similar to MERGE(), eplaces by word instead of by character.
  */
 
-FUNCTION(fun_splice)
+static void fun_splice(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *p1, *p2, *q1, *q2, sep;
     int words, i, first;
@@ -3877,7 +3868,7 @@ FUNCTION(fun_splice)
  * * fun_repeat: repeats a string
  */
 
-FUNCTION(fun_repeat)
+static void fun_repeat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int times, i;
 
@@ -3900,7 +3891,7 @@ FUNCTION(fun_repeat)
  * * NOTE: This function expects that its arguments have not been evaluated.
  */
 
-FUNCTION(fun_iter)
+static void fun_iter(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *curr, *objstring, *buff2, *buff3, *cp, *dp, sep, *str;
     int first, number = 0;
@@ -3935,7 +3926,7 @@ FUNCTION(fun_iter)
     free_lbuf(curr);
 }
 
-FUNCTION(fun_list)
+static void fun_list(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *curr, *objstring, *buff2, *buff3, *result, *cp, *dp, *str, sep;
     int number = 0;
@@ -3985,7 +3976,7 @@ FUNCTION(fun_list)
  * *      NOTE: To use added list separator, you must use base case!
  */
 
-FUNCTION(fun_fold)
+static void fun_fold(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum;
@@ -4097,7 +4088,7 @@ FUNCTION(fun_fold)
  * *  NOTE:  If you specify a separator it is used to delimit returned list
  */
 
-FUNCTION(fun_filter)
+static void fun_filter(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum, first;
@@ -4178,7 +4169,7 @@ FUNCTION(fun_filter)
  * *
  */
 
-FUNCTION(fun_map)
+static void fun_map(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref aowner, thing;
     int aflags, anum, first;
@@ -4245,7 +4236,7 @@ FUNCTION(fun_map)
  * * fun_edit: Edit text.
  */
 
-FUNCTION(fun_edit)
+static void fun_edit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *tstr;
 
@@ -4259,7 +4250,7 @@ FUNCTION(fun_edit)
  * * fun_locate: Search for things with the perspective of another obj.
  */
 
-FUNCTION(fun_locate)
+static void fun_locate(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int pref_type, check_locks, verbose, multiple;
     dbref thing, what;
@@ -4376,7 +4367,7 @@ FUNCTION(fun_locate)
  * * NOTE: This function expects that its arguments have not been evaluated.
  */
 
-FUNCTION(fun_switch)
+static void fun_switch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
     char *mbuff, *tbuff, *buf, *bp, *str;
@@ -4438,7 +4429,7 @@ FUNCTION(fun_switch)
     return;
 }
 
-FUNCTION(fun_case)
+static void fun_case(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
     char *mbuff, *buf, *bp, *str;
@@ -4498,7 +4489,7 @@ FUNCTION(fun_case)
  * * fun_space: Make spaces.
  */
 
-FUNCTION(fun_space)
+static void fun_space(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int num;
     char *cp;
@@ -4534,7 +4525,7 @@ FUNCTION(fun_space)
  * * fun_idle, fun_conn: return seconds idle or connected.
  */
 
-FUNCTION(fun_idle)
+static void fun_idle(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref target;
 
@@ -4544,7 +4535,7 @@ FUNCTION(fun_idle)
     safe_tprintf_str(buff, bufc, "%d", fetch_idle(target));
 }
 
-FUNCTION(fun_conn)
+static void fun_conn(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref target;
 
@@ -4650,7 +4641,7 @@ int n, sort_type;
     }
 }
 
-FUNCTION(fun_sort)
+static void fun_sort(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int nitems, sort_type;
     char *list, sep;
@@ -4878,7 +4869,7 @@ int oper;
     return;
 }
 
-FUNCTION(fun_setunion)
+static void fun_setunion(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
 
@@ -4887,7 +4878,7 @@ FUNCTION(fun_setunion)
     return;
 }
 
-FUNCTION(fun_setdiff)
+static void fun_setdiff(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
 
@@ -4896,7 +4887,7 @@ FUNCTION(fun_setdiff)
     return;
 }
 
-FUNCTION(fun_setinter)
+static void fun_setinter(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
 
@@ -4910,7 +4901,7 @@ FUNCTION(fun_setinter)
  * * rjust, ljust, center: Justify or center text, specifying fill character
  */
 
-FUNCTION(fun_ljust)
+static void fun_ljust(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int spaces, i;
     char sep;
@@ -4936,7 +4927,7 @@ FUNCTION(fun_ljust)
 	safe_chr(sep, buff, bufc);
 }
 
-FUNCTION(fun_rjust)
+static void fun_rjust(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int spaces, i;
     char sep;
@@ -4962,7 +4953,7 @@ FUNCTION(fun_rjust)
     safe_str(fargs[0], buff, bufc);
 }
 
-FUNCTION(fun_center)
+static void fun_center(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char sep;
     int i, len, lead_chrs, trail_chrs, width;
@@ -4996,7 +4987,7 @@ FUNCTION(fun_center)
  * * setq, setr, r: set and read global registers.
  */
 
-FUNCTION(fun_setq)
+static void fun_setq(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int regnum;
 
@@ -5010,7 +5001,7 @@ FUNCTION(fun_setq)
     }
 }
 
-FUNCTION(fun_setr)
+static void fun_setr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int regnum;
 
@@ -5026,7 +5017,7 @@ FUNCTION(fun_setr)
     safe_str(fargs[1], buff, bufc);
 }
 
-FUNCTION(fun_r)
+static void fun_r(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int regnum;
 
@@ -5043,7 +5034,7 @@ FUNCTION(fun_r)
  * * isnum: is the argument a number?
  */
 
-FUNCTION(fun_isnum)
+static void fun_isnum(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str((is_number(fargs[0]) ? "1" : "0"), buff, bufc);
 }
@@ -5053,7 +5044,7 @@ FUNCTION(fun_isnum)
  * * isdbref: is the argument a valid dbref?
  */
 
-FUNCTION(fun_isdbref)
+static void fun_isdbref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *p;
     dbref dbitem;
@@ -5074,7 +5065,7 @@ FUNCTION(fun_isdbref)
  * * trim: trim off unwanted white space.
  */
 
-FUNCTION(fun_trim)
+static void fun_trim(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *p, *lastchar, *q, sep;
     int trim;
@@ -5121,7 +5112,7 @@ FUNCTION(fun_trim)
 }
 
 #if ARBITRARY_LOGFILES_MODE>0
-FUNCTION(fun_logf)
+static void fun_logf(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     if (!fargs[0] || !fargs[1]) {
     	safe_str("#-1 INVALID ARGUMENTS", buff, bufc);
@@ -5139,7 +5130,7 @@ FUNCTION(fun_logf)
 ** fun_doing: return @doing string for arg.
 ** arg is either socket or player (Code adopted from Mux2.3)
 */
-FUNCTION(fun_doing)
+static void fun_doing(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     if ( is_number( fargs[0] ) )
     {
@@ -5198,7 +5189,7 @@ FUNCTION(fun_doing)
 ** fun_poll: return @doing header
 ** (Code adopted from Mux2.3)
 */
-FUNCTION(fun_poll)
+static void fun_poll(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     safe_str(mudstate.doing_hdr, buff, bufc);
 }
@@ -5209,7 +5200,7 @@ FUNCTION(fun_poll)
  ** Modified from fun_get
  ** Dany - 06/2005
  */
-FUNCTION(fun_pairs)
+static void fun_pairs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref thing, aowner;
     int attrib, free_buffer, aflags;

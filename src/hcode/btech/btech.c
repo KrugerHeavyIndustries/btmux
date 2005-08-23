@@ -24,7 +24,6 @@
 #include "create.h"
 #include "btechstats_global.h"
 #include "coolmenu.h"
-#include "extern.h"
 #include "mycool.h"
 #include "p.mech.utils.h"
 #include "p.glue.scode.h"
