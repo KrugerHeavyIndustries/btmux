@@ -84,9 +84,22 @@ extern void postrun_event(MUXEVENT * e);
 
 static void muxevent_delete(MUXEVENT *);
 
+#define Zombie(e) (e->flags & FLAG_ZOMBIE)
+#define LoopType(type,var) \
+    for (var = muxevent_first_in_type[type] ; var ; var = var->next_in_type) \
+if (!Zombie(var))
+
+#define LoopEvent(var) \
+    for (var = muxevent_list ; var ; var = var->next_in_main) \
+if (!Zombie(var))
+
 static void muxevent_wakeup(int fd, short event, void *arg) {
     MUXEVENT *e = (MUXEVENT *)arg;
 
+    if(Zombie(e)) {
+        muxevent_delete(e);
+        return;
+    }
     prerun_event(e);
     e->function(e);
     postrun_event(e);
@@ -94,8 +107,7 @@ static void muxevent_wakeup(int fd, short event, void *arg) {
 }
 
 void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
-        void *data, void *data2)
-{
+        void *data, void *data2) {
     MUXEVENT *e;
     struct timeval tv;
 
@@ -140,8 +152,7 @@ void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
 
 /* Remove event */
 
-static void muxevent_delete(MUXEVENT * e)
-{
+static void muxevent_delete(MUXEVENT * e) {
     if(evtimer_pending(&e->ev, NULL)) {
         evtimer_del(&e->ev);
     }
@@ -159,40 +170,41 @@ static void muxevent_delete(MUXEVENT * e)
 
 /* Run the thingy */
 
-#define Zombie(e) (e->flags & FLAG_ZOMBIE)
-#define LoopType(type,var) \
-    for (var = muxevent_first_in_type[type] ; var ; var = var->next_in_type) \
-if (!Zombie(var))
-
-#define LoopEvent(var) \
-    for (var = muxevent_list ; var ; var = var->next_in_main) \
-if (!Zombie(var))
-
-void muxevent_run()
-{
+void muxevent_run() {
     muxevent_tick += 1;
 }
 
-int muxevent_run_by_type(int type)
-{
+int muxevent_run_by_type(int type) {
+    MUXEVENT *e;
+    int ran = 0;
+
+    if (type <= last_muxevent_type) {
+        for (e = muxevent_first_in_type[type]; e; e = e->next_in_type) {
+            if (!Zombie(e)) {
+                prerun_event(e);
+                e->function(e);
+                postrun_event(e);
+                e->flags |= FLAG_ZOMBIE;
+                ran++;
+            }
+        }
+    }
+    return ran;
 }
 
-int muxevent_last_type()
-{
+int muxevent_last_type() {
     return last_muxevent_type;
 }
 
 /* Initialize the events */
 
-void muxevent_initialize()
-{
+void muxevent_initialize() {
     debug("muxevent_initialize\n");
 }
 
 /* Event removal functions */
 
-void muxevent_remove_data(void *data)
-{
+void muxevent_remove_data(void *data) {
     MUXEVENT *e;
 
     for (e = muxevent_list; e; e = e->next_in_main)
@@ -200,8 +212,7 @@ void muxevent_remove_data(void *data)
             e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remove_type_data(int type, void *data)
-{
+void muxevent_remove_type_data(int type, void *data) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -211,8 +222,7 @@ void muxevent_remove_type_data(int type, void *data)
             e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remove_type_data2(int type, void *data)
-{
+void muxevent_remove_type_data2(int type, void *data) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -222,8 +232,7 @@ void muxevent_remove_type_data2(int type, void *data)
             e->flags |= FLAG_ZOMBIE;
 }
 
-void muxevent_remove_type_data_data(int type, void *data, void *data2)
-{
+void muxevent_remove_type_data_data(int type, void *data, void *data2) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -236,8 +245,7 @@ void muxevent_remove_type_data_data(int type, void *data, void *data2)
 
 
 /* return the args of the event */
-void muxevent_get_type_data(int type, void *data, int *data2)
-{
+void muxevent_get_type_data(int type, void *data, int *data2) {
     MUXEVENT *e;
 
     LoopType(type, e)
@@ -246,8 +254,7 @@ void muxevent_get_type_data(int type, void *data, int *data2)
 }
 
 /* All the counting / other kinds of 'useless' functions */
-int muxevent_count_type(int type)
-{
+int muxevent_count_type(int type) {
     MUXEVENT *e;
     int count = 0;
 
@@ -259,8 +266,7 @@ int muxevent_count_type(int type)
 }
 
 
-int muxevent_count_type_data(int type, void *data)
-{
+int muxevent_count_type_data(int type, void *data) {
     MUXEVENT *e;
     int count = 0;
 
@@ -272,8 +278,7 @@ int muxevent_count_type_data(int type, void *data)
     return count;
 }
 
-int muxevent_count_type_data2(int type, void *data)
-{
+int muxevent_count_type_data2(int type, void *data) {
     MUXEVENT *e;
     int count = 0;
 
@@ -285,8 +290,7 @@ int muxevent_count_type_data2(int type, void *data)
     return count;
 }
 
-int muxevent_count_type_data_data(int type, void *data, void *data2)
-{
+int muxevent_count_type_data_data(int type, void *data, void *data2) {
     MUXEVENT *e;
     int count = 0;
 
@@ -298,8 +302,7 @@ int muxevent_count_type_data_data(int type, void *data, void *data2)
     return count;
 }
 
-int muxevent_count_data(int type, void *data)
-{
+int muxevent_count_data(int type, void *data) {
     MUXEVENT *e;
     int count = 0;
 
@@ -310,8 +313,7 @@ int muxevent_count_data(int type, void *data)
 }
 
 
-int muxevent_count_data_data(int type, void *data, void *data2)
-{
+int muxevent_count_data_data(int type, void *data, void *data2) {
     MUXEVENT *e;
     int count = 0;
 
@@ -321,8 +323,7 @@ int muxevent_count_data_data(int type, void *data, void *data2)
     return count;
 }
 
-void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *))
-{
+void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *)) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -332,8 +333,7 @@ void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *))
             func(e);
 }
 
-void muxevent_gothru_type(int type, void (*func) (MUXEVENT *))
-{
+void muxevent_gothru_type(int type, void (*func) (MUXEVENT *)) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -342,8 +342,7 @@ void muxevent_gothru_type(int type, void (*func) (MUXEVENT *))
         func(e);
 }
 
-int muxevent_last_type_data(int type, void *data)
-{
+int muxevent_last_type_data(int type, void *data) {
     MUXEVENT *e;
     int last = 0, t;
 
@@ -356,8 +355,7 @@ int muxevent_last_type_data(int type, void *data)
     return last;
 }
 
-int muxevent_first_type_data(int type, void *data)
-{
+int muxevent_first_type_data(int type, void *data) {
     MUXEVENT *e;
     int last = -1, t;
 
@@ -371,8 +369,7 @@ int muxevent_first_type_data(int type, void *data)
     return last;
 }
 
-int muxevent_count_type_data_firstev(int type, void *data)
-{
+int muxevent_count_type_data_firstev(int type, void *data) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
