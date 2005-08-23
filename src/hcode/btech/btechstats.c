@@ -32,7 +32,6 @@
 #include "htab.h"
 #include "create.h"
 #include "muxevent.h"
-#include "extern.h"
 #include "glue.h"
 #include "p.mechfile.h"
 #include "p.mech.utils.h"
@@ -579,7 +578,7 @@ static void show_charstatus(dbref player, PSTATS * s, dbref thing)
     coolmenu *c = NULL;
 
     if (thing) {
-	addmenu(tprintf("%%cgName     %%c: %s (#%d)", Name(thing), thing));
+        addmenu(tprintf("%%cgName     %%c: %s (#%d)", Name(thing), thing));
 	if (*(p = silly_atr_get(thing, A_FACTION)))
 	    addmenu(tprintf("%%cgFaction  %%c: %s", p));
 #if 0
@@ -734,23 +733,29 @@ void do_charclear(dbref player, dbref cause, int key, char *arg1)
     notify(player, tprintf("Player #%d stats cleared", thing));
 }
 
-
+#if 0
+/* Why, what the fuck? */
 dbref char_lookupplayer(dbref player, dbref cause, int key, char *arg1)
 {
     dbref which;
 
     if (!arg1 || !*arg1)
-	return NOTHING;
+        return NOTHING;
 
     if (!string_compare(arg1, "me") && (Typeof(player) == TYPE_PLAYER))
-	return player;
+        return player;
     if (arg1[0] == '#') {
-	if (sscanf(arg1, "#%d", &which) == 1)
-	    if (which >= 0 && isPlayer(which))
-		return which;
-	return NOTHING;
+        if (sscanf(arg1, "#%d", &which) == 1)
+            if (which >= 0 && isPlayer(which))
+            return which;
+        return NOTHING;
     }
     return lookup_player(NOTHING, arg1, 0);
+}
+#endif
+
+dbref char_lookupplayer(dbref player, dbref cause, int key, char *arg1) {
+    return lookup_player(player, arg1, 0);
 }
 
 static int loc_mod(int loc)
@@ -1580,7 +1585,7 @@ void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
 */
 }
 
-FUNCTION(fun_btgetcharvalue)
+void fun_btgetcharvalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = char id (#222)
        fargs[1] = value name / value loc #
@@ -1622,7 +1627,7 @@ FUNCTION(fun_btgetcharvalue)
 }
 
 
-FUNCTION(fun_btsetcharvalue)
+void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = char id (#222)
        fargs[1] = value name / value loc #
@@ -1694,7 +1699,7 @@ FUNCTION(fun_btsetcharvalue)
 ** appear. For attributes the full list will be returned of since
 ** characters need all of them.
 */    
-FUNCTION(fun_btcharlist)
+void fun_btcharlist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     int i;
     int type = 0;
