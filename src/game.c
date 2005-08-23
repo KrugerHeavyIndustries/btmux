@@ -940,8 +940,6 @@ char *message;
 	 */
 
 	pcache_sync();
-	SYNC;
-	CLOSE;
 	STARTLOG(LOG_ALWAYS, "DMP", "PANIC") {
 	    log_text((char *) "Panic dump: ");
 	    log_text(mudconf.crashdb);
@@ -1100,7 +1098,6 @@ void dump_database(void)
 	ENDLOG;
     } pcache_sync();
 
-    SYNC;
     dump_database_internal(DUMP_NORMAL);
     STARTLOG(LOG_DBSAVES, "DMP", "DONE") {
 	log_text((char *) "Dump complete: ");
@@ -1146,7 +1143,6 @@ int key;
 				 */
     if (!key || (key & DUMP_TEXT))
 	pcache_sync();
-    SYNC;
     if (!key || (key & DUMP_STRUCT)) {
 	if (mudconf.fork_dump) {
 	    if (mudconf.fork_vfork) {
@@ -1582,7 +1578,6 @@ char *argv[];
 
     close_sockets(0, (char *) "Going down - Bye");
     dump_database();
-    CLOSE;
 
     if (slave_socket != -1) {
 	kill(slave_pid, SIGKILL);

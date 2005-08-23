@@ -1551,7 +1551,6 @@ static RETSIGTYPE sighandler(sig)
 
                 /* Don't sync first. Using older db. */
 
-                CLOSE;
                 dump_database_internal(DUMP_CRASHED);
                 shutdown(slave_socket, 2);
                 kill(slave_pid, SIGKILL);

@@ -698,8 +698,7 @@ CMDENT command_table[] = {
         0,	        CS_ONE_ARG,			do_charclear},
 #endif
 #ifdef HUDINFO_SUPPORT
-{(char *)"hudinfo",		NULL,		CA_PUBLIC,
-	0,		CS_ONE_ARG,			fake_hudinfo},
+{(char *)"hudinfo",		NULL,		CA_PUBLIC, 0,		CS_ONE_ARG,			fake_hudinfo},
 #endif
 {(char *)PLUSHELP_COMMAND,	NULL,		0,
 	HELP_PLUSHELP,	CS_ONE_ARG,			do_help},

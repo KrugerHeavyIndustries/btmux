@@ -13,20 +13,6 @@
 
 #include <sys/file.h>
 
-#ifndef MEMORY_BASED
-#define STORE(key, attr)	cache_put(key, attr)
-#define DELETE(key)		cache_del(key)
-#define FETCH(key)		cache_get(key)
-#define SYNC			cache_sync()
-#define CLOSE			{ cache_sync(); dddb_close(); }
-#else
-#define STORE(key, attr)
-#define DELETE(key)
-#define FETCH(key)
-#define SYNC
-#define CLOSE
-#endif				/* MEMORY_BASED */
-
 
 #define	ITER_PARENTS(t,p,l)	for ((l)=0, (p)=(t); \
 				     (Good_obj(p) && \
