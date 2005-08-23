@@ -48,6 +48,7 @@ void MechLOSBroadcasti(MECH * mech, MECH * target, char *message);
 void MapBroadcast(MAP * map, char *message);
 void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
     MAP * mech_map, char *weapname, int IsHit);
-void mech_notify(MECH * mech, int type, char *format, ...);
+void mech_notify(MECH * mech, int type, char *buffer);
+void mech_printf(MECH * mech, int type, char *format, ...);
 
 #endif				/* _P_MECH_NOTIFY_H */
