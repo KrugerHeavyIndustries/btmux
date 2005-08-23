@@ -1079,18 +1079,14 @@ char *what, *args[];
  * * parse_attrib, parse_attrib_wild: parse <obj>/<attr> tokens.
  */
 
-int parse_attrib(player, str, thing, atr)
-dbref player, *thing;
-int *atr;
-char *str;
-{
+int parse_attrib(dbref player, char *str, dbref *thing, int *atr) {
     ATTR *attr;
     char *buff;
     dbref aowner;
     int aflags;
 
     if (!str)
-	return 0;
+        return 0;
 
     /*
      * Break apart string into obj and attr.  Return on failure 
@@ -1099,8 +1095,8 @@ char *str;
     buff = alloc_lbuf("parse_attrib");
     StringCopy(buff, str);
     if (!parse_thing_slash(player, buff, &str, thing)) {
-	free_lbuf(buff);
-	return 0;
+        free_lbuf(buff);
+        return 0;
     }
     /*
      * Get the named attribute from the object if we can 
@@ -1109,14 +1105,14 @@ char *str;
     attr = atr_str(str);
     free_lbuf(buff);
     if (!attr) {
-	*atr = NOTHING;
+        *atr = NOTHING;
     } else {
-	atr_pget_info(*thing, attr->number, &aowner, &aflags);
-	if (!See_attr(player, *thing, attr, aowner, aflags)) {
-	    *atr = NOTHING;
-	} else {
-	    *atr = attr->number;
-	}
+        atr_pget_info(*thing, attr->number, &aowner, &aflags);
+        if (!See_attr(player, *thing, attr, aowner, aflags)) {
+            *atr = NOTHING;
+        } else {
+            *atr = attr->number;
+        }
     }
     return 1;
 }

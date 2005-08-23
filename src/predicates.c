@@ -1100,21 +1100,19 @@ char *name, *command;
 void do_restart(player, cause, key)
 {
     if (mudstate.dumping) {
-	notify(player, "Dumping. Please try again later.");
-	return;
+        notify(player, "Dumping. Please try again later.");
+        return;
     }
 
     ResetSpecialObjects();
     raw_broadcast(0, "Game: Restart by %s, please wait.",
-	Name(Owner(player)));
+            Name(Owner(player)));
     STARTLOG(LOG_ALWAYS, "WIZ", "RSTRT") {
-	log_text((char *) "Restart by ");
-	log_name(player);
-	ENDLOG;
+        log_text((char *) "Restart by ");
+        log_name(player);
+        ENDLOG;
     } dump_database_internal(DUMP_RESTART);
 
-    SYNC;
-    CLOSE;
 
     shutdown(slave_socket, 2);
     kill(slave_pid, SIGKILL);
@@ -1128,7 +1126,6 @@ void do_restart(player, cause, key)
     kill(fileslave_pid, SIGKILL);
 #endif
 
-    alarm(0);
     dump_restart_db();
     execl("bin/netmux", "netmux", mudconf.config_file, NULL);
 }
@@ -1163,11 +1160,7 @@ dbref old, new;
     return NOTHING;
 }
 
-dbref match_possessed(player, thing, target, dflt, check_enter)
-dbref player, thing, dflt;
-char *target;
-int check_enter;
-{
+dbref match_possessed(dbref player, dbref thing, char *target, dbref dflt, int check_enter) {
     dbref result, result1;
     int control;
     char *buff, *start, *place, *s1, *d1, *temp;
@@ -1177,7 +1170,7 @@ int check_enter;
      */
 
     if (Good_obj(dflt))
-	return dflt;
+        return dflt;
 
     /*
      * Didn't find it directly.  Recursively do a contents check 
@@ -1186,104 +1179,104 @@ int check_enter;
     start = target;
     while (*target) {
 
-	/*
-	 * Fail if no ' characters 
-	 */
+        /*
+         * Fail if no ' characters 
+         */
 
-	place = target;
-	target = (char *) index(place, '\'');
-	if ((target == NULL) || !*target)
-	    return dflt;
+        place = target;
+        target = (char *) index(place, '\'');
+        if ((target == NULL) || !*target)
+            return dflt;
 
-	/*
-	 * If string started with a ', skip past it 
-	 */
+        /*
+         * If string started with a ', skip past it 
+         */
 
-	if (place == target) {
-	    target++;
-	    continue;
-	}
-	/*
-	 * If next character is not an s or a space, skip past 
-	 */
+        if (place == target) {
+            target++;
+            continue;
+        }
+        /*
+         * If next character is not an s or a space, skip past 
+         */
 
-	temp = target++;
-	if (!*target)
-	    return dflt;
-	if ((*target != 's') && (*target != 'S') && (*target != ' '))
-	    continue;
+        temp = target++;
+        if (!*target)
+            return dflt;
+        if ((*target != 's') && (*target != 'S') && (*target != ' '))
+            continue;
 
-	/*
-	 * If character was not a space make sure the following * * * 
-	 * 
-	 * * character is a space. 
-	 */
+        /*
+         * If character was not a space make sure the following * * * 
+         * 
+         * * character is a space. 
+         */
 
-	if (*target != ' ') {
-	    target++;
-	    if (!*target)
-		return dflt;
-	    if (*target != ' ')
-		continue;
-	}
-	/*
-	 * Copy the container name to a new buffer so we can * * * *
-	 * terminate it. 
-	 */
+        if (*target != ' ') {
+            target++;
+            if (!*target)
+                return dflt;
+            if (*target != ' ')
+                continue;
+        }
+        /*
+         * Copy the container name to a new buffer so we can * * * *
+         * terminate it. 
+         */
 
-	buff = alloc_lbuf("is_posess");
-	for (s1 = start, d1 = buff; *s1 && (s1 < temp); *d1++ = (*s1++));
-	*d1 = '\0';
+        buff = alloc_lbuf("is_posess");
+        for (s1 = start, d1 = buff; *s1 && (s1 < temp); *d1++ = (*s1++));
+        *d1 = '\0';
 
-	/*
-	 * Look for the container here and in our inventory.  Skip *
-	 * * * * past if we can't find it. 
-	 */
+        /*
+         * Look for the container here and in our inventory.  Skip *
+         * * * * past if we can't find it. 
+         */
 
-	init_match(thing, buff, NOTYPE);
-	if (player == thing) {
-	    match_neighbor();
-	    match_possession();
-	} else {
-	    match_possession();
-	}
-	result1 = match_result();
+        init_match(thing, buff, NOTYPE);
+        if (player == thing) {
+            match_neighbor();
+            match_possession();
+        } else {
+            match_possession();
+        }
+        result1 = match_result();
 
-	free_lbuf(buff);
-	if (!Good_obj(result1)) {
-	    dflt = promote_dflt(dflt, result1);
-	    continue;
-	}
-	/*
-	 * If we don't control it and it is either dark or opaque, *
-	 * * * * skip past. 
-	 */
+        free_lbuf(buff);
+        if (!Good_obj(result1)) {
+            dflt = promote_dflt(dflt, result1);
+            continue;
+        }
+        /*
+         * If we don't control it and it is either dark or opaque, *
+         * * * * skip past. 
+         */
 
-	control = Controls(player, result1);
-	if ((Dark(result1) || Opaque(result1)) && !control) {
-	    dflt = promote_dflt(dflt, NOTHING);
-	    continue;
-	}
-	/*
-	 * Validate object has the ENTER bit set, if requested 
-	 */
+        control = Controls(player, result1);
+        if ((Dark(result1) || Opaque(result1)) && !control) {
+            dflt = promote_dflt(dflt, NOTHING);
+            continue;
+        }
+        /*
+         * Validate object has the ENTER bit set, if requested 
+         */
 
-	if ((check_enter) && !Enter_ok(result1) && !control) {
-	    dflt = promote_dflt(dflt, NOPERM);
-	    continue;
-	}
-	/*
-	 * Look for the object in the container 
-	 */
+        if ((check_enter) && !Enter_ok(result1) && !control) {
+            dflt = promote_dflt(dflt, NOPERM);
+            continue;
+        }
+        /*
+         * Look for the object in the container 
+         */
 
-	init_match(result1, target, NOTYPE);
-	match_possession();
-	result = match_result();
-	result =
-	    match_possessed(player, result1, target, result, check_enter);
-	if (Good_obj(result))
-	    return result;
-	dflt = promote_dflt(dflt, result);
+        init_match(result1, target, NOTYPE);
+        match_possession();
+        result = match_result();
+        result =
+            match_possessed(player, result1, target, result, check_enter);
+        if (Good_obj(result))
+            return result;
+        dflt = promote_dflt(dflt, result);
     }
     return dflt;
 }
@@ -1328,10 +1321,7 @@ dbref *low_bound, *high_bound;
     }
 }
 
-int parse_thing_slash(player, thing, after, it)
-dbref player, *it;
-char *thing, **after;
-{
+int parse_thing_slash(dbref player, char *thing, char **after, dbref *it) {
     char *str;
 
     /*
@@ -1344,9 +1334,9 @@ char *thing, **after;
      */
 
     if (!*str) {
-	*after = NULL;
-	*it = NOTHING;
-	return 0;
+        *after = NULL;
+        *it = NOTHING;
+        return 0;
     }
     *str++ = '\0';
     *after = str;

@@ -244,68 +244,68 @@ void mech_shutdown(dbref player, void *data, char *buffer)
     MECH *mech = (MECH *) data;
 
     if (!CheckData(player, mech))
-	return;
-    DOCHECK((!Started(mech) &&
-	    !Starting(mech)), "The 'mech hasn't been started yet!");
+        return;
+    DOCHECK((!Started(mech) && !Starting(mech)), 
+            "The 'mech hasn't been started yet!");
     DOCHECK(MechType(mech) == CLASS_MW,
-	"You snore for a while.. and then _start_ yourself back up.");
-    DOCHECK(IsDS(mech) && !Landed(mech) &&
-	!Wiz(player), "No shutdowns in mid-air! Are you suicidal?");
+            "You snore for a while.. and then _start_ yourself back up.");
+    DOCHECK(IsDS(mech) && !Landed(mech) && !Wiz(player), 
+            "No shutdowns in mid-air! Are you suicidal?");
     if (MechPilot(mech) == -1)
-	return;
+        return;
     if (Starting(mech)) {
-	mech_notify(mech, MECHALL,
-	    "The startup sequence has been aborted.");
-	StopStartup(mech);
-	MechPilot(mech) = -1;
-	return;
+        mech_notify(mech, MECHALL,
+                "The startup sequence has been aborted.");
+        StopStartup(mech);
+        MechPilot(mech) = -1;
+        return;
     }
-    mech_notify(mech, MECHALL, tprintf("%s has been shutdown!",
-	    IsDS(mech) ? "Dropship" : is_aero(mech) ? "Fighter" :
-	    MechType(mech) == CLASS_BSUIT ? "Suit" : ((MechMove(mech) ==
-		    MOVE_HOVER) || (MechMove(mech) == MOVE_TRACK) ||
-		(MechMove(mech) ==
-		    MOVE_WHEEL)) ? "Vehicle" : MechMove(mech) ==
-	    MOVE_VTOL ? "VTOL" : "Mech"));
+    mech_printf(mech, MECHALL, "%s has been shutdown!",
+                IsDS(mech) ? "Dropship" : is_aero(mech) ? "Fighter" :
+                MechType(mech) == CLASS_BSUIT ? "Suit" : ((MechMove(mech) ==
+                        MOVE_HOVER) || (MechMove(mech) == MOVE_TRACK) ||
+                    (MechMove(mech) ==
+                     MOVE_WHEEL)) ? "Vehicle" : MechMove(mech) ==
+                MOVE_VTOL ? "VTOL" : "Mech");
 
     /*
      * Fixed by Kipsta so searchlights shutoff when the mech shuts down
      */
 
     if (MechStatus2(mech) & SLITE_ON) {
-	mech_notify(mech, MECHALL, "Your searchlight shuts off.");
-	MechStatus2(mech) &= ~SLITE_ON;
-	MechCritStatus(mech) &= ~SLITE_LIT;
+        mech_notify(mech, MECHALL, "Your searchlight shuts off.");
+        MechStatus2(mech) &= ~SLITE_ON;
+        MechCritStatus(mech) &= ~SLITE_LIT;
     }
 
     if (MechStatus(mech) & TORSO_RIGHT) {
-	mech_notify(mech, MECHSTARTED,
-	    "Torso rotated back to center for shutdown");
-	MechStatus(mech) &= ~TORSO_RIGHT;
+        mech_notify(mech, MECHSTARTED,
+                "Torso rotated back to center for shutdown");
+        MechStatus(mech) &= ~TORSO_RIGHT;
     }
     if (MechStatus(mech) & TORSO_LEFT) {
-	mech_notify(mech, MECHSTARTED,
-	    "Torso rotated back to center for shutdown");
-	MechStatus(mech) &= ~TORSO_LEFT;
+        mech_notify(mech, MECHSTARTED,
+                "Torso rotated back to center for shutdown");
+        MechStatus(mech) &= ~TORSO_LEFT;
     }
     if ((MechType(mech) == CLASS_MECH && Jumping(mech)) ||
-	(MechType(mech) != CLASS_MECH &&
-	    MechZ(mech) > MechUpperElevation(mech))) {
-	mech_notify(mech, MECHALL,
-	    "You start free-fall.. Enjoy the ride!");
-	MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK, -1);
+            (MechType(mech) != CLASS_MECH &&
+             MechZ(mech) > MechUpperElevation(mech))) {
+        mech_notify(mech, MECHALL,
+                "You start free-fall.. Enjoy the ride!");
+        MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK, -1);
     } else if (MechSpeed(mech) > MP1) {
-	mech_notify(mech, MECHALL, "Your systems stop in mid-motion!");
-	if (MechType(mech) == CLASS_MECH)
-	    MechLOSBroadcast(mech, "stops in mid-motion, and falls!");
-	else {
-	    mech_notify(mech, MECHALL,
-		"You tumble end over end and come to a crashing halt!");
-	    MechLOSBroadcast(mech,
-		"tumbles end over end and comes to a crashing halt!");
-	}
-	MechFalls(mech, 1, 0);
-	domino_space(mech, 2);
+        mech_notify(mech, MECHALL, "Your systems stop in mid-motion!");
+        if (MechType(mech) == CLASS_MECH)
+            MechLOSBroadcast(mech, "stops in mid-motion, and falls!");
+        else {
+            mech_notify(mech, MECHALL,
+                    "You tumble end over end and come to a crashing halt!");
+            MechLOSBroadcast(mech,
+                    "tumbles end over end and comes to a crashing halt!");
+        }
+        MechFalls(mech, 1, 0);
+        domino_space(mech, 2);
     }
     Shutdown(mech);
 }

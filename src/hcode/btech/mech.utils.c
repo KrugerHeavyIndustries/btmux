@@ -1459,23 +1459,23 @@ const char *ds_spher_locs[NUM_DS_SECTIONS + 1] = {
 const char **ProperSectionStringFromType(int type, int mtype)
 {
     switch (type) {
-    case CLASS_BSUIT:
-	return bsuit_locs;
-    case CLASS_MECH:
-    case CLASS_MW:
-	if (mtype == MOVE_QUAD)
-	    return quad_locs;
-	return mech_locs;
-    case CLASS_VEH_GROUND:
-    case CLASS_VEH_NAVAL:
-    case CLASS_VTOL:
-	return veh_locs;
-    case CLASS_AERO:
-	return aero_locs;
-    case CLASS_SPHEROID_DS:
-	return ds_spher_locs;
-    case CLASS_DS:
-	return ds_locs;
+        case CLASS_BSUIT:
+            return bsuit_locs;
+        case CLASS_MECH:
+        case CLASS_MW:
+            if (mtype == MOVE_QUAD)
+                return quad_locs;
+            return mech_locs;
+        case CLASS_VEH_GROUND:
+        case CLASS_VEH_NAVAL:
+        case CLASS_VTOL:
+            return veh_locs;
+        case CLASS_AERO:
+            return aero_locs;
+        case CLASS_SPHEROID_DS:
+            return ds_spher_locs;
+        case CLASS_DS:
+            return ds_locs;
     }
     return NULL;
 }

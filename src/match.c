@@ -388,9 +388,7 @@ void match_zone_exit(void)
 	(void) match_exit_internal(Zone(md.player), Zone(md.player), 0);
 }
 
-void match_everything(key)
-int key;
-{
+void match_everything(int key) {
     /*
      * Try matching me, then here, then absolute, then player FIRST, since
      * this will hit most cases. STOP if we get something, since those are
@@ -401,35 +399,34 @@ int key;
     match_here();
     match_absolute();
     if (key & MAT_NUMERIC)
-	match_numeric();
+        match_numeric();
     if (key & MAT_HOME)
-	match_home();
+        match_home();
     match_player();
     if (md.confidence >= CON_TOKEN)
-	return;
+        return;
 
     if (!(key & MAT_NO_EXITS)) {
-	if (key & MAT_EXIT_PARENTS) {
-	    match_carried_exit_with_parents();
-	    match_exit_with_parents();
-	} else {
-	    match_carried_exit();
-	    match_exit();
-	}
+        if (key & MAT_EXIT_PARENTS) {
+            match_carried_exit_with_parents();
+            match_exit_with_parents();
+        } else {
+            match_carried_exit();
+            match_exit();
+        }
     }
     match_neighbor();
     match_possession();
 }
 
-dbref match_result(void)
-{
+dbref match_result(void) {
     switch (md.count) {
-    case 0:
-	return NOTHING;
-    case 1:
-	return md.match;
-    default:
-	return AMBIGUOUS;
+        case 0:
+            return NOTHING;
+        case 1:
+            return md.match;
+        default:
+            return AMBIGUOUS;
     }
 }
 
@@ -506,11 +503,7 @@ MSTATE *mstate;
     free_lbuf(mstate->string);
 }
 
-void init_match(player, name, type)
-dbref player;
-const char *name;
-int type;
-{
+void init_match(dbref player, const char *name, int type) {
     md.confidence = -1;
     md.count = md.check_keys = 0;
     md.pref_type = type;

@@ -134,8 +134,8 @@ char *ShortArmorSectionString(char type, char mtype, int loc)
 
     locs = ProperSectionStringFromType(type, mtype);
     for (i = 0; locs[loc][i]; i++)
-	if (isupper(locs[loc][i]) || isdigit(locs[loc][i]))
-	    *(c++) = locs[loc][i];
+        if (isupper(locs[loc][i]) || isdigit(locs[loc][i]))
+            *(c++) = locs[loc][i];
     *c = 0;
     return buf;
 }

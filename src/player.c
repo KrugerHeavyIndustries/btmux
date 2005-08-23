@@ -502,46 +502,42 @@ char *name;
     return 1;
 }
 
-dbref lookup_player(doer, name, check_who)
-dbref doer;
-char *name;
-int check_who;
-{
+dbref lookup_player(dbref doer, char *name, int check_who) {
     dbref *p, thing;
     char *temp, *tp;
 
     if (!string_compare(name, "me"))
-	return doer;
+        return doer;
 
     if (*name == NUMBER_TOKEN) {
-	name++;
-	if (!is_number(name))
-	    return NOTHING;
-	thing = atoi(name);
-	if (!Good_obj(thing))
-	    return NOTHING;
-	if (!((Typeof(thing) == TYPE_PLAYER) || God(doer)))
-	    thing = NOTHING;
-	return thing;
+        name++;
+        if (!is_number(name))
+            return NOTHING;
+        thing = atoi(name);
+        if (!Good_obj(thing))
+            return NOTHING;
+        if (!((Typeof(thing) == TYPE_PLAYER) || God(doer)))
+            thing = NOTHING;
+        return thing;
     }
     tp = temp = alloc_lbuf("lookup_player");
     safe_str(name, temp, &tp);
     *tp = '\0';
     for (tp = temp; *tp; tp++)
-	*tp = ToLower(*tp);
+        *tp = ToLower(*tp);
     p = (int *) hashfind(temp, &mudstate.player_htab);
     free_lbuf(temp);
     if (!p) {
-	if (check_who) {
-	    thing = find_connected_name(doer, name);
-	    if (Dark(thing))
-		thing = NOTHING;
-	} else
-	    thing = NOTHING;
+        if (check_who) {
+            thing = find_connected_name(doer, name);
+            if (Dark(thing))
+                thing = NOTHING;
+        } else
+            thing = NOTHING;
     } else if (!Good_obj(*p)) {
-	thing = NOTHING;
+        thing = NOTHING;
     } else
-	thing = *p;
+        thing = *p;
 
     return thing;
 }

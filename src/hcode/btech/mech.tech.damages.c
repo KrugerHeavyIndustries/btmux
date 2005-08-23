@@ -270,59 +270,59 @@ char *damages_func(MECH * mech)
     int i;
 
     if (unit_is_fixable(mech))
-	make_damage_table(mech);
+        make_damage_table(mech);
     else
-	make_scrap_table(mech);
+        make_scrap_table(mech);
 
     buffer[0] = '\0';
     if (!damage_last)
-	return "";
+        return "";
     for (i = 0; i < damage_last; i++) {
-	/* Ok... i think we want: */
-	/* repairnum|location|typenum|data|fixing? */
-	if (i)
-	    sprintf(buffer, "%s,", buffer);
-	sprintf(buffer, "%s%d|%s|%d|", buffer, i + 1,
-	    ShortArmorSectionString(MechType(mech), MechMove(mech),
-		damage_table[i][1]), (int) damage_table[i][0]);
-	switch (damage_table[i][0]) {
-	case REPAIRP:
-	case REPAIRP_T:
-	case REPAIRG:
-	case ENHCRIT_MISC:
-	case ENHCRIT_FOCUS:
-	case ENHCRIT_CRYSTAL:
-	case ENHCRIT_BARREL:
-	case ENHCRIT_AMMOB:
-	case ENHCRIT_RANGING:
-	case ENHCRIT_AMMOM:
-	case SCRAPP:
-	case SCRAPG:
-	    sprintf(buffer, "%s%s", buffer, pos_part_name(mech,
-		    damage_table[i][1], damage_table[i][2]));
-	    break;
-	case RELOAD:
-	    sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
-		    damage_table[i][1], damage_table[i][2]), FullAmmo(mech,
-		    damage_table[i][1],
-		    damage_table[i][2]) - GetPartData(mech,
-		    damage_table[i][1], damage_table[i][2]));
-	    break;
-	case UNLOAD:
-	    sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
-		    damage_table[i][1], damage_table[i][2]),
-		GetPartData(mech, damage_table[i][1], damage_table[i]
-		    [2]));
-	    break;
-	case FIXARMOR:
-	case FIXARMOR_R:
-	case FIXINTERNAL:
-	    sprintf(buffer, "%s%d", buffer, damage_table[i][2]);
-	    break;
-	default:
-	    sprintf(buffer, "%s-", buffer);
-	}
-	sprintf(buffer, "%s|%d", buffer, is_under_repair(mech, i));
+        /* Ok... i think we want: */
+        /* repairnum|location|typenum|data|fixing? */
+        if (i)
+            sprintf(buffer, "%s,", buffer);
+        sprintf(buffer, "%s%d|%s|%d|", buffer, i + 1,
+                ShortArmorSectionString(MechType(mech), MechMove(mech),
+                    damage_table[i][1]), (int) damage_table[i][0]);
+        switch (damage_table[i][0]) {
+            case REPAIRP:
+            case REPAIRP_T:
+            case REPAIRG:
+            case ENHCRIT_MISC:
+            case ENHCRIT_FOCUS:
+            case ENHCRIT_CRYSTAL:
+            case ENHCRIT_BARREL:
+            case ENHCRIT_AMMOB:
+            case ENHCRIT_RANGING:
+            case ENHCRIT_AMMOM:
+            case SCRAPP:
+            case SCRAPG:
+                sprintf(buffer, "%s%s", buffer, pos_part_name(mech,
+                            damage_table[i][1], damage_table[i][2]));
+                break;
+            case RELOAD:
+                sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
+                            damage_table[i][1], damage_table[i][2]), FullAmmo(mech,
+                                damage_table[i][1],
+                                damage_table[i][2]) - GetPartData(mech,
+                                    damage_table[i][1], damage_table[i][2]));
+                break;
+            case UNLOAD:
+                sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
+                            damage_table[i][1], damage_table[i][2]),
+                        GetPartData(mech, damage_table[i][1], damage_table[i]
+                            [2]));
+                break;
+            case FIXARMOR:
+            case FIXARMOR_R:
+            case FIXINTERNAL:
+                sprintf(buffer, "%s%d", buffer, damage_table[i][2]);
+                break;
+            default:
+                sprintf(buffer, "%s-", buffer);
+        }
+        sprintf(buffer, "%s|%d", buffer, is_under_repair(mech, i));
     }
     return buffer;
 }
