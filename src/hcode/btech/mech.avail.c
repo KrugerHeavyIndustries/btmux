@@ -20,7 +20,6 @@
 #include "mech.avail.h"
 #include "coolmenu.h"
 #include "mycool.h"
-#include "extern.h"
 #include "p.template.h"
 #include "p.mech.mechref_ident.h"
 
@@ -179,7 +178,7 @@ void debug_makemechs(dbref player, void *data, char *buffer)
 #define FUNCHECK(a,b) \
 if (a) { safe_tprintf_str(buff, bufc, b); return; }
 
-FUNCTION(fun_btmakemechs)
+void fun_btmakemechs(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = faction 
        fargs[1] = numtons
