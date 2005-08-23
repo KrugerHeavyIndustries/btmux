@@ -102,8 +102,8 @@ char *vtol_bootmsgs[BOOTCOUNT] = {
 char *naval_bootmsgs[BOOTCOUNT] = {
     "%%cg->       Main reactor is now online    <-%%c",
     "%%cg->  Main computer system is now online <-%%c",
-    "%%cg->  Hull Integrity Monitoring Enabled  <-%%c",
-    "%%cg-> Ballast and Propulsion are Nominal  <-%%c",
+    "%%cg->   Hull integrity monitoring online  <-%%c",
+    "%%cg-> Ballast and propulsion are nominal  <-%%c",
     "%%cg-> Targeting system is now operational <-%%c",
     "   %%cg- %%cr-=>%%ch%%cw All systems operational!%%c %%cr<=- %%cg-%%c"
 };
