@@ -1581,7 +1581,6 @@ static RETSIGTYPE sighandler(sig)
                 }
                 if (mudconf.have_specials)
                     ChangeSpecialObjects(0);
-                alarm(0);
                 dump_restart_db();
                 execl("bin/netmux", "netmux", mudconf.config_file, NULL);
                 break;

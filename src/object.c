@@ -1582,9 +1582,8 @@ int key;
     purge_going();
 #ifndef STANDALONE
     if (player != NOTHING) {
-	alarm(1);
-	if (!Quiet(player))
-	    notify(player, "Done.");
+        if (!Quiet(player))
+            notify(player, "Done.");
     }
 #endif
 }
