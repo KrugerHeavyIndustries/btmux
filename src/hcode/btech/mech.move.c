@@ -699,10 +699,10 @@ void mech_rotatetorso(dbref player, void *data, char *buffer)
 	case 'C':
 	case 'c':
 	    MechStatus(mech) &= ~(TORSO_RIGHT | TORSO_LEFT);
-	    mech_notify(mech, MECHALL, "You center your torso");
+	    mech_notify(mech, MECHALL, "You center your torso.");
 	    break;
 	default:
-	    notify(player, "Rotate must have LEFT RIGHT or CENTER");
+	    notify(player, "Rotate must have LEFT RIGHT or CENTER.");
 	    break;
 	}
     } else
