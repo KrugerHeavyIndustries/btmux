@@ -75,6 +75,11 @@ char mux_version[MBUF_SIZE] = MUX_VERSION;
 strcat(mux_version, "+HUD");
 #endif
 
+#define HAG_WAS_HERE
+#ifdef HAG_WAS_HERE
+strcat(mux_version, "+HAG");
+#endif
+
 #ifdef SQL_SUPPORT
 strcat(mux_version, "+SQL");
 #endif
