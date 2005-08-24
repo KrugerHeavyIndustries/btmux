@@ -2902,20 +2902,20 @@ void dump_restart_db()
     putstring(f, mudstate.doing_hdr);
     putref(f, mudstate.record_players);
     DESC_ITER_ALL(d) {
-	putref(f, d->descriptor);
-	putref(f, d->flags);
-	putref(f, d->connected_at);
-	putref(f, d->command_count);
-	putref(f, d->timeout);
-	putref(f, d->host_info);
-	putref(f, d->player);
-	putref(f, d->last_time);
-	putstring(f, d->output_prefix);
-	putstring(f, d->output_suffix);
-	putstring(f, d->addr);
-	putstring(f, d->doing);
-	putstring(f, d->username);
-	putstring(f, d->hudkey);
+        putref(f, d->descriptor);
+        putref(f, d->flags);
+        putref(f, d->connected_at);
+        putref(f, d->command_count);
+        putref(f, d->timeout);
+        putref(f, d->host_info);
+        putref(f, d->player);
+        putref(f, d->last_time);
+        putstring(f, d->output_prefix);
+        putstring(f, d->output_suffix);
+        putstring(f, d->addr);
+        putstring(f, d->doing);
+        putstring(f, d->username);
+        putstring(f, d->hudkey);
     }
     putref(f, 0);
 

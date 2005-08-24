@@ -1,6 +1,0 @@
-#ifndef _FILESLAVE_H
-#define _FILESLAVE_H
-
-#define FILESLAVE_MAX_STRING	LBUF_SIZE
-#define FILESLAVE_MAX_FNAME	256
-#endif

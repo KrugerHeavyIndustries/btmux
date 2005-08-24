@@ -156,7 +156,7 @@ CMD_ONE_ARG(do_listcommands);	/* List added global commands */
 CMD_TWO_ARG(do_query);		/* Trigger an externalized query */
 #endif
 /* from log.c */
-#if ARBITRARY_LOGFILES_MODE>0
+#ifdef ARBITRARY_LOGFILES
 CMD_TWO_ARG(do_log);		/* Log to arbitrary logfile in 'logs' */
 #endif
 

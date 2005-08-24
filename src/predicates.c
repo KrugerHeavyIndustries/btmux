@@ -32,7 +32,7 @@ extern int slave_socket;
 extern int sqlslave_pid, sqlslave_socket;
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
+#ifdef ARBITRARY_LOGFILES
 extern int fileslave_pid, fileslave_socket;
 #endif
 
@@ -1116,14 +1116,10 @@ void do_restart(player, cause, key)
 
     shutdown(slave_socket, 2);
     kill(slave_pid, SIGKILL);
+
 #ifdef SQL_SUPPORT
     shutdown(sqlslave_socket, 2);
     kill(sqlslave_pid, SIGKILL);
-#endif
-
-#if ARBITRARY_LOGFILES_MODE==2    
-    shutdown(fileslave_socket, 2);
-    kill(fileslave_pid, SIGKILL);
 #endif
 
     dump_restart_db();

@@ -41,11 +41,6 @@
 void accept_sqlslave_input(int fd, short event, void *arg);
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-#include "fileslave.h"
-void accept_fileslave_input(int fd, short event, void *arg);
-#endif
-
 void accept_slave_input(int fd, short event, void *arg);
 pid_t slave_pid;
 int slave_socket = -1;
@@ -66,7 +61,6 @@ extern void ChangeSpecialObjects(int i);
 struct event listen_sock_ev;
 struct event slave_sock_ev;
 struct event sqlslave_sock_ev;
-struct event fileslave_sock_ev;
 
 int sock;
 int ndescriptors = 0;
@@ -74,15 +68,25 @@ int maxd = 0;
 
 DESC *descriptor_list = NULL;
 
+#ifdef ARBITRARY_LOGFILES
+/* The LOGFILE_TIMEOUT field describes how long a mux should keep an idle
+ * open. LOGFILE_TIMEOUT seconds after the last write, it will close. The
+ * timer is reset on each write. */
+#define LOGFILE_TIMEOUT 300 // Five Minutes
+
+#include "rbtree.h"
+struct logfile_t {
+    char *filename;
+    int fd;
+    struct event ev;
+};
+
+rbtree *logfiles = NULL;
+#endif
 
 #ifdef SQL_SUPPORT
 pid_t sqlslave_pid;
 int sqlslave_socket = -1;
-#endif
-
-#if ARBITRARY_LOGFILES_MODE==2
-pid_t fileslave_pid;
-int fileslave_socket = -1;
 #endif
 
 DESC *initializesock(int, struct sockaddr_in *);
@@ -421,129 +425,127 @@ void boot_sqlslave() {
 }
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-void boot_fileslave() {
-    int sv[2];
-    int i;
-    int maxfds;
-
-#ifdef HAVE_GETDTABLESIZE
-    maxfds = getdtablesize();
-#else
-    maxfds = sysconf(_SC_OPEN_MAX);
-#endif
-
-    if (fileslave_socket != -1) {
-        close(fileslave_socket);
-        fileslave_socket = -1;
-        event_del(&fileslave_sock_ev);
-    }
-
-    if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sv) < 0) {
-        return;
-    }
-    /*
-     * set to nonblocking
-     */
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
-        close(sv[0]);
-        close(sv[1]);
-        return;
-    }
-    fileslave_pid = vfork();
-    switch (fileslave_pid) {
-        case -1:
-            close(sv[0]);
-            close(sv[1]);
-            return;
-        case 0:                     /*
-                                     * * child
-                                     */
-            close(sv[0]);
-            close(0);
-            close(1);
-            if (dup2(sv[1], 0) == -1) {
-                _exit(1);
-            }
-            if (dup2(sv[1], 1) == -1) {
-                _exit(1);
-            }
-            for (i = 3; i < maxfds; ++i) {
-                close(i);
-            }
-            execlp("bin/fileslave", "fileslave", NULL);
-            _exit(1);
-    }
-    close(sv[1]);
-
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
-        close(sv[0]);
-        return;
-    }
-    fileslave_socket = sv[0];
-    event_set(&fileslave_sock_ev, fileslave_socket, EV_READ | EV_PERSIST, 
-            accept_fileslave_input, NULL);
-    event_add(&fileslave_sock_ev, NULL);
+#ifdef ARBITRARY_LOGFILES
+static int logcache_compare(void *vleft, void *vright, void *arg) {
+    return strcmp((char *)vleft, (char *)vright);
 }
 
-static int get_fileslave_result() {
-    dbref thing;
-    int len;
-    static char response[FILESLAVE_MAX_STRING + 1];
-
-    memset(response, '\0', FILESLAVE_MAX_STRING + 1);
-
-    if (fileslave_socket == -1)
-        return -100;
-
-    if (read(fileslave_socket, &thing, sizeof(dbref)) <=0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return -1;
-        close(fileslave_socket);
-        event_del(&fileslave_sock_ev);
-        fileslave_socket = -1;
-        return -1;
+int logcache_close(struct logfile_t *log) {
+    fprintf(stderr, "logcache] closing logfile %s\n", log->filename);
+    if(evtimer_pending(&log->ev, NULL)) {
+        evtimer_del(&log->ev);
     }
-    if (read(fileslave_socket, &len, sizeof(int)) <= 0)
-        return -2;
-    if (len > 0)
-        if (read(fileslave_socket, response, len) <= 0)
-            return -3;
-    notify(thing, response);
-    return 0;
+    close(log->fd);
+    rb_delete(logfiles, log->filename);
+    if(log->filename) 
+        free(log->filename);
+    log->filename = NULL;
+    log->fd = -1;
+    free(log);
+    return 1;
 }
 
-void fileslave_dolog(dbref thing, const char *fname, const char *fdata) {
+static void logcache_expire(int fd, short event, void *arg) {
+    logcache_close((struct logfile_t *)arg);
+}
+
+static int _logcache_list(void *key, void *data, int depth, void *arg) {
+    struct timeval tv;
+    struct logfile_t *log = (struct logfile_t *)data;
+    dbref player = *(dbref *)arg;
+    evtimer_pending(&log->ev, &tv);
+    notify_printf(player, "%-40s%d", log->filename, tv.tv_sec-mudstate.now);
+    return 1;
+}
+    
+void logcache_list(dbref player) {
+    if(rb_size(logfiles) == 0) {
+        notify(player, "There are no open logfile handles.");
+        return;
+    }
+    notify(player, "/--------------------------- Open Logfiles");
+    notify(player, "Filename                               Timeout");  
+    rb_walk(logfiles, WALK_INORDER, _logcache_list, &player);
+}
+
+static int logcache_open(char *filename) {
+    int fd;
+    struct logfile_t *newlog;
+    struct timeval tv = { LOGFILE_TIMEOUT, 0 };
+
+    if(rb_exists(logfiles, filename)) {
+        fprintf(stderr, "Serious braindamage, logcache_open() called for already open logfile.\n");
+        return 0;
+    }
+    
+    fd = open(filename, O_RDWR|O_APPEND|O_CREAT, 0644);
+    if(fd < 0) {
+        fprintf(stderr, "Failed to open logfile %s because open() failed with code: %d -  %s\n", 
+                filename, errno, strerror(errno));
+        return 0;
+    }
+    
+    newlog = malloc(sizeof(struct logfile_t));
+    newlog->fd = fd;
+    newlog->filename = strdup(filename);
+    evtimer_set(&newlog->ev, logcache_expire, newlog);
+    evtimer_add(&newlog->ev, &tv);
+    rb_insert(logfiles, newlog->filename, newlog);
+    fprintf(stderr, "logcache] opened logfile %s\n", filename);
+    return 1;
+}
+
+void boot_logcache() {
+    if(!logfiles)
+        logfiles = rb_init(logcache_compare, NULL);
+}
+
+static int _logcache_destruct(void *key, void *data, int depth, void *arg) {
+    struct logfile_t *log = (struct logfile_t *)data;
+    logcache_close(log);
+    return 1;
+}
+
+void logcache_destruct() {
+    if(!logfiles) return;
+    rb_walk(logfiles, WALK_INORDER, _logcache_destruct, NULL);
+    rb_destroy(logfiles);
+    logfiles = NULL;
+}
+
+void logcache_writelog(dbref thing, char *fname, char *fdata) {
+    struct logfile_t *log;
+    struct timeval tv = { LOGFILE_TIMEOUT, 0 };
     int len;
-
-    if (fname[0] == '\0') {
-        notify(thing, "Log to which file?");
-        return;
-    }
-    if (fdata[0] == '\0') {
-        notify(thing, "Log what to the file?");
-        return;
-    }
-
-    len = strlen(fname);
-    if (write(fileslave_socket, &len, sizeof(int)) <= 0) {
-        close(fileslave_socket);
-        event_del(&fileslave_sock_ev);
-        fileslave_socket = -1;
-        return;
-    }
-    if (write(fileslave_socket, fname, len) <= 0)
-        return;
+   
+    if(!logfiles) boot_logcache();
 
     len = strlen(fdata);
-    if (write(fileslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (write(fileslave_socket, fdata, len) <= 0)
-        return;
 
-    if (write(fileslave_socket, &thing, sizeof(dbref)) <=0)
-        return;
-    notify(thing, "Log packet sent.");
+    log = rb_find(logfiles, fname);
+
+    if(!log) {
+        if(logcache_open(fname) < 0) {
+            notify(thing, "Something awful happened trying to open logfile, check system logs.");
+            return;
+        }
+        log = rb_find(logfiles, fname);
+        if(!log) {
+            notify(thing, "Serious inconsistency in logcache code, check system logs.");
+            return;
+        }
+    }
+
+    if(evtimer_pending(&log->ev, NULL)) {
+        event_del(&log->ev);
+        event_add(&log->ev, &tv);
+    }
+
+    if(write(log->fd, fdata, len) < 0) {
+        fprintf(stderr, "System failed to write data to file with error '%s' on logfile '%s'. Closing.\n", 
+                strerror(errno), log->filename);
+        logcache_close(log);
+    }
     return;
 }
 #endif
@@ -778,16 +780,6 @@ static int eradicate_broken_fd(void)
         boot_sqlslave();
     }
 #endif
-#if ARBITRARY_LOGFILES_MODE==2
-    if (fileslave_socket != -1 && fstat(fileslave_socket, &statbuf) < 0) {
-        STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
-            log_text("Broken descriptor for file slave: ");
-            log_number(fileslave_socket);
-            ENDLOG;
-        }
-        boot_fileslave();
-    }
-#endif
     if (sock != -1 && fstat(sock, &statbuf) < 0) {
         STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
             log_text("Broken descriptor for our main port: ");
@@ -834,12 +826,6 @@ void accept_sqlslave_input(int fd, short event, void *arg) {
 }
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-void accept_fileslave_input(int fd, short event, void *arg) {
-    while (get_fileslave_result() == 0);
-}
-#endif
-
 #ifndef HAVE_GETTIMEOFDAY
 #define get_tod(x)	{ (x)->tv_sec = time(NULL); (x)->tv_usec = 0; }
 #else
@@ -851,6 +837,7 @@ void shovechars(int port) {
                    slice_timeout;
 
     mudstate.debug_cmd = (char *) "< shovechars >";
+
     if (!mudstate.restarting) {
         signal(SIGPIPE, SIG_IGN);
         sock = make_socket(port);
@@ -1537,6 +1524,13 @@ static RETSIGTYPE sighandler(sig)
 #ifdef SIGSYS
         case SIGSYS:
 #endif
+            /*
+             * Try our best to dump a core first 
+             */
+            if (!fork()) {
+                unset_signals();
+                return;
+            }
             check_panicking(sig);
             log_signal(signames[sig]);
             report();
@@ -1559,19 +1553,10 @@ static RETSIGTYPE sighandler(sig)
                 kill(sqlslave_pid, SIGKILL);
                 event_del(&sqlslave_sock_ev);
 #endif
-
-#if ARBITRARY_LOGFILES_MODE==2
-                shutdown(fileslave_socket, 2);
-                kill(fileslave_pid, SIGKILL);
-                event_del(&fileslave_sock_ev);
+#ifdef ARBITRARY_LOGFILES
+                logcache_destruct();
 #endif
-                /*
-                 * Try our best to dump a core first 
-                 */
-                if (!fork()) {
-                    unset_signals();
-                    exit(1);
-                }
+
                 if (mudconf.compress_db) {
                     sprintf(outdb, "%s.Z", mudconf.outdb);
                     sprintf(indb, "%s.Z", mudconf.indb);

@@ -98,6 +98,7 @@ extern void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int
 						MSG_ME_ALL|MSG_NBR_EXITS|MSG_F_UP|MSG_F_CONTENTS|MSG_S_OUTSIDE)
 extern void notify_except(dbref, dbref, dbref, const char *);
 extern void notify_except2(dbref, dbref, dbref, dbref, const char *);
+void notify_printf(dbref, const char *, ...);
 extern int check_filter(dbref, dbref, int, const char *);
 extern void notify_check(dbref, dbref, const char *, int);
 extern int Hearer(dbref);
@@ -128,7 +129,7 @@ extern void log_name_and_loc(dbref);
 extern char *OBJTYP(dbref);
 extern void log_type_and_name(dbref);
 extern void log_type_and_num(dbref);
-#if ARBITRARY_LOGFILES_MODE>0
+#ifdef ARBITRARY_LOGFILES
 extern int log_to_file(dbref, const char *, const char *);
 #endif
 

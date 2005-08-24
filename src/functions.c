@@ -5111,7 +5111,7 @@ static void fun_trim(char *buff, char **bufc, dbref player, dbref cause, char *f
     safe_str(q, buff, bufc);
 }
 
-#if ARBITRARY_LOGFILES_MODE>0
+#ifdef ARBITRARY_LOGFILES
 static void fun_logf(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     if (!fargs[0] || !fargs[1]) {
@@ -5512,7 +5512,7 @@ FUN flist[] = {
 {"LOCATE",	fun_locate,	3,  0,		CA_BUILDER},
 {"LOCK",	fun_lock,	1,  0,		CA_PUBLIC},
 {"LOG",		fun_log,	1,  0,		CA_PUBLIC},
-#if ARBITRARY_LOGFILES_MODE>0
+#ifdef ARBITRARY_LOGFILES
 {"LOGF",	fun_logf,	2,  0,		CA_WIZARD},
 #endif
 {"LSTACK",	fun_lstack,	0,  FN_VARARGS, CA_PUBLIC},

@@ -34,8 +34,8 @@ extern void boot_slave(void);
 #ifdef SQL_SUPPORT
 extern void boot_sqlslave(void);
 #endif
-#if ARBITRARY_LOGFILES_MODE==2
-extern void boot_fileslave(void);
+#ifdef ARBITRARY_LOGFILES
+extern void boot_logcache(void);
 #endif
 extern void vattr_clean_db(void);
 
@@ -526,7 +526,7 @@ CMDENT command_table[] = {
 	MOTD_LIST,	CS_ONE_ARG,			do_motd},
 {(char *)"@lock",		lock_sw,	CA_NO_SLAVE,
 	0,		CS_TWO_ARG|CS_INTERP,		do_lock},
-#if ARBITRARY_LOGFILES_MODE>0
+#ifdef ARBITRARY_LOGFILES
 {(char *)"@log",		NULL,		CA_WIZARD,
 	0,		CS_TWO_ARG,			do_log},
 #endif
@@ -755,11 +755,6 @@ CMDENT command_table[] = {
 {(char *)"@startsqlslave",      NULL,
 	CA_WIZARD,
         0,              CS_NO_ARGS,                     boot_sqlslave},
-#endif
-#if ARBITRARY_LOGFILES_MODE==2
-{(char *)"@startfileslave",	NULL,
-	CA_WIZARD,
-	0,		CS_NO_ARGS,			boot_fileslave},
 #endif
 {(char *)NULL,			NULL,		0,
 	0,		0,				NULL}};
@@ -2790,6 +2785,7 @@ dbref player;
 				 */
 #define	LIST_PROCESS	21
 #define	LIST_BADNAMES	22
+#define LIST_LOGFILES   23
 /* *INDENT-OFF* */
 
 NAMETAB list_names[] = {
@@ -2807,7 +2803,7 @@ NAMETAB list_names[] = {
 {(char *)"functions",		2,	CA_PUBLIC,	LIST_FUNCTIONS},
 {(char *)"globals",		1,	CA_WIZARD,	LIST_GLOBALS},
 {(char *)"hashstats",		1,	CA_WIZARD,	LIST_HASHSTATS},
-{(char *)"logging",		1,	CA_GOD,		LIST_LOGGING},
+{(char *)"logging",		4,	CA_GOD,		LIST_LOGGING},
 {(char *)"options",		1,	CA_PUBLIC,	LIST_OPTIONS},
 {(char *)"permissions",		2,	CA_WIZARD,	LIST_PERMS},
 {(char *)"powers",		2,	CA_WIZARD,	LIST_POWERS},
@@ -2815,105 +2811,98 @@ NAMETAB list_names[] = {
 {(char *)"site_information",	2,	CA_WIZARD,	LIST_SITEINFO},
 {(char *)"switches",		2,	CA_PUBLIC,	LIST_SWITCHES},
 {(char *)"user_attributes",	1,	CA_WIZARD,	LIST_VATTRS},
+{(char *)"logfiles", 4, CA_WIZARD, LIST_LOGFILES},
 { NULL,				0,	0,		0}};
 
 /* *INDENT-ON* */
 
-
-
-
-
-
-
-
-
 extern NAMETAB enable_names[];
 extern NAMETAB logoptions_nametab[];
 extern NAMETAB logdata_nametab[];
+void logcache_list(dbref player);
 
-void do_list(player, cause, extra, arg)
-dbref player, cause;
-int extra;
-char *arg;
-{
+void do_list(dbref player, dbref cause, int extra, char *arg) {
     int flagvalue;
 
     flagvalue = search_nametab(player, list_names, arg);
     switch (flagvalue) {
-    case LIST_ALLOCATOR:
-	list_bufstats(player);
-	break;
-    case LIST_BUFTRACE:
-	list_buftrace(player);
-	break;
-    case LIST_ATTRIBUTES:
-	list_attrtable(player);
-	break;
-    case LIST_COMMANDS:
-	list_cmdtable(player);
-	break;
-    case LIST_SWITCHES:
-	list_cmdswitches(player);
-	break;
-    case LIST_COSTS:
-	list_costs(player);
-	break;
-    case LIST_OPTIONS:
-	list_options(player);
-	break;
-    case LIST_HASHSTATS:
-	list_hashstats(player);
-	break;
-    case LIST_SITEINFO:
-	list_siteinfo(player);
-	break;
-    case LIST_FLAGS:
-	display_flagtab(player);
-	break;
-    case LIST_FUNCTIONS:
-	list_functable(player);
-	break;
-    case LIST_GLOBALS:
-	interp_nametab(player, enable_names, mudconf.control_flags,
-	    (char *) "Global parameters:", (char *) "enabled",
-	    (char *) "disabled");
-	break;
-    case LIST_DF_FLAGS:
-	list_df_flags(player);
-	break;
-    case LIST_PERMS:
-	list_cmdaccess(player);
-	break;
-    case LIST_CONF_PERMS:
-	list_cf_access(player);
-	break;
-    case LIST_POWERS:
-	display_powertab(player);
-	break;
-    case LIST_ATTRPERMS:
-	list_attraccess(player);
-	break;
-    case LIST_VATTRS:
-	list_vattrs(player);
-	break;
-    case LIST_LOGGING:
-	interp_nametab(player, logoptions_nametab, mudconf.log_options,
-	    (char *) "Events Logged:", (char *) "enabled",
-	    (char *) "disabled");
-	interp_nametab(player, logdata_nametab, mudconf.log_info,
-	    (char *) "Information Logged:", (char *) "yes", (char *) "no");
-	break;
-    case LIST_DB_STATS:
-	list_db_stats(player);
-	break;
-    case LIST_PROCESS:
-	list_process(player);
-	break;
-    case LIST_BADNAMES:
-	badname_list(player, "Disallowed names:");
-	break;
-    default:
-	display_nametab(player, list_names,
-	    (char *) "Unknown option.  Use one of:", 1);
+        case LIST_ALLOCATOR:
+            list_bufstats(player);
+            break;
+        case LIST_BUFTRACE:
+            list_buftrace(player);
+            break;
+        case LIST_ATTRIBUTES:
+            list_attrtable(player);
+            break;
+        case LIST_COMMANDS:
+            list_cmdtable(player);
+            break;
+        case LIST_SWITCHES:
+            list_cmdswitches(player);
+            break;
+        case LIST_COSTS:
+            list_costs(player);
+            break;
+        case LIST_OPTIONS:
+            list_options(player);
+            break;
+        case LIST_HASHSTATS:
+            list_hashstats(player);
+            break;
+        case LIST_SITEINFO:
+            list_siteinfo(player);
+            break;
+        case LIST_FLAGS:
+            display_flagtab(player);
+            break;
+        case LIST_FUNCTIONS:
+            list_functable(player);
+            break;
+        case LIST_GLOBALS:
+            interp_nametab(player, enable_names, mudconf.control_flags,
+                    (char *) "Global parameters:", (char *) "enabled",
+                    (char *) "disabled");
+            break;
+        case LIST_DF_FLAGS:
+            list_df_flags(player);
+            break;
+        case LIST_PERMS:
+            list_cmdaccess(player);
+            break;
+        case LIST_CONF_PERMS:
+            list_cf_access(player);
+            break;
+        case LIST_POWERS:
+            display_powertab(player);
+            break;
+        case LIST_ATTRPERMS:
+            list_attraccess(player);
+            break;
+        case LIST_VATTRS:
+            list_vattrs(player);
+            break;
+        case LIST_LOGGING:
+            interp_nametab(player, logoptions_nametab, mudconf.log_options,
+                    (char *) "Events Logged:", (char *) "enabled",
+                    (char *) "disabled");
+            interp_nametab(player, logdata_nametab, mudconf.log_info,
+                    (char *) "Information Logged:", (char *) "yes", (char *) "no");
+            break;
+        case LIST_DB_STATS:
+            list_db_stats(player);
+            break;
+        case LIST_PROCESS:
+            list_process(player);
+            break;
+        case LIST_BADNAMES:
+            badname_list(player, "Disallowed names:");
+            break;
+        case LIST_LOGFILES:
+            logcache_list(player);
+            break;
+        default:
+            display_nametab(player, list_names,
+                    (char *) "Unknown option.  Use one of:", 1);
     }
 }

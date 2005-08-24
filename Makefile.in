@@ -169,7 +169,7 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
-TARGETS = src/netmux src/mkindx src/unsplit src/slave @SQLSLAVE@ src/fileslave
+TARGETS = src/netmux src/mkindx src/unsplit src/slave @SQLSLAVE@
 
 all: $(TARGETS)
 
@@ -204,9 +204,6 @@ slave src/slave: src/slave.c
 
 sqlslave src/sqlslave: src/sqlslave.c
 	$(CC) $(ALLFLAGS) -o src/sqlslave src/sqlslave.c $(LIBS)
-
-fileslave src/fileslave: src/fileslave.c
-	$(CC) $(ALLFLAGS) -o src/fileslave src/fileslave.c $(LIBS)
 
 mkindx src/mkindx: src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx src/mkindx.c

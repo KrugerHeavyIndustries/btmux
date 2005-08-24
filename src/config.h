@@ -79,19 +79,7 @@ typedef char	IBUF[16];
 
 /* define ARBITRARY_LOGFILES if you want (wiz-only) access to arbitrary
    logfiles in game/logs/, through @log and logf(). */
-/* Changed to ARBITRARY_LOGGFILES_MODE as part of Exile source tree
- * merge in order to utilize #if expression evaluation for more than 2
- * exclusive modes. Define as one of the following :
- * 0 : As if undefined before. No @log/logf() at all.
- * 1 : As if defined before. @log/logf(), but the MUX process
- *     blocks until file writes complete. Bad for heavy use.
- * 2 : @log/logf() exist as 1, but a fileslave process is used 
- *     for all I/O. Makes good for heavy usage.
- * NOTE : All old #ifdef ARBITRARY_LOGS checks updated to #if expression
- * checks. The 'fileslave' program will always be compiled, but if 0 or 1
- * are used it will never be expected in /bin for use.
- */
-#define ARBITRARY_LOGFILES_MODE 2
+#define ARBITRARY_LOGFILES
 
 /* Define SQL_SUPPORT for sqlslave process to exist for @query/sql calls.
  * The makefile will contain building sqlslave if you have libdbi installed,

@@ -21,10 +21,6 @@
 #include "htab.h"
 #include "ansi.h"
 
-#if ARBITRARY_LOGFILES_MODE==2
-extern void fileslave_dolog(dbref thing, const char *fname, const char *fdata);
-#endif
-
 #ifndef STANDALONE
 /* *INDENT-OFF* */
 
@@ -339,53 +335,51 @@ void log_type_and_num(thing)
     return;
 }
 
-#if ARBITRARY_LOGFILES_MODE>0
-int log_to_file(thing, logfile, message)
-    dbref thing;
-    const char *logfile, *message;
-{
-    FILE *fp;
+#ifdef ARBITRARY_LOGFILES
+
+void logcache_writelog(dbref thing, char *pathname, char *message);
+
+int log_to_file(dbref thing, const char *logfile, const char *message) {
     char pathname[210];		/* Arbitrary limit in logfile length */
+    char message_buffer[4096];
 
     if (!message || !*message)
         return 1;		/* Nothing to do */
 
-    if (!logfile || !*logfile || strlen(logfile) > 200
-            || strrchr(logfile, '/'))
+    if (!logfile || !*logfile || strlen(logfile) > 200)
         return 0;		/* invalid logfile name */
 
-    sprintf(pathname, "logs/%s", logfile);
-#if ARBITRARY_LOGFILES_MODE==2
+    if(strstr(pathname, "..") != NULL) return 0;
+    if(strstr(pathname, "/") != NULL) return 0;
+    snprintf(pathname, 210, "logs/%s", logfile);
+
+    /* Hacking checks. */
+    
     if (access(pathname, R_OK|W_OK) != 0)
         return 0;
-    fileslave_dolog(thing, pathname, message);
-    return 1;
-#elif ARBITRARY_LOGFILES_MODE==1
-    fp = fopen(pathname, "r+");
-    if (!fp)
-        return 0;		/* Logfile doesn't exist or not writable */
-
-    fseek(fp, 0, SEEK_END);
-    fprintf(fp, "%s\n", message);
-    fclose(fp);
-#endif
+    
+    snprintf(message_buffer, 4096, "%s\n", message);
+    
+    logcache_writelog(thing, pathname, message_buffer);
     return 1;
 }
 
-void do_log(player, cause, key, logfile, message)
-    dbref player, cause;
-    int key;
-    char *logfile, *message;
-{
+void do_log(dbref player, dbref cause, int key, char *logfile, char *message) {
     if (!message || !*message) {
         notify(player, "Nothing to log!");
         return;
     }
 
-    if (!logfile || !*logfile || !log_to_file(player, logfile, message)) {
+    if (!logfile || !*logfile) {
         notify(player, "Invalid logfile.");
         return;
     }
+
+    if(!log_to_file(player, logfile, message)) {
+        notify(player, "Request failed.");
+        return;
+    }
+
     notify(player, "Message logged.");
 }
 #endif

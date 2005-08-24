@@ -84,9 +84,7 @@ strcat(mux_version, "+HAG");
 strcat(mux_version, "+SQL");
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-strcat(mux_version, "+FSL");
-#elif ARBITRARY_LOGFILES_MODE==1
+#ifdef ARBITRARY_LOGFILES
 strcat(mux_version, "+ALG");
 #endif
 

@@ -59,8 +59,9 @@ extern void boot_slave(void);
 extern void boot_sqlslave(void);
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-extern void boot_fileslave(void);
+#ifdef ARBITRARY_LOGFILES
+void boot_logcache();
+void logcache_destruct();
 #endif
 
 #ifdef HUDINFO_SUPPORT
@@ -82,11 +83,6 @@ extern int slave_socket;
 #ifdef SQL_SUPPORT
 extern pid_t sqlslave_pid;
 extern int sqlslave_socket;
-#endif
-
-#if ARBITRARY_LOGFILES_MODE==2
-extern pid_t fileslave_pid;
-extern int fileslave_socket;
 #endif
 
 #ifdef MEMORY_BASED
@@ -1400,21 +1396,14 @@ static void process_preload(void)
     free_lbuf(tstr);
 }
 
-int main(argc, argv)
-int argc;
-char *argv[];
-{
+int main(int argc, char *argv[]) {
     int mindb;
 
     if ((argc > 2) && (!strcmp(argv[1], "-s") && (argc > 3))) {
-	fprintf(stderr, "Usage: %s [-s] [config-file]\n", argv[0]);
-	exit(1);
+        fprintf(stderr, "Usage: %s [-s] [config-file]\n", argv[0]);
+        exit(1);
     }
 
-#ifdef CLOSE_STDIN
-    fclose(stdin);
-    fclose(stdout);
-#endif
     event_init();
 
 #if defined(HAVE_IEEEFP_H) && defined(HAVE_SYS_UCONTEXT_H)
@@ -1426,8 +1415,8 @@ char *argv[];
 #endif
 
     mindb = 0;			/*
-				 * Are we creating a new db? 
-				 */
+                         * Are we creating a new db? 
+                         */
 #ifdef MEMORY_BASED
     corrupt = 0;		/* Database isn't corrupted. */
 #endif
@@ -1453,11 +1442,11 @@ char *argv[];
     init_functab();
     init_attrtab();
     init_version();
-    
+
 #ifdef HUDINFO_SUPPORT
     init_hudinfo();
 #endif
-    
+
     hashinit(&mudstate.player_htab, 250 * HASH_FACTOR);
     nhashinit(&mudstate.mail_htab, 50 * HASH_FACTOR);
     nhashinit(&mudstate.fwdlist_htab, 25 * HASH_FACTOR);
@@ -1466,15 +1455,15 @@ char *argv[];
     vattr_init();
 
     if (argc > 1 && !strcmp(argv[1], "-s")) {
-	mindb = 1;
-	if (argc == 3)
-	    cf_read(argv[2]);
-	else
-	    cf_read((char *) CONF_FILE);
+        mindb = 1;
+        if (argc == 3)
+            cf_read(argv[2]);
+        else
+            cf_read((char *) CONF_FILE);
     } else if (argc == 2) {
-	cf_read(argv[1]);
+        cf_read(argv[1]);
     } else {
-	cf_read((char *) CONF_FILE);
+        cf_read((char *) CONF_FILE);
     }
 
     fcache_init();
@@ -1482,30 +1471,30 @@ char *argv[];
 
 #ifndef MEMORY_BASED
     if (mindb)
-	unlink(mudconf.gdbm);
+        unlink(mudconf.gdbm);
     if (init_gdbm_db(mudconf.gdbm) < 0) {
-	STARTLOG(LOG_ALWAYS, "INI", "LOAD") {
-	    log_text((char *) "Couldn't load text database: ");
-	    log_text(mudconf.gdbm);
-	    ENDLOG;
-	} exit(2);
+        STARTLOG(LOG_ALWAYS, "INI", "LOAD") {
+            log_text((char *) "Couldn't load text database: ");
+            log_text(mudconf.gdbm);
+            ENDLOG;
+        } exit(2);
     }
 #else
     db_free();
 #endif				/*
-				 * MEMORY_BASED 
-				 */
+                     * MEMORY_BASED 
+                     */
 
     mudstate.record_players = 0;
 
     if (mindb)
-	db_make_minimal();
+        db_make_minimal();
     else if (load_game() < 0) {
-	STARTLOG(LOG_ALWAYS, "INI", "LOAD") {
-	    log_text((char *) "Couldn't load: ");
-	    log_text(mudconf.indb);
-	    ENDLOG;
-	} exit(2);
+        STARTLOG(LOG_ALWAYS, "INI", "LOAD") {
+            log_text((char *) "Couldn't load: ");
+            log_text(mudconf.indb);
+            ENDLOG;
+        } exit(2);
     }
 #ifdef USE_PYTHON
     MUXPy_Init();
@@ -1542,10 +1531,11 @@ char *argv[];
     hashreset(&mudstate.wizhelp_htab);
     hashreset(&mudstate.plushelp_htab);
     hashreset(&mudstate.wiznews_htab);
-    // nhashreset(&mudstate.desc_htab);
 
-    for (mindb = 0; mindb < MAX_GLOBAL_REGS; mindb++)
-	mudstate.global_regs[mindb] = alloc_lbuf("main.global_reg");
+    for (mindb = 0; mindb < MAX_GLOBAL_REGS; mindb++) {
+        mudstate.global_regs[mindb] = alloc_lbuf("main.global_reg");
+    }
+
     mudstate.now = time(NULL);
     process_preload();
 
@@ -1556,8 +1546,8 @@ char *argv[];
     boot_sqlslave();
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-    boot_fileslave();
+#ifdef ARBITRARY_LOGFILES
+    boot_logcache();
 #endif
 
 #ifdef MCHECK
@@ -1580,21 +1570,18 @@ char *argv[];
     dump_database();
 
     if (slave_socket != -1) {
-	kill(slave_pid, SIGKILL);
+        kill(slave_pid, SIGKILL);
     }
+#ifdef ARBITRARY_LOGFILES
+    logcache_destruct();
+#endif
 
 #ifdef SQL_SUPPORT
     if (sqlslave_socket != -1) {
-	kill(sqlslave_pid, SIGKILL);
+        kill(sqlslave_pid, SIGKILL);
     }
 #endif
 
-#if ARBITRARY_LOGFILES_MODE==2
-    if (fileslave_socket != -1) {
-	kill(fileslave_pid, SIGKILL);
-    }
-#endif
- 
     exit(0);
 }
 

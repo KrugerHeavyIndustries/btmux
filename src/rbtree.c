@@ -245,7 +245,7 @@ void rb_insert(rbtree *bt, void *key, void *data) {
     bt->head->color = NODE_BLACK;
 }
 
-void *rb_find(rbtree *bt, void *key) {
+void *rb_find(rbtree *bt, const void *key) {
     rbtree_node *node;
     int compare_result;
 
