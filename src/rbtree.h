@@ -49,9 +49,8 @@ void *rb_find(rbtree *, void *key);
 int rb_exists(rbtree *, void *key);
 void *rb_delete(rbtree *, void *key);
 
-void rb_walk(rbtree *, int, void (*)(void *, void *, int, void *), 
-        void *);
-
+void rb_walk(rbtree *, int, int (*)(void *, void *, int, void *), void *);
 unsigned int rb_size(rbtree *);
+void *rb_search(rbtree *, int, void *);
 
 #endif
