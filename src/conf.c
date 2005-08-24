@@ -1866,7 +1866,7 @@ void list_cf_access(player)
 /* ----------------------------------------------------------------------
  ** fun_config: returns the option set in mudconf
  */
-void fun_config(char *buff, char **bufc, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_config(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     CONF *cp;
 

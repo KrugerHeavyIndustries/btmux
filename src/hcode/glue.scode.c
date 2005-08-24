@@ -572,7 +572,7 @@ static GMV xcode_data[] = {
     {-1, NULL, 0, TYPE_STRING}
 };
 
-void fun_btsetxcodevalue(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btsetxcodevalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
        fargs[1] = name of the value
@@ -679,7 +679,7 @@ static char *RetrieveValue(void *data, int i)
 }
 
 
-void fun_btgetxcodevalue(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetxcodevalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
        fargs[1] = name of the value
@@ -706,9 +706,9 @@ void fun_btgetxcodevalue(char *buff, char **bufc, dbref player, char *fargs[], i
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetrefxcodevalue(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetrefxcodevalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btgetxcodevalue_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetxcodevalue_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mech ref
@@ -842,7 +842,7 @@ void list_xcodestuff(dbref player, void *data, char *buffer)
 
 
 #ifdef BT_ENABLED
-void fun_btunderrepair(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btunderrepair(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = ref of the mech to be checked */
     int n;
@@ -858,7 +858,7 @@ void fun_btunderrepair(char *buff, char **bufc, dbref player, char *fargs[], int
 }
 
 
-void fun_btstores(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btstores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the bay/mech */
     /* fargs[1] = (optional) name of the part */
@@ -903,7 +903,7 @@ void fun_btstores(char *buff, char **bufc, dbref player, char *fargs[], int nfar
     }
 }
 
-void fun_btmapterr(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btmapterr(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = reference of map
        fargs[1] = x
@@ -931,7 +931,7 @@ void fun_btmapterr(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, "%c", terr);
 }
 
-void fun_btmapelev(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btmapelev(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = reference of map
        fargs[1] = x
@@ -971,7 +971,7 @@ void list_xcodevalues(dbref player)
 
 /* Glue functions for easy scode interface to ton of hcode stuff */
 
-void fun_btdesignex(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btdesignex(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char *id = fargs[0];
 
@@ -981,7 +981,7 @@ void fun_btdesignex(char *buff, char **bufc, dbref player, char *fargs[], int nf
 	safe_tprintf_str(buff, bufc, "0");
 }
 
-void fun_btdamages(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btdamages(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
      */
@@ -998,7 +998,7 @@ void fun_btdamages(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, damstr ? damstr : "#-1 ERROR");
 }
 
-void fun_btcritstatus(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btcritstatus(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
      * fargs[1] = location to show
@@ -1016,7 +1016,7 @@ void fun_btcritstatus(char *buff, char **bufc, dbref player, char *fargs[], int 
     safe_tprintf_str(buff, bufc, critstr ? critstr : "#-1 ERROR");
 }
 
-void fun_btarmorstatus(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btarmorstatus(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
      * fargs[1] = location to show
@@ -1034,7 +1034,7 @@ void fun_btarmorstatus(char *buff, char **bufc, dbref player, char *fargs[], int
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-void fun_btweaponstatus(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btweaponstatus(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
      * fargs[1] = location to show
@@ -1056,9 +1056,9 @@ void fun_btweaponstatus(char *buff, char **bufc, dbref player, char *fargs[], in
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btcritref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btcritref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btcritstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btcritstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = ref of the mech
@@ -1074,9 +1074,9 @@ void fun_btcritstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], 
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btarmorref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btarmorref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btarmorstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btarmorstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = ref of the mech
@@ -1092,9 +1092,9 @@ void fun_btarmorstatus_ref(char *buff, char **bufc, dbref player, char *fargs[],
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btweaponref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btweaponref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btweaponstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btweaponstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = ref of the mech
@@ -1112,7 +1112,7 @@ void fun_btweaponstatus_ref(char *buff, char **bufc, dbref player, char *fargs[]
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-void fun_btsetarmorstatus(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btsetarmorstatus(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
      * fargs[1] = location to set
@@ -1132,7 +1132,7 @@ void fun_btsetarmorstatus(char *buff, char **bufc, dbref player, char *fargs[], 
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-void fun_btthreshold(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btthreshold(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * fargs[0] = skill to query
@@ -1144,7 +1144,7 @@ void fun_btthreshold(char *buff, char **bufc, dbref player, char *fargs[], int n
     safe_tprintf_str(buff, bufc, xpth < 0 ? "#%d ERROR" : "%d", xpth);
 }
 
-void fun_btdamagemech(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btdamagemech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
      * fargs[0] = dbref of MECH object
@@ -1175,7 +1175,7 @@ void fun_btdamagemech(char *buff, char **bufc, dbref player, char *fargs[], int 
 	    totaldam, clustersize, direction, iscrit, fargs[5], fargs[6]));
 }
 
-void fun_bttechstatus(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttechstatus(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
        * fargs[0] = dbref of MECH object
@@ -1195,9 +1195,9 @@ void fun_bttechstatus(char *buff, char **bufc, dbref player, char *fargs[], int 
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_bttechref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttechref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_bttech_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttech_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = ref of the mech
@@ -1212,9 +1212,9 @@ void fun_bttech_ref(char *buff, char **bufc, dbref player, char *fargs[], int nf
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_bthexlosbroadcast(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bthexlosbroadcast(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_bthexemit(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bthexemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mapref
@@ -1246,7 +1246,7 @@ void fun_bthexemit(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btmakepilotroll(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btmakepilotroll(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mechref
        fargs[1] = roll modifier
@@ -1278,9 +1278,9 @@ void fun_btmakepilotroll(char *buff, char **bufc, dbref player, char *fargs[], i
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetreftech(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetreftech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btgetreftech_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetreftech_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mech reference */
@@ -1294,9 +1294,9 @@ void fun_btgetreftech_ref(char *buff, char **bufc, dbref player, char *fargs[], 
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetdbreffromid(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetdbreffromid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btid2db(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btid2db(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mech 
@@ -1332,9 +1332,9 @@ void fun_btid2db(char *buff, char **bufc, dbref player, char *fargs[], int nfarg
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btlostohex(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btlostohex(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_bthexlos(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bthexlos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mech 
@@ -1368,9 +1368,9 @@ void fun_bthexlos(char *buff, char **bufc, dbref player, char *fargs[], int nfar
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btlostomech(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btlostomech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
-void fun_btlosm2m(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #endif
 {
     /* fargs[0] = mech
@@ -1400,7 +1400,7 @@ void fun_btlosm2m(char *buff, char **bufc, dbref player, char *fargs[], int nfar
         safe_tprintf_str(buff, bufc, "0");
 }
 
-void fun_btaddparts(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btaddparts(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mech/map
        fargs[1] = partname
@@ -1427,7 +1427,7 @@ void fun_btaddparts(char *buff, char **bufc, dbref player, char *fargs[], int nf
 
 extern int xlate(char *);
 
-void fun_btloadmap(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mapobject
        fargs[1] = mapname
@@ -1461,7 +1461,7 @@ void fun_btloadmap(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_str("1", buff, bufc);
 }
 
-void fun_btloadmech(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btloadmech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mechobject
        fargs[1] = mechref
@@ -1485,7 +1485,7 @@ void fun_btloadmech(char *buff, char **bufc, dbref player, char *fargs[], int nf
 
 extern char radio_colorstr[];
 
-void fun_btmechfreqs(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btmechfreqs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mechobject
      */
@@ -1516,7 +1516,7 @@ void fun_btmechfreqs(char *buff, char **bufc, dbref player, char *fargs[], int n
 
 #ifdef EXILE_FUNCS_SUPPORT
 
-void fun_btgetweight(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetweight(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
       fargs[0] = stringname of part
@@ -1537,7 +1537,7 @@ void fun_btgetweight(char *buff, char **bufc, dbref player, char *fargs[], int n
     safe_tprintf_str(buff, bufc, tprintf("%.3f", (float) sw / 1024));
 }
 
-void fun_btaddstores(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the bay */
     /* fargs[1] = name of the part */
@@ -1562,7 +1562,7 @@ void fun_btaddstores(char *buff, char **bufc, dbref player, char *fargs[], int n
     safe_tprintf_str(buff, bufc, "%d", econ_find_items(it, p, b));
 }
 
-void fun_btremovestores(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btremovestores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the bay */
     /* fargs[1] = name of the part */
@@ -1588,7 +1588,7 @@ void fun_btremovestores(char *buff, char **bufc, dbref player, char *fargs[], in
     safe_tprintf_str(buff, bufc, "%d", econ_find_items(it, p, b));
 }
 
-void fun_bttechtime(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttechtime(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     time_t old;
     char *olds = silly_atr_get(player, A_TECHTIME);
@@ -1610,7 +1610,7 @@ void fun_bttechtime(char *buff, char **bufc, dbref player, char *fargs[], int nf
     notify(player, buf);
 }
 
-void fun_btcritslot(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btcritslot(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
        fargs[1] = location name
@@ -1633,7 +1633,7 @@ void fun_btcritslot(char *buff, char **bufc, dbref player, char *fargs[], int nf
     safe_tprintf_str(buff, bufc, "%s", critslot_func(mech, fargs[1], fargs[2], fargs[3]));
 }
 
-void fun_btcritslot_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btcritslot_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = ref
        fargs[1] = location name
@@ -1651,7 +1651,7 @@ void fun_btcritslot_ref(char *buff, char **bufc, dbref player, char *fargs[], in
     safe_tprintf_str(buff, bufc, "%s", critslot_func(mech, fargs[1], fargs[2], fargs[3]));
 }
 
-void fun_btgetrange(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 /* fargs[0] - [4] Combos of XY or DBref */
     dbref mechAdb, mechBdb, mapdb;
@@ -1709,7 +1709,7 @@ safe_tprintf_str(buff, bufc, "#-1 GENERAL ERROR");
 
 extern void correct_speed(MECH *);
 
-void fun_btsetmaxspeed(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btsetmaxspeed(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = id of the mech
        fargs[1] = what the new maxspeed should be set too
@@ -1730,7 +1730,7 @@ void fun_btsetmaxspeed(char *buff, char **bufc, dbref player, char *fargs[], int
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btgetrealmaxspeed(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetrealmaxspeed(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     MECH *mech;
@@ -1747,7 +1747,7 @@ void fun_btgetrealmaxspeed(char *buff, char **bufc, dbref player, char *fargs[],
     safe_tprintf_str(buff, bufc, tprintf("%f", speed));
 }
 
-void fun_btgetbv(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetbv(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     MECH *mech;
@@ -1764,7 +1764,7 @@ void fun_btgetbv(char *buff, char **bufc, dbref player, char *fargs[], int nfarg
     safe_tprintf_str(buff, bufc, tprintf("%d", bv));
 }
 
-void fun_btgetbv_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetbv_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     MECH *mech;
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
@@ -1774,7 +1774,7 @@ void fun_btgetbv_ref(char *buff, char **bufc, dbref player, char *fargs[], int n
     safe_tprintf_str(buff, bufc, "%d", MechBV(mech));
 }
 
-void fun_bttechlist(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttechlist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     MECH *mech;
@@ -1790,7 +1790,7 @@ void fun_bttechlist(char *buff, char **bufc, dbref player, char *fargs[], int nf
     safe_tprintf_str(buff, bufc, infostr ? infostr : " ");
 }
 
-void fun_bttechlist_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bttechlist_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref it;
     MECH *mech;
@@ -1809,7 +1809,7 @@ void fun_bttechlist_ref(char *buff, char **bufc, dbref player, char *fargs[], in
  * ie: the Guns and Ammo
  * in a list format like <item_1> <# of 1>|...|<item_n> <# of n>
  * Dany - 06/2005 */
-void fun_btpayload_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs) {
+void fun_btpayload_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs) {
     MECH *mech;
     char *infostr;
     
@@ -1820,7 +1820,7 @@ void fun_btpayload_ref(char *buff, char **bufc, dbref player, char *fargs[], int
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1");
 }
 
-void fun_btshowstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btshowstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref outplayer;
     MECH *mech;
@@ -1835,7 +1835,7 @@ void fun_btshowstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], 
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btshowwspecs_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btshowwspecs_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref outplayer;
     MECH *mech;
@@ -1851,7 +1851,7 @@ void fun_btshowwspecs_ref(char *buff, char **bufc, dbref player, char *fargs[], 
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btshowcritstatus_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btshowcritstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref outplayer;
     MECH *mech;
@@ -1867,7 +1867,7 @@ void fun_btshowcritstatus_ref(char *buff, char **bufc, dbref player, char *fargs
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btengrate(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btengrate(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref mechdb;
     MECH *mech;
@@ -1881,7 +1881,7 @@ void fun_btengrate(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, "%d %d", MechEngineSize(mech), susp_factor(mech));
 }
 
-void fun_btengrate_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btengrate_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     MECH *mech;
 
@@ -1892,7 +1892,7 @@ void fun_btengrate_ref(char *buff, char **bufc, dbref player, char *fargs[], int
     safe_tprintf_str(buff, bufc, "%d %d", MechEngineSize(mech), susp_factor(mech));
 }
 
-void fun_btfasabasecost_ref(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btfasabasecost_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 #ifdef BT_ADVANCED_ECON
     MECH *mech;
@@ -1906,7 +1906,7 @@ safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
 #endif
 }
 
-void fun_btweapstat(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btweapstat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = weapon name
      * fargs[1] = stat type
@@ -1965,7 +1965,7 @@ void fun_btweapstat(char *buff, char **bufc, dbref player, char *fargs[], int nf
     safe_tprintf_str(buff, bufc, "%d", val);
 }
 
-void fun_btnumrepjobs(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btnumrepjobs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     extern int damage_last;
     MECH *mech;
@@ -1984,7 +1984,7 @@ void fun_btnumrepjobs(char *buff, char **bufc, dbref player, char *fargs[], int 
     safe_tprintf_str(buff, bufc, "%d", damage_last);
 }
 
-void fun_btsetxy(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
         fargs[0] = mech
@@ -2024,7 +2024,7 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, char *fargs[], int nfarg
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btmapemit(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btmapemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mapref
        fargs[1] = message
@@ -2047,7 +2047,7 @@ void fun_btmapemit(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, "1");
 }
 
-void fun_btparttype(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btparttype(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /*
       fargs[0] = stringname of part
@@ -2090,7 +2090,7 @@ void fun_btparttype(char *buff, char **bufc, dbref player, char *fargs[], int nf
     }
 }
 
-void fun_btgetpartcost(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btgetpartcost(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 #ifdef BT_ADVANCED_ECON
 int i = -1, p, index, b;
@@ -2109,7 +2109,7 @@ safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
 #endif
 }
 
-void fun_btsetpartcost(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btsetpartcost(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 #ifdef BT_ADVANCED_ECON
 int i = -1, p, index, b;
@@ -2134,7 +2134,7 @@ safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
 #endif
 }
 
-void fun_btunitfixable(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btunitfixable(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     MECH *mech;
     dbref mechdb;
@@ -2148,7 +2148,7 @@ void fun_btunitfixable(char *buff, char **bufc, dbref player, char *fargs[], int
     safe_tprintf_str(buff, bufc, "%d", unit_is_fixable(mech));
 }
 
-void fun_btlistblz(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btlistblz(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char buf[MBUF_SIZE] = { '\0' };
     dbref mapdb;
@@ -2174,7 +2174,7 @@ void fun_btlistblz(char *buff, char **bufc, dbref player, char *fargs[], int nfa
     safe_tprintf_str(buff, bufc, buf);
 }
 
-void fun_bthexinblz(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_bthexinblz(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     dbref mapdb;
     MAP *map;

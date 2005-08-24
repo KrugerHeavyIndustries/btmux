@@ -223,7 +223,7 @@ void ListForms(dbref player, void *data, char *buffer)
 
 }
 
-void fun_btpartmatch(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btpartmatch(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = name to match on
      */
@@ -262,7 +262,7 @@ void fun_btpartmatch(char *buff, char **bufc, dbref player, char *fargs[], int n
         safe_tprintf_str(buff, bufc, "#-1 INVALID PARTNAME");
 }
 
-void fun_btpartname(char *buff, char **bufc, dbref player, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btpartname(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = partnumer to find name for
      * fargs[1] = 'short', 'long' or 'vlong'
