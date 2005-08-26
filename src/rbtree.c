@@ -195,9 +195,8 @@ void rb_insert(rbtree *bt, void *key, void *data) {
     node->color = NODE_RED;
     if(node->parent->color == NODE_RED) {
         iter = node;
-        while(iter != bt->head && iter->parent->color == NODE_RED) {
+        while(iter != bt->head && iter->parent != bt->head && iter->parent->color == NODE_RED) {
             bt->head->color = NODE_BLACK;
-           
             if(iter->parent == iter->parent->parent->left) {
                 // left child
                 if(iter->parent->parent->right == NULL ||
