@@ -21,6 +21,7 @@ rbtree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
 
 static rbtree_node *rb_find_minimum(rbtree_node *node) {
     rbtree_node *child;
+    if(!node) return NULL;
     child = node;
     while(child->left != NULL) child = child->left;
     return child;
@@ -28,6 +29,7 @@ static rbtree_node *rb_find_minimum(rbtree_node *node) {
 
 static rbtree_node *rb_find_maximum(rbtree_node *node) {
     rbtree_node *child;
+    if(!node) return NULL;
     child = node;
     while(child->right != NULL) child = child->right;
     return child;
@@ -35,6 +37,7 @@ static rbtree_node *rb_find_maximum(rbtree_node *node) {
 
 static rbtree_node *rb_find_successor_node(rbtree_node *node) {
     rbtree_node *child, *parent;
+    if(!node) return NULL;
     if(node->right != NULL) {
         child = node->right;
         while(child->left != NULL) {
@@ -55,6 +58,7 @@ static rbtree_node *rb_find_successor_node(rbtree_node *node) {
 
 static rbtree_node *rb_find_predecessor_node(rbtree_node *node) {
     rbtree_node *child, *parent;
+    if(!node) return NULL;
     if(node->left != NULL) {
         child = node->left;
         while(child->right != NULL) child = child->right;
@@ -547,7 +551,10 @@ void *rb_search(rbtree *bt, int method, void *key) {
     }
 
     if(found && (method == SEARCH_EQUAL || method == SEARCH_LTEQ || method == SEARCH_GTEQ)) {
-        return node->data;
+        if(node)
+            return node->data;
+        else
+            return NULL;
     }
 
     if(!found && (method == SEARCH_EQUAL || method == SEARCH_NEXT || method == SEARCH_PREV)) {
@@ -557,29 +564,47 @@ void *rb_search(rbtree *bt, int method, void *key) {
     if(method == SEARCH_GTEQ || (!found && method==SEARCH_GT)) {
         if(compare_result > 0) {
             node = rb_find_successor_node(last);
-            return node->data;
+            if(node)
+                return node->data;
+            else
+                return node;
         } else {
-            return last->data;
+            if(last)
+                return last->data;
+            else
+                return last;
         }
     }
 
     if(method == SEARCH_LTEQ || (!found && method == SEARCH_LT)) {
         if(compare_result < 0) {
             node = rb_find_predecessor_node(last);
-            return node->data;
+            if(node)
+                return node->data;
+            else
+                return node;
         } else {
-            return last->data;
+            if(last)
+                return last->data;
+            else
+                return last;
         }
     }
 
     if(method == SEARCH_NEXT || (found && method == SEARCH_GT)) {
         node = rb_find_successor_node(node);
-        return node->data;
+        if(node)
+            return node->data;
+        else 
+            return node;
     }
 
     if(method == SEARCH_PREV || (found && method == SEARCH_LT)) {
         node = rb_find_predecessor_node(node);
-        return node->data;
+        if(node)
+            return node->data;
+        else
+            return node;
     }
 
     return NULL;
