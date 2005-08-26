@@ -118,6 +118,31 @@ int MIN(int v1, int v2)
     return v2;
 }
 
+int proper_parseattributes(char *buffer, char **args, int max) {
+    int count = 0, iterator = 0, length;
+    char *start, *finish;
+    
+    memset(args, 0, sizeof(char *)*max);
+
+    start = buffer;
+    while(count < (max-1) && *start) {
+        if(*start == '=') {
+            args[count++] = strndup(start, 1);
+            start++;
+            continue;
+        }
+        length = strcspn(start, " \t=");
+        args[count++] = strndup(start, length);
+        start+=length;
+        if(*start != '=' && *start != '\x0') start++;
+    }
+    if(*start) {
+        args[max-1] = strdup(start);
+        count++;
+    }
+    return count;
+}
+       
 
 int silly_parseattributes(char *buffer, char **args, int max)
 {
@@ -131,34 +156,34 @@ int silly_parseattributes(char *buffer, char **args, int max)
 
     b = bufferi;
     for (a = buffer; *a && a; a++)
-	if (*a == '=') {
-	    *(b++) = ' ';
-	    *(b++) = '=';
-	    *(b++) = ' ';
-	} else
-	    *(b++) = *a;
+        if (*a == '=') {
+            *(b++) = ' ';
+            *(b++) = '=';
+            *(b++) = ' ';
+        } else
+            *(b++) = *a;
     *b = 0;
     /* Got da silly string in bufferi variable */
 
     while ((count < max) && parsed) {
-	if (!count) {
-	    /* first time through */
-	    parsed = strtok(bufferi, " \t");
-	} else {
-	    parsed = strtok(NULL, " \t");
-	}
-	args[count] = parsed;	/* Set the args pointer */
-	if (parsed)
-	    num_args++;		/* Actual count of arguments */
-	count++;		/* Loop to make sure we don't overrun our */
-	/* buffer */
+        if (!count) {
+            /* first time through */
+            parsed = strtok(bufferi, " \t");
+        } else {
+            parsed = strtok(NULL, " \t");
+        }
+        args[count] = parsed;	/* Set the args pointer */
+        if (parsed)
+            num_args++;		/* Actual count of arguments */
+        count++;		/* Loop to make sure we don't overrun our */
+        /* buffer */
     }
     /* Hrm. Now all we gotta do is append -rest- of data to end of _last_ arg */
     if (args[max - 1] && args[max - 1][0]) {
-	strcpy(foobuff, args[max - 1]);
-	while ((parsed = strtok(NULL, " \t")))
-	    sprintf(foobuff + strlen(foobuff), " %s", parsed);
-	args[max - 1] = foobuff;
+        strcpy(foobuff, args[max - 1]);
+        while ((parsed = strtok(NULL, " \t")))
+            sprintf(foobuff + strlen(foobuff), " %s", parsed);
+        args[max - 1] = foobuff;
     }
     return num_args;
 }

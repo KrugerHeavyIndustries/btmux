@@ -714,32 +714,35 @@ void mech_sendchannel(dbref player, void *data, char *buffer)
 
     cch(MECH_USUALS);
     DOCHECK(Destroyed(mech) ||
-	!MechRadioRange(mech), "Your communication gear is inoperative.");
+            !MechRadioRange(mech), "Your communication gear is inoperative.");
     DOCHECK(CrewStunned(mech), "You are too stunned to use the radio!");
-    if ((argc = silly_parseattributes(buffer, args, 3)) != 3)
-	fail = 1;
+    if ((argc = proper_parseattributes(buffer, args, 3)) != 3)
+        fail = 1;
     if (!fail && strlen(args[0]) > 1)
-	fail = 1;
+        fail = 1;
     if (!fail && args[0][0] >= 'a' && args[0][0] <= 'z')
-	chn = args[0][0] - 'a';
+        chn = args[0][0] - 'a';
     if (!fail && args[0][0] >= 'A' && args[0][0] <= 'Z')
-	chn = args[0][0] - 'Z';
+        chn = args[0][0] - 'Z';
     if (!fail && (chn >= MFreqs(mech) || chn < 0))
-	fail = 1;
+        fail = 1;
     if (!fail)
-	for (i = 0; args[2][i]; i++)
-	    DOCHECK((BOUNDED(32, args[2][i], 255)) != args[2][i],
-		"Invalid: No control characters in radio messages, please.");
+        for (i = 0; args[2][i]; i++)
+            DOCHECK((BOUNDED(32, args[2][i], 255)) != args[2][i],
+                    "Invalid: No control characters in radio messages, please.");
     DOCHECK(fail, "Invalid format! Usage: sendchannel <letter>=<string>");
 
     if (mech->freq[chn] == 0 && In_Character(mech->mapindex)) {
         send_channel("ZeroFrequencies", 
-            tprintf("Player #%d (%s) in mech #%d (channel %c) "
+                tprintf("Player #%d (%s) in mech #%d (channel %c) "
                     "on map #%d 0-freqs \"%s\"", player, Name(player),
                     mech->mynum, chn+'A', mech->mapindex, args[2]));
     }
 
     sendchannelstuff(mech, chn, args[2]);
+    for(i = 0; i < 3; i++) {
+        if(args[i]) free(args[i]);
+    }
     explode_mines(mech, mech->freq[chn]);
 }
 
@@ -1015,8 +1018,7 @@ int findCommLink(MAP * map, MECH * from, MECH * to, int freq)
 
 /* The code that does the actual sending of radio messages whenever
  * someone speaks on a given frequency */
-void sendchannelstuff(MECH * mech, int freq, char *msg)
-{
+void sendchannelstuff(MECH * mech, int freq, char *msg) {
     /* The _smart_ code :-) */
     int loop, range, bearing, i, isxp;
     MECH *tempMech;
@@ -1029,15 +1031,18 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 
     char ai_buf[LBUF_SIZE];
 
-/* Removed the Radio Failing stuff cause it annoys me - Dany
-    CheckGenericFail(mech, -2, &sfail_type, &sfail_mod);
-*/
+    /* Removed the Radio Failing stuff cause it annoys me - Dany
+       CheckGenericFail(mech, -2, &sfail_type, &sfail_mod);
+       */
     if (!MechRadioRange(mech))
         return;
 
     /* Loop through all the units on the map */
     for (loop = 0; loop < mech_map->first_free; loop++) {
-        if (mech_map->mechsOnMap[loop] != -1) {
+        if (mech_map->mechsOnMap[loop] != 2) {
+            // XXX: The test below is indicative of very bad bookkeeping. Suggesting
+            // that a dbref may be indicated as "on the map" without being on the map.
+            // I believe this to be a serious problem.
             if (!(tempMech = (MECH *) FindObjectsData(mech_map->mechsOnMap[loop])))
                 continue;
             if (Destroyed(tempMech))
@@ -1049,7 +1054,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
                 if (tempMech->freq[i] == mech->freq[freq]) {
                     if ((tempMech->freqmodes[i] & FREQ_MUTE) ||
                             ((mech->freqmodes[freq] & FREQ_DIGITAL) &&
-                            (MechRadioInfo(tempMech) & RADIO_NODIGITAL)))
+                             (MechRadioInfo(tempMech) & RADIO_NODIGITAL)))
                         continue;
                     break;
                 }
@@ -1109,12 +1114,13 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
                                             "precisely" : "exactly", i + 'A'));
                                 tempMech->freq[i] += mod * t;
                             }
-    
+
                     }
 
                 continue;
-   
+
             }
+            
             strncpy(buf2, msg, LBUF_SIZE);
 
             /* This is where we check to see if the mech has an AI and
@@ -1138,9 +1144,9 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
                     auto_parse_command(a, tempMech, i, buf3);
                 }
             }
-/* Removed the Radio fail stuff because it annoys me - Dany
-            CheckGenericFail(tempMech, -2, &rfail_type, &rfail_mod);
-*/
+            /* Removed the Radio fail stuff because it annoys me - Dany
+               CheckGenericFail(tempMech, -2, &rfail_type, &rfail_mod);
+               */
             if (!MechRadioRange(tempMech))
                 continue;
             if (mech->freqmodes[freq] & FREQ_DIGITAL) {
@@ -1169,24 +1175,24 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 
                 snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c", ccode(tempMech, i),
                         (char) ('A' + i), bearing, buf3);
-    
+
             } else {
 
                 ScrambleMessage(buf3, range, MechRadioRange(mech),
                         MechRadioRange(tempMech), mech->chantitle[freq], buf2,
                         MechComm(tempMech), &isxp,
                         (AnyECMDisturbed(mech) || AnyECMDisturbed(tempMech)
-                        /*
-                        || sfail_type == FAIL_STATIC ||
-                        rfail_type == FAIL_STATIC
-                        */
+                         /*
+                            || sfail_type == FAIL_STATIC ||
+                            rfail_type == FAIL_STATIC
+                            */
                         ) && mech != tempMech, 0);
 
                 snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c", ccode(tempMech, i),
-                    (char) ('A' + i), bearing, buf3);
-    
+                        (char) ('A' + i), bearing, buf3);
+
             }
-    
+
             mech_notify(tempMech, MECHALL, buf);
             if (isxp && In_Character(tempMech->mynum))
                 if ((MechCommLast(tempMech) + 60) < muxevent_tick) {
