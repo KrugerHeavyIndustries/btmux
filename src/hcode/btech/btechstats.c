@@ -417,7 +417,7 @@ int char_gainxp(dbref player, char *skill, int amount)
     return char_gainxpbycode(player, char_getvaluecode(skill), amount);
 }
 
-#ifndef BT_EXILE_MW3STATS
+#ifndef BT_EXTENDED_ATTRIBUTES
 int char_getskillsuccess(dbref player, char *name, int modifier)
 #else
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
@@ -1282,7 +1282,7 @@ void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded)
 */
 }
 
-#ifdef BT_EXILE_MW3STATS
+#ifdef BT_EXTENDED_ADVANTAGES
 void AccumulateComputerXP(dbref pilot, MECH * mech, int reason)
 {
 int xp;
