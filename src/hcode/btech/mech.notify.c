@@ -1209,6 +1209,7 @@ void mech_radio(dbref player, void *data, char *buffer)
     int argc;
     int fail = 0;
     char *args[3];
+    int i;
     MECH *mech = (MECH *) data;
     dbref target;
     MECH *tempMech;
@@ -1219,30 +1220,33 @@ void mech_radio(dbref player, void *data, char *buffer)
     cch(MECH_USUAL);
 
     DOCHECK(MechIsObservator(mech), "You can't radio anyone.");
-    if ((argc = silly_parseattributes(buffer, args, 3)) != 3)
-	fail = 1;
+    if ((argc = proper_parseattributes(buffer, args, 3)) != 3)
+        fail = 1;
     if (!fail && (!args[1] || args[1][0] != '=' || args[1][1] != 0))
-	fail = 1;
+        fail = 1;
     if (!fail && (!args[0] || args[0][0] == 0 || args[0][1] == 0 ||
-	    args[0][2] != 0))
-	fail = 1;
+                args[0][2] != 0))
+        fail = 1;
     if (!fail) {
-	target = FindTargetDBREFFromMapNumber(mech, args[0]);
-	tempMech = getMech(target);
-	DOCHECK(!tempMech ||
-	    !InLineOfSight(mech, tempMech, MechX(tempMech),
-		MechY(tempMech), FlMechRange(map, mech, tempMech)),
-	    "Target is not in line of sight!");
-	mech_notify(mech, MECHSTARTED, tprintf("You radio %s with, '%s'",
-		GetMechToMechID(mech, tempMech), args[2]));
-	mech_notify(tempMech, MECHSTARTED,
-	    tprintf("%s radios you with, '%s'", GetMechToMechID(tempMech,
-		    mech), args[2]));
-	auto_replyA(tempMech, tprintf("%s radio'ed me '%s'",
-		GetMechToMechID(tempMech, mech), args[2]));
+        target = FindTargetDBREFFromMapNumber(mech, args[0]);
+        tempMech = getMech(target);
+        DOCHECK(!tempMech ||
+                !InLineOfSight(mech, tempMech, MechX(tempMech),
+                    MechY(tempMech), FlMechRange(map, mech, tempMech)),
+                "Target is not in line of sight!");
+        mech_notify(mech, MECHSTARTED, tprintf("You radio %s with, '%s'",
+                    GetMechToMechID(mech, tempMech), args[2]));
+        mech_notify(tempMech, MECHSTARTED,
+                tprintf("%s radios you with, '%s'", GetMechToMechID(tempMech,
+                        mech), args[2]));
+        auto_replyA(tempMech, tprintf("%s radio'ed me '%s'",
+                    GetMechToMechID(tempMech, mech), args[2]));
     }
     DOCHECK(fail,
-	"Invalid format! Usage: radio <letter><letter>=<message>");
+            "Invalid format! Usage: radio <letter><letter>=<message>");
+    for(i = 0; i < 3; i++) {
+        if(args[i]) free(args[i]);
+    }
 }
 
 void MechBroadcast(MECH * mech, MECH * target, MAP * mech_map,
