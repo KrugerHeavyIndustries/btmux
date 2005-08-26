@@ -417,7 +417,7 @@ int char_gainxp(dbref player, char *skill, int amount)
     return char_gainxpbycode(player, char_getvaluecode(skill), amount);
 }
 
-#ifndef BT_EXTENDED_ATTRIBUTES
+#ifndef BT_EXTENDED_ADVANTAGES
 int char_getskillsuccess(dbref player, char *name, int modifier)
 #else
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
@@ -434,7 +434,7 @@ int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
 	roll = char_rollunskilled();
     else
 	roll = char_rollskilled();
-#ifdef BT_EXILE_MW3STATS
+#ifdef BT_EXTENDED_ADVANTAGES
     if (loud)
         {
         notify(player, tprintf("You make a %s skill roll!", name));
