@@ -251,8 +251,8 @@ void cf_init(void)
     mudconf.mail_expiration = 14;
     mudconf.use_http = 0;
     mudconf.queuemax = 100;
-    mudconf.queue_chunk = 3;
-    mudconf.active_q_chunk = 0;
+    mudconf.queue_chunk = 10;
+    mudconf.active_q_chunk = 10;
     mudconf.sacfactor = 5;
     mudconf.sacadjust = -1;
     mudconf.use_hostname = 1;
@@ -306,9 +306,9 @@ void cf_init(void)
     StringCopy(mudconf.mud_name, "TinyMUX");
     StringCopy(mudconf.one_coin, "penny");
     StringCopy(mudconf.many_coins, "pennies");
-    mudconf.timeslice = 1000;
+    mudconf.timeslice = 100;
     mudconf.cmd_quota_max = 100;
-    mudconf.cmd_quota_incr = 1;
+    mudconf.cmd_quota_incr = 5;
     mudconf.control_flags = 0xffffffff;	/*
                                          * Everything for now...
                                          */
