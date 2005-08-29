@@ -1738,8 +1738,8 @@ void mech_safety(dbref player, void *data, char *buffer)
     return;
 }
 
-#define MECHPREF_FLAG_INVERTED	0x01
-#define MECHPREF_FLAG_NEGATIVE	0x02
+#define MECHPREF_FLAG_INVERTED  0x01
+#define MECHPREF_FLAG_NEGATIVE  0x02
 
 static struct mechpref_info {
     unsigned char bit;
@@ -1773,22 +1773,23 @@ static char *display_mechpref(int i)
     char * state;
 
     if (!target_mech) {
-    	SendError("Invalid target_mech in display_mechpref!");
-    	return "Unknown error; contact a Wizard.";
+        SendError("Invalid target_mech in display_mechpref!");
+        return "Unknown error; contact a Wizard.";
     }
+
     if (((MechPrefs(target_mech) & info.bit) &&
-	 (info.flags & MECHPREF_FLAG_INVERTED)) ||
-	(!(MechPrefs(target_mech) & info.bit) &&
-	 !(info.flags & MECHPREF_FLAG_INVERTED))) {
-	if (info.flags & MECHPREF_FLAG_NEGATIVE)
-	    state = "%ch%cgOFF%cn";
-	else
-	    state = "%ch%crOFF%cn";
+            (info.flags & MECHPREF_FLAG_INVERTED)) ||
+            (!(MechPrefs(target_mech) & info.bit) &&
+             !(info.flags & MECHPREF_FLAG_INVERTED))) {
+        if (info.flags & MECHPREF_FLAG_NEGATIVE)
+            state = "%ch%cgOFF%cn";
+        else
+            state = "%ch%crOFF%cn";
     } else {
-	if (info.flags & MECHPREF_FLAG_NEGATIVE)
-	    state = "%ch%crON%cn";
-	else
-	    state = "%ch%cgON%cn";
+        if (info.flags & MECHPREF_FLAG_NEGATIVE)
+            state = "%ch%crON%cn";
+        else
+            state = "%ch%cgON%cn";
     }
 
     sprintf(buf, "        %-40s%s", info.name, state);
@@ -1799,52 +1800,113 @@ void mech_mechprefs(dbref player, void * data, char * buffer)
 {
     MECH * mech = (MECH *) data;
     int nargs;
-    char *args[2];
+    char *args[3];
+    char buf[LBUF_SIZE]; 
     coolmenu *c;
-    
-    cch(MECH_USUALSMO);
-    nargs = mech_parseattributes(buffer, args, 1);
-    if (!nargs) {
-	/* Show mechprefs */
-	target_mech = mech;
-	c = SelCol_FunStringMenuK(1, "Mech Preferences", display_mechpref,
-				  NUM_MECHPREFERENCES);
-	ShowCoolMenu(player, c);
-	KillCoolMenu(c);
-	target_mech = NULL;
-    } else {
-	int i;
-	struct mechpref_info info;
-	char *newstate;
 
-	for (i = 0; i < NUM_MECHPREFERENCES; i++) {
-	    if (strcasecmp(args[0], mech_preferences[i].name) == 0)
-		break;
-	}
-	if (i == NUM_MECHPREFERENCES) {
-	    notify(player, tprintf("Unknown MechPreference: %s", args[0]));
-	    return;
-	}
-	info = mech_preferences[i];
-	if (MechPrefs(mech) & info.bit)
-	    MechPrefs(mech) &= ~(info.bit);
-	else
-	    MechPrefs(mech) |= (info.bit);
-	
-	if (((MechPrefs(mech) & info.bit) &&
-	     (info.flags & MECHPREF_FLAG_INVERTED)) ||
-	    (!(MechPrefs(mech) & info.bit) &&
-	     !(info.flags & MECHPREF_FLAG_INVERTED))) {
-	    if (info.flags & MECHPREF_FLAG_NEGATIVE)
-		newstate = "%ch%cgOFF%cn";
-	    else
-		newstate = "%ch%crOFF%cn";
-	} else {
-	    if (info.flags & MECHPREF_FLAG_NEGATIVE)
-		newstate = "%ch%crON%cn";
-	    else
-		newstate = "%ch%cgON%cn";
-	}
-	notify(player, tprintf("%s %s", info.msg, newstate));
+    cch(MECH_USUALSMO);
+    nargs = mech_parseattributes(buffer, args, 2);
+
+    /* Default, no arguments passed */
+    if (!nargs) {
+
+        /* Show mechprefs */
+        target_mech = mech;
+        c = SelCol_FunStringMenuK(1, "Mech Preferences", display_mechpref,
+                NUM_MECHPREFERENCES);
+        ShowCoolMenu(player, c);
+        KillCoolMenu(c);
+        target_mech = NULL;
+
+    } else {
+
+        int i;
+        struct mechpref_info info;
+        char *newstate;
+
+        /* Looking through the different mech preferences to find the
+         * one the user wants to change */
+        for (i = 0; i < NUM_MECHPREFERENCES; i++) {
+            if (strcasecmp(args[0], mech_preferences[i].name) == 0)
+                break;
+        }
+        if (i == NUM_MECHPREFERENCES) {
+            snprintf(buf, LBUF_SIZE, "Unknown MechPreference: %s", args[0]);
+            notify(player, buf);
+            return;
+        }
+
+        /* Get the current setting */
+        info = mech_preferences[i];
+
+        /* Did they provide a ON or OFF flag */
+        if (nargs == 2) {
+
+            /* Check to make sure its either ON or OFF */
+            if ((strcasecmp(args[1], "ON") != 0) &&
+                    (strcasecmp(args[1], "OFF") != 0)) {
+
+                /* Insert notify here */
+                notify(player, "Only accept ON or OFF as valid extra "
+                        "parameter for mechprefs pref");
+                return;
+            }
+
+            /* Set the value to what they want */
+            if (strcasecmp(args[1], "ON") == 0) {
+
+                /* Set the bit */
+                if (info.flags & MECHPREF_FLAG_INVERTED) {
+                    MechPrefs(mech) &= ~(info.bit);
+                } else {
+                    MechPrefs(mech) |= (info.bit);
+                }
+
+            } else {
+
+                /* Unset the bit */
+                if (info.flags & MECHPREF_FLAG_INVERTED) {
+                    MechPrefs(mech) |= (info.bit);
+                } else {
+                    MechPrefs(mech) &= ~(info.bit);
+                }
+
+            }
+
+        } else {
+
+            /* If set, unset it, otherwise set the preference */
+            if (MechPrefs(mech) & info.bit)
+                MechPrefs(mech) &= ~(info.bit);
+            else
+                MechPrefs(mech) |= (info.bit);
+
+        }
+
+        /* Which way did the preference get changed and
+         * is it the default or non-standard mode of
+         * the preference */
+        if (((MechPrefs(mech) & info.bit) &&
+                (info.flags & MECHPREF_FLAG_INVERTED)) ||
+                (!(MechPrefs(mech) & info.bit) &&
+                 !(info.flags & MECHPREF_FLAG_INVERTED))) {
+
+            if (info.flags & MECHPREF_FLAG_NEGATIVE)
+                newstate = "%ch%cgOFF%cn";
+            else
+                newstate = "%ch%crOFF%cn";
+
+        } else {
+
+            if (info.flags & MECHPREF_FLAG_NEGATIVE)
+                newstate = "%ch%crON%cn";
+            else
+                newstate = "%ch%cgON%cn";
+
+        }
+
+        /* Tell them the preference has been changed */
+        snprintf(buf, LBUF_SIZE, "%s %s", info.msg, newstate);
+        notify(player, buf);
     }
 }    

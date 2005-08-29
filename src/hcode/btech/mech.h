@@ -710,14 +710,14 @@ struct section_struct {
 #define MOVENEMENT_LAST		10
 
 /* Mech Preferences list */
-#define MECHPREF_PKILL		0x01	/* Kill MWs anyway */
-#define MECHPREF_SLWARN		0x02	/* Warn when lit by slite */
-#define MECHPREF_AUTOFALL	0x04	/* Jump off cliffs (don't try to avoid) */
-#define MECHPREF_NOARMORWARN	0x08	/* Don't warn when armor is getting low */
-#define MECHPREF_NOAMMOWARN	0x10	/* Don't warn when ammo is getting low */
-#define MECHPREF_STANDANYWAY	0x20	/* Try to stand even when BTH too high */
-#define MECHPREF_AUTOCON_SD	0x40	/* Autocon on non-started units */
-#define MECHPREF_NOFRIENDLYFIRE 0x80	/* Disallow firing on teammates */
+#define MECHPREF_PKILL          0x01    /* Kill MWs anyway */
+#define MECHPREF_SLWARN         0x02    /* Warn when lit by slite */
+#define MECHPREF_AUTOFALL       0x04    /* Jump off cliffs (don't try to avoid) */
+#define MECHPREF_NOARMORWARN    0x08    /* Don't warn when armor is getting low */
+#define MECHPREF_NOAMMOWARN     0x10    /* Don't warn when ammo is getting low */
+#define MECHPREF_STANDANYWAY    0x20    /* Try to stand even when BTH too high */
+#define MECHPREF_AUTOCON_SD     0x40    /* Autocon on non-started units */
+#define MECHPREF_NOFRIENDLYFIRE 0x80    /* Disallow firing on teammates */
 
 typedef struct {
     char mech_name[31];		/* Holds the 30 char ID for the mech */

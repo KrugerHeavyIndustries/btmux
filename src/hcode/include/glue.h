@@ -428,7 +428,7 @@ CommandsStruct mechcommands[] = {
     {0, "SAFETY [ON|OFF]",
 	    "Enable/Disable Safeties against killing MechWarriors.",
 	mech_safety},
-    {0, "MECHPREFS [SETTING]", "Toggle the mechpref setting of SETTING",
+    {0, "MECHPREFS [SETTING [ON|OFF]]", "Toggle the mechpref setting of SETTING",
     	mech_mechprefs},
 
     /* Vengy's pickup/dropoff */
