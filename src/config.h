@@ -192,4 +192,10 @@ extern int malloc_count;
 #define srandom srand
 #endif /* HAVE_SRANDOM */
 
+#ifndef HAVE_STRNLEN
+size_t strnlen(const char *s, size_t maxlen);
+#endif
+#ifndef HAVE_STRNDUP
+char *strndup(const char *s, size_t n);
+#endif
 #endif				/* CONFIG_H */

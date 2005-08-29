@@ -576,7 +576,7 @@ int could_hear, can_hear;
 	    *bp = '\0';
 	}
 	gender = get_gender(thing);
-	notify_check(thing, thing,
+	notify_checked(thing, thing,
 	    tprintf("%s grow%s ears and can now hear.", buff,
 		(gender == 4) ? "" : "s"),
 	    (MSG_ME | MSG_NBR | MSG_LOC | MSG_INV));
@@ -589,7 +589,7 @@ int could_hear, can_hear;
 	    *bp = '\0';
 	}
 	gender = get_gender(thing);
-	notify_check(thing, thing,
+	notify_checked(thing, thing,
 	    tprintf("%s lose%s %s ears and become%s deaf.", buff,
 		(gender == 4) ? "" : "s", poss[gender],
 		(gender == 4) ? "" : "s"),

@@ -580,7 +580,7 @@ static void announce_connect(dbref player, DESC *d) {
 
     temp = mudstate.curr_enactor;
     mudstate.curr_enactor = player;
-    notify_check(player, player, buf, key);
+    notify_checked(player, player, buf, key);
     free_lbuf(buf);
     if (Suspect(player)) {
         send_channel("Suspect", tprintf("%s has connected.",
@@ -683,7 +683,7 @@ void announce_disconnect(dbref player, DESC *d, const char *reason) {
         key = MSG_INV;
         if ((loc != NOTHING) && !(Dark(player) && Wizard(player)))
             key |= (MSG_NBR | MSG_NBR_EXITS | MSG_LOC | MSG_FWDLIST);
-        notify_check(player, player, buf, key);
+        notify_checked(player, player, buf, key);
         free_mbuf(buf);
 
         if (mudconf.have_comsys)
@@ -771,7 +771,7 @@ void announce_disconnect(dbref player, DESC *d, const char *reason) {
         key = MSG_INV;
         if ((loc != NOTHING) && !(Dark(player) && Wizard(player)))
             key |= (MSG_NBR | MSG_NBR_EXITS | MSG_LOC | MSG_FWDLIST);
-        notify_check(player, player, buf, key);
+        notify_checked(player, player, buf, key);
         raw_broadcast(MONITOR,
                 (char *) "GAME: %s has partially disconnected.", Name(player),
                 0, 0, 0, 0, 0);

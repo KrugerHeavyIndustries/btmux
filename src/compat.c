@@ -203,3 +203,37 @@ struct tm *tp;
 #endif				/*
 				 * * NEED_TIMELOCAL  
 				 */
+
+/*
+ * Need strnlen
+ */
+
+#ifndef HAVE_STRNLEN
+size_t strnlen(const char *s, size_t maxlen) { 
+
+    int count; 
+    
+    for(count = 0; count < maxlen && s[count] != '\x0'; count++); 
+    
+    return count; 
+
+}
+#endif
+
+/*
+ * Need strndup
+ */
+#ifndef HAVE_STRNDUP
+char *strndup(const char *s, size_t n) {
+
+    int length; 
+    char *buf;
+    
+    length = strnlen(s, n); 
+    buf = malloc(length); 
+    strncpy(buf, s, length); 
+ 
+    return buf; 
+
+}
+#endif

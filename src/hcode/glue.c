@@ -1402,12 +1402,12 @@ void mecha_notify_except(dbref loc, dbref player, dbref exception,
     dbref first;
 
     if (loc != exception)
-	notify_check(loc, player, msg,
+	notify_checked(loc, player, msg,
 	    (MSG_ME_ALL | MSG_F_UP | MSG_S_INSIDE | MSG_NBR_EXITS_A |
 		MSG_COLORIZE));
     DOLIST(first, Contents(loc)) {
 	if (first != exception) {
-	    notify_check(first, player, msg,
+	    notify_checked(first, player, msg,
 		(MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | MSG_COLORIZE));
 	}
     }

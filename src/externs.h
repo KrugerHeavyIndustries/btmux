@@ -72,35 +72,35 @@ extern int get_gender(dbref);
 extern void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int);
 
 /* From game.c */
-#define	notify(p,m)			notify_check(p,p,m, \
+#define	notify(p,m)			notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
-#define notify_html(p,m)                notify_check(p,p,m, \
+#define notify_html(p,m)                notify_checked(p,p,m, \
                                               MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN|MSG_HTML)
-#define	notify_quiet(p,m)		notify_check(p,p,m, \
+#define	notify_quiet(p,m)		notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
-#define	notify_with_cause(p,c,m)	notify_check(p,c,m, \
+#define	notify_with_cause(p,c,m)	notify_checked(p,c,m, \
 						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
-#define notify_with_cause_html(p,c,m)   notify_check(p,c,m, \
+#define notify_with_cause_html(p,c,m)   notify_checked(p,c,m, \
                                               MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN|MSG_HTML)
-#define	notify_quiet_with_cause(p,c,m)	notify_check(p,c,m, \
+#define	notify_quiet_with_cause(p,c,m)	notify_checked(p,c,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
-#define	notify_puppet(p,c,m)		notify_check(p,c,m, \
+#define	notify_puppet(p,c,m)		notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_F_DOWN)
-#define	notify_quiet_puppet(p,c,m)	notify_check(p,c,m, \
+#define	notify_quiet_puppet(p,c,m)	notify_checked(p,c,m, \
 						MSG_ME)
-#define	notify_all(p,c,m)		notify_check(p,c,m, \
+#define	notify_all(p,c,m)		notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_NBR_EXITS|MSG_F_UP|MSG_F_CONTENTS)
-#define	notify_all_from_inside(p,c,m)	notify_check(p,c,m, \
+#define	notify_all_from_inside(p,c,m)	notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_NBR_EXITS_A|MSG_F_UP|MSG_F_CONTENTS|MSG_S_INSIDE)
-#define notify_all_from_inside_html(p,c,m)      notify_check(p,c,m, \
+#define notify_all_from_inside_html(p,c,m)      notify_checked(p,c,m, \
                                               MSG_ME_ALL|MSG_NBR_EXITS_A|MSG_F_UP|MSG_F_CONTENTS|MSG_S_INSIDE|MSG_HTML)
-#define	notify_all_from_outside(p,c,m)	notify_check(p,c,m, \
+#define	notify_all_from_outside(p,c,m)	notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_NBR_EXITS|MSG_F_UP|MSG_F_CONTENTS|MSG_S_OUTSIDE)
 extern void notify_except(dbref, dbref, dbref, const char *);
 extern void notify_except2(dbref, dbref, dbref, dbref, const char *);
 void notify_printf(dbref, const char *, ...);
 extern int check_filter(dbref, dbref, int, const char *);
-extern void notify_check(dbref, dbref, const char *, int);
+extern void notify_checked(dbref, dbref, const char *, int);
 extern int Hearer(dbref);
 extern void report(void);
 extern int atr_match(dbref, dbref, char, char *, int);

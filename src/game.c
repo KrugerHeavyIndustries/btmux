@@ -362,7 +362,7 @@ int check_parents;
 
 /*
  * ---------------------------------------------------------------------------
- * * notify_check: notifies the object #target of the message msg, and
+ * * notify_checked: notifies the object #target of the message msg, and
  * * optionally notify the contents, neighbors, and location also.
  */
 
@@ -433,7 +433,7 @@ dbref sender, sendloc;
 {
     char *tp, *tbuff;
 
-    tp = tbuff = alloc_lbuf("notify_check.fwdlist");
+    tp = tbuff = alloc_lbuf("notify_checked.fwdlist");
     safe_str((char *) "From ", tbuff, &tp);
     if (Good_obj(sendloc))
 	safe_str(Name(sendloc), tbuff, &tp);
@@ -493,7 +493,7 @@ char **destp;
 
 char *colorize(dbref player, char *from);
 
-void notify_check(target, sender, msg, key)
+void notify_checked(target, sender, msg, key)
 dbref target, sender;
 int key;
 const char *msg;
@@ -527,7 +527,7 @@ const char *msg;
      */
 
     if (key & MSG_ME) {
-	mp = msg_ns = alloc_lbuf("notify_check");
+	mp = msg_ns = alloc_lbuf("notify_checked");
 	if (Nospoof(target) && (target != sender) &&
 	    (target != mudstate.curr_enactor) &&
 	    (target != mudstate.curr_player && Good_obj(sender))) {
@@ -539,7 +539,7 @@ const char *msg;
 	     * in the code. 
 	     */
 
-	    tbuff = alloc_sbuf("notify_check.nospoof");
+	    tbuff = alloc_sbuf("notify_checked.nospoof");
 	    safe_chr('[', msg_ns, &mp);
 	    safe_str(Name(sender), msg_ns, &mp);
 	    sprintf(tbuff, "(#%d)", sender);
@@ -577,7 +577,7 @@ const char *msg;
 		if (Html(target)) {
 		    char *msg_ns_escaped;
 
-		    msg_ns_escaped = alloc_lbuf("notify_check_escape");
+		    msg_ns_escaped = alloc_lbuf("notify_checked_escape");
 		    html_escape(msg_ns, msg_ns_escaped, 0);
 		    raw_notify(target, msg_ns_escaped);
 		    free_lbuf(msg_ns_escaped);
@@ -617,7 +617,7 @@ const char *msg;
 	    && ((key & MSG_PUP_ALWAYS) ||
 		((targetloc != Location(Owner(target))) &&
 		    (targetloc != Owner(target))))) {
-	    tp = tbuff = alloc_lbuf("notify_check.puppet");
+	    tp = tbuff = alloc_lbuf("notify_checked.puppet");
 	    safe_str(Name(target), tbuff, &tp);
 	    safe_str((char *) "> ", tbuff, &tp);
 	    if (key & MSG_COLORIZE)
@@ -706,7 +706,7 @@ const char *msg;
 		    recip = fp->data[i];
 		    if (!Good_obj(recip) || (recip == target))
 			continue;
-		    notify_check(recip, sender, buff,
+		    notify_checked(recip, sender, buff,
 			(MSG_ME | MSG_F_UP | MSG_F_CONTENTS |
 			    MSG_S_INSIDE));
 		}
@@ -725,7 +725,7 @@ const char *msg;
 		    buff =
 			add_prefix(obj, target, A_PREFIX, msg,
 			"From a distance,");
-		    notify_check(recip, sender, buff,
+		    notify_checked(recip, sender, buff,
 			MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
 		    free_lbuf(buff);
 		}
@@ -760,7 +760,7 @@ const char *msg;
 		    tbuff =
 			add_prefix(obj, target, A_PREFIX, buff,
 			"From a distance,");
-		    notify_check(recip, sender, tbuff,
+		    notify_checked(recip, sender, tbuff,
 			MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
 		    free_lbuf(tbuff);
 		}
@@ -790,7 +790,7 @@ const char *msg;
 		if (Slave(obj) && (key & MSG_NO_SLAVE))
 		    continue;
 		if (obj != target) {
-		    notify_check(obj, sender, buff,
+		    notify_checked(obj, sender, buff,
 			MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
 			    MSG_HTML));
 		}
@@ -814,7 +814,7 @@ const char *msg;
 	    }
 	    DOLIST(obj, Contents(targetloc)) {
 		if ((obj != target) && (obj != targetloc)) {
-		    notify_check(obj, sender, buff,
+		    notify_checked(obj, sender, buff,
 			MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
 			    MSG_COLORIZE));
 		}
@@ -837,7 +837,7 @@ const char *msg;
 	    } else {
 		buff = (char *) msg;
 	    }
-	    notify_check(targetloc, sender, buff,
+	    notify_checked(targetloc, sender, buff,
 		MSG_ME | MSG_F_UP | MSG_S_INSIDE);
 	    if (key & MSG_S_INSIDE) {
 		free_lbuf(buff);
@@ -856,14 +856,14 @@ const char *msg;
     dbref first;
 
     if (loc != exception)
-	notify_check(loc, player, msg,
+	notify_checked(loc, player, msg,
 	    (MSG_ME_ALL | MSG_F_UP | MSG_S_INSIDE | MSG_NBR_EXITS_A));
     DOLIST(first, Contents(loc)) {
 	if (exception == NOSLAVE)
 	    if (Slave(first))
 		continue;
 	if (first != exception)
-	    notify_check(first, player, msg,
+	    notify_checked(first, player, msg,
 		(MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (exception ==
 			NOSLAVE ? MSG_NO_SLAVE : 0)));
     }
@@ -876,11 +876,11 @@ const char *msg;
     dbref first;
 
     if ((loc != exc1) && (loc != exc2))
-	notify_check(loc, player, msg,
+	notify_checked(loc, player, msg,
 	    (MSG_ME_ALL | MSG_F_UP | MSG_S_INSIDE | MSG_NBR_EXITS_A));
     DOLIST(first, Contents(loc)) {
 	if (first != exc1 && first != exc2) {
-	    notify_check(first, player, msg,
+	    notify_checked(first, player, msg,
 		(MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE));
 	}
     }
