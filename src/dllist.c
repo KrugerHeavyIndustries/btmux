@@ -51,6 +51,8 @@ int dllist_destroy_list(dllist *dllist) {
     if (dllist->size != 0) {
         return 0;
     } else {
+        dllist->head = NULL;
+        dllist->tail = NULL;
         free(dllist);
         return 1;
     }
@@ -63,6 +65,9 @@ void *dllist_destroy_node(dllist_node *node) {
     void *data;
 
     data = node->data;
+    node->prev = NULL;
+    node->next = NULL;
+    node->data = NULL;
     free(node);
 
     return data;
@@ -188,6 +193,11 @@ dllist_node *dllist_next(dllist_node *node) {
 /* Gets previous node */
 dllist_node *dllist_prev(dllist_node *node) {
     return node->prev;
+}
+
+/* Returns the data for the node */
+void *dllist_data(dllist_node *node) {
+    return node->data;
 }
 
 /* Get the size of the list */

@@ -35,6 +35,7 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/create.o      \
                  src/db.o          \
                  src/db_rw.o       \
+                 src/dllist.o      \
                  src/eval.o        \
                  src/file_c.o      \
                  src/flags.o       \
