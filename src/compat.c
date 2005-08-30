@@ -230,7 +230,8 @@ char *strndup(const char *s, size_t n) {
     char *buf;
     
     length = strnlen(s, n); 
-    buf = malloc(length); 
+    buf = malloc(length + 1);
+    memset(buf, '\0', length + 1);
     strncpy(buf, s, length); 
  
     return buf; 
