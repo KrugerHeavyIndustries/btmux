@@ -42,64 +42,74 @@
  * They have to be in the same order otherwise
  * things get ugly */
 ACOM acom[NUM_COMMANDS + 1] = {
-    {"dumbgoto", 2}
+    //{"dumbgoto ", 2, &ai_command_dumbgoto}
+    {"dumbgoto ", 2, NULL}
+#if 0
     ,               /* x, y */
-    {"goto", 2}
+    {"goto ", 2}
     ,               /* x, y */
-    {"dumbfollow", 1}
+    {"dumbfollow ", 1}
     ,               /* [dumbly]follow <dbref> */
-    {"follow", 1}
+    {"follow ", 1}
     ,               /* follow <dbref> */
-    {"leavebase", 1}
+    {"leavebase ", 1}
     ,               /* direction */
-    {"wait", 2}
+    {"wait ", 2}
     ,               /* type (0 wait seconds, 1 wait for foe), duration */
 
-    {"speed", 1}
+    {"speed ", 1}
     ,               /* sets 'move' speed to percent of the max */
-    {"jump", 1}
+    {"jump ", 1}
+#endif
     ,               /* jumps to chosen line */
-    {"startup", 0}
+    //{"startup ", 0, &ai_command_startup}
+    {"startup ", 0, NULL}
     ,               /* (starts the 'mech up) */
-    {"shutdown", 0}
+    //{"shutdown ", 0, &ai_command_shutdown}
+    {"shutdown ", 0, NULL}
+#if 0
     ,               /* (shutdowns the 'mech) */
-    {"autogun", 0}
+    {"autogun ", 0}
     ,               /* enables autogunning */
-    {"stopgun", 0}
+    {"stopgun ", 0}
     ,               /* disables autogunning */
-    {"enterbase", 1}
+    {"enterbase ", 1}
     ,               /* direction (0 = north, 1 = south, or ascii num) */
-    {"load", 0}
+    {"load ", 0}
     ,               /* - (loads up to half capacity) */
-    {"unload", 0}
+    {"unload ", 0}
+#endif
     ,               /* - (unloads everything) */
-    {"report", 0}
+    //{"report ", 0, &ai_command_report}
+    {"report ", 0, NULL}
+#if 0
     ,               /* - (report what I'm up to now?) */
-    {"pickup", 1}
+    {"pickup ", 1}
     ,               /* picks up dbref */
-    {"dropoff", 0}
+    {"dropoff ", 0}
     ,               /* dropoff's */
-    {"enterbay", 0}
+    {"enterbay ", 0}
     ,               /* Enter DropShip -- should grow 'id' argument later */
-    {"embark", 1}
+    {"embark ", 1}
     ,               /* Embark a Carrier */
-    {"udisembark", 0}
+    {"udisembark ", 0}
     ,               /* Disembark from a Carrier */
-    {"cmode", 2}
+    {"cmode ", 2}
     ,               /* ? */
-    {"swarm", 1}
+    {"swarm ", 1}
     ,               /* Swarm a target (BSUIT Only Command ?) */
-    {"attackleg", 1}
+    {"attackleg ", 1}
     ,               /* Attackleg a target (BSUIT Only Command ?) */
-    {"chasemode", 1}
+    {"chasemode ", 1}
     ,               /* Chase the target (y/n) */
-    {"swarmmode", 1}
+    {"swarmmode ", 1}
     ,               /* ? */
-    {"roammode", 1}
+    {"roammode ", 1}
     ,               /* ? */
-    {"roam", 2}
+    {"roam ", 2}
+#endif
     ,               /* ? */
-    {NULL, 0}
+    {NULL, 0, NULL}
 };
 
 /* Basic checks for the auto pilot */
@@ -129,7 +139,7 @@ static char *my2string(const char *old)
     new[63] = '\0';
     return new;
 }
-
+#if 0
 static void auto_startup(AUTO * a, MECH * mech)
 {
     if (Started(mech))
@@ -207,7 +217,7 @@ void autopilot_load_cargo(dbref player, MECH * mech, int percent)
     gradually_load(mech, mech->mapindex, percent);
     SetCargoWeight(mech);
 }
-
+#endif
 #define PSTART(a,mech) \
     if (!Started(mech)) { auto_startup(a, mech); return; }
 
@@ -245,14 +255,16 @@ void CalAutoMapindex(MECH * mech)
 
             /* Check here so if the AI is leaving by command it doesn't
              * reset the mapindex (which was messing up auto_leave_event) */
+            /*
             if (GVAL(a, 0) != GOAL_LEAVEBASE) {
                 a->mapindex = mech->mapindex;
             }
+            */
         }
     }
     return; 
 }       
-
+#if 0
 void autopilot_cmode(AUTO * a, MECH * mech, int mode, int range)
 {
     static char buf[MBUF_SIZE];
@@ -328,7 +340,7 @@ void autopilot_enterbase(MECH * mech, int dir)
     }
     mech_enterbase(GOD, mech, strng);
 }
-
+#endif
 /* See what command we should be executing now, and execute it. */
 void auto_com_event(MUXEVENT * e)
 {
@@ -337,7 +349,7 @@ void auto_com_event(MUXEVENT * e)
     MECH *tempmech;
     char buf[SBUF_SIZE];
     int i, j, t;
-
+#if 0
     if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
         return;
 
@@ -536,8 +548,10 @@ void auto_com_event(MUXEVENT * e)
             ADVANCE_PG(a);
             return;
     }
+#endif
 }
 
+#if 0
 /* We were stopped ; no longer */
 static void speed_up_if_neccessary(AUTO * a, MECH * mech, int tx, int ty,
     int bearing)
@@ -846,7 +860,7 @@ void auto_enter_event(MUXEVENT * e)
     }
     AUTOEVENT(a, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
 }
-
+#endif
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
 
@@ -854,10 +868,43 @@ void auto_enter_event(MUXEVENT * e)
 void newautopilot(dbref key, void **data, int selector)
 {
     AUTO *newi = *data;
+    command_node *temp;
+    int i;
 
     switch (selector) {
         case SPECIAL_ALLOC:
+
+            /* Allocate the command list */
+            newi->commands = dllist_create_list();
             newi->speed = 100;
+            break;
+
+        case SPECIAL_FREE:
+
+            /* Go through the list and remove any leftover nodes */
+            while (dllist_size(newi->commands)) {
+
+                /* Remove the first node on the list and get the data
+                 * from it */
+                temp = (command_node *) dllist_remove(newi->commands, 
+                        dllist_head(newi->commands));
+                
+                /* Free the args */
+                for (i = 0; i < 5; i++) {
+                    if (temp->args[i]) {
+                        free(temp->args[i]);
+                        temp->args[i] = NULL;
+                    }
+                }
+                
+                /* Free the node */
+                free(temp);
+
+            }
+
+            /* Destroy the list */
+            dllist_destroy_list(newi->commands);
+
             break;
     }
 }

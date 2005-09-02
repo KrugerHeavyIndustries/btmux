@@ -384,6 +384,28 @@ static int load_update1(Node * tmp)
     return 1;
 }
 
+/*
+ * Read in autopilot data
+ */
+static int load_autopilot_data(Node *tmp) {
+
+    AUTO *a;
+
+    if (WhichType(tmp) == GTYPE_AUTO) {
+
+        a = (AUTO *) NodeData(tmp);
+
+        /* Save the AI Command List */
+        auto_load_commands(global_file_kludge, a);
+
+        /* Save the AI Astar Path */
+
+    }
+
+    return 1;
+
+}
+
 static int get_specialobjectsize(int type)
 {
     if (type < 0 || type >= NUM_SPECIAL_OBJECTS)
@@ -471,6 +493,10 @@ static void load_xcode()
     GoThruTree(xcode_tree, load_update2);
     GoThruTree(xcode_tree, load_update3);
     GoThruTree(xcode_tree, load_update4);
+
+    /* Read in autopilot data */
+    GoThruTree(xcode_tree, load_autopilot_data);
+
 #ifdef BT_ENABLED
     if (!feof(f))
 	loadrepairs(f);
@@ -567,6 +593,32 @@ static int save_maps_func(Node * tmp)
 	    save_mapobjs(global_file_kludge, map);
     }
     return 1;
+}
+
+/* 
+ * Save any extra info for the autopilots 
+ *
+ * Like their command lists
+ * or the Astar path if there is one
+ *
+ */
+static int save_autopilot_data(Node *tmp) {
+
+    AUTO *a;
+
+    if (WhichType(tmp) == GTYPE_AUTO) {
+
+        a = (AUTO *) NodeData(tmp);
+
+        /* Save the AI Command List */
+        auto_save_commands(global_file_kludge, a);
+
+        /* Save the AI Astar Path */
+
+    }
+
+    return 1;
+
 }
 #endif
 
@@ -680,6 +732,10 @@ void SaveSpecialObjects(int i)
     global_file_kludge = f;
     /* Then, check each xcode thing for stuff */
     GoThruTree(xcode_tree, save_maps_func);
+
+    /* Save autopilot data */
+    GoThruTree(xcode_tree, save_autopilot_data);
+
     saverepairs(f);
 #endif
     my_close_file(f, &filemode);

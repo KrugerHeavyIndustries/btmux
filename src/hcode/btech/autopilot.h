@@ -18,6 +18,7 @@
 #define AUTOPILOT_H
 
 #include "mech.events.h"
+#include "dllist.h"
 
 #define AUTOPILOT_MEMORY       100  /* Number of command slots available to AI */
 #define AUTOPILOT_NC_DELAY     1
@@ -29,7 +30,12 @@
 #define AUTOPILOT_PURSUE_TICK  3
 #define AUTOPILOT_FOLLOW_TICK  3
 
-/* We needn't be _so_ careful about when we leave */
+/* Struct to store AI commands */
+typedef struct command_node_t {
+    char *args[5];                          /* Store arguements - At most will ever have 5 */
+    unsigned char argcount;                 /* Number of arguments */
+    int (*ai_command_function)(void *);     /* Function Pointer */
+} command_node;
 
 typedef struct {
     dbref mynum;
@@ -39,11 +45,17 @@ typedef struct {
     unsigned short speed;
     int ofsx, ofsy;
     int targ;
+
     /* Where are we going on in the memory? */
     unsigned short flags;
+    /*
     unsigned char program_counter;
     unsigned char first_free;
     unsigned short commands[AUTOPILOT_MEMORY];
+    */
+
+    /* Dynamic autopilot command memory */
+    dllist *commands;
 
     /* Temporary AI-pathfind data variables */
     int ahead_ok;
@@ -156,7 +168,14 @@ enum {
 typedef struct {
     char *name;
     int argcount;
+    int (*ai_command_function)(void *);
 } ACOM;
+
+/* Function Prototypes will go here */
+
+/* From autopilot_commands.c */
+void auto_load_commands(FILE *f, AUTO *a);
+void auto_save_commands(FILE *f, AUTO *a);
 
 #include "p.autopilot.h"
 #include "p.ai.h"

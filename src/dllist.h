@@ -42,3 +42,4 @@ dllist_node *dllist_prev(dllist_node *node);
 
 void *dllist_data(dllist_node *node);
 int dllist_size(dllist *dllist);
+void *dllist_get_node(dllist *dllist, int pos);

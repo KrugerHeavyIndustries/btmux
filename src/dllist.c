@@ -204,3 +204,27 @@ void *dllist_data(dllist_node *node) {
 int dllist_size(dllist *dllist) {
     return dllist->size;
 }
+
+/* Get the data from the Node in the List at Pos # */
+void *dllist_get_node(dllist *dllist, int pos) {
+
+    int counter = 1;
+    dllist_node *temp;
+
+    if (dllist_size(dllist) < pos) {
+        return NULL;
+    }
+
+    /* Start at the head */
+    temp = dllist_head(dllist);
+
+    while (counter != pos) {
+
+        temp = dllist_next(temp);
+        counter++;
+
+    }
+
+    return dllist_data(temp);
+
+}

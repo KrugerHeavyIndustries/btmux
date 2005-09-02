@@ -51,7 +51,7 @@
 #define MAX_TARGETS  100
 
 int global_kill_cheat = 0;
-
+#if 0
 static char *my2string(const char * old)
 {
     static char new[64];
@@ -133,6 +133,7 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
 
 /* EVENT system to let the AI rotate through different sets
  * of sensors depending on the conditions and target */
+#endif
 void auto_gun_sensor_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
@@ -146,7 +147,7 @@ void auto_gun_sensor_event(MUXEVENT * e)
     int slite, prefvis;
     float trng;
     int set = 0;
-
+#if 0
     /* Make sure its a MECH Xcode Object and the AI is
      * an AUTOPILOT Xcode Object */
     if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
@@ -270,8 +271,9 @@ void auto_gun_sensor_event(MUXEVENT * e)
 
     if (!flag)
         AUTOEVENT(a, EVENT_AUTOGS, auto_gun_sensor_event, AUTOGS_TICK, 0);
+#endif
 }
-
+#if 0
 /* Function to return the Average weapon range for a given unit */
 int AverageWpnRange(MECH * mech)
 {
@@ -328,7 +330,7 @@ int TargetScore(MECH * mech, MECH * target, int range) {
 */
     return MechBV(target);
 }
-
+#endif
 /* Event system to for the AI to constantly shoot at stuff */
 void auto_gun_event(MUXEVENT * e)
 {
@@ -356,7 +358,7 @@ void auto_gun_event(MUXEVENT * e)
     int wMaxGunRange = 0;
     int bth, score;
     dbref c3Ref;
-
+#if 0
     if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
         return;
 
@@ -863,4 +865,5 @@ void auto_gun_event(MUXEVENT * e)
         } /* End of weapon loop */
     }
     AUTOEVENT(a, EVENT_AUTOGUN, auto_gun_event, AUTOGUN_TICK, 0);
+#endif
 }

@@ -32,7 +32,7 @@
 #include "p.glue.h"
 
 void sendchannelstuff(MECH * mech, int freq, char *msg);
-
+#if 0
 #define Clear(a) \
     auto_disengage(a->mynum, a, ""); \
     auto_delcommand(a->mynum, a, "-1"); \
@@ -725,11 +725,11 @@ void auto_reply(MECH * mech, char *buf) {
 
     MECHEVENT(mech, EVENT_AUTO_REPLY, auto_reply_event, Number(1, 2), buf);
 }
-
+#endif
 void auto_replyA(MECH * mech, char *buf) {
 
     char *c;
-
+#if 0
     if (!mech->freq[0])
         return; /* funny freq - no freq0 spam */
     if (MechAuto(mech) <= 0)
@@ -743,6 +743,7 @@ void auto_replyA(MECH * mech, char *buf) {
     c = alloc_lbuf("auto_replyA");
     strcpy(c, buf);
     MECHEVENT(mech, EVENT_AUTO_REPLY, auto_reply_event, Number(1, 2), c);
+#endif
 }
 
 void auto_parse_command(AUTO * a, MECH * mech, int chn, char *buffer)
@@ -752,6 +753,7 @@ void auto_parse_command(AUTO * a, MECH * mech, int chn, char *buffer)
     char **argsi, *res;
     char buf[LBUF_SIZE];
 
+#if 0
     if (!a || !mech)
         return;
     if (Destroyed(mech))
@@ -837,4 +839,5 @@ void auto_parse_command(AUTO * a, MECH * mech, int chn, char *buffer)
         strcpy(buf, "Ok.");
         auto_replyA(mech, buf);
     }
+#endif
 }
