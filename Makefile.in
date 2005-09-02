@@ -87,7 +87,7 @@ BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/artillery.o                \
                  src/hcode/btech/autopilot_ai.o             \
                  src/hcode/btech/autopilot_autogun.o        \
-                 src/hcode/btech/autopilot.o                \
+                 src/hcode/btech/autopilot_commands.o       \
                  src/hcode/btech/autopilot_core.o           \
                  src/hcode/btech/autopilot_radio.o          \
                  src/hcode/btech/bsuit.o                    \
