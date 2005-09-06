@@ -37,7 +37,6 @@ extern void boot_sqlslave(void);
 #ifdef ARBITRARY_LOGFILES
 extern void boot_logcache(void);
 #endif
-extern void vattr_clean_db(void);
 
 #define CACHING "object"
 
@@ -1875,22 +1874,20 @@ dbref player;
  * * list_cmdswitches: List switches for commands.
  */
 
-static void list_cmdswitches(player)
-dbref player;
-{
+static void list_cmdswitches(dbref player) {
     char *buff;
     CMDENT *cmdp;
 
     buff = alloc_sbuf("list_cmdswitches");
     for (cmdp = command_table; cmdp->cmdname; cmdp++) {
-	if (cmdp->switches) {
-	    if (check_access(player, cmdp->perms)) {
-		if (!(cmdp->perms & CF_DARK)) {
-		    sprintf(buff, "%s:", cmdp->cmdname);
-		    display_nametab(player, cmdp->switches, buff, 0);
-		}
-	    }
-	}
+        if (cmdp->switches) {
+            if (check_access(player, cmdp->perms)) {
+                if (!(cmdp->perms & CF_DARK)) {
+                    sprintf(buff, "%s:", cmdp->cmdname);
+                    display_nametab(player, cmdp->switches, buff, 0);
+                }
+            }
+        }
     }
     free_sbuf(buff);
 }
@@ -1959,7 +1956,7 @@ dbref player;
 
 extern void cf_log_notfound(dbref, char *, const char *, char *);
 
-CF_HAND(cf_access)
+int cf_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     CMDENT *cmdp;
     char *ap;
@@ -1995,7 +1992,7 @@ CF_HAND(cf_access)
  * * cf_acmd_access: Chante command permissions for all attr-setting cmds.
  */
 
-CF_HAND(cf_acmd_access)
+int cf_acmd_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     CMDENT *cmdp;
     ATTR *ap;
@@ -2030,7 +2027,7 @@ CF_HAND(cf_acmd_access)
  * * cf_attr_access: Change access on an attribute.
  */
 
-CF_HAND(cf_attr_access)
+int cf_attr_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     ATTR *ap;
     char *sp;
@@ -2055,8 +2052,7 @@ CF_HAND(cf_attr_access)
  * * cf_cmd_alias: Add a command alias.
  */
 
-CF_HAND(cf_cmd_alias)
-{
+int cf_cmd_alias(int *vp, char *str, long extra, dbref player, char *cmd) {
     char *alias, *orig, *ap;
     CMDENT *cmdp, *cmd2;
     NAMETAB *nt;
@@ -2066,68 +2062,68 @@ CF_HAND(cf_cmd_alias)
     orig = strtok(NULL, " \t=,");
 
     if (!orig)			/*
-				   * * we only got one argument to @alias.
-				   * Bad.  
-				 */
-	return -1;
+                         * * we only got one argument to @alias.
+                         * Bad.  
+                         */
+        return -1;
 
     for (ap = orig; *ap && (*ap != '/'); ap++);
     if (*ap == '/') {
 
-	/*
-	 * Switch form of command aliasing: create an alias for a  *
-	 * * * * * * command + a switch 
-	 */
+        /*
+         * Switch form of command aliasing: create an alias for a  *
+         * * * * * * command + a switch 
+         */
 
-	*ap++ = '\0';
+        *ap++ = '\0';
 
-	/*
-	 * Look up the command 
-	 */
+        /*
+         * Look up the command 
+         */
 
-	cmdp = (CMDENT *) hashfind(orig, (HASHTAB *) vp);
-	if (cmdp == NULL) {
-	    cf_log_notfound(player, cmd, "Command", orig);
-	    return -1;
-	}
-	/*
-	 * Look up the switch 
-	 */
+        cmdp = (CMDENT *) hashfind(orig, (HASHTAB *) vp);
+        if (cmdp == NULL) {
+            cf_log_notfound(player, cmd, "Command", orig);
+            return -1;
+        }
+        /*
+         * Look up the switch 
+         */
 
-	nt = find_nametab_ent(player, (NAMETAB *) cmdp->switches, ap);
-	if (!nt) {
-	    cf_log_notfound(player, cmd, "Switch", ap);
-	    return -1;
-	}
-	/*
-	 * Got it, create the new command table entry 
-	 */
+        nt = find_nametab_ent(player, (NAMETAB *) cmdp->switches, ap);
+        if (!nt) {
+            cf_log_notfound(player, cmd, "Switch", ap);
+            return -1;
+        }
+        /*
+         * Got it, create the new command table entry 
+         */
 
-	cmd2 = (CMDENT *) malloc(sizeof(CMDENT));
-	cmd2->cmdname = strsave(alias);
-	cmd2->switches = cmdp->switches;
-	cmd2->perms = cmdp->perms | nt->perm;
-	cmd2->extra = (cmdp->extra | nt->flag) & ~SW_MULTIPLE;
-	if (!(nt->flag & SW_MULTIPLE))
-	    cmd2->extra |= SW_GOT_UNIQUE;
-	cmd2->callseq = cmdp->callseq;
-	cmd2->handler = cmdp->handler;
-	if (hashadd(cmd2->cmdname, (int *) cmd2, (HASHTAB *) vp)) {
-	    free(cmd2->cmdname);
-	    free(cmd2);
-	}
+        cmd2 = (CMDENT *) malloc(sizeof(CMDENT));
+        cmd2->cmdname = strsave(alias);
+        cmd2->switches = cmdp->switches;
+        cmd2->perms = cmdp->perms | nt->perm;
+        cmd2->extra = (cmdp->extra | nt->flag) & ~SW_MULTIPLE;
+        if (!(nt->flag & SW_MULTIPLE))
+            cmd2->extra |= SW_GOT_UNIQUE;
+        cmd2->callseq = cmdp->callseq;
+        cmd2->handler = cmdp->handler;
+        if (hashadd(cmd2->cmdname, (int *) cmd2, (HASHTAB *) vp)) {
+            free(cmd2->cmdname);
+            free(cmd2);
+        }
     } else {
 
-	/*
-	 * A normal (non-switch) alias 
-	 */
+        /*
+         * A normal (non-switch) alias 
+         */
 
-	hp = hashfind(orig, (HASHTAB *) vp);
-	if (hp == NULL) {
-	    cf_log_notfound(player, cmd, "Entry", orig);
-	    return -1;
-	}
-	hashadd(alias, hp, (HASHTAB *) vp);
+        hp = hashfind(orig, (HASHTAB *) vp);
+        if (hp == NULL) {
+            cf_log_notfound(player, cmd, "Entry", orig);
+            return -1;
+        }
+        hashadd(alias, hp, (HASHTAB *) vp);
     }
     return 0;
 }
@@ -2137,30 +2133,28 @@ CF_HAND(cf_cmd_alias)
  * * list_df_flags: List default flags at create time.
  */
 
-static void list_df_flags(player)
-dbref player;
-{
+static void list_df_flags(dbref player) {
     char *playerb, *roomb, *thingb, *exitb, *robotb, *buff;
 
     playerb =
-	decode_flags(player, (mudconf.player_flags.word1 | TYPE_PLAYER),
-	mudconf.player_flags.word2, mudconf.player_flags.word3);
+        decode_flags(player, (mudconf.player_flags.word1 | TYPE_PLAYER),
+                mudconf.player_flags.word2, mudconf.player_flags.word3);
     roomb =
-	decode_flags(player, (mudconf.room_flags.word1 | TYPE_ROOM),
-	mudconf.room_flags.word2, mudconf.room_flags.word3);
+        decode_flags(player, (mudconf.room_flags.word1 | TYPE_ROOM),
+                mudconf.room_flags.word2, mudconf.room_flags.word3);
     exitb =
-	decode_flags(player, (mudconf.exit_flags.word1 | TYPE_EXIT),
-	mudconf.exit_flags.word2, mudconf.exit_flags.word3);
+        decode_flags(player, (mudconf.exit_flags.word1 | TYPE_EXIT),
+                mudconf.exit_flags.word2, mudconf.exit_flags.word3);
     thingb =
-	decode_flags(player, (mudconf.thing_flags.word1 | TYPE_THING),
-	mudconf.thing_flags.word2, mudconf.thing_flags.word3);
+        decode_flags(player, (mudconf.thing_flags.word1 | TYPE_THING),
+                mudconf.thing_flags.word2, mudconf.thing_flags.word3);
     robotb =
-	decode_flags(player, (mudconf.robot_flags.word1 | TYPE_PLAYER),
-	mudconf.robot_flags.word2, mudconf.robot_flags.word3);
+        decode_flags(player, (mudconf.robot_flags.word1 | TYPE_PLAYER),
+                mudconf.robot_flags.word2, mudconf.robot_flags.word3);
     buff = alloc_lbuf("list_df_flags");
     sprintf(buff,
-	"Default flags: Players...%s Rooms...%s Exits...%s Things...%s Robots...%s",
-	playerb, roomb, exitb, thingb, robotb);
+            "Default flags: Players...%s Rooms...%s Exits...%s Things...%s Robots...%s",
+            playerb, roomb, exitb, thingb, robotb);
     raw_notify(player, buff);
     free_lbuf(buff);
     free_sbuf(playerb);
@@ -2177,92 +2171,90 @@ dbref player;
 
 #define coin_name(s)	(((s)==1) ? mudconf.one_coin : mudconf.many_coins)
 
-static void list_costs(player)
-dbref player;
-{
+static void list_costs(dbref player) {
     char *buff;
 
     buff = alloc_mbuf("list_costs");
     *buff = '\0';
     if (mudconf.quotas)
-	sprintf(buff, " and %d quota", mudconf.room_quota);
+        sprintf(buff, " and %d quota", mudconf.room_quota);
     notify(player, tprintf("Digging a room costs %d %s%s.",
-	    mudconf.digcost, coin_name(mudconf.digcost), buff));
+                mudconf.digcost, coin_name(mudconf.digcost), buff));
     if (mudconf.quotas)
-	sprintf(buff, " and %d quota", mudconf.exit_quota);
+        sprintf(buff, " and %d quota", mudconf.exit_quota);
     notify(player, tprintf("Opening a new exit costs %d %s%s.",
-	    mudconf.opencost, coin_name(mudconf.opencost), buff));
+                mudconf.opencost, coin_name(mudconf.opencost), buff));
     notify(player, tprintf("Linking an exit, home, or dropto costs %d %s.",
-	    mudconf.linkcost, coin_name(mudconf.linkcost)));
+                mudconf.linkcost, coin_name(mudconf.linkcost)));
     if (mudconf.quotas)
-	sprintf(buff, " and %d quota", mudconf.thing_quota);
+        sprintf(buff, " and %d quota", mudconf.thing_quota);
     if (mudconf.createmin == mudconf.createmax)
-	raw_notify(player, tprintf("Creating a new thing costs %d %s%s.",
-		mudconf.createmin, coin_name(mudconf.createmin), buff));
+        raw_notify(player, tprintf("Creating a new thing costs %d %s%s.",
+                    mudconf.createmin, coin_name(mudconf.createmin), buff));
     else
-	raw_notify(player,
-	    tprintf("Creating a new thing costs between %d and %d %s%s.",
-		mudconf.createmin, mudconf.createmax, mudconf.many_coins,
-		buff));
+        raw_notify(player,
+                tprintf("Creating a new thing costs between %d and %d %s%s.",
+                    mudconf.createmin, mudconf.createmax, mudconf.many_coins,
+                    buff));
     if (mudconf.quotas)
-	sprintf(buff, " and %d quota", mudconf.player_quota);
+        sprintf(buff, " and %d quota", mudconf.player_quota);
     notify(player, tprintf("Creating a robot costs %d %s%s.",
-	    mudconf.robotcost, coin_name(mudconf.robotcost), buff));
+                mudconf.robotcost, coin_name(mudconf.robotcost), buff));
     if (mudconf.killmin == mudconf.killmax) {
-	raw_notify(player,
-	    tprintf("Killing costs %d %s, with a %d%% chance of success.",
-		mudconf.killmin, coin_name(mudconf.digcost),
-		(mudconf.killmin * 100) / mudconf.killguarantee));
+        raw_notify(player,
+                tprintf("Killing costs %d %s, with a %d%% chance of success.",
+                    mudconf.killmin, coin_name(mudconf.digcost),
+                    (mudconf.killmin * 100) / mudconf.killguarantee));
     } else {
-	raw_notify(player, tprintf("Killing costs between %d and %d %s.",
-		mudconf.killmin, mudconf.killmax, mudconf.many_coins));
-	raw_notify(player,
-	    tprintf("You must spend %d %s to guarantee success.",
-		mudconf.killguarantee, coin_name(mudconf.killguarantee)));
+        raw_notify(player, tprintf("Killing costs between %d and %d %s.",
+                    mudconf.killmin, mudconf.killmax, mudconf.many_coins));
+        raw_notify(player,
+                tprintf("You must spend %d %s to guarantee success.",
+                    mudconf.killguarantee, coin_name(mudconf.killguarantee)));
     }
     raw_notify(player,
-	tprintf
-	("Computationally expensive commands and functions (ie: @entrances, @find, @search, @stats (with an argument or switch), search(), and stats()) cost %d %s.",
-	    mudconf.searchcost, coin_name(mudconf.searchcost)));
+            tprintf
+            ("Computationally expensive commands and functions (ie: @entrances, @find, @search, @stats (with an argument or switch), search(), and stats()) cost %d %s.",
+             mudconf.searchcost, coin_name(mudconf.searchcost)));
     if (mudconf.machinecost > 0)
-	raw_notify(player,
-	    tprintf("Each command run from the queue costs 1/%d %s.",
-		mudconf.machinecost, mudconf.one_coin));
+        raw_notify(player,
+                tprintf("Each command run from the queue costs 1/%d %s.",
+                    mudconf.machinecost, mudconf.one_coin));
     if (mudconf.waitcost > 0) {
-	raw_notify(player,
-	    tprintf
-	    ("A %d %s deposit is charged for putting a command on the queue.",
-		mudconf.waitcost, mudconf.one_coin));
-	raw_notify(player,
-	    "The deposit is refunded when the command is run or canceled.");
+        raw_notify(player,
+                tprintf
+                ("A %d %s deposit is charged for putting a command on the queue.",
+                 mudconf.waitcost, mudconf.one_coin));
+        raw_notify(player,
+                "The deposit is refunded when the command is run or canceled.");
     }
     if (mudconf.sacfactor == 0)
-	sprintf(buff, "%d", mudconf.sacadjust);
+        sprintf(buff, "%d", mudconf.sacadjust);
     else if (mudconf.sacfactor == 1) {
-	if (mudconf.sacadjust < 0)
-	    sprintf(buff, "<create cost> - %d", -mudconf.sacadjust);
-	else if (mudconf.sacadjust > 0)
-	    sprintf(buff, "<create cost> + %d", mudconf.sacadjust);
-	else
-	    sprintf(buff, "<create cost>");
+        if (mudconf.sacadjust < 0)
+            sprintf(buff, "<create cost> - %d", -mudconf.sacadjust);
+        else if (mudconf.sacadjust > 0)
+            sprintf(buff, "<create cost> + %d", mudconf.sacadjust);
+        else
+            sprintf(buff, "<create cost>");
     } else {
-	if (mudconf.sacadjust < 0)
-	    sprintf(buff, "(<create cost> / %d) - %d", mudconf.sacfactor,
-		-mudconf.sacadjust);
-	else if (mudconf.sacadjust > 0)
-	    sprintf(buff, "(<create cost> / %d) + %d", mudconf.sacfactor,
-		mudconf.sacadjust);
-	else
-	    sprintf(buff, "<create cost> / %d", mudconf.sacfactor);
+        if (mudconf.sacadjust < 0)
+            sprintf(buff, "(<create cost> / %d) - %d", mudconf.sacfactor,
+                    -mudconf.sacadjust);
+        else if (mudconf.sacadjust > 0)
+            sprintf(buff, "(<create cost> / %d) + %d", mudconf.sacfactor,
+                    mudconf.sacadjust);
+        else
+            sprintf(buff, "<create cost> / %d", mudconf.sacfactor);
     }
     raw_notify(player, tprintf("The value of an object is %s.", buff));
     if (mudconf.clone_copy_cost)
-	raw_notify(player,
-	    "The default value of cloned objects is the value of the original object.");
+        raw_notify(player,
+                "The default value of cloned objects is the value of the original object.");
     else
-	raw_notify(player,
-	    tprintf("The default value of cloned objects is %d %s.",
-		mudconf.createmin, coin_name(mudconf.createmin)));
+        raw_notify(player,
+                tprintf("The default value of cloned objects is %d %s.",
+                    mudconf.createmin, coin_name(mudconf.createmin)));
 
     free_mbuf(buff);
 }
@@ -2276,191 +2268,189 @@ static const char *switchd[] = { "/first", "/all" };
 static const char *examd[] = { "/brief", "/full" };
 static const char *ed[] = { "Disabled", "Enabled" };
 
-static void list_options(player)
-dbref player;
-{
+static void list_options(dbref player) {
     char *buff;
     time_t now;
 
     now = time(NULL);
     if (mudconf.quotas)
-	raw_notify(player, "Building quotas are enforced.");
+        raw_notify(player, "Building quotas are enforced.");
     if (mudconf.name_spaces)
-	raw_notify(player, "Player names may contain spaces.");
+        raw_notify(player, "Player names may contain spaces.");
     else
-	raw_notify(player, "Player names may not contain spaces.");
+        raw_notify(player, "Player names may not contain spaces.");
     if (!mudconf.robot_speak)
-	raw_notify(player,
-	    "Robots are not allowed to speak in public areas.");
+        raw_notify(player,
+                "Robots are not allowed to speak in public areas.");
     if (mudconf.player_listen)
-	raw_notify(player,
-	    "The @Listen/@Ahear attribute set works on player objects.");
+        raw_notify(player,
+                "The @Listen/@Ahear attribute set works on player objects.");
     if (mudconf.ex_flags)
-	raw_notify(player,
-	    "The 'examine' command lists the flag names for the object's flags.");
+        raw_notify(player,
+                "The 'examine' command lists the flag names for the object's flags.");
     if (!mudconf.quiet_look)
-	raw_notify(player,
-	    "The 'look' command shows visible attributes in addition to the description.");
+        raw_notify(player,
+                "The 'look' command shows visible attributes in addition to the description.");
     if (mudconf.see_own_dark)
-	raw_notify(player,
-	    "The 'look' command lists DARK objects owned by you.");
+        raw_notify(player,
+                "The 'look' command lists DARK objects owned by you.");
     if (!mudconf.dark_sleepers)
-	raw_notify(player,
-	    "The 'look' command shows disconnected players.");
+        raw_notify(player,
+                "The 'look' command shows disconnected players.");
     if (mudconf.terse_look)
-	raw_notify(player, "The 'look' command obeys the TERSE flag.");
+        raw_notify(player, "The 'look' command obeys the TERSE flag.");
     if (mudconf.trace_topdown) {
-	raw_notify(player,
-	    "Trace output is presented top-down (whole expression first, then sub-exprs).");
-	raw_notify(player,
-	    tprintf("Only %d lines of trace output are displayed.",
-		mudconf.trace_limit));
+        raw_notify(player,
+                "Trace output is presented top-down (whole expression first, then sub-exprs).");
+        raw_notify(player,
+                tprintf("Only %d lines of trace output are displayed.",
+                    mudconf.trace_limit));
     } else {
-	raw_notify(player,
-	    "Trace output is presented bottom-up (subexpressions first).");
+        raw_notify(player,
+                "Trace output is presented bottom-up (subexpressions first).");
     }
     if (!mudconf.quiet_whisper)
-	raw_notify(player,
-	    "The 'whisper' command lets others in the room with you know you whispered.");
+        raw_notify(player,
+                "The 'whisper' command lets others in the room with you know you whispered.");
     if (mudconf.pemit_players)
-	raw_notify(player,
-	    "The '@pemit' command may be used to emit to faraway players.");
+        raw_notify(player,
+                "The '@pemit' command may be used to emit to faraway players.");
     if (!mudconf.terse_contents)
-	raw_notify(player,
-	    "The TERSE flag suppresses listing the contents of a location.");
+        raw_notify(player,
+                "The TERSE flag suppresses listing the contents of a location.");
     if (!mudconf.terse_exits)
-	raw_notify(player,
-	    "The TERSE flag suppresses listing obvious exits in a location.");
+        raw_notify(player,
+                "The TERSE flag suppresses listing obvious exits in a location.");
     if (!mudconf.terse_movemsg)
-	raw_notify(player,
-	    "The TERSE flag suppresses enter/leave/succ/drop messages generated by moving.");
+        raw_notify(player,
+                "The TERSE flag suppresses enter/leave/succ/drop messages generated by moving.");
     if (mudconf.pub_flags)
-	raw_notify(player,
-	    "The 'flags()' function will return the flags of any object.");
+        raw_notify(player,
+                "The 'flags()' function will return the flags of any object.");
     if (mudconf.read_rem_desc)
-	raw_notify(player,
-	    "The 'get()' function will return the description of faraway objects,");
+        raw_notify(player,
+                "The 'get()' function will return the description of faraway objects,");
     if (mudconf.read_rem_name)
-	raw_notify(player,
-	    "The 'name()' function will return the name of faraway objects.");
+        raw_notify(player,
+                "The 'name()' function will return the name of faraway objects.");
     raw_notify(player,
-	tprintf("The default switch for the '@switch' command is %s.",
-	    switchd[mudconf.switch_df_all]));
+            tprintf("The default switch for the '@switch' command is %s.",
+                switchd[mudconf.switch_df_all]));
     raw_notify(player,
-	tprintf("The default switch for the 'examine' command is %s.",
-	    examd[mudconf.exam_public]));
+            tprintf("The default switch for the 'examine' command is %s.",
+                examd[mudconf.exam_public]));
     if (mudconf.sweep_dark)
-	raw_notify(player, "Players may @sweep dark locations.");
+        raw_notify(player, "Players may @sweep dark locations.");
     if (mudconf.fascist_tport)
-	raw_notify(player,
-	    "You may only @teleport out of locations that are JUMP_OK or that you control.");
+        raw_notify(player,
+                "You may only @teleport out of locations that are JUMP_OK or that you control.");
     raw_notify(player,
-	tprintf
-	("Players may have at most %d commands in the queue at one time.",
-	    mudconf.queuemax));
+            tprintf
+            ("Players may have at most %d commands in the queue at one time.",
+             mudconf.queuemax));
     if (mudconf.match_mine) {
-	if (mudconf.match_mine_pl)
-	    raw_notify(player,
-		"All objects search themselves for $-commands.");
-	else
-	    raw_notify(player,
-		"Objects other than players search themselves for $-commands.");
+        if (mudconf.match_mine_pl)
+            raw_notify(player,
+                    "All objects search themselves for $-commands.");
+        else
+            raw_notify(player,
+                    "Objects other than players search themselves for $-commands.");
     }
     if (!Wizard(player))
-	return;
+        return;
     buff = alloc_mbuf("list_options");
 
     raw_notify(player,
-	tprintf
-	("%d commands are run from the queue when there is no net activity.",
-	    mudconf.queue_chunk));
+            tprintf
+            ("%d commands are run from the queue when there is no net activity.",
+             mudconf.queue_chunk));
     raw_notify(player,
-	tprintf
-	("%d commands are run from the queue when there is net activity.",
-	    mudconf.active_q_chunk));
+            tprintf
+            ("%d commands are run from the queue when there is net activity.",
+             mudconf.active_q_chunk));
     if (mudconf.idle_wiz_dark)
-	raw_notify(player,
-	    "Wizards idle for longer than the default timeout are automatically set DARK.");
+        raw_notify(player,
+                "Wizards idle for longer than the default timeout are automatically set DARK.");
     if (mudconf.safe_unowned)
-	raw_notify(player,
-	    "Objects not owned by you are automatically considered SAFE.");
+        raw_notify(player,
+                "Objects not owned by you are automatically considered SAFE.");
     if (mudconf.paranoid_alloc)
-	raw_notify(player,
-	    "The buffer pools are checked for consistency on each allocate or free.");
+        raw_notify(player,
+                "The buffer pools are checked for consistency on each allocate or free.");
     raw_notify(player,
-	tprintf("The %s cache is %d entries wide by %d entries deep.",
-	    CACHING, mudconf.cache_width, mudconf.cache_depth));
+            tprintf("The %s cache is %d entries wide by %d entries deep.",
+                CACHING, mudconf.cache_width, mudconf.cache_depth));
     if (mudconf.cache_names)
-	raw_notify(player, "A seperate name cache is used.");
+        raw_notify(player, "A seperate name cache is used.");
     if (mudconf.cache_trim)
-	raw_notify(player,
-	    "The cache depth is periodically trimmed back to its initial value.");
+        raw_notify(player,
+                "The cache depth is periodically trimmed back to its initial value.");
     if (mudconf.fork_dump) {
-	raw_notify(player,
-	    "Database dumps are performed by a fork()ed process.");
-	if (mudconf.fork_vfork)
-	    raw_notify(player,
-		"The 'vfork()' call is used to perform the fork.");
+        raw_notify(player,
+                "Database dumps are performed by a fork()ed process.");
+        if (mudconf.fork_vfork)
+            raw_notify(player,
+                    "The 'vfork()' call is used to perform the fork.");
     }
     if (mudconf.max_players >= 0)
-	raw_notify(player,
-	    tprintf("There may be at most %d players logged in at once.",
-		mudconf.max_players));
+        raw_notify(player,
+                tprintf("There may be at most %d players logged in at once.",
+                    mudconf.max_players));
     if (mudconf.quotas)
-	sprintf(buff, " and %d quota", mudconf.start_quota);
+        sprintf(buff, " and %d quota", mudconf.start_quota);
     else
-	*buff = '\0';
+        *buff = '\0';
     raw_notify(player,
-	tprintf("New players are given %d %s to start with.",
-	    mudconf.paystart, mudconf.many_coins));
+            tprintf("New players are given %d %s to start with.",
+                mudconf.paystart, mudconf.many_coins));
     raw_notify(player,
-	tprintf("Players are given %d %s each day they connect.",
-	    mudconf.paycheck, mudconf.many_coins));
+            tprintf("Players are given %d %s each day they connect.",
+                mudconf.paycheck, mudconf.many_coins));
     raw_notify(player,
-	tprintf("Earning money is difficult if you have more than %d %s.",
-	    mudconf.paylimit, mudconf.many_coins));
+            tprintf("Earning money is difficult if you have more than %d %s.",
+                mudconf.paylimit, mudconf.many_coins));
     if (mudconf.payfind > 0)
-	raw_notify(player,
-	    tprintf
-	    ("Players have a 1 in %d chance of finding a %s each time they move.",
-		mudconf.payfind, mudconf.one_coin));
+        raw_notify(player,
+                tprintf
+                ("Players have a 1 in %d chance of finding a %s each time they move.",
+                 mudconf.payfind, mudconf.one_coin));
     raw_notify(player, tprintf("The head of the object freelist is #%d.",
-	    mudstate.freelist));
+                mudstate.freelist));
 
     sprintf(buff, "Intervals: Dump...%d  Clean...%d  Idlecheck...%d",
-	mudconf.dump_interval, mudconf.check_interval,
-	mudconf.idle_interval);
+            mudconf.dump_interval, mudconf.check_interval,
+            mudconf.idle_interval);
     raw_notify(player, buff);
 
     sprintf(buff, "Timers: Dump...%ld  Clean...%ld  Idlecheck...%ld",
-	(long) mudstate.dump_counter - now,
-	(long) mudstate.check_counter - now,
-	(long) mudstate.idle_counter - now);
+            (long) mudstate.dump_counter - now,
+            (long) mudstate.check_counter - now,
+            (long) mudstate.idle_counter - now);
     raw_notify(player, buff);
 
     sprintf(buff, "Timeouts: Idle...%d  Connect...%d  Tries...%d",
-	mudconf.idle_timeout, mudconf.conn_timeout, mudconf.retry_limit);
+            mudconf.idle_timeout, mudconf.conn_timeout, mudconf.retry_limit);
     raw_notify(player, buff);
 
     sprintf(buff,
-	"Scheduling: Timeslice...%d  Max_Quota...%d  Increment...%d",
-	mudconf.timeslice, mudconf.cmd_quota_max, mudconf.cmd_quota_incr);
+            "Scheduling: Timeslice...%d  Max_Quota...%d  Increment...%d",
+            mudconf.timeslice, mudconf.cmd_quota_max, mudconf.cmd_quota_incr);
     raw_notify(player, buff);
 
     sprintf(buff, "Spaces...%s  Savefiles...%s",
-	ed[mudconf.space_compress], ed[mudconf.compress_db]);
+            ed[mudconf.space_compress], ed[mudconf.compress_db]);
     raw_notify(player, buff);
 
     sprintf(buff,
-	"New characters: Room...#%d  Home...#%d  DefaultHome...#%d  Quota...%d",
-	mudconf.start_room, mudconf.start_home, mudconf.default_home,
-	mudconf.start_quota);
+            "New characters: Room...#%d  Home...#%d  DefaultHome...#%d  Quota...%d",
+            mudconf.start_room, mudconf.start_home, mudconf.default_home,
+            mudconf.start_quota);
     raw_notify(player, buff);
 
     sprintf(buff,
-	"Misc: GuestChar...#%d  IdleQueueChunk...%d  ActiveQueueChunk...%d  Master_room...#%d",
-	mudconf.guest_char, mudconf.queue_chunk, mudconf.active_q_chunk,
-	mudconf.master_room);
+            "Misc: GuestChar...#%d  IdleQueueChunk...%d  ActiveQueueChunk...%d  Master_room...#%d",
+            mudconf.guest_char, mudconf.queue_chunk, mudconf.active_q_chunk,
+            mudconf.master_room);
     raw_notify(player, buff);
 
     free_mbuf(buff);

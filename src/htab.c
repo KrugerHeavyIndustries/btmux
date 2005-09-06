@@ -780,7 +780,7 @@ char *prefix;
 
 extern void cf_log_notfound(dbref, char *, const char *, char *);
 
-CF_HAND(cf_ntab_access)
+int cf_ntab_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     NAMETAB *np;
     char *ap;

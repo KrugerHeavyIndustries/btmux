@@ -489,23 +489,6 @@ struct statedata {
 
 extern STATEDATA mudstate;
 
-/* Configuration parameter handler definition */
-
-#define CF_HAND(proc)	int proc (vp, str, extra, player, cmd) \
-			int	*vp; \
-			char	*str, *cmd; \
-			long	extra; \
-			dbref	player;
-
-/* This is for the DEC Alpha, which can't cast a pointer to an int. */
-#define CF_AHAND(proc)	int proc (vp, str, extra, player, cmd) \
-			long	**vp; \
-			char	*str, *cmd; \
-			long	extra; \
-			dbref	player;
-
-#define CF_HDCL(proc)	int proc(long *, char *, long, dbref, char *)
-
 /* Global flags */
 
 /* Game control flags in mudconf.control_flags */

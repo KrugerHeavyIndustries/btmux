@@ -5825,7 +5825,7 @@ dbref player;
  * * cf_func_access: set access on functions
  */
 
-CF_HAND(cf_func_access)
+int cf_func_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     FUN *fp;
     UFUN *ufp;

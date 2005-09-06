@@ -588,7 +588,7 @@ int cf_status_from_succfail(player, cmd, success, failure)
  * * cf_int: Set integer parameter.
  */
 
-CF_HAND(cf_int)
+int cf_int(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     /*
      * Copy the numeric value to the parameter
@@ -614,7 +614,7 @@ NAMETAB bool_names[] = {
 
 /* *INDENT-ON* */
 
-CF_HAND(cf_bool)
+int cf_bool(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     *vp = (int) search_nametab(GOD, bool_names, str);
     if (*vp < 0)
@@ -627,7 +627,7 @@ CF_HAND(cf_bool)
  * * cf_option: Select one option from many choices.
  */
 
-CF_HAND(cf_option)
+int cf_option(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     int i;
 
@@ -645,7 +645,7 @@ CF_HAND(cf_option)
  * * cf_string: Set string parameter.
  */
 
-CF_HAND(cf_string)
+int cf_string(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     int retval;
     char *buff;
@@ -679,7 +679,7 @@ CF_HAND(cf_string)
  * * cf_alias: define a generic hash table alias.
  */
 
-CF_HAND(cf_alias)
+int cf_alias(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *alias, *orig, *p;
     int *cp = NULL;
@@ -714,7 +714,7 @@ CF_HAND(cf_alias)
  * * cf_flagalias: define a flag alias.
  */
 
-CF_HAND(cf_flagalias)
+int cf_flagalias(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *alias, *orig;
     int *cp, success;
@@ -738,7 +738,7 @@ CF_HAND(cf_flagalias)
  * * cf_or_in_bits: OR in bits from namelist to a word.
  */
 
-CF_HAND(cf_or_in_bits)
+int cf_or_in_bits(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *sp;
     int f, success, failure;
@@ -777,7 +777,7 @@ CF_HAND(cf_or_in_bits)
  * ---------------------------------------------------------------------------
  * * cf_modify_bits: set or clear bits in a flag word from a namelist.
  */
-CF_HAND(cf_modify_bits)
+int cf_modify_bits(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *sp;
     int f, negate, success, failure;
@@ -829,7 +829,7 @@ CF_HAND(cf_modify_bits)
  * * cf_set_bits: Clear flag word and then set specified bits from namelist.
  */
 
-CF_HAND(cf_set_bits)
+int cf_set_bits(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *sp;
     int f, success, failure;
@@ -870,7 +870,7 @@ CF_HAND(cf_set_bits)
  * * cf_set_flags: Clear flag word and then set from a flags htab.
  */
 
-CF_HAND(cf_set_flags)
+int cf_set_flags(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     char *sp;
     FLAGENT *fp;
@@ -931,7 +931,7 @@ CF_HAND(cf_set_flags)
  * * cf_badname: Disallow use of player name/alias.
  */
 
-CF_HAND(cf_badname)
+int cf_badname(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     if (extra)
         badname_remove(str);
@@ -945,7 +945,7 @@ CF_HAND(cf_badname)
  * * cf_site: Update site information
  */
 
-CF_AHAND(cf_site)
+int cf_site(long **vp, char *str, long extra, dbref player, char *cmd)
 {
     SITE *site, *last, *head;
     char *addr_txt, *mask_txt;
@@ -1011,7 +1011,7 @@ CF_AHAND(cf_site)
  * * cf_cf_access: Set access on config directives
  */
 
-CF_HAND(cf_cf_access)
+int cf_cf_access(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     CONF *tp;
     char *ap;
@@ -1068,7 +1068,7 @@ void check_sqldata(void)
  * * cf_include: Read another config file.  Only valid during startup.
  */
 
-CF_HAND(cf_include)
+int cf_include(int *vp, char *str, long extra, dbref player, char *cmd)
 {
     FILE *fp;
     char *cp, *ap, *zp, *buf;
@@ -1133,11 +1133,11 @@ CF_HAND(cf_include)
     return 0;
 }
 
-extern CF_HDCL(cf_access);
-extern CF_HDCL(cf_cmd_alias);
-extern CF_HDCL(cf_acmd_access);
-extern CF_HDCL(cf_attr_access);
-extern CF_HDCL(cf_func_access);
+extern int cf_access(long *, char *, long, dbref, char *);
+extern int cf_cmd_alias(long *, char *, long, dbref, char *);
+extern int cf_acmd_access(long *, char *, long, dbref, char *);
+extern int cf_attr_access(long *, char *, long, dbref, char *);
+extern int cf_func_access(long *, char *, long, dbref, char *);
 /* *INDENT-OFF* */
 
 /* ---------------------------------------------------------------------------
