@@ -383,7 +383,7 @@ void boot_sqlslave() {
     /*
      * set to nonblocking
      */
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
+    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
         close(sv[0]);
         close(sv[1]);
         return;
@@ -414,7 +414,7 @@ void boot_sqlslave() {
     }
     close(sv[1]);
 
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
+    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
         close(sv[0]);
         return;
     }
@@ -672,7 +672,7 @@ void boot_slave() {
     /*
      * set to nonblocking 
      */
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
+    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
         close(sv[0]);
         close(sv[1]);
         return;
@@ -707,7 +707,7 @@ void boot_slave() {
     }
     close(sv[1]);
 
-    if (fcntl(sv[0], F_SETFL, FNDELAY) == -1) {
+    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
         close(sv[0]);
         return;
     }
