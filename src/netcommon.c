@@ -145,6 +145,7 @@ void raw_notify_html(dbref player, const char *msg) {
     }
 }
 
+#ifdef TCP_CORK // Linux 2.4, 2.6
 /* choke_player: cork the player's sockets, must have a matching release_socket */
 void choke_player(dbref player) {
     DESC *d;
@@ -169,6 +170,34 @@ void release_player(dbref player) {
         } 
     }
 }
+#endif
+#ifdef TCP_NOPUSH // Linux 2.4, 2.6
+/* choke_player: cork the player's sockets, must have a matching release_socket */
+void choke_player(dbref player) {
+    DESC *d;
+    int eins = 1, null = 0; 
+
+    fprintf(stderr, "choke_player] Choking %d\n", player);
+    DESC_ITER_PLAYER(player, d) {
+       if(setsockopt(d->descriptor, SOL_TCP, TCP_NOPUSH, &eins, sizeof(eins))<0) {
+            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+        } 
+    }
+}
+
+void release_player(dbref player) {
+    DESC *d;
+    int eins = 1, null = 0;
+
+    fprintf(stderr, "choke_player] Releasing %d\n", player);
+    DESC_ITER_PLAYER(player, d) {
+       if(setsockopt(d->descriptor, SOL_TCP, TCP_NOPUSH, &null, sizeof(null))<0) {
+            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+        } 
+    }
+}
+#endif
+
 
 
 /* raw_notify_raw: write a message to a player without the newline */
