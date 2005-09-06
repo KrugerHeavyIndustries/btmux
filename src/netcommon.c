@@ -152,7 +152,9 @@ void choke_player(dbref player) {
 
     fprintf(stderr, "choke_player] Choking %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-        setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &eins, sizeof(eins));
+       if(setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
+            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+        } 
     }
 }
 
@@ -162,7 +164,9 @@ void release_player(dbref player) {
 
     fprintf(stderr, "choke_player] Releasing %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-        setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &null, sizeof(null));
+       if(setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &null, sizeof(null))<0) {
+            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+        } 
     }
 }
 

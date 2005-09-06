@@ -1121,27 +1121,16 @@ void shutdownsock(DESC *d, int reason) {
 }
 
 void make_nonblocking(int s) {
-#ifdef HAVE_LINGER
-    struct linger ling;
-#endif
+    long flags;
 
-#ifdef FNDELAY
-    if (fcntl(s, F_SETFL, FNDELAY) == -1) {
-        log_perror("NET", "FAIL", "make_nonblocking", "fcntl");
+    if(fcntl(s, F_GETFL, &flags)<0) {
+        log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_GETFL");
     }
-#else
-    if (fcntl(s, F_SETFL, O_NDELAY) == -1) {
-        log_perror("NET", "FAIL", "make_nonblocking", "fcntl");
+    flags |= O_NONBLOCK;
+    flags &= ~O_NDELAY;
+    if(fcntl(s, F_SETFL, flags)<0) {
+        log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_SETFL");
     }
-#endif
-#ifdef HAVE_LINGER
-    ling.l_onoff = 0;
-    ling.l_linger = 0;
-    if (setsockopt(s, SOL_SOCKET, SO_LINGER, (char *) &ling,
-                sizeof(ling)) < 0) {
-        log_perror("NET", "FAIL", "linger", "setsockopt");
-    }
-#endif
 }
 
 extern int fcache_conn_c;
