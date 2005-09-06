@@ -145,6 +145,28 @@ void raw_notify_html(dbref player, const char *msg) {
     }
 }
 
+/* choke_player: cork the player's sockets, must have a matching release_socket */
+void choke_player(dbref player) {
+    DESC *d;
+    int eins = 1, null = 0; 
+
+    fprintf(stderr, "choke_player] Choking %d\n", player);
+    DESC_ITER_PLAYER(player, d) {
+        setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &eins, sizeof(eins));
+    }
+}
+
+void release_player(dbref player) {
+    DESC *d;
+    int eins = 1, null = 0;
+
+    fprintf(stderr, "choke_player] Releasing %d\n", player);
+    DESC_ITER_PLAYER(player, d) {
+        setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &null, sizeof(null));
+    }
+}
+
+
 /* raw_notify_raw: write a message to a player without the newline */
 
 void raw_notify_raw(dbref player, const char *msg, char *append) {

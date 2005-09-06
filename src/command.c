@@ -1307,23 +1307,15 @@ int interactive, ncargs;
  * * process_command: Execute a command.
  */
 
-void process_command(player, cause, interactive, command, args, nargs)
-dbref player, cause;
-int interactive, nargs;
-char *command, *args[];
-{
+void process_command(dbref player, dbref cause, int interactive, char *command, char *args[], int nargs) {
     char *p, *q, *arg, *lcbuf, *slashp, *cmdsave, *bp, *str;
     int succ, aflags, i;
     dbref exit, aowner;
     CMDENT *cmdp;
     char *macroout;
     int macerr;
-
-#ifndef MEMORY_BASED
-    cache_reset(0);
-#endif				/*
-				 * * MEMORY_BASED  
-				 */
+    int eins = 1, null = 0;
+    DESC *d;
 
     /*
      * Robustify player 
@@ -1332,56 +1324,64 @@ char *command, *args[];
     cmdsave = mudstate.debug_cmd;
     mudstate.debug_cmd = (char *) "< process_command >";
 
-    if (!command)
-	abort();
+    if (!command) {
+        abort();
+    }
 
     if (!Good_obj(player)) {
-	STARTLOG(LOG_BUGS, "CMD", "PLYR") {
-	    lcbuf = alloc_mbuf("process_command.LOG.badplayer");
-	    sprintf(lcbuf, "Bad player in process_command: %d", player);
-	    log_text(lcbuf);
-	    free_mbuf(lcbuf);
-	    ENDLOG;
-	}
-	mudstate.debug_cmd = cmdsave;
+        STARTLOG(LOG_BUGS, "CMD", "PLYR") {
+            lcbuf = alloc_mbuf("process_command.LOG.badplayer");
+            sprintf(lcbuf, "Bad player in process_command: %d", player);
+            log_text(lcbuf);
+            free_mbuf(lcbuf);
+            ENDLOG;
+        }
+        mudstate.debug_cmd = cmdsave;
 
-	return;
+        goto exit;
     }
+
+
+    if(isPlayer(player)) choke_player(player);
+    
     /*
      * Make sure player isn't going or halted 
      */
 
     if (Going(player) || (Halted(player) &&
-	    !((Typeof(player) == TYPE_PLAYER) && interactive))) {
-	notify(Owner(player),
-	    tprintf("Attempt to execute command by halted object #%d",
-		player));
-	mudstate.debug_cmd = cmdsave;
-	return;
+                !((Typeof(player) == TYPE_PLAYER) && interactive))) {
+        notify(Owner(player),
+                tprintf("Attempt to execute command by halted object #%d",
+                    player));
+        mudstate.debug_cmd = cmdsave;
+        goto exit;
     }
 
     if (Suspect(player)) {
-	STARTLOG(LOG_SUSPECTCMDS | LOG_ALLCOMMANDS, "CMD", "SUS") {
-	    log_name_and_loc(player);
-	    lcbuf = alloc_lbuf("process_command.LOG.allcmds");
-	    sprintf(lcbuf, " entered: '%s'", command);
-	    log_text(lcbuf);
-	    free_lbuf(lcbuf);
-	    ENDLOG;
-	}
-	send_channel("SuspectsLog",
-	    tprintf("%s (#%d) (in #%d) entered: %s", Name(player), player,
-		Location(player), command));
+        STARTLOG(LOG_SUSPECTCMDS | LOG_ALLCOMMANDS, "CMD", "SUS") {
+            log_name_and_loc(player);
+            lcbuf = alloc_lbuf("process_command.LOG.allcmds");
+            sprintf(lcbuf, " entered: '%s'", command);
+            log_text(lcbuf);
+            free_lbuf(lcbuf);
+            ENDLOG;
+        }
+        send_channel("SuspectsLog",
+                tprintf("%s (#%d) (in #%d) entered: %s", Name(player), player,
+                    Location(player), command));
     } else {
-	STARTLOG(LOG_ALLCOMMANDS, "CMD", "ALL") {
-	    log_name_and_loc(player);
-	    lcbuf = alloc_lbuf("process_command.LOG.allcmds");
-	    sprintf(lcbuf, " entered: '%s'", command);
-	    log_text(lcbuf);
-	    free_lbuf(lcbuf);
-	    ENDLOG;
-	}
+        STARTLOG(LOG_ALLCOMMANDS, "CMD", "ALL") {
+            log_name_and_loc(player);
+            lcbuf = alloc_lbuf("process_command.LOG.allcmds");
+            sprintf(lcbuf, " entered: '%s'", command);
+            log_text(lcbuf);
+            free_lbuf(lcbuf);
+            ENDLOG;
+        }
     }
+
+        
+    
     /*
      * Reset recursion limits 
      */
@@ -1391,40 +1391,31 @@ char *command, *args[];
     mudstate.lock_nest_lev = 0;
 
     if (Verbose(player))
-	notify(Owner(player), tprintf("%s] %s", Name(player), command));
+        notify(Owner(player), tprintf("%s] %s", Name(player), command));
 
     /*
      * Eat leading whitespace, and space-compress if configured 
      */
 
     while (*command && isspace(*command))
-	command++;
+        command++;
     mudstate.debug_cmd = command;
 
     /*
      * Can we fix the @npemit thing? 
      */
     if (mudconf.space_compress && strncmp(command, "@npemit", 7)) {
-	p = q = command;
-	while (*p) {
-	    while (*p && !isspace(*p))
-		*q++ = *p++;
-	    while (*p && isspace(*p))
-		p++;
-	    if (*p)
-		*q++ = ' ';
-	}
-	*q = '\0';
+        p = q = command;
+        while (*p) {
+            while (*p && !isspace(*p))
+                *q++ = *p++;
+            while (*p && isspace(*p))
+                p++;
+            if (*p)
+                *q++ = ' ';
+        }
+        *q = '\0';
     }
-#ifndef MEMORY_BASED
-    /*
-     * Reset the cache so that unreferenced attributes may be flushed 
-     */
-
-    cache_reset();
-#endif				/*
-				 * * MEMORY_BASED  
-				 */
 
     /*
      * Now comes the fun stuff.  First check for single-letter leadins.
@@ -1435,71 +1426,71 @@ char *command, *args[];
 
     i = command[0] & 0xff;
     if ((prefix_cmds[i] != NULL) && command[0]) {
-	process_cmdent(prefix_cmds[i], NULL, player, cause,
-		       interactive, command, command, args, nargs);
-	mudstate.debug_cmd = cmdsave;
-	return;
+        process_cmdent(prefix_cmds[i], NULL, player, cause,
+                interactive, command, command, args, nargs);
+        mudstate.debug_cmd = cmdsave;
+        goto exit;
     }
     if (mudconf.have_macros && (command[0] == '.') && interactive) {
-	macerr = do_macro(player, command, &macroout);
-	if (!macerr)
-	    return;
-	if (macerr == 1) {
-	    StringCopy(command, macroout);
-	    free_lbuf(macroout);
-	}
+        macerr = do_macro(player, command, &macroout);
+        if (!macerr)
+            goto exit;
+        if (macerr == 1) {
+            StringCopy(command, macroout);
+            free_lbuf(macroout);
+        }
     } else
-	macerr = 0;
+        macerr = 0;
     if (mudconf.have_comsys && !Slave(player))
-	if (!do_comsystem(player, command))
-	    return;
+        if (!do_comsystem(player, command))
+            goto exit;
 
     /* Handle mecha stuff.. */
     if (mudconf.have_specials && !Slave(player))
-	if (HandledCommand(player, Location(player), command))
-	    return;
+        if (HandledCommand(player, Location(player), command))
+            goto exit;
     /*
      * Check for the HOME command 
      */
 
     if (string_compare(command, "home") == 0) {
-	if (((Fixed(player)) || (Fixed(Owner(player)))) &&
-	    !(WizRoy(player))) {
-	    notify(player, mudconf.fixed_home_msg);
-	    return;
-	}
-	do_move(player, cause, 0, "home");
-	mudstate.debug_cmd = cmdsave;
-	return;
+        if (((Fixed(player)) || (Fixed(Owner(player)))) &&
+                !(WizRoy(player))) {
+            notify(player, mudconf.fixed_home_msg);
+            goto exit;
+        }
+        do_move(player, cause, 0, "home");
+        mudstate.debug_cmd = cmdsave;
+        goto exit;
     }
 
     /*
      * Only check for exits if we may use the goto command 
      */
     if (check_access(player, goto_cmdp->perms)) {
-	/*
-	 * Check for an exit name 
-	 */
-	init_match_check_keys(player, command, TYPE_EXIT);
-	match_exit_with_parents();
-	exit = last_match_result();
-	if (exit != NOTHING) {
-	    move_exit(player, exit, 0, "You can't go that way.", 0);
-	    mudstate.debug_cmd = cmdsave;
-	    return;
-	}
-	/*
-	 * Check for an exit in the master room 
-	 */
+        /*
+         * Check for an exit name 
+         */
+        init_match_check_keys(player, command, TYPE_EXIT);
+        match_exit_with_parents();
+        exit = last_match_result();
+        if (exit != NOTHING) {
+            move_exit(player, exit, 0, "You can't go that way.", 0);
+            mudstate.debug_cmd = cmdsave;
+            goto exit;
+        }
+        /*
+         * Check for an exit in the master room 
+         */
 
-	init_match_check_keys(player, command, TYPE_EXIT);
-	match_master_exit();
-	exit = last_match_result();
-	if (exit != NOTHING) {
-	    move_exit(player, exit, 1, NULL, 0);
-	    mudstate.debug_cmd = cmdsave;
-	    return;
-	}
+        init_match_check_keys(player, command, TYPE_EXIT);
+        match_master_exit();
+        exit = last_match_result();
+        if (exit != NOTHING) {
+            move_exit(player, exit, 1, NULL, 0);
+            mudstate.debug_cmd = cmdsave;
+            goto exit;
+        }
     }
     /*
      * Set up a lowercase command and an arg pointer for the hashed
@@ -1515,19 +1506,19 @@ char *command, *args[];
 
     lcbuf = alloc_lbuf("process_commands.LCbuf");
     for (p = command, q = lcbuf; *p && !isspace(*p); p++, q++)
-	*q = ToLower(*p);	/*
-				 * Make lowercase command 
-				 */
+        *q = ToLower(*p);	/*
+        * Make lowercase command 
+        */
     *q++ = '\0';		/*
-				 * Terminate command 
-				 */
+    * Terminate command 
+    */
     while (*p && isspace(*p))
-	p++;			/*
-				 * Skip spaces before arg 
-				 */
+        p++;			/*
+                         * Skip spaces before arg 
+                         */
     arg = p;			/*
-				 * Remember where arg starts 
-				 */
+                         * Remember where arg starts 
+                         */
 
     /*
      * Strip off any command switches and save them 
@@ -1535,7 +1526,7 @@ char *command, *args[];
 
     slashp = (char *) index(lcbuf, '/');
     if (slashp)
-	*slashp++ = '\0';
+        *slashp++ = '\0';
 
     /*
      * Check for a builtin command (or an alias of a builtin command) 
@@ -1543,15 +1534,15 @@ char *command, *args[];
 
     cmdp = (CMDENT *) hashfind(lcbuf, &mudstate.command_htab);
     if (cmdp != NULL) {
-	if ((cmdp->callseq & CS_NO_MACRO) && macerr == 1)
-	    notify(player,
-		"This command is unavailable as macro. Please use an attribute instead.");
-	else
-	    process_cmdent(cmdp, slashp, player, cause, interactive, arg,
-		command, args, nargs);
-	free_lbuf(lcbuf);
-	mudstate.debug_cmd = cmdsave;
-	return;
+        if ((cmdp->callseq & CS_NO_MACRO) && macerr == 1)
+            notify(player,
+                    "This command is unavailable as macro. Please use an attribute instead.");
+        else
+            process_cmdent(cmdp, slashp, player, cause, interactive, arg,
+                    command, args, nargs);
+        free_lbuf(lcbuf);
+        mudstate.debug_cmd = cmdsave;
+        goto exit;
     }
     /*
      * Check for enter and leave aliases, user-defined commands on the *
@@ -1564,7 +1555,7 @@ char *command, *args[];
     bp = lcbuf;
     str = command;
     exec(lcbuf, &bp, 0, player, cause,
-	EV_EVAL | EV_FCHECK | EV_STRIP | EV_TOP, &str, args, nargs);
+            EV_EVAL | EV_FCHECK | EV_STRIP | EV_TOP, &str, args, nargs);
     *bp = '\0';
     succ = 0;
 
@@ -1574,138 +1565,136 @@ char *command, *args[];
 
     if (Has_location(player) && Good_obj(Location(player))) {
 
-	/* Check for a leave alias */
-	p = atr_pget(Location(player), A_LALIAS, &aowner, &aflags);
-	if (p && *p) {
-	    if (matches_exit_from_list(lcbuf, p)) {
-		free_lbuf(lcbuf);
-		free_lbuf(p);
-		do_leave(player, player, 0);
-		return;
-	    }
-	}
-	free_lbuf(p);
+        /* Check for a leave alias */
+        p = atr_pget(Location(player), A_LALIAS, &aowner, &aflags);
+        if (p && *p) {
+            if (matches_exit_from_list(lcbuf, p)) {
+                free_lbuf(lcbuf);
+                free_lbuf(p);
+                do_leave(player, player, 0);
+                goto exit;
+            }
+        }
+        free_lbuf(p);
 
-	/*
-	 * Check for enter aliases 
-	 */
+        /*
+         * Check for enter aliases 
+         */
 
-	DOLIST(exit, Contents(Location(player))) {
-	    p = atr_pget(exit, A_EALIAS, &aowner, &aflags);
-	    if (p && *p) {
-		if (matches_exit_from_list(lcbuf, p)) {
-		    free_lbuf(lcbuf);
-		    free_lbuf(p);
-		    do_enter_internal(player, exit, 0);
-		    return;
-		}
-	    }
-	    free_lbuf(p);
-	}
+        DOLIST(exit, Contents(Location(player))) {
+            p = atr_pget(exit, A_EALIAS, &aowner, &aflags);
+            if (p && *p) {
+                if (matches_exit_from_list(lcbuf, p)) {
+                    free_lbuf(lcbuf);
+                    free_lbuf(p);
+                    do_enter_internal(player, exit, 0);
+                    goto exit;
+                }
+            }
+            free_lbuf(p);
+        }
     }
     /*
      * Check for $-command matches on me 
      */
 
     if (mudconf.match_mine && (!(No_Command(player)))) {
-	if (((Typeof(player) != TYPE_PLAYER) || mudconf.match_mine_pl) &&
-	    (atr_match(player, player, AMATCH_CMD, lcbuf, 1) > 0)) {
-	    succ++;
-	}
+        if (((Typeof(player) != TYPE_PLAYER) || mudconf.match_mine_pl) &&
+                (atr_match(player, player, AMATCH_CMD, lcbuf, 1) > 0)) {
+            succ++;
+        }
     }
     /*
      * Check for $-command matches on nearby things and on my room 
      */
 
     if (Has_location(player)) {
-	succ +=
-	    list_check(Contents(Location(player)), player, AMATCH_CMD,
-	    lcbuf, 1);
+        succ +=
+            list_check(Contents(Location(player)), player, AMATCH_CMD,
+                    lcbuf, 1);
 
-	if (!(No_Command(Location(player))))
-	    if (atr_match(Location(player), player, AMATCH_CMD, lcbuf,
-		    1) > 0) {
-		succ++;
-	    }
+        if (!(No_Command(Location(player))))
+            if (atr_match(Location(player), player, AMATCH_CMD, lcbuf,
+                        1) > 0) {
+                succ++;
+            }
     }
     /*
      * Check for $-command matches in my inventory 
      */
 
     if (Has_contents(player))
-	succ += list_check(Contents(player), player, AMATCH_CMD, lcbuf, 1);
+        succ += list_check(Contents(player), player, AMATCH_CMD, lcbuf, 1);
 
     /*
      * now do check on zones 
      */
 
     if ((!succ) && mudconf.have_zones &&
-	(Zone(Location(player)) != NOTHING)) {
-	if (Typeof(Zone(Location(player))) == TYPE_ROOM) {
+            (Zone(Location(player)) != NOTHING)) {
+        if (Typeof(Zone(Location(player))) == TYPE_ROOM) {
 
-	    /*
-	     * zone of player's location is a parent room 
-	     */
-	    if (Location(player) != Zone(player)) {
+            /*
+             * zone of player's location is a parent room 
+             */
+            if (Location(player) != Zone(player)) {
 
-		/*
-		 * check parent room exits 
-		 */
-		init_match_check_keys(player, command, TYPE_EXIT);
-		match_zone_exit();
-		exit = last_match_result();
-		if (exit != NOTHING) {
-		    move_exit(player, exit, 1, NULL, 0);
-		    mudstate.debug_cmd = cmdsave;
-		    return;
-		}
-		succ +=
-		    list_check(Contents(Zone(Location(player))), player,
-		    AMATCH_CMD, lcbuf, 1);
-	    }			/*
-				   * * end of parent room checks  
-				 */
-	} else
-	    /*
-	     * try matching commands on area zone object 
-	     */
+                /*
+                 * check parent room exits 
+                 */
+                init_match_check_keys(player, command, TYPE_EXIT);
+                match_zone_exit();
+                exit = last_match_result();
+                if (exit != NOTHING) {
+                    move_exit(player, exit, 1, NULL, 0);
+                    mudstate.debug_cmd = cmdsave;
+                    goto exit;
+                }
+                succ += list_check(Contents(Zone(Location(player))), player,
+                            AMATCH_CMD, lcbuf, 1);
+            }			/*
+                         * * end of parent room checks  
+                         */
+        } else
+            /*
+             * try matching commands on area zone object 
+             */
 
-	if ((!succ) && mudconf.have_zones &&
-	    (Zone(Location(player)) != NOTHING) &&
-	    (!(No_Command(Zone(Location(player))))))
-	    succ +=
-		atr_match(Zone(Location(player)), player, AMATCH_CMD,
-		lcbuf, 1);
+            if ((!succ) && mudconf.have_zones &&
+                    (Zone(Location(player)) != NOTHING) &&
+                    (!(No_Command(Zone(Location(player))))))
+                succ += atr_match(Zone(Location(player)), player, AMATCH_CMD,
+                            lcbuf, 1);
     }
     /*
-       * * end of matching on zone of player's * *
-       * * * * * location  
+     * * end of matching on zone of player's * *
+     * * * * * location  
      */
     /*
-       * if nothing matched with parent room/zone object, try matching
-       * zone commands on the player's personal zone  
+     * if nothing matched with parent room/zone object, try matching
+     * zone commands on the player's personal zone  
      */
     if ((!succ) && mudconf.have_zones && (Zone(player) != NOTHING) &&
-	(!(No_Command(Zone(player)))) &&
-	(Zone(Location(player)) != Zone(player))) {
-	succ += atr_match(Zone(player), player, AMATCH_CMD, lcbuf, 1);
+            (!(No_Command(Zone(player)))) &&
+            (Zone(Location(player)) != Zone(player))) {
+        succ += atr_match(Zone(player), player, AMATCH_CMD, lcbuf, 1);
     }
     /*
      * If we didn't find anything, try in the master room 
      */
 
     if (!succ) {
-	if (Good_obj(mudconf.master_room) &&
-	    Has_contents(mudconf.master_room)) {
-	    succ +=
-		list_check(Contents(mudconf.master_room), player,
-		AMATCH_CMD, lcbuf, 0);
-	    if (!(No_Command(mudconf.master_room)))
-		if (atr_match(mudconf.master_room, player, AMATCH_CMD,
-			lcbuf, 0) > 0) {
-		    succ++;
-		}
-	}
+        if (Good_obj(mudconf.master_room) &&
+                Has_contents(mudconf.master_room)) {
+            succ +=
+                list_check(Contents(mudconf.master_room), player,
+                        AMATCH_CMD, lcbuf, 0);
+            if (!(No_Command(mudconf.master_room)))
+                if (atr_match(mudconf.master_room, player, AMATCH_CMD,
+                            lcbuf, 0) > 0) {
+                    succ++;
+                }
+        }
     }
     free_lbuf(lcbuf);
 
@@ -1714,17 +1703,20 @@ char *command, *args[];
      */
 
     if (!succ) {
-	notify(player, "Huh?  (Type \"help\" for help.)");
-	STARTLOG(LOG_BADCOMMANDS, "CMD", "BAD") {
-	    log_name_and_loc(player);
-	    lcbuf = alloc_lbuf("process_commands.LOG.badcmd");
-	    sprintf(lcbuf, " entered: '%s'", command);
-	    log_text(lcbuf);
-	    free_lbuf(lcbuf);
-	    ENDLOG;
-	}
+        notify(player, "Huh?  (Type \"help\" for help.)");
+        STARTLOG(LOG_BADCOMMANDS, "CMD", "BAD") {
+            log_name_and_loc(player);
+            lcbuf = alloc_lbuf("process_commands.LOG.badcmd");
+            sprintf(lcbuf, " entered: '%s'", command);
+            log_text(lcbuf);
+            free_lbuf(lcbuf);
+            ENDLOG;
+        }
     }
     mudstate.debug_cmd = cmdsave;
+
+exit:
+    if(isPlayer(player)) release_player(player);
     return;
 }
 
@@ -1733,24 +1725,22 @@ char *command, *args[];
  * * list_cmdtable: List internal commands.
  */
 
-static void list_cmdtable(player)
-dbref player;
-{
+static void list_cmdtable(dbref player) {
     CMDENT *cmdp;
     char *buf, *bp, *cp;
 
     buf = alloc_lbuf("list_cmdtable");
     bp = buf;
     for (cp = (char *) "Commands:"; *cp; cp++)
-	*bp++ = *cp;
+        *bp++ = *cp;
     for (cmdp = command_table; cmdp->cmdname; cmdp++) {
-	if (check_access(player, cmdp->perms)) {
-	    if (!(cmdp->perms & CF_DARK)) {
-		*bp++ = ' ';
-		for (cp = cmdp->cmdname; *cp; cp++)
-		    *bp++ = *cp;
-	    }
-	}
+        if (check_access(player, cmdp->perms)) {
+            if (!(cmdp->perms & CF_DARK)) {
+                *bp++ = ' ';
+                for (cp = cmdp->cmdname; *cp; cp++)
+                    *bp++ = *cp;
+            }
+        }
     }
     *bp = '\0';
 
@@ -1759,9 +1749,9 @@ dbref player;
      */
 
     if (Typeof(player) == TYPE_PLAYER)
-	display_nametab(player, logout_cmdtable, buf, 1);
+        display_nametab(player, logout_cmdtable, buf, 1);
     else
-	notify(player, buf);
+        notify(player, buf);
     free_lbuf(buf);
 }
 
@@ -1770,22 +1760,20 @@ dbref player;
  * * list_attrtable: List available attributes.
  */
 
-static void list_attrtable(player)
-dbref player;
-{
+static void list_attrtable(dbref player) {
     ATTR *ap;
     char *buf, *bp, *cp;
 
     buf = alloc_lbuf("list_attrtable");
     bp = buf;
     for (cp = (char *) "Attributes:"; *cp; cp++)
-	*bp++ = *cp;
+        *bp++ = *cp;
     for (ap = attr; ap->name; ap++) {
-	if (See_attr(player, player, ap, player, 0)) {
-	    *bp++ = ' ';
-	    for (cp = (char *) (ap->name); *cp; cp++)
-		*bp++ = *cp;
-	}
+        if (See_attr(player, player, ap, player, 0)) {
+            *bp++ = ' ';
+            for (cp = (char *) (ap->name); *cp; cp++)
+                *bp++ = *cp;
+        }
     }
     *bp = '\0';
     raw_notify(player, buf);

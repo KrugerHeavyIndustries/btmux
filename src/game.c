@@ -493,11 +493,7 @@ char **destp;
 
 char *colorize(dbref player, char *from);
 
-void notify_checked(target, sender, msg, key)
-dbref target, sender;
-int key;
-const char *msg;
-{
+void notify_checked(dbref target, dbref sender, const char *msg, int key) {
     char *msg_ns, *mp, *tbuff, *tp, *buff, *colbuf = NULL;
     char *args[10];
     dbref aowner, targetloc, recip, obj;
@@ -510,7 +506,7 @@ const char *msg;
      */
 
     if (!Good_obj(target) || !msg || !*msg)
-	return;
+        return;
 
     /*
      * Enforce a recursion limit 
@@ -518,8 +514,8 @@ const char *msg;
 
     mudstate.ntfy_nest_lev++;
     if (mudstate.ntfy_nest_lev >= mudconf.ntfy_nest_lim) {
-	mudstate.ntfy_nest_lev--;
-	return;
+        mudstate.ntfy_nest_lev--;
+        return;
     }
     /*
      * If we want NOSPOOF output, generate it.  It is only needed if 
@@ -527,40 +523,40 @@ const char *msg;
      */
 
     if (key & MSG_ME) {
-	mp = msg_ns = alloc_lbuf("notify_checked");
-	if (Nospoof(target) && (target != sender) &&
-	    (target != mudstate.curr_enactor) &&
-	    (target != mudstate.curr_player && Good_obj(sender))) {
+        mp = msg_ns = alloc_lbuf("notify_checked");
+        if (Nospoof(target) && (target != sender) &&
+                (target != mudstate.curr_enactor) &&
+                (target != mudstate.curr_player && Good_obj(sender))) {
 
-	    /*
-	     * I'd really like to use tprintf here but I can't 
-	     * because the caller may have.
-	     * notify(target, tprintf(...)) is quite common 
-	     * in the code. 
-	     */
+            /*
+             * I'd really like to use tprintf here but I can't 
+             * because the caller may have.
+             * notify(target, tprintf(...)) is quite common 
+             * in the code. 
+             */
 
-	    tbuff = alloc_sbuf("notify_checked.nospoof");
-	    safe_chr('[', msg_ns, &mp);
-	    safe_str(Name(sender), msg_ns, &mp);
-	    sprintf(tbuff, "(#%d)", sender);
-	    safe_str(tbuff, msg_ns, &mp);
+            tbuff = alloc_sbuf("notify_checked.nospoof");
+            safe_chr('[', msg_ns, &mp);
+            safe_str(Name(sender), msg_ns, &mp);
+            sprintf(tbuff, "(#%d)", sender);
+            safe_str(tbuff, msg_ns, &mp);
 
-	    if (sender != Owner(sender)) {
-		safe_chr('{', msg_ns, &mp);
-		safe_str(Name(Owner(sender)), msg_ns, &mp);
-		safe_chr('}', msg_ns, &mp);
-	    }
-	    if (sender != mudstate.curr_enactor) {
-		sprintf(tbuff, "<-(#%d)", mudstate.curr_enactor);
-		safe_str(tbuff, msg_ns, &mp);
-	    }
-	    safe_str((char *) "] ", msg_ns, &mp);
-	    free_sbuf(tbuff);
-	}
-	safe_str((char *) msg, msg_ns, &mp);
-	*mp = '\0';
+            if (sender != Owner(sender)) {
+                safe_chr('{', msg_ns, &mp);
+                safe_str(Name(Owner(sender)), msg_ns, &mp);
+                safe_chr('}', msg_ns, &mp);
+            }
+            if (sender != mudstate.curr_enactor) {
+                sprintf(tbuff, "<-(#%d)", mudstate.curr_enactor);
+                safe_str(tbuff, msg_ns, &mp);
+            }
+            safe_str((char *) "] ", msg_ns, &mp);
+            free_sbuf(tbuff);
+        }
+        safe_str((char *) msg, msg_ns, &mp);
+        *mp = '\0';
     } else {
-	msg_ns = NULL;
+        msg_ns = NULL;
     }
 
     /*
@@ -569,283 +565,283 @@ const char *msg;
 
     check_listens = Halted(target) ? 0 : 1;
     switch (Typeof(target)) {
-    case TYPE_PLAYER:
-	if (key & MSG_ME) {
-	    if (key & MSG_HTML) {
-		raw_notify_html(target, msg_ns);
-	    } else {
-		if (Html(target)) {
-		    char *msg_ns_escaped;
+        case TYPE_PLAYER:
+            if (key & MSG_ME) {
+                if (key & MSG_HTML) {
+                    raw_notify_html(target, msg_ns);
+                } else {
+                    if (Html(target)) {
+                        char *msg_ns_escaped;
 
-		    msg_ns_escaped = alloc_lbuf("notify_checked_escape");
-		    html_escape(msg_ns, msg_ns_escaped, 0);
-		    raw_notify(target, msg_ns_escaped);
-		    free_lbuf(msg_ns_escaped);
-		} else {
-		    if (key & MSG_COLORIZE)
-			colbuf = colorize(target, msg_ns);
-		    raw_notify(target, colbuf ? colbuf : msg_ns);
-		}
-	    }
-	}
+                        msg_ns_escaped = alloc_lbuf("notify_checked_escape");
+                        html_escape(msg_ns, msg_ns_escaped, 0);
+                        raw_notify(target, msg_ns_escaped);
+                        free_lbuf(msg_ns_escaped);
+                    } else {
+                        if (key & MSG_COLORIZE)
+                            colbuf = colorize(target, msg_ns);
+                        raw_notify(target, colbuf ? colbuf : msg_ns);
+                    }
+                }
+            }
 
-	if (colbuf)
-	    free_lbuf(colbuf);
-	if (!mudconf.player_listen)
-	    check_listens = 0;
-    case TYPE_THING:
-    case TYPE_ROOM:
+            if (colbuf)
+                free_lbuf(colbuf);
+            if (!mudconf.player_listen)
+                check_listens = 0;
+        case TYPE_THING:
+        case TYPE_ROOM:
 
-	/* If we're in a pipe, objects can receive raw_notify
-	 * if they're not a player and connected (if we didn't
-	 * do this, they'd be notified twice! */
+            /* If we're in a pipe, objects can receive raw_notify
+             * if they're not a player and connected (if we didn't
+             * do this, they'd be notified twice! */
 
-	if (mudstate.inpipe && (!isPlayer(target) || (isPlayer(target) &&
-		    !Connected(target)))) {
-	    raw_notify(target, msg_ns);
-	}
+            if (mudstate.inpipe && (!isPlayer(target) || (isPlayer(target) &&
+                            !Connected(target)))) {
+                raw_notify(target, msg_ns);
+            }
 
-	/*
-	 * Forward puppet message if it is for me 
-	 */
+            /*
+             * Forward puppet message if it is for me 
+             */
 
-	has_neighbors = Has_location(target);
-	targetloc = where_is(target);
-	is_audible = Audible(target);
+            has_neighbors = Has_location(target);
+            targetloc = where_is(target);
+            is_audible = Audible(target);
 
-	if ((key & MSG_ME) && Puppet(target) && (target != Owner(target))
-	    && ((key & MSG_PUP_ALWAYS) ||
-		((targetloc != Location(Owner(target))) &&
-		    (targetloc != Owner(target))))) {
-	    tp = tbuff = alloc_lbuf("notify_checked.puppet");
-	    safe_str(Name(target), tbuff, &tp);
-	    safe_str((char *) "> ", tbuff, &tp);
-	    if (key & MSG_COLORIZE)
-		colbuf = colorize(Owner(target), msg_ns);
-	    safe_str(colbuf ? colbuf : msg_ns, tbuff, &tp);
-	    *tp = '\0';
-	    raw_notify(Owner(target), tbuff);
-	    if (colbuf)
-		free_lbuf(colbuf);
-	    free_lbuf(tbuff);
-	}
-	/*
-	 * Check for @Listen match if it will be useful 
-	 */
+            if ((key & MSG_ME) && Puppet(target) && (target != Owner(target))
+                    && ((key & MSG_PUP_ALWAYS) ||
+                        ((targetloc != Location(Owner(target))) &&
+                         (targetloc != Owner(target))))) {
+                tp = tbuff = alloc_lbuf("notify_checked.puppet");
+                safe_str(Name(target), tbuff, &tp);
+                safe_str((char *) "> ", tbuff, &tp);
+                if (key & MSG_COLORIZE)
+                    colbuf = colorize(Owner(target), msg_ns);
+                safe_str(colbuf ? colbuf : msg_ns, tbuff, &tp);
+                *tp = '\0';
+                raw_notify(Owner(target), tbuff);
+                if (colbuf)
+                    free_lbuf(colbuf);
+                free_lbuf(tbuff);
+            }
+            /*
+             * Check for @Listen match if it will be useful 
+             */
 
-	pass_listen = 0;
-	nargs = 0;
-	if (check_listens && (key & (MSG_ME | MSG_INV_L)) &&
-	    H_Listen(target)) {
-	    tp = atr_get(target, A_LISTEN, &aowner, &aflags);
-	    if (*tp && wild(tp, (char *) msg, args, 10)) {
-		for (nargs = 10;
-		    nargs && (!args[nargs - 1] || !(*args[nargs - 1]));
-		    nargs--);
-		pass_listen = 1;
-	    }
-	    free_lbuf(tp);
-	}
-	/*
-	 * If we matched the @listen or are monitoring, check the * * 
-	 * USE lock 
-	 */
+            pass_listen = 0;
+            nargs = 0;
+            if (check_listens && (key & (MSG_ME | MSG_INV_L)) &&
+                    H_Listen(target)) {
+                tp = atr_get(target, A_LISTEN, &aowner, &aflags);
+                if (*tp && wild(tp, (char *) msg, args, 10)) {
+                    for (nargs = 10;
+                            nargs && (!args[nargs - 1] || !(*args[nargs - 1]));
+                            nargs--);
+                    pass_listen = 1;
+                }
+                free_lbuf(tp);
+            }
+            /*
+             * If we matched the @listen or are monitoring, check the * * 
+             * USE lock 
+             */
 
-	if (sender < 0)
-	    sender = GOD;
-	pass_uselock = 0;
-	if ((key & MSG_ME) && check_listens && (pass_listen ||
-		Monitor(target)))
-	    pass_uselock = could_doit(sender, target, A_LUSE);
+            if (sender < 0)
+                sender = GOD;
+            pass_uselock = 0;
+            if ((key & MSG_ME) && check_listens && (pass_listen ||
+                        Monitor(target)))
+                pass_uselock = could_doit(sender, target, A_LUSE);
 
-	/*
-	 * Process AxHEAR if we pass LISTEN, USElock and it's for me 
-	 */
+            /*
+             * Process AxHEAR if we pass LISTEN, USElock and it's for me 
+             */
 
-	if ((key & MSG_ME) && pass_listen && pass_uselock) {
-	    if (sender != target)
-		did_it(sender, target, 0, NULL, 0, NULL, A_AHEAR, args,
-		    nargs);
-	    else
-		did_it(sender, target, 0, NULL, 0, NULL, A_AMHEAR, args,
-		    nargs);
-	    did_it(sender, target, 0, NULL, 0, NULL, A_AAHEAR, args,
-		nargs);
-	}
-	/*
-	 * Get rid of match arguments. We don't need them anymore 
-	 */
+            if ((key & MSG_ME) && pass_listen && pass_uselock) {
+                if (sender != target)
+                    did_it(sender, target, 0, NULL, 0, NULL, A_AHEAR, args,
+                            nargs);
+                else
+                    did_it(sender, target, 0, NULL, 0, NULL, A_AMHEAR, args,
+                            nargs);
+                did_it(sender, target, 0, NULL, 0, NULL, A_AAHEAR, args,
+                        nargs);
+            }
+            /*
+             * Get rid of match arguments. We don't need them anymore 
+             */
 
-	if (pass_listen) {
-	    for (i = 0; i < 10; i++)
-		if (args[i] != NULL)
-		    free_lbuf(args[i]);
-	}
-	/*
-	 * Process ^-listens if for me, MONITOR, and we pass USElock 
-	 */
+            if (pass_listen) {
+                for (i = 0; i < 10; i++)
+                    if (args[i] != NULL)
+                        free_lbuf(args[i]);
+            }
+            /*
+             * Process ^-listens if for me, MONITOR, and we pass USElock 
+             */
 
-	if ((key & MSG_ME) && pass_uselock && (sender != target) &&
-	    Monitor(target)) {
-	    (void) atr_match(target, sender, AMATCH_LISTEN, (char *) msg,
-		0);
-	}
-	/*
-	 * Deliver message to forwardlist members 
-	 */
+            if ((key & MSG_ME) && pass_uselock && (sender != target) &&
+                    Monitor(target)) {
+                (void) atr_match(target, sender, AMATCH_LISTEN, (char *) msg,
+                                 0);
+            }
+            /*
+             * Deliver message to forwardlist members 
+             */
 
-	if ((key & MSG_FWDLIST) && Audible(target) &&
-	    check_filter(target, sender, A_FILTER, msg)) {
-	    tbuff = dflt_from_msg(sender, target);
-	    buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
-	    free_lbuf(tbuff);
+            if ((key & MSG_FWDLIST) && Audible(target) &&
+                    check_filter(target, sender, A_FILTER, msg)) {
+                tbuff = dflt_from_msg(sender, target);
+                buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
+                free_lbuf(tbuff);
 
-	    fp = fwdlist_get(target);
-	    if (fp) {
-		for (i = 0; i < fp->count; i++) {
-		    recip = fp->data[i];
-		    if (!Good_obj(recip) || (recip == target))
-			continue;
-		    notify_checked(recip, sender, buff,
-			(MSG_ME | MSG_F_UP | MSG_F_CONTENTS |
-			    MSG_S_INSIDE));
-		}
-	    }
-	    free_lbuf(buff);
-	}
-	/*
-	 * Deliver message through audible exits 
-	 */
+                fp = fwdlist_get(target);
+                if (fp) {
+                    for (i = 0; i < fp->count; i++) {
+                        recip = fp->data[i];
+                        if (!Good_obj(recip) || (recip == target))
+                            continue;
+                        notify_checked(recip, sender, buff,
+                                (MSG_ME | MSG_F_UP | MSG_F_CONTENTS |
+                                 MSG_S_INSIDE));
+                    }
+                }
+                free_lbuf(buff);
+            }
+            /*
+             * Deliver message through audible exits 
+             */
 
-	if (key & MSG_INV_EXITS) {
-	    DOLIST(obj, Exits(target)) {
-		recip = Location(obj);
-		if (Audible(obj) && ((recip != target) &&
-			check_filter(obj, sender, A_FILTER, msg))) {
-		    buff =
-			add_prefix(obj, target, A_PREFIX, msg,
-			"From a distance,");
-		    notify_checked(recip, sender, buff,
-			MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
-		    free_lbuf(buff);
-		}
-	    }
-	}
-	/*
-	 * Deliver message through neighboring audible exits 
-	 */
+            if (key & MSG_INV_EXITS) {
+                DOLIST(obj, Exits(target)) {
+                    recip = Location(obj);
+                    if (Audible(obj) && ((recip != target) &&
+                                check_filter(obj, sender, A_FILTER, msg))) {
+                        buff =
+                            add_prefix(obj, target, A_PREFIX, msg,
+                                    "From a distance,");
+                        notify_checked(recip, sender, buff,
+                                MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
+                        free_lbuf(buff);
+                    }
+                }
+            }
+            /*
+             * Deliver message through neighboring audible exits 
+             */
 
-	if (has_neighbors && ((key & MSG_NBR_EXITS) ||
-		((key & MSG_NBR_EXITS_A) && is_audible))) {
+            if (has_neighbors && ((key & MSG_NBR_EXITS) ||
+                        ((key & MSG_NBR_EXITS_A) && is_audible))) {
 
-	    /*
-	     * If from inside, we have to add the prefix string * 
-	     * 
-	     * *  * * of * the container. 
-	     */
+                /*
+                 * If from inside, we have to add the prefix string * 
+                 * 
+                 * *  * * of * the container. 
+                 */
 
-	    if (key & MSG_S_INSIDE) {
-		tbuff = dflt_from_msg(sender, target);
-		buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
-		free_lbuf(tbuff);
-	    } else {
-		buff = (char *) msg;
-	    }
+                if (key & MSG_S_INSIDE) {
+                    tbuff = dflt_from_msg(sender, target);
+                    buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
+                    free_lbuf(tbuff);
+                } else {
+                    buff = (char *) msg;
+                }
 
-	    DOLIST(obj, Exits(Location(target))) {
-		recip = Location(obj);
-		if (Good_obj(recip) && Audible(obj) && (recip != targetloc)
-		    && (recip != target) &&
-		    check_filter(obj, sender, A_FILTER, msg)) {
-		    tbuff =
-			add_prefix(obj, target, A_PREFIX, buff,
-			"From a distance,");
-		    notify_checked(recip, sender, tbuff,
-			MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
-		    free_lbuf(tbuff);
-		}
-	    }
-	    if (key & MSG_S_INSIDE) {
-		free_lbuf(buff);
-	    }
-	}
-	/*
-	 * Deliver message to contents 
-	 */
+                DOLIST(obj, Exits(Location(target))) {
+                    recip = Location(obj);
+                    if (Good_obj(recip) && Audible(obj) && (recip != targetloc)
+                            && (recip != target) &&
+                            check_filter(obj, sender, A_FILTER, msg)) {
+                        tbuff =
+                            add_prefix(obj, target, A_PREFIX, buff,
+                                    "From a distance,");
+                        notify_checked(recip, sender, tbuff,
+                                MSG_ME | MSG_F_UP | MSG_F_CONTENTS | MSG_S_INSIDE);
+                        free_lbuf(tbuff);
+                    }
+                }
+                if (key & MSG_S_INSIDE) {
+                    free_lbuf(buff);
+                }
+            }
+            /*
+             * Deliver message to contents 
+             */
 
-	if (((key & MSG_INV) || ((key & MSG_INV_L) && pass_listen)) &&
-	    (check_filter(target, sender, A_INFILTER, msg))) {
+            if (((key & MSG_INV) || ((key & MSG_INV_L) && pass_listen)) &&
+                    (check_filter(target, sender, A_INFILTER, msg))) {
 
-	    /*
-	     * Don't prefix the message if we were given the * *
-	     * * * MSG_NOPREFIX key. 
-	     */
+                /*
+                 * Don't prefix the message if we were given the * *
+                 * * * MSG_NOPREFIX key. 
+                 */
 
-	    if (key & MSG_S_OUTSIDE) {
-		buff = add_prefix(target, sender, A_INPREFIX, msg, "");
-	    } else {
-		buff = (char *) msg;
-	    }
-	    DOLIST(obj, Contents(target)) {
-		if (Slave(obj) && (key & MSG_NO_SLAVE))
-		    continue;
-		if (obj != target) {
-		    notify_checked(obj, sender, buff,
-			MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
-			    MSG_HTML));
-		}
-	    }
-	    if (key & MSG_S_OUTSIDE)
-		free_lbuf(buff);
-	}
-	/*
-	 * Deliver message to neighbors 
-	 */
+                if (key & MSG_S_OUTSIDE) {
+                    buff = add_prefix(target, sender, A_INPREFIX, msg, "");
+                } else {
+                    buff = (char *) msg;
+                }
+                DOLIST(obj, Contents(target)) {
+                    if (Slave(obj) && (key & MSG_NO_SLAVE))
+                        continue;
+                    if (obj != target) {
+                        notify_checked(obj, sender, buff,
+                                MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
+                                    MSG_HTML));
+                    }
+                }
+                if (key & MSG_S_OUTSIDE)
+                    free_lbuf(buff);
+            }
+            /*
+             * Deliver message to neighbors 
+             */
 
-	if (has_neighbors && ((key & MSG_NBR) || ((key & MSG_NBR_A) &&
-		    is_audible &&
-		    check_filter(target, sender, A_FILTER, msg)))) {
-	    if (key & MSG_S_INSIDE) {
-		tbuff = dflt_from_msg(sender, target);
-		buff = add_prefix(target, sender, A_PREFIX, msg, "");
-		free_lbuf(tbuff);
-	    } else {
-		buff = (char *) msg;
-	    }
-	    DOLIST(obj, Contents(targetloc)) {
-		if ((obj != target) && (obj != targetloc)) {
-		    notify_checked(obj, sender, buff,
-			MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
-			    MSG_COLORIZE));
-		}
-	    }
-	    if (key & MSG_S_INSIDE) {
-		free_lbuf(buff);
-	    }
-	}
-	/*
-	 * Deliver message to container 
-	 */
+            if (has_neighbors && ((key & MSG_NBR) || ((key & MSG_NBR_A) &&
+                            is_audible &&
+                            check_filter(target, sender, A_FILTER, msg)))) {
+                if (key & MSG_S_INSIDE) {
+                    tbuff = dflt_from_msg(sender, target);
+                    buff = add_prefix(target, sender, A_PREFIX, msg, "");
+                    free_lbuf(tbuff);
+                } else {
+                    buff = (char *) msg;
+                }
+                DOLIST(obj, Contents(targetloc)) {
+                    if ((obj != target) && (obj != targetloc)) {
+                        notify_checked(obj, sender, buff,
+                                MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key &
+                                    MSG_COLORIZE));
+                    }
+                }
+                if (key & MSG_S_INSIDE) {
+                    free_lbuf(buff);
+                }
+            }
+            /*
+             * Deliver message to container 
+             */
 
-	if (has_neighbors && ((key & MSG_LOC) || ((key & MSG_LOC_A) &&
-		    is_audible &&
-		    check_filter(target, sender, A_FILTER, msg)))) {
-	    if (key & MSG_S_INSIDE) {
-		tbuff = dflt_from_msg(sender, target);
-		buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
-		free_lbuf(tbuff);
-	    } else {
-		buff = (char *) msg;
-	    }
-	    notify_checked(targetloc, sender, buff,
-		MSG_ME | MSG_F_UP | MSG_S_INSIDE);
-	    if (key & MSG_S_INSIDE) {
-		free_lbuf(buff);
-	    }
-	}
+            if (has_neighbors && ((key & MSG_LOC) || ((key & MSG_LOC_A) &&
+                            is_audible &&
+                            check_filter(target, sender, A_FILTER, msg)))) {
+                if (key & MSG_S_INSIDE) {
+                    tbuff = dflt_from_msg(sender, target);
+                    buff = add_prefix(target, sender, A_PREFIX, msg, tbuff);
+                    free_lbuf(tbuff);
+                } else {
+                    buff = (char *) msg;
+                }
+                notify_checked(targetloc, sender, buff,
+                        MSG_ME | MSG_F_UP | MSG_S_INSIDE);
+                if (key & MSG_S_INSIDE) {
+                    free_lbuf(buff);
+                }
+            }
     }
     if (msg_ns)
-	free_lbuf(msg_ns);
+        free_lbuf(msg_ns);
     mudstate.ntfy_nest_lev--;
 }
 

@@ -29,6 +29,8 @@
 
 
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
 
 typedef int	dbref;
 typedef int	FLAG;

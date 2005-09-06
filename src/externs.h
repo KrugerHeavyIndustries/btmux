@@ -49,6 +49,8 @@ extern int dddb_setfile(char *);
 extern int dddb_init(void);
 
 /* From netcommon.c */
+void choke_player(dbref);
+void release_player(dbref);
 extern void raw_notify_html(dbref, const char *);
 extern void make_ulist(dbref, char *, char **);
 extern int fetch_idle(dbref);
