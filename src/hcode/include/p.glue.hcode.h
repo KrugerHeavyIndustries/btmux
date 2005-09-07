@@ -26,5 +26,6 @@ int MIN(int v1, int v2);
 int silly_parseattributes(char *buffer, char **args, int max);
 int mech_parseattributes(char *buffer, char **args, int maxargs);
 int proper_parseattributes(char *buffer, char **args, int max);
+char *first_parseattribute(char *buffer);
 
 #endif				/* _P_GLUE_HCODE_H */

@@ -21,12 +21,12 @@
 #include "mycool.h"
 #include "p.mech.utils.h"
 
-extern ACOM acom[NUM_COMMANDS + 1];
+extern ACOM acom[AUTO_NUM_COMMANDS + 1];
 
-#define AI_COMMAND_DLLIST_START     51 
-#define AI_COMMAND_DLLIST_END       63 
+#define AI_COMMAND_DLLIST_START     51      /* Tag for start of saved command list */
+#define AI_COMMAND_DLLIST_END       63      /* Tag for end of saved command list */
 
-#define outbyte(a) tmpb=(a);fwrite(&tmpb, 1, 1, f);
+#define outbyte(a) tmpb=(a); fwrite(&tmpb, 1, 1, f);
 
 #define CHESA(a,b,c,d) if ((tmpb=fwrite(a,b,c,d)) != c) \
     { fprintf (stderr, "Error writing dllist\n"); \
@@ -36,8 +36,11 @@ extern ACOM acom[NUM_COMMANDS + 1];
     { fprintf (stderr, "Error loading dllist\n"); \
       fflush(stderr); exit(1); }
 
-/* Dynamic Command System - Malloc a Command Node */
-command_node *command_create_node() {
+/*
+ * Creates a new command_node for the AI's
+ * command list
+ */
+static command_node *auto_create_command_node() {
 
     command_node *temp;
 
@@ -46,13 +49,39 @@ command_node *command_create_node() {
         return NULL;
 
     memset(temp, 0, sizeof(command_node));
+    temp->ai_command_function = NULL;
 
     return temp;
 
 }
 
-/* The function that actually writes a command node to file */
-void auto_write_command_node(FILE *f, command_node *node) {
+/*
+ * Destroys a command_node
+ */
+void auto_destroy_command_node(command_node *node) {
+   
+    int i;
+
+    /* Free the args */
+    for (i = 0; i < AUTOPILOT_MAX_ARGS; i++) {
+        if (node->args[i]) {
+            free(node->args[i]);
+            node->args[i] = NULL;
+        }
+    }
+
+    /* Free the node */
+    free(node);
+
+    return;
+
+}
+
+/*
+ * Writes a command_node to the file specified by f. Used to
+ * save AI command list to the hcode.db file
+ */
+static void auto_write_command_node(FILE *f, command_node *node) {
 
     unsigned char size;         /* Number of Arguments to save */
     char buf[MBUF_SIZE];        /* Buffer to write the strings */
@@ -76,8 +105,11 @@ void auto_write_command_node(FILE *f, command_node *node) {
 
 }
 
-/* Function to read in a command node from a file */
-command_node *auto_read_command_node(FILE *f) {
+/*
+ * Reads the data for a command_node from a file. Used
+ * to load the AI command list from hcode.db
+ */
+static command_node *auto_read_command_node(FILE *f) {
 
     unsigned char size;         /* Number of Arguments to read */
     char buf[MBUF_SIZE];        /* Buffer to store the strings */
@@ -87,7 +119,7 @@ command_node *auto_read_command_node(FILE *f) {
     command_node *temp_command_node;
 
     /* Allocate a command node */
-    temp_command_node = command_create_node();
+    temp_command_node = auto_create_command_node();
 
     /* Zero the Buffer */
     memset(buf, '\0', sizeof(buf));
@@ -104,11 +136,40 @@ command_node *auto_read_command_node(FILE *f) {
 
     }
 
+    /* Make sure there is a command */
+    if (!temp_command_node->args[0]) {
+        fprintf(stderr, "Error loading command node from file - "
+                "no command found\n");
+        exit(1);
+    }
+
+    /* Get the command_enum and the command_function */
+    for (i = 0; acom[i].name; i++) {
+        if ((!strncmp(temp_command_node->args[0], acom[i].name, 
+                        strlen(temp_command_node->args[0]))) &&
+                (!strncmp(acom[i].name, temp_command_node->args[0], 
+                        strlen(acom[i].name))))
+            break;
+    }
+
+    if (!acom[i].name) {
+        fprintf(stderr, "Error loading command node from file - "
+                "Invalid Command\n");
+        exit(1);
+    }
+
+    temp_command_node->command_enum = acom[i].command_enum;
+    temp_command_node->ai_command_function = acom[i].ai_command_function;
+
     return temp_command_node;
 
 }
 
-/* Save Command Dllist Here */
+/* 
+ * Saves the current command list from the AI to
+ * a file.  Called by SaveSpecialObjects from
+ * glue.c
+ */
 void auto_save_commands(FILE *f, AUTO *a) {
 
     int i;                  /* Our Counter */
@@ -142,7 +203,10 @@ void auto_save_commands(FILE *f, AUTO *a) {
 
 }
 
-/* Read in ai's command list */
+/*
+ * Loads an AI's saved command list from
+ * a file.  Called by load_xcode in glue.c
+ */
 void auto_load_commands(FILE *f, AUTO *a) {
 
     int i;                  /* Our Counter */
@@ -201,7 +265,7 @@ void auto_load_commands(FILE *f, AUTO *a) {
 }
 
 /* 
-   The Autopilot command interface 
+   The Autopilot command interface
 
    addcommand <name> [args]
    delcommand <num>
@@ -212,8 +276,13 @@ void auto_load_commands(FILE *f, AUTO *a) {
 
  */
 
-/* The commands for modifying state of autopilot */
+/*
+ * The commands that are on the XCODE Object along
+ * with some helper commands for modifying the state
+ * of the AI
+ */
 
+/*! \todo {See if we need this function and remove it if not} */
 int auto_valid_progline(AUTO * a, int p)
 {
     int i;
@@ -225,14 +294,19 @@ int auto_valid_progline(AUTO * a, int p)
     return 0;
 }
 
-static char *auto_show_command(command_node *node)
-{
+/*
+ * Internal function to return a string that
+ * displays a command from a command_node
+ */
+static char *auto_show_command(command_node *node) {
+    
     static char buf[MBUF_SIZE];
     int i;
 
     snprintf(buf, MBUF_SIZE, "%-10s", node->args[0]);
 
-    for (i = 1; i < 5; i++)
+    /* Loop through the args and print the commands */
+    for (i = 1; i < AUTOPILOT_MAX_ARGS; i++)
         if (node->args[i])
             snprintf(buf + strnlen(buf, MBUF_SIZE - 1), 
                     MBUF_SIZE - strnlen(buf, MBUF_SIZE - 1),
@@ -242,48 +316,106 @@ static char *auto_show_command(command_node *node)
 
 }
 
-void auto_delcommand(dbref player, void *data, char *buffer)
-{
-    int p, i, len;
+/*
+ * Removes a command from the AI's command list
+ */
+void auto_delcommand(dbref player, void *data, char *buffer) {
+
+    int p, i;
     AUTO *a = (AUTO *) data;
-    int repeat = 0;
-    int doall = 0;
-#if 0
-    skipws(buffer);
-    DOCHECK(!*buffer, "Argument expected!");
-    DOCHECK(Readnum(p, buffer), "Invalid argument - single number expected.");
-    if (p >= 0) {
-        /* Find out if it's valid position */
-        DOCHECK(!auto_valid_progline(a, p),
-                "Invalid : Argument out of range, or argument, not command.");
+    int remove_all_commands = 0;
+    command_node *temp_command_node;
+    char error_buf[MBUF_SIZE];
+
+    /* Make sure they specified an argument */
+    if (!*buffer) {
+        notify(player, "No argument used : Usage delcommand [num]\n");
+        notify_printf(player, "Must be within the range"
+                " 1 to %d or -1 for all\n", dllist_size(a->commands));
+        return;
+    }
+
+    /* Make sure its a number */
+    if (Readnum(p, buffer)) {
+        notify_printf(player, "Invalid Argument : Must be within the range"
+                " 1 to %d or -1 for all\n", dllist_size(a->commands));
+        return;
+    }
+
+    /* Check if its a valid command position
+     * If its -1 means remove all */
+    if (p == -1) {
+        remove_all_commands = 1;
+    } else if ((p > dllist_size(a->commands)) || (p < 1)) {
+        notify_printf(player, "Invalid Argument : Must be within the range"
+                " 1 to %d or -1 for all\n", dllist_size(a->commands));
+        return;
+    } 
+
+    /* Now remove the node(s) */
+    if (!remove_all_commands) {
+
+        /* Remove the node at pos */
+        temp_command_node = (command_node *) dllist_remove_node_at_pos(a->commands, p);
+
+        if (!temp_command_node) {
+            snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
+                    " Command #%d from AI #%d but the command node doesn't exist\n",
+                    p, a->mynum);
+            SendAI(error_buf);
+        }
+
+        /* Destroy the command_node */
+        auto_destroy_command_node(temp_command_node);
+
+        notify_printf(player, "Command #%d Successfully Removed\n", p);
+
     } else {
-        doall = 1;
-        p = 0;
+
+        /* Remove ALL the commands */
+        while (dllist_size(a->commands)) {
+
+            /* Remove the first node on the list and get the data
+             * from it */
+            temp_command_node = (command_node *) dllist_remove(a->commands,
+                    dllist_head(a->commands));
+
+            /* Make sure the command node exists */
+            if (!temp_command_node) {
+
+                snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
+                        " the first command from AI #%d but the command node doesn't exist\n",
+                        a->mynum);
+                SendAI(error_buf);
+
+            } else {
+
+                /* Destroy the command node */
+                auto_destroy_command_node(temp_command_node);
+
+            }
+
+        }
+
+        notify(player, "All the commands have been removed.\n");
+
     }
 
-    while (a->first_free > 0 && (doall || !(repeat++))) {
-        /* Remove it */
-        len = acom[a->commands[p]].argcount + 1;
-        for (i = p + len; i < a->first_free; i++)
-            a->commands[i - len] = a->commands[i];
-        
-        if (PG(a) >= p)
-            PG(a) -= len;
-        
-        a->first_free -= len;
-        for (i = p; i < a->first_free; i += (acom[a->commands[i]].argcount + 1))
-            if (a->commands[i] == COMMAND_JUMP)
-                a->commands[i + 1] -= len;
+    return;
 
-        notify(player, tprintf("Command #%d deleted (%d words freed)!", p, len));
-    }
-#endif
 }
 
+/*
+ * Jump to a specific command location in the AI's
+ * command list
+ */
 void auto_jump(dbref player, void *data, char *buffer)
 {
     int p;
     AUTO *a = (AUTO *) data;
+
+    notify(player, "jump has been temporarly disabled till I can figure out"
+            " how I want to change it - Dany");
 #if 0
     skipws(buffer);
     DOCHECK(!*buffer, "Argument expected!");
@@ -296,10 +428,15 @@ void auto_jump(dbref player, void *data, char *buffer)
 #endif
 }
 
+/*
+ * Adds a command to the AI Command List
+ */
 void auto_addcommand(dbref player, void *data, char *buffer)
 {
     AUTO *a = (AUTO *) data;
-    char *args[5];              /* At most will have 4 args + command */
+    char *args[AUTOPILOT_MAX_ARGS]; /* args[0] is the command the rest are 
+                                       args for the command */
+    char *command;                  /* temp string to get the name of the command */
     int argc;
     int i, j;
 
@@ -309,11 +446,17 @@ void auto_addcommand(dbref player, void *data, char *buffer)
     /* Clear the Args */
     memset(args, 0, sizeof(char *) * 5);
 
+    command = first_parseattribute(buffer);
+
     /* Look at the buffer and try and get the command */
     for (i = 0; acom[i].name; i++) {
-        if (!strncmp(buffer, acom[i].name, strlen(acom[i].name)))
+        if ((!strncmp(command, acom[i].name, strlen(command))) &&
+                (!strncmp(acom[i].name, command, strlen(acom[i].name))))
             break;
     }
+
+    /* Free the command string we dont need it anymore */
+    free(command);
 
     /* Make sure its a valid command */
     DOCHECK(!acom[i].name, "Invalid Command!");
@@ -329,8 +472,9 @@ void auto_addcommand(dbref player, void *data, char *buffer)
         if (argc != acom[i].argcount + 1) {
    
             /* Free the args before we quit */ 
-            for(j = 0; j < 5; j++) {
-                if(args[j]) free(args[j]);
+            for(j = 0; j < AUTOPILOT_MAX_ARGS; j++) {
+                if(args[j])
+                    free(args[j]);
             }
             notify(player, "Not the proper number of arguments!");
             return;
@@ -345,14 +489,15 @@ void auto_addcommand(dbref player, void *data, char *buffer)
     }
 
     /* Build the command node */
-    temp_command_node = command_create_node();
+    temp_command_node = auto_create_command_node();
 
-    for (j = 0; j < 5; j++) {
+    for (j = 0; j < AUTOPILOT_MAX_ARGS; j++) {
         if (args[j])
             temp_command_node->args[j] = args[j];
     }
 
     temp_command_node->argcount = acom[i].argcount;
+    temp_command_node->command_enum = acom[i].command_enum;
     temp_command_node->ai_command_function = acom[i].ai_command_function;
 
     /* Add the command to the list */
@@ -364,6 +509,9 @@ void auto_addcommand(dbref player, void *data, char *buffer)
 
 }
 
+/*
+ * Lists the various settings and commands currently on the AI
+ */
 void auto_listcommands(dbref player, void *data, char *buffer)
 {
     AUTO *a = (AUTO *) data;
@@ -380,14 +528,7 @@ void auto_listcommands(dbref player, void *data, char *buffer)
     vsi(buf);
 
     addline();
-/*
-    sim(tprintf("Memory: %d (%d %%) used / %d free", a->first_free,
-            100 * a->first_free / AUTOPILOT_MEMORY,
-            AUTOPILOT_MEMORY - a->first_free), CM_TWO);
-    sim(tprintf("Program counter: #%d %s", a->program_counter,
-            a->program_counter >=
-            a->first_free ? " (End of program)" : ""), CM_TWO);
-*/
+
     snprintf(buf, MBUF_SIZE, "MyRef: #%d  MechRef: #%d  MapIndex: #%d  "
             "FSpeed: %d %% (Flag:%d)", a->mynum, a->mymechnum, a->mapindex, 
             a->speed, a->flags);
@@ -412,83 +553,245 @@ void auto_listcommands(dbref player, void *data, char *buffer)
     KillCoolMenu(c);
 }
 
-int AutoPilotOn(AUTO * a)
-{
+/*
+ * Turn the autopilot on
+ */
+static int auto_pilot_on(AUTO * a) {
 
     int i, j, count = 0;
-#if 0
+
     for (i = FIRST_AUTO_EVENT; i <= LAST_AUTO_EVENT; i++)
         if ((j = muxevent_count_type_data(i, (void *) a)))
             count += j;
 
-    if (!count)
+    if (!count) {
         return a->flags & (AUTOPILOT_AUTOGUN | AUTOPILOT_GUNZOMBIE |
                 AUTOPILOT_PILZOMBIE);
-#endif
+    }
+
     return count;
 
 }
 
-void StopAutoPilot(AUTO * a)
-{
+/*
+ * Stop whatever the autopilot is doing
+ */
+static void auto_stop_pilot(AUTO * a) {
+
     int i;
-#if 0
-    a->flags &=
-            ~(AUTOPILOT_AUTOGUN | AUTOPILOT_GUNZOMBIE | AUTOPILOT_PILZOMBIE);
+
+    a->flags &= ~(AUTOPILOT_AUTOGUN | AUTOPILOT_GUNZOMBIE 
+            | AUTOPILOT_PILZOMBIE);
+
     for (i = FIRST_AUTO_EVENT; i <= LAST_AUTO_EVENT; i++)
         muxevent_remove_type_data(i, (void *) a);
-#endif
+
 }
 
-/* Main idea: Set up all variables to current (if possible),
-   and engage our first execute-commands-event 
+/*
+ * Set the comtitle for the autopilot's unit
  */
-
-void ai_set_comtitle(AUTO * a, MECH * mech)
-{
+void auto_set_comtitle(AUTO * a, MECH * mech) {
+    
     char buf[LBUF_SIZE];
-#if 0
-    sprintf(buf, "a=%s/%s", MechType_Ref(mech), MechIDS(mech, 1));
+
+    snprintf(buf, LBUF_SIZE, "a=%s/%s", MechType_Ref(mech), MechIDS(mech, 1));
     mech_set_channeltitle(a->mynum, mech, buf);
-#endif
+
 }
 
+/*
+ * Set default parameters for the AI
+ */
+/*! \todo {Make this smarter and check some of these} */
+void auto_init(AUTO * a, MECH * m) {
+
+    a->auto_cmode = 1;      /* CHARGE! */
+    a->auto_cdist = 2;      /* Attempt to avoid kicking distance */
+    a->auto_nervous = 0;
+    a->auto_goweight = 44;  /* We're mainly concentrating on fighting */
+    a->auto_fweight = 55;
+    a->speed = 100;         /* Reset to full speed */
+    a->flags = 0;
+    a->targ = -1;
+
+}
+
+/*
+ * Setup all the flags and variables to current, then
+ * start the AI's first command.
+ */
 void auto_engage(dbref player, void *data, char *buffer) {
 
     AUTO *a = (AUTO *) data;
     MECH *mech;
-#if 0
+
     a->mymech = mech = getMech((a->mymechnum = Location(a->mynum)));
-    DOCHECK(!a, "Internal error!");
+    DOCHECK(!a, "Internal error! - Bad AI object!");
     DOCHECK(!mech, "Error: The autopilot isn't inside a 'mech!");
-    DOCHECK(AutoPilotOn(a),
+    DOCHECK(auto_pilot_on(a),
         "The autopilot's already online! You have to disengage it first.");
+
     if (MechAuto(mech) <= 0)
-        ai_init(a, mech);
+        auto_init(a, mech);
     MechAuto(mech) = a->mynum;
+    
     if (MechAuto(mech) > 0)
-        ai_set_comtitle(a, mech);
+        auto_set_comtitle(a, mech);
+
     a->mapindex = mech->mapindex;
-    a->program_counter = 0;
-/*  a->speed = 100; */
+    /*! \todo {Don't know if we still need this} */
+    //a->program_counter = 0;
 
-#if 0
-    DOCHECK(a->mapindex < 0 ||
-            !FindObjectsData(a->mapindex), "The 'mech is on invalid map!");
-#endif
-
-    notify(player, "Engaging autopilot..");
+    notify(player, "Engaging autopilot...");
     AUTOEVENT(a, EVENT_AUTOCOM, auto_com_event, AUTOPILOT_NC_DELAY, 0);
-#endif
+
+    return;
+
 }
 
-void auto_disengage(dbref player, void *data, char *buffer)
-{
+/*
+ * Turn off the autopilot
+ */
+void auto_disengage(dbref player, void *data, char *buffer) {
+
     AUTO *a = (AUTO *) data;
-#if 0
-    DOCHECK(!AutoPilotOn(a),
+
+    DOCHECK(!auto_pilot_on(a),
             "The autopilot's already offline! You have to engage it first.");
-    StopAutoPilot(a);
+
+    auto_stop_pilot(a);
     notify(player, "Autopilot has been disengaged.");
-#endif
+
+    return;
+
+}
+
+/*
+ * Remove the first command_node in the list and go to the next
+ */
+void auto_goto_next_command(AUTO *a) {
+
+    command_node *temp_command_node;
+    char error_buf[MBUF_SIZE];
+
+    if (dllist_size(a->commands) < 0) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
+                " the first command from AI #%d but the command list is empty\n",
+                a->mynum);
+        SendAI(error_buf);
+        return;
+    }
+
+    temp_command_node = (command_node *) dllist_remove(a->commands, 
+            dllist_head(a->commands));
+
+    if (!temp_command_node) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
+                " the first command from AI #%d but the command node doesn't exist\n",
+                a->mynum);
+        SendAI(error_buf);
+        return;
+    }
+
+    auto_destroy_command_node(temp_command_node);
+
+}
+
+/*
+ * Get the argument for a given command position and argument number
+ * Remember to free the string that this returns after use 
+ */
+char *auto_get_command_arg(AUTO *a, int command_number, int arg_number) {
+
+    char *argument;
+    command_node *temp_command_node;
+    char error_buf[MBUF_SIZE];
+
+    if (command_number > dllist_size(a->commands)) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
+                "access Command #%d for AI #%d but it doesn't exist",
+                a->mynum, command_number);
+        SendAI(error_buf);
+        return NULL;
+    }
+
+    if (arg_number >= AUTOPILOT_MAX_ARGS) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
+                "access Arg #%d for AI #%d Command #%d but its greater"
+                " then AUTOPILOT_MAX_ARGS (%d)",
+                a->mynum, arg_number, command_number, AUTOPILOT_MAX_ARGS);
+        SendAI(error_buf);
+        return NULL;
+    }
+
+    temp_command_node = (command_node *) dllist_get_node(a->commands, 
+                command_number);
+
+    /*! \todo {Add in check incase the command node doesn't exist} */
+
+    if (!temp_command_node->args[arg_number]) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
+                "access Arg #%d for AI #%d Command #%d but it doesn't exist",
+                a->mynum, arg_number, command_number);
+        SendAI(error_buf);
+        return NULL;
+    }
+
+    argument = strndup(temp_command_node->args[arg_number], MBUF_SIZE);
+
+    return argument;
+
+}
+
+/*
+ * Returns the command_enum value for the given command
+ * from the AI command list
+ */
+int auto_get_command_enum(AUTO *a, int command_number) {
+
+    int command_enum;
+    command_node *temp_command_node;
+    char error_buf[MBUF_SIZE];
+
+    /* Make sure there are commands */
+    if (dllist_size(a->commands) <= 0) {
+        return -1;
+    }
+
+    if (command_number <= 0) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
+                "access a command (%d) for AI #%d that can't be on a list",
+                command_number, a->mynum);
+        SendAI(error_buf);
+        return -1;
+    }
+
+    /* Make sure the command is on the list */
+    if (command_number > dllist_size(a->commands)) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
+                "access Command #%d for AI #%d but it doesn't exist",
+                a->mynum, command_number);
+        SendAI(error_buf);
+        return -1;
+    }
+
+    temp_command_node = (command_node *) dllist_get_node(a->commands, 
+                command_number);
+
+    /*! \todo {Add in check incase the command node doesn't exist} */
+
+    command_enum = temp_command_node->command_enum;
+
+    /* If its a bad enum value we have a problem */
+    if ((command_enum >= AUTO_NUM_COMMANDS) || (command_enum < 0)) {
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Command ENUM for"
+                " AI #%d Command Number #%d doesn't exist\n",
+                a->mynum, command_number);
+        SendAI(error_buf);
+        return -1;
+    }
+
+    return command_enum;
+
 }

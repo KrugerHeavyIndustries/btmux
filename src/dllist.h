@@ -31,8 +31,9 @@ void dllist_insert_before(dllist *dllist, dllist_node *node, dllist_node *newnod
 void dllist_insert_beginning(dllist *dllist, dllist_node *newnode);
 void dllist_insert_end(dllist *dllist, dllist_node *newnode);
 
-/* Removes a node and returns its data */
+/* Remove nodes and return the data */
 void *dllist_remove(dllist *dllist, dllist_node *node);
+void *dllist_remove_node_at_pos(dllist *dllist, int pos);
 
 /* Utility functions */
 dllist_node *dllist_head(dllist *dllist);

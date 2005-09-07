@@ -34,7 +34,7 @@
 #include "p.ds.bay.h"
 #include "p.bsuit.h"
 #include "p.mech.utils.h"
-#include "p.autopilot.h"
+#include "autopilot.h"
 
 void mech_findcenter(dbref player, void *data, char *buffer)
 {
@@ -1662,7 +1662,7 @@ static void mech_enter_event(MUXEVENT * e)
 	mech_Rsetxy(GOD, (void *) tmpm, tprintf("%d %d", x, y));
 	loud_teleport(tmpm->mynum, mapo->obj);
     }
-    CalAutoMapindex(mech);
+    auto_cal_mapindex(mech);
 }
 
 

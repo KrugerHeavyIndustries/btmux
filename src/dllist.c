@@ -173,6 +173,34 @@ void *dllist_remove(dllist *dllist, dllist_node *node) {
 
 }
 
+/* Remove a Node at pos - returns the data */
+void *dllist_remove_node_at_pos(dllist *dllist, int pos) {
+
+    int counter = 1;
+    dllist_node *temp;
+    void *data;
+
+    if (dllist_size(dllist) < pos) {
+        return NULL;
+    }
+
+    /* Start at the head */
+    temp = dllist_head(dllist);
+
+    while (counter != pos) {
+
+        temp = dllist_next(temp);
+        counter++;
+
+    }
+
+    /* Remove the node */
+    data = dllist_remove(dllist, temp);
+
+    return data;
+
+}
+
 /* Utility functions */
 
 /* Get Head node */
@@ -212,6 +240,10 @@ void *dllist_get_node(dllist *dllist, int pos) {
     dllist_node *temp;
 
     if (dllist_size(dllist) < pos) {
+        return NULL;
+    }
+
+    if (pos < counter) {
         return NULL;
     }
 

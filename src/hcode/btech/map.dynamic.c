@@ -242,12 +242,17 @@ void add_mech_to_map(MAP * newmap, MECH * mech)
     mech->mapnumber = loop;
     newmap->mechsOnMap[loop] = mech->mynum;
     newmap->mechflags[loop] = 0;
-    if (MechAuto(mech) > 0) {
-	AUTO *a = FindObjectsData(MechAuto(mech));
 
-	if (a)
-	    ai_set_comtitle(a, mech);
+    /* Is there an autopilot */
+    if (MechAuto(mech) > 0) {
+        
+        AUTO *a = FindObjectsData(MechAuto(mech));
+
+        /* Reset the AI's comtitle */
+        if (a)
+            auto_set_comtitle(a, mech);
     }
+
     if (Towed(mech)) {
 	int i;
 	MECH *t;

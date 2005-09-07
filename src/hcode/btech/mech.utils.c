@@ -37,7 +37,7 @@
 #include "p.bsuit.h"
 #include "p.mech.los.h"
 #include "p.aero.bomb.h"
-#include "p.autopilot.h"
+#include "autopilot.h"
 
 #ifdef BT_ADVANCED_ECON
 #include "p.mech.custom.h"
@@ -242,7 +242,7 @@ static int Leave_Hangar(MAP * map, MECH * mech)
 	    "%ch%cr%cfAutomatic self-destruct sequence initiated...%c");
 	mech_shutdown(GOD, (void *) mech, "");
     }
-    CalAutoMapindex(mech);
+    auto_cal_mapindex(mech);
     if (MechSpeed(mech) > MMaxSpeed(mech))
         MechSpeed(mech) = MMaxSpeed(mech);
     return 1;

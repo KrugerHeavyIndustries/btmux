@@ -118,6 +118,30 @@ int MIN(int v1, int v2)
     return v2;
 }
 
+/*
+ * Gets the first parameter from a string
+ * and returns it.
+ */
+char *first_parseattribute(char *buffer) {
+
+    int length;
+    char *start, *first;
+
+    /* Look for the first parameter */
+    start = buffer;
+    length = strcspn(start, " \t=");
+
+    /* If the first parameter is to big set the size */
+    if (length > SBUF_SIZE)
+        length = SBUF_SIZE;
+
+    /* Make it and return it */
+    first = strndup(start, length);
+
+    return first;
+
+}
+
 int proper_parseattributes(char *buffer, char **args, int max) {
     int count = 0, iterator = 0, length;
     char *start, *finish;
