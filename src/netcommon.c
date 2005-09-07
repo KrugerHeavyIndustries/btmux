@@ -153,7 +153,7 @@ void choke_player(dbref player) {
 
     fprintf(stderr, "choke_player] Choking %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
+       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
             log_perror("NET", "FAIL", "choke_player", "setsockopt");
         } 
     }
@@ -165,21 +165,20 @@ void release_player(dbref player) {
 
     fprintf(stderr, "choke_player] Releasing %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, SOL_TCP, TCP_CORK, &null, sizeof(null))<0) {
+       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null))<0) {
             log_perror("NET", "FAIL", "choke_player", "setsockopt");
         } 
     }
 }
 #endif
-#ifdef TCP_NOPUSH // Linux 2.4, 2.6
+#ifdef TCP_NOPUSH // *BSD, Mac OSX
 /* choke_player: cork the player's sockets, must have a matching release_socket */
 void choke_player(dbref player) {
     DESC *d;
     int eins = 1, null = 0; 
 
-    fprintf(stderr, "choke_player] Choking %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, SOL_TCP, TCP_NOPUSH, &eins, sizeof(eins))<0) {
+       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_NOPUSH, &eins, sizeof(eins))<0) {
             log_perror("NET", "FAIL", "choke_player", "setsockopt");
         } 
     }
@@ -189,10 +188,9 @@ void release_player(dbref player) {
     DESC *d;
     int eins = 1, null = 0;
 
-    fprintf(stderr, "choke_player] Releasing %d\n", player);
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, SOL_TCP, TCP_NOPUSH, &null, sizeof(null))<0) {
-            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_NOPUSH, &null, sizeof(null))<0) {
+            log_perror("NET", "FAIL", "release_player", "setsockopt");
         } 
     }
 }
@@ -566,6 +564,8 @@ static void announce_connect(dbref player, DESC *d) {
 
     desc_addhash(d);
 
+    choke_player(player);
+
     count = 0;
     DESC_ITER_CONN(dtemp)
         count++;
@@ -705,6 +705,7 @@ static void announce_connect(dbref player, DESC *d) {
     look_in(player, Location(player),
             (LK_SHOWEXIT | LK_OBEYTERSE | LK_SHOWVRML));
     mudstate.curr_enactor = temp;
+    release_player(player);
 }
 
 void announce_disconnect(dbref player, DESC *d, const char *reason) {
