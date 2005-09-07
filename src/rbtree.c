@@ -114,6 +114,8 @@ static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
 static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
     rbtree_node *child;
 
+    if(pivot == NULL || pivot->left == NULL) return;
+    
     child = pivot->left;
 
     pivot->left = child->right;
@@ -134,6 +136,8 @@ static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
 
 static void rb_rotate_left(rbtree *bt, rbtree_node *pivot) {
     rbtree_node *child;
+
+    if(pivot == NULL || pivot->right == NULL) return;
 
     child = pivot->right;
 
@@ -352,7 +356,7 @@ static void rb_rebalance(rbtree *bt, rbtree_node *node) {
                         node->parent->color = NODE_BLACK;
                     if(iterator->right)
                         iterator->right->color = NODE_BLACK;
-                    if(node->parent) 
+                    if(node->parent && node->parent->right) 
                         rb_rotate_left(bt, node->parent);
                     node = bt->head;
                 }
@@ -386,7 +390,7 @@ static void rb_rebalance(rbtree *bt, rbtree_node *node) {
                     else iterator = NULL;
                 }
 
-                if(iterator && node->parent) {
+                if(iterator && node->parent && node->parent->left) {
                     iterator->color = node->parent->color;
                     node->parent->color = NODE_BLACK;
                     if(iterator->left) iterator->left->color = NODE_BLACK;
