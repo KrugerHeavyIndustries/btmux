@@ -151,7 +151,6 @@ void choke_player(dbref player) {
     DESC *d;
     int eins = 1, null = 0; 
 
-    fprintf(stderr, "choke_player] Choking %d\n", player);
     DESC_ITER_PLAYER(player, d) {
        if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
             log_perror("NET", "FAIL", "choke_player", "setsockopt");
@@ -163,10 +162,9 @@ void release_player(dbref player) {
     DESC *d;
     int eins = 1, null = 0;
 
-    fprintf(stderr, "choke_player] Releasing %d\n", player);
     DESC_ITER_PLAYER(player, d) {
        if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null))<0) {
-            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+            log_perror("NET", "FAIL", "release_player", "setsockopt");
         } 
     }
 }
