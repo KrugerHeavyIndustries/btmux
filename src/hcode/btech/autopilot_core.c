@@ -711,7 +711,7 @@ char *auto_get_command_arg(AUTO *a, int command_number, int arg_number) {
     if (command_number > dllist_size(a->commands)) {
         snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
                 "access Command #%d for AI #%d but it doesn't exist",
-                a->mynum, command_number);
+                command_number, a->mynum);
         SendAI(error_buf);
         return NULL;
     }
@@ -720,7 +720,7 @@ char *auto_get_command_arg(AUTO *a, int command_number, int arg_number) {
         snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
                 "access Arg #%d for AI #%d Command #%d but its greater"
                 " then AUTOPILOT_MAX_ARGS (%d)",
-                a->mynum, arg_number, command_number, AUTOPILOT_MAX_ARGS);
+                arg_number, a->mynum, command_number, AUTOPILOT_MAX_ARGS);
         SendAI(error_buf);
         return NULL;
     }

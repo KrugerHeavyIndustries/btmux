@@ -1018,8 +1018,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
     rbtree *open_list_by_xy;                       /* open list sorted by hexoffset */
     rbtree *closed_list;                           /* closed list sorted by hexoffset */
 
-    /* The final path */
-    dllist *astar_path;
+    /* Helper node for the final path */
     dllist_node *astar_path_node;
 
     /* Our astar_node helpers */
@@ -1036,7 +1035,9 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
     closed_list = rb_init(&auto_astar_compare, NULL);
 
     /* Setup the path */
-    dllist_create_list(astar_path);
+    /* Destroy any existing path first */
+    auto_destroy_astar_path(a);
+    a->astar_path = dllist_create_list();
 
     /* Setup the start hex */
     temp_astar_node = auto_create_astar_node(MechX(mech), MechY(mech), -1, -1, 0, 0);
@@ -1285,9 +1286,17 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
 
         /* Get the end hex, find its parent hex and work back to
          * start hex while building list */
-
+       
+        /* Get end hex from closed list */
         hexoffset = HexOffSet(end_x, end_y);
         temp_astar_node = rb_find(closed_list, &hexoffset);
+
+        /* Add end hex to path list */
+        astar_path_node = dllist_create_node(temp_astar_node);
+        dllist_insert_beginning(a->astar_path, astar_path_node);
+
+        /* Remove it from closed list */
+        rb_delete(closed_list, &temp_astar_node->hexoffset);
 
         /* Loop */
         while (1) {
@@ -1296,7 +1305,10 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
             hexoffset = HexOffSet(temp_astar_node->x_parent, 
                     temp_astar_node->y_parent);
 
-            /* Get Parent Node from list */
+            /*! \todo {Possibly add check here incase the node we're
+             * looking for some how did not end up on the list} */
+
+            /* Get Parent Node from closed list */
             parent_astar_node = rb_find(closed_list, &hexoffset);
 
             /* Check if start hex */
@@ -1306,17 +1318,19 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
                 break;
             }
 
-            /* Add to list */
+            /* Add to path list */
             astar_path_node = dllist_create_node(parent_astar_node);
-            dllist_insert_beginning(astar_path, astar_path_node);
+            dllist_insert_beginning(a->astar_path, astar_path_node);
+            
+            /* Remove from closed list */
+            rb_delete(closed_list, &parent_astar_node->hexoffset);
 
-            /* Make Parent new child */
+            /* Make parent new child */
             temp_astar_node = parent_astar_node;
 
         }
 
-        /* Add the list to the AI */
-        a->astar_path = astar_path;
+        /* Done with the path its cleanup time */
 
     }
 
@@ -1368,5 +1382,28 @@ void astar_smooth_path(AUTO * a) {
     /* Then reset n node to final node and continue */
 
     return;
+
+}
+
+void auto_destroy_astar_path(AUTO *a) {
+
+    astar_node *temp_astar_node;
+
+    /* Make sure there is a path if not quit */
+    if (!(a->astar_path))
+        return;
+
+    /* There is a path lets kill it */
+    if (dllist_size(a->astar_path) > 0) {
+
+        while (dllist_size(a->astar_path)) {
+            temp_astar_node = dllist_remove_node_at_pos(a->astar_path, 1);
+            auto_destroy_astar_node(temp_astar_node);
+        }
+
+    }
+
+    /* Finally destroying the path */
+    dllist_destroy_list(a->astar_path);
 
 }

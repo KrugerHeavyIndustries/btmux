@@ -395,13 +395,16 @@ void auto_com_event(MUXEVENT * e) {
                     AUTOPILOT_FOLLOW_TICK, 0);
             return;
 #endif
-#if 0
+
         case GOAL_GOTO:
-            GSTART(a, mech);
+            AUTO_GSTART(a, mech);
+            /*
             AUTOEVENT(a, EVENT_AUTOGOTO, auto_goto_event, 
                     AUTOPILOT_GOTO_TICK, 0);
+            */
+            AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event,
+                    AUTOPILOT_GOTO_TICK, 1);
             return;
-#endif
 
         case GOAL_LEAVEBASE:
             AUTO_GSTART(a, mech);
@@ -836,6 +839,142 @@ void auto_dumbgoto_event(MUXEVENT * e) {
     update_wanted_heading(a, mech, bearing);
     AUTOEVENT(a, EVENT_AUTOGOTO, auto_dumbgoto_event, 
             AUTOPILOT_GOTO_TICK, 0);
+}
+
+/*
+ * The Astar goto event
+ * Uses the A* (Astar) pathfinding method used
+ * in common games to get the AI from point A
+ * to point B
+ */
+void auto_astar_goto_event(MUXEVENT *e) {
+
+    AUTO *a = (AUTO *) e->data;
+    int tx, ty;
+    MECH *mech = a->mymech;
+    float range;
+    int bearing;
+
+    int generate_path = (int) e->data2;
+
+    char *argument;
+    astar_node *temp_astar_node;
+
+    char error_buf[MBUF_SIZE];
+
+    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
+        return;
+
+    /* Basic Checks */
+    AUTO_CHECKS(a);
+
+    /* Make sure mech is started and standing */
+    AUTO_GSTART(a, mech);
+
+    /* Do we need to generate the path */
+    if (generate_path) {
+
+        /* Get the first argument - x coord */
+        argument = auto_get_command_arg(a, 1, 1);
+        if (Readnum(tx, argument)) {
+            /*! \todo {add a thing here incase the argument isn't a number} */
+            free(argument);
+        }
+        free(argument);
+
+        /* Get the second argument - y coord */
+        argument = auto_get_command_arg(a, 1, 2);
+        if (Readnum(ty, argument)) {
+            /*! \todo {add a thing here incase the argument isn't a number} */
+            free(argument);
+        }
+        free(argument);
+
+        /* Look for a path */
+        if(!(auto_astar_generate_path(a, mech, tx, ty))) {
+
+            /* Couldn't find a path for some reason */
+            snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                    " generate an astar path for AI #%d to hex %d,%d but was"
+                    " unable to", a->mynum, tx, ty);
+            SendAI(error_buf);
+            auto_goto_next_command(a);
+            return;
+
+        }
+
+    }
+    
+    /* Make sure list is ok */ 
+    if (!(a->astar_path) || (dllist_size(a->astar_path) <= 0)) {
+
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to follow"
+                " Astar path for AI #%d - but the path is not there",
+                a->mynum);
+        SendAI(error_buf);
+        auto_destroy_astar_path(a);
+        auto_goto_next_command(a);
+        return;
+
+    }
+
+    /* Get the current hex target */
+    temp_astar_node = (astar_node *) dllist_get_node(a->astar_path, 1);
+
+    if (!(temp_astar_node)) {
+
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attemping to follow"
+                " Astar path for AI #%d - but the current astar node does not"
+                " exist", a->mynum);
+        SendAI(error_buf);
+        auto_destroy_astar_path(a);
+        auto_goto_next_command(a);
+        return;
+
+    }
+
+    /* Are we in the current target hex */
+    if ((MechX(mech) == temp_astar_node->x) && 
+            (MechY(mech) == temp_astar_node->y)) {
+
+        /* Is this the last hex */
+        if (dllist_size(a->astar_path) == 1) {
+
+            /* Done! */
+            ai_set_speed(mech, a, 0);
+            auto_destroy_astar_path(a);
+            auto_goto_next_command(a);
+            return;
+
+        } else {
+
+            /* Delete the node and goto the next one */
+            temp_astar_node = (astar_node *) dllist_remove_node_at_pos(a->astar_path, 1);
+            free(temp_astar_node);
+
+            /* Call this event again */
+            AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event, 
+                    AUTOPILOT_GOTO_TICK, 0);
+            return;
+
+        }
+
+    }
+   
+    /* Set our current goal - not the end goal tho - unless this is
+     * the end hex but whatever */
+    tx = temp_astar_node->x;
+    ty = temp_astar_node->y;
+
+    /* Move towards our next hex */
+    figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
+    speed_up_if_neccessary(a, mech, tx, ty, bearing);
+    slow_down_if_neccessary(a, mech, range, bearing, tx, ty);
+    update_wanted_heading(a, mech, bearing);
+
+    AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event, 
+            AUTOPILOT_GOTO_TICK, 0);
+
 }
 
 #if 0

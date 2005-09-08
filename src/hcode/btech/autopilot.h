@@ -222,8 +222,11 @@ void auto_goto_next_command(AUTO *a);
 void auto_cal_mapindex(MECH * mech);
 void auto_command_pickup(AUTO *a);
 
+void auto_astar_goto_event(MUXEVENT *e);
+
 /* From autopilot_ai.c */
 int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y);
+void auto_destroy_astar_path(AUTO *a);
 
 #include "p.autopilot.h"
 #include "p.ai.h"
