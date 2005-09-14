@@ -21,16 +21,16 @@ rbtree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
 
 static rbtree_node *rb_find_minimum(rbtree_node *node) {
     rbtree_node *child;
-    if(!node) return NULL;
     child = node;
+    if(!node) return NULL;
     while(child->left != NULL) child = child->left;
     return child;
 }
 
 static rbtree_node *rb_find_maximum(rbtree_node *node) {
     rbtree_node *child;
-    if(!node) return NULL;
     child = node;
+    if(!node) return NULL;
     while(child->right != NULL) child = child->right;
     return child;
 }
@@ -75,26 +75,30 @@ static rbtree_node *rb_find_predecessor_node(rbtree_node *node) {
     return NULL;
 }
 
+
 void rb_destroy(rbtree *bt) {
     rbtree_node *node, *parent;
     node = bt->head;
-    while(node != NULL) {
-        if(node->left != NULL) {
-            node = node->left;
-            continue;
-        } else if(node->right != NULL) {
-            node = node->right;
-            continue;
-        } else {
-            parent = node->parent;
-            if(parent && parent->left == node) parent->left = NULL;
-            else if(parent && parent->right == node) parent->right = NULL;
-            else if(parent) {
-                fprintf(stderr, "serious braindamage in rbtree:rb_destroy\n");
-                exit(1);
+
+    if(bt->head) {
+        while(node != NULL) {
+            if(node->left != NULL) {
+                node = node->left;
+                continue;
+            } else if(node->right != NULL) {
+                node = node->right;
+                continue;
+            } else {
+                parent = node->parent;
+                if(parent && parent->left == node) parent->left = NULL;
+                else if(parent && parent->right == node) parent->right = NULL;
+                else if(parent) {
+                    fprintf(stderr, "serious braindamage.\n");
+                    exit(1);
+                }
+                free(node);
+                node = parent;
             }
-            free(node);
-            node = parent;
         }
     }
     free(bt);
@@ -114,16 +118,15 @@ static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
 static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
     rbtree_node *child;
 
-    if(pivot == NULL || pivot->left == NULL) return;
-    
+    if(!pivot || !pivot->left) return;
     child = pivot->left;
-
+    
     pivot->left = child->right;
     if(child->right != NULL)
         child->right->parent = pivot;
 
     child->parent = pivot->parent;
-    
+
     if(pivot->parent) {
         if(pivot->parent->left == pivot)
             pivot->parent->left = child;
@@ -137,8 +140,7 @@ static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
 static void rb_rotate_left(rbtree *bt, rbtree_node *pivot) {
     rbtree_node *child;
 
-    if(pivot == NULL || pivot->right == NULL) return;
-
+    if(!pivot || !pivot->right) return;
     child = pivot->right;
 
     pivot->right = child->left;
@@ -200,50 +202,72 @@ void rb_insert(rbtree *bt, void *key, void *data) {
             }
         }
     }
+
     node->color = NODE_RED;
-    if(node->parent->color == NODE_RED) {
+    if(node->parent && node->parent->color == NODE_RED) {
         iter = node;
-        while(iter != bt->head && iter->parent != bt->head && iter->parent->color == NODE_RED) {
+        while(iter != bt->head && iter->parent->parent && iter->parent->color == NODE_RED) {
             bt->head->color = NODE_BLACK;
             if(iter->parent == iter->parent->parent->left) {
-                // left child
-                if(iter->parent->parent->right == NULL ||
-                   iter->parent->parent->right->color == NODE_BLACK) {
-                    // black uncle.
-                    if(iter == iter->parent->right) {
-                        iter = iter->parent;
-                        rb_rotate_left(bt, iter);
+                // parent is left child of grandparent
+                if(iter->parent->parent->right != NULL &&
+                        iter->parent->parent->right->color == NODE_RED)  {
+                    // Case 1:
+                    // The current node has a red uncle and it's parent is parent node is a 
+                    // red left child. 
+                    iter->parent->color = NODE_BLACK;
+                    iter->parent->parent->color = NODE_RED;
+                    if(iter->parent->parent->right) iter->parent->parent->right->color = NODE_BLACK;
+                    iter = iter->parent->parent;
+                    continue;
+                } else {
+                    // Case 2 or 3:
+                    // The current node has a black uncle.
+                    if(iter->parent->right == iter) {
+                        // Case 2:
+                        // The current node has a black uncle and is the right child
+                        // of the parent. The parent is the red left child. The parent's
+                        // sibling, the current node's uncle, is black.
+                        rb_rotate_left(bt, iter->parent);
+                        iter = iter->left;
                     }
+                    // Case 3:
+                    // The current node is a left child. It's parent is a red left child
+                    // and has a black sibling. 
                     iter->parent->color = NODE_BLACK;
                     iter->parent->parent->color = NODE_RED;
                     rb_rotate_right(bt, iter->parent->parent);
-                    continue;
-                } else {
-                    // red uncle.
-                    iter->parent->color = NODE_BLACK;
-                    iter->parent->parent->right->color = NODE_BLACK;
-                    iter->parent->parent->color = NODE_RED;
-                    iter = iter->parent->parent;
-                    continue;
+                    break;
                 }
             } else {
-                if(iter->parent->parent->left == NULL ||
-                   iter->parent->parent->left->color == NODE_BLACK) {
-                    // black uncle.
-                    if(iter == iter->parent->left) {
-                        iter = iter->parent;
-                        rb_rotate_right(bt, iter);
+                // parent is right child of grandparent
+                if(iter->parent->parent->left != NULL && 
+                        iter->parent->parent->left->color == NODE_RED)  {
+                    // Case 1:
+                    // The current node has a red uncle and it's parent is parent node is a 
+                    // red right child. 
+                    iter->parent->color = NODE_BLACK;
+                    iter->parent->parent->color = NODE_RED;
+                    if(iter->parent->parent->left) iter->parent->parent->left->color = NODE_BLACK;
+                    iter = iter->parent->parent;
+                    continue;
+                } else {
+                    // Case 2 or 3:
+                    // The current node has a black uncle.
+                    if(iter->parent->left == iter) {
+                        // Case 2:
+                        // The current node has a black uncle and is the left child
+                        // of the parent. The parent is the red right child. The parent's
+                        // sibling, the current node's uncle, is black.
+                        rb_rotate_right(bt, iter->parent);
+                        iter = iter->right;
                     }
+                    // Case 3:
+                    // The current node is a right child. It's parent is a red right child
+                    // and has a black sibling. 
                     iter->parent->color = NODE_BLACK;
                     iter->parent->parent->color = NODE_RED;
                     rb_rotate_left(bt, iter->parent->parent);
-                    continue;
-                } else {
-                    // red uncle.
-                    iter->parent->color = NODE_BLACK;
-                    iter->parent->parent->left->color = NODE_BLACK;
-                    iter->parent->parent->color = NODE_RED;
-                    iter = iter->parent->parent;
                     continue;
                 }
             }
@@ -315,102 +339,201 @@ int rb_exists(rbtree *bt, void *key) {
     exit(1);
 }
 
-static void rb_rebalance(rbtree *bt, rbtree_node *node) {
-    rbtree_node *iterator;
-    
-    // we get node from rb_delete, assume node != NULL
-    while(node && node!=bt->head && node->color == NODE_BLACK) {
-        // if node != bt->head, we assume node->parent != NULL
-        if(node == node->parent->left) {
-            iterator = node->parent->right;
-            if(iterator && iterator->color == NODE_RED) {
-                iterator->color = NODE_BLACK;
-                iterator->parent->color = NODE_RED;
-                rb_rotate_left(bt, iterator->parent);
-                if(node && node->parent)
-                    iterator = node->parent->right;
-                else {
-                    iterator = NULL;
-                }
-            }
+#define rbann(format, args...) printf("%d: " format "\n", __LINE__, ##args)
+#define rbfail(format, args...) do { printf("%d: " format "\n", __LINE__, ##args); abort(); } while (0)
 
-            if((!iterator || !iterator->left || iterator->left->color != NODE_RED) && 
-               (!iterator || !iterator->right || iterator->right->color != NODE_RED)) {
-                if(iterator) iterator->color = NODE_RED;
-                node = node->parent;
-            } else {
-                if(iterator && iterator->right && iterator->right->color == NODE_BLACK) {
-                    if(iterator->left) iterator->left->color = NODE_BLACK;
-                    iterator->color = NODE_RED;
-                    rb_rotate_right(bt, iterator);
-                    if(node->parent) iterator = node->parent->right;
-                    else iterator = NULL;
-                }
-                if(iterator) {
-                    if(iterator->parent)
-                        iterator->color = iterator->parent->color;
-                    else
-                        iterator->color = NODE_BLACK;
-                    // after the rotate's, we don't know where bt->head is.
-                    if(node->parent)
-                        node->parent->color = NODE_BLACK;
-                    if(iterator->right)
-                        iterator->right->color = NODE_BLACK;
-                    if(node->parent && node->parent->right) 
-                        rb_rotate_left(bt, node->parent);
-                    node = bt->head;
-                }
-            }
+static void rb_unlink_leaf(rbtree *bt, rbtree_node *leaf) {
+    rbtree_node *child=NULL, *sibling=NULL, *node;
+
+    node=leaf;
+
+    if(node->color == NODE_RED) {
+        // if node is red and has at most one child, then it has no child.
+        if(node->parent->left == node) {
+            node->parent->left = NULL;
         } else {
-            // node is bt->head := node != NULL
-            iterator = node->parent->left;
-            if(iterator && iterator->color == NODE_RED) {
-                iterator->color = NODE_BLACK;
-                if(node->parent) {
-                    node->parent->color = NODE_RED;
-                }
-                rb_rotate_right(bt, node->parent);
-                if(node->parent) {
-                    iterator = node->parent->right;
-                } else {
-                    iterator = NULL;
-                }
-            }
+            node->parent->right = NULL;
+        }
+        node->parent = NULL;
+        return;
+    }
 
-            if((!iterator || !iterator->right || iterator->right->color != NODE_RED) &&
-               (!iterator || !iterator->left || iterator->left->color != NODE_RED)) {
-                if(iterator) iterator->color = NODE_RED;
-                node = node->parent;
+    // node is black so it has only one red child, two black children, or no children.
+    // If it had two children, we would've handled that in rb_delete()
+    if(node->left) {
+        if(node == bt->head) {
+            bt->head = node->left;
+            node->left->parent = NULL;
+        } else if(node->parent->left == node) {
+            node->parent->left = node->left;
+            node->left->parent = node->parent;
+        } else {
+            node->parent->right = node->left;
+            node->left->parent = node->parent;
+        }
+        if(node->color == NODE_BLACK) {
+            if(node->left->color == NODE_RED) {
+                node->left->color = NODE_BLACK;
             } else {
-                if(iterator && iterator->left && iterator->left->color == NODE_BLACK) {
-                    if(iterator->right) iterator->right->color = NODE_BLACK;
-                    iterator->color = NODE_RED;
-                    rb_rotate_left(bt, iterator);
-                    if(node->parent) iterator = node->parent->left;
-                    else iterator = NULL;
-                }
-
-                if(iterator && node->parent && node->parent->left) {
-                    iterator->color = node->parent->color;
-                    node->parent->color = NODE_BLACK;
-                    if(iterator->left) iterator->left->color = NODE_BLACK;
-                    rb_rotate_right(bt, node->parent);
-                    node = bt->head;
-                }
+                rbfail("shit.");
             }
         }
+        node->parent = NULL;
+        node->left = NULL;
+        return;
     }
-    if(node) node->color = NODE_BLACK;
+
+    if(node->right) {
+        if(node == bt->head) {
+            bt->head = node->right;
+            node->right->parent = NULL;
+        } else if(node->parent->right == node) {
+            node->parent->right = node->right;
+            node->right->parent = node->parent;
+        } else {
+            node->parent->left = node->right;
+            node->right->parent = node->parent;
+        }
+        if(node->color == NODE_BLACK) {
+            if(node->right->color == NODE_RED) {
+                node->right->color = NODE_BLACK;
+            } else {
+                rbfail("shit.");
+            }
+        }
+        node->right = NULL;
+        node->left = NULL;
+        return;
+    }
+
+    // node is black and has no children, if it had two children, then rb_delete
+    // would have handled the situation. Since the node is black and has no
+    // children, things get complicated.
+
+    while(node != bt->head) {
+        // First we loop through the Case 2a situations.
+        // 
+        if(node->parent->left == node) {
+            sibling = node->parent->right;
+        } else {
+            sibling = node->parent->left;
+        }
+        // if the parent is black, it has two black children, or no children.
+        // since we are a child, we're guaranteed a sibling.
+        if(!sibling) // Sanity Check
+            rbfail("serious braindamage: black child of black parent has no sibling.");
+        if(node->parent->color == NODE_BLACK && sibling->color == NODE_BLACK &&
+                (!sibling->right || sibling->right->color == NODE_BLACK) &&
+                (!sibling->left || sibling->left->color == NODE_BLACK)) {
+            sibling->color = NODE_RED;
+            node = node->parent;
+            continue;
+        }
+        break;
+    }
+
+    if(node == bt->head) {
+        node->color = NODE_BLACK;
+        goto done;
+    }
+
+    if(node->parent->left == node) {
+        sibling = node->parent->right;
+    } else {
+        sibling = node->parent->left;
+    }
+
+
+    if(node->parent->color == NODE_BLACK && sibling && sibling->color == NODE_RED &&
+            (!sibling->right || sibling->right->color == NODE_BLACK) &&
+            (!sibling->left || sibling->left->color == NODE_BLACK)) {
+        node->parent->color = NODE_RED;
+        sibling->color = NODE_BLACK;
+        if(node->parent->left == node) {
+            rb_rotate_left(bt, node->parent);
+            sibling = node->parent->right;
+        } else {
+            rb_rotate_right(bt, node->parent);
+            sibling = node->parent->left;
+        }
+    }
+
+    if(!sibling && node->parent->color == NODE_RED) {
+        node->parent->color = NODE_BLACK;
+        goto done;
+    } 
+
+
+    if(node->parent->color == NODE_RED && sibling->color == NODE_BLACK &&
+            (!sibling->right || sibling->right->color == NODE_BLACK) &&
+            (!sibling->left || sibling->left->color == NODE_BLACK)) {
+
+        sibling->color = NODE_RED;
+        node->parent->color = NODE_BLACK;
+        goto done;
+    }
+
+    if(node->parent->left == node) {
+
+        if(sibling->color == NODE_BLACK && 
+                (sibling->left && sibling->left->color == NODE_RED) &&
+                (!sibling->right || sibling->right->color == NODE_BLACK)) {
+            sibling->color = NODE_RED;
+            sibling->left->color = NODE_BLACK;
+            rb_rotate_right(bt, sibling);
+            sibling = sibling->parent;
+        }
+
+
+        if(sibling->color == NODE_BLACK &&
+                (sibling->right && sibling->right->color == NODE_RED)) {
+            sibling->right->color = NODE_BLACK;
+            sibling->color = sibling->parent->color;
+            sibling->parent->color = NODE_BLACK;
+            rb_rotate_left(bt, sibling->parent);
+        }
+    } else {
+
+        if(sibling->color == NODE_BLACK && 
+                (sibling->right && sibling->right->color == NODE_RED) &&
+                (!sibling->left || sibling->left->color == NODE_BLACK)) {
+            sibling->color = NODE_RED;
+            sibling->right->color = NODE_BLACK;
+            rb_rotate_left(bt, sibling);
+            sibling = sibling->parent;
+        }
+
+
+        if(sibling->color == NODE_BLACK &&
+                (sibling->left && sibling->left->color == NODE_RED)) {
+            sibling->left->color = NODE_BLACK;
+            sibling->color = sibling->parent->color;
+            sibling->parent->color = NODE_BLACK;
+            rb_rotate_right(bt, sibling->parent);
+        } 
+    }
+
+
+done:
+    if(leaf->parent->left == leaf) {
+        leaf->parent->left = NULL;
+    } else if(leaf->parent->right == leaf) {
+        leaf->parent->right = NULL;
+    } else {
+        rbfail("major braindamage.");
+    }
+    return;    
 }
- 
 
 void *rb_delete(rbtree *bt, void *key) {
-    rbtree_node *node, *child, *tail;
+    rbtree_node *node = NULL, *child = NULL;
     void *data;
     int compare_result;
+
     if(!bt->head) {
         return NULL;
     }
+
     node = bt->head;
     while(node != NULL) {
         compare_result = (*bt->compare_function)(key, node->key, bt->token);
@@ -430,42 +553,54 @@ void *rb_delete(rbtree *bt, void *key) {
             }
         }
     }
+
+    if(node==NULL) {
+        return node;
+    }
+
     data = node->data;
-
-    if(node->left == NULL || node->right == NULL) {
-        child=node;
-    } else {
-        child=rb_find_successor_node(node);
-    }
-  
-    if(child->left != NULL) {
-        tail = child->left;
-    } else {
-        tail = child->right;
-    }
-
-    if(tail) tail->parent = child->parent;
-
-    if(child->parent == NULL) {
-        bt->head = tail;
-    } else {
-        if(child == child->parent->left) {
-            child->parent->left = tail;
-        } else {
-            child->parent->right = tail;
-        }
-    }
-
-    if(child != node) {
-        node->key = child->key;
-        node->data = child->data;
-    }
-
-    if(child->color == NODE_RED && tail) {
-        rb_rebalance(bt, tail);
-    }
-    
     bt->size--;
+
+
+    // XXX: handle deleting the head.
+
+    if(node == bt->head && node->left == NULL && node->right == NULL) {
+        bt->head = NULL;
+        free(node);
+        return data;
+    }
+
+    /* 
+     * PROPERTY 3 OF RED BLACK TREES STATES:
+     * 
+     * Any two paths from a given node v down to a leaf node contain
+     * the same number of black nodes.
+     *
+     * MEANING:
+     * That all paths to all leaf nodes should contain the same
+     * number of black nodes. Thus, we need to handle deleting a
+     * black node in every situation, even if it is a leaf.
+     */
+
+    // our child has at most one child (or none.)
+    if(node->left == NULL || node->right == NULL) {
+        rb_unlink_leaf(bt, node);
+        free(node);
+        return data;
+    } 
+
+    // If we have full children, then we're guaranteed a successor
+    // without empty children.
+
+    child=rb_find_successor_node(node);
+
+    rb_unlink_leaf(bt, child);
+
+    node->data = child->data;
+    node->key = child->key;
+
+    // XXX: finish delete
+
     free(child);
     return data;
 }
@@ -568,47 +703,33 @@ void *rb_search(rbtree *bt, int method, void *key) {
     if(method == SEARCH_GTEQ || (!found && method==SEARCH_GT)) {
         if(compare_result > 0) {
             node = rb_find_successor_node(last);
-            if(node)
-                return node->data;
-            else
-                return node;
+            if(node) return node->data;
+            else return node;
         } else {
-            if(last)
-                return last->data;
-            else
-                return last;
+            if(last) return last->data;
+            else return last;
         }
     }
 
     if(method == SEARCH_LTEQ || (!found && method == SEARCH_LT)) {
         if(compare_result < 0) {
             node = rb_find_predecessor_node(last);
-            if(node)
-                return node->data;
-            else
-                return node;
+            return node->data;
         } else {
-            if(last)
-                return last->data;
-            else
-                return last;
+            return last->data;
         }
     }
 
     if(method == SEARCH_NEXT || (found && method == SEARCH_GT)) {
         node = rb_find_successor_node(node);
-        if(node)
-            return node->data;
-        else 
-            return node;
+        if(node) return node->data;
+        else return node;
     }
 
     if(method == SEARCH_PREV || (found && method == SEARCH_LT)) {
         node = rb_find_predecessor_node(node);
-        if(node)
-            return node->data;
-        else
-            return node;
+        if(node) return node->data;
+        else return node;
     }
 
     return NULL;
