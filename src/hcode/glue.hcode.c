@@ -168,8 +168,7 @@ int proper_parseattributes(char *buffer, char **args, int max) {
 }
        
 
-int silly_parseattributes(char *buffer, char **args, int max)
-{
+int silly_parseattributes(char *buffer, char **args, int max) {
     char bufferi[LBUF_SIZE], foobuff[LBUF_SIZE];
     char *a, *b;
     int count = 0;
@@ -212,6 +211,22 @@ int silly_parseattributes(char *buffer, char **args, int max)
     return num_args;
 }
 
+int proper_explodearguments(char *buffer, char **args, int max) {
+    int count = 0, iterator = 0, length;
+    char *start, *finish;
+    
+    memset(args, 0, sizeof(char *)*max);
+
+    start = buffer;
+    while(count < max && *start) {
+        length = strcspn(start, " \t");
+        args[count++] = strndup(start, length);
+        start+=length;
+    }
+
+    return count;
+}
+ 
 int mech_parseattributes(char *buffer, char **args, int maxargs)
 {
     int count = 0;
@@ -221,12 +236,12 @@ int mech_parseattributes(char *buffer, char **args, int maxargs)
     memset(args, 0, sizeof(char *) * maxargs);
 
     while ((count < maxargs) && parsed) {
-	parsed = strtok(!count ? buffer : NULL, " \t");
-	args[count] = parsed;	/* Set the args pointer */
-	if (parsed)
-	    num_args++;		/* Actual count of arguments */
-	count++;		/* Loop to make sure we don't overrun our */
-	/* buffer */
+        parsed = strtok(!count ? buffer : NULL, " \t");
+        args[count] = parsed;	/* Set the args pointer */
+        if (parsed)
+            num_args++;		/* Actual count of arguments */
+        count++;		/* Loop to make sure we don't overrun our */
+        /* buffer */
     }
     return num_args;
 }
