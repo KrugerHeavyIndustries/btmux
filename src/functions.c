@@ -5393,7 +5393,7 @@ FUN flist[] = {
 #ifdef BT_ADVANCED_ECON
 {"BTSETPARTCOST",		fun_btsetpartcost,		2, 0,		CA_WIZARD},
 #endif
-{"BTSETXY",			fun_btsetxy,			5, 0,		CA_WIZARD},
+{"BTSETXY",			fun_btsetxy,			0, FN_VARARGS, CA_WIZARD},
 {"BTSHOWCRITSTATUS_REF",	fun_btshowcritstatus_ref,	3, 0,		CA_WIZARD},
 {"BTSHOWSTATUS_REF",		fun_btshowstatus_ref,		2, 0,		CA_WIZARD},
 {"BTSHOWWSPECS_REF",		fun_btshowwspecs_ref,		2, 0,		CA_WIZARD},

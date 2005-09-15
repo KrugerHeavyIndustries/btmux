@@ -950,13 +950,12 @@ void fun_btmapelev(char *buff, char **bufc, dbref player, dbref cause, char *far
     FUNCHECK(!(map = FindObjectsData(it)), "#-1");
     FUNCHECK(Readnum(x, fargs[1]), "#-2");
     FUNCHECK(Readnum(y, fargs[2]), "#-2");
-    FUNCHECK(x < 0 || y < 0 || x >= map->map_width ||
-	y >= map->map_height, "?");
+    FUNCHECK(x < 0 || y < 0 || x >= map->map_width || y >= map->map_height, "?");
     i = Elevation(map, x, y);
     if (i < 0)
-	safe_tprintf_str(buff, bufc, "-%c", '0' + -i);
+        safe_tprintf_str(buff, bufc, "-%c", '0' + -i);
     else
-	safe_tprintf_str(buff, bufc, "%c", '0' + i);
+        safe_tprintf_str(buff, bufc, "%c", '0' + i);
 }
 
 void list_xcodevalues(dbref player)
@@ -1998,8 +1997,10 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     int x, y, z;
     MECH *mech;
     MAP *map;
+    char buffer[MBUF_SIZE];
 
 
+    FUNCHECK(nfargs < 4 || nfargs > 5, "#-1 INVALID ARGUMENT");
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
     mechdb = match_thing(player, fargs[0]);
     FUNCHECK(!Good_obj(mechdb), "#-1 INVALID TARGET");
@@ -2014,13 +2015,20 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 
     x = atoi(fargs[2]);
     y = atoi(fargs[3]);
-    z = atoi(fargs[4]);
     FUNCHECK(x < 0 || x > map->map_width, "#-1 X COORD");
     FUNCHECK(y < 0 || y > map->map_height, "#-1 Y COORD");
-    FUNCHECK(z < 0 || z > 10000, "#-1 Z COORD");
 
-    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", mapdb));
-    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d %d", x, y, z));
+    if(nfargs == 5) {
+        z = atoi(fargs[4]);
+        FUNCHECK(z < 0 || z > 10000, "#-1 Z COORD");
+    } else {
+        z = Elevation(map, x, y);
+    }
+
+    snprintf(buffer, MBUF_SIZE, "%d", mapdb);
+    mech_Rsetmapindex(GOD, (void *) mech, buffer);
+    snprintf(buffer, MBUF_SIZE, "%d %d %d", x, y, z);
+    mech_Rsetxy(GOD, (void *) mech, buffer);
     safe_tprintf_str(buff, bufc, "1");
 }
 
