@@ -398,7 +398,8 @@ static int load_autopilot_data(Node *tmp) {
         /* Save the AI Command List */
         auto_load_commands(global_file_kludge, a);
 
-        /* Save the AI Astar Path */
+        /* Reset the Astar Path */
+        a->astar_path = NULL;
 
     }
 
