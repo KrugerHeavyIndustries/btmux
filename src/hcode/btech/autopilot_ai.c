@@ -1494,5 +1494,6 @@ void auto_destroy_astar_path(AUTO *a) {
 
     /* Finally destroying the path */
     dllist_destroy_list(a->astar_path);
+    a->astar_path = NULL;
 
 }
