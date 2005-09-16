@@ -1249,33 +1249,63 @@ void mech_radio(dbref player, void *data, char *buffer)
     }
 }
 
-void MechBroadcast(MECH * mech, MECH * target, MAP * mech_map,
-    char *buffer)
-{
+int MapLimitedBroadcast2d(MAP *map, float x, float y, float range, char *message) {
+    int loop, count = 0;
+    MECH *mech;
+    
+    for(loop = 0; loop < map->first_free; loop++) {
+        if(map->mechsOnMap[loop] < 0) continue;
+        mech = getMech(map->mechsOnMap[loop]);
+        
+        if(mech && FindXYRange(x, y, MechFX(mech), MechFY(mech))  <= range) {
+            mech_notify(mech, MECHSTARTED, message);
+            count++;
+        }
+    }
+    return count;
+}
+
+int MapLimitedBroadcast3d(MAP *map, float x, float y, float z, float range, char *message) {
+    int loop, count=0;
+    MECH *mech;
+
+    for(loop = 0; loop < map->first_free; loop++) {
+        if(map->mechsOnMap[loop] == -1) continue;
+        mech = getMech(map->mechsOnMap[loop]);
+        if(mech && FindRange(x, y, z, MechFX(mech), MechFY(mech), MechFZ(mech)) <= range) {
+            count++;
+            mech_notify(mech, MECHSTARTED, message);
+        }
+    }
+    return count;
+}
+        
+
+void MechBroadcast(MECH * mech, MECH * target, MAP * mech_map, char *buffer) {
     int loop;
     MECH *tempMech;
 
     if (target) {
-	for (loop = 0; loop < mech_map->first_free; loop++) {
-	    if (mech_map->mechsOnMap[loop] != mech->mynum &&
-		mech_map->mechsOnMap[loop] != -1 &&
-		mech_map->mechsOnMap[loop] != target->mynum) {
-		tempMech = (MECH *)
-		    FindObjectsData(mech_map->mechsOnMap[loop]);
-		if (tempMech)
-		    mech_notify(tempMech, MECHSTARTED, buffer);
-	    }
-	}
+        for (loop = 0; loop < mech_map->first_free; loop++) {
+            if (mech_map->mechsOnMap[loop] != mech->mynum &&
+                    mech_map->mechsOnMap[loop] != -1 &&
+                    mech_map->mechsOnMap[loop] != target->mynum) {
+                tempMech = (MECH *)
+                    FindObjectsData(mech_map->mechsOnMap[loop]);
+                if (tempMech)
+                    mech_notify(tempMech, MECHSTARTED, buffer);
+            }
+        }
     } else {
-	for (loop = 0; loop < mech_map->first_free; loop++) {
-	    if (mech_map->mechsOnMap[loop] != mech->mynum &&
-		mech_map->mechsOnMap[loop] != -1) {
-		tempMech = (MECH *)
-		    FindObjectsData(mech_map->mechsOnMap[loop]);
-		if (tempMech)
-		    mech_notify(tempMech, MECHSTARTED, buffer);
-	    }
-	}
+        for (loop = 0; loop < mech_map->first_free; loop++) {
+            if (mech_map->mechsOnMap[loop] != mech->mynum &&
+                    mech_map->mechsOnMap[loop] != -1) {
+                tempMech = (MECH *)
+                    FindObjectsData(mech_map->mechsOnMap[loop]);
+                if (tempMech)
+                    mech_notify(tempMech, MECHSTARTED, buffer);
+            }
+        }
     }
 }
 

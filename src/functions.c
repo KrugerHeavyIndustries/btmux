@@ -5383,7 +5383,7 @@ FUN flist[] = {
 {"BTID2DB",			fun_btid2db, 			2, 0, 		CA_WIZARD},
 {"BTLISTBLZ",			fun_btlistblz,			1, 0,		CA_WIZARD},
 {"BTLOSM2M", 			fun_btlosm2m, 			2, 0, 		CA_WIZARD},
-{"BTMAPEMIT",			fun_btmapemit,			2, 0,		CA_WIZARD},
+{"BTMAPEMIT",			fun_btmapemit,			0, FN_VARARGS,	CA_WIZARD},
 {"BTNUMREPJOBS",		fun_btnumrepjobs,		1, 0,		CA_WIZARD},
 {"BTPARTTYPE",			fun_btparttype,			1, 0,		CA_WIZARD},
 {"BTPARTWEIGHT",		fun_btgetweight, 		1, 0,		CA_WIZARD},

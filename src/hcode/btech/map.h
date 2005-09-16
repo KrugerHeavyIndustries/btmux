@@ -15,10 +15,6 @@
 #ifndef _MAP_H
 #define _MAP_H
 
-#ifndef ECMD
-#define ECMD(a) extern void a (dbref player, void *data, char *buffer)
-#endif
-
 /*
    map.h
    Structure definitions and what not for the maps for the mechs.

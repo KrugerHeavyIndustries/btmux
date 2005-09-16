@@ -2032,27 +2032,80 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     safe_tprintf_str(buff, bufc, "1");
 }
 
+int MapLimitedBroadcast3d(MAP *map, float x, float y, float z, float range, char *message);
+int MapLimitedBroadcast2d(MAP *map, float x, float y, float range, char *message);
+
 void fun_btmapemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mapref
        fargs[1] = message
+    
+       OR
+       
+       fargs[0] = mapref
+       fargs[1] = x
+       fargs[2] = y
+       fargs[3] = range
+       fargs[4] = message
+
+       OR
+
+       fargs[0] = mapref
+       fargs[1] = x
+       fargs[2] = y
+       fargs[3] = z
+       fargs[4] = range
+       fargs[5] = message
+       
      */
+    
     MAP *map;
     dbref mapnum;
+    float x, y, realX, realY, z, range;
 
 
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    FUNCHECK(!fargs[1] || !*fargs[1], "#-1 INVALID MESSAGE");
-
-
     mapnum = match_thing(player, fargs[0]);
     FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
     map = getMap(mapnum);
     FUNCHECK(!map, "#-1 INVALID MAP");
 
-
-    MapBroadcast(map, fargs[1]);
-    safe_tprintf_str(buff, bufc, "1");
+    switch(nfargs) {
+        case 2:
+            FUNCHECK(!fargs[1] || !*fargs[1], "#-1 INVALID MESSAGE");
+            MapBroadcast(map, fargs[1]);
+            safe_tprintf_str(buff, bufc, "1");
+            break;
+        case 5:
+            x = atof(fargs[1]);
+            y = atof(fargs[2]);
+            range = atof(fargs[3]);
+            FUNCHECK(x < 0 || x > map->map_width, "#-1 ILLEGAL X COORD");
+            FUNCHECK(y < 0 || y > map->map_height, "#-1 ILLEGAL Y COORD");
+            FUNCHECK(range < 0, "#-1 ILLEGAL RANGE");
+            FUNCHECK(!fargs[4] || !*fargs[4], "#-1 INVALID MESSAGE");
+            MapCoordToRealCoord(x, y, &realX, &realY);
+            safe_tprintf_str(buff, bufc, "%d", MapLimitedBroadcast2d(map, realX, realY, range, fargs[4]));
+            break;
+        case 6:
+            x = atof(fargs[1]);
+            y = atof(fargs[2]);
+            z = atof(fargs[3]);
+            range = atof(fargs[4]);
+            FUNCHECK(x < 0 || x > map->map_width, "#-1 ILLEGAL X COORD");
+            FUNCHECK(y < 0 || y > map->map_height, "#-1 ILLEGAL Y COORD");
+            FUNCHECK(z < 0 || z > 100000, "#-1 ILLEGAL Z COORD"); // XXX: Is this accurate?
+            FUNCHECK(range < 0, "#-1 ILLEGAL RANGE");
+            FUNCHECK(!fargs[5] || !*fargs[5], "#-1 INVALID MESSAGE");
+            MapCoordToRealCoord(x, y, &realX, &realY); // XXX: should we deal with z?
+            safe_tprintf_str(buff, bufc, "%d", MapLimitedBroadcast3d(map, realX, realY, z, range, fargs[5]));
+            break;
+        default:
+            safe_tprintf_str(buff, bufc, "#-1 INVALID ARGUMENTS");
+            return;
+    }
+            
+    return;
 }
 
 void fun_btparttype(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
