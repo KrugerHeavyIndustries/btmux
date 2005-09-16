@@ -74,6 +74,7 @@ extern void fun_btloadmap();
 extern void fun_btloadmech();
 extern void fun_btmechfreqs();
 extern void fun_btaddparts();
+extern void fun_btmapunits();
 #ifndef EXILE_FUNCS_SUPPORT
 extern void fun_btgetrefxcodevalue();
 extern void fun_btarmorref();
@@ -5333,6 +5334,7 @@ FUN flist[] = {
 {"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0,	CA_WIZARD},
 {"BTMAPELEV",   fun_btmapelev,  3,  0,		CA_WIZARD},
 {"BTMAPTERR",   fun_btmapterr,  3,  0,		CA_WIZARD},
+{"BTMAPUNITS",  fun_btmapunits, 0,  FN_VARARGS,     CA_WIZARD},
 {"BTMECHFREQS",	fun_btmechfreqs, 1, 0,		CA_WIZARD},
 {"BTPARTMATCH",	fun_btpartmatch, 1, 0,		CA_WIZARD},
 {"BTPARTNAME",	fun_btpartname, 2, 0,		CA_WIZARD},
