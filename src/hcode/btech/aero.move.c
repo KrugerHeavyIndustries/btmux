@@ -171,8 +171,10 @@ void aero_takeoff(dbref player, void *data, char *buffer)
     for (i = 0; i < NUM_LAND_TYPES; i++)
 	if (MechType(mech) == land_data[i].type)
 	    break;
+
     if ((j = atoi(buffer)))
-	DOCHECK(!WizP(player), "Insufficient access!");
+	    DOCHECK(!WizP(player), "Insufficient access!");
+
     DOCHECK(TakingOff(mech),
 	"The launch sequence has already been initiated!");
     DOCHECK(i == NUM_LAND_TYPES, "This vehicle type cannot takeoff!");

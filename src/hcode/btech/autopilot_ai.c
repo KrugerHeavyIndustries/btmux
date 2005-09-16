@@ -996,9 +996,9 @@ static int auto_astar_callback(void *key, void *data, int depth, void *arg) {
  *
  * Returns 1 if it found a path and 0 if it doesn't
  */
-int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
+int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y) {
 
-    MAP * map = getMap(a->mapindex);
+    MAP * map = getMap(autopilot->mapindex);
     int found_path = 0;
 
     /* Our bit arrays */
@@ -1026,7 +1026,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
     astar_node *parent_astar_node;
 
     /* Log File */
-    FILE * logfile;
+    FILE *logfile;
     char log_msg[MBUF_SIZE];
 
     /* Open the logfile */
@@ -1035,7 +1035,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
     /* Write first message */
     snprintf(log_msg, MBUF_SIZE, "\nStarting ASTAR Path finding for AI #%d from "
             "%d, %d to %d, %d\n",
-            a->mynum, MechX(mech), MechY(mech), end_x, end_y);
+            autopilot->mynum, MechX(mech), MechY(mech), end_x, end_y);
     fprintf(logfile, "%s", log_msg);
             
     /* Zero the bitfields */
@@ -1049,8 +1049,8 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
 
     /* Setup the path */
     /* Destroy any existing path first */
-    auto_destroy_astar_path(a);
-    a->astar_path = dllist_create_list();
+    auto_destroy_astar_path(autopilot);
+    autopilot->astar_path = dllist_create_list();
 
     /* Setup the start hex */
     temp_astar_node = auto_create_astar_node(MechX(mech), MechY(mech), -1, -1, 0, 0);
@@ -1360,7 +1360,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
 
         /* Add end hex to path list */
         astar_path_node = dllist_create_node(temp_astar_node);
-        dllist_insert_beginning(a->astar_path, astar_path_node);
+        dllist_insert_beginning(autopilot->astar_path, astar_path_node);
 
         /* Log it */
         fprintf(logfile, "Added hex %d, %d to path list\n",
@@ -1395,7 +1395,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
 
             /* Add to path list */
             astar_path_node = dllist_create_node(parent_astar_node);
-            dllist_insert_beginning(a->astar_path, astar_path_node);
+            dllist_insert_beginning(autopilot->astar_path, astar_path_node);
     
             /* Log it */
             fprintf(logfile, "Added hex %d, %d to path list\n",
@@ -1446,7 +1446,7 @@ int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y) {
 /* Function to Smooth out the AI path and remove
  * nodes we don't need */
 /* Not even close to being finished yet */
-void astar_smooth_path(AUTO * a) {
+void astar_smooth_path(AUTO *autopilot) {
 
     dllist_node *current, *next, *prev;
 
@@ -1474,26 +1474,26 @@ void astar_smooth_path(AUTO * a) {
 
 }
 
-void auto_destroy_astar_path(AUTO *a) {
+void auto_destroy_astar_path(AUTO *autopilot) {
 
     astar_node *temp_astar_node;
 
     /* Make sure there is a path if not quit */
-    if (!(a->astar_path))
+    if (!(autopilot->astar_path))
         return;
 
     /* There is a path lets kill it */
-    if (dllist_size(a->astar_path) > 0) {
+    if (dllist_size(autopilot->astar_path) > 0) {
 
-        while (dllist_size(a->astar_path)) {
-            temp_astar_node = dllist_remove_node_at_pos(a->astar_path, 1);
+        while (dllist_size(autopilot->astar_path)) {
+            temp_astar_node = dllist_remove_node_at_pos(autopilot->astar_path, 1);
             auto_destroy_astar_node(temp_astar_node);
         }
 
     }
 
     /* Finally destroying the path */
-    dllist_destroy_list(a->astar_path);
-    a->astar_path = NULL;
+    dllist_destroy_list(autopilot->astar_path);
+    autopilot->astar_path = NULL;
 
 }

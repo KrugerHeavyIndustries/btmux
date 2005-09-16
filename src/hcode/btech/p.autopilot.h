@@ -15,7 +15,6 @@
 /* autopilot.c */
 void gradually_load(MECH * mech, int loc, int percent);
 void autopilot_load_cargo(dbref player, MECH * mech, int percent);
-void auto_com_event(MUXEVENT * e);
 void figure_out_range_and_bearing(MECH * mech, int tx, int ty,
     float *range, int *bearing);
 void auto_goto_event(MUXEVENT * e);
@@ -25,5 +24,4 @@ void auto_dumbfollow_event(MUXEVENT * e);
 void auto_leave_event(MUXEVENT * e);
 void newautopilot(dbref key, void **data, int selector);
 void auto_enter_event(MUXEVENT * e);
-void CalAutoMapindex(MECH * mech);
 #endif				/* _P_AUTOPILOT_H */

@@ -500,20 +500,23 @@ void mech_stand(dbref player, void *data, char *buffer)
 	"You cannot stand with a destroyed gyro!");
 
     bth = MechPilotSkillRoll_BTH(mech, 0);
-    if (mech_parseattributes(buffer, args, 1)) {
-	switch (tolower(args[0][0])) {
-	case 'c':
-	    notify(player, tprintf("Your BTH to stand would be: %d", bth));
-	    return;
-	case 'a':
-	    standanyway = 1;
-	    break;
-	default:
-	    notify(player, tprintf("Unknown argument!"
-				   "use 'stand check' or 'stand anyway'"));
-	    break;
-	}
+
+    /* Check to see if the user specified an argument for the command */
+    if (proper_explodearguments(buffer, args, 1)) {
+        switch (tolower(args[0][0])) {
+            case 'c':
+                notify_printf(player, "Your BTH to stand would be: %d", bth);
+                return;
+            case 'a':
+                standanyway = 1;
+                break;
+            default:
+                notify(player, "Unknown argument! use 'stand check' or "
+                        "'stand anyway'");
+                break;
+        }
     }
+
     DOCHECK(!Fallen(mech), "You're already standing!");
     DOCHECK(Standrecovering(mech),
 	"You're still recovering from your last attempt!");

@@ -97,37 +97,8 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     {NULL, 0, AUTO_NUM_COMMANDS, NULL}
 };
 
-/* Basic checks for the autopilot */
-#define AUTO_CHECKS(a) \
-    if (Location(a->mynum) != a->mymechnum) return; \
-    if (Destroyed(mech)) return;
-
-/* Shortcut to the auto_com_event function */
-#define AUTO_COM(a,n) \
-    AUTOEVENT(a, EVENT_AUTOCOM, auto_com_event, (n), 0);
-
-#define ADVANCE_PG(a) \
-    PG(a) += CCLEN(a); REDO(a,AUTOPILOT_NC_DELAY)
-
-/* Force the unit to start up */
-#define AUTO_PSTART(a,mech) \
-    if (!Started(mech)) { auto_startup(a, mech); return; }
-
-/* Force the unit to startup as well as try to stand */
-#define AUTO_GSTART(a,mech) \
-    AUTO_PSTART(a,mech); \
-    if (MechType(mech) == CLASS_MECH && Fallen(mech) && \
-            !(CountDestroyedLegs(mech) > 0)) { \
-        if (!Standing(mech)) mech_stand(a->mynum, mech, my2string("")); \
-        AUTO_COM(a, AUTOPILOT_NC_DELAY); return; \
-    }; \
-    if (MechType(mech) == CLASS_VTOL && Landed(mech) && \
-            !SectIsDestroyed(mech, ROTOR)) { \
-        if (!TakingOff(mech)) aero_takeoff(a->mynum, mech, my2string("")); \
-        AUTO_COM(a, AUTOPILOT_NC_DELAY); return; \
-    }
-
 /* backwards compat till I can fix all of these */
+/* \todo {Get rid of these once we're done redoing the AI} */
 #define GSTART      AUTO_GSTART
 #define PSTART      AUTO_PSTART
 #define CCH         AUTO_CHECKS
@@ -146,24 +117,26 @@ static char *my2string(const char *old)
 }
 
 /*
- * AI Startup
+ * AI Startup - force AI to startup if its not
  */
-static void auto_startup(AUTO * a, MECH * mech)
-{
+void auto_command_startup(AUTO *autopilot, MECH *mech) {
+
     if (Started(mech))
         return;
-    mech_startup(a->mynum, mech, my2string(""));
-    AUTO_COM(a, STARTUP_TIME + AUTOPILOT_NC_DELAY);
+
+    mech_startup(autopilot->mynum, mech, "");
+
 }
 
 /*
- * AI Shutdown
+ * AI Shutdown - force AI to shutdown if its not
  */
-static void auto_shutdown(AUTO * a, MECH * mech) {
+void auto_command_shutdown(AUTO *autopilot, MECH *mech) {
     
     if (!Started(mech))
         return;
-    mech_shutdown(a->mynum, mech, my2string(""));
+
+    mech_shutdown(autopilot->mynum, mech, "");
 
 }
 
@@ -234,9 +207,10 @@ void autopilot_load_cargo(dbref player, MECH * mech, int percent)
 
 /* Recal the AI to the proper map */
 /*! \todo{Possibly move this to autopilot_core.c} */
-void auto_cal_mapindex(MECH * mech)
-{
-    AUTO *a;
+void auto_cal_mapindex(MECH * mech) {
+    
+    AUTO *autopilot;
+    char error_buf[MBUF_SIZE];
 
     if (!mech) {
         SendError("Null pointer catch in auto_cal_mapindex");
@@ -244,18 +218,19 @@ void auto_cal_mapindex(MECH * mech)
     }
 
     if (MechAuto(mech) > 0) {
-        if (!(a = FindObjectsData(MechAuto(mech))) || 
+        if (!(autopilot = FindObjectsData(MechAuto(mech))) || 
                 !Good_obj(MechAuto(mech)) || 
                 Location(MechAuto(mech)) != mech->mynum) {
-            SendError(tprintf("Mech #%d thinks it has AutoP #%d on it but FindObj breaks.", 
-                    mech->mynum, MechAuto(mech)));
+            snprintf(error_buf, MBUF_SIZE, "Mech #%d thinks it has the Autopilot #%d on it"
+                    " but FindObj breaks", mech->mynum, MechAuto(mech));
+            SendError(error_buf);
             MechAuto(mech) = -1;
         } else {
 
             /* Check here so if the AI is leaving by command it doesn't
              * reset the mapindex (which was messing up auto_leave_event) */
-            if (auto_get_command_enum(a, 1) != GOAL_LEAVEBASE) {
-                a->mapindex = mech->mapindex;
+            if (auto_get_command_enum(autopilot, 1) != GOAL_LEAVEBASE) {
+                autopilot->mapindex = mech->mapindex;
             }
 
         }
@@ -295,11 +270,16 @@ void autopilot_attackleg(MECH * mech, char *id)
     bsuit_attackleg(GOD, mech, id);
 }
 
-void autopilot_dropoff(MECH * mech)
-{
-    mech_dropoff(GOD, mech, my2string("")); 
+#endif
+
+/*
+ * Tell AI to drop whatever they're carrying
+ */
+void auto_command_dropoff(MECH *mech) {
+    mech_dropoff(GOD, mech, NULL); 
 }
 
+#if 0
 void autopilot_udisembark(MECH * mech)
 {
     dbref pil = -1;
@@ -340,10 +320,10 @@ void autopilot_enterbase(MECH * mech, int dir)
  * Main Autopilot event, checks to see what command we should
  * be running and tries to run it
  */
-void auto_com_event(MUXEVENT * e) {
+void auto_com_event(MUXEVENT *muxevent) {
 
-    AUTO *a = (AUTO *) e->data;
-    MECH *mech = a->mymech;
+    AUTO *autopilot = (AUTO *) muxevent->data;
+    MECH *mech = autopilot->mymech;
     MECH *tempmech;
     char buf[SBUF_SIZE];
     int i, j, t;
@@ -351,13 +331,13 @@ void auto_com_event(MUXEVENT * e) {
     command_node *command;
 
     /* No mech and/or no AI */
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
+    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
         return;
 
     /* Make sure the map exists */
     if (!(FindObjectsData(mech->mapindex))) {
-        a->mapindex = mech->mapindex;
-        PilZombify(a);
+        autopilot->mapindex = mech->mapindex;
+        PilZombify(autopilot);
         /*
         if (GVAL(a, 0) != COMMAND_UDISEMBARK && GVAL(a, 0) != GOAL_WAIT)
             return;
@@ -366,26 +346,26 @@ void auto_com_event(MUXEVENT * e) {
     }
 
     /* Set the MAP on the AI */
-    if (a->mapindex < 0)
-        a->mapindex = mech->mapindex;
+    if (autopilot->mapindex < 0)
+        autopilot->mapindex = mech->mapindex;
    
     /* Basic Checks */
-    AUTO_CHECKS(a);
+    AUTO_CHECKS(autopilot);
 
     /* Process the first command in the list */
     //command = (command_node *) dllist_data(dllist_head(a->commands));
     //(*command->ai_command_function)();
 
     /* Get the enum value for the FIRST command */
-    switch (auto_get_command_enum(a, 1)) {
+    switch (auto_get_command_enum(autopilot, 1)) {
 
         /* First check the various GOALs then the COMMANDs */
         case GOAL_DUMBGOTO:
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_dumbgoto_event,
+            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_dumbgoto_event,
                     AUTOPILOT_GOTO_TICK, 0);
             return;
         case GOAL_DUMBFOLLOW:
-            AUTOEVENT(a, EVENT_AUTOFOLLOW, auto_dumbfollow_event,
+            AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_dumbfollow_event,
                    AUTOPILOT_FOLLOW_TICK, 0);
             return;
 #if 0
@@ -397,19 +377,19 @@ void auto_com_event(MUXEVENT * e) {
 #endif
 
         case GOAL_GOTO:
-            AUTO_GSTART(a, mech);
+            AUTO_GSTART(autopilot, mech);
             /*
             AUTOEVENT(a, EVENT_AUTOGOTO, auto_goto_event, 
                     AUTOPILOT_GOTO_TICK, 0);
             */
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event,
+            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event,
                     AUTOPILOT_GOTO_TICK, 1);
             return;
 
         case GOAL_LEAVEBASE:
-            AUTO_GSTART(a, mech);
-            a->mapindex = mech->mapindex;
-            AUTOEVENT(a, EVENT_AUTOLEAVE, auto_leave_event,
+            AUTO_GSTART(autopilot, mech);
+            autopilot->mapindex = mech->mapindex;
+            AUTOEVENT(autopilot, EVENT_AUTOLEAVE, auto_leave_event,
                     AUTOPILOT_LEAVE_TICK, 0);
             return;
 
@@ -476,13 +456,12 @@ void auto_com_event(MUXEVENT * e) {
             auto_goto_next_command(a);
             return;
 #endif
-#if 0
+
         case COMMAND_DROPOFF:
-            autopilot_dropoff(mech);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
+            auto_command_dropoff(mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
-#endif
+
 #if 0
         case COMMAND_EMBARK:
             PSTART(a, mech);
@@ -500,8 +479,8 @@ void auto_com_event(MUXEVENT * e) {
 #endif
 
         case COMMAND_ENTERBASE:
-            AUTO_GSTART(a, mech);
-            AUTOEVENT(a, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
+            AUTO_GSTART(autopilot, mech);
+            AUTOEVENT(autopilot, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
             return;
 
 #if 0
@@ -532,7 +511,8 @@ void auto_com_event(MUXEVENT * e) {
             break;
 #endif
         case COMMAND_PICKUP:
-            auto_command_pickup(a);
+            auto_command_pickup(autopilot, mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
 #if 0
         case COMMAND_ROAMMODE:
@@ -552,9 +532,8 @@ void auto_com_event(MUXEVENT * e) {
             return;
 #endif
         case COMMAND_SHUTDOWN:
-            auto_shutdown(a, mech);
-            auto_goto_next_command(a);
-            AUTO_COM(a, AUTOPILOT_NC_DELAY);
+            auto_command_shutdown(autopilot, mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
 #if 0
         case COMMAND_SPEED:
@@ -563,9 +542,8 @@ void auto_com_event(MUXEVENT * e) {
             return;
 #endif
         case COMMAND_STARTUP:
-            AUTO_GSTART(a, mech);
-            auto_goto_next_command(a);
-            AUTO_COM(a, AUTOPILOT_NC_DELAY);
+            auto_command_startup(autopilot, mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_STARTUP_TICK);
             return;
 #if 0
         case COMMAND_STOPGUN:
@@ -828,7 +806,7 @@ void auto_dumbgoto_event(MUXEVENT * e) {
             abs(MechSpeed(mech)) < 0.5) {
         /* We've reached this goal! Time for next one. */
         ai_set_speed(mech, a, 0);
-        auto_goto_next_command(a);
+        auto_goto_next_command(a, AUTOPILOT_NC_DELAY);
         return;
     }
 
@@ -847,35 +825,35 @@ void auto_dumbgoto_event(MUXEVENT * e) {
  * in common games to get the AI from point A
  * to point B
  */
-void auto_astar_goto_event(MUXEVENT *e) {
+void auto_astar_goto_event(MUXEVENT *muxevent) {
 
-    AUTO *a = (AUTO *) e->data;
+    AUTO *autopilot = (AUTO *) muxevent->data;
     int tx, ty;
-    MECH *mech = a->mymech;
+    MECH *mech = autopilot->mymech;
     float range;
     int bearing;
 
-    int generate_path = (int) e->data2;
+    int generate_path = (int) muxevent->data2;
 
     char *argument;
     astar_node *temp_astar_node;
 
     char error_buf[MBUF_SIZE];
 
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
+    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
         return;
 
     /* Basic Checks */
-    AUTO_CHECKS(a);
+    AUTO_CHECKS(autopilot);
 
     /* Make sure mech is started and standing */
-    AUTO_GSTART(a, mech);
+    AUTO_GSTART(autopilot, mech);
 
     /* Do we need to generate the path */
     if (generate_path) {
 
         /* Get the first argument - x coord */
-        argument = auto_get_command_arg(a, 1, 1);
+        argument = auto_get_command_arg(autopilot, 1, 1);
         if (Readnum(tx, argument)) {
             /*! \todo {add a thing here incase the argument isn't a number} */
             free(argument);
@@ -883,7 +861,7 @@ void auto_astar_goto_event(MUXEVENT *e) {
         free(argument);
 
         /* Get the second argument - y coord */
-        argument = auto_get_command_arg(a, 1, 2);
+        argument = auto_get_command_arg(autopilot, 1, 2);
         if (Readnum(ty, argument)) {
             /*! \todo {add a thing here incase the argument isn't a number} */
             free(argument);
@@ -891,14 +869,17 @@ void auto_astar_goto_event(MUXEVENT *e) {
         free(argument);
 
         /* Look for a path */
-        if(!(auto_astar_generate_path(a, mech, tx, ty))) {
+        if(!(auto_astar_generate_path(autopilot, mech, tx, ty))) {
 
             /* Couldn't find a path for some reason */
             snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
                     " generate an astar path for AI #%d to hex %d,%d but was"
-                    " unable to", a->mynum, tx, ty);
+                    " unable to", autopilot->mynum, tx, ty);
             SendAI(error_buf);
-            auto_goto_next_command(a);
+
+            /*! \todo {add in some message the AI can give if it can't find a path} */
+
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
 
         }
@@ -906,29 +887,29 @@ void auto_astar_goto_event(MUXEVENT *e) {
     }
     
     /* Make sure list is ok */ 
-    if (!(a->astar_path) || (dllist_size(a->astar_path) <= 0)) {
+    if (!(autopilot->astar_path) || (dllist_size(autopilot->astar_path) <= 0)) {
 
         snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to follow"
                 " Astar path for AI #%d - but the path is not there",
-                a->mynum);
+                autopilot->mynum);
         SendAI(error_buf);
-        auto_destroy_astar_path(a);
-        auto_goto_next_command(a);
+        auto_destroy_astar_path(autopilot);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
 
     }
 
     /* Get the current hex target */
-    temp_astar_node = (astar_node *) dllist_get_node(a->astar_path, 1);
+    temp_astar_node = (astar_node *) dllist_get_node(autopilot->astar_path, 1);
 
     if (!(temp_astar_node)) {
 
         snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attemping to follow"
                 " Astar path for AI #%d - but the current astar node does not"
-                " exist", a->mynum);
+                " exist", autopilot->mynum);
         SendAI(error_buf);
-        auto_destroy_astar_path(a);
-        auto_goto_next_command(a);
+        auto_destroy_astar_path(autopilot);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
 
     }
@@ -938,22 +919,23 @@ void auto_astar_goto_event(MUXEVENT *e) {
             (MechY(mech) == temp_astar_node->y)) {
 
         /* Is this the last hex */
-        if (dllist_size(a->astar_path) == 1) {
+        if (dllist_size(autopilot->astar_path) == 1) {
 
             /* Done! */
-            ai_set_speed(mech, a, 0);
-            auto_destroy_astar_path(a);
-            auto_goto_next_command(a);
+            ai_set_speed(mech, autopilot, 0);
+            auto_destroy_astar_path(autopilot);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
 
         } else {
 
             /* Delete the node and goto the next one */
-            temp_astar_node = (astar_node *) dllist_remove_node_at_pos(a->astar_path, 1);
+            temp_astar_node = 
+                (astar_node *) dllist_remove_node_at_pos(autopilot->astar_path, 1);
             free(temp_astar_node);
 
             /* Call this event again */
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event, 
+            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event, 
                     AUTOPILOT_GOTO_TICK, 0);
             return;
 
@@ -968,11 +950,11 @@ void auto_astar_goto_event(MUXEVENT *e) {
 
     /* Move towards our next hex */
     figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
-    speed_up_if_neccessary(a, mech, tx, ty, bearing);
-    slow_down_if_neccessary(a, mech, range, bearing, tx, ty);
-    update_wanted_heading(a, mech, bearing);
+    speed_up_if_neccessary(autopilot, mech, tx, ty, bearing);
+    slow_down_if_neccessary(autopilot, mech, range, bearing, tx, ty);
+    update_wanted_heading(autopilot, mech, bearing);
 
-    AUTOEVENT(a, EVENT_AUTOGOTO, auto_astar_goto_event, 
+    AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event, 
             AUTOPILOT_GOTO_TICK, 0);
 
 }
@@ -1037,7 +1019,7 @@ void auto_dumbfollow_event(MUXEVENT * e) {
 
         /* Not proper number so skip command goto next */
         free(argument);
-        auto_goto_next_command(a);
+        auto_goto_next_command(a, AUTOPILOT_NC_DELAY);
         return;
 
     }
@@ -1045,7 +1027,7 @@ void auto_dumbfollow_event(MUXEVENT * e) {
 
     if (!(leader = getMech(target)) || Destroyed(leader)) {
         /* For some reason, leader is missing(?) */
-        auto_goto_next_command(a); 
+        auto_goto_next_command(a, AUTOPILOT_NC_DELAY); 
         return;
     }
 
@@ -1114,7 +1096,7 @@ void auto_leave_event(MUXEVENT * e) {
         /* We're elsewhere, pal! */
         a->mapindex = mech->mapindex;
         ai_set_speed(mech, a, 0);
-        auto_goto_next_command(a);
+        auto_goto_next_command(a, AUTOPILOT_NC_DELAY);
         return;
     }
 
@@ -1180,7 +1162,7 @@ void auto_enter_event(MUXEVENT * e) {
 
     if (MechSpeed(mech) == 0.0) {
         mech_enterbase(GOD, mech, dir);
-        auto_goto_next_command(a);
+        auto_goto_next_command(a, AUTOPILOT_NC_DELAY);
         return;
     }
     AUTOEVENT(a, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
@@ -1189,7 +1171,7 @@ void auto_enter_event(MUXEVENT * e) {
 /*
  * Command to try to get AI to pickup a target
  */
-void auto_command_pickup(AUTO *a) {
+void auto_command_pickup(AUTO *autopilot, MECH *mech) {
 
     char *argument;
     int target;
@@ -1200,30 +1182,34 @@ void auto_command_pickup(AUTO *a) {
     /*! \todo {Add in more checks for picking up target} */
 
     /* Read in the argument */
-    argument = auto_get_command_arg(a, 1, 1);
+    argument = auto_get_command_arg(autopilot, 1, 1);
     if (Readnum(target, argument)) {
         
-        /*! \todo {add something here incase Readnum fails} */
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                " argument for pickup command", autopilot->mynum);
+        SendAI(error_buf);
         free(argument);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+
     }
     free(argument);
 
     /* Check the target */
     if (!(tempmech = getMech(target))) {
         snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to pickup"
-                " unit #%d", a->mynum, target);
+                " unit #%d", autopilot->mynum, target);
         SendAI(error_buf);
-        auto_goto_next_command(a);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
     }
 
     /* Now try and pick it up */
     strcpy(buf, MechIDS(tempmech, 1));
-    mech_pickup(GOD, tempmech, buf);
+    mech_pickup(GOD, mech, buf);
 
     /*! \todo {Possibly add in something either here or in autopilot_radio.c
-     * so that when the unit is picked up or not pickedup it radios a message} */
-    auto_goto_next_command(a);
+     * so that when the unit is picked up or not, it radios a message} */
 
 }
 

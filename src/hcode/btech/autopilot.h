@@ -25,12 +25,13 @@
                                            Includes the command as the first argument */
 #define AUTOPILOT_NC_DELAY      1       /* Generic command wait time before executing */
 
-/* Delay for next command */
+/* Delay for various commands command */
 #define AUTOPILOT_GOTO_TICK     3       /* How often to check any GOTO event */
 #define AUTOPILOT_LEAVE_TICK    5       /* How often to check if we've left the bay/hangar */
 #define AUTOPILOT_WAITFOE_TICK  4
 #define AUTOPILOT_PURSUE_TICK   3
 #define AUTOPILOT_FOLLOW_TICK   3
+#define AUTOPILOT_STARTUP_TICK  STARTUP_TIME + AUTOPILOT_NC_DELAY
 
 /* The autopilot structure */
 typedef struct {
@@ -42,13 +43,8 @@ typedef struct {
     int ofsx, ofsy;
     int targ;
 
-    /* Where are we going on in the memory? */
+    /* Special AI flags */
     unsigned short flags;
-    /*
-    unsigned char program_counter;
-    unsigned char first_free;
-    unsigned short commands[AUTOPILOT_MEMORY];
-    */
 
     /* The autopilot's command list */
     dllist *commands;
@@ -70,6 +66,7 @@ typedef struct {
 #define AUTO_GOET               15
 #define AUTO_GOTT               240
 
+/* The various flags for the AI */
 #define AUTOPILOT_AUTOGUN       1       /* Is autogun enabled, ie: shoot what AI wants to */
 #define AUTOPILOT_GUNZOMBIE     2
 #define AUTOPILOT_PILZOMBIE     4
@@ -119,6 +116,8 @@ typedef struct {
     do { AUTO *au; if (MechAuto(mech) > 0 && \
         (au=FindObjectsData(MechAuto(mech)))) UnZombifyAuto(au); } while (0)
 
+/*! \todo {Get rid of these} */
+
 #define GVAL(a,b) \
     (((a->program_counter + (b)) < a->first_free) ? \
     a->commands[(a->program_counter+(b))] : -1)
@@ -129,7 +128,40 @@ typedef struct {
 #define PG(a) \
        a->program_counter
 
-/* defines for quick access to bitfield code */
+/* Command Macros */
+
+/* Basic checks for the autopilot */
+#define AUTO_CHECKS(a) \
+        if (Location(a->mynum) != a->mymechnum) return; \
+    if (Destroyed(mech)) return;
+
+/* Shortcut to the auto_com_event function */
+#define AUTO_COM(a,n) \
+        AUTOEVENT(a, EVENT_AUTOCOM, auto_com_event, (n), 0);
+
+/*! \todo {Get rid of this once we're done} */
+#define ADVANCE_PG(a) \
+        PG(a) += CCLEN(a); REDO(a,AUTOPILOT_NC_DELAY)
+
+/* Force the unit to start up */
+#define AUTO_PSTART(a,mech) \
+        if (!Started(mech)) { auto_command_startup(a, mech); return; }
+
+/* Force the unit to startup as well as try to stand */
+#define AUTO_GSTART(a,mech) \
+    AUTO_PSTART(a,mech); \
+    if (MechType(mech) == CLASS_MECH && Fallen(mech) && \
+            !(CountDestroyedLegs(mech) > 0)) { \
+        if (!Standing(mech)) mech_stand(a->mynum, mech, ""); \
+        AUTO_COM(a, AUTOPILOT_NC_DELAY); return; \
+    }; \
+    if (MechType(mech) == CLASS_VTOL && Landed(mech) && \
+            !SectIsDestroyed(mech, ROTOR)) { \
+        if (!TakingOff(mech)) aero_takeoff(a->mynum, mech, ""); \
+        AUTO_COM(a, AUTOPILOT_NC_DELAY); return; \
+    }
+
+/* Macros for quick access to bitfield code */
 #define HexOffSet(x, y) (x * MAPY + y)
 #define HexOffSetNode(node) (HexOffSet(node->x, node->y))
 
@@ -148,8 +180,8 @@ enum {
     GOAL_DUMBFOLLOW,
     GOAL_DUMBGOTO,
     GOAL_FOLLOW,        /* unimplemented */
-    GOAL_GOTO,          /* unimplemented */
-    GOAL_LEAVEBASE,     /* unimplemented */
+    GOAL_GOTO,          /* Uses the new Astar system */ 
+    GOAL_LEAVEBASE,
     GOAL_ROAM,          /* unimplemented */
     GOAL_WAIT,          /* unimplemented */
 
@@ -157,13 +189,13 @@ enum {
     COMMAND_AUTOGUN,    /* unimplemented */
     COMMAND_CHASEMODE,  /* unimplemented */
     COMMAND_CMODE,      /* unimplemented */
-    COMMAND_DROPOFF,    /* unimplemented */
+    COMMAND_DROPOFF, 
     COMMAND_EMBARK,     /* unimplemented */
-    COMMAND_ENTERBASE,  /* unimplemented */
+    COMMAND_ENTERBASE,
     COMMAND_ENTERBAY,   /* unimplemented */
     COMMAND_JUMP,       /* unimplemented */
     COMMAND_LOAD,       /* unimplemented */
-    COMMAND_PICKUP,     /* unimplemented */
+    COMMAND_PICKUP,
     COMMAND_REPORT,     /* unimplemented */
     COMMAND_ROAMMODE,   /* unimplemented */
     COMMAND_SHUTDOWN,
@@ -209,24 +241,27 @@ typedef struct astar_node_t {
 /* Function Prototypes will go here */
 
 /* From autopilot_core.c */
-void auto_load_commands(FILE *f, AUTO *a);
-void auto_save_commands(FILE *f, AUTO *a);
+void auto_load_commands(FILE *file, AUTO *autopilot);
+void auto_save_commands(FILE *file, AUTO *autopilot);
 void auto_destroy_command_node(command_node *node);
-void auto_set_comtitle(AUTO * a, MECH * mech);
-void auto_init(AUTO * a, MECH * m);
-char *auto_get_command_arg(AUTO *a, int command_number, int arg_number);
-int auto_get_command_enum(AUTO *a, int command_number);
-void auto_goto_next_command(AUTO *a);
+void auto_set_comtitle(AUTO *autopilot, MECH * mech);
+void auto_init(AUTO *autopilot, MECH *mech);
+char *auto_get_command_arg(AUTO *autopilot, int command_number, int arg_number);
+int auto_get_command_enum(AUTO *autopilot, int command_number);
+void auto_goto_next_command(AUTO *autopilot, int time);
 
 /* From autopilot_commands.c */
-void auto_cal_mapindex(MECH * mech);
-void auto_command_pickup(AUTO *a);
-
-void auto_astar_goto_event(MUXEVENT *e);
+void auto_cal_mapindex(MECH *mech);
+void auto_command_startup(AUTO *autopilot, MECH *mech);
+void auto_command_shutdown(AUTO *autopilot, MECH *mech);
+void auto_command_pickup(AUTO *autopilot, MECH *mech);
+void auto_command_dropoff(MECH *mech);
+void auto_com_event(MUXEVENT *muxevent);
+void auto_astar_goto_event(MUXEVENT *muxevent);
 
 /* From autopilot_ai.c */
-int auto_astar_generate_path(AUTO * a, MECH * mech, short end_x, short end_y);
-void auto_destroy_astar_path(AUTO *a);
+int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y);
+void auto_destroy_astar_path(AUTO *autopilot);
 
 #include "p.autopilot.h"
 #include "p.ai.h"
