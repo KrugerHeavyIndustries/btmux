@@ -301,11 +301,127 @@ void mech_disembark(dbref player, void *data, char *buffer)
     char_disembark(player, mech);
 }
 
-#ifndef BT_CARRIERS
+/*
+ * If carriers are defined, define this function 'mech_udisembark'
+ * if not, define the following function 'mech_sdisembark'
+ */
+#ifdef BT_CARRIERS
+void mech_udisembark(dbref player, void *data, char *buffer) {
+    
+    MECH *mech = (MECH *) data;
+    MECH *target;
+    int newmech;
+    MAP *mymap;
+    int initial_speed;
+    int i;
+
+    DOCHECK(In_Character(mech->mynum) && !Wiz(player) &&
+            (char_lookupplayer(GOD, GOD, 0, 
+                    silly_atr_get(mech->mynum, A_PILOTNUM)) != player), 
+                    "This isn't your mech!");
+
+    newmech = Location(mech->mynum);
+    DOCHECK(!(Good_obj(newmech) &&
+                Hardcode(newmech)), "You're not being carried!");
+    DOCHECK(!(target = getMech(newmech)), "Not being carried!");
+    DOCHECK(target->mapindex == -1, "You are not on a map.");
+    initial_speed = figure_latest_tech_event(mech);
+    DOCHECK(initial_speed,
+            "This 'Mech is still under repairs (see checkstatus for more info)");
+    DOCHECK(abs(MechSpeed(target)) > 0,
+            "You cannot leave while the carrier is moving!");
+    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",
+                (int) target->mapindex));
+    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(target),
+                MechY(target)));
+    MechZ(mech) = MechZ(target);
+    MechFZ(mech) = ZSCALE * MechZ(mech);
+    mymap = getMap(mech->mapindex);
+    DOCHECK(!mymap, "Major map error possible. Prolly should contact a wizard.");
+    loud_teleport(mech->mynum, mech->mapindex);
+
+    if (!Destroyed(mech) && Location(player) == mech->mynum) {
+        MechPilot(mech) = player;
+        Startup(mech);
+    }
+
+    MarkForLOSUpdate(mech);
+    SetCargoWeight(mech);
+    UnSetMechPKiller(mech);
+    MechLOSBroadcast(mech, "powers up!");
+    EvalBit(MechSpecials(mech), SS_ABILITY, ((MechPilot(mech) > 0 &&
+                    isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
+                    "Sixth_Sense") : 0));
+    MechComm(mech) = DEFAULT_COMM;
+
+    if (isPlayer(MechPilot(mech)) && !Quiet(mech->mynum)) {
+        MechComm(mech) =
+            char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
+        MechPer(mech) =
+            char_getskilltarget(MechPilot(mech), "Perception", 0);
+    } else {
+        MechComm(mech) = 6;
+        MechPer(mech) = 6;
+    }
+    MechCommLast(mech) = 0;
+    UnZombifyMech(mech);
+    CargoSpace(target) += (MechTons(mech) * 100);
+    MarkForLOSUpdate(target);
+
+    if (MechCritStatus(target) & HIDDEN) {
+        MechCritStatus(target) &= ~HIDDEN;
+        MechLOSBroadcast(target, "becomes visible as it is disembarked from.");
+    }
+
+    if (!FlyingT(mech) &&
+            MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) &&
+            MechZ(mech) > 0) {
+        
+        notify(player,
+                "You open the hatch and drop out of the unit....");
+        MechLOSBroadcast(mech, tprintf("drops out of %s and begins falling to the ground.",
+                    GetMechID(target)));
+        initiate_ood(player, mech, tprintf("%d %d %d", MechX(mech), MechY(mech), MechZ(mech)));
+    } else {
+        if (MechType(mech) == CLASS_BSUIT) {
+            MechLOSBroadcast(mech, tprintf("climbs out of %s!", GetMechID(target)));
+            notify(player, "You climb out of the unit.");
+        } else {
+            if (Destroyed(target) || !Started(target)) {
+                MechLOSBroadcast(mech, tprintf("smashes open the ramp door and emerges from %s!",
+                            GetMechID(target)));
+                notify(player, "You smash open the door and break out.");
+                MechFalls(mech, 4, 0);
+            } else {
+                MechLOSBroadcast(mech, tprintf("emerges from the ramp out of %s!",
+                            GetMechID(target)));
+                notify(player, "You emerge from the unit loading ramp.");
+                if (Landed(mech) && MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) 
+                        && FlyingT(mech))
+                    MechStatus(mech) &= ~LANDED;
+            }
+        }
+    }
+
+    /* Recycle any weapons they have */
+    if (MechType(mech) == CLASS_BSUIT) {
+        StartBSuitRecycle(mech, 20);
+    } else if (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW) {
+        for (i = 0; i < NUM_SECTIONS; i++)
+            SetRecycleLimb(mech, i, PHYSICAL_RECYCLE_TIME);
+    } else if (MechType(mech) == CLASS_VEH_GROUND || MechType(mech) == CLASS_VTOL) {
+        for (i = 0; i < NUM_SECTIONS; i++)
+            if (i == ROTOR)
+                continue;
+            else
+                SetRecycleLimb(mech, i, PHYSICAL_RECYCLE_TIME);
+    }
+
+    fix_pilotdamage(mech, MechPilot(mech));
+    correct_speed(target);
+}
+#else 
 void mech_sdisembark(dbref player, void *data, char *buffer)
-#else
-void mech_udisembark(dbref player, void *data, char *buffer)
-#endif
 {
     MECH *mech = (MECH *) data;
     MECH *target;
@@ -313,138 +429,66 @@ void mech_udisembark(dbref player, void *data, char *buffer)
     MAP *mymap;
     int initial_speed;
 
-#ifndef BT_CARRIERS
     DOCHECK(MechType(mech) != CLASS_BSUIT, "This is not a battlesuit!");
-#endif
     DOCHECK(In_Character(mech->mynum) && !Wiz(player) &&
-	(char_lookupplayer(GOD, GOD, 0, silly_atr_get(mech->mynum,
-		    A_PILOTNUM)) != player), "This isn't your mech!");
+    (char_lookupplayer(GOD, GOD, 0, silly_atr_get(mech->mynum,
+            A_PILOTNUM)) != player), "This isn't your mech!");
 
     newmech = Location(mech->mynum);
     DOCHECK(!(Good_obj(newmech) &&
-	    Hardcode(newmech)), "You're not being carried!");
+        Hardcode(newmech)), "You're not being carried!");
     DOCHECK(!(target = getMech(newmech)), "Not being carried!");
-#ifdef BT_CARRIERS
-    DOCHECK(target->mapindex == -1, "You are not on a map.");
-    initial_speed = figure_latest_tech_event(mech);
-    DOCHECK(initial_speed,
-        "This 'Mech is still under repairs (see checkstatus for more info)");
-    DOCHECK(abs(MechSpeed(target)) > 0,
-        "You cannot leave while the carrier is moving!");
-#endif
-    mech->mapindex = target->mapindex;
     mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",
-	    (int) target->mapindex));
+        (int) target->mapindex));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(target),
-	    MechY(target)));
+        MechY(target)));
     MechZ(mech) = MechZ(target);
-#ifdef BT_CARRIERS
-    MechFZ(mech) = ZSCALE * MechZ(mech);
-#endif
     mymap = getMap(mech->mapindex);
-#ifdef BT_CARRIERS
-    DOCHECK(!mymap, "Major map error possible. Prolly should contact a wizard.");
-#endif
     loud_teleport(mech->mynum, mech->mapindex);
-#ifndef BT_CARRIERS
     MechPilot(mech) = player;
     initialize_pc(MechPilot(mech), mech);
     Startup(mech);
-#else
-    if (!Destroyed(mech) && Location(player) == mech->mynum) {
-	MechPilot(mech) = player;
-	Startup(mech);
-    }
-#endif
     MarkForLOSUpdate(mech);
     SetCargoWeight(mech);
     UnSetMechPKiller(mech);
     MechLOSBroadcast(mech, "powers up!");
     EvalBit(MechSpecials(mech), SS_ABILITY, ((MechPilot(mech) > 0 &&
-		isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
-		"Sixth_Sense") : 0));
+        isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
+        "Sixth_Sense") : 0));
     MechComm(mech) = DEFAULT_COMM;
     if (isPlayer(MechPilot(mech)) && !Quiet(mech->mynum)) {
-	MechComm(mech) =
-	    char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
-	MechPer(mech) =
-	    char_getskilltarget(MechPilot(mech), "Perception", 0);
+    MechComm(mech) =
+        char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
+    MechPer(mech) =
+        char_getskilltarget(MechPilot(mech), "Perception", 0);
     } else {
-	MechComm(mech) = 6;
-	MechPer(mech) = 6;
+    MechComm(mech) = 6;
+    MechPer(mech) = 6;
     }
     MechCommLast(mech) = 0;
     UnZombifyMech(mech);
-#ifndef BT_CARRIERS
     CargoSpace(target) += (MechTons(mech) * 1024);
-#else
-    CargoSpace(target) += (MechTons(mech) * 100);
-#endif
     MarkForLOSUpdate(target);
 
-#ifndef BT_CARRIERS
     if ((MechZ(mech) > (Elevation(mymap, MechX(mech), MechY(mech)) + 1)) &&
-	(MechZ(mech) > 0))
-#else
-    if (MechCritStatus(target) & HIDDEN) {
-        MechCritStatus(target) &= ~HIDDEN;
-        MechLOSBroadcast(target, "becomes visible as it is disembarked from.");
-    }
-
-    if (!FlyingT(mech) &&
-        MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) &&
-        MechZ(mech) > 0)
-#endif
-	{
-#ifndef BT_CARRIERS
-	notify(player,
-	    "You open the hatch and climb out of the unit. Maybe you should have done this while the thing was closer to the ground...");
-	MechLOSBroadcast(mech, tprintf("jumps out of %s... in mid air !",
-		GetMechID(target)));
-	initial_speed =
-	    ((MechSpeed(target) + MechVerticalSpeed(target)) / MP1) / 2 +
-	    4;
-	MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK,
-	    -initial_speed);
-#else
-	notify(player,
-	    "You open the hatch and drop out of the unit....");
-	MechLOSBroadcast(mech, tprintf("drops out of %s and begins falling to the ground.",
-	    GetMechID(target)));
-        initiate_ood(player, mech, tprintf("%d %d %d", MechX(mech), MechY(mech), MechZ(mech)));
-#endif
+    (MechZ(mech) > 0))
+    {
+    notify(player,
+        "You open the hatch and climb out of the unit. Maybe you should have done this while the thing was closer to the ground...");
+    MechLOSBroadcast(mech, tprintf("jumps out of %s... in mid air !",
+        GetMechID(target)));
+    initial_speed =
+        ((MechSpeed(target) + MechVerticalSpeed(target)) / MP1) / 2 +
+        4;
+    MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK,
+        -initial_speed);
     } else {
-#ifndef BT_CARRIERS
-	MechLOSBroadcast(mech, tprintf("climbs out of %s!",
-		GetMechID(target)));
-	notify(player, "You climb out of the unit.");
-#else
-	if (MechType(mech) == CLASS_BSUIT) {
-	    MechLOSBroadcast(mech, tprintf("climbs out of %s!", GetMechID(target)));
-            notify(player, "You climb out of the unit.");
-	} else {
-	    if (Destroyed(target) || !Started(target)) {
-		MechLOSBroadcast(mech, tprintf("smashes open the ramp door and emerges from %s!",
-		    GetMechID(target)));
-		notify(player, "You smash open the door and break out.");
-		MechFalls(mech, 4, 0);
-	    } else {
-		MechLOSBroadcast(mech, tprintf("emerges from the ramp out of %s!",
-		    GetMechID(target)));
-		notify(player, "You emerge from the unit loading ramp.");
-		if (Landed(mech) && MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) && FlyingT(mech))
-		    MechStatus(mech) &= ~LANDED;
-	    }
-	}
-#endif
+    MechLOSBroadcast(mech, tprintf("climbs out of %s!",
+        GetMechID(target)));
+    notify(player, "You climb out of the unit.");
     }
-#ifdef BT_CARRIERS
-    fix_pilotdamage(mech, MechPilot(mech));
-    correct_speed(target);
-#endif
 }
-
-
+#endif
 
 void mech_embark(dbref player, void *data, char *buffer)
 {
@@ -612,7 +656,6 @@ void mech_embark(dbref player, void *data, char *buffer)
 
     mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
-    remove_mech_from_map(newmap, mech);
     loud_teleport(mech->mynum, target->mynum);
 #ifndef BT_CARRIERS
     CargoSpace(target) -= (MechTons(mech) * 1024);
@@ -625,7 +668,6 @@ void mech_embark(dbref player, void *data, char *buffer)
 	MarkForLOSUpdate(towee);
 	mech_Rsetmapindex(GOD, (void *) towee, tprintf("%d", (int) -1));
 	mech_Rsetxy(GOD, (void *) towee, tprintf("%d %d", 0, 0));
-	remove_mech_from_map(newmap, towee);
 	loud_teleport(towee->mynum, target->mynum);
 	CargoSpace(target) -= (MechTons(towee) * 100);
 	Shutdown(towee);

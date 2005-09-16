@@ -104,6 +104,7 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
 #define CCH         AUTO_CHECKS
 #define REDO        AUTO_COM
 
+/* \todo {Phasing this thing out, once its removed we yanking it} */
 /* Dirty little trick to avoid passing string-constancts to functions
  * that intend to run 'strtok()' on it.
  */
@@ -254,11 +255,6 @@ void autopilot_cmode(AUTO * a, MECH * mech, int mode, int range)
 
 }
 
-void autopilot_embark(MECH * mech, char *id) 
-{
-    mech_embark(GOD, mech, id); 
-}
-
 void autopilot_swarm(MECH * mech, char *id)
 {
     if (MechType(mech) == CLASS_BSUIT)
@@ -273,24 +269,148 @@ void autopilot_attackleg(MECH * mech, char *id)
 #endif
 
 /*
+ * Command to try to get AI to pickup a target
+ */
+void auto_command_pickup(AUTO *autopilot, MECH *mech) {
+
+    char *argument;
+    int target;
+    char error_buf[MBUF_SIZE];
+    char buf[SBUF_SIZE];
+    MECH *tempmech;
+
+    /*! \todo {Add in more checks for picking up target} */
+
+    /* Read in the argument */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+    if (Readnum(target, argument)) {
+        
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                " argument for pickup command", autopilot->mynum);
+        SendAI(error_buf);
+        free(argument);
+        return;
+
+    }
+    free(argument);
+
+    /* Check the target */
+    if (!(tempmech = getMech(target))) {
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to pickup"
+                " unit #%d", autopilot->mynum, target);
+        SendAI(error_buf);
+        return;
+    }
+
+    /* Now try and pick it up */
+    strcpy(buf, MechIDS(tempmech, 1));
+    mech_pickup(GOD, mech, buf);
+
+    /*! \todo {Possibly add in something either here or in autopilot_radio.c
+     * so that when the unit is picked up or not, it radios a message} */
+
+}
+
+/*
  * Tell AI to drop whatever they're carrying
  */
 void auto_command_dropoff(MECH *mech) {
     mech_dropoff(GOD, mech, NULL); 
 }
 
-#if 0
-void autopilot_udisembark(MECH * mech)
-{
+/*
+ * Tell AI to set its speed (in %)
+ */
+void auto_command_speed(AUTO *autopilot) {
+
+    char *argument;
+    unsigned short speed;
+    char error_buf[MBUF_SIZE];
+
+    /* Read in the argument */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+    if (Readnum(speed, argument)) {
+        
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                " argument for speed command", autopilot->mynum);
+        SendAI(error_buf);
+        free(argument);
+        return;
+
+    }
+    free(argument);
+
+    /* Make sure its a valid speed value */
+    if (speed < 1 || speed > 100) {
+
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                " argument for speed command - out side of the range",
+                autopilot->mynum);
+        SendAI(error_buf);
+        return;
+
+    }
+
+    /* Now set it */
+    autopilot->speed = speed;
+
+}
+
+/*
+ * Command to get AI to embark a carrier
+ */
+void auto_command_embark(AUTO *autopilot, MECH *mech) {
+
+    char *argument;
+    int target;
+    char error_buf[MBUF_SIZE];
+    char buf[SBUF_SIZE];
+    MECH *tempmech;
+
+    /* Make sure the mech is on and standing */
+    AUTO_GSTART(autopilot, mech);
+
+    /* Read in the argument */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+    if (Readnum(target, argument)) {
+        
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                " argument for embark command", autopilot->mynum);
+        SendAI(error_buf);
+        free(argument);
+        return;
+
+    }
+    free(argument);
+
+    /* Check the target */
+    if (!(tempmech = getMech(target))) {
+        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to embark"
+                " unit #%d", autopilot->mynum, target);
+        SendAI(error_buf);
+        return;
+    }
+
+    strcpy(buf, MechIDS(tempmech, 1));
+    mech_embark(GOD, mech, buf); 
+
+}
+
+/*
+ * Function to force AI to disembark a carrier
+ */
+void auto_command_udisembark(MECH *mech) {
+    
     dbref pil = -1;
     char *buf;
 
     buf = silly_atr_get(mech->mynum, A_PILOTNUM);
     sscanf(buf, "#%d", &pil);
-/*  SendDebug(tprintf("Auto udisembark db -> %d", pil)); */
-    mech_udisembark(pil > 6 ? pil : GOD, mech, my2string(""));
+    mech_udisembark(pil, mech, "");
+
 }
 
+#if 0
 void autopilot_enterbase(MECH * mech, int dir)
 {
     static char strng[2];
@@ -342,7 +462,8 @@ void auto_com_event(MUXEVENT *muxevent) {
         if (GVAL(a, 0) != COMMAND_UDISEMBARK && GVAL(a, 0) != GOAL_WAIT)
             return;
         */
-        return;
+        if (auto_get_command_enum(autopilot, 1) != COMMAND_UDISEMBARK)
+            return;
     }
 
     /* Set the MAP on the AI */
@@ -351,10 +472,6 @@ void auto_com_event(MUXEVENT *muxevent) {
    
     /* Basic Checks */
     AUTO_CHECKS(autopilot);
-
-    /* Process the first command in the list */
-    //command = (command_node *) dllist_data(dllist_head(a->commands));
-    //(*command->ai_command_function)();
 
     /* Get the enum value for the FIRST command */
     switch (auto_get_command_enum(autopilot, 1)) {
@@ -462,21 +579,10 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
 
-#if 0
         case COMMAND_EMBARK:
-            PSTART(a, mech);
-            if (!(tempmech = getMech(GVAL(a, 1)))) {
-                SendAI(tprintf("AIEmbarkError #%d", GVAL(a,1)));
-                //ADVANCE_PG(a);
-                auto_goto_next_command(a);
-                return;
-            }
-            strcpy(buf, MechIDS(tempmech, 1));
-            autopilot_embark(mech, buf);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
+            auto_command_embark(autopilot, mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
-#endif
 
         case COMMAND_ENTERBASE:
             AUTO_GSTART(autopilot, mech);
@@ -535,12 +641,12 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_command_shutdown(autopilot, mech);
             auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
-#if 0
+
         case COMMAND_SPEED:
-            a->speed = GVAL(a, 1);
-            auto_goto_next_command(a);
+            auto_command_speed(autopilot);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
-#endif
+
         case COMMAND_STARTUP:
             auto_command_startup(autopilot, mech);
             auto_goto_next_command(autopilot, AUTOPILOT_STARTUP_TICK);
@@ -582,13 +688,12 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_goto_next_command(a);
             return;
 #endif
-#if 0
+
         case COMMAND_UDISEMBARK:
-            autopilot_udisembark(mech);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
+            auto_command_udisembark(mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return; 
-#endif
+
 #if 0
         case COMMAND_UNLOAD:
             mech_unloadcargo(GOD, mech, my2string(" * 9999"));
@@ -1166,51 +1271,6 @@ void auto_enter_event(MUXEVENT * e) {
         return;
     }
     AUTOEVENT(a, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
-}
-
-/*
- * Command to try to get AI to pickup a target
- */
-void auto_command_pickup(AUTO *autopilot, MECH *mech) {
-
-    char *argument;
-    int target;
-    char error_buf[MBUF_SIZE];
-    char buf[SBUF_SIZE];
-    MECH *tempmech;
-
-    /*! \todo {Add in more checks for picking up target} */
-
-    /* Read in the argument */
-    argument = auto_get_command_arg(autopilot, 1, 1);
-    if (Readnum(target, argument)) {
-        
-        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
-                " argument for pickup command", autopilot->mynum);
-        SendAI(error_buf);
-        free(argument);
-        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
-        return;
-
-    }
-    free(argument);
-
-    /* Check the target */
-    if (!(tempmech = getMech(target))) {
-        snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to pickup"
-                " unit #%d", autopilot->mynum, target);
-        SendAI(error_buf);
-        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
-        return;
-    }
-
-    /* Now try and pick it up */
-    strcpy(buf, MechIDS(tempmech, 1));
-    mech_pickup(GOD, mech, buf);
-
-    /*! \todo {Possibly add in something either here or in autopilot_radio.c
-     * so that when the unit is picked up or not, it radios a message} */
-
 }
 
 #define SPECIAL_FREE 0

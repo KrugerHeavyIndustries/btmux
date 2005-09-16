@@ -256,6 +256,7 @@ void auto_command_startup(AUTO *autopilot, MECH *mech);
 void auto_command_shutdown(AUTO *autopilot, MECH *mech);
 void auto_command_pickup(AUTO *autopilot, MECH *mech);
 void auto_command_dropoff(MECH *mech);
+void auto_command_speed(AUTO *autopilot);
 void auto_com_event(MUXEVENT *muxevent);
 void auto_astar_goto_event(MUXEVENT *muxevent);
 
