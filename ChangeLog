@@ -6,6 +6,9 @@ btonline-btechmux 0.5:
 	  construction. (Martin Murray)
 	* Replaced @wait command queue system with libevent evtimer
 	  callbacks. (Martin Murray)
+	* Extended btmapemit() (Martin Murray)
+	* Extended btsetxy() (Martin Murray)
+	* Extended btmapunits() (Martin Murray)
 
 btonline-btechmux 0.4:
 	- Changes
