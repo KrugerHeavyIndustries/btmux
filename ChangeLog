@@ -8,7 +8,8 @@ btonline-btechmux 0.5:
 	  callbacks. (Martin Murray)
 	* Extended btmapemit() (Martin Murray)
 	* Extended btsetxy() (Martin Murray)
-	* Extended btmapunits() (Martin Murray)
+	* Aded btmapunits() (Martin Murray)
+	* Extended btgetrange() (Martin Murray)
 
 btonline-btechmux 0.4:
 	- Changes
