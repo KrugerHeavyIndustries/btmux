@@ -481,6 +481,7 @@ void mech_stand(dbref player, void *data, char *buffer)
     int tNeedsPSkill = 1;
     int tDoStand = 1;
     int bth, standanyway = 0;
+    int i;
 
     cch(MECH_USUAL);
     DOCHECK(MechType(mech) == CLASS_BSUIT, "You're standing already!");
@@ -506,6 +507,9 @@ void mech_stand(dbref player, void *data, char *buffer)
         switch (tolower(args[0][0])) {
             case 'c':
                 notify_printf(player, "Your BTH to stand would be: %d", bth);
+                for(i = 0; i < 2; i++) {
+                    if(args[i]) free(args[i]);
+                }
                 return;
             case 'a':
                 standanyway = 1;
@@ -559,6 +563,12 @@ void mech_stand(dbref player, void *data, char *buffer)
 	    MechType(mech) ==
 	    CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech), 0);
     }
+
+    /* Free args */
+    for(i = 0; i < 2; i++) {
+        if(args[i]) free(args[i]);
+    }
+
 }
 
 void mech_land(dbref player, void *data, char *buffer)

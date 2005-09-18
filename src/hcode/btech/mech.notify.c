@@ -1239,7 +1239,7 @@ void mech_radio(dbref player, void *data, char *buffer)
         mech_notify(tempMech, MECHSTARTED,
                 tprintf("%s radios you with, '%s'", GetMechToMechID(tempMech,
                         mech), args[2]));
-        auto_replyA(tempMech, tprintf("%s radio'ed me '%s'",
+        auto_reply(tempMech, tprintf("%s radio'ed me '%s'",
                     GetMechToMechID(tempMech, mech), args[2]));
     }
     DOCHECK(fail,

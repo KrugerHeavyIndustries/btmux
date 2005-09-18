@@ -109,7 +109,7 @@ int combat_fast_opt[CFAST_COUNT][2] = {
 
 void sendAIM(AUTO * a, MECH * m, char *msg)
 {
-    auto_replyA(m, msg);
+    auto_reply(m, msg);
     SendAI(msg);
 }
 

@@ -352,6 +352,9 @@ void auto_delcommand(dbref player, void *data, char *buffer) {
         return;
     } 
 
+    /*! \todo {Add in check so they don't accidently remove a running command without
+     * disengaging first} */
+
     /* Now remove the node(s) */
     if (!remove_all_commands) {
 

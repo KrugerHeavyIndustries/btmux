@@ -190,7 +190,7 @@ enum {
     COMMAND_CHASEMODE,  /* unimplemented */
     COMMAND_CMODE,      /* unimplemented */
     COMMAND_DROPOFF, 
-    COMMAND_EMBARK,     /* unimplemented */
+    COMMAND_EMBARK,
     COMMAND_ENTERBASE,
     COMMAND_ENTERBAY,   /* unimplemented */
     COMMAND_JUMP,       /* unimplemented */
@@ -199,12 +199,12 @@ enum {
     COMMAND_REPORT,     /* unimplemented */
     COMMAND_ROAMMODE,   /* unimplemented */
     COMMAND_SHUTDOWN,
-    COMMAND_SPEED,      /* unimplemented */
+    COMMAND_SPEED,
     COMMAND_STARTUP,
     COMMAND_STOPGUN,    /* unimplemented */
     COMMAND_SWARM,      /* unimplemented */
     COMMAND_SWARMMODE,  /* unimplemented */
-    COMMAND_UDISEMBARK, /* unimplemented */
+    COMMAND_UDISEMBARK,
     COMMAND_UNLOAD,     /* unimplemented */
     AUTO_NUM_COMMANDS
 };
@@ -263,6 +263,26 @@ void auto_astar_goto_event(MUXEVENT *muxevent);
 /* From autopilot_ai.c */
 int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y);
 void auto_destroy_astar_path(AUTO *autopilot);
+
+/* From autopilot_radio.c */
+void auto_radio_command_dfollow(AUTO *autopilot, MECH *mech,   
+        char **args, int argc, char *mesg);
+void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_help(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_pickup(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_shutdown(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_startup(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+
+void auto_reply_event(MUXEVENT *muxevent);
+void auto_reply(MECH *mech, char *buf);
+void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer);
 
 #include "p.autopilot.h"
 #include "p.ai.h"

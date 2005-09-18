@@ -218,12 +218,16 @@ int proper_explodearguments(char *buffer, char **args, int max) {
     memset(args, 0, sizeof(char *)*max);
 
     start = buffer;
-    while(count < max && *start) {
+    while(count < max-1 && *start) {
         length = strcspn(start, " \t");
         args[count++] = strndup(start, length);
         start+=length;
+        if(*start != '\x0') start++;
     }
-
+    if(*start) {
+        args[max-1] = strdup(start);
+        count++;
+    }
     return count;
 }
  
