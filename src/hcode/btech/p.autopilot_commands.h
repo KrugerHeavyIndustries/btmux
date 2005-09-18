@@ -14,14 +14,6 @@
 
 /* autopilot_commands.c */
 int auto_valid_progline(AUTO * a, int p);
-void auto_delcommand(dbref player, void *data, char *buffer);
 void auto_jump(dbref player, void *data, char *buffer);
-void auto_addcommand(dbref player, void *data, char *buffer);
-void auto_listcommands(dbref player, void *data, char *buffer);
-int AutoPilotOn(AUTO * a);
-void StopAutoPilot(AUTO * a);
-void ai_set_comtitle(AUTO * a, MECH * mech);
-void auto_engage(dbref player, void *data, char *buffer);
-void auto_disengage(dbref player, void *data, char *buffer);
 
 #endif				/* _P_AUTOPILOT_COMMANDS_H */

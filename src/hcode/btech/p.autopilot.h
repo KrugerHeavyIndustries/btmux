@@ -22,6 +22,5 @@ void auto_dumbgoto_event(MUXEVENT * e);
 void auto_follow_event(MUXEVENT * e);
 void auto_dumbfollow_event(MUXEVENT * e);
 void auto_leave_event(MUXEVENT * e);
-void newautopilot(dbref key, void **data, int selector);
 void auto_enter_event(MUXEVENT * e);
 #endif				/* _P_AUTOPILOT_H */

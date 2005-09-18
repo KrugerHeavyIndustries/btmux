@@ -116,7 +116,6 @@ typedef struct SpecialObjectStruct {
 #include "p.mech.ammodump.h"
 #include "p.mech.damage.h"
 
-void newautopilot(dbref, void **, int);
 void newturret(dbref, void **, int);
 void newfreemech(dbref, void **, int);
 
@@ -970,7 +969,7 @@ CommandsStruct scencommands[] = {
 #define newfreemech NULL
 #define newfreemechrep NULL
 #define newfreemap NULL
-#define newautopilot NULL
+#define auto_newautopilot NULL
 #define newturret NULL
 #define mech_update NULL
 #define map_update NULL
@@ -1043,7 +1042,7 @@ SpecialObjectStruct SpecialObjects[] = {
     LINE_NU("MECHREP", mechrepcommands, struct mechrep_data, newfreemechrep, POW_MECHREP),
     LINE("MAP", mapcommands, MAP, newfreemap, LOS_TICK, map_update, POW_MAP),
     LINE_ND("CHARGEN", chargencommands, POW_SECURITY),
-    LINE_NU("AUTOPILOT", autopilotcommands, AUTO, newautopilot, POW_SECURITY),
+    LINE_NU("AUTOPILOT", autopilotcommands, AUTO, auto_newautopilot, POW_SECURITY),
     LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
     LINE_NU("CUSTOM", customcommands, struct custom_struct, newfreecustom, POW_MECHREP),
     LINE_NFS("SCEN", scencommands, SCEN, POW_SECURITY),

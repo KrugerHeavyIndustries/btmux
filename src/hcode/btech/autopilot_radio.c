@@ -76,7 +76,9 @@ struct {
     "en", "enterbay", 1, 0, auto_enterbay}, {
     "fo", "follow", 1, 0, auto_follow}, {
     "fr", "freq", 1, 0, auto_freq}, {
-    "go", "goto", 2, 0, auto_goto}, {
+#endif
+    "go", "goto", 2, 0, auto_radio_command_goto}, {
+#if 0
     "he", "heading", 1, 0, auto_heading}, {
 #endif
     "he", "help", 0, 1, auto_radio_command_help}, {
@@ -88,6 +90,7 @@ struct {
     "nog", "nogun", 0, 0, auto_nogun}, {
     "not", "notarget", 0, 0, auto_notarget}, {
 #endif
+    "ogo", "ogoto", 2, 0, auto_radio_command_ogoto}, {
     "pick", "pickup", 1, 0, auto_radio_command_pickup}, {
 #if 0
     "pr", "prone", 0, 0, auto_prone}, {
@@ -107,8 +110,8 @@ struct {
 #endif
     "st", "startup", 0, 0, auto_radio_command_startup}, {
     "st", "startup", 1, 0, auto_radio_command_startup}, {
+    "st", "stop", 0, 0, auto_radio_command_stop}, {
 #if 0
-    "st", "stop", 0, 0, auto_stop}, {
     "sw", "sweight", 2, 1, auto_sweight}, {
     "swa", "swarm", 1, 0, auto_swarm}, {
     "swarmc", "swarmcharge", 1, 0, auto_swarmcharge }, {
@@ -183,6 +186,32 @@ void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
 }
 
 /*
+ * Smart goto system based on Astar path finding
+ */
+void auto_radio_command_goto(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+    
+    int x, y;
+    char buffer[SBUF_SIZE];
+
+    if (Readnum(x, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!First number not integer");
+        return;
+    }
+    if (Readnum(y, args[2])) {
+        snprintf(mesg, LBUF_SIZE, "!Second number not integer");
+        return;
+    }
+
+    Clear(autopilot);
+    snprintf(buffer, SBUF_SIZE, "goto %d %d", x, y);
+    auto_addcommand(autopilot->mynum, autopilot, buffer);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(mesg, LBUF_SIZE, "going to %d,%d", x, y);
+
+}
+
+/*
  * Help message, lists the various commands for the AI
  */
 void auto_radio_command_help(AUTO *autopilot, MECH *mech, 
@@ -199,6 +228,32 @@ void auto_radio_command_help(AUTO *autopilot, MECH *mech,
     }
 
     auto_reply(mech, mesg);
+
+}
+
+/*
+ * Old goto system - will phase out
+ */
+void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+    
+    int x, y;
+    char buffer[SBUF_SIZE];
+
+    if (Readnum(x, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!First number not integer");
+        return;
+    }
+    if (Readnum(y, args[2])) {
+        snprintf(mesg, LBUF_SIZE, "!Second number not integer");
+        return;
+    }
+
+    Clear(autopilot);
+    snprintf(buffer, SBUF_SIZE, "oldgoto %d %d", x, y);
+    auto_addcommand(autopilot->mynum, autopilot, buffer);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(mesg, LBUF_SIZE, "going [old version] to %d,%d", x, y);
 
 }
 
@@ -255,22 +310,21 @@ void auto_radio_command_startup(AUTO *autopilot, MECH *mech,
 
 }
 
-#if 0
-/* Smart (?) goto command for AI */
-ACMD(auto_goto)
-{
-    int x, y;
+/*
+ * Radio command to stop the AI
+ */
+void auto_radio_command_stop(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
 
-    if (Readnum(x, args[0]))
-        return tprintf("!First number not integer");
-    if (Readnum(y, args[1]))
-        return tprintf("!Second number not integer");
-    Clear(a);
-    auto_addcommand(a->mynum, a, tprintf("goto %d %d", x, y));
-    auto_engage(a->mynum, a, "");
-    return tprintf("going to %d,%d", x, y);
+    char buffer[2];
+
+    strcpy(buffer, "0");
+    Clear(autopilot);
+    auto_engage(autopilot->mynum, autopilot, "");
+    mech_speed(autopilot->mynum, mech, buffer);
+    snprintf(mesg, LBUF_SIZE, "halting");
+
 }
-#endif
 
 #if 0
 /* Smart (?) follow command for AI */
@@ -397,19 +451,7 @@ ACMD(auto_heading)
     return tprintf("stopped and heading changed to %d", i);
 }
 #endif
-#if 0
-ACMD(auto_stop)
-{
 
-    char buf[5];
-
-    strcpy(buf, "0");
-    Clear(a);
-    auto_engage(a->mynum, a, "");
-    mech_speed(a->mynum, mech, buf);
-    return "halting";
-}
-#endif
 #if 0
 ACMD(auto_notarget)
 {

@@ -48,6 +48,8 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* goto a given hex */
     {"leavebase", 1, GOAL_LEAVEBASE, NULL}
     ,                           /* leave a hangar */
+    {"oldgoto", 2, GOAL_OLDGOTO, NULL}
+    ,                           /* Old style goto - will phase out */
     {"roam", 2, GOAL_ROAM, NULL}
     ,                           /* roam around an area - like patroling */
     {"wait", 2, GOAL_WAIT, NULL}
@@ -510,6 +512,12 @@ void auto_com_event(MUXEVENT *muxevent) {
                     AUTOPILOT_LEAVE_TICK, 0);
             return;
 
+        case GOAL_OLDGOTO:
+            AUTO_GSTART(autopilot, mech);
+            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event, 
+                    AUTOPILOT_GOTO_TICK, 0);
+            return;
+
 #if 0
         case GOAL_WAIT:
             i = GVAL(a, 1);
@@ -767,48 +775,75 @@ void figure_out_range_and_bearing(MECH * mech, int tx, int ty,
     *bearing = FindBearing(MechFX(mech), MechFY(mech), x, y);
     *range = FindHexRange(MechFX(mech), MechFY(mech), x, y);
 }
-#if 0
+
+
 /* Basically, all we need to do is course correction now and then.
    In case we get disabled, we call for help now and then */
-
-void auto_goto_event(MUXEVENT * e)
-{
-    AUTO *a = (AUTO *) e->data;
+/*
+ * Old goto system - will phase it out
+ */
+void auto_goto_event(MUXEVENT * e) {
+    
+    AUTO *autopilot = (AUTO *) e->data;
     int tx, ty;
     float dx, dy;
-    MECH *mech = a->mymech;
+    MECH *mech = autopilot->mymech;
     float range;
     int bearing;
 
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
+    char *argument;
+
+    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
         return;
 
-    CCH(a);
-    GSTART(a, mech);
-    tx = GVAL(a, 1);
-    ty = GVAL(a, 2);
+    /* Basic Checks */
+    AUTO_CHECKS(autopilot);
+
+    /* Make sure mech is started and standing */
+    AUTO_GSTART(autopilot, mech);
+
+    /* Get the first argument - x coord */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+    if (Readnum(tx, argument)) {
+        /*! \todo {add a thing here incase the argument isn't a number} */
+        free(argument);
+    }
+    free(argument);
+
+    /* Get the second argument - y coord */
+    argument = auto_get_command_arg(autopilot, 1, 2);
+    if (Readnum(ty, argument)) {
+        /*! \todo {add a thing here incase the argument isn't a number} */
+        free(argument);
+    }
+    free(argument);
+    
     if (MechX(mech) == tx && MechY(mech) == ty &&
             abs(MechSpeed(mech)) < 0.5) {
 
         /* We've reached this goal! Time for next one. */
-        ADVANCE_PG(a);
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
     }
+
     MapCoordToRealCoord(tx, ty, &dx, &dy);
     figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
-    if (!slow_down_if_neccessary(a, mech, range, bearing, tx, ty)) {
+    if (!slow_down_if_neccessary(autopilot, mech, range, bearing, tx, ty)) {
 
         /* Use the AI */
-        if (ai_check_path(mech, a, dx, dy, 0.0, 0.0))
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_goto_event,
+        if (ai_check_path(mech, autopilot, dx, dy, 0.0, 0.0))
+            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event,
                     AUTOPILOT_GOTO_TICK, 0);
 
     } else {
-        AUTOEVENT(a, EVENT_AUTOGOTO, auto_goto_event, 
+        AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event, 
                 AUTOPILOT_GOTO_TICK, 0);
     }
+
 }
 
+#if 0
 /* ROAMMODE is a funky beast */
 void auto_roam_event(MUXEVENT * e)
 {
@@ -873,25 +908,25 @@ void auto_roam_event(MUXEVENT * e)
  */
 void auto_dumbgoto_event(MUXEVENT * e) {
     
-    AUTO *a = (AUTO *) e->data;
+    AUTO *autopilot = (AUTO *) e->data;
     int tx, ty;
-    MECH *mech = a->mymech;
+    MECH *mech = autopilot->mymech;
     float range;
     int bearing;
 
     char *argument;
 
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
+    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
         return;
 
     /* Basic Checks */
-    AUTO_CHECKS(a);
+    AUTO_CHECKS(autopilot);
 
     /* Make sure mech is started and standing */
-    AUTO_GSTART(a, mech);
+    AUTO_GSTART(autopilot, mech);
 
     /* Get the first argument - x coord */
-    argument = auto_get_command_arg(a, 1, 1);
+    argument = auto_get_command_arg(autopilot, 1, 1);
     if (Readnum(tx, argument)) {
         /*! \todo {add a thing here incase the argument isn't a number} */
         free(argument);
@@ -899,7 +934,7 @@ void auto_dumbgoto_event(MUXEVENT * e) {
     free(argument);
 
     /* Get the second argument - y coord */
-    argument = auto_get_command_arg(a, 1, 2);
+    argument = auto_get_command_arg(autopilot, 1, 2);
     if (Readnum(ty, argument)) {
         /*! \todo {add a thing here incase the argument isn't a number} */
         free(argument);
@@ -910,17 +945,17 @@ void auto_dumbgoto_event(MUXEVENT * e) {
     if (MechX(mech) == tx && MechY(mech) == ty &&
             abs(MechSpeed(mech)) < 0.5) {
         /* We've reached this goal! Time for next one. */
-        ai_set_speed(mech, a, 0);
-        auto_goto_next_command(a, AUTOPILOT_NC_DELAY);
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
     }
 
     /* Make our way to the goal */
     figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
-    speed_up_if_neccessary(a, mech, tx, ty, bearing);
-    slow_down_if_neccessary(a, mech, range, bearing, tx, ty);
-    update_wanted_heading(a, mech, bearing);
-    AUTOEVENT(a, EVENT_AUTOGOTO, auto_dumbgoto_event, 
+    speed_up_if_neccessary(autopilot, mech, tx, ty, bearing);
+    slow_down_if_neccessary(autopilot, mech, range, bearing, tx, ty);
+    update_wanted_heading(autopilot, mech, bearing);
+    AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_dumbgoto_event, 
             AUTOPILOT_GOTO_TICK, 0);
 }
 
@@ -1271,49 +1306,4 @@ void auto_enter_event(MUXEVENT * e) {
         return;
     }
     AUTOEVENT(a, EVENT_AUTOENTERBASE, auto_enter_event, 1, 0);
-}
-
-#define SPECIAL_FREE 0
-#define SPECIAL_ALLOC 1
-
-/*
- * Called when either creating a new autopilot - SPECIAL_ALLOC
- * or when destroying an autopilot - SPECIAL_FREE
- */
-void newautopilot(dbref key, void **data, int selector) {
-    
-    AUTO *newi = *data;
-    command_node *temp;
-    int i;
-
-    switch (selector) {
-        case SPECIAL_ALLOC:
-
-            /* Allocate the command list */
-            newi->commands = dllist_create_list();
-            break;
-
-        case SPECIAL_FREE:
-
-            /* Go through the list and remove any leftover nodes */
-            while (dllist_size(newi->commands)) {
-
-                /* Remove the first node on the list and get the data
-                 * from it */
-                temp = (command_node *) dllist_remove(newi->commands, 
-                        dllist_head(newi->commands));
-                
-                /* Destroy the command node */
-                auto_destroy_command_node(temp);
-
-            }
-
-            /* Destroy the list */
-            dllist_destroy_list(newi->commands);
-            break;
-
-    }
-
-    return;
-
 }

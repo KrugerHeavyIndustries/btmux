@@ -798,3 +798,51 @@ int auto_get_command_enum(AUTO *autopilot, int command_number) {
     return command_enum;
 
 }
+
+#define SPECIAL_FREE 0
+#define SPECIAL_ALLOC 1
+            
+/*
+ * Called when either creating a new autopilot - SPECIAL_ALLOC
+ * or when destroying an autopilot - SPECIAL_FREE
+ */
+void auto_newautopilot(dbref key, void **data, int selector) {
+    
+    AUTO *newi = *data;
+    command_node *temp;
+    int i;
+
+    switch (selector) {
+        case SPECIAL_ALLOC:
+
+            /* Allocate the command list */
+            newi->commands = dllist_create_list();
+            break;
+
+        case SPECIAL_FREE:
+
+            /* Go through the list and remove any leftover nodes */
+            while (dllist_size(newi->commands)) {
+
+                /* Remove the first node on the list and get the data
+                 * from it */
+                temp = (command_node *) dllist_remove(newi->commands,
+                        dllist_head(newi->commands));
+
+                /* Destroy the command node */
+                auto_destroy_command_node(temp);
+
+            }
+
+            /* Destroy the list */
+            dllist_destroy_list(newi->commands);
+            newi->commands = NULL;
+
+            /* Destroy any astar path list thats on the AI */
+            auto_destroy_astar_path(newi);
+
+            break;
+
+    }
+
+}

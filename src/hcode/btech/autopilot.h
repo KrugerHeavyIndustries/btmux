@@ -182,6 +182,7 @@ enum {
     GOAL_FOLLOW,        /* unimplemented */
     GOAL_GOTO,          /* Uses the new Astar system */ 
     GOAL_LEAVEBASE,
+    GOAL_OLDGOTO,       /* Old implementation of goto */
     GOAL_ROAM,          /* unimplemented */
     GOAL_WAIT,          /* unimplemented */
 
@@ -241,14 +242,20 @@ typedef struct astar_node_t {
 /* Function Prototypes will go here */
 
 /* From autopilot_core.c */
-void auto_load_commands(FILE *file, AUTO *autopilot);
-void auto_save_commands(FILE *file, AUTO *autopilot);
 void auto_destroy_command_node(command_node *node);
+void auto_save_commands(FILE *file, AUTO *autopilot);
+void auto_load_commands(FILE *file, AUTO *autopilot);
+void auto_delcommand(dbref player, void *data, char *buffer);
+void auto_addcommand(dbref player, void *data, char *buffer);
+void auto_listcommands(dbref player, void *data, char *buffer);
 void auto_set_comtitle(AUTO *autopilot, MECH * mech);
 void auto_init(AUTO *autopilot, MECH *mech);
+void auto_engage(dbref player, void *data, char *buffer);
+void auto_disengage(dbref player, void *data, char *buffer);
+void auto_goto_next_command(AUTO *autopilot, int time);
 char *auto_get_command_arg(AUTO *autopilot, int command_number, int arg_number);
 int auto_get_command_enum(AUTO *autopilot, int command_number);
-void auto_goto_next_command(AUTO *autopilot, int time);
+void auto_newautopilot(dbref key, void **data, int selector);
 
 /* From autopilot_commands.c */
 void auto_cal_mapindex(MECH *mech);
@@ -271,13 +278,19 @@ void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
+void auto_radio_command_goto(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
 void auto_radio_command_help(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_pickup(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_shutdown(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
 void auto_radio_command_startup(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_stop(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 
 void auto_reply_event(MUXEVENT *muxevent);
