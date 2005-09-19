@@ -224,7 +224,8 @@ void auto_radio_command_help(AUTO *autopilot, MECH *mech,
     for (i = 0; auto_cmds[i].name; i++) {
         if (i > 0 && !strcmp(auto_cmds[i].name, auto_cmds[i-1].name))
             continue;
-        snprintf(mesg, LBUF_SIZE, "%s %s", mesg, auto_cmds[i].name);
+        strncat(mesg, " ", LBUF_SIZE);
+        strncat(mesg, auto_cmds[i].name, LBUF_SIZE);
     }
 
     auto_reply(mech, mesg);

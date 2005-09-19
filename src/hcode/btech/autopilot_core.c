@@ -298,6 +298,7 @@ int auto_valid_progline(AUTO * a, int p)
  * Internal function to return a string that
  * displays a command from a command_node
  */
+/*! \todo {Maybe re-write this so doesn't use a static buffer} */
 static char *auto_show_command(command_node *node) {
     
     static char buf[MBUF_SIZE];
@@ -307,10 +308,10 @@ static char *auto_show_command(command_node *node) {
 
     /* Loop through the args and print the commands */
     for (i = 1; i < AUTOPILOT_MAX_ARGS; i++)
-        if (node->args[i])
-            snprintf(buf + strnlen(buf, MBUF_SIZE - 1), 
-                    MBUF_SIZE - strnlen(buf, MBUF_SIZE - 1),
-                    " %s", node->args[i]);
+        if (node->args[i]) {
+            strncat(buf, " ", MBUF_SIZE);
+            strncat(buf, node->args[i], MBUF_SIZE);
+        }
 
     return buf;
 
