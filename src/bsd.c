@@ -3,7 +3,7 @@
  */
 
 /*
- * $Id: bsd.c,v 1.7 2005/08/08 09:43:05 murrayma Exp $ 
+ * $Id$ 
  */
 #include "copyright.h"
 #include "config.h"

@@ -4,7 +4,7 @@
  * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
  * All rights reserved.
  *
- * $Id: rbtree.h 63 2005-08-24 20:59:08Z murrayma $
+ * $Id$
  */
 
 #include "copyright.h"
