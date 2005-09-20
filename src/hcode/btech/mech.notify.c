@@ -727,10 +727,23 @@ void mech_sendchannel(dbref player, void *data, char *buffer)
     if (!fail && (chn >= MFreqs(mech) || chn < 0))
         fail = 1;
     if (!fail)
-        for (i = 0; args[2][i]; i++)
-            DOCHECK((BOUNDED(32, args[2][i], 255)) != args[2][i],
-                    "Invalid: No control characters in radio messages, please.");
-    DOCHECK(fail, "Invalid format! Usage: sendchannel <letter>=<string>");
+        for (i = 0; args[2][i]; i++) {
+            if ((BOUNDED(32, args[2][i], 255)) != args[2][i]) {
+                notify(player, "Invalid: No control characters in radio messages, please.");
+                for(i = 0; i < 3; i++) {
+                    if(args[i]) free(args[i]);
+                }
+                return;
+            }
+        }
+
+    if (fail) {
+        notify(player, "Invalid format! Usage: sendchannel <letter>=<string>");
+        for(i = 0; i < 3; i++) {
+            if(args[i]) free(args[i]);
+        }
+        return;
+    }
 
     if (mech->freq[chn] == 0 && In_Character(mech->mapindex)) {
         send_channel("ZeroFrequencies", 

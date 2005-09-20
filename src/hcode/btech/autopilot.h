@@ -213,7 +213,7 @@ enum {
 /* command_node struct to store AI 
  * commands for the AI command list */
 typedef struct command_node_t {
-    char *args[5];                          /* Store arguements - At most will ever have 5 */
+    char *args[AUTOPILOT_MAX_ARGS];         /* Store arguements - At most will ever have 5 */
     unsigned char argcount;                 /* Number of arguments */
     int command_enum;                       /* The ENUM value for the command */
     int (*ai_command_function)(AUTO *);     /* Function Pointer */
@@ -272,25 +272,43 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
 void auto_destroy_astar_path(AUTO *autopilot);
 
 /* From autopilot_radio.c */
-void auto_radio_command_dfollow(AUTO *autopilot, MECH *mech,   
+void auto_radio_command_dfollow(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
-void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech,
+void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
-void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
+void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
-void auto_radio_command_goto(AUTO *autopilot, MECH *mech,
+void auto_radio_command_goto(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_heading(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
 void auto_radio_command_help(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
-void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech,
+void auto_radio_command_hide(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
-void auto_radio_command_pickup(AUTO *autopilot, MECH *mech,
+void auto_radio_command_jumpjet(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_pickup(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_position(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_prone(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_report(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg);
+void auto_radio_command_reset(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_shutdown(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
+void auto_radio_command_speed(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_stand(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
 void auto_radio_command_startup(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
-void auto_radio_command_stop(AUTO *autopilot, MECH *mech,
+void auto_radio_command_stop(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
 
 void auto_reply_event(MUXEVENT *muxevent);

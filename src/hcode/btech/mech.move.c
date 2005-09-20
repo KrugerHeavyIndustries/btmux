@@ -486,8 +486,8 @@ void mech_stand(dbref player, void *data, char *buffer)
     cch(MECH_USUAL);
     DOCHECK(MechType(mech) == CLASS_BSUIT, "You're standing already!");
     DOCHECK(MechType(mech) != CLASS_MECH &&
-	MechType(mech) != CLASS_MW,
-	"This vehicle cannot stand like a 'Mech.");
+            MechType(mech) != CLASS_MW,
+            "This vehicle cannot stand like a 'Mech.");
     DOCHECK(Jumping(mech), "You're standing while jumping!");
     DOCHECK(OODing(mech), "You're standing while flying!");
 
@@ -495,10 +495,19 @@ void mech_stand(dbref player, void *data, char *buffer)
     wcDeadLegs = CountDestroyedLegs(mech);
 
     DOCHECK(((MechIsQuad(mech) && (wcDeadLegs > 3)) || (!MechIsQuad(mech)
-		&& (wcDeadLegs > 1))), "You have no legs to stand on!");
+                    && (wcDeadLegs > 1))), "You have no legs to stand on!");
     DOCHECK(wcDeadLegs > 2, "You'd be far too unstable!");
     DOCHECK(MechCritStatus(mech) & GYRO_DESTROYED,
-	"You cannot stand with a destroyed gyro!");
+            "You cannot stand with a destroyed gyro!");
+
+    DOCHECK(!Fallen(mech), "You're already standing!");
+    DOCHECK(Standrecovering(mech),
+            "You're still recovering from your last attempt!");
+    DOCHECK(IsHulldown(mech), "You can not stand while hulldown");
+    DOCHECK(ChangingHulldown(mech),
+            "You are busy changing your hulldown mode");
+    DOCHECK(!standanyway && bth > 12,
+            "You would fail; use 'stand anyway' if you really want to stand.");
 
     bth = MechPilotSkillRoll_BTH(mech, 0);
 
@@ -521,47 +530,38 @@ void mech_stand(dbref player, void *data, char *buffer)
         }
     }
 
-    DOCHECK(!Fallen(mech), "You're already standing!");
-    DOCHECK(Standrecovering(mech),
-	"You're still recovering from your last attempt!");
-    DOCHECK(IsHulldown(mech), "You can not stand while hulldown");
-    DOCHECK(ChangingHulldown(mech),
-	"You are busy changing your hulldown mode");
-    DOCHECK(!standanyway && bth > 12,
-	    "You would fail; use 'stand anyway' if you really want to stand.");
-
     MakeMechStand(mech);
 
     /*  quads with all 4 legs don't have to roll to stand */
     if (((wcDeadLegs == 0) && MechIsQuad(mech)) ||
-	(MechType(mech) == CLASS_MW)) {
-	tNeedsPSkill = 0;
+            (MechType(mech) == CLASS_MW)) {
+        tNeedsPSkill = 0;
     }
 
     MechLOSBroadcast(mech, "attempts to stand up.");
 
     if (MechRTerrain(mech) == ICE && MechZ(mech) == -1)
-    	break_thru_ice(mech);
+        break_thru_ice(mech);
 
     if (tNeedsPSkill) {
-	if (!MadePilotSkillRoll(mech, 0)) {
-	    mech_notify(mech, MECHALL,
-		"You fail your attempt to stand and fall back on the ground");
-	    MechFalls(mech, 1, 1);
-	    MECHEVENT(mech, EVENT_STANDFAIL, mech_standfail_event,
-		MechType(mech) ==
-		CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech),
-		0);
-	    tDoStand = 0;
-	}
+        if (!MadePilotSkillRoll(mech, 0)) {
+            mech_notify(mech, MECHALL,
+                    "You fail your attempt to stand and fall back on the ground");
+            MechFalls(mech, 1, 1);
+            MECHEVENT(mech, EVENT_STANDFAIL, mech_standfail_event,
+                    MechType(mech) ==
+                    CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech),
+                    0);
+            tDoStand = 0;
+        }
     }
 
     if (tDoStand) {
-	/* Now we set a counter in goingy to keep him from moving or jumping until he is finished standing */
-	mech_notify(mech, MECHALL, "You begin to stand up.");
-	MECHEVENT(mech, EVENT_STAND, mech_stand_event,
-	    MechType(mech) ==
-	    CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech), 0);
+        /* Now we set a counter in goingy to keep him from moving or jumping until he is finished standing */
+        mech_notify(mech, MECHALL, "You begin to stand up.");
+        MECHEVENT(mech, EVENT_STAND, mech_stand_event,
+                MechType(mech) ==
+                CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech), 0);
     }
 
     /* Free args */

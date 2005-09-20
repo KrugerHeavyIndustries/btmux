@@ -1151,6 +1151,7 @@ char *specials2[] = {
     "TAG_Tech",
     "OmniMech_Tech",
     "ArtemisV_Tech",
+    "Camo_Tech",
 #ifdef BT_CARRIERS
     "Carrier_Tech",
 #endif
@@ -1159,7 +1160,6 @@ char *specials2[] = {
     "HDGyro_Tech",
     "CompactGyro_Tech",
 #endif 
-    "Camo_Tech",
     NULL
 };
 
@@ -1167,13 +1167,13 @@ char *specialsabrev2[] = {
     "STHA", "HFF", "LRARM", "REACTARM", "NULL", "C3I","SCHARGE",
     "IJJ", "MJJ", "CHS", "LHS", "BLP", "AECM", "WDOG", "LFF",
     "TAG", "OMNI", "AV",
+    "CAMO",
 #ifdef BT_CARRIERS
     "CART",
 #endif
 #ifdef BT_COMPLEXREPAIRS
     "XLGRYO", "HDGYRO", "CGYRO",
 #endif
-    "CAMO",
     NULL
 };
 

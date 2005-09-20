@@ -78,36 +78,34 @@ struct {
     "fr", "freq", 1, 0, auto_freq}, {
 #endif
     "go", "goto", 2, 0, auto_radio_command_goto}, {
-#if 0
-    "he", "heading", 1, 0, auto_heading}, {
-#endif
+    "he", "heading", 1, 0, auto_radio_command_heading}, {
     "he", "help", 0, 1, auto_radio_command_help}, {
+    "hi", "hide", 0, 0, auto_radio_command_hide }, {
+    "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet }, {
+    "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet }, {
 #if 0
-    "hi", "hide", 0, 0, auto_hide }, {
-    "jump", "jumpjet", 1, 0, auto_jumpjet }, {
-    "jump", "jumpjet", 2, 0, auto_jumpjet }, {
     "le", "leavebase", 1, 0, auto_leavebase }, {
     "nog", "nogun", 0, 0, auto_nogun}, {
     "not", "notarget", 0, 0, auto_notarget}, {
 #endif
     "ogo", "ogoto", 2, 0, auto_radio_command_ogoto}, {
     "pick", "pickup", 1, 0, auto_radio_command_pickup}, {
+    "pos", "position", 2, 0, auto_radio_command_position}, {
+    "pr", "prone", 0, 0, auto_radio_command_prone}, {
 #if 0
-    "pr", "prone", 0, 0, auto_prone}, {
-    "pos", "position", 2, 0, auto_position}, {
     "ra", "rally", 2, 0, auto_rally}, {
     "ra", "rally", 3, 0, auto_rally}, {
-    "re", "report", 0, 1, auto_report}, {
-    "reset", "reset", 0, 0, auto_reset}, {
+#endif
+    "re", "report", 0, 1, auto_radio_command_report}, {
+    "reset", "reset", 0, 0, auto_radio_command_reset}, {
+#if 0
     "roam", "roammode", 1, 0, auto_roammode }, {
     "se", "sensor", 2, 0, auto_sensor}, {
     "se", "sensor", 0, 0, auto_sensor}, {
 #endif
     "sh", "shutdown", 0, 0, auto_radio_command_shutdown}, {
-#if 0
-    "sp", "speed", 1, 0, auto_speed}, {
-    "st", "stand", 0, 0, auto_stand}, {
-#endif
+    "sp", "speed", 1, 0, auto_radio_command_speed}, {
+    "st", "stand", 0, 0, auto_radio_command_stand}, {
     "st", "startup", 0, 0, auto_radio_command_startup}, {
     "st", "startup", 1, 0, auto_radio_command_startup}, {
     "st", "stop", 0, 0, auto_radio_command_stop}, {
@@ -212,12 +210,38 @@ void auto_radio_command_goto(AUTO *autopilot, MECH *mech,
 }
 
 /*
+ * Radio command to alter an AI's heading
+ */
+void auto_radio_command_heading(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    int heading;
+    char buffer[SBUF_SIZE];
+
+    if (Readnum(heading, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!Number not integer");
+        return;
+    }
+
+    Clear(autopilot);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(buffer, SBUF_SIZE, "%d", heading);
+    mech_heading(autopilot->mynum, mech, buffer);
+    strcpy(buffer, "0");
+    mech_speed(autopilot->mynum, mech, buffer);
+    snprintf(buffer, LBUF_SIZE, "stopped and heading changed to %d", heading);
+
+}
+
+/*
  * Help message, lists the various commands for the AI
  */
 void auto_radio_command_help(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg) {
 
     int i;
+
+    /*! \todo {Add a short form of this command} */
 
     snprintf(mesg, LBUF_SIZE, "The following commands are possible:");
 
@@ -230,6 +254,74 @@ void auto_radio_command_help(AUTO *autopilot, MECH *mech,
 
     auto_reply(mech, mesg);
 
+}
+
+/*
+ * Radio command to force AI to try and hide itself
+ */
+void auto_radio_command_hide(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    if ((HasCamo(mech)) ? 
+            0 : MechType(mech) != CLASS_BSUIT && MechType(mech) != CLASS_MW) {
+        snprintf(mesg, LBUF_SIZE, "!Last I checked I was kind of big for that");
+        return;
+    }
+
+    if (!(MechRTerrain(mech) == HEAVY_FOREST ||
+            MechRTerrain(mech) == LIGHT_FOREST ||
+            MechRTerrain(mech) == ROUGH ||
+            MechRTerrain(mech) == MOUNTAINS ||
+            (MechType(mech) == CLASS_BSUIT ?  MechRTerrain(mech) == BUILDING : 0))) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid Terrain");
+        return;
+    }
+
+    bsuit_hide(autopilot->mynum, mech, "");
+    snprintf(mesg, LBUF_SIZE, "Begining to hide");
+
+}
+
+/*
+ * Radio command to force AI to jump either on a target or 
+ * in a given direction range
+ */
+
+void auto_radio_command_jumpjet(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+    
+    dbref target;
+    char buffer[SBUF_SIZE];
+    int bear, rng;
+
+    if (!abs(MechJumpSpeed(mech))) {
+        snprintf(mesg, LBUF_SIZE, "!I don't do hiphop and jump around");
+        return;
+    }
+
+    if ((argc - 1) == 1) {
+        if ((target = FindTargetDBREFFromMapNumber(mech, args[1])) <= 0) {
+            snprintf(mesg, LBUF_SIZE, "!Unable to see such a target");
+            return;
+        }
+        strcpy(buffer, args[1]);
+        mech_jump(autopilot->mynum, mech, buffer);
+        snprintf(mesg, LBUF_SIZE, "jumping on [%s]", args[1]);
+        return;
+    } else {
+        if (Readnum(bear, args[1])) {
+            snprintf(mesg, LBUF_SIZE, "!Invalid bearing");
+            return;
+        }
+        if (Readnum(rng, args[2])) {
+            snprintf(mesg, LBUF_SIZE, "!Invalid range");
+            return;
+        }
+        snprintf(buffer, SBUF_SIZE, "%s %s", args[1], args[2]);
+        mech_jump(autopilot->mynum, mech, buffer);
+        snprintf(mesg, LBUF_SIZE, "jump %s degrees %s hexes", args[1], args[2]);
+        return;
+    }
 }
 
 /*
@@ -282,6 +374,110 @@ void auto_radio_command_pickup(AUTO *autopilot, MECH *mech,
 }
 
 /*
+ * Radio command to make AI take up a given position (dir & range) from
+ * their current target (hex or unit)
+ */
+void auto_radio_command_position(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    int x, y;
+
+    /*! \todo {Add in some checks for validity of the arguments} */
+
+    if (Readnum(x, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid first int");
+        return;
+    }
+    if (Readnum(y, args[2])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalide second int");
+        return;
+    }
+
+    autopilot->ofsx = x;
+    autopilot->ofsy = y;
+    snprintf(mesg, LBUF_SIZE, "following %d degrees, %d away", x, y);
+
+}
+
+/*
+ * Radio command to force AI to go prone
+ */
+void auto_radio_command_prone(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    mech_drop(autopilot->mynum, mech, "");
+    snprintf(mesg, LBUF_SIZE, "hitting the deck");
+
+}
+
+/*
+ * Radio command so the AI can report its status
+ */
+/*! \todo {Add something that tells more info then this} */
+void auto_radio_command_report(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    char buffer[MBUF_SIZE];
+    MECH *target;
+
+    /* Is the AI moving or something */
+    if (Jumping(mech))
+        strcpy(buffer, "Jumping");
+    else if (Fallen(mech))
+        strcpy(buffer, "Prone");
+    else if (IsRunning(MechSpeed(mech), MMaxSpeed(mech)))
+        strcpy(buffer, "Running");
+    else if (MechSpeed(mech) > 1.0)
+        strcpy(buffer, "Walking");
+    else
+        strcpy(buffer, "Standing");
+
+    snprintf(mesg, LBUF_SIZE, "%s at %d, %d", buffer, MechX(mech), MechY(mech));
+
+    /* Which way is the AI going */
+    if (MechSpeed(mech) > 1.0) {
+        snprintf(buffer, MBUF_SIZE, ", headed %d speed %.2f",
+                MechFacing(mech), MechSpeed(mech));
+        strncat(mesg, buffer, LBUF_SIZE);
+    } else {
+        snprintf(buffer, MBUF_SIZE, ", headed %d",
+                MechFacing(mech));
+        strncat(mesg, buffer, LBUF_SIZE);
+    }
+
+    /* Is the AI targeting something */
+    if (MechTarget(mech) != -1) {
+        target = getMech(MechTarget(mech));
+
+        if (target) {
+            snprintf(buffer, MBUF_SIZE, ", targeting %s %s",
+                    GetMechToMechID(mech, target),
+                    InLineOfSight(mech, target, MechX(target),
+                        MechY(target), FaMechRange(mech, target)) ?
+                    "" : "(not in LOS)");
+            strncat(mesg, buffer, LBUF_SIZE);
+        }
+    }
+    
+    /* Send the mesg to the reply system, this is a silent command */
+    auto_reply(mech, mesg);
+
+}
+
+/*
+ * Radio command to reset the AI's internal flags what not
+ */
+void auto_radio_command_reset(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    Clear(autopilot);
+    auto_init(autopilot, mech);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(mesg, LBUF_SIZE, "all internal events and flags reset!");
+
+}
+
+/*
  * Radio command to force AI to shutdown
  */
 void auto_radio_command_shutdown(AUTO *autopilot, MECH *mech, 
@@ -289,6 +485,40 @@ void auto_radio_command_shutdown(AUTO *autopilot, MECH *mech,
 
     mech_shutdown(autopilot->mynum, mech, "");
     snprintf(mesg, LBUF_SIZE, "shutting down");
+
+}
+
+/*
+ * Radio command to alter the speed of an AI (% of speed)
+ */
+void auto_radio_command_speed(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    int speed = 100;
+
+    if (Readnum(speed, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid value - not a number");
+        return;
+    }
+
+    if (speed < 1 || speed > 100) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid speed");
+        return;
+    }
+
+    autopilot->speed = speed;
+    snprintf(mesg, LBUF_SIZE, "setting speed to %d %%", speed);
+
+}
+
+/*
+ * Radio Command to force AI to stand
+ */
+void auto_radio_command_stand(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    mech_stand(autopilot->mynum, mech, "");
+    snprintf(mesg, LBUF_SIZE, "standing up");
 
 }
 
@@ -375,49 +605,6 @@ ACMD(auto_swarm)
 }
 #endif
 #if 0
-ACMD(auto_speed)
-{
-    int speed = 100;
-
-    speed = atoi(args[0]);
-    if (speed < 1 || speed > 100)
-        return "!Invalid speed";
-    a->speed = speed;
-    return tprintf("setting speed to %d %%.", atoi(args[0]));
-}
-#endif
-#if 0
-ACMD(auto_hide)
-{
-
-    if ((HasCamo(mech)) ? 
-            0 : MechType(mech) != CLASS_BSUIT && MechType(mech) != CLASS_MW) {
-        return "!Last I checked I was kind of big for that";
-    }
-
-    if (!(MechRTerrain(mech) == HEAVY_FOREST ||
-            MechRTerrain(mech) == LIGHT_FOREST ||
-            MechRTerrain(mech) == ROUGH ||
-            MechRTerrain(mech) == MOUNTAINS ||
-            (MechType(mech) == CLASS_BSUIT ?  MechRTerrain(mech) == BUILDING : 0))) {
-        return "!Invalid Terrain";
-    }
-
-    bsuit_hide(a->mynum, mech, "");
-    return "Begining to hide";
-}
-#endif
-#if 0
-ACMD(auto_reset)
-{
-    Clear(a);
-    ai_init(a, a->mymech);
-    auto_engage(a->mynum, a, "");
-
-    return tprintf("all internal events and flags reset!");
-}
-#endif
-#if 0
 ACMD(auto_attackleg)
 {
     dbref targetref;
@@ -433,26 +620,6 @@ ACMD(auto_attackleg)
     return tprintf("attacklegging %s.", args[0]); 
 }
 #endif
-
-
-
-#if 0
-ACMD(auto_heading)
-{
-    int i;
-    char buf[3];
-
-    if (Readnum(i, args[0]))
-        return tprintf("!Number not integer");
-    Clear(a);
-    auto_engage(a->mynum, a, "");
-    strcpy(buf, "0");
-    mech_heading(a->mynum, mech, tprintf("%d", i));
-    mech_speed(a->mynum, mech, buf);
-    return tprintf("stopped and heading changed to %d", i);
-}
-#endif
-
 #if 0
 ACMD(auto_notarget)
 {
@@ -471,20 +638,6 @@ ACMD(auto_nogun)
     if (Gunning(a))
         DoStopGun(a);
     return "powering down weapons";
-}
-#endif
-#if 0
-ACMD(auto_position)
-{
-    int x, y;
-
-    if (Readnum(x, args[0]))
-        return "!Invalid first int";
-    if (Readnum(y, args[1]))
-        return "!Invalid second int";
-    a->ofsx = x;
-    a->ofsy = y;
-    return tprintf("following %d degrees, %d away", a->ofsx, a->ofsy);
 }
 #endif
 #if 0
@@ -663,33 +816,6 @@ ACMD(auto_target)
 }
 #endif
 #if 0
-ACMD(auto_jumpjet)
-{
-    dbref targetref;
-    char buf[50];
-    int bear, rng;
-
-    if (!abs(MechJumpSpeed(mech)))
-        return "!I don't do hiphop and jump around";
-
-    if (argc == 1) {
-        if ((targetref = FindTargetDBREFFromMapNumber(mech, args[0])) <= 0) {
-            return "!Unable to see such a target";
-        }
-        mech_jump(a->mynum, mech, args[0]);
-        return tprintf("jumping on [%s]", args[0]);
-    } else {
-        if (Readnum(bear, args[0]))
-            return "!Invalid bearing";
-        if (Readnum(rng, args[1]))
-            return "!Invalid range";
-        snprintf(buf, sizeof(char) * 50, "%s %s", args[0], args[1]);
-        mech_jump(a->mynum, mech, buf);
-        return tprintf("jump %s degrees %s hexes", args[0], args[1]);
-    }
-}
-#endif
-#if 0
 ACMD(auto_freq)
 {
     int freq;
@@ -717,42 +843,6 @@ ACMD(auto_setchanmode)
 }
 #endif
 #if 0
-ACMD(auto_report)
-{
-    static char buf[MBUF_SIZE];
-
-    if (Jumping(mech))
-        strcpy(buf, "Jumping");
-    else if (Fallen(mech))
-        strcpy(buf, "Prone");
-    else if (IsRunning(MechSpeed(mech), MMaxSpeed(mech)))
-        strcpy(buf, "Running");
-    else if (MechSpeed(mech) > 1.0)
-        strcpy(buf, "Walking");
-    else
-        strcpy(buf, "Standing");
-
-    strcat(buf, tprintf(" at %d, %d", MechX(mech), MechY(mech)));
-    if (MechSpeed(mech) > 1.0)
-        strcat(buf, tprintf(", headed %d speed %.2f", MechFacing(mech),
-            MechSpeed(mech)));
-    else
-        strcat(buf, tprintf(", headed %d", MechFacing(mech)));
-    if (MechTarget(mech) != -1) {
-        MECH *tempMech = getMech(MechTarget(mech));
-
-        if (tempMech)
-            strcat(buf, tprintf(", targetting %s %s", GetMechToMechID(mech,
-                    tempMech), InLineOfSight(mech, tempMech,
-                    MechX(tempMech), MechY(tempMech), FaMechRange(mech,
-                    tempMech)) ? "" : "(not in LOS)"));
-    }
-    auto_reply(mech, buf);
-    return NULL;
-}
-#endif
-
-#if 0
 ACMD(auto_enterbase)
 {
     mech_enterbase(a->mynum, mech, argc ? tprintf("%s",
@@ -777,20 +867,6 @@ ACMD(auto_enterbay)
             args[0]) : tprintf(""));
     return argc ? tprintf("entering bay (of %s)",
             args[0]) : "entering bay";
-}
-#endif
-#if 0
-ACMD(auto_prone)
-{
-    mech_drop(a->mynum, mech, tprintf(""));
-    return "hitting the deck";
-}
-#endif
-#if 0
-ACMD(auto_stand)
-{
-    mech_stand(a->mynum, mech, tprintf(""));
-    return "standing up";
 }
 #endif
 #if 0
