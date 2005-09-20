@@ -278,6 +278,10 @@ void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
+void auto_radio_command_embark(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_enterbase(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
 void auto_radio_command_goto(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);
 void auto_radio_command_heading(AUTO *autopilot, MECH *mech, 
@@ -287,6 +291,8 @@ void auto_radio_command_help(AUTO *autopilot, MECH *mech,
 void auto_radio_command_hide(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_jumpjet(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg);
+void auto_radio_command_leavebase(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg);

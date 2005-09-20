@@ -68,10 +68,10 @@ struct {
     "dr", "drally", 3, 0, auto_drally}, {
 #endif
     "drop", "dropoff", 0, 0, auto_radio_command_dropoff}, {
+    "emb", "embark", 1, 0, auto_radio_command_embark}, {
+    "en", "enterbase", 0, 0, auto_radio_command_enterbase}, {
+    "en", "enterbase", 1, 0, auto_radio_command_enterbase}, {
 #if 0
-    "emb", "embark", 1, 0, auto_embark}, {
-    "en", "enterbase", 0, 0, auto_enterbase}, {
-    "en", "enterbase", 1, 0, auto_enterbase}, {
     "en", "enterbay", 0, 0, auto_enterbay}, {
     "en", "enterbay", 1, 0, auto_enterbay}, {
     "fo", "follow", 1, 0, auto_follow}, {
@@ -80,11 +80,11 @@ struct {
     "go", "goto", 2, 0, auto_radio_command_goto}, {
     "he", "heading", 1, 0, auto_radio_command_heading}, {
     "he", "help", 0, 1, auto_radio_command_help}, {
-    "hi", "hide", 0, 0, auto_radio_command_hide }, {
-    "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet }, {
-    "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet }, {
+    "hi", "hide", 0, 0, auto_radio_command_hide}, {
+    "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet}, {
+    "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet}, {
+    "le", "leavebase", 1, 0, auto_radio_command_leavebase}, {
 #if 0
-    "le", "leavebase", 1, 0, auto_leavebase }, {
     "nog", "nogun", 0, 0, auto_nogun}, {
     "not", "notarget", 0, 0, auto_notarget}, {
 #endif
@@ -180,6 +180,50 @@ void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
     snprintf(mesg, LBUF_SIZE, "dropping off");
+
+}
+
+/*
+ * Radio command to force AI to embark a carrier
+ */
+void auto_radio_command_embark(AUTO* autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    dbref targetref;
+    char buffer[SBUF_SIZE];
+
+    targetref = FindTargetDBREFFromMapNumber(mech, args[1]);
+    if (targetref <= 0) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid target to embark");
+        return;
+    }
+    Clear(autopilot);
+    snprintf(buffer, MBUF_SIZE, "embark %d", targetref);
+    auto_addcommand(autopilot->mynum, autopilot, buffer);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(mesg, LBUF_SIZE, "embarking %s", args[1]);
+    return;
+
+}
+
+/*
+ * Radio command to force AI to enterbase
+ */
+void auto_radio_command_enterbase(AUTO *autopilot, MECH *mech,
+                char **args, int argc, char *mesg) {
+
+    char buffer[SBUF_SIZE];
+
+    if (argc - 1) {
+        snprintf(buffer, SBUF_SIZE, "%s", args[1]);
+        snprintf(mesg, LBUF_SIZE, "entering base (%s side)",
+                args[1]);
+    } else {
+        strncpy(buffer, "", SBUF_SIZE);
+        snprintf(mesg, LBUF_SIZE, "entering base");
+    }
+
+    mech_enterbase(autopilot->mynum, mech, buffer);
 
 }
 
@@ -286,7 +330,6 @@ void auto_radio_command_hide(AUTO *autopilot, MECH *mech,
  * Radio command to force AI to jump either on a target or 
  * in a given direction range
  */
-
 void auto_radio_command_jumpjet(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg) {
     
@@ -322,6 +365,28 @@ void auto_radio_command_jumpjet(AUTO *autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "jump %s degrees %s hexes", args[1], args[2]);
         return;
     }
+}
+
+/*
+ * Radio command to force AI to leavebase
+ */
+void auto_radio_command_leavebase(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    char buffer[SBUF_SIZE];
+    int direction;
+
+    if (Readnum(direction, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid value for direction");
+        return;
+    }
+
+    Clear(autopilot);
+    snprintf(buffer, SBUF_SIZE, "leavebase %d", direction);
+    auto_addcommand(autopilot->mynum, autopilot, buffer);
+    auto_engage(autopilot->mynum, autopilot, ""); 
+    snprintf(mesg, LBUF_SIZE, "leaving base at %d heading", direction);
+
 }
 
 /*
@@ -571,21 +636,6 @@ ACMD(auto_follow)
     auto_engage(a->mynum, a, "");
     return tprintf("following %s (%d degrees, %d away)", args[0], a->ofsx,
             a->ofsy);
-}
-#endif
-#if 0
-/* Tell AI to embark a carrier */
-ACMD(auto_embark)
-{
-    dbref targetref;
-
-    targetref = FindTargetDBREFFromMapNumber(mech, args[0]);
-    if (targetref <= 0)
-        return "!Invalid target to embark";
-    Clear(a);
-    auto_addcommand(a->mynum, a, tprintf("embark %d", targetref));
-    auto_engage(a->mynum, a, "");
-    return tprintf("embarking %s", args[0]); 
 }
 #endif
 #if 0
@@ -840,24 +890,6 @@ ACMD(auto_setchanmode)
     mech_set_channelmode(a->mynum, mech, tprintf("%s=%s", args[0],
         args[1]));
     return tprintf("set channelmode %s=%s", args[0], args[1]);
-}
-#endif
-#if 0
-ACMD(auto_enterbase)
-{
-    mech_enterbase(a->mynum, mech, argc ? tprintf("%s",
-            args[0]) : tprintf(""));
-    return argc ? tprintf("entering base (%s side)",
-            args[0]) : "entering base";
-}
-#endif
-#if 0
-ACMD(auto_leavebase)
-{ 
-    Clear(a);
-    auto_addcommand(a->mynum, a, tprintf("leavebase %d", atoi(args[0])));
-    auto_engage(a->mynum, a, ""); 
-    return tprintf("leaving base at %d heading", atoi(args[0]));
 }
 #endif
 #if 0
