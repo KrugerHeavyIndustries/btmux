@@ -36,11 +36,6 @@
 #define WEXITSTATUS(stat) (((*((int *) &(stat))) >> 8) & 0xff)
 #endif
 
-#ifdef SQL_SUPPORT
-#include "sqlslave.h"
-void accept_sqlslave_input(int fd, short event, void *arg);
-#endif
-
 void accept_slave_input(int fd, short event, void *arg);
 pid_t slave_pid;
 int slave_socket = -1;
@@ -84,11 +79,6 @@ struct logfile_t {
 rbtree *logfiles = NULL;
 #endif
 
-#ifdef SQL_SUPPORT
-pid_t sqlslave_pid;
-int sqlslave_socket = -1;
-#endif
-
 DESC *initializesock(int, struct sockaddr_in *);
 DESC *new_connection(int);
 int process_output(DESC *);
@@ -106,324 +96,6 @@ void set_lastsite(DESC * d, char *lastsite)
     }
 }
 
-#ifdef SQL_SUPPORT
-/*
- * get a result from the SQL slave
- */
-
-static int get_sqlslave_result() {
-    dbref thing;
-    int attr, len;
-    static char response[SQLQUERY_MAX_STRING], result[SQLQUERY_MAX_STRING], preserve[SQLQUERY_MAX_STRING];
-    char *argv[3];
-
-    if (sqlslave_socket == -1)
-        return -100;
-
-    memset(response, '\0', SQLQUERY_MAX_STRING);
-    memset(result, '\0', SQLQUERY_MAX_STRING);
-    memset(preserve, '\0', SQLQUERY_MAX_STRING);
-
-    if (read(sqlslave_socket, &thing, sizeof(dbref)) <= 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK)
-            return -1;
-        close(sqlslave_socket);
-        sqlslave_socket = -1;
-        event_del(&sqlslave_sock_ev);
-        return -1;
-    }
-    if (read(sqlslave_socket, &attr, sizeof(int)) <= 0)
-        return -2;
-    if (read(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return -3;
-    if (len > 0)
-        if (read(sqlslave_socket, response, len) <= 0)
-            return -4;
-    if (read(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return -5;
-    if (len > 0)
-        if (read(sqlslave_socket, result, len) <= 0)
-            return -6;
-    if (read(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return -7;
-    if (len > 0)
-        if (read(sqlslave_socket, preserve, len) <= 0)
-            return -8;
-
-    argv[0] = response;
-    argv[1] = result;
-    argv[2] = preserve;
-    did_it(GOD, thing, 0, NULL, 0, NULL, attr, argv, 3);
-    return 0;
-}
-
-/*
- * Simple wrappers to get various mudconf pointers.
- * DISCLAIMER : This code was written under the influence while juggling the rest of the mechanics :P
- * I know this is 'VERY' uglee. 
- * TODO : Create a multi-dimensional (char *) array either globally or part of mudconf. 1 Dimension is A-E.
- * 2nd dimension is the HOSTNAME,etc... slots. This method needs a 2nd array of (int *) for the init val's.
- * 2nd solution is to make a struct of 1 (int *) and X (char *) and make an array of the struct. But,
- * do we really need to unprettify code for the one (int *) and have a minor structure extern'ed all over
- * the handfull of spots it's needed? To be decided. (dun dun dundun)
- * 
- * If anyone does the above TODO, get a patch in and delete these comments :D
- */
-
-int *sqldb_slotinit(char db_slot) {
-    switch (db_slot) {
-        case 'A':
-        case 'a':
-            return &mudconf.sqlDB_init_A;
-        case 'B':
-        case 'b':
-            return &mudconf.sqlDB_init_B;
-        case 'C':
-        case 'c':
-            return &mudconf.sqlDB_init_C;
-        case 'D':
-        case 'd':
-            return &mudconf.sqlDB_init_D;
-        case 'E':
-        case 'e':
-            return &mudconf.sqlDB_init_E;
-        default:
-            return NULL;
-    }
-}
-
-char *sqldb_slotval(char db_slot, int which) {
-    switch (db_slot) {
-        case 'A':
-        case 'a':
-            switch (which) {
-                case SQLDB_SLOT_HOSTNAME:
-                    return mudconf.sqlDB_hostname_A;
-                case SQLDB_SLOT_DBNAME:
-                    return mudconf.sqlDB_dbname_A;
-                case SQLDB_SLOT_USERNAME:
-                    return mudconf.sqlDB_username_A;
-                case SQLDB_SLOT_PASSWORD:
-                    return mudconf.sqlDB_password_A;
-                case SQLDB_SLOT_DBTYPE:
-                    return mudconf.sqlDB_type_A;
-            }
-        case 'B':
-        case 'b':
-            switch (which) {
-                case SQLDB_SLOT_HOSTNAME:
-                    return mudconf.sqlDB_hostname_B;
-                case SQLDB_SLOT_DBNAME:
-                    return mudconf.sqlDB_dbname_B;
-                case SQLDB_SLOT_USERNAME:
-                    return mudconf.sqlDB_username_B;
-                case SQLDB_SLOT_PASSWORD:
-                    return mudconf.sqlDB_password_B;
-                case SQLDB_SLOT_DBTYPE:
-                    return mudconf.sqlDB_type_B;
-            }
-        case 'C':
-        case 'c':
-            switch (which) {
-                case SQLDB_SLOT_HOSTNAME:
-                    return mudconf.sqlDB_hostname_C;
-                case SQLDB_SLOT_DBNAME:
-                    return mudconf.sqlDB_dbname_C;
-                case SQLDB_SLOT_USERNAME:
-                    return mudconf.sqlDB_username_C;
-                case SQLDB_SLOT_PASSWORD:
-                    return mudconf.sqlDB_password_C;
-                case SQLDB_SLOT_DBTYPE:
-                    return mudconf.sqlDB_type_C;
-            }
-        case 'D':
-        case 'd':
-            switch (which) {
-                case SQLDB_SLOT_HOSTNAME:
-                    return mudconf.sqlDB_hostname_D;
-                case SQLDB_SLOT_DBNAME:
-                    return mudconf.sqlDB_dbname_D;
-                case SQLDB_SLOT_USERNAME:
-                    return mudconf.sqlDB_username_D;
-                case SQLDB_SLOT_PASSWORD:
-                    return mudconf.sqlDB_password_D;
-                case SQLDB_SLOT_DBTYPE:
-                    return mudconf.sqlDB_type_D;
-            }
-        case 'E':
-        case 'e':
-            switch (which) {
-                case SQLDB_SLOT_HOSTNAME:
-                    return mudconf.sqlDB_hostname_E;
-                case SQLDB_SLOT_DBNAME:
-                    return mudconf.sqlDB_dbname_E;
-                case SQLDB_SLOT_USERNAME:
-                    return mudconf.sqlDB_username_E;
-                case SQLDB_SLOT_PASSWORD:
-                    return mudconf.sqlDB_password_E;
-                case SQLDB_SLOT_DBTYPE:
-                    return mudconf.sqlDB_type_E;
-            }
-        default:
-            return NULL;
-    }
-}
-
-/*
- * Internal call to send a query down to the libdbi SQL client.
- * It's a bit spamy but I wanted it to support open ended string lengths
- * so as to cap the data send/receives at whichever internal buffers were at hand,
- * instead of hardwiring sizes into a static structure.
- * To make this code cleaner....
- * TODO : Create a static transmit structure with all string sizes defined as LBUF
- * for the large potential ones, and SBUF/MBUF for the smaller ones liek username, PW,
- * etc... When transmitting, just loop through the proper location's instead of
- * calling each, and use strlen of course to define send sizes.
- *
- * How important? <shrug>
- */
-
-void sqlslave_doquery(char db_slot, dbref thing, int attr, char *pres, char *qry) {
-    int len;
-    char *val;
-
-    if (write(sqlslave_socket, &thing, sizeof(dbref)) <= 0) {
-        close(sqlslave_socket);
-        sqlslave_socket = -1;
-        event_del(&sqlslave_sock_ev);
-        return;
-    }
-    if (write(sqlslave_socket, &attr, sizeof(int)) <= 0)
-        return;
-
-    val = sqldb_slotval(db_slot, SQLDB_SLOT_DBTYPE);
-    len = strlen(val);
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, val, len) <= 0)
-            return;
-
-    val = sqldb_slotval(db_slot, SQLDB_SLOT_HOSTNAME);
-    len = strlen(val);
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, val, len) <= 0)
-            return;
-
-    val = sqldb_slotval(db_slot, SQLDB_SLOT_USERNAME);
-    len = strlen(val);
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, val, len) <= 0)
-            return;
-
-    val = sqldb_slotval(db_slot, SQLDB_SLOT_PASSWORD);
-    len = strlen(val);
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, val, len) <= 0)
-            return;
-
-    val = sqldb_slotval(db_slot, SQLDB_SLOT_DBNAME);
-    len = strlen(val);
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, val, len) <= 0)
-            return;
-
-    len = strlen(pres);
-    if (len >= SQLQUERY_MAX_STRING)
-        len = SQLQUERY_MAX_STRING;
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, pres, len) <= 0)
-            return;
-
-    len = strlen(qry);
-    if (len >= SQLQUERY_MAX_STRING)
-        len = SQLQUERY_MAX_STRING;
-    if (write(sqlslave_socket, &len, sizeof(int)) <= 0)
-        return;
-    if (len > 0)
-        if (write(sqlslave_socket, qry, len) <= 0)
-            return;
-    return;
-}
-
-/*
- * Boot and/or Restart the SQL Slave
- */
-
-void boot_sqlslave() {
-    int sv[2];
-    int i;
-    int maxfds;
-
-#ifdef HAVE_GETDTABLESIZE
-    maxfds = getdtablesize();
-#else
-    maxfds = sysconf(_SC_OPEN_MAX);
-#endif
-
-    if (sqlslave_socket != -1) {
-        close(sqlslave_socket);
-        sqlslave_socket = -1;
-        event_del(&sqlslave_sock_ev);
-    }
-
-    if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sv) < 0) {
-        return;
-    }
-    /*
-     * set to nonblocking
-     */
-    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
-        close(sv[0]);
-        close(sv[1]);
-        return;
-    }
-    sqlslave_pid = vfork();
-    switch (sqlslave_pid) {
-        case -1:
-            close(sv[0]);
-            close(sv[1]);
-            return;
-        case 0:                     /*
-                                     * * child
-                                     */
-            close(sv[0]);
-            close(0);
-            close(1);
-            if (dup2(sv[1], 0) == -1) {
-                _exit(1);
-            }
-            if (dup2(sv[1], 1) == -1) {
-                _exit(1);
-            }
-            for (i = 3; i < maxfds; ++i) {
-                close(i);
-            }
-            execlp("bin/sqlslave", "sqlslave", NULL);
-            _exit(1);
-    }
-    close(sv[1]);
-
-    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
-        close(sv[0]);
-        return;
-    }
-    sqlslave_socket = sv[0];
-    event_set(&sqlslave_sock_ev, sqlslave_socket, EV_READ | EV_PERSIST, 
-            accept_sqlslave_input, NULL);
-    event_add(&sqlslave_sock_ev);
-}
-#endif
 
 #ifdef ARBITRARY_LOGFILES
 static int logcache_compare(void *vleft, void *vright, void *arg) {
@@ -459,11 +131,11 @@ static int _logcache_list(void *key, void *data, int depth, void *arg) {
 }
     
 void logcache_list(dbref player) {
+    notify(player, "/--------------------------- Open Logfiles");
     if(rb_size(logfiles) == 0) {
-        notify(player, "There are no open logfile handles.");
+        notify(player, "- There are no open logfile handles.");
         return;
     }
-    notify(player, "/--------------------------- Open Logfiles");
     notify(player, "Filename                               Timeout");  
     rb_walk(logfiles, WALK_INORDER, _logcache_list, &player);
 }
@@ -495,7 +167,7 @@ static int logcache_open(char *filename) {
     return 1;
 }
 
-void boot_logcache() {
+void logcache_init() {
     if(!logfiles)
         logfiles = rb_init(logcache_compare, NULL);
 }
@@ -518,7 +190,7 @@ void logcache_writelog(dbref thing, char *fname, char *fdata) {
     struct timeval tv = { LOGFILE_TIMEOUT, 0 };
     int len;
    
-    if(!logfiles) boot_logcache();
+    if(!logfiles) logcache_init();
 
     len = strlen(fdata);
 
@@ -770,16 +442,6 @@ static int eradicate_broken_fd(void)
         }
         boot_slave();
     }
-#ifdef SQL_SUPPORT
-    if (sqlslave_socket != -1 && fstat(sqlslave_socket, &statbuf) < 0) {
-        STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
-            log_text("Broken descriptor for SQL slave: ");
-            log_number(sqlslave_socket);
-            ENDLOG;
-        }
-        boot_sqlslave();
-    }
-#endif
     if (sock != -1 && fstat(sock, &statbuf) < 0) {
         STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
             log_text("Broken descriptor for our main port: ");
@@ -820,11 +482,6 @@ void accept_slave_input(int fd, short event, void *arg) {
     while (get_slave_result() == 0);
 }
 
-#ifdef SQL_SUPPORT
-void accept_sqlslave_input(int fd, short event, void *arg) {
-    while (get_sqlslave_result() == 0);
-}
-#endif
 
 #ifndef HAVE_GETTIMEOFDAY
 #define get_tod(x)	{ (x)->tv_sec = time(NULL); (x)->tv_usec = 0; }
@@ -1537,15 +1194,12 @@ static RETSIGTYPE sighandler(sig)
                 dump_database_internal(DUMP_CRASHED);
                 shutdown(slave_socket, 2);
                 kill(slave_pid, SIGKILL);
-#ifdef SQL_SUPPORT
-                shutdown(sqlslave_socket, 2);
-                kill(sqlslave_pid, SIGKILL);
-                event_del(&sqlslave_sock_ev);
-#endif
 #ifdef ARBITRARY_LOGFILES
                 logcache_destruct();
 #endif
-
+#ifdef SQL_SUPPORT
+                sqlchild_destruct();
+#endif
                 if (mudconf.compress_db) {
                     sprintf(outdb, "%s.Z", mudconf.outdb);
                     sprintf(indb, "%s.Z", mudconf.indb);

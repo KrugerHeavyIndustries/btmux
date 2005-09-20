@@ -28,10 +28,6 @@ extern void dump_restart_db(void);
 extern int slave_pid;
 extern int slave_socket;
 
-#ifdef SQL_SUPPORT
-extern int sqlslave_pid, sqlslave_socket;
-#endif
-
 #ifdef ARBITRARY_LOGFILES
 extern int fileslave_pid, fileslave_socket;
 #endif
@@ -1117,10 +1113,6 @@ void do_restart(player, cause, key)
     shutdown(slave_socket, 2);
     kill(slave_pid, SIGKILL);
 
-#ifdef SQL_SUPPORT
-    shutdown(sqlslave_socket, 2);
-    kill(sqlslave_pid, SIGKILL);
-#endif
 
     dump_restart_db();
     execl("bin/netmux", "netmux", mudconf.config_file, NULL);
@@ -1619,12 +1611,8 @@ int exam_here;
  * * did_it: Have player do something to/with thing
  */
 
-void did_it(player, thing, what, def, owhat, odef, awhat, args, nargs)
-dbref player, thing;
-int what, owhat, awhat, nargs;
-char *args[];
-const char *def, *odef;
-{
+void did_it(dbref player, dbref thing, int what, const char *def, int owhat, 
+        const char *odef, int awhat, char *args[], int nargs) {
     char *d, *buff, *act, *charges, *bp, *str;
     dbref loc, aowner;
     int num, aflags;
@@ -1634,84 +1622,84 @@ const char *def, *odef;
      */
 
     if (what > 0) {
-	d = atr_pget(thing, what, &aowner, &aflags);
-	if (*d) {
-	    buff = bp = alloc_lbuf("did_it.1");
-	    str = d;
-	    exec(buff, &bp, 0, thing, player,
-		EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
-	    *bp = '\0';
-	    if (what == A_HTDESC) {
-		safe_str("\r\n", buff, &bp);
-		*bp = '\0';
-		notify_html(player, buff);
-	    } else
-		notify(player, buff);
-	    free_lbuf(buff);
-	} else if (def) {
-	    notify(player, def);
-	}
-	free_lbuf(d);
+        d = atr_pget(thing, what, &aowner, &aflags);
+        if (*d) {
+            buff = bp = alloc_lbuf("did_it.1");
+            str = d;
+            exec(buff, &bp, 0, thing, player,
+                    EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
+            *bp = '\0';
+            if (what == A_HTDESC) {
+                safe_str("\r\n", buff, &bp);
+                *bp = '\0';
+                notify_html(player, buff);
+            } else
+                notify(player, buff);
+            free_lbuf(buff);
+        } else if (def) {
+            notify(player, def);
+        }
+        free_lbuf(d);
     } else if ((what < 0) && def) {
-	notify(player, def);
+        notify(player, def);
     }
     /*
      * message to neighbors 
      */
 
     if ((owhat > 0) && Has_location(player) &&
-	Good_obj(loc = Location(player))) {
-	d = atr_pget(thing, owhat, &aowner, &aflags);
-	if (*d) {
-	    buff = bp = alloc_lbuf("did_it.2");
-	    str = d;
-	    exec(buff, &bp, 0, thing, player,
-		EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
-	    *bp = '\0';
-	    if (*buff)
-		notify_except2(loc, player, player, thing, tprintf("%s %s",
-			Name(player), buff));
-	    free_lbuf(buff);
-	} else if (odef) {
-	    notify_except2(loc, player, player, thing, tprintf("%s %s",
-		    Name(player), odef));
-	}
-	free_lbuf(d);
+            Good_obj(loc = Location(player))) {
+        d = atr_pget(thing, owhat, &aowner, &aflags);
+        if (*d) {
+            buff = bp = alloc_lbuf("did_it.2");
+            str = d;
+            exec(buff, &bp, 0, thing, player,
+                    EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
+            *bp = '\0';
+            if (*buff)
+                notify_except2(loc, player, player, thing, tprintf("%s %s",
+                            Name(player), buff));
+            free_lbuf(buff);
+        } else if (odef) {
+            notify_except2(loc, player, player, thing, tprintf("%s %s",
+                        Name(player), odef));
+        }
+        free_lbuf(d);
     } else if ((owhat < 0) && odef && Has_location(player) &&
-	Good_obj(loc = Location(player))) {
-	notify_except2(loc, player, player, thing, tprintf("%s %s",
-		Name(player), odef));
+            Good_obj(loc = Location(player))) {
+        notify_except2(loc, player, player, thing, tprintf("%s %s",
+                    Name(player), odef));
     }
     /*
      * do the action attribute 
      */
 
     if (awhat > 0) {
-	if (*(act = atr_pget(thing, awhat, &aowner, &aflags))) {
-	    charges = atr_pget(thing, A_CHARGES, &aowner, &aflags);
-	    if (*charges) {
-		num = atoi(charges);
-		if (num > 0) {
-		    buff = alloc_sbuf("did_it.charges");
-		    sprintf(buff, "%d", num - 1);
-		    atr_add_raw(thing, A_CHARGES, buff);
-		    free_sbuf(buff);
-		} else if (*(buff =
-			atr_pget(thing, A_RUNOUT, &aowner, &aflags))) {
-		    free_lbuf(act);
-		    act = buff;
-		} else {
-		    free_lbuf(act);
-		    free_lbuf(buff);
-		    free_lbuf(charges);
-		    return;
-		}
-	    }
-	    free_lbuf(charges);
-	    wait_que(thing, player, 0, NOTHING, 0, act, args, nargs,
-		mudstate.global_regs);
-	}
-	free_lbuf(act);
+        if (*(act = atr_pget(thing, awhat, &aowner, &aflags))) {
+            charges = atr_pget(thing, A_CHARGES, &aowner, &aflags);
+            if (*charges) {
+                num = atoi(charges);
+                if (num > 0) {
+                    buff = alloc_sbuf("did_it.charges");
+                    sprintf(buff, "%d", num - 1);
+                    atr_add_raw(thing, A_CHARGES, buff);
+                    free_sbuf(buff);
+                } else if (*(buff =
+                            atr_pget(thing, A_RUNOUT, &aowner, &aflags))) {
+                    free_lbuf(act);
+                    act = buff;
+                } else {
+                    free_lbuf(act);
+                    free_lbuf(buff);
+                    free_lbuf(charges);
+                    return;
+                }
+            }
+            free_lbuf(charges);
+            wait_que(thing, player, 0, NOTHING, 0, act, args, nargs,
+                    mudstate.global_regs);
+        }
+        free_lbuf(act);
     }
 }
 

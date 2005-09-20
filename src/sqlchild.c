@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
@@ -34,22 +35,19 @@
 #include "slave.h"
 #include "attrs.h"
 
+#ifdef SQL_SUPPORT
 #define MAX_QUERIES 8
 
 static int running_queries = 0;
-static char *db_username = NULL;
-static char *db_password = NULL;
-static char *db_database = NULL;
-static char *db_hostname = NULL;
-static char *db_type = NULL;
-
-static dbi_conn conn;
+dbi_conn conn=NULL;
 
 #define DBIS_EFAIL -1
 #define DBIS_READY 0
 #define DBIS_RESOURCE 1
 
+int dbi_initialized = 0;
 int dbi_state;
+int query_counter = 0;
 
 struct query_state_t {
     dbref thing;
@@ -60,43 +58,329 @@ struct query_state_t {
     char *rdelim;
     char *cdelim;
     struct query_state_t *next;
+    int serial;
+    struct timeval start;
+    char slot;
     int fd;
     int pid;
 } *running = NULL, *pending = NULL, *pending_tail = NULL;
 
 struct timeval query_timeout = { 10, 0 };
 
-void init_sql(char *username, char *password, char *database, char *hostname, 
-        char *type) {
+void sqlchild_init();
+void sqlchild_destruct();
+static void sqlchild_kill_all();
+static void sqlchild_kill_query(int requestId);
+static void sqlchild_abort_query(struct query_state_t *aqt, char *error);
+static void sqlchild_abort_query_dbi(struct query_state_t *aqt, char *error);
+static void sqlchild_execute_query(struct query_state_t *aqt);
+static void sqlchild_finish_query(int fd, short events, void *arg);
+static void sqlchild_check_queue();
+int sqlchild_request(dbref thing, int attr, char slot, char *pres, char *query, char *rdelim, char *cdelim);
+
+void sqlchild_init() {
     dbi_driver *driver;
-
-    fprintf(stderr, "sql] starting up.\n");
+   
+    if(dbi_initialized) return;
     
-    if(username) db_username = strdup(username);
-    if(password) db_password = strdup(password);
-    if(database) db_database = strdup(database);
-    if(hostname) db_hostname = strdup(hostname);
-    if(!type) {
-        EMIT_STDERR("no database type supplied, failing.");
-        dbi_state = DBIS_EFAIL;
-    } else db_type = strdup(type);
-
     if(dbi_initialize(NULL) == -1) {
         EMIT_STDERR("dbi_initialized() failed.");
         dbi_state = DBIS_EFAIL;
         return;
     }
 
-    fprintf(stderr, "sql] dbi initialized. Current drivers = ");
     driver = dbi_driver_list(NULL);
     while(driver != NULL) {
-        fprintf(stderr, "%s ", dbi_driver_get_name(driver));
         driver = dbi_driver_list(driver);
     }
 
-    fprintf(stderr, "\n");
     
-    conn = dbi_conn_new(db_type);
+    dbi_state = DBIS_READY;
+}
+
+void sqlchild_destruct() {
+    dbi_state = DBIS_EFAIL;
+    sqlchild_kill_all();
+    dbi_shutdown();
+}
+
+/* do_query entrypoint */
+int sqlchild_request(dbref thing, int attr, char slot, char *pres, char *query, char *rdelim, char *cdelim) {
+    int fds[2];
+    struct query_state_t *aqt;
+
+    if(dbi_state < DBIS_READY) return -1;
+    
+    aqt = malloc(sizeof(struct query_state_t));
+    aqt->thing = thing;
+    aqt->attr = attr;
+    aqt->preserve = strdup(pres);
+    aqt->query = strdup(query);
+    aqt->rdelim = strdup(rdelim);
+    aqt->cdelim = strdup(cdelim);
+    aqt->serial = query_counter++;
+    aqt->slot = slot;
+
+    if(pending == NULL) {
+        aqt->next = NULL;
+        pending = aqt;
+        pending_tail = aqt;
+    } else {
+        pending_tail->next = aqt;
+        aqt->next = NULL;
+        pending_tail = aqt;
+    }
+    sqlchild_check_queue();
+    return 1;
+}
+
+void sqlchild_kill_all() {
+    if(!dbi_initialized) return;
+    while(running) {
+        sqlchild_kill_query(running);
+    }
+}
+
+void sqlchild_kill_query(int requestId) {
+    int status;
+    struct query_state_t *iter, *aqt;
+    return; // XXX: search queues
+    kill(aqt->pid, SIGTERM);
+    waitpid(aqt->pid, NULL, 0);
+    
+    iter = running;
+    if(running == aqt) {
+        running = aqt->next;
+    } else {
+        while(iter) {
+            if(iter->next == aqt) {
+                iter->next = aqt->next;
+                break;
+            }
+            iter = iter->next;
+        }
+    }
+    if(aqt->preserve) free(aqt->preserve);
+    if(aqt->query) free(aqt->query);
+    if(aqt->rdelim) free(aqt->rdelim);
+    if(aqt->cdelim) free(aqt->cdelim);
+    close(aqt->fd);
+    free(aqt);
+    running_queries--;
+    sqlchild_check_queue();
+};
+
+void sqlchild_list(dbref thing) {
+    int nactive = 0, npending = 0;
+    struct query_state_t *aqt;
+    notify(thing, "/--------------------------- Running Queries");
+    if(running) {
+        aqt = running;
+        while(aqt) {
+            notify_printf(thing, "%08d #%8d %40s", aqt->serial, aqt->thing, aqt->query);
+            aqt = aqt->next;
+        }
+    } else {
+        notify(thing, "- No active queries.");
+    }
+    notify(thing, "/--------------------------- Pending Queries");
+    if(pending) {
+        aqt = pending;
+        while(aqt) {
+            notify_printf(thing, "%08d #%-8d %40s", aqt->serial, aqt->thing, aqt->query);
+            aqt = aqt->next;
+        }
+    } else {
+        notify(thing, "- No pending queries.");
+    }
+    notify_printf(thing, "%d active and %d pending queries.\n", nactive, pending);
+}
+        
+    
+struct query_response {
+    int status;
+    int n_chars;
+};
+
+/* HOST FUNCTIONS */
+
+static void sqlchild_finish_query(int fd, short events, void *arg) {
+    char *argv[5];
+    struct query_state_t *aqt = (struct query_state_t *)arg, *iter;
+    struct query_response resp = { -1, 0 };
+    char buffer[LBUF_SIZE];
+    buffer[0] = '\0';
+
+    if(read(aqt->fd, &resp, sizeof(struct query_response)) < 0) {
+        log_perror("SQL", "FAIL", NULL, "sqlchild_finish_query");
+        argv[0] = "-1";
+        argv[1] = "";
+        argv[3] = "serious braindamage";
+        goto fail;
+
+    }
+
+    if(resp.n_chars) {
+        if(read(aqt->fd, buffer, resp.n_chars) < 0) {
+            log_perror("SQL", "FAIL", NULL, "sqlchild_finish_query");
+            argv[0] = "-1";
+            argv[1] = "";
+            argv[3] = "serious braindamage";
+            goto fail;
+        }
+    }
+
+    if(resp.n_chars < LBUF_SIZE) {
+        if(strnlen(buffer, resp.n_chars) >= LBUF_SIZE) {
+            buffer[LBUF_SIZE] = '\0';
+        }
+    } else {
+        if(strnlen(buffer, LBUF_SIZE) >= LBUF_SIZE) {
+            buffer[LBUF_SIZE] = '\0';
+        }
+    }
+    
+    if(resp.status == 0) {
+        argv[0] = "1";
+        argv[1] = buffer;
+        argv[3] = "Success";
+    } else {
+        argv[0] = "0";
+        argv[1] = "";
+        if(resp.n_chars) {
+            argv[3] = buffer;
+        } else {
+            argv[3] = "minor braindamage, no error reported.";
+        }
+    }
+    
+fail:
+    argv[2] = aqt->preserve;
+    did_it(GOD, aqt->thing, 0, NULL, 0, NULL, aqt->attr, argv, 4);
+hardfail:
+    iter = running;
+    if(running == aqt) {
+        running = aqt->next;
+    } else {
+        while(iter) {
+            if(iter->next == aqt) {
+                iter->next = aqt->next;
+                break;
+            }
+            iter = iter->next;
+        }
+    }
+    if(aqt->preserve) free(aqt->preserve);
+    if(aqt->query) free(aqt->query);
+    if(aqt->rdelim) free(aqt->rdelim);
+    if(aqt->cdelim) free(aqt->cdelim);
+    close(aqt->fd);
+    free(aqt);
+    running_queries--;
+    sqlchild_check_queue();
+    return;
+}
+
+static void sqlchild_check_queue() {
+    int fds[2];
+    struct query_state_t *aqt;
+    if(running_queries >= mudconf.sqlDB_max_queries) return;
+    if(pending == NULL) return;
+    if(dbi_state != DBIS_READY) return;
+
+    aqt = pending;
+    pending = aqt->next;
+    if(pending == NULL) pending_tail = NULL;
+    
+    if(pipe(fds) < 0) {
+        log_perror("SQL", "FAIL", NULL, "pipe");
+        return;
+    }
+
+    if((aqt->pid=fork()) == 0) {
+        aqt->fd = fds[1];
+        sqlchild_execute_query(aqt);
+        exit(0);
+    } else {
+        running_queries++;
+        aqt->fd = fds[0];
+        close(fds[1]);
+    }
+
+    if(running) aqt->next = running;
+    running = aqt;
+
+    event_set(&aqt->ev, aqt->fd, EV_READ, sqlchild_finish_query, aqt);
+    event_add(&aqt->ev, &query_timeout);
+    return;
+}
+
+/* CHILD FUNCTIONS */
+
+static void sqlchild_abort_query(struct query_state_t *aqt, char *error) {
+    struct query_response resp = { DBIS_EFAIL, 0 };
+    if(error) {
+        resp.n_chars = strlen(error)+1;
+        write(aqt->fd, &resp, sizeof(resp));
+        write(aqt->fd, error, resp.n_chars);
+    } else {
+        write(aqt->fd, &resp, sizeof(resp));
+    }
+    close(aqt->fd);
+    return;
+}
+
+static void sqlchild_abort_query_dbi(struct query_state_t *aqt, char *error) {
+    const char *error_ptr;
+    if(dbi_conn_error(conn, &error_ptr) != -1) 
+        sqlchild_abort_query(aqt, error_ptr);
+    else 
+        sqlchild_abort_query(aqt, error);
+    return;
+}
+
+static void sqlchild_make_connection(char db_slot) {
+    char *db_type, *db_hostname, *db_username, *db_password, *db_database;
+    switch(db_slot){
+        case 'A':
+            db_type = mudconf.sqlDB_type_A;
+            db_hostname = mudconf.sqlDB_hostname_A;
+            db_username = mudconf.sqlDB_username_A;
+            db_password = mudconf.sqlDB_password_A;
+            db_database = mudconf.sqlDB_dbname_A;
+            break;
+        case 'B':
+            db_type = mudconf.sqlDB_type_B;
+            db_hostname = mudconf.sqlDB_hostname_B;
+            db_username = mudconf.sqlDB_username_B;
+            db_password = mudconf.sqlDB_password_B;
+            db_database = mudconf.sqlDB_dbname_B;
+            break;
+        case 'C':
+            db_type = mudconf.sqlDB_type_C;
+            db_hostname = mudconf.sqlDB_hostname_C;
+            db_username = mudconf.sqlDB_username_C;
+            db_password = mudconf.sqlDB_password_C;
+            db_database = mudconf.sqlDB_dbname_C;
+            break;
+        case 'D':
+            db_type = mudconf.sqlDB_type_D;
+            db_hostname = mudconf.sqlDB_hostname_D;
+            db_username = mudconf.sqlDB_username_D;
+            db_password = mudconf.sqlDB_password_D;
+            db_database = mudconf.sqlDB_dbname_D;
+            break;
+        case 'E':
+            db_type = mudconf.sqlDB_type_E;
+            db_hostname = mudconf.sqlDB_hostname_E;
+            db_username = mudconf.sqlDB_username_E;
+            db_password = mudconf.sqlDB_password_E;
+            db_database = mudconf.sqlDB_dbname_E;
+            break;
+        default:
+            return;
+    }
+   conn = dbi_conn_new(db_type);
     if(!conn) {
         EMIT_STDERR("dbi_conn_new() failed with db_type %s.", db_type);
         dbi_state = DBIS_EFAIL;
@@ -123,44 +407,14 @@ void init_sql(char *username, char *password, char *database, char *hostname,
         dbi_state = DBIS_EFAIL;
         return;
     }
-    dbi_state = DBIS_READY;
-}
-
-struct query_response {
-    int status;
-    int n_chars;
-};
-
-static void abort_query(struct query_state_t *aqt, char *error) {
-    struct query_response resp = { DBIS_EFAIL, 0 };
-    if(error) {
-        EMIT_STDERR(error);
-        resp.n_chars = strlen(error)+1;
-        write(aqt->fd, &resp, sizeof(resp));
-        write(aqt->fd, error, resp.n_chars);
-    } else {
-        write(aqt->fd, &resp, sizeof(resp));
-    }
-    close(aqt->fd);
     return;
 }
-
-static void abort_query_dbi(struct query_state_t *aqt, char *error) {
-    const char *error_ptr;
-    if(dbi_conn_error(conn, &error_ptr) != -1) 
-        abort_query(aqt, error_ptr);
-    else 
-        abort_query(aqt, error);
-    return;
-}
-
-#define OUTLEN 8192
-
-static void execute_query(struct query_state_t *aqt) {
+ 
+static void sqlchild_execute_query(struct query_state_t *aqt) {
     struct query_response resp = { DBIS_READY, -1 };
     dbi_result result;
     int rows, fields, i, ii, retval;
-    char output_buffer[OUTLEN], *ptr, *eptr, *delim;
+    char output_buffer[LBUF_SIZE], *ptr, *eptr, *delim;
     char time_buffer[64];
     int length = 0;
 
@@ -170,27 +424,29 @@ static void execute_query(struct query_state_t *aqt) {
     time_t type_time;
     
     ptr = output_buffer;
-    eptr = ptr + OUTLEN;
+    eptr = ptr + LBUF_SIZE;
     *ptr = '\0';
-    
-    if(dbi_conn_connect(conn) != 0) {
-        abort_query_dbi(aqt, "dbi_conn_connect failed");
+
+    sqlchild_make_connection(aqt->slot);
+    if(!conn) {
+        sqlchild_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
         return;
     }
-    
+
+    if(dbi_conn_connect(conn) != 0) {
+        sqlchild_abort_query(aqt, "dbi_conn_connect failed");
+        return;
+    }
+
     result = dbi_conn_query(conn, aqt->query);
     if(result == NULL) {
-        abort_query_dbi(aqt, "unknown error in dbi_conn_query");
+        sqlchild_abort_query_dbi(aqt, "unknown error in dbi_conn_query");
         return;
     }
 
     rows = dbi_result_get_numrows(result);
     fields = dbi_result_get_numfields(result);
 
-    if(!rows || !fields) {
-        abort_query_dbi(aqt, "unknown error");
-    }
-        
     while(dbi_result_next_row(result)) {
         for(i = 1; i <= fields; i++) {
             if(fields == i) delim = aqt->rdelim;
@@ -210,20 +466,20 @@ static void execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
                 case DBI_TYPE_BINARY:
-                    abort_query(aqt, "can't handle type BINARY");
+                    sqlchild_abort_query(aqt, "can't handle type BINARY");
                     return;
                 case DBI_TYPE_DATETIME:
                     // HANDLE TIMEZONE
                     type_time = dbi_result_get_datetime_idx(result, i);
-                    ctime_r(type_time, time_buffer);
+                    ctime_r(&type_time, time_buffer);
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", time_buffer, delim);
                     break;
                 default:
-                    abort_query(aqt, "unknown type");
+                    sqlchild_abort_query(aqt, "unknown type");
                     return;
             }
             if(eptr-ptr < 1) {
-                abort_query(aqt, "result too large");
+                sqlchild_abort_query(aqt, "result too large");
                 return;
             }
         }
@@ -241,130 +497,5 @@ static void execute_query(struct query_state_t *aqt) {
     close(aqt->fd);
     return;
 }
-static void issue_sql_request();
 
-static void accept_query_result(int fd, short events, void *arg) {
-    char *argv[5];
-    struct query_state_t *aqt = (struct query_state_t *)arg, *iter;
-    struct query_response resp = { -1, 0 };
-    char buffer[OUTLEN];
-    char confirm[4096];
-    buffer[0] = '\0';
-
-    EMIT_STDERR("child %d completed.", aqt->pid);
-    if(read(aqt->fd, &resp, sizeof(struct query_response)) < 0) {
-        log_perror("SQL", "FAIL", NULL, "accept_query_result");
-        goto fail;
-
-    }
-
-    if(resp.n_chars) {
-        if(read(aqt->fd, buffer, resp.n_chars) < 0) {
-            log_perror("SQL", "FAIL", NULL, "accept_query_result");
-            goto fail;
-        }
-    }
-
-    confirm[0] = '\0';
-    
-    if(resp.status == 0) {
-        strncpy(confirm, "{ Success }", 4096);
-    } else {
-        if(resp.n_chars) {
-            snprintf(confirm, 4096, "{ #-1 %s }", buffer);
-            buffer[0] = '\0';
-            resp.n_chars = 0;
-        } else {
-            snprintf(confirm, 4096, "{ #-1 Serious Braindamage, Unknown Error }");
-        }
-    }
-    argv[0] = confirm;
-    argv[1] = buffer;
-    argv[2] = aqt->preserve;
-    did_it(GOD, aqt->thing, 0, NULL, 0, NULL, aqt->attr, argv, 3);
-fail:
-    iter = running;
-    if(running == aqt) {
-        running = aqt->next;
-    } else {
-        while(iter) {
-            if(iter->next == aqt) {
-                iter->next = aqt->next;
-                break;
-            }
-            iter = iter->next;
-        }
-    }
-    if(aqt->preserve) free(aqt->preserve);
-    if(aqt->query) free(aqt->query);
-    if(aqt->rdelim) free(aqt->rdelim);
-    if(aqt->cdelim) free(aqt->cdelim);
-    close(aqt->fd);
-    free(aqt);
-    running_queries--;
-    issue_sql_request();
-    return;
-}
-
-static void issue_sql_request() {
-    int fds[2];
-    struct query_state_t *aqt;
-    if(running_queries == MAX_QUERIES) return;
-    if(pending == NULL) return;
-
-    aqt = pending;
-    pending = aqt->next;
-    if(pending == NULL) pending_tail = NULL;
-    
-    if(pipe(fds) < 0) {
-        log_perror("SQL", "FAIL", NULL, "pipe");
-        return 0;
-    }
-
-    if((aqt->pid=fork()) == 0) {
-        aqt->fd = fds[1];
-        execute_query(aqt);
-        exit(0);
-    } else {
-        running_queries++;
-        aqt->fd = fds[0];
-        close(fds[1]);
-    }
-
-    if(running) aqt->next = running;
-    running = aqt;
-
-    event_set(&aqt->ev, aqt->fd, EV_READ, accept_query_result, aqt);
-    event_add(&aqt->ev, &query_timeout);
-    EMIT_STDERR("started sql slave, pid = %d and return fd = %d\n", 
-            aqt->pid, aqt->fd);
-    return;
-}
-
-int queue_request(dbref thing, int attr, char *pres, char *query, char *rdelim, char *cdelim) {
-    int fds[2];
-    struct query_state_t *aqt;
-
-    if(dbi_state < DBIS_READY) return -1;
-    
-    aqt = malloc(sizeof(struct query_state_t));
-    aqt->thing = thing;
-    aqt->attr = attr;
-    aqt->preserve = strdup(pres);
-    aqt->query = strdup(query);
-    aqt->rdelim = strdup(rdelim);
-    aqt->cdelim = strdup(cdelim);
-
-    if(pending == NULL) {
-        aqt->next = NULL;
-        pending = aqt;
-        pending_tail = aqt;
-    } else {
-        pending_tail->next = aqt;
-        aqt->next = NULL;
-        pending_tail = aqt;
-    }
-    issue_sql_request();
-    return 1;
-}
-
+#endif /* SQL_SUPPORT */

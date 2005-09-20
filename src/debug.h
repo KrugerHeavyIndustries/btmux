@@ -56,7 +56,11 @@
 		abort();	\
     }} while (0)
 
-#define EMIT_STDERR(format, args...) fprintf(stderr, "%s (%s:%d)] " format "\n", ##args)
+#define EMIT_STDERR(args...) do { \
+    fprintf(stderr, "%s (%s:%d)] ", __FUNCTION__, __FILE__, __LINE__); \
+    fprintf(stderr, args); \
+    fprintf(stderr, "\n"); \
+    } while(0)
 
 #define handle_errno(x) if((x)<0) do { fprintf(stderr, "%s (%s:%d)] %s\n", __FUNCTION__, __FILE__,  __LINE__, strerror(errno)); abort(); } while(0)
 

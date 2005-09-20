@@ -22,8 +22,9 @@
 #include "alloc.h"
 #include "attrs.h"
 #include "powers.h"
+
 #ifdef SQL_SUPPORT
-#include "p.bsd.h"
+#include "sqlchild.h"
 #endif
 
 int recursive_check_contents(dbref victim, dbref destination)
@@ -235,41 +236,49 @@ char *what, *command, *args[];
 }
 
 #ifdef SQL_SUPPORT
+void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry);
+void do_query(dbref player, dbref cause, int key, char *what, char *qry) {
+    switch(key) {
+        case QUERY_SQL:
+            do_query_sub(player, cause, key, what, qry);
+            break;
+        case LIST_SQL:
+            sqlchild_list(player);
+            break;
+        case KILL_SQL:
+        default:
+            break;
+    }
+}
+
+
 /*
  * ---------------------------------------------------------------------------
  *  * do_query: Calls a externalized query.
  */
-void do_query(player, cause, key, what, qry)
-dbref player, cause;
-int key;
-char *what, *qry;
-{
+void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
     dbref thing, aowner;
     int aflags, attr = -1;
     ATTR *ap;
     char *obj;
+    char *rdelim = "|";
+    char *cdelim = ":";
     char db_slot;
     static char preserve[LBUF_SIZE];
 
     obj = parse_to(&what, '/', 0);
-    db_slot = obj[0];
-    if (!(db_slot >= 'A' && db_slot <= 'E') && !(db_slot >= 'a' && db_slot <= 'e')) {
+    db_slot = toupper(obj[0]);
+    if (!(db_slot >= 'A' && db_slot <= 'E')) {
         notify(player, "Invalid DB slot. Try A through E.");
         return;
-        } else {
-            int *test = sqldb_slotinit(db_slot);
-            if (*test == 0) {
-                notify(player, "DB slot not initialized properly.");
-                return;
-                }
-        }
+    } 
 
     obj = parse_to(&what, '/', 0);
     init_match(player, obj, NOTYPE);
     match_everything(0);
 
     if ((thing = noisy_match_result()) < 0) {
-        notify(player, "No match.");
+        // noisy_match_result will inform the player.
         return;
     } else if (!controls(player, thing)) {
         notify(player, "Permission Denied.");
@@ -281,31 +290,52 @@ char *what, *qry;
         ap = NULL;
     else
         ap = atr_str(obj);
+
     if (!ap) {
         notify(player, "Attribute error.");
         return;
-        }
+    }
+
     atr_pget_info(thing, ap->number, &aowner, &aflags);
+
     if (Set_attr(player, thing, ap, aflags)) {
         attr = ap->number;
     } else {
         notify_quiet(player, "Permission denied.");
         return;
     }
-    if (!what || !*what) {
+
+    obj = parse_to(&what, '/', 0);
+    
+    if (!obj || !*obj) {
         notify(player, "Invalid preservation data");
         return;
-        }
+    }
+
     memset(preserve, '\0', LBUF_SIZE);
-    strncpy(preserve, what, LBUF_SIZE);
+    strncpy(preserve, obj, LBUF_SIZE);
+
+    if(what) {
+        obj = parse_to(&what, '/', 0);
+        if(obj && *obj) {
+            cdelim = obj;
+
+            if(what) {
+                obj = parse_to(&what, '/', 0);
+                if(obj && *obj) {
+                    rdelim = obj;
+                }
+            }
+        }
+    }
 
     if (!qry || !*qry) {
         notify(player, "Query error.");
         return;
-        }
+    }
 
     if (key & QUERY_SQL) {
-        sqlslave_doquery(db_slot, thing, attr, preserve, qry);
+        sqlchild_request(thing, attr, db_slot, preserve, qry, rdelim, cdelim);
         notify_quiet(player, "SQL query sent.");
     } else {
         notify_quiet(player, "Switch not supported.");

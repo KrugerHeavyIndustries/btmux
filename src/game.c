@@ -28,6 +28,9 @@
 #include "slave.h"
 #include "vattr.h"
 #include "commac.h"
+#ifdef HAVE_SQL_SUPPORT
+#include "sqlchild.h"
+#endif
 
 #ifndef NEXT
 #endif
@@ -55,12 +58,9 @@ extern void raw_notify(dbref, const char *);
 extern void do_second(void);
 extern void do_dbck(dbref, dbref, int);
 extern void boot_slave(void);
-#ifdef SQL_SUPPORT
-extern void boot_sqlslave(void);
-#endif
 
 #ifdef ARBITRARY_LOGFILES
-void boot_logcache();
+void logcache_init();
 void logcache_destruct();
 #endif
 
@@ -79,11 +79,6 @@ int reserved;
 
 extern pid_t slave_pid;
 extern int slave_socket;
-
-#ifdef SQL_SUPPORT
-extern pid_t sqlslave_pid;
-extern int sqlslave_socket;
-#endif
 
 #ifdef MEMORY_BASED
 extern int corrupt;
@@ -962,117 +957,120 @@ int dump_type;
 #endif
 
     if (dump_type == DUMP_CRASHED) {
-	unlink(mudconf.crashdb);
-	f = fopen(mudconf.crashdb, "w");
-	if (f != NULL) {
-	    db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
-	    fclose(f);
-	} else {
-	    log_perror("DMP", "FAIL", "Opening crash file",
-		mudconf.crashdb);
-	}
-	if (mudconf.have_mailer)
-	    if ((f = fopen(mudconf.mail_db, "w"))) {
-		dump_mail(f);
-		fclose(f);
-	    }
-	if (mudconf.have_comsys || mudconf.have_macros)
-	    save_comsys_and_macros(mudconf.commac_db);
-	SaveSpecialObjects(DUMP_CRASHED);
-	return;
+        unlink(mudconf.crashdb);
+        f = fopen(mudconf.crashdb, "w");
+        if (f != NULL) {
+            db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
+            fclose(f);
+        } else {
+            log_perror("DMP", "FAIL", "Opening crash file",
+                    mudconf.crashdb);
+        }
+        if (mudconf.have_mailer)
+            if ((f = fopen(mudconf.mail_db, "w"))) {
+                dump_mail(f);
+                fclose(f);
+            }
+        if (mudconf.have_comsys || mudconf.have_macros)
+            save_comsys_and_macros(mudconf.commac_db);
+        SaveSpecialObjects(DUMP_CRASHED);
+        return;
     }
 
     if (dump_type == DUMP_RESTART) {
-	f = fopen(mudconf.indb, "w");
-	if (f != NULL) {
-	    /* Write a flatfile */
-	    db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
-	    fclose(f);
-	} else {
-	    log_perror("DMP", "FAIL", "Opening restart file",
-		mudconf.indb);
-	}
-	if (mudconf.have_mailer)
-	    if ((f = fopen(mudconf.mail_db, "w"))) {
-		dump_mail(f);
-		fclose(f);
-	    }
-	if (mudconf.have_comsys || mudconf.have_macros)
-	    save_comsys_and_macros(mudconf.commac_db);
-	if (mudconf.have_specials)
-	    SaveSpecialObjects(DUMP_RESTART);
-	return;
+        f = fopen(mudconf.indb, "w");
+        if (f != NULL) {
+            /* Write a flatfile */
+            db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
+            fclose(f);
+        } else {
+            log_perror("DMP", "FAIL", "Opening restart file",
+                    mudconf.indb);
+        }
+        if (mudconf.have_mailer)
+            if ((f = fopen(mudconf.mail_db, "w"))) {
+                dump_mail(f);
+                fclose(f);
+            }
+        if (mudconf.have_comsys || mudconf.have_macros)
+            save_comsys_and_macros(mudconf.commac_db);
+        if (mudconf.have_specials)
+            SaveSpecialObjects(DUMP_RESTART);
+        return;
     }
     if (dump_type == DUMP_KILLED) {
-	sprintf(tmpfile, "%s.KILLED", mudconf.indb);
-	f = fopen(tmpfile, "w");
-	if (f != NULL) {
-	    /* Write a flatfile */
-	    db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
-	    fclose(f);
-	} else {
-	    log_perror("DMP", "FAIL", "Opening killed file", mudconf.indb);
-	}
-	if (mudconf.have_mailer)
-	    if ((f = fopen(mudconf.mail_db, "w"))) {
-		dump_mail(f);
-		fclose(f);
-	    }
-	if (mudconf.have_comsys || mudconf.have_macros)
-	    save_comsys_and_macros(mudconf.commac_db);
-	if (mudconf.have_specials)
-	    SaveSpecialObjects(DUMP_KILLED);
-	return;
+        sprintf(tmpfile, "%s.KILLED", mudconf.indb);
+        f = fopen(tmpfile, "w");
+        if (f != NULL) {
+            /* Write a flatfile */
+            db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
+            fclose(f);
+        } else {
+            log_perror("DMP", "FAIL", "Opening killed file", mudconf.indb);
+        }
+        if (mudconf.have_mailer)
+            if ((f = fopen(mudconf.mail_db, "w"))) {
+                dump_mail(f);
+                fclose(f);
+            }
+        if (mudconf.have_comsys || mudconf.have_macros)
+            save_comsys_and_macros(mudconf.commac_db);
+        if (mudconf.have_specials)
+            SaveSpecialObjects(DUMP_KILLED);
+        return;
     }
 
     sprintf(prevfile, "%s.prev", mudconf.outdb);
     sprintf(tmpfile, "%s.#%d#", mudconf.outdb, mudstate.epoch - 1);
     unlink(tmpfile);		/*
-				 * nuke our predecessor 
-				 */
+                             * nuke our predecessor 
+                             */
     sprintf(tmpfile, "%s.#%d#", mudconf.outdb, mudstate.epoch);
 
     if (mudconf.compress_db) {
-	sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch - 1);
-	unlink(tmpfile);
-	sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch);
-	StringCopy(outfn, mudconf.outdb);
-	strcat(outfn, ".gz");
-	f = popen(tprintf("%s > %s", mudconf.compress, tmpfile), "w");
-	if (f) {
-	    db_write(f, F_MUX, OUTPUT_VERSION | OUTPUT_FLAGS);
-	    pclose(f);
-	    rename(mudconf.outdb, prevfile);
-	    if (rename(tmpfile, outfn) < 0)
-		log_perror("SAV", "FAIL",
-		    "Renaming output file to DB file", tmpfile);
-	} else {
-	    log_perror("SAV", "FAIL", "Opening", tmpfile);
-	}
+        sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch - 1);
+        unlink(tmpfile);
+        sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch);
+        StringCopy(outfn, mudconf.outdb);
+        strcat(outfn, ".gz");
+        f = popen(tprintf("%s > %s", mudconf.compress, tmpfile), "w");
+        if (f) {
+            db_write(f, F_MUX, OUTPUT_VERSION | OUTPUT_FLAGS);
+            pclose(f);
+            rename(mudconf.outdb, prevfile);
+            if (rename(tmpfile, outfn) < 0)
+                log_perror("SAV", "FAIL",
+                        "Renaming output file to DB file", tmpfile);
+        } else {
+            log_perror("SAV", "FAIL", "Opening", tmpfile);
+        }
     } else {
-	f = fopen(tmpfile, "w");
-	if (f) {
-	    db_write(f, F_MUX, OUTPUT_VERSION | OUTPUT_FLAGS);
-	    fclose(f);
-	    rename(mudconf.outdb, prevfile);
-	    if (rename(tmpfile, mudconf.outdb) < 0)
-		log_perror("SAV", "FAIL",
-		    "Renaming output file to DB file", tmpfile);
-	} else {
-	    log_perror("SAV", "FAIL", "Opening", tmpfile);
-	}
+        f = fopen("netmux.xml", "w");
+        xml_db_write(f, F_MUX, 0);
+        fclose(f);
+        f = fopen(tmpfile, "w");
+        if (f) {
+            db_write(f, F_MUX, OUTPUT_VERSION | OUTPUT_FLAGS);
+            fclose(f);
+            rename(mudconf.outdb, prevfile);
+            if (rename(tmpfile, mudconf.outdb) < 0)
+                log_perror("SAV", "FAIL",
+                        "Renaming output file to DB file", tmpfile);
+        } else {
+            log_perror("SAV", "FAIL", "Opening", tmpfile);
+        }
     }
 
 #ifndef STANDALONE
     if (mudconf.have_mailer)
-	if ((f = fopen(mudconf.mail_db, "w"))) {
-	    dump_mail(f);
-	    fclose(f);
-	}
+        if ((f = fopen(mudconf.mail_db, "w"))) {
+            dump_mail(f);
+            fclose(f);
+        }
     if (mudconf.have_comsys || mudconf.have_macros)
-	save_comsys_and_macros(mudconf.commac_db);
+        save_comsys_and_macros(mudconf.commac_db);
     if (mudconf.have_specials)
-	SaveSpecialObjects(DUMP_NORMAL);
+        SaveSpecialObjects(DUMP_NORMAL);
 #endif
 }
 
@@ -1538,12 +1536,13 @@ int main(int argc, char *argv[]) {
     load_restart_db();
 
     boot_slave();
+
 #ifdef SQL_SUPPORT
-    boot_sqlslave();
+    sqlchild_init();
 #endif
 
 #ifdef ARBITRARY_LOGFILES
-    boot_logcache();
+    logcache_init();
 #endif
 
 #ifdef MCHECK
@@ -1571,12 +1570,10 @@ int main(int argc, char *argv[]) {
 #ifdef ARBITRARY_LOGFILES
     logcache_destruct();
 #endif
-
 #ifdef SQL_SUPPORT
-    if (sqlslave_socket != -1) {
-        kill(sqlslave_pid, SIGKILL);
-    }
+    sqlchild_destruct();
 #endif
+
 
     exit(0);
 }

@@ -71,6 +71,7 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/walkdb.o      \
                  src/wild.o        \
                  src/wiz.o         \
+				 src/sqlchild.o	   \
 
 HCODE_OBJECTS =  src/hcode/coolmenu.o        \
                  src/hcode/debug.o           \
@@ -202,9 +203,6 @@ clean:
 
 slave src/slave: src/slave.c
 	$(CC) $(ALLFLAGS) -o src/slave src/slave.c
-
-sqlslave src/sqlslave: src/sqlslave.c
-	$(CC) $(ALLFLAGS) -o src/sqlslave src/sqlslave.c $(LIBS)
 
 mkindx src/mkindx: src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx src/mkindx.c

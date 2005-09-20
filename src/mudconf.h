@@ -315,6 +315,7 @@ struct confdata {
     char sqlDB_username_E[128];
     char sqlDB_password_E[128];
     char sqlDB_dbname_E[128];
+    int sqlDB_max_queries;
 #endif
 #ifdef EXTENDED_DEFAULT_PARENTS
     int room_parent;

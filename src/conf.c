@@ -21,8 +21,7 @@
 #include "flags.h"
 #include "powers.h"
 #ifdef SQL_SUPPORT
-#include "sqlslave.h"
-#include "p.bsd.h"
+#include "sqlchild.h"
 #endif
 
 
@@ -475,6 +474,7 @@ void cf_init(void)
     mudconf.sqlDB_init_C = 0;
     mudconf.sqlDB_init_D = 0;
     mudconf.sqlDB_init_E = 0;
+    mudconf.sqlDB_max_queries = 4;
 #endif
 #ifdef EXTENDED_DEFAULT_PARENTS
     mudconf.exit_parent = 0;
@@ -1029,39 +1029,6 @@ int cf_cf_access(int *vp, char *str, long extra, dbref player, char *cmd)
     return -1;
 }
 
-#ifdef SQL_SUPPORT
-/*
- *  -------------------------------------------------------------------------
- *  * check_sqldata: Read initialization after cf_include.
- *  * Ya, should prolly added some command or automatic code to read the
- *  * configs on change. Oh well.
- */
-
-void check_sqldata(void)
-{
-    char i;
-    char *val;
-    int *init, ii;
-
-    for (i = 'A'; i < 'E'; i++) {
-        init = sqldb_slotinit(i);
-        /* Quick hack. Validation needed here later once we start testing with more than mysql (At the time, local driver issue on dev machine.) */
-        if (strcmp(sqldb_slotval(i, SQLDB_SLOT_DBTYPE), "mysql") != 0) {
-            *init = 0;
-            continue;
-        }
-        for (ii = SQLDB_SLOT_HOSTNAME; ii < SQLDB_SLOT_DBTYPE; ii++) {
-            val = sqldb_slotval(i, ii);
-            if (val[0] == '\0') {
-                *init = 0;
-                continue;
-            }
-        }
-        *init = 1;
-    }
-    return;
-}
-#endif
 
 /*
  * ---------------------------------------------------------------------------
@@ -1125,9 +1092,6 @@ int cf_include(int *vp, char *str, long extra, dbref player, char *cmd)
     if (ferror(fp))
         fprintf(stderr, "Error reading config file: %s\n",
                 strerror(errno));
-#ifdef SQL_SUPPORT
-    check_sqldata();
-#endif
     free_lbuf(buf);
     fclose(fp);
     return 0;
@@ -1698,6 +1662,8 @@ CONF conftable[] = {
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_password_E,128},
     {(char *)"sqlDB_dbname_E",
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_dbname_E,  128},
+    {(char *)"sqlDB_max_queries",
+        cf_int,      CA_GOD,         &mudconf.sqlDB_max_queries,  0},
 #endif
 #ifdef EXTENDED_DEFAULT_PARENTS
     {(char *)"exit_parent",

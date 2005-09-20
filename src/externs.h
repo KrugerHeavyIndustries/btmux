@@ -323,6 +323,8 @@ extern void list_chashstats(dbref);
 /* Command handler keys */
 #ifdef SQL_SUPPORT
 #define QUERY_SQL       1       /* SQL Query */
+#define LIST_SQL        2       /* List active and pending queries */
+#define KILL_SQL        3       /* Kill an active query */
 #endif
 #define	ATTRIB_ACCESS	1	/* Change access to attribute */
 #define	ATTRIB_RENAME	2	/* Rename attribute */
