@@ -1045,9 +1045,6 @@ int dump_type;
             log_perror("SAV", "FAIL", "Opening", tmpfile);
         }
     } else {
-        f = fopen("netmux.xml", "w");
-        xml_db_write(f, F_MUX, 0);
-        fclose(f);
         f = fopen(tmpfile, "w");
         if (f) {
             db_write(f, F_MUX, OUTPUT_VERSION | OUTPUT_FLAGS);
