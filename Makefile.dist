@@ -1,13 +1,13 @@
 
-default: configure src/autoconf.h
+Makefile: configure
 	./configure
 	
-configure: configure.in
+configure: src/autoconf.h.in
 	autoconf
 
-src/autoconf.h: src/autoconf.h.in
+src/autoconf.h.in: 
 	autoheader
 
 clean:
-	rm -rf autom4te.cache configure config.log config.cache Makefile src/autoconf.h config.status buildnum.data src/autoconf.h
+	rm -rf autom4te.cache configure config.log config.cache Makefile src/autoconf.h config.status buildnum.data src/autoconf.h.in
 	
