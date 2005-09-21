@@ -5294,6 +5294,115 @@ static void fun_pairs(char *buff, char **bufc, dbref player, dbref cause, char *
 	    free_lbuf(atr_gotten);
     return;
 }
+
+/* ----------------------------------------------------------------------
+ ** fun_colorpairs: take an attr off an object and color the
+ ** {[()]} in that attribute and return it.
+ ** Modified from fun_get
+ ** Dany - 09/2005
+ */
+static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    dbref thing, aowner;
+    int attrib, free_buffer, aflags;
+    ATTR *attr;
+    char *atr_gotten;
+    struct boolexp *bool;
+
+    char *tmp_char;
+    char tmp_string[LBUF_SIZE];
+    char tmp_piece[2];
+
+    if (!parse_attrib(player, fargs[0], &thing, &attrib)) {
+	    safe_str("#-1 NO MATCH", buff, bufc);
+	    return;
+    }
+    if (attrib == NOTHING) {
+	    return;
+    }
+    free_buffer = 1;
+    attr = atr_num(attrib);	/*
+				             * We need the attr's flags for this: 
+				             */
+    if (!attr) {
+	    return;
+    }
+    if (attr->flags & AF_IS_LOCK) {
+	    atr_gotten = atr_get(thing, attrib, &aowner, &aflags);
+	    if (Read_attr(player, thing, attr, aowner, aflags)) {
+	        bool = parse_boolexp(player, atr_gotten, 1);
+	        free_lbuf(atr_gotten);
+	        atr_gotten = unparse_boolexp(player, bool);
+	        free_boolexp(bool);
+	    } else {
+	        free_lbuf(atr_gotten);
+	        atr_gotten = (char *) "#-1 PERMISSION DENIED";
+	    }
+	    free_buffer = 0;
+    } else {
+	    atr_gotten = atr_pget(thing, attrib, &aowner, &aflags);
+    }
+
+    /*
+     * Perform access checks.  c_r_p fills buff with an error message * * 
+     * 
+     * *  * * if needed. 
+     */
+
+    if (check_read_perms(player, thing, attr, aowner, aflags, buff, bufc)) {
+
+        /* zero temporary string */
+        memset(tmp_string, 0, sizeof(tmp_string));
+
+        /* Scan through the attribute, colorize what we want */
+        for(tmp_char = atr_gotten; *tmp_char; tmp_char++) {
+       
+            switch(*tmp_char) {
+                case '{':
+                    strncat(tmp_string, ANSI_RED, LBUF_SIZE);
+                    strncat(tmp_string, "{", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                case '[':
+                    strncat(tmp_string, ANSI_YELLOW, LBUF_SIZE);
+                    strncat(tmp_string, "[", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                case '(':
+                    strncat(tmp_string, ANSI_GREEN, LBUF_SIZE);
+                    strncat(tmp_string, "(", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                case '}':
+                    strncat(tmp_string, ANSI_RED, LBUF_SIZE);
+                    strncat(tmp_string, "}", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                case ']':
+                    strncat(tmp_string, ANSI_YELLOW, LBUF_SIZE);
+                    strncat(tmp_string, "]", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                case ')':
+                    strncat(tmp_string, ANSI_GREEN, LBUF_SIZE);
+                    strncat(tmp_string, ")", LBUF_SIZE);
+                    strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
+                    break;
+                default:
+                    sprintf(tmp_piece, "%c", *tmp_char);
+                    strncat(tmp_string, tmp_piece, LBUF_SIZE);
+                    break;
+            }
+
+        }
+
+	    safe_str(tmp_string, buff, bufc);
+    }
+
+    if (free_buffer)
+	    free_lbuf(atr_gotten);
+    return;
+}
 #endif
 /* *INDENT-OFF* */
 
@@ -5417,6 +5526,7 @@ FUN flist[] = {
 {"CHILDREN",    fun_children,   1,  0,          CA_PUBLIC},
 #ifdef EXILE_FUNCS_SUPPORT
 {"COBJ",	fun_cobj,	1,  0,		CA_PUBLIC},
+{"COLORPAIRS",  fun_colorpairs,	1,  0,		CA_PUBLIC},
 #endif
 {"COLUMNS",	fun_columns,	0,  FN_VARARGS, CA_PUBLIC},
 {"COMP",	fun_comp,	2,  0,		CA_PUBLIC},
