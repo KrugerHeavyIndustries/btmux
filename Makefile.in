@@ -192,7 +192,7 @@ install: $(TARGETS)
 	mv -f $(TARGETS) game.run/bin/
 
 update:
-	cvs update -dP;
+	svn update;
 
 netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
 	$(CC) $(ALLFLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version.o
