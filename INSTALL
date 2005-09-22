@@ -75,6 +75,7 @@ but that's where each of the modules belong.
 S4: COMPILING AND RUNNING THE SOURCE
 ------------------------------------
 To compile the Battletech MUX source, 'cd' into your root BTMux dir and type
+'make -f Makefile.dist'. This will generate a configure file. You will then
 './configure'. This will autodetect some values for your system. When it is
 done check your 'Makefile' and adjust any settings, then type 'make install'.
 Make sure that you already have a /game directory present or the binaries
