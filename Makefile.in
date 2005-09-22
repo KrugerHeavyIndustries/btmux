@@ -63,6 +63,7 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/rob.o         \
                  src/set.o         \
                  src/speech.o      \
+@SQLCHILD@
                  src/strhandler.o  \
                  src/stringutil.o  \
                  src/timer.o       \
@@ -71,7 +72,6 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/walkdb.o      \
                  src/wild.o        \
                  src/wiz.o         \
-				 src/sqlchild.o	   \
 
 HCODE_OBJECTS =  src/hcode/coolmenu.o        \
                  src/hcode/debug.o           \
@@ -171,7 +171,7 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
-TARGETS = src/netmux src/mkindx src/unsplit src/slave @SQLSLAVE@
+TARGETS = src/netmux src/mkindx src/unsplit src/slave
 
 all: $(TARGETS)
 
@@ -200,6 +200,9 @@ netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
 
 clean:
 	rm -f $(ALLOBJS) src/version.o $(TARGETS)
+
+distclean: clean
+	rm -rf .depend Makefile config.status config.log
 
 slave src/slave: src/slave.c
 	$(CC) $(ALLFLAGS) -o src/slave src/slave.c
