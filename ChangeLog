@@ -8,11 +8,55 @@ btonline-btechmux 0.5:
 	  callbacks. (Martin Murray)
 	* Extended btmapemit() (Martin Murray)
 	* Extended btsetxy() (Martin Murray)
-	* Aded btmapunits() (Martin Murray)
+	* Added btmapunits() (Martin Murray)
 	* Extended btgetrange() (Martin Murray)
+	* Removed FUNCTION(xx) (Martin Murray)
+	* Added red-black tree library to MUX. (Martin Murray)
+	* The AI for the MUX now uses doubly-linked list for storing
+	  commands.  This allows bigger and more flexible commands to
+	  be created. (Dany)
+	* The AI now has a new 'goto' command based on the A* (A-star)
+	  pathfinding algorthim.  The old goto has been moved to 
+	  'oldgoto' for addcommand and 'ogoto' for radio command. (Dany)
+	* Re-arranged the files that contained AI code. (Dany)
+	* Added a doubly linked list library to the MUX 'dllist'. (Dany)
+	* Replaced the fileslave with a faster, more efficient logcache 
+	  system based on libevent. (Martin Murray)
+	* Added a function proper_parseattributes to replace 
+	  silly_parseattributes. (Martin Murray)
+	* Added builtin strndup and strlen for non GNU OS systems.
+	  (Dany)
+	* Added MECHPREFS [SETTING [ON|OFF]].  Allowing the pilot 
+	  to manually specify ON or OFF for the given preference.
+	  (Dany)
+	* Removed the CONF_HAND, CONF_AHAND, and CONF_HDECL macros
+	  (Martin Murray)
+	* Replace FNDELAY on pipe's with O_NONBLOCK. (Martin Murray)
+	* Added logging for the A* path finding. (Dany)
+	* Added proper_explodearguments to replace mech_parseattributes.
+	  (Martin Murray)
+	* Split the single mech_u/sdisembark function into two
+	  seperate functions, instead having the one with all
+	  the #defines. (Dany)
+	* Added two hcode functions to match behavior with btmapemit
+	  MapLimitedBroadcast2d & MapLimitedBroadcast3d. (Martin Murray)
+	* Rewrote the AI's radio command system. (Dany)
+	* New sqlchild system to replace the old sqlslave system.
+	  (Martin Murray)
+	* Added softcode function colorpairs(). (Dany)
+	* Added the @fail and @afail stuff to embark as well as 
+	  redid the @fail and added @afail to enterbase. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)
+	* Fixed btsetcharvalue() and btgetcharvalue() crashers.
+	  (Martin Murray)
+	* Some fixes for the mux to compile on Linux/amd64,
+	  still a bunch of 32/64 bit issues. (Martin Murray)
+	* Changed notify_check to notify_checked, was conflicting 
+	  with a builtin function on Mac OS X. (Dany)
+	* Fixes for embark and udisembark. (Dany)
+	* Fixes to the configure system. (Dany)
 
 btonline-btechmux 0.4:
 	- Changes
