@@ -686,15 +686,15 @@ void bsuit_hide(dbref player, void *data, char *buffer)
 
     cch(MECH_USUALO);
     DOCHECK(((HasCamo(mech)) || (Wizard(player))) ? 0 : MechType(mech) != CLASS_BSUIT && 
-            MechType(mech) != CLASS_MW, "Your not capable of such curious things.");
+            MechType(mech) != CLASS_MW, "You aren't capable of such curious things.");
 
     if (!map) {
         mech_notify(mech, MECHALL, "You are not on a map!");
         return;
     }
 
-    DOCHECK(Jumping(mech), "It's hard to hide while you're jumping!");
-    DOCHECK((fabs(MechSpeed(mech)) > MP1), "Moving and hiding don't mix!");
+    DOCHECK(Jumping(mech) || OODing(mech), "Hide where? Up here?");
+    DOCHECK((fabs(MechSpeed(mech)) > MP1), "Come to a complete stop first.");
     DOCHECK(Hiding(mech), "You are looking for cover already!");
     DOCHECK(MechMove(mech) == MOVE_VTOL && !Landed(mech), "You must be landed!");
 

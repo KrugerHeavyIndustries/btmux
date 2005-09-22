@@ -104,8 +104,8 @@ void initiate_ood(dbref player, MECH * mech, char *buffer)
     DOCHECK(OODing(mech), "OOD already in progress!");
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", x, y));
     DOCHECK(MechX(mech) != x || MechY(mech) != y, "Invalid co-ordinates!");
-    DOCHECK(Fallen(mech), "No way!");
-    DOCHECK(Digging(mech), "The mech isn't ready to be OOD'ed!");
+    DOCHECK(Fallen(mech), "You'll have to get up first.");
+    DOCHECK(Digging(mech), "You're too busy digging in.");
     MechZ(mech) = z;
     MechFZ(mech) = ZSCALE * MechZ(mech);
     MarkForLOSUpdate(mech);
