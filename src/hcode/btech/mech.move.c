@@ -512,7 +512,7 @@ void mech_stand(dbref player, void *data, char *buffer)
     bth = MechPilotSkillRoll_BTH(mech, 0);
 
     /* Check to see if the user specified an argument for the command */
-    if (proper_explodearguments(buffer, args, 1)) {
+    if (proper_explodearguments(buffer, args, 2)) {
         switch (tolower(args[0][0])) {
             case 'c':
                 notify_printf(player, "Your BTH to stand would be: %d", bth);
