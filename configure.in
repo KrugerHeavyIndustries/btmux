@@ -76,29 +76,74 @@ fi
 
 # Check the various enable code sections
 AC_MSG_CHECKING([Should we enable support for graphical HUDs [[default=yes]]])
-AC_ARG_ENABLE(hudinfo-support,
-    [  --disable-hudinfo-support      Disable the code to support graphical HUDs [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([hudinfo-support],
+    AS_HELP_STRING([--disable-hudinfo-support],
+                   [Disable the code to support graphical HUDs [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
     [
-        AC_MSG_RESULT([yes])
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([HUDINFO_SUPPORT], [1], [Should the HUDINFO code be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for hudinfo-support option)
+                ;;
+        esac
+    ],
+    [
         AC_DEFINE([HUDINFO_SUPPORT], [1], [Should the HUDINFO code be enabled])
-    ]
-)
-
-AC_MSG_CHECKING([Should we enable the 'Exile' functions [[default=yes]]])
-AC_ARG_ENABLE(exile_funcs_support,
-    [  --disable-exile-funcs-support  Disable the 'Exile' functions [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
-    [
         AC_MSG_RESULT([yes])
-        AC_DEFINE([EXILE_FUNCS_SUPPORT], [1], [Should the 'Exile' functions be enabled])
     ]
 )
-
+                   
+AC_MSG_CHECKING([Should we enable the 'Exile' functions [[default=yes]]])
+AC_ARG_ENABLE([exile-funcs-support],
+    AS_HELP_STRING([--disable-exile-funcs-support],
+                   [Disable the 'Exile' functions [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([EXILE_FUNCS_SUPPORT], [1], [Should the 'Exile' functions be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for exile-funcs-support option)
+                ;;
+        esac
+    ],
+    [
+        AC_DEFINE([EXILE_FUNCS_SUPPORT], [1], [Should the 'Exile' functions be enabled])
+        AC_MSG_RESULT([yes])
+    ]
+)
+                   
 AC_MSG_CHECKING([Should we enable the advanced econ system [[default=yes]]])
-AC_ARG_ENABLE(bt_advanced_econ,
-    [  --disable-bt-advanced-econ     Disable the advanced econ system [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-advanced-econ],
+    AS_HELP_STRING([--disable-bt-advanced-econ],
+                   [Disable the advanced econ system [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_ADVANCED_ECON], [1], [Should the advanced econ system be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-advanced-econ option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_ADVANCED_ECON], [1], [Should the advanced econ system be enabled])
@@ -106,9 +151,24 @@ AC_ARG_ENABLE(bt_advanced_econ,
 )
 
 AC_MSG_CHECKING([Should we enable the code for carriers [[default=yes]]])
-AC_ARG_ENABLE(bt_carriers,
-    [  --disable-bt-carriers          Disable the code for carriers [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-carriers],
+    AS_HELP_STRING([--disable-bt-carriers],
+                   [Disable the code for carriers [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_CARRIERS], [1], [Should the carrier code be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-carriers option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_CARRIERS], [1], [Should the carrier code be enabled])
@@ -116,9 +176,24 @@ AC_ARG_ENABLE(bt_carriers,
 )
 
 AC_MSG_CHECKING([Should we enable MW3-like stats and skills [[default=yes]]])
-AC_ARG_ENABLE(bt-mw3stats,
-    [  --disable-bt-mw3stats          Disable MW3-like stats and skills [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-mw3stats],
+    AS_HELP_STRING([--disable-bt-mw3stats],
+                   [Disable MW3-like stats and skills [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_EXILE_MW3STATS], [1], [Should MW3-like stats and skills be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-mw3stats option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_EXILE_MW3STATS], [1], [Should MW3-like stats and skills be enabled])
@@ -126,9 +201,24 @@ AC_ARG_ENABLE(bt-mw3stats,
 )
 
 AC_MSG_CHECKING([Should we enable advanced movement modes [[default=yes]]])
-AC_ARG_ENABLE(bt-movement-modes,
-    [  --disable-bt-movement-modes    Disable advanced movement modes [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-movement-modes],
+    AS_HELP_STRING([--disable-bt-movement-modes],
+                   [Disable advanced movement modes [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should the advanced movement modes be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-movement-modes option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should the advanced movement modes be enabled])
@@ -136,9 +226,24 @@ AC_ARG_ENABLE(bt-movement-modes,
 )
 
 AC_MSG_CHECKING([Should we enable extended advantages [[default=yes]]])
-AC_ARG_ENABLE(bt-ext-advantages,
-    [  --disable-bt-ext-advantages    Disable extended advantages [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-ext-advantages],
+    AS_HELP_STRING([--disable-bt-ext-advantages],
+                   [Disable extended advantages [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-ext-advantages option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
@@ -146,9 +251,24 @@ AC_ARG_ENABLE(bt-ext-advantages,
 )
 
 AC_MSG_CHECKING([Should we enable targcomp modes [[default=yes]]])
-AC_ARG_ENABLE(bt-targcomp-modes,
-    [  --disable-bt-targcomp-modes    Disable targeting computer modes [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-targcomp-modes],
+    AS_HELP_STRING([--disable-bt-targcomp-modes],
+                   [Disable targeting computer modes [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_TARGCOMP_MODES], [1], [Should targeting computer modes be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-targcomp-modes option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_TARGCOMP_MODES], [1], [Should targeting computer modes be enabled])
@@ -156,9 +276,24 @@ AC_ARG_ENABLE(bt-targcomp-modes,
 )
 
 AC_MSG_CHECKING([Should we copy freqs to MW on disembark [[default=yes]]])
-AC_ARG_ENABLE(bt-mwfreqs,
-    [  --disable-bt-mwfreqs           Disable MW freq copying [[default=enabled]]],
-    [AC_MSG_RESULT([no])],
+AC_ARG_ENABLE([bt-mwfreqs],
+    AS_HELP_STRING([--disable-bt-mwfreqs],
+                   [Disable MW freq copying [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-mwfreqs option)
+                ;;
+        esac
+    ],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
@@ -166,53 +301,107 @@ AC_ARG_ENABLE(bt-mwfreqs,
 )
 
 AC_MSG_CHECKING([Should we enable the code for complex repairs [[default=no]]])
-AC_ARG_ENABLE(bt-complexrepairs,
-    [  --enable-bt-complexrepairs     Enable code for complex repairs [[default=disabled]]],
+AC_ARG_ENABLE([bt-complexrepairs],
+    AS_HELP_STRING([--enable-bt-complexrepairs],
+                   [Enable code for complex repairs [[default=disabled]]])
+    AS_HELP_STRING([ ], [ ]),
     [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_COMPLEXREPAIRS], [1], [Should complex repairs be enabled])
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_COMPLEXREPAIRS], [1], [Should complex repairs be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-complexrepairs option)
+                ;;
+        esac
     ],
-    [AC_MSG_RESULT([no])]
+    [
+        AC_MSG_RESULT([no])
+    ]
 )
 
 AC_MSG_CHECKING([Should we allow mech overspeeding [[default=no]]])
-AC_ARG_ENABLE(bt-overspeeding,
-    [  --enable-bt-overspeeding       Enable mech overspeeding [[default=disabled]]],
+AC_ARG_ENABLE([bt-overspeeding],
+    AS_HELP_STRING([--enable-bt-overspeeding],
+                   [Enable mech overspeeding [[default=disabled]]])
+    AS_HELP_STRING([ ], [ ]),
     [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([WEIGHT_OVERSPEEDING], [1], [Should mech overspeeding be enabled])
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([WEIGHT_OVERSPEEDING], [1], [Should mech overspeeding be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-overspeeding option)
+                ;;
+        esac
     ],
-    [AC_MSG_RESULT([no])]
+    [
+        AC_MSG_RESULT([no])
+    ]
 )
 
 AC_MSG_CHECKING([Should we enable the code for freetechtime [[default=no]]])
-AC_ARG_ENABLE(bt-freetechtime,
-    [  --enable-bt-freetechtime       Enable code to give near instant techtime [[default=disabled]]],
+AC_ARG_ENABLE([bt-freetechtime],
+    AS_HELP_STRING([--enable-bt-freetechtime],
+                   [Enable code to give near instant techtime [[default=disabled]]])
+    AS_HELP_STRING([ ], [ ]),
     [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_FREETECHTIME], [1], [Should the freetechtime code be enabled])
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_FREETECHTIME], [1], [Should the freetechtime code be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for bt-freetechtime option)
+                ;;
+        esac
     ],
-    [AC_MSG_RESULT([no])]
+    [
+        AC_MSG_RESULT([no])
+    ]
 )
 
 AC_MSG_CHECKING([Should we enable sql support [[default=no]]])
-AC_ARG_ENABLE(sql-support,
-    [  --enable-sql-support           Enable support for sql. 
-                                      Needs libdbi with mysql driver [[default=disabled]]],
-    [AC_MSG_RESULT([yes])
-        AC_CHECK_HEADER([dbi/dbi.h])
-        AC_CHECK_LIB(dbi, dbi_conn_new)
-
-        if test "$ac_cv_header_dbi_dbi_h" = "yes" && 
-            test "$ac_cv_lib_dbi_dbi_conn_new" = "yes" ; then
-            AC_DEFINE([SQL_SUPPORT], [1], [Should SQL Support be enabled])
-            AC_SUBST([SQLSLAVE], [src/sqlslave])
-        else
-            AC_MSG_ERROR([Was unable to locate ldbi])
-        fi
-
+AC_ARG_ENABLE([sql-support],
+    AS_HELP_STRING([--enable-sql-support],
+                   [Enable support for sql.  Needs libdbi with mysql driver [[default=disabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_CHECK_HEADER([dbi/dbi.h])
+                AC_CHECK_LIB(dbi, dbi_conn_new)
+                if test "$ac_cv_header_dbi_dbi_h" = "yes" && 
+                        test "$ac_cv_lib_dbi_dbi_conn_new" = "yes" ; then
+                    AC_DEFINE([SQL_SUPPORT], [1], [Should SQL Support be enabled])
+                    AC_SUBST([SQLSLAVE], [src/sqlslave])
+                else
+                    AC_MSG_ERROR([Was unable to locate ldbi])
+                fi
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for sql-support option)
+                ;;
+        esac
     ],
-    [AC_MSG_RESULT([no])]
+    [
+        AC_MSG_RESULT([no])
+    ]
 )
 
 AC_CONFIG_FILES([Makefile])
