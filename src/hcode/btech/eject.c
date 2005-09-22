@@ -490,15 +490,12 @@ void mech_sdisembark(dbref player, void *data, char *buffer)
 }
 #endif
 
-void mech_embark(dbref player, void *data, char *buffer)
-{
-    MECH *mech = (MECH *) data;
 #ifndef BT_CARRIERS
+/* Embark command for when carriers not defined */
+void mech_embark(dbref player, void *data, char *buffer) {
+    
+    MECH *mech = (MECH *) data;
     MECH *target;
-#else
-    MECH *target, *towee = NULL;
-    int tmp;
-#endif
     dbref target_num;
     MAP *newmap;
     int argc;
@@ -506,11 +503,9 @@ void mech_embark(dbref player, void *data, char *buffer)
 
     if (player != GOD)
 	cch(MECH_USUAL);
-#ifndef BT_CARRIERS
     DOCHECK((MechType(mech) != CLASS_MW) &&
 	(MechType(mech) != CLASS_BSUIT),
 	"... Why not just TELL it you love it?");
-#endif
     if (MechType(mech) == CLASS_MW) {
 	argc = mech_parseattributes(buffer, args, 1);
 	DOCHECK(argc != 1, "Invalid number of arguements.");
@@ -529,7 +524,6 @@ void mech_embark(dbref player, void *data, char *buffer)
 	DOCHECK(MechX(mech) != MechX(target) ||
 	    MechY(mech) != MechY(target),
 	    "You need to be in the same hex!");
-#ifndef BT_CARRIERS
 	DOCHECK(((MechType(target) != CLASS_MECH) &&
 		(MechType(target) != CLASS_VTOL) &&
 		(MechType(target) != CLASS_VEH_GROUND)) ||
@@ -538,15 +532,6 @@ void mech_embark(dbref player, void *data, char *buffer)
 	    (!mudconf.btech_ic),
 	    "You dont really see a way to get in there.");
 	DOCHECK(MechTeam(mech) != MechTeam(target), "Locked. Damn !");
-#else
-	DOCHECK((!In_Character(mech->mynum)) || (!In_Character(target->mynum)),
-	    "You don't really see a way to get in there.");
-        DOCHECK((MechType(target) == CLASS_VEH_GROUND || MechType(target) == CLASS_VTOL) &&
-                !unit_is_fixable(target),
-	    "You can't find and entrance amid the mass of twisted metal.");
-        DOCHECK(!can_pass_lock(mech->mynum, target->mynum, A_LENTER),
-	    "Locked. Damn !");
-#endif
 	DOCHECK(fabs(MechSpeed(target)) > 15.,
 	    "Are you suicidal ? That thing is moving too fast !");
 
@@ -578,26 +563,12 @@ void mech_embark(dbref player, void *data, char *buffer)
 	!InLineOfSight(mech, target, MechX(target), MechY(target),
 	    FaMechRange(mech, target)),
 	"That target is not in your line of sight.");
-#ifdef BT_CARRIERS
-    DOCHECK(MechCarrying(mech) == target_num, "You cannot embark what your towing!");
-    DOCHECK(Fallen(mech) || Standing(mech), "Help! I've fallen and I can't get up!");
-    DOCHECK(!Started(mech) || Destroyed(mech), "Ha Ha Ha.");
-    DOCHECK(Jumping(mech), "You cannot do that while jumping!");
-    DOCHECK(Jumping(target), "You cannot do that while it is jumping!");
-    DOCHECK(MechSpecials2(mech) & CARRIER_TECH && (IsDS(target) ? IsDS(mech) : 1), "You're a bit bulky to do that yourself.");
-    DOCHECK(MechCritStatus(mech) & HIDDEN, "You cannot embark while hidden.");
-    DOCHECK(MechTons(mech) > CarMaxTon(target), "You are too large for that class of carrier.");
-    DOCHECK(MechType(mech) != CLASS_BSUIT && !(MechSpecials2(target) & CARRIER_TECH),
-	"This unit can't handle your mass.");
-    DOCHECK(MMaxSpeed(mech) < MP1, "You are to overloaded to enter.");
-#endif
     DOCHECK(MechZ(mech) > (MechZ(target) + 1),
 	"You are too high above the target.");
     DOCHECK(MechZ(mech) < (MechZ(target) - 1),
 	"You can't reach that high !");
     DOCHECK(MechX(mech) != MechX(target) ||
 	MechY(mech) != MechY(target), "You need to be in the same hex!");
-#ifndef BT_CARRIERS
     DOCHECK(((MechType(target) != CLASS_VTOL) &&
 	    (MechType(target) != CLASS_VEH_GROUND)) ||
 	(!In_Character(mech->mynum)) || (!In_Character(target->mynum)) ||
@@ -607,45 +578,10 @@ void mech_embark(dbref player, void *data, char *buffer)
 	"Are you suicidal ? That thing is moving too fast !");
     DOCHECK((MechTons(mech) * 1024 * CountBSuitMembers(mech)) >
 	CargoSpace(target), "Not enough cargospace for you !");
-#else
-
-    DOCHECK(!can_pass_lock(mech->mynum, target->mynum, A_LENTER),
-	"Locked. Damn !");
-    DOCHECK(fabs(MechSpeed(target)) > 0,
-        "Are you suicidal ? That thing is moving too fast !");
-    DOCHECK(!In_Character(mech->mynum) || !In_Character(target->mynum),
-        "You don't really see a way to get in there.");
-    DOCHECK((tmp = MechFullNoRecycle(mech, CHECK_BOTH)),
-	tprintf("You have %s recycling!", (tmp == 1 ? "weapons" : tmp == 2 ? "limbs" : "error")));
-    DOCHECK((MechTons(mech) * 100) > CargoSpace(target),
-	"Not enough cargospace for you!");
-    if (MechCarrying(mech) > 0) {
-	DOCHECK(!(towee = getMech(MechCarrying(mech))),
-	    "Internal error caused by towed unit! Contact a wizard!");
-	DOCHECK(MechTons(towee) > CarMaxTon(target),
-	    "Your towed unit is  too large for that class of carrier.");
-	DOCHECK(((MechTons(mech) + MechTons(towee)) * 100) > CargoSpace(target),
-	    "Not enough cargospace for you and your towed unit!");
-    }
-#endif
     newmap = getMap(mech->mapindex);
-#ifndef BT_CARRIERS
     mech_notify(mech, MECHALL, tprintf("You climb into %s.",
 	    GetMechID(target)));
     MechLOSBroadcast(mech, tprintf("climbs into %s.", GetMechID(target)));
-#else
-    if (MechType(mech) == CLASS_BSUIT) {
-	mech_notify(mech, MECHALL, tprintf("You climb into %s.", GetMechID(target)));
-	MechLOSBroadcast(mech, tprintf("climbs into %s.", GetMechID(target)));
-    } else {
-	mech_notify(mech, MECHALL, tprintf("You climb up the entry ramp into %s.", GetMechID(target)));
-	MechLOSBroadcast(mech, tprintf("climbs up the entry ramp into %s.", GetMechID(target)));
-	if (towee && MechCarrying(mech) > 0) {
-	    mech_notify(towee, MECHALL, tprintf("You are drug up the entry ramp into %s.", GetMechID(target)));
-	    MechLOSBroadcast(towee, tprintf("is drug up the entry ramp into %s.", GetMechID(target)));
-	}
-    }
-#endif
     MarkForLOSUpdate(mech);
     MarkForLOSUpdate(target);
 
@@ -657,26 +593,181 @@ void mech_embark(dbref player, void *data, char *buffer)
     mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
     loud_teleport(mech->mynum, target->mynum);
-#ifndef BT_CARRIERS
     CargoSpace(target) -= (MechTons(mech) * 1024);
-#else
-    CargoSpace(target) -= (MechTons(mech) * 100);
-#endif
     Shutdown(mech);
-#ifdef BT_CARRIERS
+}
+#else
+/* Our embark command for when carriers are compiled in */
+void mech_embark(dbref player, void *data, char *buffer) {
+
+    MECH *mech = (MECH *) data;
+    MECH *target, *towee = NULL;
+    int tmp;
+    dbref target_num;
+    MAP *newmap;
+    int argc;
+    char *args[4];
+    char fail_mesg[SBUF_SIZE];
+
+    if (player != GOD)
+        cch(MECH_USUAL);
+    if (MechType(mech) == CLASS_MW) {
+        argc = mech_parseattributes(buffer, args, 1);
+        DOCHECK(argc != 1, "Invalid number of arguements.");
+        target_num = FindTargetDBREFFromMapNumber(mech, args[0]);
+        DOCHECK(target_num == -1,
+                "That target is not in your line of sight.");
+        target = getMech(target_num);
+        DOCHECK(!target ||
+                !InLineOfSight(mech, target, MechX(target), MechY(target),
+                    FaMechRange(mech, target)),
+                "That target is not in your line of sight.");
+        DOCHECK(MechZ(mech) > (MechZ(target) + 1),
+                "You are too high above the target.");
+        DOCHECK(MechZ(mech) < (MechZ(target) - 1),
+                "You can't reach that high !");
+        DOCHECK(MechX(mech) != MechX(target) ||
+                MechY(mech) != MechY(target),
+                "You need to be in the same hex!");
+        DOCHECK((!In_Character(mech->mynum)) || (!In_Character(target->mynum)),
+                "You don't really see a way to get in there.");
+        DOCHECK((MechType(target) == CLASS_VEH_GROUND || MechType(target) == CLASS_VTOL) &&
+                !unit_is_fixable(target),
+                "You can't find and entrance amid the mass of twisted metal.");
+
+        if (!can_pass_lock(mech->mynum, target->mynum, A_LENTER)) {
+            
+            /* Trigger FAIL & AFAIL */
+            memset(fail_mesg, 0, sizeof(fail_mesg));
+            snprintf(fail_mesg, LBUF_SIZE, "That unit's bay doors are locked.");
+
+            did_it(player, target->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
+                    (char **) NULL, 0);
+
+            return;
+        }
+
+        DOCHECK(fabs(MechSpeed(target)) > 15.,
+                "Are you suicidal ? That thing is moving too fast !");
+
+        if (MechType(target) == CLASS_MECH) {
+            DOCHECK(!GetSectInt(target, HEAD),
+                    "Okay, just climb up to-- Wait... where did the head go??");
+            DOCHECK(PartIsDestroyed(target, HEAD, 2),
+                    "Okay, just climb up and open-- "
+                    "WTF ? Someone stole the cockpit!");
+            DOCHECK(PartIsNonfunctional(target, HEAD, 2),
+                    "Okay, just climb up and open-- hey, this door won't budge!");
+        }
+        mech_notify(mech, MECHALL, tprintf("You climb into %s.",
+                    GetMechID(target)));
+        MechLOSBroadcast(mech, tprintf("climbs into %s.",
+                    GetMechID(target)));
+        tele_contents(mech->mynum, target->mynum, TELE_ALL);
+        discard_mw(mech);
+        return;
+    }
+    /* What heppens with a Bsuit squad? */
+    /* Check if the vechile has cargo capacity, or is an Omni Mech */
+    argc = mech_parseattributes(buffer, args, 1);
+    DOCHECK(argc != 1, "Invalid number of arguements.");
+    target_num = FindTargetDBREFFromMapNumber(mech, args[0]);
+    DOCHECK(target_num == -1, "That target is not in your line of sight.");
+    target = getMech(target_num);
+    DOCHECK(!target ||
+            !InLineOfSight(mech, target, MechX(target), MechY(target),
+                FaMechRange(mech, target)),
+            "That target is not in your line of sight.");
+    DOCHECK(MechCarrying(mech) == target_num, "You cannot embark what your towing!");
+    DOCHECK(Fallen(mech) || Standing(mech), "Help! I've fallen and I can't get up!");
+    DOCHECK(!Started(mech) || Destroyed(mech), "Ha Ha Ha.");
+    DOCHECK(Jumping(mech), "You cannot do that while jumping!");
+    DOCHECK(Jumping(target), "You cannot do that while it is jumping!");
+    DOCHECK(MechSpecials2(mech) & CARRIER_TECH && (IsDS(target) ? IsDS(mech) : 1), 
+            "You're a bit bulky to do that yourself.");
+    DOCHECK(MechCritStatus(mech) & HIDDEN, "You cannot embark while hidden.");
+    DOCHECK(MechTons(mech) > CarMaxTon(target), "You are too large for that class of carrier.");
+    DOCHECK(MechType(mech) != CLASS_BSUIT && !(MechSpecials2(target) & CARRIER_TECH),
+            "This unit can't handle your mass.");
+    DOCHECK(MMaxSpeed(mech) < MP1, "You are to overloaded to enter.");
+    DOCHECK(MechZ(mech) > (MechZ(target) + 1),
+            "You are too high above the target.");
+    DOCHECK(MechZ(mech) < (MechZ(target) - 1),
+            "You can't reach that high !");
+    DOCHECK(MechX(mech) != MechX(target) ||
+            MechY(mech) != MechY(target), "You need to be in the same hex!");
+
+    if (!can_pass_lock(mech->mynum, target->mynum, A_LENTER)) {
+
+        /* Trigger FAIL & AFAIL */
+        memset(fail_mesg, 0, sizeof(fail_mesg));
+        snprintf(fail_mesg, LBUF_SIZE, "That unit's bay doors are locked.");
+
+        did_it(player, target->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
+                (char **) NULL, 0);
+
+        return;
+    }
+
+    DOCHECK(fabs(MechSpeed(target)) > 0,
+            "Are you suicidal ? That thing is moving too fast !");
+    DOCHECK(!In_Character(mech->mynum) || !In_Character(target->mynum),
+            "You don't really see a way to get in there.");
+    DOCHECK((tmp = MechFullNoRecycle(mech, CHECK_BOTH)),
+            tprintf("You have %s recycling!", 
+                (tmp == 1 ? "weapons" : tmp == 2 ? "limbs" : "error")));
+    DOCHECK((MechTons(mech) * 100) > CargoSpace(target),
+            "Not enough cargospace for you!");
+    if (MechCarrying(mech) > 0) {
+        DOCHECK(!(towee = getMech(MechCarrying(mech))),
+                "Internal error caused by towed unit! Contact a wizard!");
+        DOCHECK(MechTons(towee) > CarMaxTon(target),
+                "Your towed unit is  too large for that class of carrier.");
+        DOCHECK(((MechTons(mech) + MechTons(towee)) * 100) > CargoSpace(target),
+                "Not enough cargospace for you and your towed unit!");
+    }
+    newmap = getMap(mech->mapindex);
+    if (MechType(mech) == CLASS_BSUIT) {
+        mech_notify(mech, MECHALL, tprintf("You climb into %s.", GetMechID(target)));
+        MechLOSBroadcast(mech, tprintf("climbs into %s.", GetMechID(target)));
+    } else {
+        mech_notify(mech, MECHALL, tprintf("You climb up the entry ramp into %s.", 
+                    GetMechID(target)));
+        MechLOSBroadcast(mech, tprintf("climbs up the entry ramp into %s.", 
+                    GetMechID(target)));
+        if (towee && MechCarrying(mech) > 0) {
+            mech_notify(towee, MECHALL, tprintf("You are drug up the entry ramp into %s.", 
+                        GetMechID(target)));
+            MechLOSBroadcast(towee, tprintf("is drug up the entry ramp into %s.", 
+                        GetMechID(target)));
+        }
+    }
+    MarkForLOSUpdate(mech);
+    MarkForLOSUpdate(target);
+
+    if (MechCritStatus(target) & HIDDEN) {
+        MechCritStatus(target) &= ~HIDDEN;
+        MechLOSBroadcast(target, "becomes visible as it is embarked into.");
+    }
+
+    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
+    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
+    loud_teleport(mech->mynum, target->mynum);
+    CargoSpace(target) -= (MechTons(mech) * 100);
+    Shutdown(mech);
     if (towee && MechCarrying(mech) > 0) {
-	MarkForLOSUpdate(towee);
-	mech_Rsetmapindex(GOD, (void *) towee, tprintf("%d", (int) -1));
-	mech_Rsetxy(GOD, (void *) towee, tprintf("%d %d", 0, 0));
-	loud_teleport(towee->mynum, target->mynum);
-	CargoSpace(target) -= (MechTons(towee) * 100);
-	Shutdown(towee);
-	SetCarrying(mech, -1);
-	MechStatus(towee) &= ~TOWED;
+        MarkForLOSUpdate(towee);
+        mech_Rsetmapindex(GOD, (void *) towee, tprintf("%d", (int) -1));
+        mech_Rsetxy(GOD, (void *) towee, tprintf("%d %d", 0, 0));
+        loud_teleport(towee->mynum, target->mynum);
+        CargoSpace(target) -= (MechTons(towee) * 100);
+        Shutdown(towee);
+        SetCarrying(mech, -1);
+        MechStatus(towee) &= ~TOWED;
     }
     correct_speed(target);
-#endif
 }
+#endif
 
 void autoeject(dbref player, MECH * mech, int tIsBSuit)
 {

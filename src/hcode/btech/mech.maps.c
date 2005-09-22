@@ -1676,6 +1676,8 @@ void mech_enterbase(dbref player, void *data, char *buffer)
     char *args[2];
     int argc;
 
+    char fail_mesg[SBUF_SIZE];
+
     argc = mech_parseattributes(buffer, args, 2);
     DOCHECK(argc > 1, "Invalid arguments to command!");
     tmpc = args[0];
@@ -1720,12 +1722,17 @@ void mech_enterbase(dbref player, void *data, char *buffer)
 		(int) mapo->obj, mapo->x, mapo->y, mech->mapindex));
 	return;
     }
+    
     if (!can_pass_lock(mech->mynum, newmap->mynum, A_LENTER) &&
 	    (BuildIsSafe(newmap) || newmap->cf >= (newmap->cfmax / 2))) {
-        char *msg = silly_atr_get(newmap->mynum, A_FAIL);
-        if (!msg || !*msg)
-            msg = "The hangar is locked."; 
-        notify(player, msg);
+
+        /* Trigger FAIL & AFAIL */
+        memset(fail_mesg, 0, sizeof(fail_mesg));
+        snprintf(fail_mesg, LBUF_SIZE, "The hangar is locked.");
+
+        did_it(player, newmap->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
+                (char **) NULL, 0);
+
         return;
     }
 
