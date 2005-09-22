@@ -18,44 +18,62 @@ S1: BUILD DEPENDENCIES
 Before you even attempt to compile the source, you'll need to make sure that
 your machine has the following packages installed:
 
-* gdbm
 * crypt (libcrypt/lcrypt)
+* libevent (http://www.monkey.org/~provos/libevent/)
 * libdbi (If SQL support is enabled)
 
-S2: OBTAINING THE NEEDED MODULES
---------------------------------
-BattletechMUX comes in a set of modules that allow for certain chunks of the
-structure to be updated or inter-changed with other alternative versions.
-This is markedly different from the older versions of BTMux where everything
-came in one package.
+ S2: OBTAINING THE NEEDED MODULES
+ --------------------------------
+ BattletechMUX comes in a set of modules that allow for certain chunks of the
+ structure to be updated or inter-changed with other alternative versions.
+ This is markedly different from the older versions of BTMux where everything
+ came in one package.
 
-The first thing you need to get is the actual BTMux source. This serves as
-the root directory for the entire tree and is where you bring in the
-modules that you download. Head on over to the btonline-btmux project's
-Files section at:
+ The first thing you need to get is the actual BTMux source. This serves as
+ the root directory for the entire tree and is where you bring in the
+ modules that you download. 
 
-http://sourceforge.net/project/showfiles.php?group_id=128056
+ You have two methods of obtaining the BTMux source: 
+ * Subversion
+ * SourceForge Files Page
 
-First download a version of the source. This is under the Btech-Online BTMux
-package. Select the version you'd like (usually the latest) and download
-it to your home directory. Un-tar/bzip it like this:
+ The Subversion source will be the latest and most up to date, but may have
+ bugs in it. The releases are more stable and tested, but may not have bug
+ fixes or improvements in them that the Subversion source does have. So,
+ choose your poison and see one of the following sections.
 
-tar -jxf btonline-btechmux-0.x.tbz2
+ S2A: SUBVERSION SOURCE
+ ----------------------
+ See the instructions on:
+  http://docs.btmux.com/index.php/Getting_and_Updating_the_Source
 
-Make sure to replace the 'x' with the proper version number. This will leave
-you with a btonline-btechmux directory. We'll call this your BTMux root dir.
+ S2B: SOURCEFORGE RELEASE
+ ------------------------
+ Head on over to the btonline-btmux project's
+ Files section at:
+ 
+ http://sourceforge.net/project/showfiles.php?group_id=128056
+ 
+ First download a version of the source. This is under the Btech-Online BTMux
+ package. Select the version you'd like (usually the latest) and download
+ it to your home directory. Un-tar/bzip it like this:
+ 
+ tar -jxf btonline-btechmux-0.x.tbz2
+ 
+ Make sure to replace the 'x' with the proper version number. This will leave
+ you with a btonline-btechmux directory. We'll call this your BTMux root dir.
 
-Next you'll want to download a game directory. If you are new to running
-BTMuxs, it is strongly recommended you get the BattletechMUX in a Box
-game dir. This contains a lot of BTMux systems pre-built so you can get
-right to working on the fun stuff. Download it and extract it like before
-but make sure you're in the directory the BTMux root dir occupies (not
-from within the actual BTMux root dir).
+ Next you'll want to download a game directory. If you are new to running
+ BTMuxs, it is strongly recommended you get the BattletechMUX in a Box
+ game dir. This contains a lot of BTMux systems pre-built so you can get
+ right to working on the fun stuff. Download it and extract it like before
+ but make sure you're in the directory the BTMux root dir occupies (not
+ from within the actual BTMux root dir).
 
-You will then want to download a Map, Mech, and Text directory. If you
-don't know which one to get, stick with the standard ones. Extract all
-of these just like you did with the source and make sure to do it from
-the same directory.
+ You will then want to download a Map, Mech, and Text directory. If you
+ don't know which one to get, stick with the standard ones. Extract all
+ of these just like you did with the source and make sure to do it from
+ the same directory.
 
 S3: BTMUX DIRECTORY STRUCTURE
 -----------------------------
@@ -75,9 +93,14 @@ but that's where each of the modules belong.
 S4: COMPILING AND RUNNING THE SOURCE
 ------------------------------------
 To compile the Battletech MUX source, 'cd' into your root BTMux dir and type
-'make -f Makefile.dist'. This will generate a configure file. You will then
-'./configure'. This will autodetect some values for your system. When it is
-done check your 'Makefile' and adjust any settings, then type 'make install'.
+'make -f Makefile.dist'. This will generate a configure script and run it
+with the defaults.
+
+NOTE: If you'd like to change the default configuration values, issue a
+'./configure --help' to see the various features that may be enabled or
+disabled. More about this in Section 5. When you've got your configuration
+how you like it, proceed with compiling the source by typing 'make install'.
+
 Make sure that you already have a /game directory present or the binaries
 won't be moved and you will not have a working game. See Sections 1 and 2
 for details on setting your game directory up.
@@ -99,7 +122,10 @@ S5: COMPILE-TIME DIRECTIVES
 There are a number of compile-time directives available for you to further
 customize your game to your tastes. You may view these at:
 
-http://docs.btmux.com/index.php/HardCode:Compile_Options
+http://docs.btmux.com/index.php/Compile_Time_Options
+
+You may set these by issuing a './configure' with the needed flags. See
+'./configure --help' for an up-to-date list.
 
 Most of these require a 'make clean' before re-compiling. Some may also
 require a hcode.db rebuild which means you'll need to remove your
@@ -114,7 +140,7 @@ Most importantly, change the 'port' config directive as you will most
 likely want to choose something unique. Documentation on config 
 directives may be found at:
 
-http://docs.btmux.com/index.php/Administration:Config_Directives
+http://docs.btmux.com/index.php/Config_Directives
 
 Note that you'll need to do a @restart for most of these config
 directives to take effect. You may use the @admin command with your
@@ -145,6 +171,10 @@ WIZARD) and the #2 character (Your new head wiz character).
 You may connect using the two character's dbref like this:
 
 connect #1 btmuxr0x
+
+Note that the same password is used for both #1 and #2, you will
+need to change these using the @password command as soon as
+possible! 
 
 You should now be set to start tinkering! Good luck :)
 
