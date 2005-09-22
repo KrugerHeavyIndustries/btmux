@@ -11,6 +11,9 @@ btonline-btechmux 0.5:
 	* Aded btmapunits() (Martin Murray)
 	* Extended btgetrange() (Martin Murray)
 
+	- Bugfixes
+	* Can no longer hide while OOD'ing (Greg Taylor)
+
 btonline-btechmux 0.4:
 	- Changes
 	* Merged with the unstable branch's revision #38 + the patch
@@ -65,7 +68,7 @@ btonline-btechmux 0.4:
 	* Added parts of Exile's autogun code. (Dany)
 	* Added Exile's autosensor code for the AIs. (Dany)
 
-	- BugFixes
+	- Bugfixes
 	* Changed the name of the skill 'Technician-BattleSuit' to
 	  'Technician-BSuit' to fix a bug when setting and getting the xp
 	  of that skill. (Dany)
