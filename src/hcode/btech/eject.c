@@ -608,6 +608,8 @@ void mech_embark(dbref player, void *data, char *buffer) {
     int argc;
     char *args[4];
     char fail_mesg[SBUF_SIZE];
+    char enter_lock[LBUF_SIZE];
+    int i, j;
 
     if (player != GOD)
         cch(MECH_USUAL);
@@ -645,6 +647,15 @@ void mech_embark(dbref player, void *data, char *buffer) {
                     (char **) NULL, 0);
 
             return;
+        }
+
+        /* They passed the lock but does that mean there was no lock? */
+        memset(enter_lock, 0, sizeof(enter_lock));
+        atr_get_str(enter_lock, target->mynum, A_LENTER, &i, &j);
+        if (*enter_lock == '\0') {
+
+            /* Check their teams */
+            DOCHECK(MechTeam(mech) != MechTeam(target), "Locked. Damn !");
         }
 
         DOCHECK(fabs(MechSpeed(target)) > 15.,
@@ -707,6 +718,15 @@ void mech_embark(dbref player, void *data, char *buffer) {
                 (char **) NULL, 0);
 
         return;
+    }
+
+    /* They passed the lock but does that mean there was no lock? */
+    memset(enter_lock, 0, sizeof(enter_lock));
+    atr_get_str(enter_lock, target->mynum, A_LENTER, &i, &j);
+    if (*enter_lock == '\0') {
+
+        /* Check their teams */
+        DOCHECK(MechTeam(mech) != MechTeam(target), "Locked. Damn !");
     }
 
     DOCHECK(fabs(MechSpeed(target)) > 0,
