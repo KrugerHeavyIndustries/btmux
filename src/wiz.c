@@ -247,6 +247,7 @@ void do_query(dbref player, dbref cause, int key, char *what, char *qry) {
             break;
         case KILL_SQL:
         default:
+            notify(player, "Invalid Syntax. Try Again.");
             break;
     }
 }
@@ -266,6 +267,10 @@ void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
     char db_slot;
     static char preserve[LBUF_SIZE];
 
+    if(!what) {
+        notify(player, "Invalid DB slot.");
+    }
+    
     obj = parse_to(&what, '/', 0);
     db_slot = toupper(obj[0]);
     if (!(db_slot >= 'A' && db_slot <= 'E')) {
@@ -273,6 +278,11 @@ void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
         return;
     } 
 
+    if(!what) {
+        notify(player, "Invalid object.");
+        return;
+    }
+    
     obj = parse_to(&what, '/', 0);
     init_match(player, obj, NOTYPE);
     match_everything(0);
@@ -285,6 +295,11 @@ void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
         return;
     }
 
+    if(!what) {
+        notify(player, "Invalid attribute.");
+        return;
+    }
+    
     obj = parse_to(&what, '/', 0);
     if (!obj || !*obj)
         ap = NULL;
@@ -308,7 +323,7 @@ void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
     obj = parse_to(&what, '/', 0);
     
     if (!obj || !*obj) {
-        notify(player, "Invalid preservation data");
+        notify(player, "Invalid preservation data.");
         return;
     }
 
