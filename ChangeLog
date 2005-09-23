@@ -57,6 +57,9 @@ btonline-btechmux 0.5:
 	  with a builtin function on Mac OS X. (Dany)
 	* Fixes for embark and udisembark. (Dany)
 	* Fixes to the configure system. (Dany)
+	* btsetpartcost() corrected negative cost error check. (George Ponick)
+	* btdamagemech() total damage limited to 1000 to prevent runaway loop. (George Ponick)
+
 
 btonline-btechmux 0.4:
 	- Changes

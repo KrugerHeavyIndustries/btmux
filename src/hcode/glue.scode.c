@@ -1164,10 +1164,9 @@ void fun_btdamagemech(char *buff, char **bufc, dbref player, dbref cause, char *
     FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
     FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
     FUNCHECK(!(mech = FindObjectsData(it)), "#-1 UNABLE TO GET MECHDATA");
-    FUNCHECK(Readnum(totaldam, fargs[1]) || totaldam < 1,
-	     "#-1 INVALID 2ND ARG");
-    FUNCHECK(Readnum(clustersize, fargs[2]) || clustersize < 1,
-	     "#-1 INVALID 3RD ARG");
+    FUNCHECK(Readnum(totaldam, fargs[1]) || totaldam < 1
+            || totaldam > 1000, "#-1 INVALID 2ND ARG");
+    FUNCHECK(Readnum(clustersize, fargs[2]) || clustersize < 1, "#-1 INVALID 3RD ARG");
     FUNCHECK(Readnum(direction, fargs[3]), "#-1 INVALID 4TH ARG");
     FUNCHECK(Readnum(iscrit, fargs[4]), "#-1 INVALID 5TH ARG");
     safe_tprintf_str(buff, bufc, "%d", dodamage_func(player, mech,
@@ -2325,25 +2324,26 @@ safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
 void fun_btsetpartcost(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 #ifdef BT_ADVANCED_ECON
-int i = -1, p, index, b;
-unsigned long long int cost;
+    int i = -1, p, index, b;
+    unsigned long long int cost;
 
-FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-if (!find_matching_long_part(fargs[0], &i, &p, &b)) {
-    i = -1;
-    FUNCHECK(!find_matching_vlong_part(fargs[0], &i, &p, &b), "#-1 INVALID PART NAME");
+    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+    if (!find_matching_long_part(fargs[0], &i, &p, &b)) {
+        i = -1;
+        FUNCHECK(!find_matching_vlong_part(fargs[0], &i, &p, &b), "#-1 INVALID PART NAME");
     }
-if (strstr(fargs[0], "Sword") && !strstr(fargs[0], "PC."))
-    p = I2Special(SWORD);
-cost = atoll(fargs[1]);
-if (cost < 0) {
-    safe_tprintf_str(buff, bufc, "#-1 COST ERROR");
-    return;
+    if (strstr(fargs[0], "Sword") && !strstr(fargs[0], "PC."))
+        p = I2Special(SWORD);
+    cost = atoll(fargs[1]);
+    /* since we're using an unsigned long long, lets check before we push it to unsigned status */                  
+    if (atoll(fargs[1]) < 0) {
+        safe_tprintf_str(buff, bufc, "#-1 COST ERROR");
+        return;
     }
-SetPartCost(p, cost);
-safe_tprintf_str(buff, bufc, "%lld", cost);
+    SetPartCost(p, cost);
+    safe_tprintf_str(buff, bufc, "%lld", cost);
 #else
-safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
+    safe_tprintf_str(buff, bufc, "#-1 NO ECONDB SUPPORT");
 #endif
 }
 
