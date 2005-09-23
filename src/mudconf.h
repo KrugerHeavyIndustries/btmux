@@ -286,11 +286,11 @@ struct confdata {
 #endif				/* STANDALONE */
 #ifdef SQL_SUPPORT
     int sqlDB_init_A;
-    char sqlDB_type_A[128];
-    char sqlDB_hostname_A[128];
-    char sqlDB_username_A[128];
-    char sqlDB_password_A[128];
-    char sqlDB_dbname_A[128];
+    char sqlDB_type_A[128];     /* Currently only 'MySQL' */
+    char sqlDB_hostname_A[128]; /* Usually localhost */
+    char sqlDB_username_A[128]; /* SQL user */
+    char sqlDB_password_A[128]; /* SQL user's password */
+    char sqlDB_dbname_A[128];   /* Name of the DB to use */
     int sqlDB_init_B;
     char sqlDB_type_B[128];
     char sqlDB_hostname_B[128];
