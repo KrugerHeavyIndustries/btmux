@@ -59,6 +59,7 @@ btonline-btechmux 0.5:
 	* Fixes to the configure system. (Dany)
 	* btsetpartcost() corrected negative cost error check. (George Ponick)
 	* btdamagemech() total damage limited to 1000 to prevent runaway loop. (George Ponick)
+	* Fixed bttechlist() to prevent that FUSTAG bug. (Greg Taylor)
 
 
 btonline-btechmux 0.4:

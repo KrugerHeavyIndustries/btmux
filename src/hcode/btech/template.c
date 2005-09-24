@@ -2646,21 +2646,17 @@ char *techlist_func(MECH * mech)
 {
     static char buffer[MBUF_SIZE];
     char bufa[SBUF_SIZE], bufb[SBUF_SIZE];
-    int i, ii, part = 0, axe = 0, mace = 0, sword = 0, hascase = 0, tag = 0;
+    int i, ii, part = 0, axe = 0, mace = 0, sword = 0, hascase = 0;
 
     snprintf(bufa, SBUF_SIZE, "%s", BuildBitString(specialsabrev, MechSpecials(mech)));
     snprintf(bufb, SBUF_SIZE, "%s", BuildBitString(specialsabrev2, MechSpecials2(mech)));
     snprintf(buffer, MBUF_SIZE, "%s %s", bufa, bufb);
 
     if (!(strstr(buffer, "XL") || strstr(buffer, "XXL") || strstr(buffer, "LENG") || strstr(buffer, "ICE") || strstr(buffer, "CENG")))
-        strcat(buffer, " FUS");
+        strcat(buffer, " FUS ");
     for (i = 0 ; i < NUM_SECTIONS; i++)
         for (ii = 0; ii < NUM_CRITICALS; ii++) {
             part = GetPartType(mech, i, ii);
-            if (part == I2Special(TAG) && !tag) {
-                tag = 1;
-                strcat(buffer, "TAG");
-                }
             if (part == I2Special(AXE) && !axe) {
                 axe = 1;
                 strcat(buffer, " AXE");
