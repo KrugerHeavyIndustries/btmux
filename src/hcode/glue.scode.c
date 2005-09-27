@@ -2149,8 +2149,7 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause, char *fa
             for(loop = 0; loop < map->first_free; loop++) {
                 if(map->mechsOnMap[loop] < 0) continue;
                 mech = getMech(map->mechsOnMap[loop]);
-
-                if(mech && FindXYRange(x, y, MechFX(mech), MechFY(mech)) <= range)
+                if(mech && FindXYRange(realX, realY, MechFX(mech), MechFY(mech)) <= range)
                     safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
             }
             break;
@@ -2167,7 +2166,7 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause, char *fa
                 if(map->mechsOnMap[loop] < 0) continue;
                 mech = getMech(map->mechsOnMap[loop]);
 
-                if(mech && FindRange(x, y, z*ZSCALE, MechFX(mech), MechFY(mech), MechFZ(mech)) <= range)
+                if(mech && FindRange(realX, realY, z*ZSCALE, MechFX(mech), MechFY(mech), MechFZ(mech)) <= range)
                     safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
             }
             break;
