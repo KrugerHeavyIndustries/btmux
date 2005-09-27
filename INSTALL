@@ -21,6 +21,7 @@ your machine has the following packages installed:
 * crypt (libcrypt/lcrypt)
 * libevent (http://www.monkey.org/~provos/libevent/)
 * libdbi (If SQL support is enabled)
+* autoconf
 
  S2: OBTAINING THE NEEDED MODULES
  --------------------------------
@@ -99,11 +100,14 @@ with the defaults.
 NOTE: If you'd like to change the default configuration values, issue a
 './configure --help' to see the various features that may be enabled or
 disabled. More about this in Section 5. When you've got your configuration
-how you like it, proceed with compiling the source by typing 'make install'.
+how you like it, proceed with compiling the source by typing './configure'
+followed by any flags you need, then 'make install'.
 
 Make sure that you already have a /game directory present or the binaries
 won't be moved and you will not have a working game. See Sections 1 and 2
-for details on setting your game directory up.
+for details on setting your game directory up. In general, 'make install'
+will pull the latest version of everything you need as long as you
+have Subversion installed.
 
 To run the example database, cd into the /game.run directory after running
 'make install', and run './Startmux'. Also see the README in the 'game'
