@@ -1,7 +1,3 @@
-
-Makefile: configure
-	./configure
-	
 configure: src/autoconf.h.in
 	autoconf
 
