@@ -69,7 +69,9 @@ extern NAMETAB logoptions_nametab[];
 extern NAMETAB access_nametab[];
 extern NAMETAB attraccess_nametab[];
 extern NAMETAB list_names[];
+#if 0
 extern NAMETAB sigactions_nametab[];
+#endif
 extern CONF conftable[];
 
 #endif
@@ -475,6 +477,7 @@ void cf_init(void)
     mudconf.sqlDB_init_D = 0;
     mudconf.sqlDB_init_E = 0;
     mudconf.sqlDB_max_queries = 4;
+    memset(mudconf.sqlDB_mysql_socket, '\0', 128);
 #endif
 #ifdef EXTENDED_DEFAULT_PARENTS
     mudconf.exit_parent = 0;
@@ -1552,9 +1555,11 @@ CONF conftable[] = {
         cf_int,		CA_GOD,		&mudconf.searchcost,		0},
     {(char *)"see_owned_dark",
         cf_bool,	CA_GOD,		&mudconf.see_own_dark,		0},
+#if 0
     {(char *)"signal_action",
         cf_option,	CA_DISABLED,	&mudconf.sig_action,
         (long)sigactions_nametab},
+#endif
     {(char *)"site_chars",
         cf_int,		CA_GOD,		&mudconf.site_chars,		0},
     {(char *)"space_compress",
@@ -1662,6 +1667,8 @@ CONF conftable[] = {
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_password_E,128},
     {(char *)"sqlDB_dbname_E",
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_dbname_E,  128},
+    {(char *)"sqlDB_mysql_socket",
+        cf_string,      CA_GOD,         (int *)mudconf.sqlDB_mysql_socket, 128},
     {(char *)"sqlDB_max_queries",
         cf_int,      CA_GOD,         &mudconf.sqlDB_max_queries,  0},
 #endif

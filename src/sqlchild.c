@@ -421,13 +421,18 @@ static void sqlchild_make_connection(char db_slot) {
         default:
             return;
     }
-   conn = dbi_conn_new(db_type);
+    conn = dbi_conn_new(db_type);
     if(!conn) {
         dprintk("dbi_conn_new() failed with db_type %s.", db_type);
         dbi_state = DBIS_EFAIL;
         return;
     }
-
+    if(strncmp(db_type, "mysql", 128)==0 && strnlen(mudconf.sqlDB_mysql_socket) > 0 &&
+        dbi_conn_set_option(conn, "mysql_unix_socket", mudconf.sqlDB_mysql_socket)) {
+        dprintk("failed to set mysql_unix_socket");
+        dbi_state = DBIS_EFAIL;
+        return;
+    }
     if(db_hostname && dbi_conn_set_option(conn, "host", db_hostname)) {
         dprintk("failed to set hostname");
         dbi_state = DBIS_EFAIL;
@@ -471,7 +476,12 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     dprintk("executing query %d.", aqt->serial);
 
     sqlchild_make_connection(aqt->slot);
-    if(!conn) {
+    if(dbi_state!=DBIS_READY) {
+        sqlchild_child_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
+        return;
+    }
+
+     if(!conn) {
         sqlchild_child_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
         return;
     }
