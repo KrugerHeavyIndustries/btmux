@@ -57,10 +57,8 @@ void mech_pickup(dbref player, void *data, char *buffer)
 	!InLineOfSight(mech, target, MechX(target), MechY(target),
 	    FaMechRange(mech, target)),
 	"That target is not in your line of sight.");
-#ifdef BT_CARRIERS
     DOCHECK(MechSpecials2(target) & CARRIER_TECH && !MechSpecials2(mech) & CARRIER_TECH,
 	"You cannot handle the mass on that carrier.");
-#endif
     DOCHECK(CarryingClub(mech),
 	"You can't pickup while you're carrying a club!");
     DOCHECK(Jumping(mech), "You can't pickup while jumping!");

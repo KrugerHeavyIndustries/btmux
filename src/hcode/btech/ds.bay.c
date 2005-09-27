@@ -256,9 +256,7 @@ void mech_enterbay(dbref player, void *data, char *buffer)
 	DOCHECK(!Find_DS_Bay_In_MechHex(mech, ds, &bayn),
 	    "You see no bays in your hex.");
     }
-#ifdef BT_CARRIERS
     DOCHECK(IsDS(mech) && !(MechSpecials2(mech) & CARRIER_TECH), "Your craft can't enter bays.");
-#endif
     DOCHECK(!DS_Bay_Is_Open(mech, ds, AeroBay(ds, bayn)),
 	"The door has been jammed!");
     DOCHECK(IsDS(mech),

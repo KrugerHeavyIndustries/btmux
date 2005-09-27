@@ -339,18 +339,12 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
                 lugged = get_weight(c) * 2;
                 if (MechSpecials(mech) & SALVAGE_TECH)
                     lugged = lugged / 2;
-#ifndef BT_CARRIERS
-                else if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-                        (MechHeat(mech) >= 9.))
-                    lugged = lugged / 2;
-#else
                 if ((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
                         (MechHeat(mech) >= 9.))
                     lugged = lugged / 2;
 
                 if (MechSpecials2(mech) & CARRIER_TECH)
                     lugged = lugged / 2;
-#endif
        }
 
         if (MechSpecials(mech) & CARGO_TECH)
@@ -1786,11 +1780,7 @@ int mechs_in_hex(MAP * map, int x, int y, int friendly, int team)
 		continue;
 	    if (Destroyed(mech))
 		continue;
-#ifndef BT_CARRIERS
-	    if (IsDS(mech) && (Landed(mech) || !Started(mech)))
-#else
 	    if (!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech) && (Landed(mech) || !Started(mech)))
-#endif
 	    {
 		cnt += 2;
 		continue;

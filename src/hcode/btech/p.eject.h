@@ -21,11 +21,7 @@ void enter_mw_bay(MECH * mech, dbref bay);
 void pickup_mw(MECH * mech, MECH * target);
 void mech_eject(dbref player, void *data, char *buffer);
 void mech_disembark(dbref player, void *data, char *buffer);
-#ifndef BT_CARRIERS
-void mech_sdisembark(dbref player, void *data, char *buffer);
-#else
 void mech_udisembark(dbref player, void *data, char *buffer);
-#endif
 void mech_embark(dbref player, void *data, char *buffer);
 void autoeject(dbref player, MECH * mech, int tIsBSuit);
 #endif				/* _P_EJECT_H */

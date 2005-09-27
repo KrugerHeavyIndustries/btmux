@@ -1538,7 +1538,6 @@ void mechrep_Raddinftech(dbref player, void *data, char *buffer)
 
 }
 
-#ifdef BT_CARRIERS
 void mechrep_setcargospace(dbref player, void *data, char *buffer)
 {
     char *args[2];
@@ -1561,7 +1560,6 @@ void mechrep_setcargospace(dbref player, void *data, char *buffer)
     notify(player, tprintf("%3.2f cargospace and %d tons of maxton space set.", (float) ((float) cargo / 100), (int) max));
 
 }
-#endif
 
 MECH *load_refmech(char *reference)
 {

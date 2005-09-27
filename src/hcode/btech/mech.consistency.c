@@ -380,13 +380,10 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 			w * pile[i]);
 	    }
 	}
-#ifndef BT_CARRIERS
-    ADDENTRY("Cargo/Infantry space", CargoSpace(mech));
-#else
     if (CargoSpace(mech))
 	ADDENTRY(tprintf("CargoSpace (%.2ft)", (float) CargoSpace(mech) / 100),
 	    (int) (((float) CargoSpace(mech) / (MechSpecials2(mech) & CARRIER_TECH ? 1000 : MechSpecials(mech) & CARGO_TECH ? 100 : 500)) * 1024));
-#endif
+
     if (interactive > 0) {
 	addline();
 	vsi(tprintf("%%cgTotal: %s%.1f tons (offset: %.1f)%%cn",
@@ -527,13 +524,10 @@ int mech_weight_sub_veh(dbref player, MECH * mech, int interactive)
 		ADDENTRY_C(get_parts_long_name(i, 0), pile[i],
 		    w * pile[i]);
 	}
-#ifndef BT_CARRIERS
-    ADDENTRY("Cargo/Infantry space", CargoSpace(mech));
-#else
     if (CargoSpace(mech))
 	ADDENTRY(tprintf("CargoSpace (%.2ft)", (float) CargoSpace(mech) / 100),
 	    (int) (((float) CargoSpace(mech) / (MechSpecials2(mech) & CARRIER_TECH ? 1000 : MechSpecials(mech) & CARGO_TECH ? 100 : 500)) * 1024));
-#endif
+
     if (interactive > 0) {
 	addline();
 	vsi(tprintf("%%cgTotal: %s%.1f tons (offset: %.1f)%%cn",

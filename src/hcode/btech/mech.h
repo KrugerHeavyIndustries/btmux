@@ -757,9 +757,7 @@ typedef struct {
     char targcomp;
     char unused_char[3];
 #endif
-#ifdef BT_CARRIERS
     char carmaxton;             /* Max Tonnage variable for carrier sizing */
-#endif
 } mech_ud;
 
 typedef struct {
@@ -1115,9 +1113,7 @@ struct repair_data {
 #define OMNIMECH_TECH           0x10000     /* Is an omni mech */
 #define ARTEMISV_TECH           0x20000     /* Not yet implemented */
 #define CAMO_TECH               0x40000    /* Allows any unit to 'hide' */
-#ifdef BT_CARRIERS
 #define CARRIER_TECH            0x80000     /* Can be used as a carrier of mechs */
-#endif
 #ifdef BT_COMPLEXREPAIRS
 #define XLGYRO_TECH             0x100000
 #define HDGYRO_TECH             0x200000

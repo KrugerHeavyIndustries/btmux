@@ -242,9 +242,7 @@
 #endif
 #define MechBV(a)		(a)->ud.mechbv
 #define CargoSpace(a)		(a)->ud.cargospace
-#ifdef BT_CARRIERS
 #define CarMaxTon(a)		(a)->ud.carmaxton
-#endif
 #define Heatcutoff(a)		(MechCritStatus(a) & HEATCUTOFF)
 
 #define MechHasDHS(a)		(MechSpecials(a) & (CLAN_TECH|DOUBLE_HEAT_TECH))

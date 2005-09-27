@@ -962,12 +962,8 @@ static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
 	}
 
 	base = pos + tac_hex_offset(x, y, dispcols, oddcol1);
-#ifndef BT_CARRIERS
-	if (IsDS(mech) && (Landed(mech) || !Started(mech)))
-#else
 	if (!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech) &&
 	    ((MechZ(mech) >= ORBIT_Z && mech != player_mech) || Landed(mech) || !Started(mech)))
-#endif
 	    {
 	    int ts = DSBearMod(mech);
 	    int dir;

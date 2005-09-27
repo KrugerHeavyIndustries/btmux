@@ -506,9 +506,7 @@ static GMV xcode_data[] = {
     MeEntry("radiotype", MechRadioType, TYPE_CHAR),
     MeEntry("bv", MechBV, TYPE_INT),
     MeEntry("cargospace", CargoSpace, TYPE_INT),
-#ifdef BT_CARRIERS
     MeEntry("carmaxton", CarMaxTon, TYPE_CHAR_RO),
-#endif
 
     MeVEntry("bay0", AeroBay, 0, TYPE_DBREF),
     MeVEntry("bay1", AeroBay, 1, TYPE_DBREF),

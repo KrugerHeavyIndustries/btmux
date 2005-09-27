@@ -54,9 +54,7 @@ char *load_cmds[] = {
     "Config", "Computer", "Name", "Jump_Speed", "Radio",
     "SI", "Fuel", "Comment", "RadioType",
     "Mech_BV", "Cargo_Space", "Max_Suits", "InfantrySpecials",
-#ifdef BT_CARRIERS
     "Max_Ton",
-#endif
     NULL
 };
 
@@ -1154,9 +1152,7 @@ char *specials2[] = {
     "OmniMech_Tech",
     "ArtemisV_Tech",
     "Camo_Tech",
-#ifdef BT_CARRIERS
     "Carrier_Tech",
-#endif
 #ifdef BT_COMPLEXREPAIRS
     "XLGyro_Tech",
     "HDGyro_Tech",
@@ -1170,9 +1166,7 @@ char *specialsabrev2[] = {
     "IJJ", "MJJ", "CHS", "LHS", "BLP", "AECM", "WDOG", "LFF",
     "TAG", "OMNI", "AV",
     "CAMO",
-#ifdef BT_CARRIERS
     "CART",
-#endif
 #ifdef BT_COMPLEXREPAIRS
     "XLGRYO", "HDGYRO", "CGYRO",
 #endif
@@ -1721,9 +1715,7 @@ int save_template(dbref player, MECH * mech, char *reference,
 	"RadioType");
     SILLY_OUTPUT(2000, MechBV(mech), "Mech_BV");
     SILLY_OUTPUT(2000, CargoSpace(mech), "Cargo_Space");
-#ifdef BT_CARRIERS
     SILLY_OUTPUT(0, CarMaxTon(mech), "Max_Ton");
-#endif
     SILLY_OUTPUT(2000, MechMaxSuits(mech), "Max_Suits");
     SILLY_OUTPUT(0, AeroSIOrig(mech), "SI");
 
@@ -2508,10 +2500,10 @@ int load_template(dbref player, MECH * mech, char *filename)
 	case 23:		/* Mech battle value */
 	    MechBV(mech) = atoi(read_desc(fp, ptr));
 	    break;
-	case 24:
+	case 24:		/* Cargospace */
 	    CargoSpace(mech) = atoi(read_desc(fp, ptr));
-	    break;
-	case 25:
+	    break;		
+	case 25:		/* Maxsuits */
 	    MechMaxSuits(mech) = atoi(read_desc(fp, ptr));
 	    break;
 	case 26:		/* Specials */
@@ -2522,11 +2514,9 @@ int load_template(dbref player, MECH * mech, char *filename)
 		    BuildBitVectorNoErr(infantry_specials, tmpc);
 
 	    break;
-#ifdef BT_CARRIERS
-	case 27:
+	case 27:              	/* Carmaxton */
 	    CarMaxTon(mech) = atoi(read_desc(fp, ptr));
 	    break;
-#endif
 	}
     }
     fclose(fp);

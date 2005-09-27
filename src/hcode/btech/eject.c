@@ -36,12 +36,9 @@
 #include "p.mech.pickup.h"
 #include "p.bsuit.h"
 #include "p.mech.tag.h"
-
-#ifdef BT_CARRIERS
 #include "p.crit.h"
 #include "p.mech.tech.h"
 #include "p.mech.tech.commands.h"
-#endif
 
 int tele_contents(dbref from, dbref to, int flag)
 {
@@ -301,11 +298,6 @@ void mech_disembark(dbref player, void *data, char *buffer)
     char_disembark(player, mech);
 }
 
-/*
- * If carriers are defined, define this function 'mech_udisembark'
- * if not, define the following function 'mech_sdisembark'
- */
-#ifdef BT_CARRIERS
 void mech_udisembark(dbref player, void *data, char *buffer) {
     
     MECH *mech = (MECH *) data;
@@ -420,184 +412,7 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
     fix_pilotdamage(mech, MechPilot(mech));
     correct_speed(target);
 }
-#else 
-void mech_sdisembark(dbref player, void *data, char *buffer)
-{
-    MECH *mech = (MECH *) data;
-    MECH *target;
-    int newmech;
-    MAP *mymap;
-    int initial_speed;
 
-    DOCHECK(MechType(mech) != CLASS_BSUIT, "This is not a battlesuit!");
-    DOCHECK(In_Character(mech->mynum) && !Wiz(player) &&
-    (char_lookupplayer(GOD, GOD, 0, silly_atr_get(mech->mynum,
-            A_PILOTNUM)) != player), "This isn't your mech!");
-
-    newmech = Location(mech->mynum);
-    DOCHECK(!(Good_obj(newmech) &&
-        Hardcode(newmech)), "You're not being carried!");
-    DOCHECK(!(target = getMech(newmech)), "Not being carried!");
-    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",
-        (int) target->mapindex));
-    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(target),
-        MechY(target)));
-    MechZ(mech) = MechZ(target);
-    mymap = getMap(mech->mapindex);
-    loud_teleport(mech->mynum, mech->mapindex);
-    MechPilot(mech) = player;
-    initialize_pc(MechPilot(mech), mech);
-    Startup(mech);
-    MarkForLOSUpdate(mech);
-    SetCargoWeight(mech);
-    UnSetMechPKiller(mech);
-    MechLOSBroadcast(mech, "powers up!");
-    EvalBit(MechSpecials(mech), SS_ABILITY, ((MechPilot(mech) > 0 &&
-        isPlayer(MechPilot(mech))) ? char_getvalue(MechPilot(mech),
-        "Sixth_Sense") : 0));
-    MechComm(mech) = DEFAULT_COMM;
-    if (isPlayer(MechPilot(mech)) && !Quiet(mech->mynum)) {
-    MechComm(mech) =
-        char_getskilltarget(MechPilot(mech), "Comm-Conventional", 0);
-    MechPer(mech) =
-        char_getskilltarget(MechPilot(mech), "Perception", 0);
-    } else {
-    MechComm(mech) = 6;
-    MechPer(mech) = 6;
-    }
-    MechCommLast(mech) = 0;
-    UnZombifyMech(mech);
-    CargoSpace(target) += (MechTons(mech) * 1024);
-    MarkForLOSUpdate(target);
-
-    if ((MechZ(mech) > (Elevation(mymap, MechX(mech), MechY(mech)) + 1)) &&
-    (MechZ(mech) > 0))
-    {
-    notify(player,
-        "You open the hatch and climb out of the unit. Maybe you should have done this while the thing was closer to the ground...");
-    MechLOSBroadcast(mech, tprintf("jumps out of %s... in mid air !",
-        GetMechID(target)));
-    initial_speed =
-        ((MechSpeed(target) + MechVerticalSpeed(target)) / MP1) / 2 +
-        4;
-    MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK,
-        -initial_speed);
-    } else {
-    MechLOSBroadcast(mech, tprintf("climbs out of %s!",
-        GetMechID(target)));
-    notify(player, "You climb out of the unit.");
-    }
-}
-#endif
-
-#ifndef BT_CARRIERS
-/* Embark command for when carriers not defined */
-void mech_embark(dbref player, void *data, char *buffer) {
-    
-    MECH *mech = (MECH *) data;
-    MECH *target;
-    dbref target_num;
-    MAP *newmap;
-    int argc;
-    char *args[4];
-
-    if (player != GOD)
-	cch(MECH_USUAL);
-    DOCHECK((MechType(mech) != CLASS_MW) &&
-	(MechType(mech) != CLASS_BSUIT),
-	"... Why not just TELL it you love it?");
-    if (MechType(mech) == CLASS_MW) {
-	argc = mech_parseattributes(buffer, args, 1);
-	DOCHECK(argc != 1, "Invalid number of arguements.");
-	target_num = FindTargetDBREFFromMapNumber(mech, args[0]);
-	DOCHECK(target_num == -1,
-	    "That target is not in your line of sight.");
-	target = getMech(target_num);
-	DOCHECK(!target ||
-	    !InLineOfSight(mech, target, MechX(target), MechY(target),
-		FaMechRange(mech, target)),
-	    "That target is not in your line of sight.");
-	DOCHECK(MechZ(mech) > (MechZ(target) + 1),
-	    "You are too high above the target.");
-	DOCHECK(MechZ(mech) < (MechZ(target) - 1),
-	    "You can't reach that high !");
-	DOCHECK(MechX(mech) != MechX(target) ||
-	    MechY(mech) != MechY(target),
-	    "You need to be in the same hex!");
-	DOCHECK(((MechType(target) != CLASS_MECH) &&
-		(MechType(target) != CLASS_VTOL) &&
-		(MechType(target) != CLASS_VEH_GROUND)) ||
-	    (MechMove(target) == MOVE_NONE) || (!In_Character(mech->mynum))
-	    || (!In_Character(target->mynum)) ||
-	    (!mudconf.btech_ic),
-	    "You dont really see a way to get in there.");
-	DOCHECK(MechTeam(mech) != MechTeam(target), "Locked. Damn !");
-	DOCHECK(fabs(MechSpeed(target)) > 15.,
-	    "Are you suicidal ? That thing is moving too fast !");
-
-	if (MechType(target) == CLASS_MECH) {
-	    DOCHECK(!GetSectInt(target, HEAD),
-		"Okay, just climb up to-- Wait... where did the head go??");
-	    DOCHECK(PartIsDestroyed(target, HEAD, 2),
-		"Okay, just climb up and open-- "
-		"WTF ? Someone stole the cockpit!");
-	    DOCHECK(PartIsNonfunctional(target, HEAD, 2),
-		"Okay, just climb up and open-- hey, this door won't budge!");
-	}
-	mech_notify(mech, MECHALL, tprintf("You climb into %s.",
-		GetMechID(target)));
-	MechLOSBroadcast(mech, tprintf("climbs into %s.",
-		GetMechID(target)));
-	tele_contents(mech->mynum, target->mynum, TELE_ALL);
-	discard_mw(mech);
-	return;
-    }
-    /* What heppens with a Bsuit squad? */
-    /* Check if the vechile has cargo capacity, or is an Omni Mech */
-    argc = mech_parseattributes(buffer, args, 1);
-    DOCHECK(argc != 1, "Invalid number of arguements.");
-    target_num = FindTargetDBREFFromMapNumber(mech, args[0]);
-    DOCHECK(target_num == -1, "That target is not in your line of sight.");
-    target = getMech(target_num);
-    DOCHECK(!target ||
-	!InLineOfSight(mech, target, MechX(target), MechY(target),
-	    FaMechRange(mech, target)),
-	"That target is not in your line of sight.");
-    DOCHECK(MechZ(mech) > (MechZ(target) + 1),
-	"You are too high above the target.");
-    DOCHECK(MechZ(mech) < (MechZ(target) - 1),
-	"You can't reach that high !");
-    DOCHECK(MechX(mech) != MechX(target) ||
-	MechY(mech) != MechY(target), "You need to be in the same hex!");
-    DOCHECK(((MechType(target) != CLASS_VTOL) &&
-	    (MechType(target) != CLASS_VEH_GROUND)) ||
-	(!In_Character(mech->mynum)) || (!In_Character(target->mynum)) ||
-	(!mudconf.btech_ic), "You dont really see a way to get in there.");
-    DOCHECK(MechTeam(mech) != MechTeam(target), "Locked. Damn !");
-    DOCHECK(fabs(MechSpeed(target)) > 15.,
-	"Are you suicidal ? That thing is moving too fast !");
-    DOCHECK((MechTons(mech) * 1024 * CountBSuitMembers(mech)) >
-	CargoSpace(target), "Not enough cargospace for you !");
-    newmap = getMap(mech->mapindex);
-    mech_notify(mech, MECHALL, tprintf("You climb into %s.",
-	    GetMechID(target)));
-    MechLOSBroadcast(mech, tprintf("climbs into %s.", GetMechID(target)));
-    MarkForLOSUpdate(mech);
-    MarkForLOSUpdate(target);
-
-    if (MechCritStatus(target) & HIDDEN) {
-        MechCritStatus(target) &= ~HIDDEN;
-        MechLOSBroadcast(target, "becomes visible as it is embarked into.");
-    }
-
-    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
-    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
-    loud_teleport(mech->mynum, target->mynum);
-    CargoSpace(target) -= (MechTons(mech) * 1024);
-    Shutdown(mech);
-}
-#else
-/* Our embark command for when carriers are compiled in */
 void mech_embark(dbref player, void *data, char *buffer) {
 
     MECH *mech = (MECH *) data;
@@ -787,7 +602,6 @@ void mech_embark(dbref player, void *data, char *buffer) {
     }
     correct_speed(target);
 }
-#endif
 
 void autoeject(dbref player, MECH * mech, int tIsBSuit)
 {

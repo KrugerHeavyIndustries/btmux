@@ -477,12 +477,7 @@ CommandsStruct mechcommands[] = {
 
     {0, "DISEMBARK", "Gets the hell out of the 'mech / vehicle.",
 	mech_disembark},
-#ifndef BT_CARRIERS
-    {0, "SDISEMBARK", "Get a Battlesuit out of  vehicle.",
-	mech_sdisembark},
-#else
     {0, "UDISEMBARK", "Get the unit out of it's carrier.", mech_udisembark},
-#endif
     {0, "EMBARK", "Climb into a 'mech / vehicle", mech_embark},
     {1, "MASC", "Toggles MASC on and off", mech_masc},
     {0, "SCHARGE", "Toggles Supercharger on and off", mech_scharge},
@@ -793,11 +788,8 @@ CommandsStruct mechrepcommands[] = {
 	mechrep_Rsetscanrange},
     {0, "SETRADIORANGE <NUM>", "@Sets the radio range of the mech.",
 	mechrep_Rsetradiorange},
-#ifdef BT_CARRIERS
     {0, "SETCARGOSPACE <VAL> <MAXTON>",
 	"Sets cargospace and max cargo tonnage", mechrep_setcargospace},
-#endif
-
     {0, NULL, NULL, NULL}
 };
 

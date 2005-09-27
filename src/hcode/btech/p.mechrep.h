@@ -53,8 +53,6 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer);
 void mechrep_Raddtech(dbref player, void *data, char *buffer);
 void mechrep_Rdelinftech(dbref player, void *data, char *buffer);
 void mechrep_Raddinftech(dbref player, void *data, char *buffer);
-#ifdef BT_CARRIERS
 void mechrep_setcargospace(dbref player, void *data, char *buffer);
-#endif
 
 #endif				/* _P_MECHREP_H */

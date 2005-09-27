@@ -25,13 +25,6 @@
  * #define BT_COMPLEXREPAIRS
  */
 
-/*
- * Define this if you want carrier support added.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_CARRIERS
- */
-
 /* Define this if you want to have "movement modes" on. This includes
  * sprinting, dodging, and evading. Dodging will only be enabled i
  * BT_EXTENDED_ADVANTAGES is defined since it can only be used by
