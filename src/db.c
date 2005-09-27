@@ -46,9 +46,7 @@ NAME *purenames = NULL;
 int corrupt;
 #endif
 
-extern int sock;
-extern int ndescriptors;
-extern int maxd;
+extern int mux_bound_socket;
 extern int slave_socket;
 
 extern pid_t slave_pid;
@@ -1105,11 +1103,11 @@ int anum;
 
     va = (VATTR *) anum_get(anum);
     if (va != NULL) {
-	tattr.name = va->name;
-	tattr.number = va->number;
-	tattr.flags = va->flags;
-	tattr.check = NULL;
-	return &tattr;
+        tattr.name = va->name;
+        tattr.number = va->number;
+        tattr.flags = va->flags;
+        tattr.check = NULL;
+        return &tattr;
     }
     /*
      * All failed, return NULL 
@@ -2897,10 +2895,11 @@ void dump_restart_db()
 
     f = fopen("restart.db", "w");
     fprintf(f, "+V%d\n", version);
-    putref(f, sock);
+    putref(f, mux_bound_socket);
     putref(f, mudstate.start_time);
     putstring(f, mudstate.doing_hdr);
     putref(f, mudstate.record_players);
+    putref(f, slave_socket);
     DESC_ITER_ALL(d) {
         putref(f, d->descriptor);
         putref(f, d->flags);
@@ -2945,12 +2944,11 @@ void load_restart_db() {
         abort();
     }
     version = getref(f);
-    sock = getref(f);
+    mux_bound_socket = getref(f);
 
     if (version & RS_NEW_STRINGS)
         new_strings = 1;
 
-    maxd = sock + 1;
     mudstate.start_time = getref(f);
     time(&mudstate.restart_time);
     strcpy(mudstate.doing_hdr, getstring_noalloc(f, new_strings));
@@ -2959,8 +2957,9 @@ void load_restart_db() {
         mudstate.record_players = getref(f);
     }
 
+    slave_socket = getref(f);
+
     while ((val = getref(f)) != 0) {
-        ndescriptors++;
         d = alloc_desc("restart");
         d->descriptor = val;
         d->flags = getref(f);
@@ -3028,8 +3027,6 @@ void load_restart_db() {
                 accept_client_input, d);
         event_add(&d->sock_ev, NULL);
 
-        if (d->descriptor >= maxd)
-            maxd = d->descriptor + 1;
         desc_addhash(d);
         if (isPlayer(d->player))
             s_Flags2(d->player, Flags2(d->player) | CONNECTED);

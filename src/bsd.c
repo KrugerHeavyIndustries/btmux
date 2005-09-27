@@ -31,13 +31,20 @@
 #include "attrs.h"
 #include <errno.h>
 
+#define DEBUG_BSD
+#ifdef DEBUG_BSD
+#define DEBUG
+#endif
+
+#include "debug.h"
+
 #ifdef __CYGWIN__
 #undef WEXITSTATUS
 #define WEXITSTATUS(stat) (((*((int *) &(stat))) >> 8) & 0xff)
 #endif
 
 void accept_slave_input(int fd, short event, void *arg);
-pid_t slave_pid;
+pid_t slave_pid = -1;
 int slave_socket = -1;
 
 
@@ -57,9 +64,8 @@ struct event listen_sock_ev;
 struct event slave_sock_ev;
 struct event sqlslave_sock_ev;
 
-int sock;
+int mux_bound_socket = -1;
 int ndescriptors = 0;
-int maxd = 0;
 
 DESC *descriptor_list = NULL;
 
@@ -103,7 +109,7 @@ static int logcache_compare(void *vleft, void *vright, void *arg) {
 }
 
 int logcache_close(struct logfile_t *log) {
-    fprintf(stderr, "logcache] closing logfile %s\n", log->filename);
+    dprintk("closing logfile '%s'.", log->filename);
     if(evtimer_pending(&log->ev, NULL)) {
         evtimer_del(&log->ev);
     }
@@ -118,6 +124,7 @@ int logcache_close(struct logfile_t *log) {
 }
 
 static void logcache_expire(int fd, short event, void *arg) {
+    dprintk("Expiring '%s'.", ((struct logfile_t *)arg)->filename);
     logcache_close((struct logfile_t *)arg);
 }
 
@@ -156,6 +163,9 @@ static int logcache_open(char *filename) {
                 filename, errno, strerror(errno));
         return 0;
     }
+    if(fcntl(fd, F_SETFD, FD_CLOEXEC) < 0) {
+        log_perror("LOGCACHE", "FAIL", NULL, "fcntl(fd, F_SETFD, FD_CLOEXEC)");
+    }
     
     newlog = malloc(sizeof(struct logfile_t));
     newlog->fd = fd;
@@ -163,13 +173,17 @@ static int logcache_open(char *filename) {
     evtimer_set(&newlog->ev, logcache_expire, newlog);
     evtimer_add(&newlog->ev, &tv);
     rb_insert(logfiles, newlog->filename, newlog);
-    fprintf(stderr, "logcache] opened logfile %s\n", filename);
+    dprintk("opened logfile '%s' fd = %d.", filename, fd);
     return 1;
 }
 
 void logcache_init() {
-    if(!logfiles)
+    if(!logfiles) {
+        dprintk("logcache initialized.");
         logfiles = rb_init(logcache_compare, NULL);
+    } else {
+        dprintk("REDUNDANT CALL TO logcache_init()!");
+    }
 }
 
 static int _logcache_destruct(void *key, void *data, int depth, void *arg) {
@@ -179,7 +193,11 @@ static int _logcache_destruct(void *key, void *data, int depth, void *arg) {
 }
 
 void logcache_destruct() {
-    if(!logfiles) return;
+    dprintk("logcache destructing.");
+    if(!logfiles) {
+        dprintk("logcache_destruct() CALLED WHILE UNITIALIZED!");
+        return;
+    }
     rb_walk(logfiles, WALK_INORDER, _logcache_destruct, NULL);
     rb_destroy(logfiles);
     logfiles = NULL;
@@ -222,6 +240,20 @@ void logcache_writelog(dbref thing, char *fname, char *fdata) {
 }
 #endif
 
+void slave_destruct();
+void mux_release_socket();
+
+void shutdown_services() {
+#ifdef SQL_SUPPORT
+    sqlchild_destruct();
+#endif
+#ifdef ARBITRARY_LOGFILES
+    logcache_destruct();
+#endif
+    slave_destruct();
+}
+
+
 /*
  * get a result from the slave 
  */
@@ -248,6 +280,7 @@ static int get_slave_result() {
         close(slave_socket);
         slave_socket = -1;
         event_del(&slave_sock_ev);
+        slave_pid = -1;
         free_lbuf(buf);
         return (-1);
     } else if (len == 0) {
@@ -334,21 +367,11 @@ void boot_slave() {
 #endif
 
     if (slave_socket != -1) {
-        close(slave_socket);
-        slave_socket = -1;
-        event_del(&slave_sock_ev);
+        slave_destruct();
     }
-    if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sv) < 0) {
-        return;
-    }
-    /*
-     * set to nonblocking 
-     */
-    if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
-        close(sv[0]);
-        close(sv[1]);
-        return;
-    }
+
+    handle_errno(socketpair(AF_UNIX, SOCK_DGRAM, 0, sv));
+    
     slave_pid = fork();
     switch (slave_pid) {
         case -1:
@@ -356,7 +379,11 @@ void boot_slave() {
             close(sv[1]);
             return;
 
-        case 0:			/*
+        case 0:
+            if(mux_bound_socket > 0) {
+               mux_release_socket();
+            }
+                        /*
                          * * child  
                          */
             close(sv[0]);
@@ -381,39 +408,68 @@ void boot_slave() {
 
     if (fcntl(sv[0], F_SETFL, O_NONBLOCK) == -1) {
         close(sv[0]);
-        return;
+        slave_socket = -1;
+        log_perror("NET", "FAIL", NULL, "fcntl(slave_socket, F_SETFL, O_NONBLOCK)");
     }
+    
+    dprintk("slave initialized pid = %d, fd = %d.", slave_pid, sv[0]);
     slave_socket = sv[0];
     event_set(&slave_sock_ev, slave_socket, EV_READ | EV_PERSIST, 
             accept_slave_input, NULL);
     event_add(&slave_sock_ev, NULL);
 }
 
-int make_socket(int port) {
+void slave_destruct() {
+    if(slave_socket != -1) {
+        event_del(&slave_sock_ev);
+        close(slave_socket);
+        slave_socket = -1;
+    } else {
+        dprintk("slave_destruct() called without functioning slave_socket!");
+    }
+    if(slave_pid != -1) {
+        kill(slave_pid, SIGKILL);
+        slave_pid = -1; 
+    } else {
+        dprintk("slave_destruct() called without functioning slave.");
+    }
+    dprintk("slave shutdown.");
+}
+
+int bind_mux_socket(int port) {
     int s, opt;
     struct sockaddr_in server;
 
     s = socket(AF_INET, SOCK_STREAM, 0);
-    if (s < 0) {
+    if(s < 0) {
         log_perror("NET", "FAIL", NULL, "creating master socket");
         exit(3);
     }
     opt = 1;
-    if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt,
+    if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt,
                 sizeof(opt)) < 0) {
         log_perror("NET", "FAIL", NULL, "setsockopt");
+    }
+    if(fcntl(s, F_SETFD, 1) < 0) {
+        log_perror("NET", "FAIL", NULL, "fcntl(sock, F_SETFD)");
     }
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);
-    if (!mudstate.restarting)
-        if (bind(s, (struct sockaddr *) &server, sizeof(server))) {
-            log_perror("NET", "FAIL", NULL, "bind");
-            close(s);
-            exit(4);
-        }
+    if(bind(s, (struct sockaddr *) &server, sizeof(server))) {
+        log_perror("NET", "FAIL", NULL, "bind");
+        close(s);
+        exit(4);
+    }
     listen(s, 5);
     return s;
+}
+
+void mux_release_socket() {
+    dprintk("releasing mux main socket.");
+    event_del(&listen_sock_ev);
+    close(mux_bound_socket); 
+    mux_bound_socket = -1;
 }
 
 static int eradicate_broken_fd(void)
@@ -442,13 +498,13 @@ static int eradicate_broken_fd(void)
         }
         boot_slave();
     }
-    if (sock != -1 && fstat(sock, &statbuf) < 0) {
+    if (mux_bound_socket != -1 && fstat(mux_bound_socket, &statbuf) < 0) {
         STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
             log_text("Broken descriptor for our main port: ");
             log_number(slave_socket);
             ENDLOG;
         }
-        sock = -1;
+        mux_bound_socket = -1;
         return -1;
     }
     return 0;
@@ -471,8 +527,6 @@ void accept_new_connection(int fd, short event, void *arg) {
     DESC *newfd;
 
     newfd = new_connection(fd);
-
-
     event_set(&newfd->sock_ev, newfd->descriptor, EV_READ | EV_PERSIST, 
             accept_client_input, newfd);
     event_add(&newfd->sock_ev, NULL);
@@ -495,13 +549,16 @@ void shovechars(int port) {
 
     mudstate.debug_cmd = (char *) "< shovechars >";
 
-    if (!mudstate.restarting) {
+    dprintk("shovechars starting, sock is %d.", mux_bound_socket);
+
+    if(mux_bound_socket < 0) {
         signal(SIGPIPE, SIG_IGN);
-        sock = make_socket(port);
-        event_set(&listen_sock_ev, sock, EV_READ | EV_PERSIST, 
-                accept_new_connection, NULL);
-        event_add(&listen_sock_ev, NULL);
+        mux_bound_socket = bind_mux_socket(port);
     }
+    
+    event_set(&listen_sock_ev, mux_bound_socket, EV_READ | EV_PERSIST, 
+            accept_new_connection, NULL);
+    event_add(&listen_sock_ev, NULL);
     get_tod(&last_slice);
 
     while (mudstate.shutdown_flag == 0) {
@@ -557,10 +614,10 @@ DESC *new_connection(int sock) {
     mudstate.debug_cmd = (char *) "< new_connection >";
     addr_len = sizeof(struct sockaddr);
 
-    newsock = accept(sock, (struct sockaddr *)&addr, &addr_len);
+    newsock = accept(mux_bound_socket, (struct sockaddr *)&addr, &addr_len);
+    dprintk("accept() result is %d.", newsock);
     if (newsock < 0)
         return 0;
-
 
     if (site_check(addr.sin_addr, mudstate.access_list) == H_FORBIDDEN) {
         STARTLOG(LOG_NET | LOG_SECURITY, "NET", "SITE") {
@@ -946,7 +1003,7 @@ void close_sockets(int emergency, char *message) {
             shutdownsock(d, R_GOING_DOWN);
         }
     }
-    close(sock);
+    close(mux_bound_socket);
     event_del(&listen_sock_ev);
 }
 

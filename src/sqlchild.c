@@ -19,7 +19,6 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
-#include "debug.h"
 #include <dbi/dbi.h>
 
 #include "mudconf.h"
@@ -34,6 +33,13 @@
 #include "command.h"
 #include "slave.h"
 #include "attrs.h"
+
+#ifdef DEBUG_SQL
+#ifndef DEBUG
+#define DEBUG
+#endif
+#endif
+#include "debug.h"
 
 #ifdef SQL_SUPPORT
 #define MAX_QUERIES 8
@@ -70,10 +76,12 @@ struct timeval query_timeout = { 10, 0 };
 void sqlchild_init();
 void sqlchild_destruct();
 static void sqlchild_kill_all();
-static void sqlchild_kill_query(int requestId);
-static void sqlchild_abort_query(struct query_state_t *aqt, char *error);
-static void sqlchild_abort_query_dbi(struct query_state_t *aqt, char *error);
-static void sqlchild_execute_query(struct query_state_t *aqt);
+int sqlchild_kill(int requestId);
+void sqlchild_list(dbref thing);
+static void sqlchild_kill_query(struct query_state_t *aqt);
+static void sqlchild_child_abort_query(struct query_state_t *aqt, char *error);
+static void sqlchild_child_abort_query_dbi(struct query_state_t *aqt, char *error);
+static void sqlchild_child_execute_query(struct query_state_t *aqt);
 static void sqlchild_finish_query(int fd, short events, void *arg);
 static void sqlchild_check_queue();
 int sqlchild_request(dbref thing, int attr, char slot, char *pres, char *query, char *rdelim, char *cdelim);
@@ -82,23 +90,28 @@ void sqlchild_init() {
     dbi_driver *driver;
    
     if(dbi_initialized) return;
+
+    dprintk("initializing sqlchild.");
     
     if(dbi_initialize(NULL) == -1) {
-        EMIT_STDERR("dbi_initialized() failed.");
+        dprintk("dbi_initialized() failed.");
         dbi_state = DBIS_EFAIL;
         return;
     }
 
+    dprintk("libdbi started.");
+    
     driver = dbi_driver_list(NULL);
     while(driver != NULL) {
+        dprintk("libdbi driver '%s' ready.", dbi_driver_get_name(driver));
         driver = dbi_driver_list(driver);
     }
-
     
     dbi_state = DBIS_READY;
 }
 
 void sqlchild_destruct() {
+    dprintk("shutting down.");
     dbi_state = DBIS_EFAIL;
     sqlchild_kill_all();
     dbi_shutdown();
@@ -135,16 +148,41 @@ int sqlchild_request(dbref thing, int attr, char slot, char *pres, char *query, 
 }
 
 void sqlchild_kill_all() {
+    dprintk("shutting down.\n");
     if(!dbi_initialized) return;
     while(running) {
         sqlchild_kill_query(running);
     }
 }
 
-void sqlchild_kill_query(int requestId) {
+int sqlchild_kill(int requestId) {
     int status;
     struct query_state_t *iter, *aqt;
-    return; // XXX: search queues
+
+    dprintk("received request to terminate %d", requestId);
+    
+    if(running) 
+        iter = running;
+        while(iter)
+            if(iter->serial == requestId) {
+                sqlchild_kill_query(iter);
+                return 1;
+            } else iter = iter->next;
+    if(pending)
+        iter = pending;
+        while(iter)
+            if(iter->serial == requestId) {
+                sqlchild_kill_query(iter);
+                return 1;
+            } else iter = iter->next;
+    return 0;
+}
+
+static void sqlchild_kill_query(struct query_state_t *aqt) {
+    struct query_state_t *iter;
+    
+    dprintk("terminating query %d", aqt->serial);
+
     kill(aqt->pid, SIGTERM);
     waitpid(aqt->pid, NULL, 0);
     
@@ -193,7 +231,7 @@ void sqlchild_list(dbref thing) {
     } else {
         notify(thing, "- No pending queries.");
     }
-    notify_printf(thing, "%d active and %d pending queries.\n", nactive, pending);
+    notify_printf(thing, "%d active and %d pending queries.", nactive, pending);
 }
         
     
@@ -210,6 +248,8 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
     struct query_response resp = { -1, 0 };
     char buffer[LBUF_SIZE];
     buffer[0] = '\0';
+
+    dprintk("receiving response for query %d", aqt->serial);
 
     if(read(aqt->fd, &resp, sizeof(struct query_response)) < 0) {
         log_perror("SQL", "FAIL", NULL, "sqlchild_finish_query");
@@ -299,13 +339,14 @@ static void sqlchild_check_queue() {
 
     if((aqt->pid=fork()) == 0) {
         aqt->fd = fds[1];
-        sqlchild_execute_query(aqt);
+        sqlchild_child_execute_query(aqt);
         exit(0);
     } else {
         running_queries++;
         aqt->fd = fds[0];
         close(fds[1]);
     }
+    dprintk("waiting on sqlchild pid %d executing request %d", aqt->pid, aqt->serial);
 
     if(running) aqt->next = running;
     running = aqt;
@@ -317,7 +358,7 @@ static void sqlchild_check_queue() {
 
 /* CHILD FUNCTIONS */
 
-static void sqlchild_abort_query(struct query_state_t *aqt, char *error) {
+static void sqlchild_child_abort_query(struct query_state_t *aqt, char *error) {
     struct query_response resp = { DBIS_EFAIL, 0 };
     if(error) {
         resp.n_chars = strlen(error)+1;
@@ -330,12 +371,12 @@ static void sqlchild_abort_query(struct query_state_t *aqt, char *error) {
     return;
 }
 
-static void sqlchild_abort_query_dbi(struct query_state_t *aqt, char *error) {
+static void sqlchild_child_abort_query_dbi(struct query_state_t *aqt, char *error) {
     const char *error_ptr;
     if(dbi_conn_error(conn, &error_ptr) != -1) 
-        sqlchild_abort_query(aqt, error_ptr);
+        sqlchild_child_abort_query(aqt, error_ptr);
     else 
-        sqlchild_abort_query(aqt, error);
+        sqlchild_child_abort_query(aqt, error);
     return;
 }
 
@@ -382,35 +423,35 @@ static void sqlchild_make_connection(char db_slot) {
     }
    conn = dbi_conn_new(db_type);
     if(!conn) {
-        EMIT_STDERR("dbi_conn_new() failed with db_type %s.", db_type);
+        dprintk("dbi_conn_new() failed with db_type %s.", db_type);
         dbi_state = DBIS_EFAIL;
         return;
     }
 
     if(db_hostname && dbi_conn_set_option(conn, "host", db_hostname)) {
-        EMIT_STDERR("failed to set hostname");
+        dprintk("failed to set hostname");
         dbi_state = DBIS_EFAIL;
         return;
     }
     if(dbi_conn_set_option(conn, "username", db_username)) {
-        EMIT_STDERR("failed to set username");
+        dprintk("failed to set username");
         dbi_state = DBIS_EFAIL;
         return;
     }
     if(dbi_conn_set_option(conn, "password", db_password)) {
-        EMIT_STDERR("failed to set password");
+        dprintk("failed to set password");
         dbi_state = DBIS_EFAIL;
         return;
     } 
     if(dbi_conn_set_option(conn, "dbname", db_database)) {
-        EMIT_STDERR("failed to set database");
+        dprintk("failed to set database");
         dbi_state = DBIS_EFAIL;
         return;
     }
     return;
 }
  
-static void sqlchild_execute_query(struct query_state_t *aqt) {
+static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     struct query_response resp = { DBIS_READY, -1 };
     dbi_result result;
     int rows, fields, i, ii, retval;
@@ -426,21 +467,23 @@ static void sqlchild_execute_query(struct query_state_t *aqt) {
     ptr = output_buffer;
     eptr = ptr + LBUF_SIZE;
     *ptr = '\0';
+    
+    dprintk("executing query %d.", aqt->serial);
 
     sqlchild_make_connection(aqt->slot);
     if(!conn) {
-        sqlchild_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
+        sqlchild_child_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
         return;
     }
 
     if(dbi_conn_connect(conn) != 0) {
-        sqlchild_abort_query(aqt, "dbi_conn_connect failed");
+        sqlchild_child_abort_query(aqt, "dbi_conn_connect failed");
         return;
     }
 
     result = dbi_conn_query(conn, aqt->query);
     if(result == NULL) {
-        sqlchild_abort_query_dbi(aqt, "unknown error in dbi_conn_query");
+        sqlchild_child_abort_query_dbi(aqt, "unknown error in dbi_conn_query");
         return;
     }
 
@@ -466,7 +509,7 @@ static void sqlchild_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
                 case DBI_TYPE_BINARY:
-                    sqlchild_abort_query(aqt, "can't handle type BINARY");
+                    sqlchild_child_abort_query(aqt, "can't handle type BINARY");
                     return;
                 case DBI_TYPE_DATETIME:
                     // HANDLE TIMEZONE
@@ -475,11 +518,11 @@ static void sqlchild_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", time_buffer, delim);
                     break;
                 default:
-                    sqlchild_abort_query(aqt, "unknown type");
+                    sqlchild_child_abort_query(aqt, "unknown type");
                     return;
             }
             if(eptr-ptr < 1) {
-                sqlchild_abort_query(aqt, "result too large");
+                sqlchild_child_abort_query(aqt, "result too large");
                 return;
             }
         }

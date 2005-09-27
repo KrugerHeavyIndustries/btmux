@@ -1109,10 +1109,8 @@ void do_restart(player, cause, key)
         ENDLOG;
     } dump_database_internal(DUMP_RESTART);
 
-
-    shutdown(slave_socket, 2);
-    kill(slave_pid, SIGKILL);
-
+    
+    shutdown_services();
 
     dump_restart_db();
     execl("bin/netmux", "netmux", mudconf.config_file, NULL);

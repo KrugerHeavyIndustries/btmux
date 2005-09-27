@@ -16,26 +16,32 @@
 	/* debug test: 
  	* if the first argument `test' evaluates as true,
  	* the rest of the arguments are passed to fprintf */ 
-	#define DEBUG_TEST(test, args...)	\
+	#define dtest(test, args...)	\
 	do { if (test) {	\
-		fprintf(stderr, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);	\
+		fprintf(stderr, "%5d %s (%s:%d)] ", getpid(), __FUNCTION__, __FILE__, __LINE__);	\
 		fprintf(stderr, args);	\
 		fprintf(stderr, "\n");	\
 	}} while(0)
 
 	/* debug print 
 	 * prints arguments */
-	#define DEBUG_PRINT(args...)	\
+	#define dprintk(args...)	\
 	do {	\
-	fprintf(stderr, "[%s:%s:%d] ", __FILE__, __FUNCTION__, __LINE__);	\
-	fprintf(stderr, args);	\
-	fprintf(stderr, "\n");	\
+        fprintf(stderr, "%5d %s (%s:%d)] ", getpid(), __FUNCTION__, __FILE__, __LINE__);	\
+        fprintf(stderr, args);	\
+        fprintf(stderr, "\n");	\
 	} while(0)
 #else
-	#define DEBUG_TEST(args...)
-	#define DEBUG_PRINT(args...)
+	#define dtest(args...)
+	#define dprintk(args...)
 #endif /* DEBUG */
 
+#define printk(args...)	\
+do {	\
+    fprintf(stderr, "%s (%s:%d)] ", __FILE__, __FUNCTION__, __LINE__);	\
+    fprintf(stderr, args);	\
+    fprintf(stderr, "\n");	\
+} while(0)
 
 #define IF_FAIL(condition, args...)	\
 	do {	\
@@ -55,12 +61,6 @@
 		perror(NULL);	\
 		abort();	\
     }} while (0)
-
-#define EMIT_STDERR(args...) do { \
-    fprintf(stderr, "%s (%s:%d)] ", __FUNCTION__, __FILE__, __LINE__); \
-    fprintf(stderr, args); \
-    fprintf(stderr, "\n"); \
-    } while(0)
 
 #define handle_errno(x) if((x)<0) do { fprintf(stderr, "%s (%s:%d)] %s\n", __FUNCTION__, __FILE__,  __LINE__, strerror(errno)); abort(); } while(0)
 

@@ -83,13 +83,6 @@ typedef char	IBUF[16];
    logfiles in game/logs/, through @log and logf(). */
 #define ARBITRARY_LOGFILES
 
-/* Define SQL_SUPPORT for sqlslave process to exist for @query/sql calls.
- * The makefile will contain building sqlslave if you have libdbi installed,
- * but this needs to be on for the netmux process's code to be aware of starting
- * it, letting you use it, reading the socket's, etc....
- */
-/* #define SQL_SUPPORT */
-
 /* Define EXTENDED_DEFAULT_PARENTS to have room_parent and exit_parent mudconf
  * value (0 for none, default) to set a default exit and room parent. Usefull for some.
  */
@@ -193,6 +186,9 @@ extern int malloc_count;
 #define random rand
 #define srandom srand
 #endif /* HAVE_SRANDOM */
+
+#define DEBUG_BSD
+#define DEBUG_SQL
 
 #ifndef HAVE_STRNLEN
 size_t strnlen(const char *s, size_t maxlen);

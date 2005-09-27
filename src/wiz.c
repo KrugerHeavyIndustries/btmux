@@ -246,6 +246,8 @@ void do_query(dbref player, dbref cause, int key, char *what, char *qry) {
             sqlchild_list(player);
             break;
         case KILL_SQL:
+            notify(player, "not implemented.");
+            break;
         default:
             notify(player, "Invalid Syntax. Try Again.");
             break;
