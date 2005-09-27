@@ -304,6 +304,7 @@ char *cargo[] = {
     "HeavyDuty_Gyro",
     "Compact_Gyro",
     "Compact_HeatSink",
+    "SearchLight",
 #ifdef BT_COMPLEXREPAIRS
     "Sensors_10",
     "Sensors_20",
@@ -728,6 +729,7 @@ int cargoweight[] = {
     2048, 			/* HeavyDuty_Gyro */
     2048,			/* Compact_Gyro */
     2048, 			/* Compact_HeatSink */
+    204,			/* SearchLight */
 #ifdef BT_COMPLEXREPAIRS
     102,			/* Sensors_10 */
     204,			/* Sensors_20 */
