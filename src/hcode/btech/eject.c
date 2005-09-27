@@ -274,7 +274,9 @@ static void char_disembark(dbref player, MECH * mech)
     }
 }
 
-
+/**
+ * Handle the disembarking of pilots from units.
+ */
 void mech_disembark(dbref player, void *data, char *buffer)
 {
     MECH *mech = (MECH *) data;
@@ -298,30 +300,42 @@ void mech_disembark(dbref player, void *data, char *buffer)
     char_disembark(player, mech);
 }
 
+/**
+ * Handle the disembarking of units from within carriers.
+ */
 void mech_udisembark(dbref player, void *data, char *buffer) {
     
-    MECH *mech = (MECH *) data;
+    MECH *mech = (MECH *) data;		/* The disembarking unit */
     MECH *target;
-    int newmech;
-    MAP *mymap;
-    int initial_speed;
-    int i;
+    int newmech;			/* The carrier. */
+    MAP *mymap;				/* The map to disembark to */
+    int under_repairs;			/* Is the unit still under repairs? */
+    int i;				/* Used in section recycle for loop. */
 
+    /* Any IN_CHARACTER unit's pilot must match the invoker to disembark.
+     * A unit that is not IC can be disembarked by anyone.
+     */
     DOCHECK(In_Character(mech->mynum) && !Wiz(player) &&
             (char_lookupplayer(GOD, GOD, 0, 
                     silly_atr_get(mech->mynum, A_PILOTNUM)) != player), 
                     "This isn't your mech!");
 
+    /* Find the carrier that the invoker's unit is in and check it for validity. */
     newmech = Location(mech->mynum);
     DOCHECK(!(Good_obj(newmech) &&
                 Hardcode(newmech)), "You're not being carried!");
     DOCHECK(!(target = getMech(newmech)), "Not being carried!");
     DOCHECK(target->mapindex == -1, "You are not on a map.");
-    initial_speed = figure_latest_tech_event(mech);
-    DOCHECK(initial_speed,
+    
+    /* Don't allow repairing units to disembark */
+    under_repairs = figure_latest_tech_event(mech);
+    DOCHECK(under_repairs,
             "This 'Mech is still under repairs (see checkstatus for more info)");
+    
     DOCHECK(abs(MechSpeed(target)) > 0,
             "You cannot leave while the carrier is moving!");
+    
+    /* Carry out the disembarking. */
     mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",
                 (int) target->mapindex));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(target),
@@ -330,8 +344,11 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
     MechFZ(mech) = ZSCALE * MechZ(mech);
     mymap = getMap(mech->mapindex);
     DOCHECK(!mymap, "Major map error possible. Prolly should contact a wizard.");
+    
+    /* Teleporting loudly in order to trigger @aenter's and whatnot. */
     loud_teleport(mech->mynum, mech->mapindex);
 
+    /* If we make it safely, start the invoker's unit up once it's on the map. */
     if (!Destroyed(mech) && Location(player) == mech->mynum) {
         MechPilot(mech) = player;
         Startup(mech);
@@ -360,11 +377,13 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
     CargoSpace(target) += (MechTons(mech) * 100);
     MarkForLOSUpdate(target);
 
+    /* A hidden carrier that is disembarked from loses its HIDDEN status */
     if (MechCritStatus(target) & HIDDEN) {
         MechCritStatus(target) &= ~HIDDEN;
         MechLOSBroadcast(target, "becomes visible as it is disembarked from.");
     }
 
+    /* Para-dropping out of units from elevations. */
     if (!FlyingT(mech) &&
             MechZ(mech) > Elevation(mymap, MechX(mech), MechY(mech)) &&
             MechZ(mech) > 0) {
@@ -379,12 +398,14 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
             MechLOSBroadcast(mech, tprintf("climbs out of %s!", GetMechID(target)));
             notify(player, "You climb out of the unit.");
         } else {
+	    /* If the carrier is destroyed, do damage to the disembarking unit. */
             if (Destroyed(target) || !Started(target)) {
                 MechLOSBroadcast(mech, tprintf("smashes open the ramp door and emerges from %s!",
                             GetMechID(target)));
                 notify(player, "You smash open the door and break out.");
                 MechFalls(mech, 4, 0);
             } else {
+	    /* All is well. */
                 MechLOSBroadcast(mech, tprintf("emerges from the ramp out of %s!",
                             GetMechID(target)));
                 notify(player, "You emerge from the unit loading ramp.");
@@ -395,7 +416,7 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
         }
     }
 
-    /* Recycle any weapons they have */
+    /* Recycle any weapons/sections they have to prevent munchkin behavior. */
     if (MechType(mech) == CLASS_BSUIT) {
         StartBSuitRecycle(mech, 20);
     } else if (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW) {
@@ -411,7 +432,7 @@ void mech_udisembark(dbref player, void *data, char *buffer) {
 
     fix_pilotdamage(mech, MechPilot(mech));
     correct_speed(target);
-}
+} /* end mech_udisembark */
 
 void mech_embark(dbref player, void *data, char *buffer) {
 
