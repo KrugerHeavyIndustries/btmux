@@ -46,9 +46,6 @@ NAME *purenames = NULL;
 int corrupt;
 #endif
 
-extern int mux_bound_socket;
-extern int slave_socket;
-
 extern pid_t slave_pid;
 extern void desc_addhash(DESC *);
 extern void del_commac(dbref);
@@ -2895,11 +2892,9 @@ void dump_restart_db()
 
     f = fopen("restart.db", "w");
     fprintf(f, "+V%d\n", version);
-    putref(f, mux_bound_socket);
     putref(f, mudstate.start_time);
     putstring(f, mudstate.doing_hdr);
     putref(f, mudstate.record_players);
-    putref(f, slave_socket);
     DESC_ITER_ALL(d) {
         putref(f, d->descriptor);
         putref(f, d->flags);
@@ -2944,7 +2939,6 @@ void load_restart_db() {
         abort();
     }
     version = getref(f);
-    mux_bound_socket = getref(f);
 
     if (version & RS_NEW_STRINGS)
         new_strings = 1;
@@ -2956,8 +2950,6 @@ void load_restart_db() {
     if (version & RS_RECORD_PLAYERS) {
         mudstate.record_players = getref(f);
     }
-
-    slave_socket = getref(f);
 
     while ((val = getref(f)) != 0) {
         d = alloc_desc("restart");

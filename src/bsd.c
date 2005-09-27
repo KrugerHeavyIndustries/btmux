@@ -37,6 +37,9 @@
 #endif
 
 #include "debug.h"
+#if SQL_SUPPORT
+#include "sqlchild.h"
+#endif
 
 #ifdef __CYGWIN__
 #undef WEXITSTATUS
@@ -449,6 +452,11 @@ int bind_mux_socket(int port) {
     if(setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char *) &opt,
                 sizeof(opt)) < 0) {
         log_perror("NET", "FAIL", NULL, "setsockopt");
+    }
+    if(fcntl(s, F_SETFD, FD_CLOEXEC) < 0) {
+        log_perror("LOGCACHE", "FAIL", NULL, "fcntl(fd, F_SETFD, FD_CLOEXEC)");
+        close(s);
+        abort();
     }
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
