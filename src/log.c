@@ -20,6 +20,9 @@
 #include "alloc.h"
 #include "htab.h"
 #include "ansi.h"
+#ifdef ARBITRARY_LOGFILES
+#include "logcache.h"
+#endif
 
 #ifndef STANDALONE
 /* *INDENT-OFF* */
@@ -336,9 +339,6 @@ void log_type_and_num(thing)
 }
 
 #ifdef ARBITRARY_LOGFILES
-
-void logcache_writelog(dbref thing, char *pathname, char *message);
-
 int log_to_file(dbref thing, const char *logfile, const char *message) {
     char pathname[210];		/* Arbitrary limit in logfile length */
     char message_buffer[4096];
@@ -360,7 +360,10 @@ int log_to_file(dbref thing, const char *logfile, const char *message) {
     
     snprintf(message_buffer, 4096, "%s\n", message);
     
-    logcache_writelog(thing, pathname, message_buffer);
+    if(!logcache_writelog(pathname, message_buffer)) {
+        notify(thing, "Serious failure while trying to write to log.");
+        return 0;
+    }
     return 1;
 }
 

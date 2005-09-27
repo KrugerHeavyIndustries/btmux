@@ -45,6 +45,7 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/help.o        \
                  src/htab.o        \
                  src/log.o         \
+@LOGCACHE@
                  src/look.o        \
                  src/macro.o       \
                  src/mail.o        \
@@ -206,7 +207,7 @@ netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
 	$(CC) $(ALLFLAGS) -o src/netmux $(ALLOBJS) src/version.o $(LIBS)
 
 clean:
-	rm -f $(ALLOBJS) src/version.o $(TARGETS)
+	rm -f $(ALLOBJS) src/version.o $(TARGETS) .depend
 
 distclean: clean
 	rm -rf .depend Makefile config.status config.log

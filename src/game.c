@@ -28,7 +28,7 @@
 #include "slave.h"
 #include "vattr.h"
 #include "commac.h"
-#ifdef HAVE_SQL_SUPPORT
+#ifdef SQL_SUPPORT
 #include "sqlchild.h"
 #endif
 

@@ -81,7 +81,6 @@ typedef char	IBUF[16];
 
 /* define ARBITRARY_LOGFILES if you want (wiz-only) access to arbitrary
    logfiles in game/logs/, through @log and logf(). */
-#define ARBITRARY_LOGFILES
 
 /* Define EXTENDED_DEFAULT_PARENTS to have room_parent and exit_parent mudconf
  * value (0 for none, default) to set a default exit and room parent. Usefull for some.
