@@ -450,9 +450,6 @@ int bind_mux_socket(int port) {
                 sizeof(opt)) < 0) {
         log_perror("NET", "FAIL", NULL, "setsockopt");
     }
-    if(fcntl(s, F_SETFD, 1) < 0) {
-        log_perror("NET", "FAIL", NULL, "fcntl(sock, F_SETFD)");
-    }
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);
