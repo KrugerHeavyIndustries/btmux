@@ -176,8 +176,15 @@ TARGETS = src/netmux src/mkindx src/unsplit src/slave
 all: $(TARGETS)
 
 # Install copies the 'game' directory to game.run, after trying to get all
-# files from bk. If the bk command fails, we don't really care.
+# files from svn. If the svn command fails, we don't really care.
 install: $(TARGETS)
+	if [ ! -d game ]; then \
+            echo No game directory, attempting to download one from the Subversion repository.; \
+            svn co http://btmux.com/svn/game/trunk game; \
+            svn co http://btmux.com/svn/maps/trunk game/maps; \
+            svn co http://btmux.com/svn/text/trunk game/text; \
+            svn co http://btmux.com/svn/mechs/trunk game/mechs; \
+        fi
 	if [ ! -d game ]; then \
 	    echo No game directory. Please acquire one from http://sourceforge.net/projects/btonline-btech.; \
 	    exit 1; \
