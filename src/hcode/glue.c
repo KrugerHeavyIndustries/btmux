@@ -273,7 +273,6 @@ static int load_update4(Node * tmp)
 {
     MECH *mech;
     MAP *map;
-    AUTO *a;
 
 #ifdef BT_ENABLED
     if (WhichType(tmp) == GTYPE_MECH) {
@@ -294,14 +293,6 @@ static int load_update4(Node * tmp)
 	if (!FlyingT(mech) && Started(mech) && Jumping(mech))
 	    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(mech),
 		    MechY(mech)));
-    } else if (WhichType(tmp) == GTYPE_AUTO) {
-	a = NodeData(tmp);
-	mech = getMech(a->mymechnum);
-	if (!a->mymechnum || !(a->mymech = getMech(a->mymechnum)))
-	    DoStopGun(a);
-	else
-	    if (Gunning(a))
-	    	DoStartGun(a);
     }
 #endif
     return 1;
@@ -389,17 +380,36 @@ static int load_update1(Node * tmp)
  */
 static int load_autopilot_data(Node *tmp) {
 
-    AUTO *a;
+    AUTO *autopilot;
+    int i;
 
     if (WhichType(tmp) == GTYPE_AUTO) {
 
-        a = (AUTO *) NodeData(tmp);
+        autopilot = (AUTO *) NodeData(tmp);
 
         /* Save the AI Command List */
-        auto_load_commands(global_file_kludge, a);
+        auto_load_commands(global_file_kludge, autopilot);
 
         /* Reset the Astar Path */
-        a->astar_path = NULL;
+        autopilot->astar_path = NULL;
+
+        /* Reset the weaplist */
+        autopilot->weaplist = NULL;
+
+        /* Reset the profile */
+        for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+            autopilot->profile[i] = NULL;
+        }
+
+        /* Check to see if the AI is in a mech */
+        /* Need to make this better, check if its got a target whatnot */
+	    if (!autopilot->mymechnum || 
+                !(autopilot->mymech = getMech(autopilot->mymechnum))) {
+	        DoStopGun(autopilot);
+        } else {
+	        if (Gunning(autopilot))
+	    	    DoStartGun(autopilot);
+        }
 
     }
 

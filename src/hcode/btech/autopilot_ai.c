@@ -874,7 +874,7 @@ void ai_init(AUTO * a, MECH * m) {
     a->auto_fweight = 55;
     a->speed = 100;         /* Reset to full speed */
     a->flags = 0;
-    a->targ = -1; 
+    a->target = -1; 
 }
 
 static MECH *target_mech;
@@ -1025,6 +1025,7 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
     astar_node *temp_astar_node;
     astar_node *parent_astar_node;
 
+#ifdef DEBUG_ASTAR
     /* Log File */
     FILE *logfile;
     char log_msg[MBUF_SIZE];
@@ -1037,7 +1038,8 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
             "%d, %d to %d, %d\n",
             autopilot->mynum, MechX(mech), MechY(mech), end_x, end_y);
     fprintf(logfile, "%s", log_msg);
-            
+#endif
+
     /* Zero the bitfields */
     memset(closed_list_bitfield, 0, sizeof(closed_list_bitfield));
     memset(open_list_bitfield, 0, sizeof(open_list_bitfield));
@@ -1058,11 +1060,13 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
     if (temp_astar_node == NULL) {
         /*! \todo {Add code here to break if we can't alloc memory} */
 
+#ifdef DEBUG_ASTAR
         /* Write Log Message */
         snprintf(log_msg, MBUF_SIZE, "AI ERROR - Unable to malloc astar node for "
                 "hex %d, %d\n",
                 MechX(mech), MechY(mech));
         fprintf(logfile, "%s", log_msg);
+#endif
 
     }
 
@@ -1071,11 +1075,13 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
     rb_insert(open_list_by_xy, &temp_astar_node->hexoffset, temp_astar_node);
     SetHexBit(open_list_bitfield, temp_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
     /* Log it */
     snprintf(log_msg, MBUF_SIZE, "Added hex %d, %d (%d %d) to open list\n",
             temp_astar_node->x, temp_astar_node->y, temp_astar_node->g_score,
             temp_astar_node->h_score); 
     fprintf(logfile, "%s", log_msg);
+#endif
 
     /* Now loop till we find path */
     while (!found_path) {
@@ -1094,29 +1100,37 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
         rb_delete(open_list_by_xy, &parent_astar_node->hexoffset);
         ClearHexBit(open_list_bitfield, parent_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
         /* Log it */
         snprintf(log_msg, MBUF_SIZE, "Removed hex %d, %d (%d %d) from open "
                 "list - lowest cost node\n",
                 parent_astar_node->x, parent_astar_node->y,
                 parent_astar_node->g_score, parent_astar_node->h_score); 
         fprintf(logfile, "%s", log_msg);
+#endif
 
         /* Add it to the closed list */
         rb_insert(closed_list, &parent_astar_node->hexoffset, parent_astar_node);
         SetHexBit(closed_list_bitfield, parent_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
         /* Log it */
         snprintf(log_msg, MBUF_SIZE, "Added hex %d, %d (%d %d) to closed list"
                 " - lowest cost node\n",
                 parent_astar_node->x, parent_astar_node->y,
                 parent_astar_node->g_score, parent_astar_node->h_score); 
         fprintf(logfile, "%s", log_msg);
+#endif
 
         /* Now we check to see if we added the end hex to the closed list.
          * When this happens it means we are done */
         if (CheckHexBit(closed_list_bitfield, HexOffSet(end_x, end_y))) {
             found_path = 1;
+
+#ifdef DEBUG_ASTAR
             fprintf(logfile, "Found path for the AI\n");
+#endif
+
             break;
         }
 
@@ -1263,12 +1277,14 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
                     rb_delete(open_list_by_xy, &temp_astar_node->hexoffset);
                     ClearHexBit(open_list_bitfield, temp_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
                     /* Log it */
                     snprintf(log_msg, MBUF_SIZE, "Removed hex %d, %d (%d %d) from "
                             "open list - score recal\n",
                             temp_astar_node->x, temp_astar_node->y,
                             temp_astar_node->g_score, temp_astar_node->h_score); 
                     fprintf(logfile, "%s", log_msg);
+#endif
 
                     /* Recalc score */
                     /* H-Score should be the same since the hex doesn't move */
@@ -1299,11 +1315,13 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
                 if (temp_astar_node == NULL) {
                     /*! \todo {Add code here to break if we can't alloc memory} */
 
+#ifdef DEBUG_ASTAR
                     /* Log it */
                     snprintf(log_msg, MBUF_SIZE, "AI ERROR - Unable to malloc astar"
                             " node for hex %d, %d\n",
                             map_x2, map_y2);
                     fprintf(logfile, "%s", log_msg);
+#endif
 
                 }
 
@@ -1318,9 +1336,13 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
 
                 if (rb_exists(open_list_by_score, &temp_astar_node->f_score)) {
                     temp_astar_node->f_score++;
+
+#ifdef DEBUG_ASTAR
                     fprintf(logfile, "Adjusting score for hex %d, %d - same"
                             " fscore already exists\n",
                             temp_astar_node->x, temp_astar_node->y);
+#endif
+
                 } else {
                     break;
                 }
@@ -1330,11 +1352,13 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
             rb_insert(open_list_by_xy, &temp_astar_node->hexoffset, temp_astar_node);
             SetHexBit(open_list_bitfield, temp_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
             /* Log it */
             snprintf(log_msg, MBUF_SIZE, "Added hex %d, %d (%d %d) to open list\n",
                     temp_astar_node->x, temp_astar_node->y,
                     temp_astar_node->g_score, temp_astar_node->h_score);
             fprintf(logfile, "%s", log_msg);
+#endif
 
         } /* End of looking for hexes next to us */
        
@@ -1345,8 +1369,10 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
     /* Lets first see if we found a path */
     if (found_path) {
 
+#ifdef DEBUG_ASTAR
         /* Log Message */
         fprintf(logfile, "Building Path from closed list for AI\n");
+#endif
 
         /* Found a path so we need to go through the closed list
          * and generate it */
@@ -1362,54 +1388,71 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
         astar_path_node = dllist_create_node(temp_astar_node);
         dllist_insert_beginning(autopilot->astar_path, astar_path_node);
 
+#ifdef DEBUG_ASTAR
         /* Log it */
         fprintf(logfile, "Added hex %d, %d to path list\n",
                 temp_astar_node->x, temp_astar_node->y);
+#endif
 
         /* Remove it from closed list */
         rb_delete(closed_list, &temp_astar_node->hexoffset);
 
+#ifdef DEBUG_ASTAR
         /* Log it */
         fprintf(logfile, "Removed hex %d, %d from closed list - path list work\n",
                 temp_astar_node->x, temp_astar_node->y);
+#endif
 
-        /* Loop */
-        while (1) {
-        
-            /* Get Parent Node Offset*/
-            hexoffset = HexOffSet(temp_astar_node->x_parent, 
-                    temp_astar_node->y_parent);
+        /* Check if the end hex is the start hex */
+        if (!(temp_astar_node->x == MechX(mech) &&
+                temp_astar_node->y == MechY(mech))) {
 
-            /*! \todo {Possibly add check here incase the node we're
-             * looking for some how did not end up on the list} */
+            /* Its not so lets loop through the closed list
+             * building the path */
 
-            /* Get Parent Node from closed list */
-            parent_astar_node = rb_find(closed_list, &hexoffset);
+            /* Loop */
+            while (1) {
 
-            /* Check if start hex */
-            /* If start hex quit */
-            if (parent_astar_node->x == MechX(mech) &&
-                    parent_astar_node->y == MechY(mech)) {
-                break;
-            }
+                /* Get Parent Node Offset*/
+                hexoffset = HexOffSet(temp_astar_node->x_parent, 
+                        temp_astar_node->y_parent);
 
-            /* Add to path list */
-            astar_path_node = dllist_create_node(parent_astar_node);
-            dllist_insert_beginning(autopilot->astar_path, astar_path_node);
-    
-            /* Log it */
-            fprintf(logfile, "Added hex %d, %d to path list\n",
-                    parent_astar_node->x, parent_astar_node->y);
+                /*! \todo {Possibly add check here incase the node we're
+                 * looking for some how did not end up on the list} */
 
-            /* Remove from closed list */
-            rb_delete(closed_list, &parent_astar_node->hexoffset);
+                /* Get Parent Node from closed list */
+                parent_astar_node = rb_find(closed_list, &hexoffset);
 
-            /* Log it */
-            fprintf(logfile, "Removed hex %d, %d from closed list - path list work\n",
-                    parent_astar_node->x, parent_astar_node->y);
+                /* Check if start hex */
+                /* If start hex quit */
+                if (parent_astar_node->x == MechX(mech) &&
+                        parent_astar_node->y == MechY(mech)) {
+                    break;
+                }
 
-            /* Make parent new child */
-            temp_astar_node = parent_astar_node;
+                /* Add to path list */
+                astar_path_node = dllist_create_node(parent_astar_node);
+                dllist_insert_beginning(autopilot->astar_path, astar_path_node);
+
+#ifdef DEBUG_ASTAR
+                /* Log it */
+                fprintf(logfile, "Added hex %d, %d to path list\n",
+                        parent_astar_node->x, parent_astar_node->y);
+#endif
+
+                /* Remove from closed list */
+                rb_delete(closed_list, &parent_astar_node->hexoffset);
+
+#ifdef DEBUG_ASTAR
+                /* Log it */
+                fprintf(logfile, "Removed hex %d, %d from closed list - path list work\n",
+                        parent_astar_node->x, parent_astar_node->y);
+#endif
+
+                /* Make parent new child */
+                temp_astar_node = parent_astar_node;
+
+            } /* End of while loop */
 
         }
 
@@ -1419,8 +1462,10 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
 
     /* Make sure we destroy all the objects we dont need any more */
 
+#ifdef DEBUG_ASTAR
     /* Log Message */
     fprintf(logfile, "Destorying the AI lists\n");
+#endif
 
     /* Destroy the open lists */
     rb_walk(open_list_by_score, WALK_INORDER, &auto_astar_callback, NULL);
@@ -1431,8 +1476,10 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
     rb_walk(closed_list, WALK_INORDER, &auto_astar_callback, NULL);
     rb_destroy(closed_list);
 
+#ifdef DEBUG_ASTAR
     /* Close Log file */
     fclose(logfile);
+#endif
 
     /* End */
     if (found_path) {

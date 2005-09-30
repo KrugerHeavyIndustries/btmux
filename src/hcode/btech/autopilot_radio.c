@@ -33,12 +33,18 @@
 
 void sendchannelstuff(MECH * mech, int freq, char *msg);
 
+/*! \todo {Should really do away with this some how but i'm being lazy right now} */
 #define Clear(a) \
     auto_disengage(a->mynum, a, ""); \
-    auto_delcommand(a->mynum, a, "-1");
-#if 0
-    if (a->targ >= -1) auto_addcommand(a->mynum, a, tprintf("autogun"));
-#endif
+    auto_delcommand(a->mynum, a, "-1"); \
+    if (a->target >= -1) { \
+        if (AssignedTarget(a) && a->target != -1) { \
+            snprintf(buffer, SBUF_SIZE, "autogun target %d", a->target); \
+        } else { \
+            snprintf(buffer, SBUF_SIZE, "autogun on"); \
+        } \
+        auto_addcommand(a->mynum, autopilot, buffer); \
+    } \
 
 #define BACMD(name) char * name (AUTO *autopilot, MECH *mech, char **args, int argc, int chn)
 #define ACMD(name) static BACMD(name)
@@ -54,11 +60,14 @@ struct {
     void (*fun)(AUTO *autopilot, MECH *mech, char **args, int argc, char *mesg);
 } auto_cmds[] = {
     {
+    "auto", "autogun", 1, 0, auto_radio_command_autogun}, {
 #if 0
     "att", "attackleg", 1, 0, auto_attackleg}, {
     "chanf", "chanfreq", 2, 0, auto_setchanfreq}, {
     "chanm", "chanmode", 2, 0, auto_setchanmode}, {
-    "chase", "chasetarg", 1, 0, auto_chasetarg}, {
+#endif
+    "chase", "chasetarg", 1, 0, auto_radio_command_chasetarg}, {
+#if 0
     "cm", "cmode", 2, 0, auto_cmode}, {
 #endif
     "dfo", "dfollow", 1, 0, auto_radio_command_dfollow}, {
@@ -74,7 +83,9 @@ struct {
 #if 0
     "en", "enterbay", 0, 0, auto_enterbay}, {
     "en", "enterbay", 1, 0, auto_enterbay}, {
-    "fo", "follow", 1, 0, auto_follow}, {
+#endif
+    "fo", "follow", 1, 0, auto_radio_command_follow}, {
+#if 0
     "fr", "freq", 1, 0, auto_freq}, {
 #endif
     "go", "goto", 2, 0, auto_radio_command_goto}, {
@@ -100,25 +111,98 @@ struct {
     "reset", "reset", 0, 0, auto_radio_command_reset}, {
 #if 0
     "roam", "roammode", 1, 0, auto_roammode }, {
-    "se", "sensor", 2, 0, auto_sensor}, {
-    "se", "sensor", 0, 0, auto_sensor}, {
 #endif
+    "se", "sensor", 2, 0, auto_radio_command_sensor}, {
+    "se", "sensor", 0, 0, auto_radio_command_sensor}, {
     "sh", "shutdown", 0, 0, auto_radio_command_shutdown}, {
     "sp", "speed", 1, 0, auto_radio_command_speed}, {
     "st", "stand", 0, 0, auto_radio_command_stand}, {
     "st", "startup", 0, 0, auto_radio_command_startup}, {
     "st", "startup", 1, 0, auto_radio_command_startup}, {
     "st", "stop", 0, 0, auto_radio_command_stop}, {
+    "sw", "sweight", 2, 1, auto_radio_command_sweight}, {
 #if 0
-    "sw", "sweight", 2, 1, auto_sweight}, {
     "swa", "swarm", 1, 0, auto_swarm}, {
     "swarmc", "swarmcharge", 1, 0, auto_swarmcharge }, {
     "swarmm", "swarmmode", 1, 0, auto_swarmmode }, {
-    "ta", "target", 1, 0, auto_target}, {
+#endif
+    "ta", "target", 1, 0, auto_radio_command_target}, {
+#if 0
     "ta", "target", 2, 0, auto_target}, {
 #endif
     NULL, NULL, 0, 0, NULL}
 };
+
+/*
+ * The autogun radio interface
+ */
+void auto_radio_command_autogun(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg) {
+
+    if (strcmp(args[1], "on") == 0) {
+
+        autopilot->target = -1;
+        autopilot->target_score = 0;
+        autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
+
+        /* Reset the Assigned target flag */
+        if (AssignedTarget(autopilot)) {
+            UnassignTarget(autopilot);
+        }
+
+        if (Gunning(autopilot)) {
+            DoStopGun(autopilot);
+        }
+        DoStartGun(autopilot);
+
+        snprintf(mesg, LBUF_SIZE, "shooting at whatever I want");
+        return;
+
+    } else if (strcmp(args[1], "off") == 0) {
+
+        /* Reset the AI */
+        autopilot->target = -2;
+        autopilot->target_score = 0;
+        autopilot->target_update_tick = 0;
+
+        /* Reset this flag since we don't want to be shooting anything */
+        if (AssignedTarget(autopilot)) {
+            UnassignTarget(autopilot);
+        }
+
+        if (Gunning(autopilot))
+            DoStopGun(autopilot);
+
+        snprintf(mesg, LBUF_SIZE, "powering down weapons");
+        return;
+
+    }
+    snprintf(mesg, LBUF_SIZE, "!Invalid Input for autogun:"
+            " use 'on' or 'off'");
+
+}
+
+/*
+ * Tell the AI to chase whatever its targeting
+ */
+void auto_radio_command_chasetarg(AUTO *autopilot, MECH *mech, 
+        char **args, int argc, char *mesg) {
+
+    if (strcmp(args[1], "on") == 0) {
+
+        auto_set_chasetarget_mode(autopilot, AUTO_CHASETARGET_ON);
+        snprintf(mesg, LBUF_SIZE, "Chase Target Mode is Activated");
+        return;
+
+    } else if (strcmp(args[1], "off") == 0) {
+
+        auto_set_chasetarget_mode(autopilot, AUTO_CHASETARGET_OFF);
+        snprintf(mesg, LBUF_SIZE, "Chase Target Mode is Deactivated");
+        return;
+    }
+    snprintf(mesg, LBUF_SIZE, "!Invalid Input for chasetarg: use 'on' or 'off'");
+
+}
 
 /*
  * Radio command to force AI to [dumbly] follow a given target
@@ -134,7 +218,9 @@ void auto_radio_command_dfollow(AUTO *autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "!Invalid target to follow");
         return;
     }
+
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "dumbfollow %d", targetref);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -159,7 +245,9 @@ void auto_radio_command_dgoto(AUTO *autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "!First number not an integer");
         return;
     }
+
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "dumbgoto %d %d", x, y);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -176,6 +264,7 @@ void auto_radio_command_dropoff(AUTO *autopilot, MECH *mech,
     char buffer[SBUF_SIZE];
 
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "dropoff");
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -197,8 +286,9 @@ void auto_radio_command_embark(AUTO* autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "!Invalid target to embark");
         return;
     }
+
     Clear(autopilot);
-    snprintf(buffer, MBUF_SIZE, "embark %d", targetref);
+    snprintf(buffer, SBUF_SIZE, "embark %d", targetref);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
     snprintf(mesg, LBUF_SIZE, "embarking %s", args[1]);
@@ -210,7 +300,7 @@ void auto_radio_command_embark(AUTO* autopilot, MECH *mech,
  * Radio command to force AI to enterbase
  */
 void auto_radio_command_enterbase(AUTO *autopilot, MECH *mech,
-                char **args, int argc, char *mesg) {
+        char **args, int argc, char *mesg) {
 
     char buffer[SBUF_SIZE];
 
@@ -223,7 +313,34 @@ void auto_radio_command_enterbase(AUTO *autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "entering base");
     }
 
+    Clear(autopilot);
+
     mech_enterbase(autopilot->mynum, mech, buffer);
+
+}
+
+/*
+ * New smart follow system based on A*'s goto
+ */
+void auto_radio_command_follow(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    char buffer[SBUF_SIZE];
+    dbref targetref;
+
+    targetref = FindTargetDBREFFromMapNumber(mech, args[1]);
+    if (targetref <= 0) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid target to follow");
+        return;
+    }
+
+    Clear(autopilot);
+  
+    snprintf(buffer, SBUF_SIZE, "follow %d", targetref);
+    auto_addcommand(autopilot->mynum, autopilot, buffer);
+    auto_engage(autopilot->mynum, autopilot, "");
+    snprintf(mesg, LBUF_SIZE, "following %s (%d degrees, %d away)", args[1], 
+            autopilot->ofsx, autopilot->ofsy);
 
 }
 
@@ -245,7 +362,13 @@ void auto_radio_command_goto(AUTO *autopilot, MECH *mech,
         return;
     }
 
+    if (MechX(mech) == x && MechY(mech) == y) {
+        snprintf(mesg, LBUF_SIZE, "!Already in that hex");
+        return;
+    }
+
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "goto %d %d", x, y);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -381,7 +504,13 @@ void auto_radio_command_leavebase(AUTO *autopilot, MECH *mech,
         return;
     }
 
+    /* Make sure chasetarget doesn't interfere with this */
+    if (ChasingTarget(autopilot)) {
+        StopChasingTarget(autopilot);
+    }
+
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "leavebase %d", direction);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, ""); 
@@ -408,6 +537,7 @@ void auto_radio_command_ogoto(AUTO *autopilot, MECH *mech,
     }
 
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "oldgoto %d %d", x, y);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -430,7 +560,13 @@ void auto_radio_command_pickup(AUTO *autopilot, MECH *mech,
         return;
     }
 
+    /* Make sure chasetarget doesn't interfere with this */
+    if (ChasingTarget(autopilot)) {
+        StopChasingTarget(autopilot);
+    }
+
     Clear(autopilot);
+
     snprintf(buffer, SBUF_SIZE, "pickup %d", targetref);
     auto_addcommand(autopilot->mynum, autopilot, buffer);
     auto_engage(autopilot->mynum, autopilot, "");
@@ -535,10 +671,44 @@ void auto_radio_command_report(AUTO *autopilot, MECH *mech,
 void auto_radio_command_reset(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg) {
 
-    Clear(autopilot);
+    char buffer[SBUF_SIZE];
+
+    auto_disengage(autopilot->mynum, autopilot, "");
+    auto_delcommand(autopilot->mynum, autopilot, "-1");
     auto_init(autopilot, mech);
     auto_engage(autopilot->mynum, autopilot, "");
     snprintf(mesg, LBUF_SIZE, "all internal events and flags reset!");
+
+}
+
+/*
+ * Radio command to alter or let the AI alter
+ * its sensors
+ */
+void auto_radio_command_sensor(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    char buf[SBUF_SIZE];
+
+    if (argc) {
+
+        /* Make sure no sensor event running */
+        muxevent_remove_type_data(EVENT_AUTO_SENSOR, autopilot);
+
+        /* Set the user specified sensors */
+        snprintf(buf, SBUF_SIZE, "%s %s", args[1], args[2]);
+        mech_sensor(autopilot->mynum, mech, buf);
+        autopilot->flags |= AUTOPILOT_LSENS;
+        snprintf(mesg, LBUF_SIZE, "updated my sensors");
+        return;
+
+    }
+
+    /* Let AI decide */
+    autopilot->flags &= ~AUTOPILOT_LSENS;
+    UpdateAutoSensor(autopilot, 0);
+    snprintf(mesg, LBUF_SIZE, "using my own judgement with sensors");
+    return;
 
 }
 
@@ -612,32 +782,102 @@ void auto_radio_command_startup(AUTO *autopilot, MECH *mech,
 void auto_radio_command_stop(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg) {
 
-    char buffer[2];
+    char buffer[SBUF_SIZE];
 
     strcpy(buffer, "0");
+
+    /* Turn chasetarget off */
+    auto_set_chasetarget_mode(autopilot, AUTO_CHASETARGET_OFF);
+
     Clear(autopilot);
+
     auto_engage(autopilot->mynum, autopilot, "");
     mech_speed(autopilot->mynum, mech, buffer);
     snprintf(mesg, LBUF_SIZE, "halting");
 
 }
 
-#if 0
-/* Smart (?) follow command for AI */
-ACMD(auto_follow)
-{
+/*
+ * Command for the old goto, will phase it out
+ */
+void auto_radio_command_sweight(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
+    int x, y;
+
+    if (Readnum(x, args[1])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalid first int");
+        return;
+    }
+    if (Readnum(y, args[2])) {
+        snprintf(mesg, LBUF_SIZE, "!Invalide second int");
+        return;
+    }
+    x = MAX(1, x);
+    y = MAX(1, y);
+    autopilot->auto_goweight = x;
+    autopilot->auto_fweight = y;
+    snprintf(mesg, LBUF_SIZE, "sweight'ed to %d:%d. (go:fight)", x, y);
+    return;
+
+}
+
+/*
+ * Tell the AI to target a specific unit
+ */
+void auto_radio_command_target(AUTO *autopilot, MECH *mech,
+        char **args, int argc, char *mesg) {
+
     dbref targetref;
 
-    targetref = FindTargetDBREFFromMapNumber(mech, args[0]);
-    if (targetref <= 0)
-        return "!Invalid target to follow";
-    Clear(a);
-    auto_addcommand(a->mynum, a, tprintf("follow %d", targetref));
-    auto_engage(a->mynum, a, "");
-    return tprintf("following %s (%d degrees, %d away)", args[0], a->ofsx,
-            a->ofsy);
+    if (!strcmp(args[1], "-")) {
+       
+        /* Basicly doing the same as 'autogun on' */
+        autopilot->target = -1;
+        autopilot->target_score = 0;
+        autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
+
+        if (AssignedTarget(autopilot)) {
+            UnassignTarget(autopilot);
+        }
+
+        if (Gunning(autopilot)) {
+            DoStopGun(autopilot);
+        }
+        DoStartGun(autopilot);
+
+        snprintf(mesg, LBUF_SIZE, "shooting at whatever I want");
+        return;
+
+    } else {
+
+        targetref = FindTargetDBREFFromMapNumber(mech, args[1]);
+        if (targetref <= 0) {
+            snprintf(mesg, LBUF_SIZE, "!Unable to see such a target");
+            return;
+        }
+
+    }
+
+    autopilot->target = targetref;
+    autopilot->target_score = 0;
+    autopilot->target_update_tick = 0;
+
+    /* Let the AI know its an assigned target */
+    if(!AssignedTarget(autopilot)) {
+        AssignTarget(autopilot);
+    }
+    
+    if (Gunning(autopilot)) {
+        DoStopGun(autopilot);
+    }
+    DoStartGun(autopilot);
+
+    snprintf(mesg, LBUF_SIZE, "aiming for [%s] (and ignoring everyone else)",
+            args[1]);
+
 }
-#endif
+
 #if 0
 ACMD(auto_swarm)
 {
@@ -691,22 +931,6 @@ ACMD(auto_nogun)
 }
 #endif
 #if 0
-ACMD(auto_sweight)
-{
-    int x, y;
-
-    if (Readnum(x, args[0]))
-        return "!Invalid first int";
-    if (Readnum(y, args[1]))
-        return "!Invalid second int";
-    x = MAX(1, x);
-    y = MAX(1, y);
-    a->auto_goweight = x;
-    a->auto_fweight = y;
-    return tprintf("sweight'ed to %d:%d. (go:fight)", x, y);
-}
-#endif
-#if 0
 ACMD(auto_rally)
 {
     char xb[6], yb[6];
@@ -752,36 +976,6 @@ ACMD(auto_drally)
     args[0] = xb;
     args[1] = yb;
     return auto_dgoto(a, mech, args, 2, chn);
-}
-#endif
-#if 0
-ACMD(auto_sensor)
-{
-    if (argc) {
-        /* Alter sensors */
-        char buf[LBUF_SIZE];
-
-        sprintf(buf, "%s %s", args[0], args[1]);
-        mech_sensor(a->mynum, mech, buf);
-        a->flags |= AUTOPILOT_LSENS;
-        return "updated my sensors";
-    }
-    a->flags &= ~AUTOPILOT_LSENS;
-    UpdateAutoSensor(a);
-    return "using my own judgement with sensors";
-}
-#endif
-#if 0
-ACMD(auto_chasetarg)
-{
-    if (strcmp(args[0], "on") == 0) {
-        a->flags |= AUTOPILOT_CHASETARG;
-        return "Chase Target mode is ON";
-    } else if (strcmp(args[0], "off") == 0) {
-        a->flags &= ~AUTOPILOT_CHASETARG;
-        return "Chase Target mode is OFF";
-    }
-    return "!Invalid input use on or off";
 }
 #endif
 #if 0
@@ -839,30 +1033,6 @@ ACMD(auto_swarmcharge)
     a->flags |= AUTOPILOT_SWARMCHARGE; 
     return tprintf("swarmcharging %s (%d degrees, %d away)", args[0],
         a->ofsx, a->ofsy);
-}
-#endif
-#if 0
-ACMD(auto_target)
-{
-    dbref targetref;
-
-    if (!strcmp(args[0], "-")) {
-        a->targ = -1;
-        if (Gunning(a))
-            DoStopGun(a);
-        DoStartGun(a);
-        return "aiming for nobody in particular";
-    } else {
-        targetref = FindTargetDBREFFromMapNumber(mech, args[0]);
-        if (targetref <= 0)
-            return "!Unable to see such a target";
-    }
-    a->targ = targetref;
-    if (Gunning(a))
-        DoStopGun(a);
-    DoStartGun(a);
-    return tprintf("aiming for [%s] (and ignoring everyone else)",
-            args[0]);
 }
 #endif
 #if 0

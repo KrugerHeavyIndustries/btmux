@@ -21,6 +21,8 @@
 
 #define MAX_EVENTS 100
 
+extern char *muxevent_names[];
+
 int muxevent_exec_count[MAX_EVENTS];
 
 void muxevent_count_initialize()
@@ -40,98 +42,6 @@ static int muxevent_mech_event[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,   /*60-69 */
     0, 0, 1, 0, 0, 0, 0, 0, 0, 0,   /*70-79 */
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-static char *muxevent_names[] = {
-    "NONAME",			/* 0 - */
-    "Move",			/* 1 */
-    "DHIT",			/* 2 */
-    "Startup",			/* 3 */
-    "Lock",			/* 4 */
-    "Stand",			/* 5 */
-    "Jump",			/* 6 */
-    "Recycle",			/* 7 */
-    "JumpSt",			/* 8 */
-    "PRecov",			/* 9 */
-    "SChange",			/* 10 */
-    "DecRemv",			/* 11 */
-    "SpotLck",			/* 12 */
-    "PLos",			/* 13 */
-    "ChkRng",			/* 14 */
-    "Takeoff",			/* 15 */
-
-    "Fall",			/* 16 */
-    "BRegen",			/* 17 */
-    "BRebuild",			/* 18 */
-    "Dump",			/* 19 */
-
-    "MASCF",			/* 20 */
-    "MASCR",			/* 21 */
-    "AmmoWarn",			/* 22 */
-
-    "AutoGo",			/* 23 */
-    "AutoLe",			/* 24 */
-    "AutoCo",			/* 25 */
-    "AutoGu",			/* 26 */
-    "AutoGS",			/* 27 */
-    "AutoFo",			/* 28 */
-    "MRec",			/* 29 */
-
-    "BlindR",			/* 30 */
-    "Burn",			/* 31 */
-    "SixthS",			/* 32 */
-
-    "Hidin",			/* 33 */
-    "OOD",			/* 34 */
-
-    "Misc",			/* 35 */
-    "Lateral",			/* 36 */
-    "SelfExp",			/* 37 */
-
-    "AutoRep",			/* 38 */
-    "DigIn",			/* 39 */
-
-    "TRepl",			/* 40 */
-    "TReplG",			/* 41 */
-    "TReat",			/* 42 */
-    "TRelo",			/* 43 */
-    "TFix",			/* 44 */
-    "TFixI",			/* 45 */
-    "TScrL",			/* 46 */
-    "TScrP",			/* 47 */
-    "TScrG",			/* 48 */
-    "TRepaG",			/* 49 */
-    "TRepaP",			/* 50 */
-    "TMoB",			/* 51 */
-    "TUMoB",			/* 52 */
-    "StandF",			/* 53 */
-    "SliteC",			/* 54 */
-    "HeatCutOff",		/* 55 */
-    "56",
-    "57",
-    "58",
-    "59",
-    "60",
-    "61",
-    "62",
-    "63",
-    "64",
-    "65",
-    "66",
-    "67",
-    "68",
-    "69",
-    "70",
-    "71",
-    "72",
-    "73",
-    "74",
-    "75",
-    "76",
-    "77",
-    "78",
-    "79",
-    NULL
 };
 
 void debug_EventTypes(dbref player, void *data, char *buffer) {

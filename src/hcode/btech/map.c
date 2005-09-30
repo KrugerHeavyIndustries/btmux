@@ -550,7 +550,7 @@ void map_update(dbref obj, void *data)
 		if (MechAuto(mech) > 0)
 		    if ((au = FindObjectsData(MechAuto(mech))))
 			if (Gunning(au))
-			    UpdateAutoSensor(au);
+			    UpdateAutoSensor(au, 0);
 	    }
     }
     if (map->moves) {

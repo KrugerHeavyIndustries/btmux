@@ -868,6 +868,7 @@ CommandsStruct autopilotcommands[] = {
     {0, "LISTCOMMANDS", "Lists whole command queue of the autopilot",
 	auto_listcommands},
     {0, "JUMP <NUM>", "Sets current instruction to <NUM>", auto_jump},
+    {0, "EVENTSTATS", "Lists current events for this AI", auto_eventstats},
     {0, NULL, NULL, NULL}
 };
 

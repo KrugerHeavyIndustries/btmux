@@ -46,6 +46,32 @@ btonline-btechmux 0.5:
 	* Added softcode function colorpairs(). (Dany)
 	* Added the @fail and @afail stuff to embark as well as 
 	  redid the @fail and added @afail to enterbase. (Dany)
+	* Changed physical attacks to be more in line with FASA
+	  rules.  Allowing torso twist for upper body attacks,
+	  and allowing punch/axe/sword to attack the forward arc
+	  as well as their respective side arc. (Dany)
+	* New autogun code for the AI.  AI develops a profile
+	  of its weapons as well as scores targets differently.
+	  Also handles physical attacks better, won't make a physical
+	  attack unless its target is in range or will attack
+	  another target if its main target is beyond a given range.
+	* Updated the AI follow command to use the A* pathfinding
+	  (Dany)
+	* Made the AI Chasetarg command use the new follow
+	  command (Dany)
+	* Added a #define DEBUG_ASTAR which when defined logs
+	  the various things that go on with the astar generate
+	  path function. (Dany)
+	* Chasetarg goes into sleep when other movement commands
+	  are being used.  When those commands are done Chasetarg
+	  comes back online. (Dany)
+	* Cleaned up muxevent_names array in event.c, was sorely
+	  out of date.  Probably still needs more work.  This was
+	  being used by the DEBUG object when listing events. (Dany)
+	* AIs can now pick their own sensors using the
+	  auto_sensor_event. (Dany)
+	* Added command to AI's interface called 'EVENTSTATS', lists
+	  the various events running on that AI. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)

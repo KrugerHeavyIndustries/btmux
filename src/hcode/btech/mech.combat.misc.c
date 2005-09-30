@@ -213,10 +213,10 @@ void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS)
     heat_effect(mech, hitMech, hmod * 30, 1);	/* 3min for _each_ missile */
 }
 
-extern int global_kill_cheat;
+//extern int global_kill_cheat;
 void KillMechContentsIfIC(dbref aRef)
 {
-    global_kill_cheat = 1;
+    //global_kill_cheat = 1;
     if (!In_Character(aRef))
 	return;
     if (!mudconf.btech_ic || mudconf.btech_xploss >= 1000)
@@ -261,7 +261,7 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 
     if (Destroyed(target))
 	return;
-    global_kill_cheat = 1;
+    //global_kill_cheat = 1;
     if (mech && target)
         ChannelEmitKill(target, mech);
     if (mech) {

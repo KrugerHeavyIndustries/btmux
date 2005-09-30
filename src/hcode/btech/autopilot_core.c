@@ -22,6 +22,7 @@
 #include "p.mech.utils.h"
 
 extern ACOM acom[AUTO_NUM_COMMANDS + 1];
+extern char *muxevent_names[];
 
 #define AI_COMMAND_DLLIST_START     51      /* Tag for start of saved command list */
 #define AI_COMMAND_DLLIST_END       63      /* Tag for end of saved command list */
@@ -447,7 +448,7 @@ void auto_addcommand(dbref player, void *data, char *buffer) {
     dllist_node *temp_dllist_node;
 
     /* Clear the Args */
-    memset(args, 0, sizeof(char *) * 5);
+    memset(args, 0, sizeof(char *) * AUTOPILOT_MAX_ARGS);
 
     command = first_parseattribute(buffer);
 
@@ -470,7 +471,7 @@ void auto_addcommand(dbref player, void *data, char *buffer) {
         /* Parse the buffer for commands
          * Its argcount + 1 because we are parsing the command + its
          * arguments */
-        argc = proper_parseattributes(buffer, args, acom[i].argcount + 1);
+        argc = proper_explodearguments(buffer, args, acom[i].argcount + 1);
         
         if (argc != acom[i].argcount + 1) {
    
@@ -556,6 +557,32 @@ void auto_listcommands(dbref player, void *data, char *buffer) {
     KillCoolMenu(c);
 }
 
+void auto_eventstats(dbref player, void *data, char *buffer) {
+    
+    AUTO *autopilot = (AUTO *) data;
+    int i, j, total; 
+
+    notify(player, "Events by type: ");
+    notify(player, "-------------------------------");
+
+    total = 0;
+
+    for (i = FIRST_AUTO_EVENT; i <= LAST_AUTO_EVENT; i++) {
+
+        if ((j = muxevent_count_type_data(i, (void *) autopilot))) {
+            notify_printf(player, "%-20s%d", muxevent_names[i], j);
+            total += j;
+        }
+            
+    }
+
+    if (total) {
+        notify(player, "-------------------------------");
+        notify_printf(player, "%d total", total);
+    }
+
+}
+
 /*
  * Turn the autopilot on
  */
@@ -616,7 +643,17 @@ void auto_init(AUTO *autopilot, MECH *mech) {
     autopilot->auto_fweight = 55;
     autopilot->speed = 100;         /* Reset to full speed */
     autopilot->flags = 0;
-    autopilot->targ = -1;
+
+    /* Target Stuff */
+    autopilot->target = -2;
+    autopilot->target_score = 0;
+    autopilot->target_threshold = 50;
+    autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
+
+    /* Follow & Chase target stuff */
+    autopilot->chase_target = -10;
+    autopilot->chasetarg_update_tick = AUTOPILOT_CHASETARG_UPDATE_TICK; 
+    autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK; 
 
 }
 
@@ -809,7 +846,7 @@ int auto_get_command_enum(AUTO *autopilot, int command_number) {
  */
 void auto_newautopilot(dbref key, void **data, int selector) {
     
-    AUTO *newi = *data;
+    AUTO *autopilot = *data;
     command_node *temp;
     int i;
 
@@ -817,18 +854,30 @@ void auto_newautopilot(dbref key, void **data, int selector) {
         case SPECIAL_ALLOC:
 
             /* Allocate the command list */
-            newi->commands = dllist_create_list();
+            autopilot->commands = dllist_create_list();
+
+            /* Make sure certain things are set NULL */
+            autopilot->astar_path = NULL;
+            autopilot->weaplist = NULL;
+
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                autopilot->profile[i] = NULL;
+            }
+
+            /* And some things not set null */
+            autopilot->speed = 100;
+
             break;
 
         case SPECIAL_FREE:
 
             /* Go through the list and remove any leftover nodes */
-            while (dllist_size(newi->commands)) {
+            while (dllist_size(autopilot->commands)) {
 
                 /* Remove the first node on the list and get the data
                  * from it */
-                temp = (command_node *) dllist_remove(newi->commands,
-                        dllist_head(newi->commands));
+                temp = (command_node *) dllist_remove(autopilot->commands,
+                        dllist_head(autopilot->commands));
 
                 /* Destroy the command node */
                 auto_destroy_command_node(temp);
@@ -836,11 +885,22 @@ void auto_newautopilot(dbref key, void **data, int selector) {
             }
 
             /* Destroy the list */
-            dllist_destroy_list(newi->commands);
-            newi->commands = NULL;
+            dllist_destroy_list(autopilot->commands);
+            autopilot->commands = NULL;
 
             /* Destroy any astar path list thats on the AI */
-            auto_destroy_astar_path(newi);
+            auto_destroy_astar_path(autopilot);
+
+            /* Destroy profile array */
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                if (autopilot->profile[i]) {
+                    rb_destroy(autopilot->profile[i]);
+                }
+                autopilot->profile[i] = NULL;
+            }
+
+            /* Destroy weaponlist */
+            auto_destroy_weaplist(autopilot);
 
             break;
 

@@ -745,14 +745,42 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     /* Check weapon arc! */
     /* Theoretically, physical attacks occur only to 'real' forward
        arc, not rottorsoed one, but we let it pass this time */
+    /* This is wrong according to BMR 
+     *
+     * Which states that the Torso twist is taken into account
+     * as well as punching/axing/swords can attack in their
+     * respective arcs - Dany
+     *
+     * So I went and changed it according to FASA rules */
     if (AttackType == PA_KICK) {
-	ts = MechStatus(mech) & (TORSO_LEFT | TORSO_RIGHT);
-	MechStatus(mech) &= ~ts;
+
+	    ts = MechStatus(mech) & (TORSO_LEFT | TORSO_RIGHT);
+	    MechStatus(mech) &= ~ts;
+        iwa = InWeaponArc(mech, MechFX(target), MechFY(target));
+	    MechStatus(mech) |= ts;
+
+        DOCHECKMA(!(iwa & FORWARDARC), "Target is not in your 'real' forward arc!");
+
+    } else {
+
+        iwa = InWeaponArc(mech, MechFX(target), MechFY(target));
+
+        if (AttackType == PA_CLUB) {
+            DOCHECKMA(!(iwa & FORWARDARC), "Target is not in your forward arc!");
+        } else {
+
+            if (sect == RARM) {
+                DOCHECKMA(!((iwa & FORWARDARC) || (iwa & RSIDEARC)),
+                        "Target is not in your forward or right side arc!");
+            } else {
+                DOCHECKMA(!((iwa & FORWARDARC) || (iwa & LSIDEARC)),
+                        "Target is not in your forward or left side arc!");
+
+            }
+
+        }
+
     }
-    iwa = InWeaponArc(mech, MechFX(target), MechFY(target));
-    if (AttackType == PA_KICK)
-	MechStatus(mech) |= ts;
-    DOCHECKMA(!(iwa & FORWARDARC), "Target is not in forward arc!");
 
     /* Add in the movement modifiers */
 #ifndef BT_EXTENDED_ADVANTAGES

@@ -411,6 +411,19 @@ do { MaybeRecycle(a,c) ; (a)->ud.sections[b].recycle=c; } while (0)
 #define UpdateRecycling(a) \
 do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_tick) \
     recycle_weaponry(a); } while (0)
+
+#define AllLimbsRecycling(mech) \
+    (MechSections(mech)[RARM].recycle && \
+    MechSections(mech)[LARM].recycle && \
+    MechSections(mech)[RLEG].recycle && \
+    MechSections(mech)[LLEG].recycle)
+
+#define AnyLimbsRecycling(mech) \
+    (MechSections(mech)[RARM].recycle || \
+    MechSections(mech)[LARM].recycle || \
+    MechSections(mech)[RLEG].recycle || \
+    MechSections(mech)[LLEG].recycle)
+
 #define StopExploding(a)    muxevent_remove_type_data(EVENT_EXPLODE, (void *) a)
 #define StopLateral(a)      muxevent_remove_type_data(EVENT_LATERAL,(void *) a)
 #define StopMasc(a)         muxevent_remove_type_data(EVENT_MASC_FAIL,(void *) a)

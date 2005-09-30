@@ -58,30 +58,31 @@
 #define EVENT_MASC_REGEN  21	/* MASC recovery during non-use */
 #define EVENT_AMMOWARN    22	/* Warn of running out of ammo */
 
-#define FIRST_AUTO_EVENT    23
-#define EVENT_AUTOGOTO      23  /* Autopilot goto */
-#define EVENT_AUTOLEAVE     24  /* Autopilot leavebase */
-#define EVENT_AUTOCOM       25  /* Autopilot next command */
-#define EVENT_AUTOGUN       26  /* Autopilot gun control */
-#define EVENT_AUTOGS        27  /* Autopilot gun/sensor change */
-#define EVENT_AUTOFOLLOW    28  /* Autopilot follow */
-#define EVENT_AUTOENTERBASE 29  /* Autopilot enterbase */
-#define EVENT_AUTO_REPLY    30  /* Autopilot reply */
-#define LAST_AUTO_EVENT     30
+#define FIRST_AUTO_EVENT        23
+#define EVENT_AUTOGOTO          23  /* Autopilot goto */
+#define EVENT_AUTOLEAVE         24  /* Autopilot leavebase */
+#define EVENT_AUTOCOM           25  /* Autopilot next command */
+#define EVENT_AUTOGUN           26  /* Autopilot gun control */
+#define EVENT_AUTO_SENSOR       27  /* Autopilot gun/sensor change */
+#define EVENT_AUTOFOLLOW        28  /* Autopilot follow */
+#define EVENT_AUTOENTERBASE     29  /* Autopilot enterbase */
+#define EVENT_AUTO_REPLY        30  /* Autopilot reply */
+#define EVENT_AUTO_PROFILE      31  /* Autopilot profile change */
+#define LAST_AUTO_EVENT         EVENT_AUTO_PROFILE 
 
-#define EVENT_MRECOVERY     31  /* mech */
-#define EVENT_BLINDREC      32
-#define EVENT_BURN          33
-#define EVENT_SS            34
+#define EVENT_MRECOVERY     32  /* mech */
+#define EVENT_BLINDREC      33
+#define EVENT_BURN          34
+#define EVENT_SS            35
 
-#define EVENT_HIDE          35
-#define EVENT_OOD           36
-#define EVENT_NUKEMECH      37
-#define EVENT_LATERAL       38
-#define EVENT_EXPLODE       39
-#define EVENT_DIG           40
+#define EVENT_HIDE          36
+#define EVENT_OOD           37
+#define EVENT_NUKEMECH      38
+#define EVENT_LATERAL       39
+#define EVENT_EXPLODE       40
+#define EVENT_DIG           41
 
-#define FIRST_TECH_EVENT    41
+#define FIRST_TECH_EVENT    42
 
 #define EVENT_REPAIR_REPL       FIRST_TECH_EVENT        /* mech,<part> */
 #define EVENT_REPAIR_REPLG      (FIRST_TECH_EVENT+1)    /* mech,<part> */
@@ -130,6 +131,98 @@
 #endif
 
 #define ETEMPL(a) void a (MUXEVENT *e)
+
+static char *muxevent_names[] = {
+    "NONAME",           /* 0 - */
+    "Move",             /* 1 */
+    "DHIT",             /* 2 */
+    "Startup",          /* 3 */
+    "Lock",             /* 4 */
+    "Stand",            /* 5 */
+    "Jump",             /* 6 */
+    "Recycle",          /* 7 */
+    "JumpSt",           /* 8 */
+    "PRecov",           /* 9 */
+    "SChange",          /* 10 */
+    "DecRemv",          /* 11 */
+    "SpotLck",          /* 12 */
+    "PLos",             /* 13 */
+    "ChkRng",           /* 14 */
+    "Takeoff",          /* 15 */
+
+    "Fall",             /* 16 */
+    "BRegen",           /* 17 */
+    "BRebuild",         /* 18 */
+    "Dump",             /* 19 */
+
+    "MASCF",            /* 20 */
+    "MASCR",            /* 21 */
+    "AmmoWarn",         /* 22 */
+
+    "AutoGoto",         /* 23 */
+    "AutoLeave",        /* 24 */
+    "AutoCo",           /* 25 */
+    "AutoGun",          /* 26 */
+    "AutoSensor",       /* 27 */
+    "AutoFollow",       /* 28 */
+    "AutoEnter",        /* 29 */
+    "AutoReply",        /* 30 */
+    "AutoProfile",      /* 31 */
+    "MRec",             /* 32 */
+
+    "BlindR",           /* 33 */
+    "Burn",             /* 34 */
+    "SixthS",           /* 35 */
+
+    "Hidin",            /* 36 */
+    "OOD",              /* 37 */
+
+    "Misc",             /* 38 */
+    "Lateral",          /* 39 */
+    "SelfExp",          /* 40 */
+
+    "DigIn",            /* 41 */
+
+    "TRepl",            /* 42 */
+    "TReplG",           /* 43 */
+    "TReat",            /* 44 */
+    "TRelo",            /* 45 */
+    "TFix",             /* 46 */
+    "TFixI",            /* 47 */
+    "TScrL",            /* 48 */
+    "TScrP",            /* 49 */
+    "TScrG",            /* 50 */
+    "TRepaG",           /* 51 */
+    "TRepaP",           /* 52 */
+    "TMoB",             /* 53 */
+    "TUMoB",            /* 54 */
+    "TRese",            /* 55 */
+    "TRepSuit",         /* 56 */
+    "TRepNHCrit",       /* 57 */
+    "58",
+    "59",
+    "StandF",           /* 60 */
+    "SliteC",           /* 61 */
+    "HeatCutOff",       /* 62 */
+    "VechBurn",         /* 63 */
+    "UnStunCrew",       /* 64 */
+    "UnJamTurret",      /* 65 */
+    "UnJamAmmo",        /* 66 */
+    "StArmor",          /* 67 */
+    "NSS",              /* 68 */
+    "TagRecycle",       /* 69 */
+    "RemPods",          /* 70 */
+    "Extinguish",       /* 71 */
+    "EntHangar",        /* 72 */
+    "Hulldown",         /* 73 */
+    "74",               /* 74 */
+    "SchFail",          /* 75 */
+    "SchRegen",         /* 76 */
+    "CkStagger",        /* 77 */
+    "MoveMode",         /* 78 */
+    "Sideslip",         /* 79 */
+    NULL
+};
 
 #include "p.aero.move.h"
 #include "p.mech.move.h"

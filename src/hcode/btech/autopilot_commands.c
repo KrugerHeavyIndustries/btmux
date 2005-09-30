@@ -38,6 +38,8 @@
  * large enum that is located in autopilot.h
  */
 ACOM acom[AUTO_NUM_COMMANDS + 1] = {
+    {"chasetarget", 1, GOAL_CHASETARGET, NULL}
+    ,                           /* Extension of follow, for chasetarget */
     {"dumbfollow", 1, GOAL_DUMBFOLLOW, NULL}
     ,                           /* [dumbly] follow the given target */
     {"dumbgoto", 2, GOAL_DUMBGOTO, NULL}
@@ -56,7 +58,7 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* sit there and don't do anything for a while */
     {"attackleg", 1, COMMAND_ATTACKLEG, NULL}
     ,                           /* ? */
-    {"autogun", 0, COMMAND_AUTOGUN, NULL}
+    {"autogun", 1, COMMAND_AUTOGUN, NULL}
     ,                           /* Let the AI decide what to shoot */
     {"chasemode", 1, COMMAND_CHASEMODE, NULL}
     ,                           /* chase after a target or not */
@@ -105,19 +107,6 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
 #define PSTART      AUTO_PSTART
 #define CCH         AUTO_CHECKS
 #define REDO        AUTO_COM
-
-/* \todo {Phasing this thing out, once its removed we yanking it} */
-/* Dirty little trick to avoid passing string-constancts to functions
- * that intend to run 'strtok()' on it.
- */
-static char *my2string(const char *old)
-{
-    static char new[64];
-
-    strncpy(new, old, 63);
-    new[63] = '\0';
-    return new;
-}
 
 /*
  * AI Startup - force AI to startup if its not
@@ -241,6 +230,83 @@ void auto_cal_mapindex(MECH * mech) {
     return; 
 }
 
+/*
+ * Function to turn chasetarget on/off as well as let the AI
+ * remember that it was on.
+ *
+ * Figured this was easier then coding a bunch of blocks of
+ * stuff all over the place.
+ */
+void auto_set_chasetarget_mode(AUTO *autopilot, int mode) {
+
+    /* Depending on the mode we do different things*/
+    switch (mode) {
+
+        case AUTO_CHASETARGET_ON:
+
+            /* Start Chasing */
+            if (!ChasingTarget(autopilot))
+                StartChasingTarget(autopilot);
+
+            /* Reset this flag because we don't need it set */
+            if (WasChasingTarget(autopilot))
+                ForgetChasingTarget(autopilot);
+
+            /* Flags to reset */
+            autopilot->chase_target = -10;
+            autopilot->chasetarg_update_tick = AUTOPILOT_CHASETARG_UPDATE_TICK;
+
+            break;
+
+       case AUTO_CHASETARGET_OFF:
+
+            /* Stop Chasing */
+            if (ChasingTarget(autopilot))
+                StopChasingTarget(autopilot);
+
+            /* Reset this flag because we don't need it set */
+            if (WasChasingTarget(autopilot))
+                ForgetChasingTarget(autopilot);
+
+            break;
+
+       case AUTO_CHASETARGET_REMEMBER:
+
+            /* If we we had chasetarget on - turn it back on */
+            if (WasChasingTarget(autopilot)) {
+
+                /* Start chasing */
+                if (!ChasingTarget(autopilot))
+                    StartChasingTarget(autopilot);
+
+                /* Reset the values */
+                autopilot->chase_target = -10;
+                autopilot->chasetarg_update_tick = AUTOPILOT_CHASETARG_UPDATE_TICK;
+
+                /* Unset the flag because we don't need it now */
+                ForgetChasingTarget(autopilot);
+
+            }
+
+            break;
+
+       case AUTO_CHASETARGET_SAVE:
+
+            /* If we are chasing a target turn this off 
+             * but save it */
+            if (ChasingTarget(autopilot)) {
+
+                StopChasingTarget(autopilot);
+                RememberChasingTarget(autopilot);
+
+            }
+
+            break;
+
+    }
+
+}
+
 #if 0
 void autopilot_cmode(AUTO * a, MECH * mech, int mode, int range)
 {
@@ -269,6 +335,169 @@ void autopilot_attackleg(MECH * mech, char *id)
 }
 
 #endif
+
+/*
+ * Interface to the autogun system
+ * Even tho it takes 1 argument, we will parse that
+ * 1 argument looking for pieces.
+ */
+void auto_command_autogun(AUTO *autopilot, MECH *mech) {
+
+    dbref target_dbref;
+    MECH *target;
+    char *argument;
+    char error_buf[MBUF_SIZE];
+    char *args[AUTOPILOT_MAX_ARGS - 1];
+    int argc;
+    int i;
+
+    /* Read in the argument */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+
+    /* Parse the argument */
+    argc = proper_explodearguments(argument, args, AUTOPILOT_MAX_ARGS - 1);
+
+    /* Free the argument */
+    free(argument);
+
+    /* Now we check to see how many arguments it found */
+    if (argc == 1) {
+        
+        /* Ok its either going to be on or off */
+        if (strcmp(args[0], "on") == 0) {
+
+            /* Reset the AI parameters */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
+            autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
+
+            /* Check if assigned target flag on */
+            if (AssignedTarget(autopilot)) {
+                UnassignTarget(autopilot);
+            }
+
+            /* Get the AI going */
+            AUTO_GSTART(autopilot, mech);
+
+            if (Gunning(autopilot)) {
+                DoStopGun(autopilot);
+            }
+
+            DoStartGun(autopilot);
+
+        } else if (strcmp(args[0], "off") == 0) {
+
+            /* Reset the target */
+            autopilot->target = -2;
+            autopilot->target_score = 0;
+            autopilot->target_update_tick = 0;
+
+            /* Check if Assigned Target Flag on */
+            if (AssignedTarget(autopilot)) {
+                UnassignTarget(autopilot);
+            }
+
+            if (Gunning(autopilot)) {
+                DoStopGun(autopilot);
+            }
+
+        } else {
+
+            /* Invalid command */
+            snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                    " argument for autogun command", autopilot->mynum);
+            SendAI(error_buf);
+
+        }
+
+    } else if (argc == 2) {
+
+        /* Check for 'target' */
+        if (strcmp(args[0], "target") == 0) {
+
+            /* Read in the 2nd argument - the target */
+            if (Readnum(target_dbref, args[1])) {
+
+                /* Invalid command */
+                snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                        " argument for autogun command", autopilot->mynum);
+                SendAI(error_buf);
+
+                /* Free Args */
+                for (i = 0; i < AUTOPILOT_MAX_ARGS - 1; i++) {
+                    if (args[i])
+                        free(args[i]);
+                }
+
+                return;
+            }
+
+            /* Now see if its a mech */
+            if (!(target = getMech(target_dbref))) {
+
+                snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                        " target for autogun command", autopilot->mynum);
+                SendAI(error_buf);
+
+                /* Free Args */
+                for (i = 0; i < AUTOPILOT_MAX_ARGS - 1; i++) {
+                    if (args[i])
+                        free(args[i]);
+                }
+
+                return;
+            }
+
+            /* Ok valid unit so lets lock it and setup parameters */
+            autopilot->target = target_dbref;
+            autopilot->target_score = 0;
+            autopilot->target_update_tick = 0;
+
+            /* Set the Assigned Flag */
+            if (!AssignedTarget(autopilot)) {
+                AssignTarget(autopilot);
+            }
+
+            /* Get the AI going */
+            AUTO_GSTART(autopilot, mech);
+
+            if (Gunning(autopilot)) {
+                DoStopGun(autopilot);
+            }
+
+            DoStartGun(autopilot);
+
+        } else {
+
+            /* Invalid command */
+            snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+                    " argument for autogun command", autopilot->mynum);
+            SendAI(error_buf);
+
+        }
+
+    }
+
+
+    /* Free Args */
+    for (i = 0; i < AUTOPILOT_MAX_ARGS - 1; i++) {
+        if (args[i])
+            free(args[i]);
+    }
+
+}
+
+/*
+ * Command to interface between chasetarget and follow
+ */
+void auto_command_chasetarget(AUTO *autopilot) {
+
+    /* Fire off follow event */
+    AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
+            AUTOPILOT_FOLLOW_TICK, 0);
+
+    return;
+}
 
 /*
  * Command to try to get AI to pickup a target
@@ -479,6 +708,9 @@ void auto_com_event(MUXEVENT *muxevent) {
     switch (auto_get_command_enum(autopilot, 1)) {
 
         /* First check the various GOALs then the COMMANDs */
+        case GOAL_CHASETARGET:
+            auto_command_chasetarget(autopilot);
+            return;
         case GOAL_DUMBGOTO:
             AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_dumbgoto_event,
                     AUTOPILOT_GOTO_TICK, 0);
@@ -487,20 +719,15 @@ void auto_com_event(MUXEVENT *muxevent) {
             AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_dumbfollow_event,
                    AUTOPILOT_FOLLOW_TICK, 0);
             return;
-#if 0
+
         case GOAL_FOLLOW:
-            GSTART(a, mech);
-            AUTOEVENT(a, EVENT_AUTOFOLLOW, auto_follow_event,
+            AUTO_GSTART(autopilot, mech);
+            AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
                     AUTOPILOT_FOLLOW_TICK, 0);
             return;
-#endif
 
         case GOAL_GOTO:
             AUTO_GSTART(autopilot, mech);
-            /*
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_goto_event, 
-                    AUTOPILOT_GOTO_TICK, 0);
-            */
             AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event,
                     AUTOPILOT_GOTO_TICK, 1);
             return;
@@ -553,15 +780,12 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_goto_next_command(a);
             return; 
 #endif
-#if 0
+
         case COMMAND_AUTOGUN:
-            PSTART(a, mech);
-            if (!Gunning(a))
-                DoStartGun(a);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
+            auto_command_autogun(autopilot, mech);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             break;
-#endif
+
 #if 0
         case COMMAND_CHASEMODE:
             if (GVAL(a,1))
@@ -823,6 +1047,7 @@ void auto_goto_event(MUXEVENT * e) {
 
         /* We've reached this goal! Time for next one. */
         ai_set_speed(mech, autopilot, 0);
+
         auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
     }
@@ -944,8 +1169,10 @@ void auto_dumbgoto_event(MUXEVENT * e) {
     /* If we're at the target hex - stop */
     if (MechX(mech) == tx && MechY(mech) == ty &&
             abs(MechSpeed(mech)) < 0.5) {
+        
         /* We've reached this goal! Time for next one. */
         ai_set_speed(mech, autopilot, 0);
+            
         auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
     }
@@ -1033,6 +1260,7 @@ void auto_astar_goto_event(MUXEVENT *muxevent) {
                 " Astar path for AI #%d - but the path is not there",
                 autopilot->mynum);
         SendAI(error_buf);
+
         auto_destroy_astar_path(autopilot);
         auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
@@ -1048,6 +1276,7 @@ void auto_astar_goto_event(MUXEVENT *muxevent) {
                 " Astar path for AI #%d - but the current astar node does not"
                 " exist", autopilot->mynum);
         SendAI(error_buf);
+        
         auto_destroy_astar_path(autopilot);
         auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
         return;
@@ -1063,6 +1292,8 @@ void auto_astar_goto_event(MUXEVENT *muxevent) {
 
             /* Done! */
             ai_set_speed(mech, autopilot, 0);
+
+            /* Destroy the path and goto the next command */
             auto_destroy_astar_path(autopilot);
             auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return;
@@ -1099,7 +1330,228 @@ void auto_astar_goto_event(MUXEVENT *muxevent) {
 
 }
 
+/*
+ * New follow system based on astar goto
+ */
+void auto_astar_follow_event(MUXEVENT *muxevent) {
+
+    AUTO *autopilot = (AUTO *) muxevent->data;
+    MECH *mech = autopilot->mymech;
+    MECH *target;
+    MAP *map;
+
+    dbref target_dbref;
+
+    float range;
+    float fx, fy;
+    short x, y;
+    int bearing;
+
+    char *argument;
+    astar_node *temp_astar_node;
+
+    char error_buf[MBUF_SIZE];
+
+    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
+        return;
+
+    /* Basic Checks */
+    AUTO_CHECKS(autopilot);
+
+    /* Make sure mech is started and standing */
+    AUTO_GSTART(autopilot, mech);
+
+    /* Get the only argument - dbref of target */
+    argument = auto_get_command_arg(autopilot, 1, 1);
+    if (Readnum(target_dbref, argument)) {
+        /*! \todo {add a thing here incase the argument isn't a number} */
+        free(argument);
+    }
+    free(argument);
+
+    /* Get the Map */
+    if (!(map = getMap(autopilot->mapindex))) {
+
+        /* Bad Map */
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                " follow unit #%d with AI #%d but AI is not on a valid"
+                " Map (#%d).", target_dbref, autopilot->mynum,
+                autopilot->mapindex);
+        SendAI(error_buf);
+        
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+
+    }
+
+    /* Get the target */
+    if (!(target = getMech(target_dbref))) {
+
+        /* Bad Target */
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                " follow unit #%d with AI #%d but its not a valid unit.",
+                target_dbref, autopilot->mynum);
+        SendAI(error_buf);
+
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+    }
+
+    if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
+
+        /* Target Dead or not on map */
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                " follow unit #%d with AI #%d but it either is dead or"
+                " not on the same map.", target_dbref, autopilot->mynum);
+        SendAI(error_buf);
+
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+    }
+
+    /* Generate the target hex */
+    FindXY(MechFX(target), MechFY(target), MechFacing(target) + autopilot->ofsx,
+            autopilot->ofsy, &fx, &fy);
+
+    RealCoordToMapCoord(&x, &y, fx, fy);
+
+    /* Make sure the hex is sane */
+    if (x < 0 || y < 0 || x >= map->map_width || y >= map->map_height) {
+
+        /* Bad Target Hex */
+
+        /* Reset the hex to the Target's current hex */
+        x = MechX(target);
+        y = MechY(target);
+
+    }
+
+    /* Are we in the target hex and the target isn't moving ? */
+    if ((MechX(mech) == x) && (MechY(mech) == y) && (MechSpeed(target) < 0.5)) {
+
+        /* Ok go into holding pattern */
+        ai_set_speed(mech, autopilot, 0);
+        AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
+                AUTOPILOT_FOLLOW_TICK, 0);
+        return;
+    }
+
+    /* Do we need to generate the path - only switch paths if we don't have
+     * one or if the ticker has gone high enough */
+    if (!autopilot->astar_path ||
+            autopilot->follow_update_tick >= AUTOPILOT_FOLLOW_UPDATE_TICK) {
+
+        /* Look for a path */
+        if(!(auto_astar_generate_path(autopilot, mech, x, y))) {
+            /* Couldn't find a path for some reason */
+            snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                    " generate an astar path for AI #%d to hex %d,%d to follow"
+                    " unit #%d, but was unable to.",
+                    autopilot->mynum, x, y, target_dbref);
+            SendAI(error_buf);
+
+            /*! \todo {add in some message the AI can give if it can't find a path} */
+
+            ai_set_speed(mech, autopilot, 0);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+            return;
+
+        }
+
+        /* Zero the ticker */
+        autopilot->follow_update_tick = 0;
+
+    }
+    
+    /* Make sure list is ok */ 
+    if (!(autopilot->astar_path) || (dllist_size(autopilot->astar_path) <= 0)) {
+
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to follow"
+                " Astar path for AI #%d - but the path is not there",
+                autopilot->mynum);
+        SendAI(error_buf);
+
+        /* Destroy List */
+        auto_destroy_astar_path(autopilot);
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+
+    }
+
+    /* Get the current hex target */
+    temp_astar_node = (astar_node *) dllist_get_node(autopilot->astar_path, 1);
+
+    if (!(temp_astar_node)) {
+
+        snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attemping to follow"
+                " Astar path for AI #%d - but the current astar node does not"
+                " exist", autopilot->mynum);
+        SendAI(error_buf);
+
+        /* Destroy List */
+        auto_destroy_astar_path(autopilot);
+        ai_set_speed(mech, autopilot, 0);
+        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+        return;
+
+    }
+
+    /* Are we in the current target hex */
+    if ((MechX(mech) == temp_astar_node->x) && 
+            (MechY(mech) == temp_astar_node->y)) {
+
+        /* Is this the last hex */
+        if (dllist_size(autopilot->astar_path) == 1) {
+
+            /* Done! */
+            ai_set_speed(mech, autopilot, 0);
+            auto_destroy_astar_path(autopilot);
+
+            /* Re-Run Follow */
+            AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
+                AUTOPILOT_FOLLOW_TICK, 0);
+            return;
+
+        } else {
+
+            /* Delete the node and goto the next one */
+            temp_astar_node = 
+                (astar_node *) dllist_remove_node_at_pos(autopilot->astar_path, 1);
+            free(temp_astar_node);
+
+            /* Call this event again */
+            AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
+                AUTOPILOT_FOLLOW_TICK, 0);
+            return;
+
+        }
+
+    }
+   
+    /* Set our current goal - not the end goal tho - unless this is
+     * the end hex but whatever */
+    x = temp_astar_node->x;
+    y = temp_astar_node->y;
+
+    /* Move towards our next hex */
+    figure_out_range_and_bearing(mech, x, y, &range, &bearing);
+    speed_up_if_neccessary(autopilot, mech, x, y, bearing);
+    slow_down_if_neccessary(autopilot, mech, range, bearing, x, y);
+    update_wanted_heading(autopilot, mech, bearing);
+
+    /* Increase Tick */
+    autopilot->follow_update_tick++;
+
+    AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
+            AUTOPILOT_FOLLOW_TICK, 0);
+
+}
+
 #if 0
+/* Old follow system - will phase out */
 void auto_follow_event(MUXEVENT * e)
 {
     AUTO *a = (AUTO *) e->data;
