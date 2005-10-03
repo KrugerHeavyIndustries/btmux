@@ -18,9 +18,5 @@ void autopilot_load_cargo(dbref player, MECH * mech, int percent);
 void figure_out_range_and_bearing(MECH * mech, int tx, int ty,
     float *range, int *bearing);
 void auto_goto_event(MUXEVENT * e);
-void auto_dumbgoto_event(MUXEVENT * e);
 void auto_follow_event(MUXEVENT * e);
-void auto_dumbfollow_event(MUXEVENT * e);
-void auto_leave_event(MUXEVENT * e);
-void auto_enter_event(MUXEVENT * e);
 #endif				/* _P_AUTOPILOT_H */

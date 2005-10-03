@@ -311,6 +311,7 @@ enum {
     GOAL_CHASETARGET,   /* An extension of follow for chasetarget */
     GOAL_DUMBFOLLOW,
     GOAL_DUMBGOTO,
+    GOAL_ENTERBASE,     /* Revamp of enterbase so it keeps trying */
     GOAL_FOLLOW,        /* Uses the new Astar system */
     GOAL_GOTO,          /* Uses the new Astar system */ 
     GOAL_LEAVEBASE,
@@ -324,7 +325,6 @@ enum {
     COMMAND_CMODE,      /* unimplemented */
     COMMAND_DROPOFF, 
     COMMAND_EMBARK,
-    COMMAND_ENTERBASE,
     COMMAND_ENTERBAY,   /* unimplemented */
     COMMAND_JUMP,       /* unimplemented */
     COMMAND_LOAD,       /* unimplemented */
@@ -372,6 +372,10 @@ void auto_command_speed(AUTO *autopilot);
 void auto_com_event(MUXEVENT *muxevent);
 void auto_astar_goto_event(MUXEVENT *muxevent);
 void auto_astar_follow_event(MUXEVENT *muxevent);
+void auto_dumbgoto_event(MUXEVENT *muxevent);
+void auto_dumbfollow_event(MUXEVENT *muxevent);
+void auto_leave_event(MUXEVENT *muxevent);
+void auto_enter_event(MUXEVENT *muxevent);
 
 /* From autopilot_ai.c */
 int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y);

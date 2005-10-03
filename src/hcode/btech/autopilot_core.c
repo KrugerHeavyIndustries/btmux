@@ -636,6 +636,8 @@ void auto_set_comtitle(AUTO *autopilot, MECH *mech) {
 /*! \todo {Make this smarter and check some of these} */
 void auto_init(AUTO *autopilot, MECH *mech) {
 
+    autopilot->ofsx = 0;            /* Positional - angle */
+    autopilot->ofsy = 0;            /* Positional - distance */
     autopilot->auto_cmode = 1;      /* CHARGE! */
     autopilot->auto_cdist = 2;      /* Attempt to avoid kicking distance */
     autopilot->auto_nervous = 0;
