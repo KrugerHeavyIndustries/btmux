@@ -1,4 +1,3 @@
-
 /*
  * version.c - version information 
  */
@@ -69,7 +68,7 @@ int extra;
 
 void init_version(void)
 {
-char mux_version[MBUF_SIZE] = MUX_VERSION;
+char mux_version[MBUF_SIZE];
 
 #ifdef HUDINFO_SUPPORT
 strcat(mux_version, "+HUD");
@@ -88,31 +87,11 @@ strcat(mux_version, "+SQL");
 strcat(mux_version, "+ALG");
 #endif
 
-#ifdef BETA
-#if PATCHLEVEL > 0
-    snprintf(mudstate.version, 128, "TinyMUX Beta %s patchlevel %d #%s with %s",
-	mux_version, PATCHLEVEL, MUX_BUILD_NUM, PACKAGE_STRING);
-#else
-    snprintf(mudstate.version, 128, "TinyMUX Beta %s #%s with %s", mux_version,
-	MUX_BUILD_NUM, PACKAGE_STRING);
-#endif				/*
-				 * PATCHLEVEL 
-				 */
-#else				/*
-				 * not BETA 
-				 */
-#if PATCHLEVEL > 0
-    snprintf(mudstate.version, 128, "TinyMUX %s patchlevel %d #%s [%s] with %s",
-	mux_version, PATCHLEVEL, MUX_BUILD_NUM, MUX_RELEASE_DATE, PACKAGE_STRING);
-#else
-    snprintf(mudstate.version, 128, "TinyMUX %s #%s [%s] with %s", mux_version,
-	MUX_BUILD_NUM, MUX_RELEASE_DATE, PACKAGE_STRING);
-#endif				/*
-				 * PATCHLEVEL 
-				 */
-#endif				/*
-				 * BETA 
-				 */
+    /* Version Identification string for version() and VERSION command */
+    /* BtOnline-BTechMUX x.x build #<x> */
+    snprintf(mudstate.version, 128, "%s build #%s (%s)",
+	PACKAGE_STRING, MUX_BUILD_NUM, mux_version);
+
     STARTLOG(LOG_ALWAYS, "INI", "START") {
 	log_text((char *) "Starting: ");
 	log_text(mudstate.version);
