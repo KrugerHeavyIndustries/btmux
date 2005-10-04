@@ -68,7 +68,7 @@ int extra;
 
 void init_version(void)
 {
-char mux_version[MBUF_SIZE];
+char mux_version[MBUF_SIZE] = "";
 
 #ifdef HUDINFO_SUPPORT
 strcat(mux_version, "+HUD");
