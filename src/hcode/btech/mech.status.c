@@ -1364,16 +1364,21 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		SHOWSECTSTAT(i));
 	    notify(player, tempbuff);
 	}
-    } else if (MechType(mech) == CLASS_VEH_GROUND && !doweird) {
-	*tempbuff = 0;
 
-	if (MechSections(mech)[FSIDE].recycle) {
-	    sprintf(tempbuff + strlen(tempbuff),
-		"Vehicle status (charge): %s", SHOWSECTSTAT(FSIDE));
-	}
-	if (*tempbuff)
-	    notify(player, tempbuff);
+    } else if (((MechType(mech) == CLASS_VEH_GROUND) ||
+            (MechType(mech) == CLASS_VTOL)) && !doweird) {
+
+        *tempbuff = 0;
+
+        if (MechSections(mech)[FSIDE].recycle) {
+            sprintf(tempbuff + strlen(tempbuff),
+                    "Vehicle status (charge): %s", SHOWSECTSTAT(FSIDE));
+        }
+
+        if (*tempbuff)
+            notify(player, tempbuff);
     }
+
     ammoweapcount =
 	FindAmmunition(mech, ammoweap, ammo, ammomax, modearray);
     if (!doweird) {

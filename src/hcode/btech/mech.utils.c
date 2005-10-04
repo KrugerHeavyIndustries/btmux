@@ -1123,14 +1123,18 @@ int FindWeaponNumberOnMech_Advanced(MECH * mech, int number, int *section,
 		return (MechWeapons[weaparray[index]].type ==
 		    TBEAM) ? TIC_NUM_RECYCLING : TIC_NUM_RELOADING;
 	    } else {
-		if (MechSections(mech)[loop].recycle &&
-		    (MechType(mech) == CLASS_MECH ||
-			MechType(mech) == CLASS_VEH_GROUND) && !sight) {
-		    *section = loop;
-		    *crit = critical[index];
-		    /* just did a physical attack */
-		    return TIC_NUM_PHYSICAL;
-		}
+            
+            if (MechSections(mech)[loop].recycle &&
+                    (MechType(mech) == CLASS_MECH ||
+                     MechType(mech) == CLASS_VEH_GROUND ||
+                     MechType(mech) == CLASS_VTOL) && !sight) {
+
+                *section = loop;
+                *crit = critical[index];
+                /* just did a physical attack */
+                return TIC_NUM_PHYSICAL;
+            }
+            
 		/* The recylce data for the weapon is clear- it is ready to fire! */
 		*section = loop;
 		*crit = critical[index];

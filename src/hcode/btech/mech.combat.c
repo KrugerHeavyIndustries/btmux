@@ -392,6 +392,7 @@ int FireWeaponNumber(dbref player,
     float enemyX, enemyY, enemyZ;
     int ishex = 0;
     int wcDeadLegs = 0;
+    char location[20];
 
     if (!sight && (MechCritStatus(mech) & HIDDEN)) {
         mech_notify(mech, MECHALL,
@@ -421,13 +422,26 @@ int FireWeaponNumber(dbref player,
 	    "The weapon system chirps: 'That weapon is still reloading!'");
 	DOCHECK0(weaptype == -4,
 	    "The weapon system chirps: 'That weapon is still recharging!'");
-	DOCHECK0(weaptype == -5,
-	    "The limb holding that weapon is still retracting from an attack!");
+
+    /* New fancy message for when they try and fire a weapon and the section
+     * is busy */
+    if (weaptype == -5) {
+        
+        /* Get the section name and print the message along
+         * with the time left */
+        ArmorStringFromIndex(section, location, MechType(mech),
+                MechMove(mech));
+        notify_printf(player, "%s%s is still recovering from a "
+                "previous action! (%d)",
+                MechType(mech) == CLASS_BSUIT ? "" : "Your ",
+                location, MechSections(mech)[section].recycle);
+        return 0;
+    }
 
 	DOCHECK0(MechSections(mech)[section].specials & CARRYING_CLUB,
 	    "You're carrying a club in that arm.");
 
-	if (Fallen(mech) && MechType(mech) == CLASS_MECH) {
+    if (Fallen(mech) && MechType(mech) == CLASS_MECH) {
 	    /* if a quad has 3 of 4 legs dead, it can't fire at all while prone */
 	    wcDeadLegs = CountDestroyedLegs(mech);
 	    if (MechIsQuad(mech))

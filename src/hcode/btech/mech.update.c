@@ -1303,24 +1303,37 @@ int recycle_weaponry(MECH * mech)
 		}
 	    }
 	}
-	if (MechSections(mech)[loop].recycle &&
-	    (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_BSUIT
-		|| (MechType(mech) == CLASS_VEH_GROUND))) {
-	    if (diff >= MechSections(mech)[loop].recycle &&
-		!SectIsDestroyed(mech, loop)) {
-		MechSections(mech)[loop].recycle = 0;
-		ArmorStringFromIndex(loop, location, MechType(mech),
-		    MechMove(mech));
-		mech_notify(mech, MECHSTARTED,
-		    tprintf("%%cg%s%s has finished its attack.%%c",
-			MechType(mech) == CLASS_BSUIT ? "" : "Your ",
-			location));
-	    } else {
-		MechSections(mech)[loop].recycle -= diff;
-		if (MechSections(mech)[loop].recycle < lowest || !lowest)
-		    lowest = MechSections(mech)[loop].recycle;
-	    }
-	}
+
+    /* Cycle a section */
+    if (MechSections(mech)[loop].recycle &&
+            ((MechType(mech) == CLASS_MECH) 
+             || (MechType(mech) == CLASS_BSUIT)
+             || (MechType(mech) == CLASS_VEH_GROUND)
+             || (MechType(mech) == CLASS_VTOL))) {
+
+        /* Is the section finished cycling or do we deincrement it */
+        if (diff >= MechSections(mech)[loop].recycle &&
+                !SectIsDestroyed(mech, loop)) {
+            
+            MechSections(mech)[loop].recycle = 0;
+            ArmorStringFromIndex(loop, location, MechType(mech),
+                    MechMove(mech));
+
+            mech_notify(mech, MECHSTARTED,
+                    tprintf("%%cg%s%s has finished its previous action.%%c",
+                        MechType(mech) == CLASS_BSUIT ? "" : "Your ",
+                        location));
+
+        } else {
+
+            MechSections(mech)[loop].recycle -= diff;
+            if (MechSections(mech)[loop].recycle < lowest || !lowest)
+                lowest = MechSections(mech)[loop].recycle;
+
+        }
+
+    }
+
     }
     arc_override = 0;
     return lowest;
