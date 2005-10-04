@@ -432,9 +432,9 @@ int FireWeaponNumber(dbref player,
         ArmorStringFromIndex(section, location, MechType(mech),
                 MechMove(mech));
         notify_printf(player, "%s%s is still recovering from a "
-                "previous action! (%d)",
+                "previous action!",
                 MechType(mech) == CLASS_BSUIT ? "" : "Your ",
-                location, MechSections(mech)[section].recycle);
+                location);
         return 0;
     }
 

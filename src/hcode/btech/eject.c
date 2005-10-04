@@ -569,9 +569,21 @@ void mech_embark(dbref player, void *data, char *buffer) {
             "Are you suicidal ? That thing is moving too fast !");
     DOCHECK(!In_Character(mech->mynum) || !In_Character(target->mynum),
             "You don't really see a way to get in there.");
-    DOCHECK((tmp = MechFullNoRecycle(mech, CHECK_BOTH)),
-            tprintf("You have %s recycling!", 
-                (tmp == 1 ? "weapons" : tmp == 2 ? "limbs" : "error")));
+
+    /* New message system for when someone tries to embark
+     * but their sections are still cycling (or weapons) */
+    if ((tmp = MechFullNoRecycle(mech, CHECK_BOTH))) {
+
+        if (tmp == 1) {
+            notify(player, "You have weapons recycling!");
+        } else if (tmp == 2) {
+            notify(player, "You are still recovering from your previous action!");
+        } else {
+            notify(player, "error");
+        }
+        return;
+    }
+    
     DOCHECK((MechTons(mech) * 100) > CargoSpace(target),
             "Not enough cargospace for you!");
     if (MechCarrying(mech) > 0) {
