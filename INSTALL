@@ -21,7 +21,6 @@ your machine has the following packages installed:
 * crypt (libcrypt/lcrypt)
 * libevent (http://www.monkey.org/~provos/libevent/)
 * libdbi (If SQL support is enabled)
-* autoconf
 
  S2: OBTAINING THE NEEDED MODULES
  --------------------------------
