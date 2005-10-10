@@ -820,9 +820,20 @@ static void mech_masc_event(MUXEVENT * e)
 	if (MechSpeed(mech) > 0.0)
 	    MechLOSBroadcast(mech, "stops suddenly!");
     }
+
+    /* Break the Hips - FASA canon rule about MASC */
+    DestroyPart(mech, RLEG, 0);
+    DestroyPart(mech, LLEG, 0);
+    if (MechMove(mech) == MOVE_QUAD) {
+        DestroyPart(mech, RARM, 0);
+        DestroyPart(mech, LARM, 0);
+    }
+    
+    /* Let the MUX know both hips gone */
+    MechCritStatus(mech) |= HIP_DESTROYED;
+
+    /* Reset the Speeds, this sets all 3 of them */
     SetMaxSpeed(mech, 0.0);
-    MechDesiredSpeed(mech) = 0.0;
-    MechSpeed(mech) = 0.0;
 }
 
 void mech_masc(dbref player, void *data, char *buffer)

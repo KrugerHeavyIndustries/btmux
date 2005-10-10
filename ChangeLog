@@ -86,7 +86,10 @@ btonline-btechmux 0.5:
 	* btsetpartcost() corrected negative cost error check. (George Ponick)
 	* btdamagemech() total damage limited to 1000 to prevent runaway loop. (George Ponick)
 	* Fixed bttechlist() to prevent that FUSTAG bug. (Greg Taylor)
-
+	* Fix for bug #1321731.  Masc code more in line with FASA
+	  now and should destroy all the hips as well as
+	  set the max speed to zero, fixing any weirdness
+	  that was occuring when the unit took another leg crit.
 
 btonline-btechmux 0.4:
 	- Changes
