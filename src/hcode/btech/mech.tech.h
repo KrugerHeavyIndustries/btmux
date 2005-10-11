@@ -215,7 +215,7 @@ ECMD(tech_fix);
 (Cargo(\
        (MechSpecials(mech) & FF_TECH) ? FF_ARMOR : \
        (MechSpecials(mech) & HARDA_TECH) ? HD_ARMOR : \
-       (MechSpecials2(mech) & STEALTH_ARMOR_TECH) ? STEALTH_ARMOR : \
+       (MechSpecials2(mech) & STEALTH_ARMOR_TECH) ? STH_ARMOR : \
        (MechSpecials2(mech) & HVY_FF_ARMOR_TECH) ? HVY_FF_ARMOR : \
        (MechSpecials2(mech) & LT_FF_ARMOR_TECH) ? LT_FF_ARMOR : \
        (MechInfantrySpecials(mech) & CS_PURIFIER_STEALTH_TECH) ? PURIFIER_ARMOR : \

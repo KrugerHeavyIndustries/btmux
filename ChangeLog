@@ -89,7 +89,10 @@ btonline-btechmux 0.5:
 	* Fix for bug #1321731.  Masc code more in line with FASA
 	  now and should destroy all the hips as well as
 	  set the max speed to zero, fixing any weirdness
-	  that was occuring when the unit took another leg crit.
+	  that was occuring when the unit took another leg crit. (Dany)
+	* Fix for bug #1324084 - Stealth Armor.  Fix so when you
+	  repair the armor on a stealth armor unit, it uses STH_Armor
+	  parts instead of 'Internals' (which is wrong). (Dany)
 
 btonline-btechmux 0.4:
 	- Changes
