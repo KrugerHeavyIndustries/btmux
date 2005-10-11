@@ -3,15 +3,24 @@
  *
  * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
  * All rights reserved.
+ * 
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.      
  *
  * $Id$
  */
 
-#ifndef __FOREST_RB_TREE__
-#define __FOREST_RB_TREE__
-
-#define NODE_RED 0 
-#define NODE_BLACK 1
+#ifndef __RB_TREE__
+#define __RB_TREE__
 
 #define SEARCH_EQUAL    0x1
 #define SEARCH_GTEQ     0x2
@@ -27,19 +36,7 @@
 #define WALK_INORDER    0x101
 #define WALK_POSTORDER  0x102
 
-typedef struct rbtree_node_t {
-    struct rbtree_node_t *left, *right, *parent;
-    void *key;
-    void *data;
-    int color;
-} rbtree_node;
-
-typedef struct rbtree_head_t {
-    struct rbtree_node_t *head;
-    int (*compare_function)(void *, void *, void *);
-    void *token;
-    unsigned int size;
-} rbtree;
+typedef void *rbtree;
 
 rbtree *rb_init(int (*)(void *, void *, void *), void *);
 void rb_destroy(rbtree *);

@@ -18,9 +18,9 @@
 #define	NUM_POOLS	7
 
 
-#define LBUF_SIZE	4096
-#define MBUF_SIZE	512
-#define SBUF_SIZE	64
+#define LBUF_SIZE	16384
+#define MBUF_SIZE	2048
+#define SBUF_SIZE	256
 
 /*
 #define LBUF_SIZE	4000
