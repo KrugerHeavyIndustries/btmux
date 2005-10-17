@@ -1112,12 +1112,14 @@ struct repair_data {
 #define TAG_TECH                0x8000      /* Target Aquisition Gear */
 #define OMNIMECH_TECH           0x10000     /* Is an omni mech */
 #define ARTEMISV_TECH           0x20000     /* Not yet implemented */
-#define CAMO_TECH               0x40000    /* Allows any unit to 'hide' */
+#define CAMO_TECH               0x40000     /* Allows any unit to 'hide' */
 #define CARRIER_TECH            0x80000     /* Can be used as a carrier of mechs */
+#define WATERPROOF_TECH         0x100000    /* Can the unit go underwater without problems 
+                                               for use with tanks */
 #ifdef BT_COMPLEXREPAIRS
-#define XLGYRO_TECH             0x100000
-#define HDGYRO_TECH             0x200000
-#define CGYRO_TECH              0x400000
+#define XLGYRO_TECH             0x200000
+#define HDGYRO_TECH             0x400000
+#define CGYRO_TECH              0x800000
 #endif
 
 /* Infantry specials */

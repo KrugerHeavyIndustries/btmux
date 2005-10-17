@@ -78,6 +78,10 @@ btonline-btechmux 0.5:
 	  Trigger mine and makes it more usable. (Dany)
 	* Added Exile's emits (to MechDebugInfo) for picking up
 	  and dropping off units. (Dany)
+	* Added Exile's Waterproof_Tech but it works on all units
+	  except for aeros, vtols and DSes.  Basicly negates any
+	  rolls or affects that water has on a unit although
+	  the units will still slow down in water. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)

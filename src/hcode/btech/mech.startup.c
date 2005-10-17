@@ -31,6 +31,7 @@
 #include "p.mech.tag.h"
 #include "p.bsuit.h"
 #include "p.bsuit.h"
+#include "p.mech.combat.misc.h"
 
 /* NOTE: Number of boot messages for both types _MUST_ match */
 
@@ -147,6 +148,27 @@ static void mech_startup_event(MUXEVENT * e)
             break;
     }
     timer++;
+
+    /* Check if the unit is in water and if it should die */
+    /* Make sure it checks pretty early in the startup */
+    if (timer>=2) {
+
+        if (InWater(mech) && (MechType(mech) == CLASS_VEH_GROUND || 
+                    MechType(mech) == CLASS_VTOL || 
+                    MechType(mech) == CLASS_BSUIT ||
+                    MechType(mech) == CLASS_AERO ||
+                    MechType(mech) == CLASS_DS) &&
+                !(MechSpecials2(mech) & WATERPROOF_TECH)) {
+
+            mech_notify(mech, MECHALL, "Water floods your engine and your unit "
+                    "becomes inoperable.");
+            MechLOSBroadcast(mech, "emits some bubbles as its engines are flooded.");
+            DestroyMech(mech, mech, 0);
+            return;
+
+        }
+    }
+
     if (timer < BOOTCOUNT) {
         MECHEVENT(mech, EVENT_STARTUP, mech_startup_event, SSLEN, timer);
         return;

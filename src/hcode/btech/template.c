@@ -1153,6 +1153,7 @@ char *specials2[] = {
     "ArtemisV_Tech",
     "Camo_Tech",
     "Carrier_Tech",
+    "Waterproof_Tech",
 #ifdef BT_COMPLEXREPAIRS
     "XLGyro_Tech",
     "HDGyro_Tech",
@@ -1167,6 +1168,7 @@ char *specialsabrev2[] = {
     "TAG", "OMNI", "AV",
     "CAMO",
     "CART",
+    "WPRF",
 #ifdef BT_COMPLEXREPAIRS
     "XLGRYO", "HDGYRO", "CGYRO",
 #endif

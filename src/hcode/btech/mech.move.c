@@ -1608,31 +1608,40 @@ void MechFloods(MECH * mech)
     int elev = MechElevation(mech);
 
     if (!InWater(mech))
-	return;
+        return;
+
+    /* Waterproof Tech - no flooding if we have this */
+    if (MechSpecials2(mech) & WATERPROOF_TECH)
+        return;
 
     if (MechType(mech) == CLASS_BSUIT) {
-	if (MechSwarmTarget(mech) > 0)
-	    return;
+        
+        if (MechSwarmTarget(mech) > 0)
+            return;
 
-	mech_notify(mech, MECHALL,
-	    "You somehow find yourself in water and realize this may really really suck...");
-	mech_notify(mech, MECHALL,
-	    "Everything gets very dark as water starts to fill your suit and you sink towards the bottom!");
+        mech_notify(mech, MECHALL,
+                "You somehow find yourself in water and realize this may really really suck...");
+        mech_notify(mech, MECHALL,
+                "Everything gets very dark as water starts to fill your suit "
+                "and you sink towards the bottom!");
 
-	MechLOSBroadcast(mech,
-	    "shudders, splashes in the water for a second, then goes limp and sinks to the bottom.");
+        MechLOSBroadcast(mech,
+                "shudders, splashes in the water for a second, then goes limp "
+                "and sinks to the bottom.");
 
-	KillMechContentsIfIC(mech->mynum);
-	DestroyMech(mech, mech, 0);
-	return;
+        KillMechContentsIfIC(mech->mynum);
+        DestroyMech(mech, mech, 0);
+        return;
     }
 
     if (MechType(mech) != CLASS_MECH)
-	return;
+        return;
+
     if (MechZ(mech) >= 0)
-	return;
+        return;
+
     for (i = 0; i < NUM_SECTIONS; i++)
-	MechFloodsLoc(mech, i, elev);
+        MechFloodsLoc(mech, i, elev);
 }
 
 void MechFalls(MECH * mech, int levels, int seemsg)
