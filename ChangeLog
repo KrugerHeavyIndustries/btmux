@@ -73,6 +73,10 @@ btonline-btechmux 0.5:
 	* Added command to AI's interface called 'EVENTSTATS', lists
 	  the various events running on that AI. (Dany)
 
+	- Merge
+	* Added Exile's mine trigger stuff which seperates the
+	  Trigger mine and makes it more usable. (Dany)
+
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)
 	* Fixed btsetcharvalue() and btgetcharvalue() crashers.
@@ -93,6 +97,9 @@ btonline-btechmux 0.5:
 	* Fix for bug #1324084 - Stealth Armor.  Fix so when you
 	  repair the armor on a stealth armor unit, it uses STH_Armor
 	  parts instead of 'Internals' (which is wrong). (Dany)
+	* Added some rounding for the Trigger mine distance calcs
+	  because of ranges being generated like 1.000072 messing
+	  with it. (Dany)
 
 btonline-btechmux 0.4:
 	- Changes
