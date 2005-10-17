@@ -76,6 +76,8 @@ btonline-btechmux 0.5:
 	- Merge
 	* Added Exile's mine trigger stuff which seperates the
 	  Trigger mine and makes it more usable. (Dany)
+	* Added Exile's emits (to MechDebugInfo) for picking up
+	  and dropping off units. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)
