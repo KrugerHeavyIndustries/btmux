@@ -34,6 +34,16 @@
 #include "config.h"
 #include "p.comsys.h"
 
+#define DEBUG_NETCOMMON
+#ifdef DEBUG_NETCOMMON
+#ifndef DEBUG
+#define DEBUG
+#endif
+#include "debug.h"
+#endif
+
+
+
 extern int process_output(DESC * d);
 extern void handle_prog(DESC *, char *);
 extern void fcache_dump_conn(DESC *, int);
@@ -372,8 +382,8 @@ void freeqs(DESC *d) {
 }
 
 int desc_cmp(void *vleft, void *vright, void *token) {
-    dbref left = *(dbref *)vleft;
-    dbref right = *(dbref *)vright;
+    dbref left = (dbref)vleft;
+    dbref right = (dbref)vright;
 
     return (left-right);
 }
@@ -390,13 +400,16 @@ void desc_addhash(DESC *d) {
 
     player = d->player;
 
-    hdesc = (DESC *)rb_find(mudstate.desctree, &d->player);
+    hdesc = (DESC *)rb_find(mudstate.desctree, (void *)d->player);
+    dprintk("Adding descriptor %p(%d) to list root at %p (%d).", 
+            d, d->player, hdesc, (hdesc?hdesc->player:-1));
+            
     if (hdesc == NULL) {
         d->hashnext = NULL;
     } else {
         d->hashnext = hdesc;
     }
-    rb_insert(mudstate.desctree, &d->player, d);
+    rb_insert(mudstate.desctree, (void *)d->player, d);
 }
 
 /*
@@ -407,43 +420,63 @@ void desc_addhash(DESC *d) {
 static void desc_delhash(DESC *d) {
     DESC *hdesc, *last;
     dbref player;
+    char buffer[4096];
 
     player = d->player;
     last = NULL;
-    hdesc = (DESC *) rb_find(mudstate.desctree, &d->player);
-    while (hdesc != NULL) {
-        if (d == hdesc) {
-            if (last == NULL) {
-                if (d->hashnext == NULL) {
-                    rb_delete(mudstate.desctree, &d->player);
-                } else {
-                    rb_insert(mudstate.desctree, &d->player, d->hashnext);
-                }
-            } else {
-                last->hashnext = d->hashnext;
-            }
+    hdesc = (DESC *) rb_find(mudstate.desctree, (void *)d->player);
+
+    dprintk("removing descriptor %p(%d) from list root %p(%d).", d, d->player,
+            hdesc, hdesc?hdesc->player:-1);
+
+    if(!hdesc) {
+        snprintf(buffer, 4096, "desc_delhash: unable to find player(%d)'s descriptors from hashtable.\n", 
+                d->player);
+        log_text(buffer);
+        return;
+    }
+    dprintk("hdesc: %p, d: %p, hdesc->hashnext: %p, d->hashnext: %p", hdesc, d,
+            hdesc->hashnext, d->hashnext);
+
+    if(hdesc == d && hdesc->hashnext) {
+        dprintk("updating %d to use hashroot %p", d->player, hdesc->hashnext);
+        rb_insert(mudstate.desctree, (void *)d->player, hdesc->hashnext);
+        return;
+    } else if(hdesc == d) {
+        dprintk("removing %d table", d->player);
+        rb_delete(mudstate.desctree, (void *)d->player);
+        return;
+    }
+     
+    while (hdesc->hashnext != NULL) {
+        if (hdesc->hashnext == d) {
+            hdesc->hashnext = hdesc->hashnext->hashnext;
             break;
         }
-        last = hdesc;
         hdesc = hdesc->hashnext;
     }
+    if(!hdesc) {
+        snprintf(buffer, 4096, "Unable to find descriptor in player(%d)'s descriptor list.\n", d->player);
+        log_text(buffer);
+    }
     d->hashnext = NULL;
+    return;
 }
 
 extern int fcache_conn_c;
 
-    void welcome_user(DESC *d) {
-        if (d->host_info & H_REGISTRATION)
-            fcache_dump(d, FC_CONN_REG);
-        else {
-            if (fcache_conn_c) {
-                fcache_dump_conn(d,
-                        d->logo < fcache_conn_c ? d->logo : (fcache_conn_c - 1));
-                return;
-            }
-            fcache_dump(d, FC_CONN);
+void welcome_user(DESC *d) {
+    if (d->host_info & H_REGISTRATION)
+        fcache_dump(d, FC_CONN_REG);
+    else {
+        if (fcache_conn_c) {
+            fcache_dump_conn(d,
+                    d->logo < fcache_conn_c ? d->logo : (fcache_conn_c - 1));
+            return;
         }
+        fcache_dump(d, FC_CONN);
     }
+}
 
 void save_command(DESC *d, CBLK *command) {
 
