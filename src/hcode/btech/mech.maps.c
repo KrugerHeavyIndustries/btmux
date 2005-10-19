@@ -143,8 +143,8 @@ enum { SWATER_IDX, DWATER_IDX, BUILDING_IDX, ROAD_IDX, ROUGH_IDX, MOUNTAIN_IDX,
 /* Default colour string is "BbWnYyRWWWXGgbRHYRn" */
 /* internal rep has H instead of h and \0 instead of n */
 
-#define DEFAULT_COLOR_STRING "BbWnYyRWWWXGgbRhYRnGR"
-#define DEFAULT_COLOR_SCHEME "BbW\0YyRWWWXGgbRHYR\0GR"
+#define DEFAULT_COLOR_STRING "BbWXYyRWWWXGgbRhYRnGR"
+#define DEFAULT_COLOR_SCHEME "BbWXYyRWWWXGgbRHYR\0GR"
 
 static char custom_color_str[NUM_COLOR_IDX + 1] = DEFAULT_COLOR_SCHEME;
 
