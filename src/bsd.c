@@ -692,7 +692,6 @@ void make_nonblocking(int s) {
         log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_GETFL");
     }
     flags |= O_NONBLOCK;
-    flags &= ~O_NDELAY;
     if(fcntl(s, F_SETFL, flags)<0) {
         log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_SETFL");
     }
