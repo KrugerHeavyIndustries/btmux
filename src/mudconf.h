@@ -93,8 +93,11 @@ struct confdata {
     char guests_channel[32];	/* Name of guests channel */
     char pueblo_msg[1024];	/* Message displayed to Pueblo clients */
     int allow_unloggedwho;	/* Wether or not to allow unlogged-in clients to use WHO, DOING and SESSION */
-    int btech_engine;
-    int btech_ic;
+    int btech_engine;		/* Allow or disallow explode reactor */
+    int btech_explode_ammo;	/* Allow or disallow explode ammo */
+    int btech_explode_stop;	/* Allow or disallow explode stop */
+    int btech_explode_time;	/* Number of tics self-destruction takes */
+    int btech_ic;		/* Allow or disallow MechWarrior embark/disembark */
     int btech_parts;
     int btech_vcrit;
     int btech_slowdown;

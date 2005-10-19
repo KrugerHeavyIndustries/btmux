@@ -102,8 +102,11 @@ void cf_init(void)
     StringCopy(mudconf.compress, "gzip");
     StringCopy(mudconf.uncompress, "gzip -d");
     StringCopy(mudconf.status_file, "shutdown.status");
-    mudconf.allow_unloggedwho = 0;
-    mudconf.btech_engine = 1;
+    mudconf.allow_unloggedwho = 0;     
+    mudconf.btech_engine = 1;           
+    mudconf.btech_explode_time = 120;  
+    mudconf.btech_explode_ammo = 1;    
+    mudconf.btech_explode_stop = 0;   
     mudconf.btech_stackpole = 1;
     mudconf.phys_use_pskill = 1;
     mudconf.btech_erange = 1;
@@ -1133,6 +1136,12 @@ CONF conftable[] = {
         cf_string,	CA_DISABLED,	(int *)mudconf.site_file,	32},
     {(char *)"btech_engine",
         cf_int,         CA_GOD,         &mudconf.btech_engine,          0},
+    {(char *)"btech_explode_time",
+	            cf_int,         CA_GOD,   &mudconf.btech_explode_time,   0},
+    {(char *)"btech_explode_ammo",
+	            cf_int,         CA_GOD,   &mudconf.btech_explode_ammo,   0},
+    {(char *)"btech_explode_stop",
+	            cf_int,         CA_GOD,   &mudconf.btech_explode_stop,   0},
     {(char *)"btech_failures",
         cf_int,         CA_GOD,         &mudconf.btech_parts,           0},
     {(char *)"btech_ic",

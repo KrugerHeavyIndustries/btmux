@@ -1042,16 +1042,17 @@ void mech_explode(dbref player, void *data, char *buffer)
     char *args[3];
     int i;
     int ammoloc, ammocritnum;
-    int time = 10;
+    int time = mudconf.btech_explode_time;
     int ammo = 1;
     int argc;
 
     cch(MECH_USUALO);
     argc = mech_parseattributes(buffer, args, 2);
     DOCHECK(argc != 1, "Invalid number of arguments!");
-    DOCHECK(!mudconf.btech_engine,
-	"The command has been disabled for now. Sorry.");
+    
     if (!strcasecmp(buffer, "stop")) {
+	DOCHECK(!mudconf.btech_explode_stop,
+	    "It's too late to turn back now!");
 	DOCHECK(!Exploding(mech),
 	    "Your mech isn't undergoing a self-destruct sequence!");
 
@@ -1060,6 +1061,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	SendDebug(tprintf
 	    ("#%d in #%d stopped the self-destruction sequence.", player,
 		mech->mynum));
+	MechLOSBroadcast(mech, "regains control over itself.");
 	return;
     }
     DOCHECK(Exploding(mech),
@@ -1068,21 +1070,27 @@ void mech_explode(dbref player, void *data, char *buffer)
 	/*
 	   Find SOME ammo to explode ; if possible, we engage the 'boom' process
 	 */
+	DOCHECK(!mudconf.btech_explode_ammo,
+	    "You can't bring yourself to do it!");
 	i = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
 	DOCHECK(!i, "There is no 'damaging' ammo on your 'mech!");
 	/* Engage the boom-event */
-	time = 2;
 	SendDebug(tprintf
 	    ("#%d in #%d initiates the ammo explosion sequence.", player,
 		mech->mynum));
-	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, 256 + time);
+	MechLOSBroadcast(mech, "starts billowing smoke!");
+	time = time / 2;
+	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
     } else {
+	DOCHECK(!mudconf.btech_engine,
+	    "You can't bring yourself to do it!");
 	DOCHECK(MechType(mech) != CLASS_MECH,
 	    "Only mechs can do the 'big boom' effect.");
-	time = 10;
+	DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
 	SendDebug(tprintf
 	    ("#%d in #%d initiates the reactor explosion sequence.",
 		player, mech->mynum));
+	MechLOSBroadcast(mech, "loses reactions containment!");
 	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 	ammo = 0;
     }
@@ -1091,6 +1099,8 @@ void mech_explode(dbref player, void *data, char *buffer)
     mech_notify(mech, MECHALL, tprintf("%s in %d seconds.",
 	    ammo ? "The ammunition will explode" :
 	    "The reactor will blow up", time));
+    /* Null out the pilot to disallow further commands */
+    MechPilot(mech) = -1;
 }
 
 static void mech_dig_event(MUXEVENT * e)
