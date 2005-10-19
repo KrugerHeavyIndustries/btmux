@@ -696,7 +696,7 @@ void make_nonblocking(int s) {
         log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_SETFL");
     }
     flags = 1;
-    if(setsockopt(s, IPPROTO_TCP, TCP_NDELAY, &flags, sizeof(flags)) < 0) {
+    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags)) < 0) {
         log_perror("NET", "FAIL", "make_nonblocking", "setsockopt NDELAY");
     }
 }
