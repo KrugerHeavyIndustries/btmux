@@ -768,12 +768,18 @@ void mech_view(dbref player, void *data, char *buffer)
 	}
 	target = getMech(targetnum);
 	mech_map = getMap(mech->mapindex);
+	
 	if (!target ||
 	    !InLineOfSight(mech, target, MechX(target), MechY(target),
 		FlMechRange(mech_map, mech, target))) {
 	    mech_notify(mech, MECHPILOT, "Target is not in line of sight!");
 	    return;
 	}
+	
+	DOCHECK(!InLineOfSight_NB(mech, target, MechX(target),
+	    MechY(target), FlMechRange(mech_map, mech, target)),
+		"That target isn't seen well enough by the scanners for viewing!");
+		    
 	if (*(target_desc = silly_atr_get(target->mynum, A_MECHDESC)))
 	    notify(player, target_desc);
 	else
