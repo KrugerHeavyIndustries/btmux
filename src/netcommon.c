@@ -332,12 +332,11 @@ void queue_write(DESC *d, const char *b, int n) {
         return;
 
     retval = write(d->descriptor, b, n);
-    if(retval < n) {
-        fprintf(stderr, "queue_write] truncated write: %d of %d.\n", retval, n);
-    } else if(retval < 0) {
+     if(retval < 0) {
         fprintf(stderr, "queue_write] write() returned %s.\n", strerror(errno));
-    }
-
+    } else if(retval < n) {
+        fprintf(stderr, "queue_write] truncated write: %d of %d.\n", retval, n);
+    } 
     return;
 }
 
