@@ -168,7 +168,7 @@ extern void do_hudinfo(DESC *, char *);
 #define free_desc(b) pool_free(POOL_DESC,((char **)&(b)))
 
 #define DESC_ITER_PLAYER(p,d) \
-	for (d=(DESC *)rb_find(mudstate.desctree, &p);d;d=d->hashnext)
+	for (d=(DESC *)rb_find(mudstate.desctree, (void *)p);d;d=d->hashnext)
 
 #define DESC_ITER_CONN(d) \
 	for (d=descriptor_list;(d);d=(d)->next) \
@@ -178,7 +178,7 @@ extern void do_hudinfo(DESC *, char *);
 	for (d=descriptor_list;(d);d=(d)->next)
 
 #define DESC_SAFEITER_PLAYER(p,d,n) \
-	for (d=(DESC *)rb_find(mudstate.desctree, &p), \
+	for (d=(DESC *)rb_find(mudstate.desctree, (void *)p), \
         	n=((d!=NULL) ? d->hashnext : NULL); \
 	     d; \
 	     d=n,n=((n!=NULL) ? n->hashnext : NULL))
