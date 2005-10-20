@@ -224,7 +224,7 @@ char getStatusChar(MECH * mech, MECH * mechTarget, int wCharNum)
 	cRet = MechSwarmTarget(mechTarget) > 0 ? 'W' :
 	    Towed(mechTarget) ? 'T' : MechCarrying(mechTarget) >
 	    0 ? 't' : CarryingClub(mechTarget) ? 'C' :
-#ifdef BT_MOVEMENTS_MODES
+#ifdef BT_MOVEMENT_MODES
 	    Sprinting(mechTarget) ? 'M' : Evading(mechTarget) ? 'm' :
 #endif
 	    ' ';
