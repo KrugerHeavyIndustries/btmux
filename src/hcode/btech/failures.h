@@ -17,8 +17,8 @@
 
 #define IsAutocannon(a) (MechWeapons[a].type == TAMMO)
 #define IsEnergy(a) (MechWeapons[a].type==TBEAM)
-#define IsFlamer(a) (MechWeapons[a].type==TBEAM && \
-	strstr(MechWeapons[a].name, "Flamer"))
+/*#define IsFlamer(a) (MechWeapons[a].type==TBEAM && \
+	strstr(MechWeapons[a].name, "Flamer")) */
 
 /* these are types of modifiers */
 #define HEAT	        1

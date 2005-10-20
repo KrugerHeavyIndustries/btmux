@@ -500,10 +500,11 @@ void mech_stand(dbref player, void *data, char *buffer)
     DOCHECK(IsHulldown(mech), "You can not stand while hulldown");
     DOCHECK(ChangingHulldown(mech),
             "You are busy changing your hulldown mode");
+    
+    bth = MechPilotSkillRoll_BTH(mech, 0);
+
     DOCHECK(!standanyway && bth > 12,
             "You would fail; use 'stand anyway' if you really want to stand.");
-
-    bth = MechPilotSkillRoll_BTH(mech, 0);
 
     /* Check to see if the user specified an argument for the command */
     if (proper_explodearguments(buffer, args, 2)) {

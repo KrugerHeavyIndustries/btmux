@@ -125,18 +125,25 @@
 #define BOMBCOST_SIZE           NUM_BOMBS
 #endif
 
-#define IsAmmo(a)	((a) >= AMMO_BASE_INDEX && (a) < BOMB_BASE_INDEX)
-#define IsBomb(a)	((a) >= BOMB_BASE_INDEX && (a) < SPECIAL_BASE_INDEX)
-#define IsSpecial(a)	((a) >= SPECIAL_BASE_INDEX && (a) < CARGO_BASE_INDEX)
-#define IsCargo(a)	((a) >= CARGO_BASE_INDEX)
-#define IsActuator(a)	(IsSpecial(a) && a <= I2Special(HAND_OR_FOOT_ACTUATOR))
-#define IsWeapon(a)	((a) >= WEAPON_BASE_INDEX && (a) < AMMO_BASE_INDEX)
-#define IsArtillery(a)	(MechWeapons[a].type==TARTILLERY)
-#define IsMissile(a)	(MechWeapons[a].type==TMISSILE)
-#define IsBallistic(a)	(MechWeapons[a].type==TAMMO)
-#define IsEnergy(a)	(MechWeapons[a].type==TBEAM)
+#define IsAmmo(a)           ((a) >= AMMO_BASE_INDEX && (a) < BOMB_BASE_INDEX)
+#define IsBomb(a)           ((a) >= BOMB_BASE_INDEX && (a) < SPECIAL_BASE_INDEX)
+#define IsSpecial(a)        ((a) >= SPECIAL_BASE_INDEX && (a) < CARGO_BASE_INDEX)
+#define IsCargo(a)          ((a) >= CARGO_BASE_INDEX)
+#define IsActuator(a)       (IsSpecial(a) && a <= I2Special(HAND_OR_FOOT_ACTUATOR))
+#define IsWeapon(a)         ((a) >= WEAPON_BASE_INDEX && (a) < AMMO_BASE_INDEX)
+#define IsArtillery(a)      (MechWeapons[a].type==TARTILLERY)
+#define IsMissile(a)        (MechWeapons[a].type==TMISSILE)
+#define IsBallistic(a)      (MechWeapons[a].type==TAMMO)
+#define IsEnergy(a)         (MechWeapons[a].type==TBEAM)
+
+/* Fun Weapons that do affects */
+#define IsFlamer(a)         (strstr(MechWeapons[a].name, "Flamer"))
+#define IsCoolant(a)        (strstr(MechWeapons[a].name, "Coolant"))
+#define IsAcid(a)           (strstr(MechWeapons[a].name, "Acid"))
+
 #ifdef BT_EXILE_MW3STATS
 #endif
+
 #define GunRangeWithCheck(mech,sec,a) (SectionUnderwater(mech,sec) > 0 ? GunWaterRange(a) : IsArtillery(a)?(ARTILLERY_MAPSHEET_SIZE * MechWeapons[a].longrange):(MechWeapons[a].longrange))
 #define EGunRangeWithCheck(mech,sec,a) ((SectionUnderwater(mech,sec) > 0) ? EGunWaterRange(a) : (mudconf.btech_erange && (MechWeapons[a].medrange * 2) > GunRange(a)) ? (MechWeapons[a].medrange * 2) : GunRange(a))
 #define GunRange(a)	(IsArtillery(a)?(ARTILLERY_MAPSHEET_SIZE * MechWeapons[a].longrange):(MechWeapons[a].longrange))

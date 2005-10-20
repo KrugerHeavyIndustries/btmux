@@ -74,6 +74,7 @@ DESC *descriptor_list = NULL;
 
 void slave_destruct();
 void mux_release_socket();
+void make_nonblocking(int s);
 
 DESC *initializesock(int, struct sockaddr_in *);
 DESC *new_connection(int);
@@ -462,7 +463,7 @@ DESC *new_connection(int sock) {
     int len;
     char *buf;
 
-
+    make_nonblocking(sock);
     cmdsave = mudstate.debug_cmd;
     mudstate.debug_cmd = (char *) "< new_connection >";
     addr_len = sizeof(struct sockaddr);

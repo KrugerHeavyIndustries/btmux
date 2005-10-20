@@ -154,3 +154,5 @@
 #define VRT_IS_RL10		30	/* IS.RL-10 */
 #define VRT_IS_RL15		30	/* IS.RL-15 */
 #define VRT_IS_RL20		30	/* IS.RL-20 */                   
+#define VRT_IS_COOLANTGUN   30  /* IS.CoolantGun */
+#define VRT_IS_ACIDTHROWER  30  /* IS.AcidThrower */

@@ -82,6 +82,7 @@ btonline-btechmux 0.5:
 	  except for aeros, vtols and DSes.  Basicly negates any
 	  rolls or affects that water has on a unit although
 	  the units will still slow down in water. (Dany)
+	* Added Coolant Guns (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)

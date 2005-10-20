@@ -344,6 +344,12 @@ struct weapon_struct MechWeapons[] = {
     {"IS.RL-20", VRT_IS_RL20, TMISSILE, 5, 1, 0, 3, 7, 12, 0, -1, -1, -1,
 	3, 0, 150, -1, ROCKET | IDF, 24},
 
+    /* Exile Munch Weapons */
+    {"IS.CoolantGun", VRT_IS_COOLANTGUN, TAMMO, 0, 3, 0, 1, 2, 3, 0, -1, -1,
+    -1, 1, 25, 100, -1, CHEAT, 15},
+    {"IS.AcidThrower", VRT_IS_ACIDTHROWER, TAMMO, 3, 3, 0, 1, 2, 3, 0, -1, -1,
+    -1, 2, 10, 150, -1, NONE, 30},
+
     {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, NONE, 1}
 
 };

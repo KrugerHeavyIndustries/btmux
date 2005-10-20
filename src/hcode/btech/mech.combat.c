@@ -393,257 +393,289 @@ int FireWeaponNumber(dbref player,
     int ishex = 0;
     int wcDeadLegs = 0;
     char location[20];
+    int mode;
 
+    /* If they fire their weapon while hidden, they should appear */
     if (!sight && (MechCritStatus(mech) & HIDDEN)) {
         mech_notify(mech, MECHALL,
-            "You break out of your cover to initiate weapons fire!");
+                "You break out of your cover to initiate weapons fire!");
         MechLOSBroadcast(mech, "breaks out of its cover and begins firing rabidly!");
         MechCritStatus(mech) &= ~HIDDEN;
     }
 
+    /* If they fire a weapon while trying to hide stop them from hiding */
     if (!sight) {
-	    StopHiding(mech);
+        StopHiding(mech);
     }
 
 #ifdef BT_MOVEMENT_MODES
     DOCHECK0(MoveModeLock(mech), "You cannot fire while using a special movement mode.");
 #endif
-    DOCHECK0(weapnum < 0,
-	"The weapons system chirps: 'Illegal Weapon Number!'");
-    weaptype =
-	FindWeaponNumberOnMech_Advanced(mech, weapnum, &section, &critical,
-	sight);
-    DOCHECK0(weaptype == -1,
-	"The weapons system chirps: 'Illegal Weapon Number!'");
+    DOCHECK0(weapnum < 0, "The weapons system chirps: 'Illegal Weapon Number!'");
+
+    weaptype = FindWeaponNumberOnMech_Advanced(mech, weapnum, &section, &critical, sight);
+    mode = GetPartFireMode(mech, section, critical);
+    
+    DOCHECK0(weaptype == -1, "The weapons system chirps: 'Illegal Weapon Number!'");
+
     if (!sight) {
-	DOCHECK0(PartTempNuke(mech, section, critical),
-	    "The weapons system chirps: 'That Weapon is still unusable - please stand by.'");
-	DOCHECK0(weaptype == -3,
-	    "The weapon system chirps: 'That weapon is still reloading!'");
-	DOCHECK0(weaptype == -4,
-	    "The weapon system chirps: 'That weapon is still recharging!'");
+        DOCHECK0(PartTempNuke(mech, section, critical),
+                "The weapons system chirps: 'That Weapon is still unusable - please stand by.'");
+        DOCHECK0(weaptype == -3,
+                "The weapon system chirps: 'That weapon is still reloading!'");
+        DOCHECK0(weaptype == -4,
+                "The weapon system chirps: 'That weapon is still recharging!'");
 
-    /* New fancy message for when they try and fire a weapon and the section
-     * is busy */
-    if (weaptype == -5) {
-        
-        /* Get the section name and print the message along
-         * with the time left */
-        ArmorStringFromIndex(section, location, MechType(mech),
-                MechMove(mech));
-        notify_printf(player, "%s%s is still recovering from a "
-                "previous action!",
-                MechType(mech) == CLASS_BSUIT ? "" : "Your ",
-                location);
-        return 0;
-    }
+        /* New fancy message for when they try and fire a weapon and the section
+         * is busy */
+        if (weaptype == -5) {
 
-	DOCHECK0(MechSections(mech)[section].specials & CARRYING_CLUB,
-	    "You're carrying a club in that arm.");
+            /* Get the section name and print the message */
+            ArmorStringFromIndex(section, location, MechType(mech),
+                    MechMove(mech));
+            notify_printf(player, "%s%s is still recovering from a "
+                    "previous action!",
+                    MechType(mech) == CLASS_BSUIT ? "" : "Your ",
+                    location);
+            return 0;
+        }
 
-    if (Fallen(mech) && MechType(mech) == CLASS_MECH) {
-	    /* if a quad has 3 of 4 legs dead, it can't fire at all while prone */
-	    wcDeadLegs = CountDestroyedLegs(mech);
-	    if (MechIsQuad(mech))
-		DOCHECK0(wcDeadLegs > 2,
-		    "Quads need atleast 3 legs to fire while prone.");
+        DOCHECK0(MechSections(mech)[section].specials & CARRYING_CLUB,
+                "You're carrying a club in that arm.");
 
-	    /* quads with all 4 legs can fire all weapons while prone. They do not need to prop. */
-	    if (!MechIsQuad(mech) || (MechIsQuad(mech) && wcDeadLegs > 0)) {
-		DOCHECK0(section == RLEG || section == LLEG,
-		    "You cannot fire leg mounted weapons when prone.");
-		switch (section) {
-		case RARM:
-		    DOCHECK0(SectHasBusyWeap(mech, LARM) ||
-			MechSections(mech)[LARM].recycle ||
-			SectIsDestroyed(mech, LARM),
-			"You currently can't use your Left Arm to prop yourself up.");
-		    break;
-		case LARM:
-		    DOCHECK0(SectHasBusyWeap(mech, RARM) ||
-			MechSections(mech)[RARM].recycle ||
-			SectIsDestroyed(mech, RARM),
-			"Your currently can't use your Right Arm to prop yourself up.");
-		    break;
-		default:
-		    DOCHECK0((SectHasBusyWeap(mech, RARM) ||
-			    MechSections(mech)[RARM].recycle ||
-			    SectIsDestroyed(mech, RARM))
-			&& (SectHasBusyWeap(mech, LARM) ||
-			    MechSections(mech)[LARM].recycle ||
-			    SectIsDestroyed(mech, LARM)),
-			"You currently don't have any arms to spare to prop yourself up.");
-		}
-	    }
-	}
+        if (Fallen(mech) && MechType(mech) == CLASS_MECH) {
+
+            /* if a quad has 3 of 4 legs dead, it can't fire at all while prone */
+            wcDeadLegs = CountDestroyedLegs(mech);
+            if (MechIsQuad(mech))
+                DOCHECK0(wcDeadLegs > 2, "Quads need atleast 3 legs to fire while prone.");
+
+            /* quads with all 4 legs can fire all weapons while prone. They do not need to prop. */
+            if (!MechIsQuad(mech) || (MechIsQuad(mech) && wcDeadLegs > 0)) {
+                DOCHECK0(section == RLEG || section == LLEG,
+                        "You cannot fire leg mounted weapons when prone.");
+                switch (section) {
+                    case RARM:
+                        DOCHECK0(SectHasBusyWeap(mech, LARM) ||
+                                MechSections(mech)[LARM].recycle ||
+                                SectIsDestroyed(mech, LARM),
+                                "You currently can't use your Left Arm to prop yourself up.");
+                        break;
+                    case LARM:
+                        DOCHECK0(SectHasBusyWeap(mech, RARM) ||
+                                MechSections(mech)[RARM].recycle ||
+                                SectIsDestroyed(mech, RARM),
+                                "Your currently can't use your Right Arm to prop yourself up.");
+                        break;
+                    default:
+                        DOCHECK0((SectHasBusyWeap(mech, RARM) ||
+                                    MechSections(mech)[RARM].recycle ||
+                                    SectIsDestroyed(mech, RARM))
+                                && (SectHasBusyWeap(mech, LARM) ||
+                                    MechSections(mech)[LARM].recycle ||
+                                    SectIsDestroyed(mech, LARM)),
+                                "You currently don't have any arms to spare to prop yourself up.");
+                }
+            }
+        }
     }
 
     if (CountSwarmers(mech) > 0) {
-	DOCHECK0(((section == CTORSO) || (section == RTORSO) ||
-		(section == LTORSO)),
-	    "You can not fire torso mounted weapons while you have battlesuits on you!");
+        DOCHECK0(((section == CTORSO) || (section == RTORSO) ||
+                    (section == LTORSO)),
+                "You can not fire torso mounted weapons while you have battlesuits on you!");
     }
 
     DOCHECK0((MechDugIn(mech)) && section != TURRET,
-	"Only turret weapons are available while in cover.");
+            "Only turret weapons are available while in cover.");
     DOCHECK0(IsAMS(weaptype), "That weapon is defensive only!");
     DOCHECK0(weaptype == -2 ||
-	(PartTempNuke(mech, section, critical) == FAIL_DESTROYED),
-	"The weapons system chirps: 'That Weapon has been destroyed!'");
+            (PartTempNuke(mech, section, critical) == FAIL_DESTROYED),
+            "The weapons system chirps: 'That Weapon has been destroyed!'");
     DOCHECK0(argc > 3, "Invalid number of arguments!");
+
     if ((MechWeapons[weaptype].special & IDF) && MechSpotter(mech) != -1 &&
-	MechTarget(mech) == -1 && MechTargY(mech) == -1 &&
-	MechTargX(mech) == -1)
-	if (FireSpot(player, mech, mech_map, weapnum, weaptype, sight,
-		section, critical))
-	    return 1;
+            MechTarget(mech) == -1 && MechTargY(mech) == -1 &&
+            MechTargX(mech) == -1)
+        if (FireSpot(player, mech, mech_map, weapnum, weaptype, sight,
+                    section, critical))
+            return 1;
+
     switch (argc) {
-    case 1:
-	/* Fire at the default target */
-	DOCHECK0(!FindTargetXY(mech, &enemyX, &enemyY, &enemyZ),
-	    "You do not have a default target set!");
+        
+        /* Fire at default target */
+        case 1:
+          
+            /* If its a coolant gun in heat mode we should shot our mech */
+            if (IsCoolant(weaptype) && (mode & HEAT_MODE)) {
 
-	if (MechTarget(mech) != -1) {
-	    tempMech = getMech(MechTarget(mech));
-	    DOCHECK0(!tempMech, "Error in FireWeaponNumber routine");
-	    mapx = MechX(tempMech);
-	    mapy = MechY(tempMech);
-	    range = FaMechRange(mech, tempMech);
-	    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
-	    if (!(MechWeapons[weaptype].special & IDF)) {
-		DOCHECK0(!LOS,
-		    "That target is not in your line of sight!");
-            } else if (MapIsUnderground(mech_map)) {
-	        DOCHECK0(!LOS,
-	            "That target is not in your direct line of sight, and "
-	            "you cannot fire your IDF weapons underground!");
-	    }
-	} else
-	    /* default target is a hex */
-	{
-	    ishex = 1;
-	    if (!sight && !IsArtillery(weaptype) && MechLockFire(mech))
-		/* look for enemies in the default hex cause they may have moved */
-		if ((tempMech =
-			find_mech_in_hex(mech, mech_map, MechTargX(mech),
-			    MechTargY(mech), 0))) {
-		    enemyX = MechFX(tempMech);
-		    enemyY = MechFY(tempMech);
-		    enemyZ = MechFZ(tempMech);
-		    mapx = MechX(tempMech);
-		    mapy = MechY(tempMech);
-		}
-	    if (!tempMech) {
-		mapx = MechTargX(mech);
-		mapy = MechTargY(mech);
-		MechTargZ(mech) = Elevation(mech_map, mapx, mapy);
-		enemyZ = ZSCALE * MechTargZ(mech);
-		MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
-	    }
-	    /* don't check LOS for missile weapons firing at hex number */
-	    range =
-		FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
-		enemyY, enemyZ);
-	    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
-	    if (!(IsArtillery(weaptype) ||
-		    (MechWeapons[weaptype].special & IDF))) {
-		DOCHECK0(!LOS,
-		    "That hex target is not in your line of sight!");
-	    } else if (MapIsUnderground(mech_map)) {
-	        DOCHECK0(!LOS,
-	            "That target is not in your direct line of sight, and "
-	            "you cannot fire your IDF weapons underground!");
-	    }
-	}
+                /* Setting our mech as the target and the other parameters
+                 * as well */
+                tempMech = mech;
+                DOCHECK0(!tempMech, "Error in FireWeaponNumber routine");
+                mapx = MechX(tempMech);
+                mapy = MechY(tempMech);
+                range = 0.2;                
+                LOS = 1;
 
-	if (MechType(mech) != CLASS_BSUIT) {
-	    ARCCHECK(mech, enemyX, enemyY, section, critical,
-		"Default target is not in your weapons arc!");
-	}
+            } else {
 
-	break;
-    case 2:
-	/* Fire at the numbered target */
-	targetID[0] = args[1][0];
-	targetID[1] = args[1][1];
-	target = FindTargetDBREFFromMapNumber(mech, targetID);
-	DOCHECK0(target == -1, "That target is not in your line of sight!");
-	tempMech = getMech(target);
-	DOCHECK0(!tempMech, "Error in FireWeaponNumber routine!");
-	enemyX = MechFX(tempMech);
-	enemyY = MechFY(tempMech);
-	enemyZ = MechFZ(tempMech);
-	mapx = MechX(tempMech);
-	mapy = MechY(tempMech);
+                DOCHECK0(!FindTargetXY(mech, &enemyX, &enemyY, &enemyZ),
+                        "You do not have a default target set!");
 
-	range =
-	    FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
-	    enemyY, enemyZ);
-	LOS =
-	    LOS_NB(mech, tempMech, MechX(tempMech), MechY(tempMech),
-	    range);
-	DOCHECK0(!LOS, "That target is not in your line of sight!");
+                if (MechTarget(mech) != -1) {
 
-	if (MechType(mech) != CLASS_BSUIT) {
-	    ARCCHECK(mech, enemyX, enemyY, section, critical,
-		"That target is not in your weapons arc!");
-	}
-	break;
-    case 3:
-	/* Fire at the Map X Y */
-	mapx = atoi(args[1]);
-	mapy = atoi(args[2]);
-	ishex = 1;
-	DOCHECK0(mapx < 0 || mapx >= mech_map->map_width || mapy < 0 ||
-	    mapy >= mech_map->map_height, "Map coordinates out of range!");
-	if (!sight && !IsArtillery(weaptype))
-	    /* look for enemies in that hex... */
-	    if ((tempMech =
-		    find_mech_in_hex(mech, mech_map, MechTargX(mech),
-			MechTargY(mech), 0))) {
-		enemyX = MechFX(tempMech);
-		enemyY = MechFY(tempMech);
-		enemyZ = MechFZ(tempMech);
-	    }
-	if (!tempMech) {
-	    MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
-	    MechTargZ(mech) = Elevation(mech_map, mapx, mapy);
-	    enemyZ = ZSCALE * MechTargZ(mech);
-	}
+                    tempMech = getMech(MechTarget(mech));
+                    DOCHECK0(!tempMech, "Error in FireWeaponNumber routine");
+                    mapx = MechX(tempMech);
+                    mapy = MechY(tempMech);
+                    range = FaMechRange(mech, tempMech);
+                    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
 
-	if (MechType(mech) != CLASS_BSUIT) {
-	    ARCCHECK(mech, enemyX, enemyY, section, critical,
-		"That hex target is not in your weapons arc!");
-	}
+                    if (!(MechWeapons[weaptype].special & IDF)) {
+                        DOCHECK0(!LOS,
+                                "That target is not in your line of sight!");
+                    } else if (MapIsUnderground(mech_map)) {
+                        DOCHECK0(!LOS,
+                                "That target is not in your direct line of sight, and "
+                                "you cannot fire your IDF weapons underground!");
+                    }
 
-	/* Don't check LOS for missile weapons */
-	range =
-	    FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
-	    enemyY, enemyZ);
-	LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
-	if (!IsArtillery(weaptype))
-	    DOCHECK0(!LOS,
-		"That hex target is not in your line of sight!");
+                } else {
+
+                    /* default target is a hex */
+                    ishex = 1;
+                    if (!sight && !IsArtillery(weaptype) && MechLockFire(mech)) {
+
+                        /* look for enemies in the default hex cause they may have moved */
+                        if ((tempMech = find_mech_in_hex(mech, mech_map, MechTargX(mech),
+                                        MechTargY(mech), 0))) {
+
+                            enemyX = MechFX(tempMech);
+                            enemyY = MechFY(tempMech);
+                            enemyZ = MechFZ(tempMech);
+                            mapx = MechX(tempMech);
+                            mapy = MechY(tempMech);
+                        }
+
+                    }
+
+                    if (!tempMech) {
+                        mapx = MechTargX(mech);
+                        mapy = MechTargY(mech);
+                        MechTargZ(mech) = Elevation(mech_map, mapx, mapy);
+                        enemyZ = ZSCALE * MechTargZ(mech);
+                        MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
+                    }
+
+                    /* don't check LOS for missile weapons firing at hex number */
+                    range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
+                            enemyY, enemyZ);
+                    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
+
+                    if (!(IsArtillery(weaptype) || (MechWeapons[weaptype].special & IDF))) {
+                        DOCHECK0(!LOS,
+                                "That hex target is not in your line of sight!");
+                    } else if (MapIsUnderground(mech_map)) {
+                        DOCHECK0(!LOS,
+                                "That target is not in your direct line of sight, and "
+                                "you cannot fire your IDF weapons underground!");
+                    }
+                }
+
+                if (MechType(mech) != CLASS_BSUIT) {
+                    ARCCHECK(mech, enemyX, enemyY, section, critical,
+                            "Default target is not in your weapons arc!");
+                }
+            }
+            break;
+
+        case 2:
+            /* Fire at the numbered target */
+            targetID[0] = args[1][0];
+            targetID[1] = args[1][1];
+            target = FindTargetDBREFFromMapNumber(mech, targetID);
+            DOCHECK0(target == -1, "That target is not in your line of sight!");
+            tempMech = getMech(target);
+            DOCHECK0(!tempMech, "Error in FireWeaponNumber routine!");
+            enemyX = MechFX(tempMech);
+            enemyY = MechFY(tempMech);
+            enemyZ = MechFZ(tempMech);
+            mapx = MechX(tempMech);
+            mapy = MechY(tempMech);
+
+            range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
+                    enemyY, enemyZ);
+            LOS = LOS_NB(mech, tempMech, MechX(tempMech), MechY(tempMech), range);
+
+            DOCHECK0(!LOS, "That target is not in your line of sight!");
+
+            if (MechType(mech) != CLASS_BSUIT) {
+                ARCCHECK(mech, enemyX, enemyY, section, critical,
+                        "That target is not in your weapons arc!");
+            }
+            break;
+
+        case 3:
+            
+            /* Fire at the Map X Y */
+            mapx = atoi(args[1]);
+            mapy = atoi(args[2]);
+            ishex = 1;
+            DOCHECK0(mapx < 0 || mapx >= mech_map->map_width || mapy < 0 ||
+                    mapy >= mech_map->map_height, "Map coordinates out of range!");
+
+            if (!sight && !IsArtillery(weaptype))
+
+                /* look for enemies in that hex... */
+                if ((tempMech = find_mech_in_hex(mech, mech_map, MechTargX(mech),
+                                MechTargY(mech), 0))) {
+                    enemyX = MechFX(tempMech);
+                    enemyY = MechFY(tempMech);
+                    enemyZ = MechFZ(tempMech);
+                }
+
+            if (!tempMech) {
+                MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
+                MechTargZ(mech) = Elevation(mech_map, mapx, mapy);
+                enemyZ = ZSCALE * MechTargZ(mech);
+            }
+
+            if (MechType(mech) != CLASS_BSUIT) {
+                ARCCHECK(mech, enemyX, enemyY, section, critical,
+                        "That hex target is not in your weapons arc!");
+            }
+
+            /* Don't check LOS for missile weapons */
+            range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
+                        enemyY, enemyZ);
+            LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
+
+            if (!IsArtillery(weaptype))
+                DOCHECK0(!LOS,
+                        "That hex target is not in your line of sight!");
     }
+
     if (tempMech) {
-	DOCHECK0(IsArtillery(weaptype),
-	    "You can only target hexes with this kind of artillery.");
-	DOCHECK0(MechSwarmTarget(tempMech) == mech->mynum,
-	    "You are unable to use your weapons against a 'swarmer!");
-	DOCHECK0(StealthArmorActive(tempMech) &&
-	    ((MechTarget(mech) != tempMech->mynum) || Locking(mech)),
-	    "You need a stable lock to fire on that target!");
-	DOCHECK0(MechTeam(tempMech) == MechTeam(mech) &&
-		 MechNoFriendlyFire(mech),
-		 "You can't fire on a teammate with FFSafeties on!");
-	DOCHECK0(MechType(tempMech) == CLASS_MW &&
-	    MechType(mech) != CLASS_MW &&
-	    !MechPKiller(mech),
-	    "That's a living, breathing person! Switch off the safety first, if you really want to assassinate the target.");
+        DOCHECK0(IsArtillery(weaptype),
+                "You can only target hexes with this kind of artillery.");
+        DOCHECK0(MechSwarmTarget(tempMech) == mech->mynum,
+                "You are unable to use your weapons against a 'swarmer!");
+        DOCHECK0(StealthArmorActive(tempMech) &&
+                ((MechTarget(mech) != tempMech->mynum) || Locking(mech)),
+                "You need a stable lock to fire on that target!");
+        DOCHECK0(!IsCoolant(weaptype) && MechTeam(tempMech) == MechTeam(mech) &&
+                MechNoFriendlyFire(mech),
+                "You can't fire on a teammate with FFSafeties on!");
+        DOCHECK0(MechType(tempMech) == CLASS_MW &&
+                MechType(mech) != CLASS_MW &&
+                !MechPKiller(mech),
+                "That's a living, breathing person! Switch off the safety first, "
+                "if you really want to assassinate the target.");
     }
 
     FireWeapon(mech, mech_map, tempMech, LOS, weaptype, weapnum, section,
-	critical, enemyX, enemyY, mapx, mapy, range, 1000, sight, ishex);
+            critical, enemyX, enemyY, mapx, mapy, range, 1000, sight, ishex);
     return (1);
 }
 
@@ -723,6 +755,12 @@ void FireWeapon(MECH * mech,
     dbref c3Ref = -1;
     MECH *c3Mech = NULL;
     int firstCrit = 0;
+    int mode = GetPartFireMode(mech, section, critical);
+
+    /* If its a coolant gun set to heat, set the target
+     * to the mech (ie it shoots itself with coolant gun) */
+    if (IsCoolant(weapindx) && mode & HEAT_MODE)
+        target = mech;
 
     DOCHECKMA((SectionUnderwater(mech, section) &&
 	    (MechWeapons[weapindx].shortrange_water <= 0)),
@@ -1412,191 +1450,227 @@ void HitTarget(MECH * mech,
     char strMissileFakeName[30];
     int tFoundRACFake = 0;
     int tUsingTC = ((wFireMode & ON_TC) && !IsArtillery(weapindx) &&
-	!IsMissile(weapindx) &&
-	(!(MechCritStatus(mech) & TC_DESTROYED)) &&
-	((MechAim(mech) != NUM_SECTIONS) && hitMech &&
-	    (MechAimType(mech) == MechType(hitMech))));
+            !IsMissile(weapindx) &&
+            (!(MechCritStatus(mech) & TC_DESTROYED)) &&
+            ((MechAim(mech) != NUM_SECTIONS) && hitMech &&
+             (MechAimType(mech) == MechType(hitMech))));
 
     if (hitMech) {
-	/* Check to see if we're aiming at a particular location. Swarm attacks can't aim. */
-	if ((MechAim(mech) != NUM_SECTIONS) && hitMech && Immobile(hitMech)
-	    && !tIsSwarmAttack) {
-	    roll = Roll();
 
-	    if (roll == 6 || roll == 7 || roll == 8)
-		aim_hit = 1;
-	}
+        /* Check to see if we're aiming at a particular location. Swarm attacks can't aim. */
+        if ((MechAim(mech) != NUM_SECTIONS) && hitMech && Immobile(hitMech)
+                && !tIsSwarmAttack) {
+
+            roll = Roll();
+
+            if (roll == 6 || roll == 7 || roll == 8)
+                aim_hit = 1;
+        }
+        
+        /* Check to see if mech is sprinting. Break them out */
+        if (MechStatus2(hitMech) & SPRINTING ) {
+
+            MechStatus2(hitMech) &= ~SPRINTING;
+            MechLOSBroadcast(hitMech, "breaks out of its sprint as it takes damage!");
+            mech_notify(hitMech, MECHALL, "You lose your sprinting momentum as you take damage!");
+
+            if(!MoveModeChange(hitMech))
+                MECHEVENT(hitMech, EVENT_MOVEMODE, mech_movemode_event, 
+                        TURN, MODE_OFF|MODE_SPRINT|MODE_MODEFAIL);
+        }
+
+        /* Check to see if mech is changing movement modes. Break the out */
+        if (MoveModeLock(hitMech) && 
+                !(MoveModeData(hitMech) & (MODE_EVADE|MODE_DODGE|MODE_MODEFAIL|MODE_OFF))) {
+
+            StopMoveMode(hitMech);
+            mech_notify(hitMech, MECHALL, "Your movement mode changes are cancelled as "
+                    "you take damage!");
+        }
+
+        /* Check if mech is hidden. Break them out. */
+        if (MechCritStatus(hitMech) & HIDDEN) {
+
+            mech_notify(hitMech, MECHALL, "Your cover is ruined as you take damage!");
+            MechLOSBroadcast(hitMech, "loses it's cover as it takes damage!");
+            MechCritStatus(hitMech) &= ~HIDDEN;
+        }
+
     }
 
-/* Check to see if mech is sprinting. Break them out */
-   if (MechStatus2(hitMech) & SPRINTING ) {
-	MechStatus2(hitMech) &= ~SPRINTING;
-	MechLOSBroadcast(hitMech, "breaks out of its sprint as it takes damage!");
-   	mech_notify(hitMech, MECHALL, "You lose your sprinting momentum as you take damage!");
-	if(!MoveModeChange(hitMech))
-		MECHEVENT(hitMech, EVENT_MOVEMODE, mech_movemode_event, TURN, MODE_OFF|MODE_SPRINT|MODE_MODEFAIL);
-  }
-
-/* Check to see if mech is changing movement modes. Break the out */
-   if (MoveModeLock(hitMech) && !(MoveModeData(hitMech) & (MODE_EVADE|MODE_DODGE|MODE_MODEFAIL|MODE_OFF))) {
-	StopMoveMode(hitMech);
-	mech_notify(hitMech, MECHALL, "Your movement mode changes are cancelled as you take damage!");
-   }
-
-/* Check if mech is hidden. Break them out. */
-  if (MechCritStatus(hitMech) & HIDDEN) {
-	mech_notify(hitMech, MECHALL, "Your cover is ruined as you take damage!");
-	MechLOSBroadcast(hitMech, "loses it's cover as it takes damage!");
-	MechCritStatus(hitMech) &= ~HIDDEN;
-  }
-
-    if (!IsMissile(weapindx))
-	wWeapDamage =
-	    determineDamageFromHit(mech, wSection, wCritSlot, hitMech,
-	    hitX, hitY, weapindx, wGattlingShots, wBaseWeapDamage,
-	    wAmmoMode, type, modifier, 0);
+    if (!IsMissile(weapindx)) {
+        wWeapDamage = determineDamageFromHit(mech, wSection, wCritSlot, hitMech,
+                hitX, hitY, weapindx, wGattlingShots, wBaseWeapDamage,
+                wAmmoMode, type, modifier, 0);
+    }
 
     /*
-       * Ok, if we're not an artillery weapon or missile and we're not in
-       * LBX, RAC, Ultra or RFAC mode...
+     * Ok, if we're not an artillery weapon or missile and we're not in
+     * LBX, RAC, Ultra or RFAC mode...
      */
     if (!IsArtillery(weapindx) && !IsMissile(weapindx) && !tIsUltra &&
-	!tIsLBX & !tIsRAC) {
-	if (hitMech) {
-	    if ((MechWeapons[weapindx].special & CHEAT) &&
-		(GetPartFireMode(mech, wSection, wCritSlot) & HEAT_MODE)) {
-		mech_notify(hitMech, MECHALL,
-		    "%cy%chThe flaming plasma sprays all over you!%cn");
-		mech_notify(mech, MECHALL,
-		    "%cgYou cover your target in flaming plasma!%cn");
-		MechWeapHeat(hitMech) += (float) wBaseWeapDamage;
-		return;
-	    }
+            !tIsLBX && !tIsRAC) {
 
-	    if (aim_hit)
-		hitloc =
-		    FindAimHitLoc(mech, hitMech, &isrear, &iscritical);
-	    else if (tUsingTC)
-		hitloc = FindTCHitLoc(mech, hitMech, &isrear, &iscritical);
-	    else
-		hitloc =
-		    FindTargetHitLoc(mech, hitMech, &isrear, &iscritical);
+        if (hitMech) {
 
-	    DamageMech(hitMech, mech, LOS, GunPilot(mech), hitloc, isrear,
-		iscritical, pc_to_dam_conversion(hitMech, weapindx,
-		    wWeapDamage),
-		0, weapindx, bth, weapindx, wAmmoMode, tIsSwarmAttack);
-	} else {
-	    hex_hit(mech, hitX, hitY, weapindx, wAmmoMode, wWeapDamage, 1);
-	}
+            /* Flamers - if in heat mode don't do damage */
+            if ((IsFlamer(weapindx)) && (wFireMode & HEAT_MODE)) {
 
-	return;
+                mech_notify(hitMech, MECHALL,
+                        "%cy%chThe flaming plasma sprays all over you!%cn");
+                mech_notify(mech, MECHALL,
+                        "%cgYou cover your target in flaming plasma!%cn");
+                MechWeapHeat(hitMech) += (float) wBaseWeapDamage;
+                return;
+                
+            } else if ((IsCoolant(weapindx)) && (MechType(hitMech) != CLASS_MW)) {
+
+                /* Its a Coolant Gun */
+                /* So now we figure out if we want to hit our unit with it
+                 * or a target */
+
+                if (wFireMode & HEAT_MODE) {
+
+                    /* Hit our own unit with the coolant gun */
+                    mech_notify(mech, MECHALL, "%ccCoolant washes over your systems!!%c");
+                    MechWeapHeat(mech) -= (float) wBaseWeapDamage;
+
+                } else {
+
+                    /* Hit the target with the coolant gun */
+                    mech_notify(mech, MECHALL, "%ccYou hit with the stream of coolant!!%c");
+                    mech_notify(hitMech, MECHALL, "%ccCoolant washes over your systems!!%c");
+                    MechWeapHeat(hitMech) -= (float) wBaseWeapDamage;
+
+                }
+
+                /* Never does damage so return */
+                return;
+
+            }
+
+            if (aim_hit)
+                hitloc = FindAimHitLoc(mech, hitMech, &isrear, &iscritical);
+            else if (tUsingTC)
+                hitloc = FindTCHitLoc(mech, hitMech, &isrear, &iscritical);
+            else
+                hitloc = FindTargetHitLoc(mech, hitMech, &isrear, &iscritical);
+
+            DamageMech(hitMech, mech, LOS, GunPilot(mech), hitloc, isrear,
+                    iscritical, pc_to_dam_conversion(hitMech, weapindx, wWeapDamage),
+                    0, weapindx, bth, weapindx, wAmmoMode, tIsSwarmAttack);
+
+        } else {
+            hex_hit(mech, hitX, hitY, weapindx, wAmmoMode, wWeapDamage, 1);
+        }
+
+        return;
     }
 
     /*
-       * Since we're here, we're either
-       *      - A missile weapon
-       *      - An artillery weapon
-       *      - An AC in Ultra, RF or LBX mode
-       *      - A RAC in RAC mode
+     * Since we're here, we're either
+     *      - A missile weapon
+     *      - An artillery weapon
+     *      - An AC in Ultra, RF or LBX mode
+     *      - A RAC in RAC mode
      */
 
     /*
-       * Do special case for RACs since they don't have an entry in the MissileHitTable.
-       *
-       * We're gonna fake it by pretending we're either an SRM-2, SRM-4 or SRM-6, depending
-       * upon the mode
+     * Do special case for RACs since they don't have an entry in the MissileHitTable.
+     *
+     * We're gonna fake it by pretending we're either an SRM-2, SRM-4 or SRM-6, depending
+     * upon the mode
      */
     if (tIsRAC) {
-	if (GetPartFireMode(mech, wSection, wCritSlot) & RAC_TWOSHOT_MODE)
-	    strcpy(strMissileFakeName, "IS.SRM-2");
-	else if (GetPartFireMode(mech, wSection,
-		wCritSlot) & RAC_FOURSHOT_MODE)
-	    strcpy(strMissileFakeName, "IS.SRM-4");
-	else if (GetPartFireMode(mech, wSection,
-		wCritSlot) & RAC_SIXSHOT_MODE)
-	    strcpy(strMissileFakeName, "IS.SRM-6");
-	for (loop = 0; MissileHitTable[loop].key != -1; loop++) {
-	    if (!strcmp(MissileHitTable[loop].name, strMissileFakeName)) {
-		tFoundRACFake = 1;
-		break;
-	    }
-	}
+        if (GetPartFireMode(mech, wSection, wCritSlot) & RAC_TWOSHOT_MODE)
+            strcpy(strMissileFakeName, "IS.SRM-2");
+        else if (GetPartFireMode(mech, wSection,
+                    wCritSlot) & RAC_FOURSHOT_MODE)
+            strcpy(strMissileFakeName, "IS.SRM-4");
+        else if (GetPartFireMode(mech, wSection,
+                    wCritSlot) & RAC_SIXSHOT_MODE)
+            strcpy(strMissileFakeName, "IS.SRM-6");
+        for (loop = 0; MissileHitTable[loop].key != -1; loop++) {
+            if (!strcmp(MissileHitTable[loop].name, strMissileFakeName)) {
+                tFoundRACFake = 1;
+                break;
+            }
+        }
 
-	if (!tFoundRACFake)
-	    return;
+        if (!tFoundRACFake)
+            return;
     } else {
-	for (loop = 0; MissileHitTable[loop].key != -1; loop++)
-	    if (MissileHitTable[loop].key == weapindx)
-		break;
-	if (!(MissileHitTable[loop].key == weapindx))
-	    return;
+        for (loop = 0; MissileHitTable[loop].key != -1; loop++)
+            if (MissileHitTable[loop].key == weapindx)
+                break;
+        if (!(MissileHitTable[loop].key == weapindx))
+            return;
     }
 
     if (IsMissile(weapindx)) {
-	if (tIsSwarm && hitMech)	/* No swarms on hex hits */
-	    SwarmHitTarget(mech, weapindx, wSection, wCritSlot, hitMech,
-		LOS, bth, reallyhit ? bth + 1 : bth - 1,
-		(type ==
-		    CRAZY_MISSILES) ? MissileHitTable[loop].
-		num_missiles[10] * modifier /
-		100 : MissileHitTable[loop].num_missiles[10],
-		(GetPartAmmoMode(mech, wSection, wCritSlot) & SWARM1_MODE),
-		tIsSwarmAttack);
-	else
-	    MissileHitTarget(mech, weapindx, wSection, wCritSlot, hitMech,
-		hitX, hitY, LOS ? 1 : 0, bth,
-		reallyhit ? bth + 1 : bth - 1,
-		(type ==
-		    CRAZY_MISSILES) ? MissileHitTable[loop].
-		num_missiles[10] * modifier /
-		100 : MissileHitTable[loop].num_missiles[10],
-		tIsSwarmAttack);
+        if (tIsSwarm && hitMech)	/* No swarms on hex hits */
+            SwarmHitTarget(mech, weapindx, wSection, wCritSlot, hitMech,
+                    LOS, bth, reallyhit ? bth + 1 : bth - 1,
+                    (type ==
+                     CRAZY_MISSILES) ? MissileHitTable[loop].
+                    num_missiles[10] * modifier /
+                    100 : MissileHitTable[loop].num_missiles[10],
+                    (GetPartAmmoMode(mech, wSection, wCritSlot) & SWARM1_MODE),
+                    tIsSwarmAttack);
+        else
+            MissileHitTarget(mech, weapindx, wSection, wCritSlot, hitMech,
+                    hitX, hitY, LOS ? 1 : 0, bth,
+                    reallyhit ? bth + 1 : bth - 1,
+                    (type ==
+                     CRAZY_MISSILES) ? MissileHitTable[loop].
+                    num_missiles[10] * modifier /
+                    100 : MissileHitTable[loop].num_missiles[10],
+                    tIsSwarmAttack);
 
-	return;
+        return;
     }
 
     num_missiles_hit =
-	MissileHitTable[loop].num_missiles[MissileHitIndex(mech, hitMech,
-	    weapindx, wSection, wCritSlot)];
+        MissileHitTable[loop].num_missiles[MissileHitIndex(mech, hitMech,
+                weapindx, wSection, wCritSlot)];
     /*
-       * Check for non-missile, multiple hit weapons, like LBXs, RACs, RFACs and Ultras
+     * Check for non-missile, multiple hit weapons, like LBXs, RACs, RFACs and Ultras
      */
     if (LOS)
-	mech_notify(mech, MECHALL,
-	    tprintf("%%cgYou hit with %d %s%s!%%c",
-		num_missiles_hit, (tIsUltra ||
-		    tIsRAC ? "slug" : tIsLBX ? "pellet" : "missile"),
-		(num_missiles_hit > 1 ? "s" : "")));
+        mech_notify(mech, MECHALL,
+                tprintf("%%cgYou hit with %d %s%s!%%c",
+                    num_missiles_hit, (tIsUltra ||
+                        tIsRAC ? "slug" : tIsLBX ? "pellet" : "missile"),
+                    (num_missiles_hit > 1 ? "s" : "")));
 
     if (tIsLBX)
-	Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,
-	    weapindx, wFireMode, wAmmoMode, num_missiles_hit,
-	    tIsLBX ? 1 : wWeapDamage, Clustersize(weapindx), LOS, bth,
-	    tIsSwarmAttack);
+        Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,
+                weapindx, wFireMode, wAmmoMode, num_missiles_hit,
+                tIsLBX ? 1 : wWeapDamage, Clustersize(weapindx), LOS, bth,
+                tIsSwarmAttack);
     else {
-	while (num_missiles_hit) {
-	    if (hitMech) {
-		if (aim_hit)
-		    hitloc =
-			FindAimHitLoc(mech, hitMech, &isrear, &iscritical);
-		if (tUsingTC)
-		    hitloc =
-			FindTCHitLoc(mech, hitMech, &isrear, &iscritical);
-		else
-		    hitloc =
-			FindTargetHitLoc(mech, hitMech, &isrear,
-			&iscritical);
-		DamageMech(hitMech, mech, LOS, GunPilot(mech), hitloc,
-		    isrear, iscritical, pc_to_dam_conversion(hitMech,
-			weapindx, wWeapDamage), 0, weapindx, bth, weapindx,
-		    wAmmoMode, tIsSwarmAttack);
-	    } else
-		hex_hit(mech, hitX, hitY, weapindx, wAmmoMode, wWeapDamage,
-		    1);
+        while (num_missiles_hit) {
+            if (hitMech) {
+                if (aim_hit)
+                    hitloc =
+                        FindAimHitLoc(mech, hitMech, &isrear, &iscritical);
+                if (tUsingTC)
+                    hitloc =
+                        FindTCHitLoc(mech, hitMech, &isrear, &iscritical);
+                else
+                    hitloc =
+                        FindTargetHitLoc(mech, hitMech, &isrear,
+                                &iscritical);
+                DamageMech(hitMech, mech, LOS, GunPilot(mech), hitloc,
+                        isrear, iscritical, pc_to_dam_conversion(hitMech,
+                            weapindx, wWeapDamage), 0, weapindx, bth, weapindx,
+                        wAmmoMode, tIsSwarmAttack);
+            } else
+                hex_hit(mech, hitX, hitY, weapindx, wAmmoMode, wWeapDamage,
+                        1);
 
-	    num_missiles_hit--;
-	}
+            num_missiles_hit--;
+        }
     }
 
 }
