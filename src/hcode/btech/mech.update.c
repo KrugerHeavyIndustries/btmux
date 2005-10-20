@@ -858,7 +858,7 @@ void UpdateSpeed(MECH * mech)
 	    else
 		tempspeed = tempspeed * 3.0 / 4.0;
 	}
-#ifdef BT_MOVEMETN_MODES
+#ifdef BT_MOVEMENT_MODES
 	if ((Sprinting(mech) || Evading(mech)) && !(HasBoolAdvantage(MechPilot(mech), "speed_demon") || HasBoolAdvantage(MechPilot(mech), "maneuvering_ace")))
 	    tempspeed = (tempspeed * 2) / 3;
 #endif

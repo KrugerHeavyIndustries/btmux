@@ -106,6 +106,8 @@ btonline-btechmux 0.5:
 	* Added some rounding for the Trigger mine distance calcs
 	  because of ranges being generated like 1.000072 messing
 	  with it. (Dany)
+	* Movement mode contact flags now appear as intended. (Power_Shaper)
+	* Maneuvering ace now gets the proper turning bonus. (John FitzSimons)
 
 btonline-btechmux 0.4:
 	- Changes
