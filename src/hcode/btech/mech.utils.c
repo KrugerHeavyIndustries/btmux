@@ -334,6 +334,17 @@ void CheckEdgeOfMap(MECH * mech)
 	}
     }
 }
+int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1)
+{
+float hyp, opp, deg;
+
+hyp = FindRange(x0, y0, z0, x1, y1, z1);
+if (hyp <= 0.0)
+    return 0;
+opp = FindRange(0, 0, 0, 0, 0, fabsf(z1 - z0));
+deg = asin(opp / hyp) * (180 / PI);
+return ceilf(deg);
+}
 
 int FindBearing(float x0, float y0, float x1, float y1)
 {

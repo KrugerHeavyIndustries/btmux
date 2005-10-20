@@ -139,6 +139,7 @@ ECMD(mech_inferno);
 ECMD(mech_swarm);
 ECMD(mech_swarm1);
 ECMD(mech_dig);
+ECMD(mech_vector);
 
 ECMD(f_map_loadmap);
 
@@ -395,6 +396,7 @@ CommandsStruct mechcommands[] = {
     {0, "TACTICAL [C | T | L] [<BEARING> <RANGE> | <TARGET-ID>]",
 	    "Shows the tactical map at the mech's location / at bearing and range / around chosen target",
 	mech_tacmap},
+    {0, "VECTOR [<X Y> <X Y>]", "Same format as range.",mech_vector},
 
     /* Special */
     HEADER("Special"),
