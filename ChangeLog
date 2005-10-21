@@ -1,4 +1,4 @@
-btonline-btechmux 0.5:
+btonline-btechmux 0.6:
 	- Changes
 	* Replaced the muxevent event queue's with evtimer callbacks.
 	  (Martin Murray)
