@@ -1175,8 +1175,8 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 	sprintf(mapname, "%s", map->mapname);
     };
 
-    sprintf(result, "%d,%d,%d,%d,%s,%s,-1", sx, sy, ex - 1, ey - 1,
-	mapid, mapname);
+    sprintf(result, "%d,%d,%d,%d,%s,%s,-1,%d,%d", sx, sy, ex - 1, ey - 1,
+	mapid, mapname, map->map_width, map->map_height);
     hudinfo_notify(d, msgclass, "S", result);
 
     for (y = sy; y < ey; y++) {

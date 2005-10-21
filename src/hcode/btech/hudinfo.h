@@ -6,7 +6,7 @@
  * HUDINFO support.
  */
 
-#define HUD_PROTO_VERSION "0.7"
+#define HUD_PROTO_VERSION "0.8"
 
 static void hud_generalstatus(DESC *, MECH *, char *, char *);
 static void hud_weapons(DESC *, MECH *, char *, char *);
