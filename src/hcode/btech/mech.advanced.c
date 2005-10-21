@@ -1023,7 +1023,7 @@ static void mech_explode_event(MUXEVENT * e)
             MechZ(mech) += 6;
             doing_explode = 0;
 
-            if (mudconf.btech_engine > 1)
+            if (mudconf.btech_explode_reactor > 1)
                 dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 15);
             else
                 dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 10);
@@ -1037,8 +1037,8 @@ static void mech_explode_event(MUXEVENT * e)
                         "%ch%crYou bear full brunt of the blast!%cn",
                         "is hit badly by the blast!",
                         "%ch%cyYou receive some damage from the blast!%cn",
-                        "is hit by the blast!", mudconf.btech_engine > 1,
-                        mudconf.btech_engine > 1 ? 5 : 3, 5, 1, 2);
+                        "is hit by the blast!", mudconf.btech_explode_reactor > 1,
+                        mudconf.btech_explode_reactor > 1 ? 5 : 3, 5, 1, 2);
             }
 
             MechZ(mech) = z;
@@ -1093,7 +1093,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	time = time / 2;
 	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
     } else {
-	DOCHECK(!mudconf.btech_engine,
+	DOCHECK(!mudconf.btech_explode_reactor,
 	    "You can't bring yourself to do it!");
 	DOCHECK(MechType(mech) != CLASS_MECH,
 	    "Only mechs can do the 'big boom' effect.");

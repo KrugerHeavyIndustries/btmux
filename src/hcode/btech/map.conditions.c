@@ -155,7 +155,7 @@ void check_stackpole(MECH * wounded, MECH * attacker)
 	    "%ch%crYou bear full brunt of the blast!%cn",
 	    "is hit badly by the blast!",
 	    "%ch%cyYou receive some damage from the blast!%cn",
-	    "is hit by the blast!", mudconf.btech_engine > 1, 3, 5, 1, 2);
+	    "is hit by the blast!", mudconf.btech_explode_reactor > 1, 3, 5, 1, 2);
 	MechZ(wounded) = z;
 	headhitmwdamage(wounded, 4);
     }

@@ -72,6 +72,11 @@ btonline-btechmux 0.5:
 	  auto_sensor_event. (Dany)
 	* Added command to AI's interface called 'EVENTSTATS', lists
 	  the various events running on that AI. (Dany)
+	* Changed the 'btech_engine' config directive to
+	  'btech_explode_reactor'. (Greg Taylor)
+	* There is now a config directive, 'btech_seismic_see_stopped',
+	  that determines whether seismic picks up stopped units.
+	  Default to off (0). (Power_Shaper)
 
 	- Merge
 	* Added Exile's mine trigger stuff which seperates the
