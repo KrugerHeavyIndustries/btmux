@@ -76,30 +76,47 @@ CSEEFUNC(electrom_csee, !(map->sensorflags & (1 << SENSOR_EM)) &&
 /* Seismic sees, as long as there is a target, and it isn't jumping or
    flying, or hovering, or otherwise with little or no contact to the
    ground. Period. */
-CSEEFUNC(seismic_csee, !(map->sensorflags & (1 << SENSOR_SE)) &&
-        t && !Jumping(m) &&
-	((MechMove(m) != MOVE_VTOL) || ((MechMove(m) == MOVE_VTOL) &&
-		Landed(m))) && ((MechMove(m) != MOVE_FLY) ||
-	    ((MechMove(m) == MOVE_FLY) && Landed(m))) && Started(t) &&
-	!Jumping(t) && (MechType(t) != CLASS_BSUIT) &&
-	(MechType(t) != CLASS_MW) && (MechMove(t) != MOVE_HOVER) &&
-	((MechMove(t) != MOVE_VTOL) || ((MechMove(t) == MOVE_VTOL) &&
-		Landed(t))) && ((MechMove(t) != MOVE_FLY) ||
-	    ((MechMove(t) == MOVE_FLY) && Landed(t))) &&
-	(MechMove(t) != MOVE_NONE));
+CSEEFUNC(seismic_csee, 
+    !(map->sensorflags & (1 << SENSOR_SE)) &&
+    t && 
+    (!Jumping(m) && mudconf.btech_seismic_see_stopped ? 1 : 
+        (abs(MechSpeed(t)) > MP1) &&
+    ((MechMove(m) != MOVE_VTOL) || ((MechMove(m) == MOVE_VTOL) && Landed(m))) && 
+    ((MechMove(m) != MOVE_FLY) || ((MechMove(m) == MOVE_FLY) && Landed(m))) && 
+    Started(t) &&
+    !Jumping(t) && 
+    (MechType(t) != CLASS_BSUIT) &&
+    (MechType(t) != CLASS_MW) && 
+    (MechMove(t) != MOVE_HOVER) &&
+    ((MechMove(t) != MOVE_VTOL) || ((MechMove(t) == MOVE_VTOL) &&
+        Landed(t))) && ((MechMove(t) != MOVE_FLY) ||
+        ((MechMove(t) == MOVE_FLY) && Landed(t)))) &&
+    (MechMove(t) != MOVE_NONE));
 
 /* Radar sees, as long as the target is flying and not near disruptions. */
-CSEEFUNC(radar_csee, !(map->sensorflags & (1 << SENSOR_RA)) &&
-    t && MechZ(t) > 2 && !(f & MECHLOSFLAG_BLOCK) &&
+CSEEFUNC(radar_csee, 
+    !(map->sensorflags & (1 << SENSOR_RA)) &&
+    t && 
+    MechZ(t) > 2 && 
+    !(f & MECHLOSFLAG_BLOCK) &&
     (MechZ(t) >= 10 || (r < (MechZ(t) * MechZ(t)))) &&
     MechsElevation(t) > 1);
 
-CSEEFUNC(bap_csee, !(map->sensorflags & (1 << SENSOR_BAP)) &&
-    !AnyECMDisturbed(m) && t && !AngelECMProtected(t) &&
-    !StealthArmorActive(t) && !NullSigSysActive(t));
+/* BAP is disrupted by ECM and can't pick up units with nullsig active. */
+CSEEFUNC(bap_csee, 
+    !(map->sensorflags & (1 << SENSOR_BAP)) &&
+    !AnyECMDisturbed(m) && 
+    t && 
+    !AngelECMProtected(t) &&
+    !StealthArmorActive(t) && 
+    !NullSigSysActive(t));
 
-CSEEFUNC(blood_csee, !(map->sensorflags & (1 << SENSOR_BHAP)) &&
-    !AnyECMDisturbed(m) && t && !AngelECMProtected(t));
+/* Bloodhound is only disrupted by ECM. */
+CSEEFUNC(blood_csee, 
+    !(map->sensorflags & (1 << SENSOR_BHAP)) &&
+    !AnyECMDisturbed(m) && 
+    t && 
+    !AngelECMProtected(t));
 
 /* Basically, mechs w/o heat are +2 tohit, mechs in utter overheat are
    -2 tohit */
@@ -122,30 +139,43 @@ CSEEFUNC(blood_csee, !(map->sensorflags & (1 << SENSOR_BHAP)) &&
 			      MechRTerrain(mech) == HEAVY_FOREST ? 2 : 0))
 
 /* To-hit functions */
+/* Visual - Non-Day, Interrupting woods, partial LOS, and hulldown. */
 TOHITFUNC(vislight_tohit, ((!t ||
 	    !IsLit(t)) ? (2 - l) : 0) + nwood_count(t,
 	f) + ((f & MECHLOSFLAG_PARTIAL) ? 3 +
 	(IsHulldown(t) ? 2 : 0) : 0));
+
+/* Liteamp - Interrupting woods, partial LOS, hulldown. */
 TOHITFUNC(liteamp_tohit, ((2 - l) / 2) + ((nwood_count(t,
 		f) * 3) / 2) + ((f & MECHLOSFLAG_PARTIAL) ? 3 +
 	(IsHulldown(t) ? 2 : 0) : 0));
+
+/* Infrared - Interrupting Woods, partial LOS, Hulldown, heat. */
 TOHITFUNC(infrared_tohit, ((nwood_count(t,
 		f) * 4) / 3) + ((f & MECHLOSFLAG_PARTIAL) ? 3 +
 	(IsHulldown(t) ? 2 : 0) : 0) + HEAT_MODIFIER(MechHeat(t) + 7));
+
+/* Emag - Interrupting woods, partial LOS, hulldwon, weight/movement,
+ * recently fired. */
 TOHITFUNC(electrom_tohit, ((nwood_count(t,
 		f) * 2) / 3) + ((f & MECHLOSFLAG_PARTIAL) ? 3 +
 	(IsHulldown(t) ? 2 : 0) : 0) +
     WEIGHT_MODIFIER(MechTons(t)) + MOVE_MODIFIER(MechSpeed(t)) +
     (MechStatus(t) & FIRED ? -1 : 0) + MNumber(m, 0, 1));
 
-/* Seismic's hurt by enemy staying in place / light mechs */
+/* Seismic - Partial LOS, hulldown, weight, speed */
 TOHITFUNC(seismic_tohit,
     2 + ((f & MECHLOSFLAG_PARTIAL) ? 3 + (IsHulldown(t) ? 2 : 0) : 0) +
     WEIGHT_MODIFIER(MechRealTons(t)) - MOVE_MODIFIER(MechSpeed(t)) +
     MNumber(m, 0, 1));
-TOHITFUNC(bap_tohit, MNumber(m, 0, 2));	/* Very evil */
-TOHITFUNC(blood_tohit, MNumber(m, 0, 2));	/* Very evil */
 
+/* BAP - Flat BTH? */
+TOHITFUNC(bap_tohit, MNumber(m, 0, 2));	   /* Very evil */
+
+/* BloodHound - Flat BTH? */
+TOHITFUNC(blood_tohit, MNumber(m, 0, 2));  /* Very evil */
+
+/* Radar - Only 10z and above, partial LOS, interrupting woods. */
 TOHITFUNC(radar_tohit, ((MechZ(t) >= 10 ||
 	    FlyingT(t)) ? -3 : 0) + ((f & MECHLOSFLAG_PARTIAL) ? 2 +
 	(IsHulldown(t) ? 2 : 0) : 0) + nwood_count(t, f));

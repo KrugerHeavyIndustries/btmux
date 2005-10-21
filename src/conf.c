@@ -149,6 +149,7 @@ void cf_init(void)
     mudconf.btech_stacking = 2;
     mudconf.btech_stackdamage = 100;
     mudconf.btech_mw_losmap = 1;
+    mudconf.btech_seismic_see_stopped = 0;
 #ifdef EXILE_FUNCS_SUPPORT
     mudconf.btech_usedmechstore = 0;
     mudconf.btech_ooc_comsys = 0;
@@ -1242,6 +1243,8 @@ CONF conftable[] = {
     {(char *)"hudinfo_enabled",
         cf_int,		CA_GOD,		&mudconf.hudinfo_enabled, 0},
 #endif
+    {(char *)"btech_seismic_see_stopped",
+        cf_int,         CA_GOD,         &mudconf.btech_seismic_see_stopped, 0},
     {(char *)"btech_limitedrepairs",
         cf_int,         CA_GOD,         &mudconf.btech_limitedrepairs,  0},
     {(char *)"btech_stackpole",

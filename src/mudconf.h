@@ -144,6 +144,7 @@ struct confdata {
     int btech_stacking;		/* Whether to check for stacking, and how to penalize */
     int btech_stackdamage;	/* Damage modifier for btech_stacking=2 */
     int btech_mw_losmap;	/* Whether MechWarriors always get a losmap */
+    int btech_seismic_see_stopped; /* Whether you see stopped mechs on seismic */
 #ifdef EXILE_FUNCS_SUPPORT
     int btech_usedmechstore;	/* DBref for the dead mechs to spool into upon IC death */
     int btech_ooc_comsys;	/* Enable bypassing of CA_NO_IC command checks for IC location blocking */
