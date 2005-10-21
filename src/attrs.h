@@ -166,7 +166,7 @@
 
 #define A_MECHSKILLS    214	/* Pilot's skills in using a mech */
 #define A_XTYPE         215	/* Hardcode type */
-#define A_TACHEIGHT     216	/* Tactical height */
+#define A_TACSIZE       216	/* Tactical Size (H & W) */
 #define A_LRSHEIGHT     217	/* LRS height */
 #define A_CONTACTOPT    218	/* Contact options */
 #define A_MECHNAME      219	/* Mech name */

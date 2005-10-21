@@ -124,11 +124,11 @@ void map_view(dbref player, void *data, char *buffer)
 	        return;
     }
 
-    /* Get the Tacsize attribute 'even tho it says tacheight' from
+    /* Get the Tacsize attribute from
      * the player, if doesn't exist set the height and width to
      * default params. If it does exist, check the values and
      * make sure they are legit. */
-    str = silly_atr_get(player, A_TACHEIGHT);
+    str = silly_atr_get(player, A_TACSIZE);
     if (!*str) {
 	    displayHeight = MAP_DISPLAY_HEIGHT;
         displayWidth = MAP_DISPLAY_WIDTH;

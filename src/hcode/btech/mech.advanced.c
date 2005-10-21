@@ -989,50 +989,61 @@ static void mech_explode_event(MUXEVENT * e)
     int dam;
 
     if (Destroyed(mech) || !Started(mech))
-	return;
+        return;
+
     if (extra > 256 && !FindDestructiveAmmo(mech, &i, &j))
-	return;
+        return;
+
     if ((--extra) % 256) {
-	mech_notify(mech, MECHALL,
-	    tprintf("Self-destruction in %d second%s..", extra % 256,
-		extra > 1 ? "s" : ""));
-	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, extra);
+
+        mech_notify(mech, MECHALL,
+                tprintf("Self-destruction in %d second%s..", extra % 256,
+                    extra > 1 ? "s" : ""));
+        MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, extra);
+
     } else {
-	SendDebug(tprintf("#%d explodes.", mech->mynum));
-	if (extra >= 256) {
-	    SendDebug(tprintf("#%d explodes [ammo]", mech->mynum));
-	    mech_notify(mech, MECHALL, "All your ammo explodes!");
-	    while ((damage = FindDestructiveAmmo(mech, &i, &j)))
-		ammo_explosion(mech, mech, i, j, damage);
-	} else {
-	    SendDebug(tprintf("#%d explodes [reactor]", mech->mynum));
-	    MechLOSBroadcast(mech, "suddenly explodes!");
-	    doing_explode = 1;
-	    mech_notify(mech, MECHALL,
-		"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
-	    z = MechZ(mech);
-	    map = FindObjectsData(mech->mapindex);
-	    DestroySection(mech, mech, -1, LTORSO);
-	    DestroySection(mech, mech, -1, RTORSO);
-	    DestroySection(mech, mech, -1, CTORSO);
-	    DestroySection(mech, mech, -1, HEAD);
-	    MechZ(mech) += 6;
-	    doing_explode = 0;
-	    if (mudconf.btech_engine > 1)
-		dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 15);
-	    else
-		dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 10);
-	    blast_hit_hexesf(map, dam, 1, MAX(MechTons(mech) / 10,
-		    MechEngineSize(mech) / 25), MechFX(mech), MechFY(mech),
-		MechFX(mech), MechFY(mech),
-		"%ch%crYou bear full brunt of the blast!%cn",
-		"is hit badly by the blast!",
-		"%ch%cyYou receive some damage from the blast!%cn",
-		"is hit by the blast!", mudconf.btech_engine > 1,
-		mudconf.btech_engine > 1 ? 5 : 3, 5, 1, 2);
-	    MechZ(mech) = z;
-	    headhitmwdamage(mech, 4);
-	}
+        
+        SendDebug(tprintf("#%d explodes.", mech->mynum));
+        if (extra >= 256) {
+            SendDebug(tprintf("#%d explodes [ammo]", mech->mynum));
+            mech_notify(mech, MECHALL, "All your ammo explodes!");
+            while ((damage = FindDestructiveAmmo(mech, &i, &j)))
+                ammo_explosion(mech, mech, i, j, damage);
+        } else {
+            SendDebug(tprintf("#%d explodes [reactor]", mech->mynum));
+            MechLOSBroadcast(mech, "suddenly explodes!");
+            doing_explode = 1;
+            mech_notify(mech, MECHALL,
+                    "Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
+            z = MechZ(mech);
+            DestroySection(mech, mech, -1, LTORSO);
+            DestroySection(mech, mech, -1, RTORSO);
+            DestroySection(mech, mech, -1, CTORSO);
+            DestroySection(mech, mech, -1, HEAD);
+            MechZ(mech) += 6;
+            doing_explode = 0;
+
+            if (mudconf.btech_engine > 1)
+                dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 15);
+            else
+                dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 10);
+
+            /* If the guy is on a map have it hit the hexes around it */
+            map = FindObjectsData(mech->mapindex);
+            if (map) {
+                blast_hit_hexesf(map, dam, 1, MAX(MechTons(mech) / 10,
+                            MechEngineSize(mech) / 25), MechFX(mech), MechFY(mech),
+                        MechFX(mech), MechFY(mech),
+                        "%ch%crYou bear full brunt of the blast!%cn",
+                        "is hit badly by the blast!",
+                        "%ch%cyYou receive some damage from the blast!%cn",
+                        "is hit by the blast!", mudconf.btech_engine > 1,
+                        mudconf.btech_engine > 1 ? 5 : 3, 5, 1, 2);
+            }
+
+            MechZ(mech) = z;
+            headhitmwdamage(mech, 4);
+        }
     }
 }
 

@@ -84,6 +84,7 @@ btonline-btechmux 0.5:
 	  the units will still slow down in water. (Dany)
 	* Added Coolant Guns. (Dany)
 	* Added 'vector' command. (Power_Shaper)
+	* Changed tacheight to tacsize. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)
@@ -110,6 +111,8 @@ btonline-btechmux 0.5:
 	  with it. (Dany)
 	* Movement mode contact flags now appear as intended. (Power_Shaper)
 	* Maneuvering ace now gets the proper turning bonus. (John FitzSimons)
+	* Patch to keep exploding units that aren't on maps
+	  from crashing the MUX. (Dany)
 
 btonline-btechmux 0.4:
 	- Changes

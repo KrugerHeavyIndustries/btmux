@@ -253,7 +253,7 @@ ATTR attr[] = {
 	NULL},
     {"Startup", A_STARTUP, AF_ODARK, NULL},
     {"Succ", A_SUCC, AF_ODARK | AF_NOPROG, NULL},
-    {"Tacheight", A_TACHEIGHT, AF_ODARK, NULL},
+    {"Tacsize", A_TACSIZE, AF_ODARK, NULL},
     {"TeloutLock", A_LTELOUT, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
 	NULL},
     {"Tfail", A_TFAIL, AF_ODARK | AF_NOPROG, NULL},

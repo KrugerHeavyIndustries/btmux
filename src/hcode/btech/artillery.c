@@ -160,6 +160,10 @@ void blast_hit_hexf(MAP * map, int dam, int singlehitsize, int heatdam,
     int ground_zero;
     short tx, ty;
 
+    /* Not on a map so just return */
+    if (!map)
+        return;
+
     RealCoordToMapCoord(&tx, &ty, fx, fy);
     if (tx < 0 || ty < 0 || tx >= map->map_width || ty >= map->map_height)
 	return;
