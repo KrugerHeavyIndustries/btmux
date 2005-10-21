@@ -108,7 +108,7 @@ void cf_init(void)
     mudconf.btech_explode_ammo = 1;    
     mudconf.btech_explode_stop = 0;   
     mudconf.btech_stackpole = 1;
-    mudconf.phys_use_pskill = 1;
+    mudconf.btech_phys_use_pskill = 1;
     mudconf.btech_erange = 1;
     mudconf.btech_dig_only_fs = 0;
     mudconf.btech_digbonus = 3;
@@ -1249,8 +1249,8 @@ CONF conftable[] = {
         cf_int,         CA_GOD,         &mudconf.btech_limitedrepairs,  0},
     {(char *)"btech_stackpole",
         cf_int,         CA_GOD,         &mudconf.btech_stackpole,       0},
-    {(char *)"phys_use_pskill",
-        cf_int,		CA_GOD,		&mudconf.phys_use_pskill,	0},
+    {(char *)"btech_phys_use_pskill",
+        cf_int,		CA_GOD,		&mudconf.btech_phys_use_pskill,	0},
     {(char *)"btech_erange",
         cf_int,		CA_GOD,		&mudconf.btech_erange,		0},
     {(char *)"btech_dig_only_fs",

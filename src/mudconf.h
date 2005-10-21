@@ -103,9 +103,9 @@ struct confdata {
     int btech_slowdown;
     int btech_fasaturn;
     int btech_dynspeed;
-    int btech_stackpole;
+    int btech_stackpole;        /* Mechs mushroom as a result of triple engine crits */
     int btech_erange;
-    int phys_use_pskill;
+    int btech_phys_use_pskill;  /* Use piloting skills for physical attacks */
     int namechange_days;
     int allow_chanlurking;	/* 'last' and 'who' on 'off' channels ? */
     int btech_newterrain;	/* fasa terrain restrictions for wheeled */

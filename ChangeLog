@@ -77,6 +77,8 @@ btonline-btechmux 0.5:
 	* There is now a config directive, 'btech_seismic_see_stopped',
 	  that determines whether seismic picks up stopped units.
 	  Default to off (0). (Power_Shaper)
+	* Renamed 'phys_use_pskill' to 'btech_use_pskill' to fit in
+	  with the rest of the config directives.
 
 	- Merge
 	* Added Exile's mine trigger stuff which seperates the

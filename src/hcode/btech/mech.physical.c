@@ -139,7 +139,7 @@ void mech_punch(dbref player, void *data, char *buffer)
 	"You cannot use physicals while using a special movement mode.");
 #endif
     argc = mech_parseattributes(buffer, args, 5);
-    if (mudconf.phys_use_pskill)
+    if (mudconf.btech_phys_use_pskill)
 	ltohit = rtohit = FindPilotPiloting(mech) - 1;
 
     if (get_arm_args(&punching, &argc, &args, mech, have_punch, "")) {
@@ -237,7 +237,7 @@ void mech_club(dbref player, void *data, char *buffer)
 	"You can't club anyone with a destroyed or missing left hand.");
 
     PhysicalAttack(mech, 5,
-	(mudconf.phys_use_pskill ? FindPilotPiloting(mech) - 1 : 4) +
+	(mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 1 : 4) +
 	2 * MechSections(mech)[RARM].basetohit +
 	2 * MechSections(mech)[LARM].basetohit, PA_CLUB, argc, args,
 	mech_map, RARM);
@@ -277,7 +277,7 @@ void mech_axe(dbref player, void *data, char *buffer)
 	"You cannot use physicals while using a special movement mode.");
 #endif
     argc = mech_parseattributes(buffer, args, 5);
-    if (mudconf.phys_use_pskill)
+    if (mudconf.btech_phys_use_pskill)
 	ltohit = rtohit = FindPilotPiloting(mech) - 1;
 
     ltohit += MechSections(mech)[LARM].basetohit;
@@ -332,7 +332,7 @@ void mech_sword(dbref player, void *data, char *buffer)
 	"You cannot use physicals while using a special movement mode.");
 #endif
     argc = mech_parseattributes(buffer, args, 5);
-    if (mudconf.phys_use_pskill)
+    if (mudconf.btech_phys_use_pskill)
 	ltohit = rtohit = FindPilotPiloting(mech) - 2;
 
     ltohit += MechSections(mech)[LARM].basetohit;
@@ -413,7 +413,7 @@ void mech_kick(dbref player, void *data, char *buffer)
     }
 
     PhysicalAttack(mech, 5,
-	(mudconf.phys_use_pskill ? FindPilotPiloting(mech) - 2 : 3),
+	(mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 2 : 3),
 	PA_KICK, argc, args, mech_map, leg);
 }
 
@@ -1166,7 +1166,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
         (MechType(target) == CLASS_DS))
         DOCHECKMA0(!Landed(target), "Your target is airborne, you cannot land on it.");
 
-    if (mudconf.phys_use_pskill)
+    if (mudconf.btech_phys_use_pskill)
         baseToHit = FindPilotPiloting(mech);
 
 #ifndef BT_EXTENDED_ADVANTAGES
