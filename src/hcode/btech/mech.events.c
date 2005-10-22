@@ -363,6 +363,29 @@ void very_fake_func(MUXEVENT * e)
 
 }
 
+/*
+ * Exile Stun Code Event
+ */
+void mech_crewstun_event(MUXEVENT * e)
+{
+    MECH *mech = (MECH *) e->data;
+
+    if (!mech)
+        return;
+    if (!Started(mech) || Destroyed(mech)) {
+        if (MechCritStatus(mech) & CREW_STUNNED)
+            MechCritStatus(mech) &= ~CREW_STUNNED;
+        return;
+    }
+    if (MechType(mech) != CLASS_MECH)
+        mech_notify(mech, MECHALL, "%ch%cgThe crew recovers from their bewilderment!%cn");
+    else
+        mech_notify(mech, MECHALL, "%ch%cgYou recover from your stunning experience!%cn");
+
+    if (MechCritStatus(mech) & CREW_STUNNED)
+        MechCritStatus(mech) &= ~CREW_STUNNED;
+}
+
 void unstun_crew_event(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;

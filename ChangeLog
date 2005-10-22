@@ -92,6 +92,8 @@ btonline-btechmux 0.6:
 	* Added Coolant Guns. (Dany)
 	* Added 'vector' command. (Power_Shaper)
 	* Changed tacheight to tacsize. (Dany)
+	* Added Exile's head hit stun code.  Can be turned on/off using the
+	  mudconf parameter 'btech_exile_stun_code'. (Dany)
 
 	- Bugfixes
 	* Can no longer hide while OOD'ing (Greg Taylor)

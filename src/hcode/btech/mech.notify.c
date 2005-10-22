@@ -332,6 +332,10 @@ void Mech_ShowFlags(dbref player, MECH * mech, int spaces, int level)
         strcpy(buf + spaces, tprintf("%%ch%%cySIDESLIPPING%%c"));
         notify(player,buf);
         }
+    if (MechCritStatus(mech) & CREW_STUNNED) {
+        strcpy(buf + spaces, "%ch%crCREW STUNNED%c");
+        notify(player, buf);
+    }
 #endif
     if (level == 0) {		/* our own 'status' */
 	if (ECMProtected(mech)) {

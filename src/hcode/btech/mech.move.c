@@ -741,123 +741,135 @@ void mech_speed(dbref player, void *data, char *buffer)
 
     cch(MECH_USUAL);
     if (RollingT(mech)) {
-	DOCHECK(!Landed(mech), "Use thrust command instead!");
+        DOCHECK(!Landed(mech), "Use thrust command instead!");
     } else if (FlyingT(mech)) {
-	DOCHECK(MechType(mech) != CLASS_VTOL,
-	    "Use thrust command instead!");
+        DOCHECK(MechType(mech) != CLASS_VTOL, "Use thrust command instead!");
     }
     DOCHECK(MechMove(mech) == MOVE_NONE,
-	"This piece of equipment is stationary!");
+            "This piece of equipment is stationary!");
     DOCHECK(PerformingAction(mech),
-	"You are too busy at the moment to turn.");
+            "You are too busy at the moment to turn.");
     DOCHECK(Standing(mech),
-	"You are currently standing up and cannot move.");
+            "You are currently standing up and cannot move.");
     DOCHECK((Fallen(mech)) && (MechType(mech) != CLASS_MECH &&
-	    MechType(mech) != CLASS_MW),
-	"Your vehicle's movement system is destroyed.");
+                MechType(mech) != CLASS_MW),
+            "Your vehicle's movement system is destroyed.");
     DOCHECK(Fallen(mech), "You are currently prone and cannot move.");
     DOCHECK(WaterBeast(mech) &&
-	NotInWater(mech),
-	"You are regrettably unable to move at this time. We apologize for the inconvenience.");
+            NotInWater(mech),
+            "You are regrettably unable to move at this time. We apologize for the inconvenience.");
 
     if (MechType(mech) != CLASS_MECH)
-	DOCHECK(RemovingPods(mech),
-	    "You are too busy removing iNARC pods!");
+        DOCHECK(RemovingPods(mech),
+                "You are too busy removing iNARC pods!");
     DOCHECK(IsHulldown(mech), "You can not move while hulldown");
     DOCHECK(ChangingHulldown(mech),
-	"You are busy changing your hulldown mode");
+            "You are busy changing your hulldown mode");
 
     if (mech_parseattributes(buffer, args, 1) != 1) {
-	notify(player, tprintf("Your current speed is %.2f.",
-		MechSpeed(mech)));
-	return;
+        notify(player, tprintf("Your current speed is %.2f.", MechSpeed(mech)));
+        return;
     }
     DOCHECK(FlyingT(mech) && AeroFuel(mech) <= 0 &&
-	!AeroFreeFuel(mech), "You're out of fuel!");
+            !AeroFreeFuel(mech), "You're out of fuel!");
     maxspeed = MMaxSpeed(mech);
+    
     if (MechMove(mech) == MOVE_VTOL)
-	maxspeed =
-	    sqrt((float) maxspeed * maxspeed -
-	    MechVerticalSpeed(mech) * MechVerticalSpeed(mech));
-    maxspeed = maxspeed > 0.0 ? maxspeed : 0.0;
-    if ((MechHeat(mech) >= 9.) &&
-	(MechSpecials(mech) & TRIPLE_MYOMER_TECH))
-	maxspeed = ceil((rint((maxspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+        maxspeed = sqrt((float) maxspeed * maxspeed -
+                MechVerticalSpeed(mech) * MechVerticalSpeed(mech));
 
-/*   if (MechStatus(mech) & MASC_ENABLED) maxspeed = (4. / 3. ) * maxspeed; */
+    maxspeed = maxspeed > 0.0 ? maxspeed : 0.0;
+
+    if ((MechHeat(mech) >= 9.) &&
+            (MechSpecials(mech) & TRIPLE_MYOMER_TECH))
+        maxspeed = ceil((rint((maxspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+
+    /*   if (MechStatus(mech) & MASC_ENABLED) maxspeed = (4. / 3. ) * maxspeed; */
     walkspeed = WalkingSpeed(maxspeed);
     newspeed = atof(args[0]);
+
     if (newspeed < 0.1) {
-	/* Possibly a string speed instead? */
-	for (i = 0; speed_tables[i].name; i++)
-	    if (!strcasecmp(speed_tables[i].name, args[0])) {
-		switch (speed_tables[i].flag) {
-		case 0:
-		    newspeed = 0.0;
-		    break;
-		case -1:
-		    newspeed = -walkspeed;
-		    break;
-		case 1:
-		    newspeed = walkspeed;
-		    break;
-		case 2:
-		    newspeed = maxspeed;
-		    break;
-		}
-		break;
-	    }
+
+        /* Possibly a string speed instead? */
+        for (i = 0; speed_tables[i].name; i++)
+            if (!strcasecmp(speed_tables[i].name, args[0])) {
+                switch (speed_tables[i].flag) {
+                    case 0:
+                        newspeed = 0.0;
+                        break;
+                    case -1:
+                        newspeed = -walkspeed;
+                        break;
+                    case 1:
+                        newspeed = walkspeed;
+                        break;
+                    case 2:
+                        newspeed = maxspeed;
+                        break;
+                }
+                break;
+            }
     }
+
     if (newspeed > maxspeed)
-	newspeed = maxspeed;
+        newspeed = maxspeed;
     if (newspeed < -walkspeed)
-	newspeed = -walkspeed;
+        newspeed = -walkspeed;
 
     DOCHECK((newspeed < 0) && (MechCarrying(mech) > 0) &&
-	(!(MechSpecials(mech) & SALVAGE_TECH)),
-	"You can not backup while towing!");
+            (!(MechSpecials(mech) & SALVAGE_TECH)),
+            "You can not backup while towing!");
 
     if (IsRunning(newspeed, maxspeed)) {
-	DOCHECK(Dumping(mech), "You can not run while dumping ammo!");
-	DOCHECK(UnJammingAmmo(mech),
-	    "You can not run while unjamming your weapon!");
-	DOCHECK(CrewStunned(mech),
-	    "Your cannot possibly control a vehicle going this fast in your current mental state!");
-	DOCHECK(MechTankCritStatus(mech) & TAIL_ROTOR_DESTROYED,
-	    "Your cannot possibly control a VTOL going this fast with a destroyed tail rotor!");
-	DOCHECK(MechType(mech) == CLASS_MECH && ((MechZ(mech) < 0 &&
-	        (MechRTerrain(mech) == WATER || MechRTerrain(mech) == BRIDGE ||
-	         MechRTerrain(mech) == ICE)) || MechRTerrain(mech) == HIGHWATER),
-	    "You can't run through water!");
+        DOCHECK(Dumping(mech), "You can not run while dumping ammo!");
+        DOCHECK(UnJammingAmmo(mech),
+                "You can not run while unjamming your weapon!");
+       
+        /* Exile Stun Code Effect */
+        if ((MechType(mech) == CLASS_MECH) && (MechCritStatus(mech) & CREW_STUNNED)) {
+            mech_notify(mech, MECHALL, "You cannot move faster than cruise"
+                    " speed while stunned!");
+            return;
+        }
+            
+        DOCHECK(CrewStunned(mech),
+                "Your cannot possibly control a vehicle going this fast in your "
+                "current mental state!");
+        DOCHECK(MechTankCritStatus(mech) & TAIL_ROTOR_DESTROYED,
+                "Your cannot possibly control a VTOL going this fast with a destroyed tail rotor!");
+        DOCHECK(MechType(mech) == CLASS_MECH && ((MechZ(mech) < 0 &&
+                        (MechRTerrain(mech) == WATER || MechRTerrain(mech) == BRIDGE ||
+                         MechRTerrain(mech) == ICE)) || MechRTerrain(mech) == HIGHWATER),
+                "You can't run through water!");
     }
     if (!Wizard(player) && In_Character(mech->mynum) &&
-	MechPilot(mech) != player) {
-	if (newspeed < 0.0) {
-	    notify(player,
-		"Not being the Pilot of this beast, you cannot move it backwards.");
-	    return;
-	} else if (newspeed > walkspeed) {
-	    notify(player,
-		"Not being the Pilot of this beast, you cannot go faster than walking speed.");
-	    return;
-	}
+            MechPilot(mech) != player) {
+        if (newspeed < 0.0) {
+            notify(player,
+                    "Not being the Pilot of this beast, you cannot move it backwards.");
+            return;
+        } else if (newspeed > walkspeed) {
+            notify(player,
+                    "Not being the Pilot of this beast, you cannot go faster than walking speed.");
+            return;
+        }
     }
     MechDesiredSpeed(mech) = newspeed;
     MaybeMove(mech);
     if (fabs(newspeed) > 0.1) {
-	if (MechSwarmTarget(mech) > 0) {
-	    StopSwarming(mech, 1);
-        MechCritStatus(mech) &= ~HIDDEN;
-    }
-	if (Digging(mech)) {
-	    mech_notify(mech, MECHALL,
-		"You cease your attempts at digging in.");
-	    StopDigging(mech);
-	}
-	MechTankCritStatus(mech) &= ~DUG_IN;
+        if (MechSwarmTarget(mech) > 0) {
+            StopSwarming(mech, 1);
+            MechCritStatus(mech) &= ~HIDDEN;
+        }
+        if (Digging(mech)) {
+            mech_notify(mech, MECHALL,
+                    "You cease your attempts at digging in.");
+            StopDigging(mech);
+        }
+        MechTankCritStatus(mech) &= ~DUG_IN;
     }
     mech_notify(mech, MECHALL, tprintf("Desired speed changed to %d KPH",
-	    (int) newspeed));
+                (int) newspeed));
 }
 
 void mech_vertical(dbref player, void *data, char *buffer)

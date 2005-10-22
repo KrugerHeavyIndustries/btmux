@@ -419,6 +419,11 @@ int FireWeaponNumber(dbref player,
     DOCHECK0(weaptype == -1, "The weapons system chirps: 'Illegal Weapon Number!'");
 
     if (!sight) {
+
+        /* Exile Stun Code Check */
+        DOCHECK0((MechCritStatus(mech) & CREW_STUNNED),
+                "You cannot take actions while stunned! That include finding the trigger.");
+
         DOCHECK0(PartTempNuke(mech, section, critical),
                 "The weapons system chirps: 'That Weapon is still unusable - please stand by.'");
         DOCHECK0(weaptype == -3,

@@ -367,4 +367,7 @@
 
 typedef unsigned char byte;
 
+/* Exile Stun Code Timer */
+#define MECHSTUN_TICK 10
+
 #endif				/* BTCONFIG_H */

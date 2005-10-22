@@ -108,26 +108,27 @@
 #define EVENT_HEATCUTOFFCHANGING    62 
 #define EVENT_VEHICLEBURN           63  /* Burn a side of a vehicle */
 #define EVENT_UNSTUN_CREW           64  /* Unstun the crew */
-#define EVENT_UNJAM_TURRET          65 
-#define EVENT_UNJAM_AMMO            66
-#define EVENT_STEALTH_ARMOR         67
-#define EVENT_NSS                   68
-#define EVENT_TAG_RECYCLE           69
-#define EVENT_REMOVE_PODS           70
-#define EVENT_VEHICLE_EXTINGUISH    71
-#define EVENT_ENTER_HANGAR          72
-#define EVENT_CHANGING_HULLDOWN     73
+#define EVENT_CREWSTUN              65
+#define EVENT_UNJAM_TURRET          66 
+#define EVENT_UNJAM_AMMO            67
+#define EVENT_STEALTH_ARMOR         68
+#define EVENT_NSS                   69
+#define EVENT_TAG_RECYCLE           70
+#define EVENT_REMOVE_PODS           71
+#define EVENT_VEHICLE_EXTINGUISH    72
+#define EVENT_ENTER_HANGAR          73
+#define EVENT_CHANGING_HULLDOWN     74
 
 /* Not used in the stable branch, just devel */
-/* EVENT_BOGDOWNWAIT                74 */
+/* EVENT_BOGDOWNWAIT                75 */
 
-#define EVENT_SCHARGE_FAIL          75  /* SCHARGE roll for failure of stuff */
-#define EVENT_SCHARGE_REGEN         76  /* SCHARGE recovery during non-use */
+#define EVENT_SCHARGE_FAIL          76  /* SCHARGE roll for failure of stuff */
+#define EVENT_SCHARGE_REGEN         77  /* SCHARGE recovery during non-use */
 
-#define EVENT_CHECK_STAGGER         77
+#define EVENT_CHECK_STAGGER         78
 #ifdef BT_MOVEMENT_MODES
-#define EVENT_MOVEMODE              78
-#define EVENT_SIDESLIP              79
+#define EVENT_MOVEMODE              79
+#define EVENT_SIDESLIP              80
 #endif
 
 #define ETEMPL(a) void a (MUXEVENT *e)
@@ -206,21 +207,22 @@ static char *muxevent_names[] = {
     "HeatCutOff",       /* 62 */
     "VechBurn",         /* 63 */
     "UnStunCrew",       /* 64 */
-    "UnJamTurret",      /* 65 */
-    "UnJamAmmo",        /* 66 */
-    "StArmor",          /* 67 */
-    "NSS",              /* 68 */
-    "TagRecycle",       /* 69 */
-    "RemPods",          /* 70 */
-    "Extinguish",       /* 71 */
-    "EntHangar",        /* 72 */
-    "Hulldown",         /* 73 */
-    "74",               /* 74 */
-    "SchFail",          /* 75 */
-    "SchRegen",         /* 76 */
-    "CkStagger",        /* 77 */
-    "MoveMode",         /* 78 */
-    "Sideslip",         /* 79 */
+    "StunCrew",         /* 65 */
+    "UnJamTurret",      /* 66 */
+    "UnJamAmmo",        /* 67 */
+    "StArmor",          /* 68 */
+    "NSS",              /* 69 */
+    "TagRecycle",       /* 70 */
+    "RemPods",          /* 71 */
+    "Extinguish",       /* 72 */
+    "EntHangar",        /* 73 */
+    "Hulldown",         /* 74 */
+    "75",               /* 75 */
+    "SchFail",          /* 76 */
+    "SchRegen",         /* 77 */
+    "CkStagger",        /* 78 */
+    "MoveMode",         /* 79 */
+    "Sideslip",         /* 80 */
     NULL
 };
 

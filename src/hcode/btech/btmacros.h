@@ -367,6 +367,10 @@ do { MechSections(a)[b].config &= ~SECTION_BREACHED ; SetWCheck(a); } while (0)
 #define CrewStunned(a)			 muxevent_count_type_data(EVENT_UNSTUN_CREW, (void *) a)
 #define StunCrew(a)					 MECHEVENT(a, EVENT_UNSTUN_CREW, unstun_crew_event, 60, 0)
 
+/* Exile Stun code */
+#define CrewStunning(a)         muxevent_count_type_data(EVENT_CREWSTUN, (void *) a)
+#define StopCrewStunning(a)     muxevent_remove_type_data(EVENT_CREWSTUN, (void *) a)
+
 #define Burning(a)           muxevent_count_type_data(EVENT_VEHICLEBURN, (void *) a)
 #define BurningSide(a,side)  muxevent_count_type_data_data(EVENT_VEHICLEBURN, (void *) a, (void *) side)
 #define StopBurning(a)       muxevent_remove_type_data(EVENT_VEHICLEBURN, (void *) a)
@@ -503,18 +507,22 @@ MechStatus(a) &= ~LOCK_MODES
 		}; \
 	} while (0)
 
-#define Destroy(a)           \
-    do { if (Uncon(a)) \
-    {  MechStatus(a) &= ~(BLINDED|UNCONSCIOUS); \
-      mech_notify(a, MECHALL, "The mech was destroyed while pilot was unconscious!"); \
-    } \
-    Shutdown(a) ; MechStatus(a) |= DESTROYED;\
-    StopBSuitSwarmers(FindObjectsData(a->mapindex),a,1); \
-    muxevent_remove_data((void *) a); \
-  if ((MechType(a) == CLASS_MECH && Jumping(a)) || \
-      (MechType(a) != CLASS_MECH && MechZ(a) > MechUpperElevation(a)))\
-      MECHEVENT(a, EVENT_FALL, mech_fall_event, FALL_TICK, -1); \
+#define Destroy(a) \
+    do { \
+        if (Uncon(a)) { \
+            MechStatus(a) &= ~(BLINDED|UNCONSCIOUS); \
+            mech_notify(a, MECHALL, "The mech was destroyed while pilot was unconscious!"); \
+        } \
+        Shutdown(a); \
+        MechStatus(a) |= DESTROYED; \
+        MechCritStatus(a) &= ~CREW_STUNNED; \
+        StopBSuitSwarmers(FindObjectsData(a->mapindex),a,1); \
+        muxevent_remove_data((void *) a); \
+        if ((MechType(a) == CLASS_MECH && Jumping(a)) || \
+                (MechType(a) != CLASS_MECH && MechZ(a) > MechUpperElevation(a))) \
+            MECHEVENT(a, EVENT_FALL, mech_fall_event, FALL_TICK, -1); \
     } while (0)
+
 #define DestroyAndDump(a)           \
     do { Destroy(a); MechVerticalSpeed(a) = 0.0; \
     if (MechRTerrain(a) == WATER || MechRTerrain(a) == ICE) \

@@ -28,6 +28,7 @@ void mech_stand_event(MUXEVENT * e);
 void mech_plos_event(MUXEVENT * e);
 void aero_move_event(MUXEVENT * e);
 void very_fake_func(MUXEVENT * e);
+void mech_crewstun_event(MUXEVENT * e);
 void unstun_crew_event(MUXEVENT * e);
 void mech_unjam_ammo_event(MUXEVENT * objEvent);
 void check_stagger_event(MUXEVENT * event);
