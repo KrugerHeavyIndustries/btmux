@@ -26,6 +26,7 @@ dbref FindMechOnMap(MAP *map, char *mechid);
 dbref FindTargetDBREFFromMapNumber(MECH * mech, char *mapnum);
 void FindComponents(float magnitude, int degrees, float *x, float *y);
 void CheckEdgeOfMap(MECH * mech);
+int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1);
 int FindBearing(float x0, float y0, float x1, float y1);
 int InWeaponArc(MECH * mech, float x, float y);
 char *FindGunnerySkillName(MECH * mech, int weapindx);

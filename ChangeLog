@@ -120,6 +120,7 @@ btonline-btechmux 0.6:
 	* Maneuvering ace now gets the proper turning bonus. (John FitzSimons)
 	* Patch to keep exploding units that aren't on maps
 	  from crashing the MUX. (Dany)
+	* Patch to keep units set CritProof_Tech from getting crits. (Dany)
 
 btonline-btechmux 0.4:
 	- Changes
