@@ -488,10 +488,10 @@ int FireWeaponNumber(dbref player,
 
     DOCHECK0((MechDugIn(mech)) && section != TURRET,
             "Only turret weapons are available while in cover.");
-    DOCHECK0(IsAMS(weaptype), "That weapon is defensive only!");
     DOCHECK0(weaptype == -2 ||
             (PartTempNuke(mech, section, critical) == FAIL_DESTROYED),
             "The weapons system chirps: 'That Weapon has been destroyed!'");
+    DOCHECK0(IsAMS(weaptype), "That weapon is defensive only!");
     DOCHECK0(argc > 3, "Invalid number of arguments!");
 
     if ((MechWeapons[weaptype].special & IDF) && MechSpotter(mech) != -1 &&

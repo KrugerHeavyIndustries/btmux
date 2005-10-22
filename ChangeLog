@@ -121,6 +121,8 @@ btonline-btechmux 0.6:
 	* Patch to keep exploding units that aren't on maps
 	  from crashing the MUX. (Dany)
 	* Patch to keep units set CritProof_Tech from getting crits. (Dany)
+	* Destroyed defensive weapons now emit proper error when player
+	  attempts to fire them (Power_Shaper)
 
 btonline-btechmux 0.4:
 	- Changes
