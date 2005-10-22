@@ -186,19 +186,28 @@ int FindSwarmHitLocation(int *iscritical, int *isrear)
     return HEAD;
 }
 
+/*
+ * Determines whether a section is crittable.
+ * tres = armor percentage threshhold
+ */
 int crittable(MECH * mech, int loc, int tres)
 {
     int d;
 
     if (MechSpecials(mech) & CRITPROOF_TECH)
         return 0;
+    /* Towers and Stationary Objectives should not crit */
     if (MechMove(mech) == MOVE_NONE)
         return 0;
     if (!GetSectOArmor(mech, loc))
         return 1;
     if (MechType(mech) != CLASS_MECH && mudconf.btech_vcrit <= 1)
         return 0;
+
+    /* Calculate percentage of armor remaining */
     d = (100 * GetSectArmor(mech, loc)) / GetSectOArmor(mech, loc);
+
+    /* Are we below the threshold? */
     if (d < tres)
         return 1;
     if (d == 100) {
@@ -210,7 +219,7 @@ int crittable(MECH * mech, int loc, int tres)
         if (Number(1, 11) == 6)
             return 1;
     return 0;
-}
+} /* end crittable() */
 
 int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
     int *isrear)
