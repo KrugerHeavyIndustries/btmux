@@ -515,7 +515,7 @@ MechStatus(a) &= ~LOCK_MODES
         } \
         Shutdown(a); \
         MechStatus(a) |= DESTROYED; \
-        MechCritStatus(a) &= ~CREW_STUNNED; \
+        MechCritStatus(a) &= ~MECH_STUNNED; \
         StopBSuitSwarmers(FindObjectsData(a->mapindex),a,1); \
         muxevent_remove_data((void *) a); \
         if ((MechType(a) == CLASS_MECH && Jumping(a)) || \

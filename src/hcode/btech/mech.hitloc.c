@@ -123,7 +123,7 @@ int ModifyHeadHit(int hitGroup, MECH * mech)
         if (CrewStunning(mech))
             StopCrewStunning(mech);
         MechLOSBroadcast(mech, "significantly slows down and starts wobbling!");
-        MechCritStatus(mech) |= CREW_STUNNED;
+        MechCritStatus(mech) |= MECH_STUNNED;
         if (MechSpeed(mech) > WalkingSpeed(MechMaxSpeed(mech)))
             MechDesiredSpeed(mech) = WalkingSpeed(MechMaxSpeed(mech));
         MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK, 0);

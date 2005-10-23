@@ -826,7 +826,7 @@ void mech_speed(dbref player, void *data, char *buffer)
                 "You can not run while unjamming your weapon!");
        
         /* Exile Stun Code Effect */
-        if ((MechType(mech) == CLASS_MECH) && (MechCritStatus(mech) & CREW_STUNNED)) {
+        if (MechCritStatus(mech) & MECH_STUNNED) {
             mech_notify(mech, MECHALL, "You cannot move faster than cruise"
                     " speed while stunned!");
             return;

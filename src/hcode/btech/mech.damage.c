@@ -98,137 +98,150 @@ int cause_armordamage(MECH * wounded,
     int wPercentLeft = 0;
 
     if (MechType(wounded) == CLASS_MW)
-	return (damage > 0) ? damage : 0;
+        return (damage > 0) ? damage : 0;
+
     if ((MechSpecials(wounded) & HARDA_TECH) && damage > 0)
-	damage = (damage + 1) / 2;
+        damage = (damage + 1) / 2;
+
     /* Now decrement armor, and if neccessary, handle criticals... */
     if (MechType(wounded) == CLASS_MECH && isrear && (hitloc == CTORSO
-	    || hitloc == RTORSO || hitloc == LTORSO)) {
-	if ((GetSectRArmor(wounded, hitloc) - damage) >= 0)
-	    wPercentLeft =
-		(((GetSectRArmor(wounded,
-			    hitloc) -
-			damage) * 100) / GetSectORArmor(wounded, hitloc));
-	intDamage = damage - GetSectRArmor(wounded, hitloc);
-	if (intDamage > 0) {
-	    SetSectRArmor(wounded, hitloc, 0);
-	    if (intDamage != damage)
-		seriousness = 3;
-	} else {
-	    seriousness = MySeriousnessCheckR(wounded, hitloc);
-	    SetSectRArmor(wounded, hitloc, GetSectRArmor(wounded,
-		    hitloc) - damage);
-	    seriousness =
-		(seriousness == MySeriousnessCheckR(wounded,
-		    hitloc)) ? 0 : MySeriousnessCheckR(wounded, hitloc);
-	}
-    } else {
-	/* Silly stuff */
-	/*
-	   SetSectArmor(wounded, hitloc, MAX(0, intDamage =  GetSectArmor(wounded, hitloc) - damage));
-	   intDamage = abs(intDamage);
-	 */
-	if (GetSectOArmor(wounded, hitloc) &&
-	    ((GetSectArmor(wounded, hitloc) - damage) >= 0))
-	    wPercentLeft =
-		(((GetSectArmor(wounded,
-			    hitloc) -
-			damage) * 100) / GetSectOArmor(wounded, hitloc));
-	intDamage = damage - GetSectArmor(wounded, hitloc);
-	if (intDamage > 0) {
-	    SetSectArmor(wounded, hitloc, 0);
-	    if (intDamage != damage)
-		seriousness = 3;
-	} else {
-	    seriousness = MySeriousnessCheck(wounded, hitloc);
-	    SetSectArmor(wounded, hitloc, GetSectArmor(wounded,
-		    hitloc) - damage);
-	    seriousness =
-		(seriousness == MySeriousnessCheck(wounded,
-		    hitloc)) ? 0 : MySeriousnessCheck(wounded, hitloc);
-	}
+                || hitloc == RTORSO || hitloc == LTORSO)) {
 
-	if (!GetSectArmor(wounded, hitloc))
-	    MechFloodsLoc(wounded, hitloc, MechZ(wounded));
+        if ((GetSectRArmor(wounded, hitloc) - damage) >= 0) {
+
+            wPercentLeft = (((GetSectRArmor(wounded, hitloc) -
+                   damage) * 100) / GetSectORArmor(wounded, hitloc));
+        }
+
+        intDamage = damage - GetSectRArmor(wounded, hitloc);
+
+        if (intDamage > 0) {
+            SetSectRArmor(wounded, hitloc, 0);
+            if (intDamage != damage)
+                seriousness = 3;
+        } else {
+            seriousness = MySeriousnessCheckR(wounded, hitloc);
+            SetSectRArmor(wounded, hitloc, GetSectRArmor(wounded,
+                        hitloc) - damage);
+            seriousness = (seriousness == MySeriousnessCheckR(wounded,
+                        hitloc)) ? 0 : MySeriousnessCheckR(wounded, hitloc);
+        }
+
+    } else {
+
+        /* Silly stuff */
+        /*
+           SetSectArmor(wounded, hitloc, MAX(0, intDamage =  
+            GetSectArmor(wounded, hitloc) - damage));
+           intDamage = abs(intDamage);
+           */
+
+        if (GetSectOArmor(wounded, hitloc) &&
+                ((GetSectArmor(wounded, hitloc) - damage) >= 0)) {
+
+            wPercentLeft = (((GetSectArmor(wounded, hitloc) -
+                   damage) * 100) / GetSectOArmor(wounded, hitloc));
+        }
+
+        intDamage = damage - GetSectArmor(wounded, hitloc);
+        
+        if (intDamage > 0) {
+            SetSectArmor(wounded, hitloc, 0);
+            if (intDamage != damage)
+                seriousness = 3;
+        } else {
+            seriousness = MySeriousnessCheck(wounded, hitloc);
+            SetSectArmor(wounded, hitloc, GetSectArmor(wounded,
+                        hitloc) - damage);
+            seriousness = (seriousness == MySeriousnessCheck(wounded,
+                        hitloc)) ? 0 : MySeriousnessCheck(wounded, hitloc);
+        }
+
+        if (!GetSectArmor(wounded, hitloc))
+            MechFloodsLoc(wounded, hitloc, MechZ(wounded));
     }
 
     if (!iscritical && (wAmmoMode & AC_AP_MODE) && (intDamage <= 0) &&
-	(wPercentLeft < 50))
-	tAPCritical = 1;
-    if (iscritical || tAPCritical) {
-	r = Roll();
-	rollstat.critrolls[r - 2]++;
-	rollstat.totcrolls++;
-	/* Do the AP ammo thang */
-	if (tAPCritical) {
-	    if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/2"))
-		r -= 4;
-	    else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "LightAC/2"))
-		r -= 4;
-	    else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/5"))
-		r -= 3;
-	    else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "LightAC/5"))
-		r -= 3;
-	    else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/10"))
-		r -= 2;
-	    else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/20"))
-		r -= 1;
-	    else
-		r -= 10;
-	}
+            (wPercentLeft < 50))
+        tAPCritical = 1;
 
-	switch (r) {
-	case 8:
-	case 9:
-	    HandleCritical(wounded, attacker, LOS, hitloc, 1);
-	    (*crits) += 1;
-	    break;
-	case 10:
-	case 11:
-	    HandleCritical(wounded, attacker, LOS, hitloc, 2);
-	    (*crits) += 2;
-	    break;
-	case 12:
-	    HandleCritical(wounded, attacker, LOS, hitloc, 3);
-	    (*crits) += 3;
-	    break;
-	default:
-	    break;
-	}
-	iscritical = 0;
+    if (iscritical || tAPCritical) {
+        r = Roll();
+        rollstat.critrolls[r - 2]++;
+        rollstat.totcrolls++;
+        /* Do the AP ammo thang */
+        if (tAPCritical) {
+            if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/2"))
+                r -= 4;
+            else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "LightAC/2"))
+                r -= 4;
+            else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/5"))
+                r -= 3;
+            else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "LightAC/5"))
+                r -= 3;
+            else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/10"))
+                r -= 2;
+            else if (!strcmp(&MechWeapons[wWeapIndx].name[3], "AC/20"))
+                r -= 1;
+            else
+                r -= 10;
+        }
+
+        switch (r) {
+            case 8:
+            case 9:
+                HandleCritical(wounded, attacker, LOS, hitloc, 1);
+                (*crits) += 1;
+                break;
+            case 10:
+            case 11:
+                HandleCritical(wounded, attacker, LOS, hitloc, 2);
+                (*crits) += 2;
+                break;
+            case 12:
+                HandleCritical(wounded, attacker, LOS, hitloc, 3);
+                (*crits) += 3;
+                break;
+            default:
+                break;
+        }
+        iscritical = 0;
     }
+
     if (MechType(wounded) == CLASS_AERO && intDamage >= 0) {
-	DestroySection(wounded, attacker, LOS, hitloc);
-	if (Destroyed(wounded)) {
-	    intDamage = 0;
-	    return 0;
-	}
-	switch (hitloc) {
-	case AERO_COCKPIT:
-	    DestroyMech(wounded, attacker, 1);
-	    return 0;
-	case AERO_ENGINE:
-	    MakeMechFall(wounded);
-	    MechSpeed(wounded) = 0;
-	    SetMaxSpeed(wounded, 0);
-	    MechVerticalSpeed(wounded) = 0;
-	    if (!(MechStatus(wounded) & LANDED))
-		mech_notify(wounded, MECHALL, "You feel the thrust die..");
-	    else
-		mech_notify(wounded, MECHALL,
-		    "The computer reports engine destroyed!");
-	    if (!Landed(wounded))
-		MECHEVENT(wounded, EVENT_FALL, mech_fall_event, FALL_TICK,
-		    -1);
-	    break;
-	}
+        DestroySection(wounded, attacker, LOS, hitloc);
+        if (Destroyed(wounded)) {
+            intDamage = 0;
+            return 0;
+        }
+        switch (hitloc) {
+            case AERO_COCKPIT:
+                DestroyMech(wounded, attacker, 1);
+                return 0;
+            case AERO_ENGINE:
+                MakeMechFall(wounded);
+                MechSpeed(wounded) = 0;
+                SetMaxSpeed(wounded, 0);
+                MechVerticalSpeed(wounded) = 0;
+                if (!(MechStatus(wounded) & LANDED))
+                    mech_notify(wounded, MECHALL, "You feel the thrust die..");
+                else
+                    mech_notify(wounded, MECHALL,
+                            "The computer reports engine destroyed!");
+                if (!Landed(wounded))
+                    MECHEVENT(wounded, EVENT_FALL, mech_fall_event, FALL_TICK,
+                            -1);
+                break;
+        }
     }
+
     if (seriousness > 0 && MechArmorWarn(wounded))
-	mech_notify(wounded, MECHALL, tprintf("%sWARNING: %s%s Armor %s",
-		MySeriousColorStr(wounded, seriousness),
-		ShortArmorSectionString(MechType(wounded),
-					MechMove(wounded), hitloc),
-		isrear ? " (Rear)" : "", MySeriousStr(wounded, seriousness)));
+        mech_notify(wounded, MECHALL, tprintf("%sWARNING: %s%s Armor %s",
+                    MySeriousColorStr(wounded, seriousness),
+                    ShortArmorSectionString(MechType(wounded),
+                        MechMove(wounded), hitloc),
+                    isrear ? " (Rear)" : "", MySeriousStr(wounded, seriousness)));
+
     return intDamage > 0 ? intDamage : 0;
 }
 

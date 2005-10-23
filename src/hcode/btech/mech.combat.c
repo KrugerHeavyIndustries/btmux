@@ -421,7 +421,7 @@ int FireWeaponNumber(dbref player,
     if (!sight) {
 
         /* Exile Stun Code Check */
-        DOCHECK0((MechCritStatus(mech) & CREW_STUNNED),
+        DOCHECK0((MechCritStatus(mech) & MECH_STUNNED),
                 "You cannot take actions while stunned! That include finding the trigger.");
 
         DOCHECK0(PartTempNuke(mech, section, critical),

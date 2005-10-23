@@ -1055,7 +1055,7 @@ struct repair_data {
 #define CHEAD			0x08000000	/* Altered heading */
 #define OBSERVATORIC		0x10000000
 #define BLOODHOUND_DESTROYED	0x20000000
-/* unused			0x40000000 */
+#define MECH_STUNNED    0x40000000  /* Is the mech stunned (Exile stun code) */
 /* unused			0x80000000 */
 
 /* tankcritstatus element */

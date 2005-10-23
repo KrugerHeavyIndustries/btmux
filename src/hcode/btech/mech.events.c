@@ -373,8 +373,8 @@ void mech_crewstun_event(MUXEVENT * e)
     if (!mech)
         return;
     if (!Started(mech) || Destroyed(mech)) {
-        if (MechCritStatus(mech) & CREW_STUNNED)
-            MechCritStatus(mech) &= ~CREW_STUNNED;
+        if (MechCritStatus(mech) & MECH_STUNNED)
+            MechCritStatus(mech) &= ~MECH_STUNNED;
         return;
     }
     if (MechType(mech) != CLASS_MECH)
@@ -382,8 +382,8 @@ void mech_crewstun_event(MUXEVENT * e)
     else
         mech_notify(mech, MECHALL, "%ch%cgYou recover from your stunning experience!%cn");
 
-    if (MechCritStatus(mech) & CREW_STUNNED)
-        MechCritStatus(mech) &= ~CREW_STUNNED;
+    if (MechCritStatus(mech) & MECH_STUNNED)
+        MechCritStatus(mech) &= ~MECH_STUNNED;
 }
 
 void unstun_crew_event(MUXEVENT * e)
