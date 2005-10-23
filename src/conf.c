@@ -151,6 +151,7 @@ void cf_init(void)
     mudconf.btech_mw_losmap = 1;
     mudconf.btech_seismic_see_stopped = 0;
     mudconf.btech_exile_stun_code = 0;
+    mudconf.btech_roll_on_backwalk = 1 ;
 #ifdef EXILE_FUNCS_SUPPORT
     mudconf.btech_usedmechstore = 0;
     mudconf.btech_ooc_comsys = 0;
@@ -1226,6 +1227,8 @@ CONF conftable[] = {
         cf_int,		CA_GOD,		&mudconf.btech_mw_losmap, 0},
     {(char *)"btech_exile_stun_code",
         cf_int,     CA_GOD,     &mudconf.btech_exile_stun_code, 0},
+    {(char *)"btech_roll_on_backwalk",
+        cf_int,     CA_GOD,     &mudconf.btech_roll_on_backwalk, 0},
 #ifdef EXILE_FUNCS_SUPPORT
     {(char *)"btech_usedmechstore",
         cf_int,         CA_GOD,         &mudconf.btech_usedmechstore,   0},

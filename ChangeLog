@@ -81,6 +81,7 @@ btonline-btechmux 0.6:
 	  with the rest of the config directives.
 
 	- Merge
+	* Added Exile's roll on back walk code. (Tuncay)
 	* Added Exile's mine trigger stuff which seperates the
 	  Trigger mine and makes it more usable. (Dany)
 	* Added Exile's emits (to MechDebugInfo) for picking up
@@ -96,6 +97,7 @@ btonline-btechmux 0.6:
 	  mudconf parameter 'btech_exile_stun_code'. (Dany)
 
 	- Bugfixes
+	* Fixed mistiming in weapon recycling code. (Martin Murray)
 	* Can no longer hide while OOD'ing (Greg Taylor)
 	* Fixed btsetcharvalue() and btgetcharvalue() crashers.
 	  (Martin Murray)

@@ -97,7 +97,7 @@ int DSOkToNotify(MECH * mech)
 }
 
 enum {
-    JUMP, WALK_WALL, WALK_DROP, HIT_UNDER_BRIDGE
+    JUMP, WALK_WALL, WALK_DROP, HIT_UNDER_BRIDGE, WALK_BACK
 };
 
 int collision_check(MECH * mech, int mode, int le, int lt)
@@ -139,6 +139,9 @@ int collision_check(MECH * mech, int mode, int le, int lt)
 	} else {
 	    return (e - le) > MoveMod(mech);
 	}
+	case WALK_BACK:
+		if (MechMove(mech) != MOVE_TRACK && MechType(mech) != CLASS_VTOL)
+	    return (MechSpeed(mech) < 0 ? abs((le - e)) : 0);
     case HIT_UNDER_BRIDGE:	/* Hovers only... tho it should be fixed for foils and hulls too */
 	if ((lt == BRIDGE) && (MechRTerrain(mech) == BRIDGE) && (le == 0)
 	    && (Elevation(mech_map, MechLastX(mech), MechLastY(mech)) != 0)
@@ -1358,6 +1361,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
     int elevation, lastelevation;
     int oldterrain;
     int ot, le, ed, done = 0, tt, avoidbth;
+    int isunder = 0;
     float f;
 
     ot = oldterrain =
@@ -1475,7 +1479,26 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-            }
+            } else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+            	mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
+				     (elevation > lastelevation ? "small incline" : "small drop")));
+            		if (MechPilot(mech) == -1
+            		 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
+                		mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+            		} else {
+						mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation ?
+						 "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
+                		MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ?
+                		 "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
+                		MechFalls(mech, abs(lastelevation - elevation), 1);
+                		MechDesiredSpeed(mech) = 0;
+                		MechSpeed(mech) = 0;
+						if (elevation > lastelevation) {
+							MOVE_BACK;
+						    }
+					}
+        			return;
+            }	 
             le = elevation - lastelevation;
             le = (le < 0) ? -le : le;
             if (MechZ(mech) != elevation)
@@ -1638,7 +1661,25 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-            }
+				} else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+            		mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!", (elevation > lastelevation ? "small incline" : "small drop")));
+		            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
+		                mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+            		} else {
+            		    mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation
+            		     ? "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
+                		MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation
+                		 ? "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
+                		MechFalls(mech, abs(lastelevation - elevation), 1);
+                		MechDesiredSpeed(mech) = 0;
+                		MechSpeed(mech) = 0;
+                		if (elevation > lastelevation) {
+                        	    MOVE_BACK;
+				    }
+		            }
+			        return;
+		        }
+            
 
             if (!(MechSpecials2(mech) & WATERPROOF_TECH) &&
                     (MechRTerrain(mech) == WATER || 
@@ -1772,7 +1813,30 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
+         	}  else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
+                (elevation > lastelevation ? "small incline" : "small drop")));
+            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
+                collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
+                mech_notify(mech, MECHALL,
+                    "You manage to overcome the obstacle.");
+            } else {
+                mech_notify(mech, MECHALL,
+                    tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." :
+                        "You fall on your rear off the small incline.")));
+                MechLOSBroadcast(mech,
+                    tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." :
+                        "falls off the back of a small incline.")));
+                MechFalls(mech, abs(lastelevation - elevation), 1);
+                MechDesiredSpeed(mech) = 0;
+                MechSpeed(mech) = 0;
+                if (elevation > lastelevation)
+                        {
+                        MOVE_BACK;
+                        }
             }
+        return;
+        }
             if (!(MechSpecials2(mech) & WATERPROOF_TECH) &&
                     (MechRTerrain(mech) == WATER || 
                      (MechRTerrain(mech) == BRIDGE && (lastelevation < (elevation - 1)))) &&
@@ -1972,8 +2036,29 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
+        }  else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain)) && !isunder) {
+            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
+                (elevation > lastelevation ? "small incline" : "small drop")));
+            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
+                collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
+                mech_notify(mech, MECHALL,
+                    "You manage to overcome the obstacle.");
+            } else {
+                mech_notify(mech, MECHALL,
+                    tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." :
+                        "You fall on your rear off the small incline.")));
+                MechLOSBroadcast(mech,
+                    tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." :
+                        "falls off the back of a small incline.")));
+                MechFalls(mech, abs(lastelevation - elevation), 1);
+                MechDesiredSpeed(mech) = 0;
+                MechSpeed(mech) = 0;
+                if (elevation > lastelevation) {
+                        MOVE_BACK;
+                        }
             }
-
+        return;
+        }
             tt = MechRTerrain(mech);
             if ((tt == HEAVY_FOREST || tt == LIGHT_FOREST) &&
                     fabs(MechSpeed(mech)) > MP1) {
@@ -2031,7 +2116,22 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
+        }  else if (Landed(mech) && mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!", (elevation > lastelevation ? "small incline" : "small drop")));
+            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
+                mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+            } else { 
+                mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
+                MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
+                MechFalls(mech, (abs(lastelevation - elevation) + 1000), 1);
+                MechDesiredSpeed(mech) = 0;
+                MechSpeed(mech) = 0;
+                if (elevation > lastelevation) {
+                        MOVE_BACK;
+                        } 
             }
+        return;
+        }
             if (MechRTerrain(mech) == WATER)
                 return;
 
