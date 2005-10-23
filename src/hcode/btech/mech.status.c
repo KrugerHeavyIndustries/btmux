@@ -1469,7 +1469,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	    	critical[ii]) & ROCKET_FIRED)
 		strcat(weapbuff, "%ch%cxEmpty%c  || ");
 	    else if (weapdata[ii])
-		strcat(weapbuff, tprintf(" %2d    || ", weapdata[ii]));
+		strcat(weapbuff, tprintf(" %2d    || ", weapdata[ii]/WEAPON_TICK+(weapdata[ii]%WEAPON_TICK?1:0)));
 	    else if (countDamagedSlotsFromCrit(mech, loop, critical[ii]))
 		strcat(weapbuff, "%crDAMAGED%c|| ");
 	    else

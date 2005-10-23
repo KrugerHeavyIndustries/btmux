@@ -1019,8 +1019,7 @@ void FireWeapon(MECH * mech,
 	    mech_notify(mech, MECHALL,
 		"The ECM confuses your streak homing system!");
 	else if (roll < baseToHit) {
-	    SetRecyclePart(mech, section, critical,
-		MechWeapons[weapindx].vrt);
+	    SetRecyclePart(mech, section, critical, WEAPON_TICK*MechWeapons[weapindx].vrt);
 	    mech_notify(mech, MECHALL, "Your streak fails to lock on.");
 	    return;
 	}
@@ -1235,7 +1234,7 @@ void FireWeapon(MECH * mech,
     }
 
     /* Recycle the weapon */
-    SetRecyclePart(mech, section, critical, MechWeapons[weapindx].vrt);
+    SetRecyclePart(mech, section, critical, WEAPON_TICK*MechWeapons[weapindx].vrt);
 
 		/****************************************
 		* START: Set the heat after firing

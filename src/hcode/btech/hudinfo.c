@@ -375,24 +375,24 @@ static void hud_weapons(DESC * d, MECH * mech, char *msgclass, char *args)
     UpdateRecycling(mech);
 
     for (sect = 0; sect < NUM_SECTIONS; sect++) {
-	weapcount = FindWeapons(mech, sect, weaparray, weapdata, critical);
-	if (weapcount <= 0)
-	    continue;
-	for (i = 0; i < weapcount; i++) {
-	    weapnum++;
-	    sprintf(response, "%d,%d,%d,%s%s,%s,%s,%s",
-		weapnum,
-		weaparray[i],
-		GetPartBrand(mech, sect, critical[i]),
-		ShortArmorSectionString(MechType(mech), MechMove(mech),
-		    sect), GetPartFireMode(mech, sect,
-		    critical[i]) & REAR_MOUNT ? "r" : "",
-		hud_getweaponstatus(mech, sect, critical[i], weapdata[i]),
-		hud_getfiremode(mech, sect, critical[i], weaparray[i]),
-		hud_getammomode(mech, GetPartAmmoMode(mech, sect,
-			critical[i])));
-	    hudinfo_notify(d, msgclass, "L", response);
-	}
+        weapcount = FindWeapons(mech, sect, weaparray, weapdata, critical);
+        if (weapcount <= 0)
+            continue;
+        for (i = 0; i < weapcount; i++) {
+            weapnum++;
+            sprintf(response, "%d,%d,%d,%s%s,%s,%s,%s",
+                    weapnum,
+                    weaparray[i],
+                    GetPartBrand(mech, sect, critical[i]),
+                    ShortArmorSectionString(MechType(mech), MechMove(mech),
+                        sect), GetPartFireMode(mech, sect,
+                            critical[i]) & REAR_MOUNT ? "r" : "",
+                    hud_getweaponstatus(mech, sect, critical[i], weapdata[i]),
+                    hud_getfiremode(mech, sect, critical[i], weaparray[i]),
+                    hud_getammomode(mech, GetPartAmmoMode(mech, sect,
+                            critical[i])));
+            hudinfo_notify(d, msgclass, "L", response);
+        }
     }
     hudinfo_notify(d, msgclass, "D", "Done");
 }
@@ -1088,7 +1088,7 @@ static void hud_weapscan(DESC * d, MECH * mech, char *msgclass, char *args)
 	    sprintf(response, "%d,%d,%s,%s", weapnum, weaparray[i],
 		ShortArmorSectionString(MechType(targ), MechMove(targ),
 		    sect), hud_getweapscanstatus(targ, sect, critical[i],
-		    weapdata[i]));
+		    weapdata[i]/WEAPON_TICK));
 	    hudinfo_notify(d, msgclass, "L", response);
 	}
     }

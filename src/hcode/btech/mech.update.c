@@ -1260,7 +1260,7 @@ int recycle_weaponry(MECH * mech)
     unsigned char weapdata[MAX_WEAPS_SECTION];
     char location[20];
 
-    int diff = (muxevent_tick - MechLWRT(mech)) / WEAPON_TICK;
+    int diff = (muxevent_tick - MechLWRT(mech));
     int lowest = 0;
 
     if (diff < 1) {
