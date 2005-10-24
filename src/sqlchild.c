@@ -34,6 +34,16 @@
 #include "slave.h"
 #include "attrs.h"
 
+/* TODO:
+ * String sanitization.
+ *  - dbi_driver_quote_string_copy ?
+ * 
+ * Handle Timezones in DATETIME
+ *
+ * Handle final write() failing.
+ */
+
+#define DEBUG_SQL
 #ifdef DEBUG_SQL
 #ifndef DEBUG
 #define DEBUG
@@ -476,6 +486,10 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     dprintk("executing query %d.", aqt->serial);
 
     sqlchild_make_connection(aqt->slot);
+    if(!conn) {
+        sqlchild_child_abort_query(aqt, "failed to create connection");
+        return;
+    }
     if(dbi_state!=DBIS_READY) {
         sqlchild_child_abort_query_dbi(aqt, "unknown error in sqlchild_make_connection");
         return;
