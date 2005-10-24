@@ -500,9 +500,14 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     rows = dbi_result_get_numrows(result);
     fields = dbi_result_get_numfields(result);
 
+    delim = NULL;
+    
     while(dbi_result_next_row(result)) {
+        if(delim != NULL) {
+            ptr += snprintf(ptr, eptr-ptr, aqt->rdelim);
+        }
         for(i = 1; i <= fields; i++) {
-            if(fields == i) delim = aqt->rdelim;
+            if(fields == i) delim = "";
             else delim = aqt->cdelim;
             // XXX: handle error values form snprintf()
             switch(dbi_result_get_field_type_idx(result, i)) {
