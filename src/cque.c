@@ -634,7 +634,7 @@ void do_wait(dbref player, dbref cause, int key, char *event, char *cmd, char *c
  * * que_next: Return the time in seconds until the next command should be
  * * run from the queue.
  */
-
+#if 0
 int que_next(void) {
     int min, this;
     BQUE *point;
@@ -686,7 +686,7 @@ int que_next(void) {
     }
     return min - 1;
 }
-
+#endif 
 /*
  * ---------------------------------------------------------------------------
  * * do_second: Check the wait and semaphore queues for commands to remove.
@@ -799,37 +799,41 @@ int do_top(int ncmds) {
                 }
 
                 command = mudstate.qfirst->comm;
-                while (command) {
-                    cp = parse_to(&command, ';', 0);
-                    if (cp && *cp) {
-                        while (command && (*command == '|')) {
-                            command++;
-                            mudstate.inpipe = 1;
-                            mudstate.poutnew =
-                                alloc_lbuf("process_command.pipe");
-                            mudstate.poutbufc = mudstate.poutnew;
-                            mudstate.poutobj = player;
-                            process_command(player, mudstate.qfirst->cause,
-                                    0, cp, mudstate.qfirst->env,
+
+                if(command) {
+                    if(isPlayer(player)) choke_player(player);
+                    while (command) {
+                        cp = parse_to(&command, ';', 0);
+                        if (cp && *cp) {
+                            while (command && (*command == '|')) {
+                                command++;
+                                mudstate.inpipe = 1;
+                                mudstate.poutnew = alloc_lbuf("process_command.pipe");
+                                mudstate.poutbufc = mudstate.poutnew;
+                                mudstate.poutobj = player;
+                                process_command(player, mudstate.qfirst->cause,
+                                        0, cp, mudstate.qfirst->env,
+                                        mudstate.qfirst->nargs);
+                                if (mudstate.pout) {
+                                    free_lbuf(mudstate.pout);
+                                    mudstate.pout = NULL;
+                                }
+
+                                *mudstate.poutbufc = '\0';
+                                mudstate.pout = mudstate.poutnew;
+                                cp = parse_to(&command, ';', 0);
+                            }
+                            mudstate.inpipe = 0;
+                            process_command(player, mudstate.qfirst->cause, 0,
+                                    cp, mudstate.qfirst->env,
                                     mudstate.qfirst->nargs);
                             if (mudstate.pout) {
                                 free_lbuf(mudstate.pout);
                                 mudstate.pout = NULL;
                             }
-
-                            *mudstate.poutbufc = '\0';
-                            mudstate.pout = mudstate.poutnew;
-                            cp = parse_to(&command, ';', 0);
-                        }
-                        mudstate.inpipe = 0;
-                        process_command(player, mudstate.qfirst->cause, 0,
-                                cp, mudstate.qfirst->env,
-                                mudstate.qfirst->nargs);
-                        if (mudstate.pout) {
-                            free_lbuf(mudstate.pout);
-                            mudstate.pout = NULL;
                         }
                     }
+                    if(isPlayer(player)) release_player(player);
                 }
             }
         }

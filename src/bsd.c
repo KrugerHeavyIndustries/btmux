@@ -32,12 +32,13 @@
 #include <errno.h>
 #include "logcache.h"
 
-#define DEBUG_BSD
 #ifdef DEBUG_BSD
+#ifndef DEBUG
 #define DEBUG
 #endif
-
+#endif
 #include "debug.h"
+
 #if SQL_SUPPORT
 #include "sqlchild.h"
 #endif
@@ -377,13 +378,22 @@ void accept_client_input(int fd, short event, void *arg) {
     }
 }
 
+void bsd_write_callback(struct bufferevent *bufev, void *arg) {
+    dprintk("write.");
+}
+
+void bsd_read_callback(struct bufferevent *bufev, void *arg) {
+    dprintk("read.");
+}
+
+void bsd_error_callback(struct bufferevent *bufev, short whut, void *arg) {
+    dprintk("error %d", whut);
+}
+
 void accept_new_connection(int fd, short event, void *arg) {
     DESC *newfd;
 
     newfd = new_connection(fd);
-    event_set(&newfd->sock_ev, newfd->descriptor, EV_READ | EV_PERSIST, 
-            accept_client_input, newfd);
-    event_add(&newfd->sock_ev, NULL);
 }
 
 void accept_slave_input(int fd, short event, void *arg) {
@@ -398,8 +408,7 @@ void accept_slave_input(int fd, short event, void *arg) {
 #endif
 
 void shovechars(int port) {
-    struct timeval last_slice, current_time, next_slice, timeout,
-                   slice_timeout;
+    struct timeval last_slice, current_time, next_slice, slice_timeout;
 
     mudstate.debug_cmd = (char *) "< shovechars >";
 
@@ -433,8 +442,6 @@ void shovechars(int port) {
          * any queued robot commands waiting? 
          */
 
-        timeout.tv_sec = que_next();
-        timeout.tv_usec = 0;
         next_slice = msec_add(last_slice, mudconf.timeslice);
         slice_timeout = timeval_sub(next_slice, current_time);
 
@@ -622,21 +629,22 @@ void shutdownsock(DESC *d, int reason) {
             free_lbuf(buff);
             free_sbuf(buff2);
             ENDLOG;
-        } announce_disconnect(d->player, d, disc_messages[reason]);
+        } 
+        announce_disconnect(d->player, d, disc_messages[reason]);
     } else {
         if (reason == R_LOGOUT)
             reason = R_QUIT;
-        STARTLOG(LOG_SECURITY | LOG_NET, "NET", "DISC") {
-            buff = alloc_mbuf("shutdownsock.LOG.neverconn");
-            sprintf(buff,
-                    "[%d/%s] Connection closed, never connected. <Reason: %s>",
-                    d->descriptor, d->addr, disc_reasons[reason]);
-            log_text(buff);
-            free_mbuf(buff);
+            STARTLOG(LOG_SECURITY | LOG_NET, "NET", "DISC") {
+                buff = alloc_mbuf("shutdownsock.LOG.neverconn");
+                sprintf(buff,
+                        "[%d/%s] Connection closed, never connected. <Reason: %s>",
+                        d->descriptor, d->addr, disc_reasons[reason]);
+                log_text(buff);
+                free_mbuf(buff);
             ENDLOG;
         }
     }
-    // process_output(d);
+    
     clearstrings(d);
     if (reason == R_LOGOUT) {
         d->flags &= ~DS_CONNECTED;
@@ -657,6 +665,7 @@ void shutdownsock(DESC *d, int reason) {
         d->output_tot = 0;
         welcome_user(d);
     } else {
+        bufferevent_free(d->sock_buff);
         event_del(&d->sock_ev);
         shutdown(d->descriptor, 2);
         close(d->descriptor);
@@ -687,13 +696,10 @@ void shutdownsock(DESC *d, int reason) {
 }
 
 void make_nonblocking(int s) {
-    long flags;
+    long flags=0;
 
-    if(fcntl(s, F_GETFL, &flags)<0) {
-        log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_GETFL");
-    }
     flags |= O_NONBLOCK;
-    if(fcntl(s, F_SETFL, flags)<0) {
+    if(fcntl(s, F_SETFL, flags) < 0) {
         log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_SETFL");
     }
     flags = 1;
@@ -710,8 +716,6 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     ndescriptors++;
     d = alloc_desc("init_sock");
     d->descriptor = s;
-    if (fcache_conn_c)
-        d->logo = rand() % fcache_conn_c;
     d->flags = 0;
     d->connected_at = mudstate.now;
     d->retries_left = mudconf.retry_limit;
@@ -724,6 +728,7 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     d->player = 0;		/*
                          * be sure #0 isn't wizard.  Shouldn't be. 
                          */
+    d->chokes = 0;
 
     d->addr[0] = '\0';
     d->doing[0] = '\0';
@@ -755,6 +760,15 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     d->prev = &descriptor_list;
     StringCopyTrunc(d->addr, inet_ntoa(a->sin_addr), 50);
     descriptor_list = d;
+
+    d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
+            bsd_read_callback, bsd_error_callback, NULL);
+    bufferevent_disable(d->sock_buff, EV_READ);
+    bufferevent_enable(d->sock_buff, EV_WRITE);
+    event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
+            accept_client_input, d);
+    event_add(&d->sock_ev, NULL);
+
     welcome_user(d);
     return d;
 }
@@ -851,6 +865,7 @@ void close_sockets(int emergency, char *message) {
             if (shutdown(d->descriptor, 2) < 0)
                 log_perror("NET", "FAIL", NULL, "shutdown");
             close(d->descriptor);
+            bufferevent_free(d->sock_buff);
             event_del(&d->sock_ev);
         } else {
             queue_string(d, message);

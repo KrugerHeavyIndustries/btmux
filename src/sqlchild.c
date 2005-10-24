@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <dbi/dbi.h>
+#include <string.h>
 
 #include "mudconf.h"
 #include "config.h"

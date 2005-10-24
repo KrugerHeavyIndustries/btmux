@@ -1152,7 +1152,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     }
 
 
-    if(isPlayer(player)) choke_player(player);
+//    if(isPlayer(player)) choke_player(player);
 
     /*
      * Make sure player isn't going or halted 
@@ -1526,7 +1526,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     mudstate.debug_cmd = cmdsave;
 
 exit:
-    if(isPlayer(player)) release_player(player);
+//    if(isPlayer(player)) release_player(player);
     return;
 }
 

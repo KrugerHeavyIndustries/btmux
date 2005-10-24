@@ -78,7 +78,6 @@ struct prog_data {
 typedef struct descriptor_data DESC;
 struct descriptor_data {
     int descriptor;
-    int logo;
     int flags;
     int retries_left;
     int command_count;
@@ -97,6 +96,7 @@ struct descriptor_data {
     int input_size;
     int input_tot;
     int input_lost;
+    int chokes;
     CBLK *input_head;
     CBLK *input_tail;
     CBLK *raw_input;
@@ -112,6 +112,7 @@ struct descriptor_data {
     struct descriptor_data *next;
     struct descriptor_data **prev;
     struct event sock_ev;
+    struct bufferevent *sock_buff;
 };
 
 /* flags in the flag field */
@@ -193,11 +194,5 @@ extern void do_hudinfo(DESC *, char *);
 	for (d=descriptor_list,n=((d!=NULL) ? d->next : NULL); \
 	     d; \
 	     d=n,n=((n!=NULL) ? n->next : NULL))
-#if 0
-#define MALLOC(result, type, number, where) do { \
-	if (!((result)=(type *) XMALLOC (((number) * sizeof (type)), where))) \
-		panic("Out of memory", 1);				\
-	} while (0)
-#endif
 
 #endif
