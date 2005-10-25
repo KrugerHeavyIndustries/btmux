@@ -426,7 +426,7 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
 
 	mech_notify(objMech, MECHALL,
 	    tprintf
-	    ("You finish bouncing around and realize you nolonger have ammo for your %s!",
+	    ("You finish bouncing around and realize you no longer have ammo for your %s!",
 		get_parts_long_name(I2Weapon(wWeapIdx), 0)));
 	return;
     }

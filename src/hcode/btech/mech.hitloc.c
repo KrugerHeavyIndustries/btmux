@@ -1227,7 +1227,7 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 	else
 	    mech_notify(mech, MECHALL,
 		tprintf
-		("%%cr%%chYour motive system is destroyed! Your %s can nolonger move!%%cn",
+		("%%cr%%chYour motive system is destroyed! Your %s can no longer move!%%cn",
 		    strVhlTypeName));
 
 	if (MechSpeed(mech) > 0)

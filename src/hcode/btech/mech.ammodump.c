@@ -47,7 +47,7 @@ static void mech_dump_event(MUXEVENT * ev)
 	else {
 	    mech_notify(mech, MECHALL, "All ammunition dumped.");
 	    MechLOSBroadcast(mech,
-		"nolonger has ammo dumping from hatches on its back.");
+		"no longer has ammo dumping from hatches on its back.");
 	}
 	return;
     }
@@ -67,7 +67,7 @@ static void mech_dump_event(MUXEVENT * ev)
 	    mech_notify(mech, MECHALL,
 		tprintf("All ammunition in %s dumped.", buf));
 	    MechLOSBroadcast(mech,
-		"nolonger has ammo dumping from hatches on its back.");
+		"no longer has ammo dumping from hatches on its back.");
 	}
 	return;
     }
@@ -86,7 +86,7 @@ static void mech_dump_event(MUXEVENT * ev)
 	    mech_notify(mech, MECHALL, tprintf("Ammunition for %s dumped!",
 		    get_parts_long_name(I2Weapon(weapindx), 0)));
 	    MechLOSBroadcast(mech,
-		"nolonger has ammo dumping from hatches on its back.");
+		"no longer has ammo dumping from hatches on its back.");
 	}
 	return;
     }
@@ -102,7 +102,7 @@ static void mech_dump_event(MUXEVENT * ev)
 	mech_notify(mech, MECHALL,
 	    tprintf("Ammunition in %s crit %i dumped!", buf, i + 1));
 	MechLOSBroadcast(mech,
-	    "nolonger has ammo dumping from hatches on its back.");
+	    "no longer has ammo dumping from hatches on its back.");
     }
 }
 
@@ -136,7 +136,7 @@ void mech_dump(dbref player, void *data, char *buffer)
 	mech_notify(mech, MECHALL, "Ammo dumping halted.");
 	StopDump(mech);
 	MechLOSBroadcast(mech,
-	    "nolonger has ammo dumping from hatches on its back.");
+	    "no longer has ammo dumping from hatches on its back.");
 	return;
     } else if (!strcasecmp(args[0], "all")) {
 	count = 0;

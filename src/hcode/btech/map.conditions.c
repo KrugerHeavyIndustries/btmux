@@ -291,7 +291,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 	    !OODing(wounded) && attacker) {
 	    if (tDoAutoFall) {
 		mech_notify(wounded, MECHALL,
-		    "You realize remaining standing is nolonger an option and crash to the ground!");
+		    "You realize remaining standing is no longer an option and crash to the ground!");
 		MechLOSBroadcast(wounded, "crashes to the ground!");
 		MechFalls(wounded, 1, 0);
 	    } else if (!MadePilotSkillRoll(wounded, 0)) {

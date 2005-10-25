@@ -1818,10 +1818,12 @@ void auto_gun_event(MUXEVENT *muxevent) {
                 if (GetSectInt(mech, TURRET) && temp_weapon_node->section == TURRET) {
 
                     /* Rotate Turret and nail the guy */
+                    if (MechTurretFacing(mech) != FindBearing(MechFX(mech),
+                        MechFY(mech), MechFX(target), MechFY(target))) {
                     snprintf(buffer, LBUF_SIZE, "%d", FindBearing(MechFX(mech), 
                                 MechFY(mech), MechFX(target), MechFY(target)));
                     mech_turret(autopilot->mynum, mech, buffer);
-
+                    }
                 } else {
 
                     /* Check if in arc of weapon */

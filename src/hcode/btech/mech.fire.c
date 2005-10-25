@@ -79,7 +79,7 @@ static void vehicle_burn_event(MUXEVENT * objEvent)
 		tprintf("The fire burning on your %s finally goes out.",
 		    strLocName));
 	if (!Burning(objMech))
-	    MechLOSBroadcast(objMech, "is nolonger engulfed in flames.");
+	    MechLOSBroadcast(objMech, "is no longer engulfed in flames.");
     }
 }
 
@@ -124,7 +124,7 @@ void vehicle_extinquish_fire_event(MUXEVENT * e)
     StopBurning(objMech);
 
     mech_notify(objMech, MECHALL, "You manage to dowse the fire.");
-    MechLOSBroadcast(objMech, "is nolonger engulfed in flames.");
+    MechLOSBroadcast(objMech, "is no longer engulfed in flames.");
 }
 
 void vehicle_extinquish_fire(dbref player, MECH * mech, char *buffer)
