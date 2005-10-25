@@ -2918,6 +2918,10 @@ void dump_restart_db()
 
 void accept_client_input(int fd, short event, void *arg);
 
+void bsd_write_callback(struct bufferevent *bufev, void *arg);
+void bsd_read_callback(struct bufferevent *bufev, void *arg);
+void bsd_error_callback(struct bufferevent *bufev, short whut, void *arg);
+
 void load_restart_db() {
     FILE *f;
     DESC *d;
@@ -2985,7 +2989,6 @@ void load_restart_db() {
         else
             d->hudkey[0] = '\0';
 
-
         d->output_size = 0;
         d->output_tot = 0;
         d->output_lost = 0;
@@ -3014,6 +3017,10 @@ void load_restart_db() {
             d->prev = &descriptor_list;
             descriptor_list = d;
         }
+    d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
+            bsd_read_callback, bsd_error_callback, NULL);
+    bufferevent_disable(d->sock_buff, EV_READ);
+    bufferevent_enable(d->sock_buff, EV_WRITE);
 
         event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
                 accept_client_input, d);

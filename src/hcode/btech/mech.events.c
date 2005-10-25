@@ -167,23 +167,23 @@ void MaybeRecycle(MECH * mech, int wticks)
     int nr, dat;
 
     if (!(Started(mech) && !Destroyed(mech)))
-	return;
+        return;
     nr = NextRecycle(mech);
     UpdateRecycling(mech);
     if (nr < 0)
-	MechLWRT(mech) = muxevent_tick;
-    if (nr < 0 || nr > ((wticks + 1) * WEAPON_TICK)) {
-	dat = MAX(1, wticks * WEAPON_TICK);
-	MECHEVENT(mech, EVENT_RECYCLE, mech_recycle_event, dat, 0);
+        MechLWRT(mech) = muxevent_tick;
+    if (nr < 0 || nr > ((wticks + 1))) {
+        dat = MAX(1, wticks);
+        MECHEVENT(mech, EVENT_RECYCLE, mech_recycle_event, dat, 0);
 #ifdef WEAPON_RECYCLE_DEBUG
-	SendDebug(tprintf("%6d Recycle event for #%d set in %ds.",
-		muxevent_tick, mech->mynum, dat));
+        SendDebug(tprintf("%6d Recycle event for #%d set in %ds.",
+                    muxevent_tick, mech->mynum, dat));
 #endif
     }
 #ifdef WEAPON_RECYCLE_DEBUG
     else
-	SendDebug(tprintf("%6d Recycle event for #%d exists at %d secs",
-		muxevent_tick, mech->mynum, nr));
+        SendDebug(tprintf("%6d Recycle event for #%d exists at %d secs",
+                    muxevent_tick, mech->mynum, nr));
 #endif
 }
 
