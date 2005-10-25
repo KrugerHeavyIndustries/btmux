@@ -186,9 +186,6 @@ extern int malloc_count;
 #define srandom srand
 #endif /* HAVE_SRANDOM */
 
-#define DEBUG_BSD
-#define DEBUG_SQL
-
 #ifndef HAVE_STRNLEN
 size_t strnlen(const char *s, size_t maxlen);
 #endif

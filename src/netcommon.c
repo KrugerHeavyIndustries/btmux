@@ -34,13 +34,12 @@
 #include "config.h"
 #include "p.comsys.h"
 
-#define DEBUG_NETCOMMON
 #ifdef DEBUG_NETCOMMON
 #ifndef DEBUG
 #define DEBUG
 #endif
-#include "debug.h"
 #endif
+#include "debug.h"
 
 
 
@@ -125,7 +124,7 @@ struct timeval update_quotas(struct timeval last, struct timeval current) {
     int nslices;
     DESC *d;
 
-    nslices = msec_diff(current, last) / mudconf.timeslice;
+    nslices = msec_diff(current, last) / (mudconf.timeslice > 0 ? mudconf.timeslice : 1);
 
     if (nslices > 0) {
         DESC_ITER_ALL(d) {
@@ -162,9 +161,14 @@ void choke_player(dbref player) {
     int eins = 1, null = 0; 
 
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
-            log_perror("NET", "FAIL", "choke_player", "setsockopt");
+        if(d->chokes == 0) {
+            dprintk("Choking player %d, fd %d", d->player, d->descriptor);
+            if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
+                // XXX: currently we ignore the error, because if its not supported,
+                // then we'd spam the logs; other errors will be caught in the event loop.
+            } 
         } 
+        d->chokes++;
     }
 }
 
@@ -173,12 +177,17 @@ void release_player(dbref player) {
     int eins = 1, null = 0;
 
     DESC_ITER_PLAYER(player, d) {
-       if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null))<0) {
-            log_perror("NET", "FAIL", "release_player", "setsockopt");
-        } 
+        d->chokes--;
+        if(d->chokes == 0) {
+            dprintk("Releasing player %d, fd %d", d->player, d->descriptor);
+            if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null))<0) {
+                // XXX: current we ignore any error, ebcause if its not supported,
+                // then we'd spam the logs; other errors will be caught in the event loop.
+            } 
+        }
     }
 }
-#endif
+#else
 #ifdef TCP_NOPUSH // *BSD, Mac OSX
 /* choke_player: cork the player's sockets, must have a matching release_socket */
 void choke_player(dbref player) {
@@ -202,7 +211,16 @@ void release_player(dbref player) {
         } 
     }
 }
+#else /* no OS support for network block coalescing. */
+void choke_player(dbref player) {
+    // Do nothing!
+}
+void release_player(dbref player) {
+    // Do nothing!
+}
 #endif
+#endif
+
 
 
 
@@ -341,12 +359,9 @@ void queue_write(DESC *d, const char *b, int n) {
     if (n <= 0)
         return;
 
-    retval = write(d->descriptor, b, n);
-     if(retval < 0) {
-        fprintf(stderr, "queue_write] write() returned %s.\n", strerror(errno));
-    } else if(retval < n) {
-        fprintf(stderr, "queue_write] truncated write: %d of %d.\n", retval, n);
-    } 
+    bufferevent_write(d->sock_buff, b, n);
+    d->output_tot += n;
+    dprintk("queued %d bytes.", n);
     return;
 }
 
@@ -470,8 +485,7 @@ void welcome_user(DESC *d) {
         fcache_dump(d, FC_CONN_REG);
     else {
         if (fcache_conn_c) {
-            fcache_dump_conn(d,
-                    d->logo < fcache_conn_c ? d->logo : (fcache_conn_c - 1));
+            fcache_dump_conn(d, rand() % fcache_conn_c);
             return;
         }
         fcache_dump(d, FC_CONN);
@@ -488,21 +502,21 @@ void save_command(DESC *d, CBLK *command) {
     d->input_tail = command;
 }
 
-    static void set_userstring(char **userstring, const char *command) {
-        while (*command && isascii(*command) && isspace(*command))
-            command++;
-        if (!*command) {
-            if (*userstring != NULL) {
-                free_lbuf(*userstring);
-                *userstring = NULL;
-            }
-        } else {
-            if (*userstring == NULL) {
-                *userstring = alloc_lbuf("set_userstring");
-            }
-            StringCopy(*userstring, command);
+static void set_userstring(char **userstring, const char *command) {
+    while (*command && isascii(*command) && isspace(*command))
+        command++;
+    if (!*command) {
+        if (*userstring != NULL) {
+            free_lbuf(*userstring);
+            *userstring = NULL;
         }
+    } else {
+        if (*userstring == NULL) {
+            *userstring = alloc_lbuf("set_userstring");
+        }
+        StringCopy(*userstring, command);
     }
+}
 
 static void parse_connect(const char *msg, char *command, char *user, char *pass) {
     char *p;
@@ -865,6 +879,7 @@ void announce_disconnect(dbref player, DESC *d, const char *reason) {
     }
 
     mudstate.curr_enactor = temp;
+    release_player(player);
     desc_delhash(d);
 }
 
@@ -1633,6 +1648,7 @@ int do_command(DESC *d, char *command, int first) {
             */
         if (d->flags & DS_CONNECTED) {
             d->command_count++;
+            choke_player(d->player);
             if (d->output_prefix) {
                 queue_string(d, d->output_prefix);
                 queue_write(d, "\r\n", 2);
@@ -1645,6 +1661,7 @@ int do_command(DESC *d, char *command, int first) {
                 queue_string(d, d->output_suffix);
                 queue_write(d, "\r\n", 2);
             }
+            release_player(d->player);
             mudstate.debug_cmd = cmdsave;
             return 1;
         } else {
