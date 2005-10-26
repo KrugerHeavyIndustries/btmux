@@ -263,8 +263,8 @@ static void do_show_com(chmsg * d) {
 static void do_comlast(dbref player, struct channel *ch) {
 #ifdef CHANNEL_HISTORY
     if (!myfifo_length(&ch->last_messages)) {
-        notify(player, tprintf("There haven't been any messages on %s.",
-                    ch->name));
+        notify_printf(player, "There haven't been any messages on %s.",
+                    ch->name);
         return;
     }
     cheat_player = player;
@@ -291,7 +291,7 @@ void do_processcom(dbref player, char *arg1, char *arg2) {
     }
 
     if (!(ch = select_channel(arg1))) {
-        raw_notify(player, tprintf("Unknown channel %s.", arg1));
+        notify_printf(player, "Unknown channel %s.", arg1);
         return;
     }
     if (!(user = select_user(ch, player))) {
@@ -304,22 +304,21 @@ void do_processcom(dbref player, char *arg1, char *arg2) {
     } else if (!strcasecmp(arg2, "off")) {
         do_leavechannel(player, ch);
     } else if (!user->on && !Wizard(player) && !mudconf.allow_chanlurking) {
-        raw_notify(player, tprintf("You must be on %s to do that.", arg1));
+        notify_printf(player, "You must be on %s to do that.", arg1);
         return;
     } else if (!strcasecmp(arg2, "who")) {
         do_comwho(player, ch);
     } else if (!strcasecmp(arg2, "last")) {
         do_comlast(player, ch);
     } else if (!user->on) {
-        raw_notify(player, tprintf("You must be on %s to do that.", arg1));
+        notify_printf(player, "You must be on %s to do that.", arg1);
         return;
     } else if (!do_test_access(player, CHANNEL_TRANSMIT, ch)) {
         raw_notify(player, "That channel type cannot be transmitted on.");
         return;
     } else {
         if (!payfor(player, Guest(player) ? 0 : ch->charge)) {
-            notify(player, tprintf("You don't have enough %s.",
-                        mudconf.many_coins));
+            notify_printf(player, "You don't have enough %s.", mudconf.many_coins);
             return;
         } else {
             ch->amount_col += ch->charge;
@@ -400,8 +399,8 @@ static void do_joinchannel(dbref player, struct channel *ch) {
     } else if (!user->on) {
         user->on = 1;
     } else {
-        raw_notify(player, tprintf("You are already on channel %s.",
-                    ch->name));
+        notify_printf(player, "You are already on channel %s.",
+                    ch->name);
         return;
     }
 
@@ -419,7 +418,7 @@ static void do_leavechannel(dbref player, struct channel *ch) {
     if (!user)
         return;
 
-    raw_notify(player, tprintf("You have left channel %s.", ch->name));
+    notify_printf(player, "You have left channel %s.", ch->name);
 
     if ((user->on) && (!Dark(player))) {
         char *c = Name(player);
@@ -450,10 +449,10 @@ static void do_comwho(dbref player, struct channel *ch) {
             if (i > 30) {
                 char *c = get_uptime_to_string(i);
 
-                raw_notify(player, tprintf("%s [idle %s]", buff, c));
+                notify_printf(player, "%s [idle %s]", buff, c);
                 free_sbuf(c);
             } else
-                raw_notify(player, tprintf("%s", buff));
+                notify_printf(player, "%s", buff);
             free_lbuf(buff);
         }
     }
@@ -463,11 +462,11 @@ static void do_comwho(dbref player, struct channel *ch) {
         if (Typeof(user->who) != TYPE_PLAYER && user->on &&
                 !(Going(user->who) && God(Owner(user->who)))) {
             buff = unparse_object(player, user->who, 0);
-            raw_notify(player, tprintf("%s", buff));
+            notify_printf(player, "%s", buff);
             free_lbuf(buff);
         }
     }
-    raw_notify(player, tprintf("-- %s --", ch->name));
+    notify_printf(player, "-- %s --", ch->name);
 }
 
 struct channel *select_channel(char *channel) {
@@ -556,8 +555,7 @@ void do_addcom(dbref player, dbref cause, int key, char *arg1, char *arg2) {
     }
 
     if (!(ch = select_channel(channel))) {
-        raw_notify(player, tprintf("Channel %s does not exist yet.",
-                    channel));
+        notify_printf(player, "Channel %s does not exist yet.", channel);
         return;
     }
     if (!do_test_access(player, CHANNEL_JOIN, ch)) {
@@ -573,9 +571,8 @@ void do_addcom(dbref player, dbref cause, int key, char *arg1, char *arg2) {
     for (where = 0; where < c->numchannels &&
             (strcasecmp(arg1, c->alias + where * 6) > 0); where++);
     if (where < c->numchannels && !strcasecmp(arg1, c->alias + where * 6)) {
-        raw_notify(player,
-                tprintf("That alias is already in use for channel %s.",
-                    c->channels[where]));
+        notify_printf(player, "That alias is already in use for channel %s.",
+                    c->channels[where]);
         return;
     }
     if (c->numchannels >= c->maxchannels) {
@@ -601,12 +598,11 @@ void do_addcom(dbref player, dbref cause, int key, char *arg1, char *arg2) {
     do_setnewtitle(player, ch, title);
 
     if (title[0])
-        raw_notify(player,
-                tprintf("Channel %s added with alias %s and title %s.",
-                    channel, arg1, title));
+        notify_printf(player, "Channel %s added with alias %s and title %s.",
+                    channel, arg1, title);
     else
-        raw_notify(player, tprintf("Channel %s added with alias %s.",
-                    channel, arg1));
+        notify_printf(player, "Channel %s added with alias %s.",
+                    channel, arg1);
 }
 
 static void do_setnewtitle(dbref player, struct channel *ch, char *title) {
@@ -644,8 +640,8 @@ void do_delcom(dbref player, dbref cause, int key, char *arg1) {
     for (i = 0; i < c->numchannels; i++) {
         if (!strcasecmp(arg1, c->alias + i * 6)) {
             do_delcomchannel(player, c->channels[i]);
-            raw_notify(player, tprintf("Channel %s deleted.",
-                        c->channels[i]));
+            notify_printf(player, "Channel %s deleted.",
+                        c->channels[i]);
             free(c->channels[i]);
 
             c->numchannels--;
@@ -667,7 +663,7 @@ void do_delcomchannel(dbref player, char *channel) {
     int i;
 
     if (!(ch = select_channel(channel))) {
-        raw_notify(player, tprintf("Unknown channel %s.", channel));
+        notify_printf(player, "Unknown channel %s.", channel);
     } else {
         for (i = 0; i < ch->num_users; i++) {
             user = ch->users[i];
@@ -681,8 +677,7 @@ void do_delcomchannel(dbref player, char *channel) {
                                 tprintf("[%s] %s has left this channel.",
                                     channel, c));
                 }
-                raw_notify(player, tprintf("You have left channel %s.",
-                            channel));
+                notify_printf(player, "You have left channel %s.", channel);
 
                 if (user->title)
                     free(user->title);
@@ -704,7 +699,7 @@ void do_createchannel(dbref player, dbref cause, int key, char *channel) {
         return;
     }
     if (select_channel(channel)) {
-        raw_notify(player, tprintf("Channel %s already exists.", channel));
+        notify_printf(player, "Channel %s already exists.", channel);
         return;
     }
     if (!*channel) {
@@ -739,7 +734,7 @@ void do_createchannel(dbref player, dbref cause, int key, char *channel) {
 
     hashadd(newchannel->name, (int *) newchannel, &mudstate.channel_htab);
 
-    raw_notify(player, tprintf("Channel %s created.", channel));
+    notify_printf(player, "Channel %s created.", channel);
 }
 
 void do_destroychannel(dbref player, dbref cause, int key, char *channel) {
@@ -753,7 +748,7 @@ void do_destroychannel(dbref player, dbref cause, int key, char *channel) {
     ch = (struct channel *) hashfind(channel, &mudstate.channel_htab);
 
     if (!ch) {
-        raw_notify(player, tprintf("Could not find channel %s.", channel));
+        notify_printf(player, "Could not find channel %s.", channel);
         return;
     } else if (!(Comm_All(player)) && (player != ch->charge_who)) {
         raw_notify(player, "You do not have permission to do that. ");
@@ -767,7 +762,7 @@ void do_destroychannel(dbref player, dbref cause, int key, char *channel) {
     }
     free(ch->users);
     free(ch);
-    raw_notify(player, tprintf("Channel %s destroyed.", channel));
+    notify_printf(player, "Channel %s destroyed.", channel);
 }
 
 void do_listchannels(dbref player) {
@@ -786,9 +781,8 @@ void do_listchannels(dbref player) {
         if (perm || (ch->type & CHANNEL_PUBLIC)
                 || ch->charge_who == player) {
 
-            raw_notify(player,
-                    tprintf
-                    ("%c%c %-20.20s %c%c%c/%c%c%c %5d %5d %8d %8d %6d %10d",
+            notify_printf(player,
+                    "%c%c %-20.20s %c%c%c/%c%c%c %5d %5d %8d %8d %6d %10d",
                      (ch->type & (CHANNEL_PUBLIC)) ? 'P' : '-',
                      (ch->type & (CHANNEL_LOUD)) ? 'L' : '-', ch->name,
                      (ch->type & (CHANNEL_PL_MULT *
@@ -805,7 +799,7 @@ void do_listchannels(dbref player) {
                                   CHANNEL_RECIEVE)) ? 'r' : '-',
                      (ch->chan_obj != NOTHING) ? ch->chan_obj : -1,
                      ch->charge_who, ch->charge, ch->amount_col,
-                     ch->num_users, ch->num_messages));
+                     ch->num_users, ch->num_messages);
         }
     raw_notify(player, "-- End of list of Channels --");
 }
@@ -830,8 +824,8 @@ void do_comtitle(dbref player, dbref cause, int key, char *arg1, char *arg2) {
         return;
     }
     if ((ch = select_channel(channel)) && select_user(ch, player)) {
-        raw_notify(player, tprintf("Title set to '%s' on channel %s.",
-                    arg2, channel));
+        notify_printf(player, "Title set to '%s' on channel %s.",
+                    arg2, channel);
         do_setnewtitle(player, ch, arg2);
     }
     if (!ch) {
@@ -856,13 +850,12 @@ void do_comlist(dbref player, dbref cause, int key) {
 
     for (i = 0; i < c->numchannels; i++) {
         if ((user = select_user(select_channel(c->channels[i]), player))) {
-            raw_notify(player, tprintf("%-9.9s %-19.19s %-39.39s %s",
+            notify_printf(player, "%-9.9s %-19.19s %-39.39s %s",
                         c->alias + i * 6, c->channels[i],
-                        user->title, (user->on ? "on" : "off")));
+                        user->title, (user->on ? "on" : "off"));
         } else {
-            raw_notify(player,
-                    tprintf("Bad Comsys Alias: %s for Channel: %s",
-                        c->alias + i * 6, c->channels[i]));
+            notify_printf(player, "Bad Comsys Alias: %s for Channel: %s",
+                        c->alias + i * 6, c->channels[i]);
         }
     }
     raw_notify(player, "-- End of comlist --");
@@ -977,17 +970,15 @@ void do_channelwho(dbref player, dbref cause, int key, char *arg1) {
     }
 
     if (!(ch = select_channel(channel))) {
-        tprintf(ansibuffer, LBUF_SIZE, "Unknown channel %s.", channel);
-        raw_notify(player, ansibuffer);
+        notify_printf(player, "Unknown channel \"%s\".", channel);
         return;
     }
     if (!((Comm_All(player)) || (player == ch->charge_who))) {
         raw_notify(player, "You do not have permission to do that.");
         return;
     }
-    raw_notify(player, tprintf("-- %s --", ch->name));
-    raw_notify(player, tprintf("%-29.29s %-6.6s %-6.6s", "Name", "Status",
-                "Player"));
+    notify_printf(player, "-- %s --", ch->name);
+    notify_printf(player, "%-29.29s %-6.6s %-6.6s", "Name", "Status", "Player");
     for (i = 0; i < ch->num_users; i++) {
         user = ch->users[i];
         if ((flag || UNDEAD(user->who)) && (!Hidden(user->who) ||
@@ -995,13 +986,13 @@ void do_channelwho(dbref player, dbref cause, int key, char *arg1) {
                     Wizard_Who(player))) {
             cp = unparse_object(player, user->who, 0);
             strip_ansi_r(ansibuffer, cp, LBUF_SIZE);
-            raw_notify(player, tprintf("%-29.29s %-6.6s %-6.6s", ansibuffer,
+            notify_printf(player, "%-29.29s %-6.6s %-6.6s", ansibuffer,
                         ((user->on) ? "on " : "off"),
-                        (Typeof(user->who) == TYPE_PLAYER) ? "yes" : "no "));
+                        (Typeof(user->who) == TYPE_PLAYER) ? "yes" : "no ");
             free_lbuf(cp);
         }
     }
-    raw_notify(player, tprintf("-- %s --", ch->name));
+    notify_printf(player, "-- %s --", ch->name);
 }
 
 void do_comdisconnectraw_notify(dbref player, char *chan) {
@@ -1047,13 +1038,12 @@ void do_comconnectchannel(dbref player, char *channel, char *alias, int i) {
                 user->on_next = ch->on_users;
                 ch->on_users = user;
             } else
-                raw_notify(player,
-                        tprintf("Bad Comsys Alias: %s for Channel: %s",
-                            alias + i * 6, channel));
+                notify_printf(player,"Bad Comsys Alias: %s for Channel: %s",
+                            alias + i * 6, channel);
         }
     } else
-        raw_notify(player, tprintf("Bad Comsys Alias: %s for Channel: %s",
-                    alias + i * 6, channel));
+        notify_printf(player, "Bad Comsys Alias: %s for Channel: %s",
+                    alias + i * 6, channel);
 }
 
 void do_comdisconnect(dbref player) {
@@ -1123,7 +1113,7 @@ void do_editchannel(dbref player, dbref cause, int flag, char *arg1, char *arg2)
         return;
     }
     if (!(ch = select_channel(arg1))) {
-        raw_notify(player, tprintf("Unknown channel %s.", arg1));
+        notify_printf(player, "Unknown channel %s.", arg1);
         return;
     }
     if (!((Comm_All(player)) || (player == ch->charge_who))) {
@@ -1283,8 +1273,7 @@ void do_chclose(dbref player, char *chan) {
     struct channel *ch;
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.", chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1292,8 +1281,8 @@ void do_chclose(dbref player, char *chan) {
         return;
     }
     ch->type &= (~(CHANNEL_PUBLIC));
-    raw_notify(player,
-            tprintf("@cset: Channel %s taken off the public listings.", chan));
+    notify_printf(player,
+            "@cset: Channel %s taken off the public listings.", chan);
     return;
 }
 
@@ -1306,7 +1295,7 @@ void do_cemit(dbref player, dbref cause, int key, char *chan, char *text) {
         return;
     }
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("Channel %s does not exist.", chan));
+        notify_printf(player, "Channel %s does not exist.", chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1354,8 +1343,8 @@ void do_chopen(dbref player, dbref cause, int key, char *chan, char *object) {
     }
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.",
+                    chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1363,8 +1352,8 @@ void do_chopen(dbref player, dbref cause, int key, char *chan, char *object) {
         return;
     }
     ch->type |= (CHANNEL_PUBLIC);
-    raw_notify(player,
-            tprintf("@cset: Channel %s placed on the public listings.", chan));
+    notify_printf(player, "@cset: Channel %s placed on the public listings.", 
+            chan);
     return;
 }
 
@@ -1372,8 +1361,8 @@ void do_chloud(dbref player, char *chan) {
     struct channel *ch;
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.",
+                    chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1381,9 +1370,9 @@ void do_chloud(dbref player, char *chan) {
         return;
     }
     ch->type |= (CHANNEL_LOUD);
-    raw_notify(player,
-            tprintf("@cset: Channel %s now sends connect/disconnect msgs.",
-                chan));
+    notify_printf(player,
+            "@cset: Channel %s now sends connect/disconnect msgs.",
+                chan);
     return;
 }
 
@@ -1391,8 +1380,8 @@ void do_chsquelch(dbref player, char *chan) {
     struct channel *ch;
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.",
+                    chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1400,8 +1389,8 @@ void do_chsquelch(dbref player, char *chan) {
         return;
     }
     ch->type &= ~(CHANNEL_LOUD);
-    raw_notify(player,
-            tprintf("@cset: Channel %s connect/disconnect msgs muted.", chan));
+    notify_printf(player,
+            "@cset: Channel %s connect/disconnect msgs muted.", chan);
     return;
 }
 
@@ -1409,8 +1398,8 @@ void do_chtransparent(dbref player, char *chan) {
     struct channel *ch;
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.",
+                    chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1418,9 +1407,9 @@ void do_chtransparent(dbref player, char *chan) {
         return;
     }
     ch->type |= CHANNEL_TRANSPARENT;
-    raw_notify(player,
-            tprintf("@cset: Channel %s now shows all listeners to everyone.",
-                chan));
+    notify_printf(player,
+            "@cset: Channel %s now shows all listeners to everyone.",
+                chan);
     return;
 }
 
@@ -1428,8 +1417,8 @@ void do_chopaque(dbref player, char *chan) {
     struct channel *ch;
 
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cset: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cset: Channel %s does not exist.",
+                    chan);
         return;
     }
     if ((player != ch->charge_who) && (!Comm_All(player))) {
@@ -1437,9 +1426,9 @@ void do_chopaque(dbref player, char *chan) {
         return;
     }
     ch->type &= ~CHANNEL_TRANSPARENT;
-    raw_notify(player,
-            tprintf("@cset: Channel %s now does not show all listeners to everyone.",
-                chan));
+    notify_printf(player,
+            "@cset: Channel %s now does not show all listeners to everyone.",
+                chan);
     return;
 }
 
@@ -1476,8 +1465,8 @@ void do_chboot(dbref player, dbref cause, int key, char *channel, char *victim) 
         return;
     }
     if (!(vu = select_user(ch, thing))) {
-        raw_notify(player, tprintf("@cboot: %s in not on the channel.",
-                    Name(thing)));
+        notify_printf(player, "@cboot: %s in not on the channel.",
+                    Name(thing));
         return;
     }
     /*
@@ -1514,9 +1503,9 @@ void do_chanobj(dbref player, char *channel, char *object) {
     }
     ch->chan_obj = thing;
     buff = unparse_object(player, thing, 0);
-    raw_notify(player,
-            tprintf("Channel %s is now using %s as channel object.", ch->name,
-                buff));
+    notify_printf(player,
+            "Channel %s is now using %s as channel object.", ch->name,
+                buff);
     free_lbuf(buff);
 }
 
@@ -1596,16 +1585,14 @@ void do_chanstatus(dbref player, dbref cause, int key, char *chan) {
                 "** Channel             --Flags--  Obj   Own   Charge  Balance  Users   Messages");
 
         if (!(ch = select_channel(chan))) {
-            raw_notify(player,
-                    tprintf("@cstatus: Channel %s does not exist.", chan));
+            notify_printf(player,
+                    "@cstatus: Channel %s does not exist.", chan);
             return;
         }
         if (perm || (ch->type & CHANNEL_PUBLIC) ||
                 ch->charge_who == player) {
 
-            raw_notify(player,
-                    tprintf
-                    ("%c%c %-20.20s %c%c%c/%c%c%c %5d %5d %8d %8d %6d %10d",
+            notify_printf(player, "%c%c %-20.20s %c%c%c/%c%c%c %5d %5d %8d %8d %6d %10d",
                      (ch->type & (CHANNEL_PUBLIC)) ? 'P' : '-',
                      (ch->type & (CHANNEL_LOUD)) ? 'L' : '-', ch->name,
                      (ch->type & (CHANNEL_PL_MULT *
@@ -1622,7 +1609,7 @@ void do_chanstatus(dbref player, dbref cause, int key, char *chan) {
                                   CHANNEL_RECIEVE)) ? 'r' : '-',
                      (ch->chan_obj != NOTHING) ? ch->chan_obj : -1,
                      ch->charge_who, ch->charge, ch->amount_col,
-                     ch->num_users, ch->num_messages));
+                     ch->num_users, ch->num_messages);
         }
         raw_notify(player, "-- End of list of Channels --");
         return;
@@ -1632,8 +1619,8 @@ void do_chanstatus(dbref player, dbref cause, int key, char *chan) {
 
     raw_notify(player, "** Channel       Owner           Description");
     if (!(ch = select_channel(chan))) {
-        raw_notify(player, tprintf("@cstatus: Channel %s does not exist.",
-                    chan));
+        notify_printf(player, "@cstatus: Channel %s does not exist.",
+                    chan);
         return;
     }
     if (Comm_All(player) || (ch->type & CHANNEL_PUBLIC) ||
