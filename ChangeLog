@@ -128,6 +128,11 @@ btonline-btechmux 0.6:
 	* Patch to keep units set CritProof_Tech from getting crits. (Dany)
 	* Destroyed defensive weapons now emit proper error when player
 	  attempts to fire them (Power_Shaper)
+	* deltech now accepts 'all' or any permutation of case. (Greg)
+	* XL Gyros, Compact Gyros, and Hardened Gyros are now addable
+	  and no longer under the complex repairs ifdef. They need to be
+	  implemented though. As a result, carrier tech will not show
+	  up as xl_gyro tech when complex_repairs is enabled. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes

@@ -2634,7 +2634,6 @@ if (MechType(mech) == CLASS_MECH) {
         i += (100 - (MechEngineSize(mech) % 100));
     i /= 100;
 
-#if 0
 /* NULLTODO : Port any of these techs ASAP */
     if (MechSpecials2(mech) & XLGYRO_TECH)
         ADDPRICE("XLGyro", i * 750000)
@@ -2643,7 +2642,6 @@ if (MechType(mech) == CLASS_MECH) {
     else if (MechSpecials2(mech) & HDGYRO_TECH)
         ADDPRICE("HD Gyro", i * 500000)
     else
-#endif
         ADDPRICE("Gyro", i * 300000)
 } else {
     int pamp = 0, turret = 0;

@@ -1124,11 +1124,9 @@ struct repair_data {
 #define CARRIER_TECH            0x80000     /* Can be used as a carrier of mechs */
 #define WATERPROOF_TECH         0x100000    /* Can the unit go underwater without problems 
                                                for use with tanks */
-#ifdef BT_COMPLEXREPAIRS
 #define XLGYRO_TECH             0x200000
 #define HDGYRO_TECH             0x400000
 #define CGYRO_TECH              0x800000
-#endif
 
 /* Infantry specials */
 #define INF_SWARM_TECH			0x01	/* Infantry/BSuits can swarm unfriendlies */

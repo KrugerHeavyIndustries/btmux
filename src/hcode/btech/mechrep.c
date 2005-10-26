@@ -1359,8 +1359,8 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
     nv2 = BuildBitVector(specials2, buffer);
 
     /* Make sure what they gave was valid */
-    if (((nv < 0) && (nv2 < 0)) && (strcmp(buffer, "All") != 0) && 
-            (strcmp(buffer, "Case") != 0)) {
+    if (((nv < 0) && (nv2 < 0)) && (strcasecmp(buffer, "all") != 0) && 
+            (strcasecmp(buffer, "Case") != 0)) {
 	    notify(player, "Invalid tech: Available techs:");
         notify(player, "\tAll");
         notify(player, "\tCase");
@@ -1375,14 +1375,14 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
     }
 
     /* Check to see if user specified anything */
-    if (((!nv) && (!nv2)) && (strcmp(buffer, "All") != 0) && 
-            (strcmp(buffer, "Case") != 0)) {
+    if (((!nv) && (!nv2)) && (strcasecmp(buffer, "all") != 0) && 
+            (strcasecmp(buffer, "Case") != 0)) {
 	    notify(player, "Nothing specified");
 	    return;
     }
 
     /* Check to see if user specified 'ALL' */
-    if (strcmp(buffer, "All") == 0) {
+    if (strcasecmp(buffer, "all") == 0) {
 
         for (i = 0; i < NUM_SECTIONS; i++) {
 
@@ -1410,7 +1410,7 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
         return;
     }
 
-    if (strcmp(buffer, "Case") == 0) {
+    if (strcasecmp(buffer, "Case") == 0) {
         for (i = 0; i < NUM_SECTIONS; i++) {
 	        if (MechSections(mech)[i].config & CASE_TECH) { 
                 for (j = 0; j < NUM_CRITICALS; j++) {
@@ -1429,7 +1429,7 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
 
     if (nv > 0) {
 
-        if (strcmp(buffer, "TripleMyomerTech") == 0) {
+        if (strcasecmp(buffer, "TripleMyomerTech") == 0) {
             if (MechSpecials(mech) & TRIPLE_MYOMER_TECH) {
                 for (i = 0; i < NUM_SECTIONS; i++) {
                     for (j = 0; j < NUM_CRITICALS; j++) {
@@ -1441,7 +1441,7 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
                     }
                 }
             }
-        } else if (strcmp(buffer, "Masc") == 0) {
+        } else if (strcasecmp(buffer, "Masc") == 0) {
             if (MechSpecials(mech) & MASC_TECH) {
                 for (i = 0; i < NUM_SECTIONS; i++) {
                     for (j = 0; j < NUM_CRITICALS; j++) {

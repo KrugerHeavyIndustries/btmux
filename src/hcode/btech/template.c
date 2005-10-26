@@ -1154,11 +1154,9 @@ char *specials2[] = {
     "Camo_Tech",
     "Carrier_Tech",
     "Waterproof_Tech",
-#ifdef BT_COMPLEXREPAIRS
     "XLGyro_Tech",
     "HDGyro_Tech",
     "CompactGyro_Tech",
-#endif 
     NULL
 };
 
@@ -1169,9 +1167,7 @@ char *specialsabrev2[] = {
     "CAMO",
     "CART",
     "WPRF",
-#ifdef BT_COMPLEXREPAIRS
     "XLGRYO", "HDGYRO", "CGYRO",
-#endif
     NULL
 };
 
