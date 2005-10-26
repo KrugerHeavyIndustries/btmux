@@ -262,6 +262,9 @@
 #define MechSeemsFriend(a, b)	(MechTeam(a) == MechTeam(b) && \
 				 InLineOfSight_NB(a, b, 0, 0, 0))
 
+#define SetTurnMode(a,b) do { if (b) MechPrefs(a) |= MECHPREF_TURNMODE; else MechPrefs(a) &= ~MECHPREF_TURNMODE; } while (0)
+#define GetTurnMode(a)	(MechPrefs(a) & MECHPREF_TURNMODE)
+
 #define MECHEVENT(mech,type,func,time,data) \
   do { if (mech->mynum > 0) \
      muxevent_add(time, 0, type, func, (void *) (mech), (void *) (data)); } while (0)

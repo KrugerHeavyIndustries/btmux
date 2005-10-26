@@ -41,6 +41,7 @@
 #include "p.mech.tag.h"
 #include "p.mech.enhanced.criticals.h"
 #include "p.mech.contacts.h"
+#include "p.btechstats.h"
 
 #ifdef EXILE_FUNCS_SUPPORT
 #include "p.mech.notify.h"
@@ -101,6 +102,8 @@ void DisplayTarget(dbref player, MECH * mech)
     }
     if (MechPKiller(mech))
 	notify(player, "\nWeapon Safeties are %ch%crOFF%cn.");
+    if (GotPilot(mech) && HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
+        notify(player, tprintf("Turn Mode: %s", GetTurnMode(mech) ? "TIGHT" : "NORMAL"));        
     if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
 	tempMech = getMech(MechChargeTarget(mech));
 	if (!tempMech)

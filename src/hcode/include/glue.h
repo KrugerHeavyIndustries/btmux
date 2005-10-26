@@ -431,6 +431,7 @@ CommandsStruct mechcommands[] = {
 	mech_safety},
     {0, "MECHPREFS [SETTING [ON|OFF]]", "Toggle the mechpref setting of SETTING",
     	mech_mechprefs},
+    {51, "TURNMODE [TIGHT | NORMAL]", "Sets turnmode.", mech_turnmode},
 
     /* Vengy's pickup/dropoff */
     {0, "DROPOFF", "Drops the mech you are carrying.", mech_dropoff},

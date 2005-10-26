@@ -725,6 +725,7 @@ struct section_struct {
 #define MECHPREF_STANDANYWAY    0x20    /* Try to stand even when BTH too high */
 #define MECHPREF_AUTOCON_SD     0x40    /* Autocon on non-started units */
 #define MECHPREF_NOFRIENDLYFIRE 0x80    /* Disallow firing on teammates */
+#define MECHPREF_TURNMODE       0x100   /* Tight or Normal for Maneuvering Ace */
 
 typedef struct {
     char mech_name[31];		/* Holds the 30 char ID for the mech */

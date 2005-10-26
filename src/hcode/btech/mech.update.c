@@ -693,7 +693,9 @@ void UpdateHeading(MECH * mech)
     /*   offset = offset * 2 * MOVE_MOD; - Twice as fast as this;dunno why - */
     offset = offset * MOVE_MOD;
 #ifdef BT_MOVEMENT_MODES
-    if (MechStatus2(mech) & (SPRINTING|EVADING)) {
+    if(GetTurnMode(mech) && HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
+         offset = (offset * 3 ) /2 ;
+    if (MechStatus2(mech) & (SPRINTING|EVADING) && !HasBoolAdvantage(MechPilot(mech), "maneuvering_ace")) {
 	if (HasBoolAdvantage(MechPilot(mech), "speed_demon"))
 	    offset = (offset * 2) / 3;
 	else

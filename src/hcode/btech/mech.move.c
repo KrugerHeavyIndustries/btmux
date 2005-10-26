@@ -104,6 +104,35 @@ void mech_lateral(dbref player, void *data, char *buffer)
     StopLateral(mech);
     MECHEVENT(mech, EVENT_LATERAL, mech_lateral_event, LATERAL_TICK, i);
 }
+void mech_turnmode(dbref player, void *data, char *buffer)
+{
+	MECH *mech = (MECH *) data;
+
+	if (!GotPilot(mech) || MechPilot(mech) != player) {
+		notify(player, "You're not the pilot!");
+		return;
+	}
+
+	if (!HasBoolAdvantage(player, "maneuvering_ace")) {
+		mech_notify(mech, MECHPILOT, "You're not skilled enough to do that.");
+		return;
+	}
+
+	if (buffer && !strcasecmp(buffer, "tight")) {
+		SetTurnMode(mech,1);
+		mech_notify(mech, MECHALL, "You brace for tighter turns.");
+		return;
+	}
+	if (buffer && !strcasecmp(buffer, "normal")) {
+		SetTurnMode(mech,0);
+		mech_notify(mech, MECHALL, "You assume a normal turn mode."); 
+		return;
+	}
+	mech_notify(mech, MECHALL, tprintf("Your turning type is : %s",
+		GetTurnMode(mech) ? "TIGHT" : "NORMAL"));
+	return;
+}
+
 
 void mech_bootlegger(dbref player, void *data, char *buffer)
 {

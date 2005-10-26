@@ -15,6 +15,7 @@
 /* mech.move.c */
 const char *LateralDesc(MECH * mech);
 void mech_lateral(dbref player, void *data, char *buffer);
+void mech_turnmode(dbref player, void *data, char *buffer);
 void mech_bootlegger(dbref player, void *data, char *buffer);
 void mech_eta(dbref player, void *data, char *buffer);
 float MechCargoMaxSpeed(MECH * mech, float mspeed);
