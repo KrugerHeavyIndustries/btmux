@@ -1316,7 +1316,8 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 #define SHOWSECTSTAT(a) \
 	 (SectIsDestroyed(mech, a) ? "%ch%cx*****%c" : \
 	 (MechSections(mech)[(a)].recycle > 0) ? \
-	 tprintf("%-5d", MechSections(mech)[(a)].recycle) : "%cgReady%c")
+	 tprintf("%-5d", (MechSections(mech)[(a)].recycle / WEAPON_TICK) \
+         + (MechSections(mech)[(a)].recycle%WEAPON_TICK)) : "%cgReady%c")
 
     UpdateRecycling(mech);
     if (MechType(mech) == CLASS_MECH && !doweird) {
@@ -1325,7 +1326,8 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 #define SHOWPHYSTATUS(a,b) \
 	 (!canUsePhysical(mech,a,b) ? "%ch%crXX%c" : \
 	 (MechSections(mech)[(a)].recycle > 0) ? \
-		tprintf("%-3d", MechSections(mech)[(a)].recycle) : "%cgRdy%c")
+		tprintf("%-3d", (MechSections(mech)[(a)].recycle / WEAPON_TICK) + \
+        + (MechSections(mech)[(a)].recycle%WEAPON_TICK)) : "%cgRdy%c")
 
 #define SHOW(part,loc) \
 		sprintf(tempbuff + strlen(tempbuff), "%s: %s  ", part, loc)

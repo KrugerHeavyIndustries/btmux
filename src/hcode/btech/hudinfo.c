@@ -259,7 +259,7 @@ static char *hud_getweaponstatus(MECH * mech, int sect, int crit, int data)
     if (GetPartFireMode(mech, sect, crit) & IS_JETTISONED_MODE)
 	return "j";
     if (data) {
-	sprintf(wstatus, "%d", data);
+	sprintf(wstatus, "%d", data / WEAPON_TICK);
 	return wstatus;
     }
     return "R";
@@ -538,7 +538,7 @@ static void hud_limbstatus(DESC * d, MECH * mech, char *msgclass,
 		strcpy(status, "*");
 	    else if (MechSections(mech)[locs[todo]].recycle > 0)
 		sprintf(status, "%d",
-		    MechSections(mech)[locs[todo]].recycle);
+		    MechSections(mech)[locs[todo]].recycle / WEAPON_TICK);
 	    else
 		strcpy(status, "R");
 

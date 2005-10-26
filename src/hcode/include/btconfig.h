@@ -251,7 +251,7 @@
 #define SCHANGE_TICK     10	/* Sensor change */
 #define SPOT_TICK        10	/* How oft is the range for spotting checked? */
 
-#define PHYSICAL_RECYCLE_TIME 30
+#define PHYSICAL_RECYCLE_TIME 30*WEAPON_TICK
 #define STARTUP_TIME 30
 #define UNCONSCIOUS_TIME 30	/* ORIGINAL authors thought it was UNCONCIOUS */
 #define WEAPON_RECYCLE_TIME 30	/* weapon_tick's */
