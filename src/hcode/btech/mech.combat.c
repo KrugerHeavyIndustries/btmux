@@ -1471,34 +1471,6 @@ void HitTarget(MECH * mech,
                 aim_hit = 1;
         }
         
-        /* Check to see if mech is sprinting. Break them out */
-        if (MechStatus2(hitMech) & SPRINTING ) {
-
-            MechStatus2(hitMech) &= ~SPRINTING;
-            MechLOSBroadcast(hitMech, "breaks out of its sprint as it takes damage!");
-            mech_notify(hitMech, MECHALL, "You lose your sprinting momentum as you take damage!");
-
-            if(!MoveModeChange(hitMech))
-                MECHEVENT(hitMech, EVENT_MOVEMODE, mech_movemode_event, 
-                        TURN, MODE_OFF|MODE_SPRINT|MODE_MODEFAIL);
-        }
-
-        /* Check to see if mech is changing movement modes. Break the out */
-        if (MoveModeLock(hitMech) && 
-                !(MoveModeData(hitMech) & (MODE_EVADE|MODE_DODGE|MODE_MODEFAIL|MODE_OFF))) {
-
-            StopMoveMode(hitMech);
-            mech_notify(hitMech, MECHALL, "Your movement mode changes are cancelled as "
-                    "you take damage!");
-        }
-
-        /* Check if mech is hidden. Break them out. */
-        if (MechCritStatus(hitMech) & HIDDEN) {
-
-            mech_notify(hitMech, MECHALL, "Your cover is ruined as you take damage!");
-            MechLOSBroadcast(hitMech, "loses it's cover as it takes damage!");
-            MechCritStatus(hitMech) &= ~HIDDEN;
-        }
 
     }
 
