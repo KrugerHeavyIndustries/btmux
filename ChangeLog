@@ -96,6 +96,7 @@ btonline-btechmux 0.6:
 	* Added Exile's head hit stun code.  Can be turned on/off using the
 	  mudconf parameter 'btech_exile_stun_code'. (Dany)
 	* Finished hooking Maneuvering Ace to turnmodes. (Power_Shaper)
+        * Added Exile's Observer channel code with coloring (Power_Shaper)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)

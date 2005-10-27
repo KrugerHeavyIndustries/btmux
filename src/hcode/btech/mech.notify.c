@@ -210,6 +210,30 @@ struct {
     NULL, NULL, 0}
 };
 
+struct {
+    int team;
+    char *ccode;
+} obs_team_color[] = {
+    {
+    1, "%cw" }, {
+    2, "%cc" }, {
+    3, "%cm" }, {
+    4, "%cb" }, {
+    5, "%cy" }, {
+    6, "%cg" }, {
+    7, "%cr" }, {
+    8, "%ch%cx" }, {
+    9, "%ch%cw" }, {
+   10, "%ch%cc" }, {
+   11, "%ch%cm" }, {
+   12, "%ch%cb" }, {
+   13, "%ch%cy" }, {
+   14, "%ch%cg" }, {
+   15, "%ch%cr" }, {
+    0, "%ch%cw" }
+};
+
+
 void Mech_ShowFlags(dbref player, MECH * mech, int spaces, int level)
 {
     char buf[MBUF_SIZE];
@@ -577,11 +601,13 @@ void mech_set_channeltitle(dbref player, void *data, char *buffer)
 /*                    1234567890123456 */
 const char radio_colorstr[] = "xrgybmcwXRGYBMCW";
 
-static char *ccode(MECH * m, int i)
+static char *ccode(MECH * m, int i, int obs, int team)
 {
     int t = m->freqmodes[i] / FREQ_REST;
     static char buf[6];
+    int ii;
 
+  if (!obs) {
     if (!t) {
 	strcpy(buf, "");
 	return buf;
@@ -591,6 +617,14 @@ static char *ccode(MECH * m, int i)
 	return buf;
     }
     sprintf(buf, "%%ch%%c%c", ToLower(radio_colorstr[t - 1]));
+  } else {
+    for (ii = 0; ii < 15; ii++) {
+	if (team == obs_team_color[ii].team)
+     	    sprintf(buf, "%s", obs_team_color[ii].ccode);
+    }
+    if (buf == NULL)
+	sprintf(buf, "%s", obs_team_color[0].ccode);
+  }
     return buf;
 }
 
@@ -1046,6 +1080,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
     char buf3[LBUF_SIZE];
     int sfail_type, sfail_mod;
     int rfail_type, rfail_mod;
+    int obs = 0 ;
 
     char ai_buf[LBUF_SIZE];
 
@@ -1065,6 +1100,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                 continue;
             if (Destroyed(tempMech))
                 continue;
+            obs = (MechCritStatus(tempMech) & OBSERVATORIC);
             range = FaMechRange(mech, tempMech);
             bearing = FindBearing(MechFX(tempMech), MechFY(tempMech), 
                     MechFX(mech), MechFY(mech));
@@ -1077,22 +1113,6 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                     break;
                 }
             }
-#ifdef OBSERVATORIC_OL_RADIO
-            /* This should really move to a simple 'config' command
-               on the MECH object... */
-            if (MechIsObservator(tempMech)) {
-                if (mech->chantitle[freq] && *mech->chantitle[freq])
-                    sprintf(buf3, "<%s> ", mech->chantitle[freq]);
-                else
-                    buf3[0] = '\0';
-                snprintf(buf, LBUF_SIZE, "%s<Team %d:%6d:%.3d> %s%s%%c",
-                        i < MFreqs(tempMech) ? ccode(tempMech, i) : "", 
-                        MechTeam(mech), mech->freq[freq], bearing,
-                        buf3, msg);
-                mech_notify(tempMech, MECHALL, buf);
-                continue;
-            }
-#endif
             if (i >= MFreqs(tempMech)) {
                 /* Possible scanner check */
                 if (!(mech->freqmodes[freq] & FREQ_DIGITAL))
@@ -1190,9 +1210,13 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                     bearing = FindBearing(MechFX(tempMech), MechFY(tempMech),
                             MechFX(comm_mech[comm_best_path[comm_best - 1]]),
                             MechFY(comm_mech[comm_best_path[comm_best - 1]]));
-
-                snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c", ccode(tempMech, i),
+                if (!obs)
+                snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
+                else {
+                    		    snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), buf3);
+		}
 
             } else {
 
@@ -1205,9 +1229,13 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                             rfail_type == FAIL_STATIC
                             */
                         ) && mech != tempMech, 0);
-
-                snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c", ccode(tempMech, i),
+                if (!obs)
+                snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
+                else {
+		    snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), buf3);
+		}
 
             }
 
