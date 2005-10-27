@@ -88,7 +88,6 @@ extern void fun_btgetxcodevalue_ref();
 extern void fun_btarmorstatus_ref();
 extern void fun_btcritstatus_ref();
 extern void fun_btweaponstatus_ref();
-extern void fun_bttech_ref();
 extern void fun_btid2db();
 extern void fun_bthexlos();
 extern void fun_btlosm2m();
@@ -5500,7 +5499,6 @@ FUN flist[] = {
 {"BTSHOWCRITSTATUS_REF",	fun_btshowcritstatus_ref,	3, 0,		CA_WIZARD},
 {"BTSHOWSTATUS_REF",		fun_btshowstatus_ref,		2, 0,		CA_WIZARD},
 {"BTSHOWWSPECS_REF",		fun_btshowwspecs_ref,		2, 0,		CA_WIZARD},
-{"BTTECH_REF",   		fun_bttech_ref,			1, 0,		CA_WIZARD},
 {"BTTECHLIST",			fun_bttechlist,			1, 0,		CA_WIZARD},
 {"BTTECHLIST_REF",		fun_bttechlist_ref,		1, 0,		CA_WIZARD},
 {"BTTECHTIME",			fun_bttechtime, 		0, 0,           CA_WIZARD},
