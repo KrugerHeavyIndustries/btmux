@@ -302,6 +302,7 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
     int hs_eff;
     char buf[MBUF_SIZE];
     int ints_c, ints_tot;
+    float gyro_calc;
 
     bzero(pile, sizeof(pile));
     if (interactive > 0) {
@@ -337,14 +338,31 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
     PLOC(HEAD)
 	ADDENTRY("Cockpit", 3 * 1024);
     PLOC(CTORSO)
-	ADDENTRY("Gyro", (int) (ceil(MechEngineSize(mech) / 100.0) * 1024));
-    ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
-	MechSpecials(mech) & COMPI_TECH ? "Internals (Composite)" :
-	MechSpecials(mech) & ES_TECH ? "Internals (ES)" : "Internals",
-	round_to_halfton(MechTons(mech) * 1024 * (interactive >=
-	    0 ? ints_tot : ints_c) / 5 / ints_tot /
-	(MechSpecials(mech) & REINFI_TECH ? 1 : (MechSpecials(mech) &
-		(ES_TECH | COMPI_TECH)) ? 4 : 2)));
+	/* Store the base-line gyro weight */
+    	gyro_calc = (MechEngineSize(mech) / 100.0) * 1024;
+        
+    	/* Figure out what kind of gyro we have and adjust weight accordingly */
+        if (MechSpecials2(mech) & XLGYRO_TECH) {
+	    /* XL Gyro is 1/2 normal gyro weight. */
+	    ADDENTRY("Gyro (XL)", (int) ceil(gyro_calc * 0.5));
+	} else if (MechSpecials2(mech) & HDGYRO_TECH) {
+	    /* Hardened Gyro is 2x normal gyro weight. */
+	    ADDENTRY("Gyro (Hardened)", (int) ceil(gyro_calc * 2));
+	} else if (MechSpecials2(mech) & CGYRO_TECH) {
+	    /* Compact Gyro is 1.5x normal gyro weight. */
+	    ADDENTRY("Gyro (Compact)", (int) ceil(gyro_calc * 1.5));
+	} else {
+	    /* Standard Gyro. */
+	    ADDENTRY("Gyro", (int) ceil(gyro_calc));
+	}
+	
+        ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
+	    MechSpecials(mech) & COMPI_TECH ? "Internals (Composite)" :
+	    MechSpecials(mech) & ES_TECH ? "Internals (ES)" : "Internals",
+	        round_to_halfton(MechTons(mech) * 1024 * (interactive >=
+	        0 ? ints_tot : ints_c) / 5 / ints_tot /
+	        (MechSpecials(mech) & REINFI_TECH ? 1 : (MechSpecials(mech) &
+	        (ES_TECH | COMPI_TECH)) ? 4 : 2)));
     armor_o = armor;
     if (MechSpecials(mech) & FF_TECH)
 	armor = armor * 50 / (cl ? 60 : 56);
