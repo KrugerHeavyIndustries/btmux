@@ -55,6 +55,7 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/netcommon.o   \
                  src/object.o      \
                  src/player.o      \
+				 src/player_c.o    \
                  src/powers.o      \
                  src/predicates.o  \
                  src/python.o      \
