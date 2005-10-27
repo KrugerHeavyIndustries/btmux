@@ -73,7 +73,6 @@ extern void fun_btpartname();
 extern void fun_btloadmap();
 extern void fun_btloadmech();
 extern void fun_btmechfreqs();
-extern void fun_btaddparts();
 extern void fun_btmapunits();
 #ifndef EXILE_FUNCS_SUPPORT
 extern void fun_btgetrefxcodevalue();
@@ -81,7 +80,6 @@ extern void fun_btarmorref();
 extern void fun_btcritref();
 extern void fun_btweaponref();
 extern void fun_bttechref();
-extern void fun_btgetreftech();
 extern void fun_btgetdbreffromid();
 extern void fun_btlostohex();
 extern void fun_btlostomech();
@@ -92,7 +90,6 @@ extern void fun_btarmorstatus_ref();
 extern void fun_btcritstatus_ref();
 extern void fun_btweaponstatus_ref();
 extern void fun_bttech_ref();
-extern void fun_btgetreftech_ref();
 extern void fun_btid2db();
 extern void fun_bthexlos();
 extern void fun_btlosm2m();
@@ -5428,7 +5425,6 @@ FUN flist[] = {
 {"BEEP",        fun_beep,       0,  0,          CA_BUILDER},
 {"BEFORE",	fun_before,	0,  FN_VARARGS,	CA_PUBLIC},
 #ifdef BT_ENABLED
-{"BTADDPARTS",	fun_btaddparts, 3, 0,		CA_WIZARD},
 {"BTARMORSTATUS",fun_btarmorstatus,2,0,		CA_WIZARD},
 {"BTCRITSTATUS",fun_btcritstatus,2,0,		CA_WIZARD},
 {"BTDAMAGEMECH",fun_btdamagemech,7, 0, 		CA_WIZARD},
@@ -5459,7 +5455,6 @@ FUN flist[] = {
 {"BTARMORREF",	fun_btarmorref,	2, 0,		CA_WIZARD},
 {"BTCRITREF",	fun_btcritref,	2, 0,		CA_WIZARD},
 {"BTGETDBREFFROMID", fun_btgetdbreffromid, 2, 0, CA_WIZARD},
-{"BTGETREFTECH", fun_btgetreftech, 1, 0,	CA_WIZARD},
 {"BTGETREFXCODEVALUE", fun_btgetrefxcodevalue, 2, 0, CA_WIZARD},
 {"BTHEXLOSBROADCAST", fun_bthexlosbroadcast, 4, 0, CA_WIZARD},
 {"BTLOSTOHEX", fun_btlostohex, 3, 0,		CA_WIZARD},
@@ -5485,7 +5480,6 @@ FUN flist[] = {
 #endif
 {"BTGETRANGE",			fun_btgetrange,			0, FN_VARARGS,  CA_WIZARD},
 {"BTGETREALMAXSPEED",		fun_btgetrealmaxspeed,		1, 0,		CA_WIZARD},
-{"BTGETREFTECH_REF", 		fun_btgetreftech_ref, 		1, 0,		CA_WIZARD},
 {"BTGETWEIGHT",			fun_btgetweight, 		1, 0,		CA_WIZARD},
 {"BTGETXCODEVALUE_REF", 	fun_btgetxcodevalue_ref,	2, 0,		CA_WIZARD},
 {"BTHEXEMIT", 			fun_bthexemit, 			4, 0, 		CA_WIZARD},

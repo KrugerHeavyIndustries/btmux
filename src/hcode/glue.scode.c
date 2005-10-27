@@ -1274,22 +1274,6 @@ void fun_btmakepilotroll(char *buff, char **bufc, dbref player, dbref cause, cha
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetreftech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
-void fun_btgetreftech_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
-{
-    /* fargs[0] = mech reference */
-    char *infostr;
-    MECH *mech;
-
-    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
-    infostr = mechrep_gettechstring(mech);
-    safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
-}
-
-#ifndef EXILE_FUNCS_SUPPORT
 void fun_btgetdbreffromid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
 void fun_btid2db(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1396,7 +1380,7 @@ void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause, char *farg
         safe_tprintf_str(buff, bufc, "0");
 }
 
-void fun_btaddparts(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mech/map
        fargs[1] = partname
@@ -1531,31 +1515,6 @@ void fun_btgetweight(char *buff, char **bufc, dbref player, dbref cause, char *f
     if (sw <= 0)
         sw = (1024 * 100);
     safe_tprintf_str(buff, bufc, tprintf("%.3f", (float) sw / 1024));
-}
-
-void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-{
-    /* fargs[0] = id of the bay */
-    /* fargs[1] = name of the part */
-    /* fargs[2] = amount */
-    dbref it;
-    int i = -1, spec, num;
-    void *foo;
-    int p, b;
-
-    it = match_thing(player, fargs[0]);
-    FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1");
-    spec = WhichSpecial(it);
-    FUNCHECK(!(foo = FindObjectsData(it)), "#-1");
-    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    FUNCHECK(Readnum(num, fargs[2]), "#-2 Illegal Value");
-    if (!find_matching_long_part(fargs[1], &i, &p, &b)) {
-        i = -1;
-        FUNCHECK(!find_matching_vlong_part(fargs[1], &i, &p, &b),
-            "#-1 INVALID PART NAME");
-    }
-    econ_change_items(it, p, b, num);
-    safe_tprintf_str(buff, bufc, "%d", econ_find_items(it, p, b));
 }
 
 void fun_btremovestores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)

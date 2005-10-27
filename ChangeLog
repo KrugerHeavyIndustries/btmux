@@ -79,6 +79,9 @@ btonline-btechmux 0.6:
 	  Default to off (0). (Power_Shaper)
 	* Renamed 'phys_use_pskill' to 'btech_use_pskill' to fit in
 	  with the rest of the config directives.
+	* Removed functions: btgetreftech(), btgetreftech_ref(),
+	  btaddparts(). Use their existing equivalents:
+	  btaddstores(), bttechlist(), bttechlist_ref(). (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
