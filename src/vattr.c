@@ -133,7 +133,7 @@ int key;
 
     for(vp = (VATTR *) rb_search(vt, SEARCH_FIRST, NULL);
             vp != NULL;
-            vp = (VATTR *) rb_search(vt, SEARCH_GT, NULL)) {
+            vp = (VATTR *) rb_search(vt, SEARCH_GT, vp)) {
 #if 0
         for (vp = (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
             vp != NULL;
