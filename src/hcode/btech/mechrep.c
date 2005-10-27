@@ -1615,7 +1615,7 @@ void mechrep_setcargospace(dbref player, void *data, char *buffer)
     CargoSpace(mech) = cargo;
 
     max = (atoi(args[1]));
-    max = (BOUNDED(10,max,100));
+    max = (BOUNDED(1,max,100));
     CarMaxTon(mech) = (char) max;
 
     notify(player, tprintf("%3.2f cargospace and %d tons of maxton space set.", (float) ((float) cargo / 100), (int) max));
