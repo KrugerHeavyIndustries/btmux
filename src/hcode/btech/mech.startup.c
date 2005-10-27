@@ -310,11 +310,11 @@ void mech_shutdown(dbref player, void *data, char *buffer)
                 "Torso rotated back to center for shutdown");
         MechStatus(mech) &= ~TORSO_LEFT;
     }
-    if ((MechType(mech) == CLASS_MECH && Jumping(mech)) ||
-            (MechType(mech) != CLASS_MECH &&
-             MechZ(mech) > MechUpperElevation(mech))) {
-        mech_notify(mech, MECHALL,
-                "You start free-fall.. Enjoy the ride!");
+    if (MechMove(mech) != MOVE_NONE && MechType(mech) != CLASS_VEH_NAVAL &&
+        ((MechType(mech) == CLASS_MECH && Jumping(mech)) ||
+	    (MechType(mech) != CLASS_MECH &&
+	    MechZ(mech) > MechUpperElevation(mech) && MechZ(mech) < ORBIT_Z))) {
+        mech_notify(mech, MECHALL,"You start free-fall.. Enjoy the ride!");
         MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK, -1);
     } else if (MechSpeed(mech) > MP1) {
         mech_notify(mech, MECHALL, "Your systems stop in mid-motion!");

@@ -154,6 +154,8 @@ btonline-btechmux 0.6:
 	  up as xl_gyro tech when complex_repairs is enabled. (Greg)
 	* It is now possible to compile with --disable-bt-movement-modes.
 	  (Greg)
+	* Units with movetype NONE no longer fall from the sky when shutdown
+	  while floating above ground level in the air. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes
