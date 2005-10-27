@@ -130,9 +130,7 @@ unsigned long long int CalcFasaCost(MECH * mech);
 int FindAverageGunnery(MECH * mech);
 int CalculateBV(MECH *mech, int gunstat, int pilstat);
 #endif
-#ifdef BT_MOVEMENT_MODES
 int MechFullNoRecycle(MECH * mech, int num);
-#endif
 #ifdef BT_COMPLEXREPAIRS
 int GetPartMod(MECH * mech, int t);
 int ProperArmor(MECH* mech);

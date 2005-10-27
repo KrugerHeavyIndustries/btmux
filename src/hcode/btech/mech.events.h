@@ -126,10 +126,8 @@
 #define EVENT_SCHARGE_REGEN         77  /* SCHARGE recovery during non-use */
 
 #define EVENT_CHECK_STAGGER         78
-#ifdef BT_MOVEMENT_MODES
 #define EVENT_MOVEMODE              79
 #define EVENT_SIDESLIP              80
-#endif
 
 #define ETEMPL(a) void a (MUXEVENT *e)
 

@@ -867,7 +867,6 @@ if (FlyingT(mech)) { \
 #define MechToMech_LOSFlag(map, from, to)	\
 			((map)->LOSinfo[from->mapnumber][to->mapnumber])
 
-#ifdef BT_MOVEMENT_MODES
 #define MoveModeChange(a)	muxevent_count_type_data(EVENT_MOVEMODE,(void *) a)
 #define MoveModeLock(a)		(MechStatus2(a) & MOVE_MODES_LOCK || (MoveModeChange(a) && !(MechStatus2(a) & DODGING)))
 #define MoveModeData(a)		muxevent_count_type_data_firstev(EVENT_MOVEMODE, (void *) a)
@@ -877,6 +876,5 @@ if (FlyingT(mech)) { \
 #define Dodging(a)		(MechStatus2(a) & DODGING)
 #define SideSlipping(a)		muxevent_count_type_data(EVENT_SIDESLIP, (void *) a)
 #define StopSideslip(a)		muxevent_remove_type_data(EVENT_SIDESLIP, (void *) a)
-#endif
 											   
 #endif				/* BTMACROS_H */

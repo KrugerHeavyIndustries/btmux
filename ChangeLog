@@ -152,6 +152,8 @@ btonline-btechmux 0.6:
 	  and no longer under the complex repairs ifdef. They need to be
 	  implemented though. As a result, carrier tech will not show
 	  up as xl_gyro tech when complex_repairs is enabled. (Greg)
+	* It is now possible to compile with --disable-bt-movement-modes.
+	  (Greg)
 
 btonline-btechmux 0.4:
 	- Changes

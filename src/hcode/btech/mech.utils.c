@@ -3143,7 +3143,6 @@ return ((offbv + defbv) / 100) * mul;
 }
 #endif
 
-#ifdef BT_MOVEMENT_MODES
 int MechFullNoRecycle(MECH * mech, int num)
 {
     int i;
@@ -3156,7 +3155,6 @@ int MechFullNoRecycle(MECH * mech, int num)
         }
     return 0;
 }
-#endif
 
 #ifdef BT_COMPLEXREPAIRS
 int GetPartMod(MECH * mech, int t)

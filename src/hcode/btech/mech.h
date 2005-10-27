@@ -986,14 +986,11 @@ struct repair_data {
 #define PER_ECM_ENABLED     0x00001000	/* set if this unit is using Personal ECM */
 #define PER_ECCM_ENABLED    0x00002000	/* set if this unit is using Personal ECCM */
 #define AUTOTURN_TURRET     0x00004000	/* auto-turn the turret to the locked target */
-#ifdef BT_MOVEMENT_MODES
 #define SPRINTING           0x00010000	/* set if this unit is sprinting */
 #define EVADING             0x00020000	/* set if this unit is evading */
 #define DODGING             0x00040000	/* set if this unit is dodging */
-#endif
 #define ATTACKEMIT_MECH     0x00080000  /* set to be able to watch a unit and what it attacks */
 
-#ifdef BT_MOVEMENT_MODES
 /* Grouping masks */
 #define MOVE_MODES      (SPRINTING|EVADING|DODGING)
 #define MOVE_MODES_LOCK (SPRINTING|EVADING)
@@ -1011,8 +1008,6 @@ struct repair_data {
 #define CHECK_WEAPS     0x1
 #define CHECK_PHYS      0x2
 #define CHECK_BOTH      (CHECK_WEAPS|CHECK_PHYS)
-
-#endif
 
 #define MechLockFire(mech) \
 ((MechStatus(mech) & LOCK_TARGET) && \
