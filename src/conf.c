@@ -152,10 +152,8 @@ void cf_init(void)
     mudconf.btech_seismic_see_stopped = 0;
     mudconf.btech_exile_stun_code = 0;
     mudconf.btech_roll_on_backwalk = 1 ;
-#ifdef EXILE_FUNCS_SUPPORT
     mudconf.btech_usedmechstore = 0;
     mudconf.btech_ooc_comsys = 0;
-#endif
 #ifdef BT_FREETECHTIME
     mudconf.btech_freetechtime = 0;
 #endif
@@ -1229,12 +1227,10 @@ CONF conftable[] = {
         cf_int,     CA_GOD,     &mudconf.btech_exile_stun_code, 0},
     {(char *)"btech_roll_on_backwalk",
         cf_int,     CA_GOD,     &mudconf.btech_roll_on_backwalk, 0},
-#ifdef EXILE_FUNCS_SUPPORT
     {(char *)"btech_usedmechstore",
         cf_int,         CA_GOD,         &mudconf.btech_usedmechstore,   0},
     {(char *)"btech_ooc_comsys",
         cf_int,         CA_GOD,         &mudconf.btech_ooc_comsys,	0},
-#endif
 #ifdef BT_FREETECHTIME
     {(char *)"btech_freetechtime",
         cf_int,		CA_GOD,		&mudconf.btech_freetechtime,	0},
@@ -1846,13 +1842,6 @@ void list_cf_access(player)
     free_mbuf(buff);
 }
 
-#ifdef EXILE_FUNCS_SUPPORT
-/* ::FIX:: [cad] actually this define maybe should go into a header file, instead
-   of being scattered all over the place */
-/*
- * This is the prototype for functions 
- */
-
 
 /* ----------------------------------------------------------------------
  ** fun_config: returns the option set in mudconf
@@ -1897,8 +1886,6 @@ void fun_config(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
     safe_str( "#-1", buff, bufc );
 }
 
-
-#endif
 #endif				/*
                      * * STANDALONE
                      */

@@ -43,9 +43,7 @@
 #include "p.mech.combat.misc.h"
 #include "p.mech.pickup.h"
 #include "p.mech.tag.h"
-#ifdef EXILE_FUNCS_SUPPORT
 #include "p.functions.h"
-#endif
 
 Tree skill_tree = NULL;
 extern dbref pilot_override;
@@ -1688,7 +1686,6 @@ void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause, char
 }
 
 
-#ifdef EXILE_FUNCS_SUPPORT
 /* ----------------------------------------------------------------------
 ** Syntax: btcharlist(skills|advantages|attributes[,targetplayer])
 **
@@ -1759,8 +1756,6 @@ void fun_btcharlist(char *buff, char **bufc, dbref player, dbref cause, char *fa
 	}
     return;
 }
-#endif /* EXILE_FUNCS_SUPPORT */
-
 
 #define MAX_PLAYERS_ON 10000
 

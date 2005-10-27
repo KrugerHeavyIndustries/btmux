@@ -15,9 +15,7 @@
 #define _P_MECH_CONSISTENCY_H
 
 /* mech.consistency.c */
-#ifdef EXILE_FUNCS_SUPPORT
 int susp_factor(MECH * mech);
-#endif
 int engine_weight(MECH * mech);
 int mech_weight_sub_mech(dbref player, MECH * mech, int interactive);
 int mech_weight_sub_veh(dbref player, MECH * mech, int interactive);

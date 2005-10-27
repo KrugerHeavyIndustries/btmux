@@ -2631,7 +2631,6 @@ void DumpWeapons(dbref player)
     KillCoolMenu(c);
 }
 
-#ifdef EXILE_FUNCS_SUPPORT
 char *techlist_func(MECH * mech)
 {
     static char buffer[MBUF_SIZE];
@@ -2683,8 +2682,6 @@ char *techlist_func(MECH * mech)
 
     return buffer;
 }
-
-#endif 
 
 /* Function to return the payload of a unit
  * Used by the btpayload_ref() scode function

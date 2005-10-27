@@ -26,10 +26,7 @@
 #include "alloc.h"
 #include "ansi.h"
 #include "comsys.h"
-
-#ifdef EXILE_FUNCS_SUPPORT
 #include "interface.h"
-#endif
 
 UFUN *ufun_head;
 
@@ -42,11 +39,6 @@ extern void cf_log_notfound(dbref player, char *cmd,
 
 /*
  * Function definitions from funceval.c 
- */
-
-/* EXILE_FUNCS_SUPPORT below is where a name is changed for exile DB's.
- * Perhaps with time someday it can be changed and a @function can be defined
- * on the sites in question. For now I rather do this.
  */
 
 extern void fun_btdesignex();
@@ -74,16 +66,6 @@ extern void fun_btloadmap();
 extern void fun_btloadmech();
 extern void fun_btmechfreqs();
 extern void fun_btmapunits();
-#ifndef EXILE_FUNCS_SUPPORT
-extern void fun_btgetrefxcodevalue();
-extern void fun_btarmorref();
-extern void fun_btcritref();
-extern void fun_btweaponref();
-extern void fun_btgetdbreffromid();
-extern void fun_btlostohex();
-extern void fun_btlostomech();
-extern void fun_bthexlosbroadcast();
-#else
 extern void fun_btgetxcodevalue_ref();
 extern void fun_btarmorstatus_ref();
 extern void fun_btcritstatus_ref();
@@ -92,11 +74,7 @@ extern void fun_btid2db();
 extern void fun_bthexlos();
 extern void fun_btlosm2m();
 extern void fun_bthexemit();
-#endif
 
-/* These are the new added functions */
-#ifdef EXILE_FUNCS_SUPPORT
-/* Exile BTFunctiosn */
 extern void fun_btgetweight();
 extern void fun_btpartweight();
 extern void fun_btaddstores();
@@ -131,11 +109,8 @@ extern void fun_btunitfixable();
 extern void fun_btlistblz();
 extern void fun_bthexinblz();
 extern void fun_btcharlist();
-
-/* Extra normal MUX functions I added */
 extern void fun_cobj();
 extern void fun_config();
-#endif
 	
 extern void fun_cwho();
 extern void fun_clist();
@@ -224,10 +199,6 @@ extern void fun_items();
 extern void fun_lstack();
 extern void fun_regmatch();
 extern void fun_translate();
-
-/*
- * This is the prototype for functions 
- */
 
 /*
  * This is for functions that take an optional delimiter character 
@@ -5121,7 +5092,6 @@ static void fun_logf(char *buff, char **bufc, dbref player, dbref cause, char *f
 }
 #endif
 
-#ifdef EXILE_FUNCS_SUPPORT
 /* ----------------------------------------------------------------------
 ** fun_doing: return @doing string for arg.
 ** arg is either socket or player (Code adopted from Mux2.3)
@@ -5398,7 +5368,6 @@ static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause, c
 	    free_lbuf(atr_gotten);
     return;
 }
-#endif
 /* *INDENT-OFF* */
 
 /* ---------------------------------------------------------------------------
@@ -5449,16 +5418,6 @@ FUN flist[] = {
 {"BTTHRESHOLD", fun_btthreshold, 1, 0,		CA_WIZARD},
 {"BTUNDERREPAIR",    fun_btunderrepair,   1, 0, CA_BUILDER},
 {"BTWEAPONSTATUS",fun_btweaponstatus,0,FN_VARARGS,	CA_WIZARD},
-#ifndef EXILE_FUNCS_SUPPORT
-{"BTARMORREF",	fun_btarmorref,	2, 0,		CA_WIZARD},
-{"BTCRITREF",	fun_btcritref,	2, 0,		CA_WIZARD},
-{"BTGETDBREFFROMID", fun_btgetdbreffromid, 2, 0, CA_WIZARD},
-{"BTGETREFXCODEVALUE", fun_btgetrefxcodevalue, 2, 0, CA_WIZARD},
-{"BTHEXLOSBROADCAST", fun_bthexlosbroadcast, 4, 0, CA_WIZARD},
-{"BTLOSTOHEX", fun_btlostohex, 3, 0,		CA_WIZARD},
-{"BTLOSTOMECH", fun_btlostomech, 2, 0, 		CA_WIZARD},
-{"BTWEAPONREF", fun_btweaponref,0, FN_VARARGS,		CA_WIZARD},
-#else
 {"BTADDSTORES",			fun_btaddstores,		3, 0,		CA_WIZARD},
 {"BTARMORSTATUS_REF", 		fun_btarmorstatus_ref,		2, 0,		CA_WIZARD},
 {"BTCHARLIST",			fun_btcharlist,			1, FN_VARARGS,	CA_WIZARD},
@@ -5506,7 +5465,6 @@ FUN flist[] = {
 {"BTWEAPONSTATUS_REF", 		fun_btweaponstatus_ref,		0, FN_VARARGS,	CA_WIZARD},
 {"BTWEAPSTAT",			fun_btweapstat,			2, 0,		CA_WIZARD},
 #endif
-#endif
 {"CAPSTR",	fun_capstr,	-1, 0,		CA_PUBLIC},
 {"CASE",	fun_case,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
@@ -5514,16 +5472,12 @@ FUN flist[] = {
 {"CEIL",	fun_ceil,	1,  0,		CA_PUBLIC},
 {"CENTER",	fun_center,	0,  FN_VARARGS,	CA_PUBLIC},
 {"CHILDREN",    fun_children,   1,  0,          CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
 {"COBJ",	fun_cobj,	1,  0,		CA_PUBLIC},
 {"COLORPAIRS",  fun_colorpairs,	1,  0,		CA_PUBLIC},
-#endif
 {"COLUMNS",	fun_columns,	0,  FN_VARARGS, CA_PUBLIC},
 {"COMP",	fun_comp,	2,  0,		CA_PUBLIC},
 {"CON",		fun_con,	1,  0,		CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
 {"CONFIG", 	fun_config,	1,  0,		CA_WIZARD},
-#endif
 {"CONN",	fun_conn,	1,  0,		CA_PUBLIC},
 {"CONTROLS", 	fun_controls,	2,  0,		CA_PUBLIC},
 {"CONVSECS",    fun_convsecs,   1,  0,		CA_PUBLIC},
@@ -5542,9 +5496,7 @@ FUN flist[] = {
 {"DIST2D",	fun_dist2d,	4,  0,		CA_PUBLIC},
 {"DIST3D",	fun_dist3d,	6,  0,		CA_PUBLIC},
 {"DIV",		fun_div,	2,  0,		CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
 {"DOING",       fun_doing,      1,  0,          CA_WIZARD},
-#endif
 {"E",		fun_e,		0,  0,		CA_PUBLIC},
 {"EDEFAULT",	fun_edefault,	2,  FN_NO_EVAL, CA_PUBLIC},
 {"EDIT",	fun_edit,	3,  0,		CA_PUBLIC},
@@ -5649,9 +5601,7 @@ FUN flist[] = {
 {"OR",		fun_or,		0,  FN_VARARGS,	CA_PUBLIC},
 {"ORFLAGS",	fun_orflags,	2,  0,		CA_PUBLIC},
 {"OWNER",	fun_owner,	1,  0,		CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
 {"PAIRS",   fun_pairs,	1,  0,		CA_PUBLIC},
-#endif
 {"PARENT",	fun_parent,	1,  0,		CA_PUBLIC},
 {"PARSE",	fun_parse,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
@@ -5660,9 +5610,7 @@ FUN flist[] = {
 {"PI",		fun_pi,		0,  0,		CA_PUBLIC},
 {"PLAYMEM",	fun_playmem,	1,  0,		CA_PUBLIC},
 {"PMATCH",	fun_pmatch,	1,  0,		CA_PUBLIC},
-#ifdef EXILE_FUNCS_SUPPORT
 {"POLL",        fun_poll,       0,  0,          CA_WIZARD},
-#endif
 {"POP",		fun_pop,	0,  FN_VARARGS, CA_PUBLIC},
 {"PORTS",	fun_ports,	1,  0,		CA_PUBLIC},
 {"POS",		fun_pos,	2,  0,		CA_PUBLIC},

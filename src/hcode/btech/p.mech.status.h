@@ -17,11 +17,7 @@
 /* mech.status.c */
 void DisplayTarget(dbref player, MECH * mech);
 void show_miscbrands(MECH * mech, dbref player);
-#ifndef EXILE_FUNCS_SUPPORT
-void PrintGenericStatus(dbref player, MECH * mech, int own);
-#else
 void PrintGenericStatus(dbref player, MECH * mech, int own, int usex);
-#endif
 void PrintShortInfo(dbref player, MECH * mech);
 void PrintInfoStatus(dbref player, MECH * mech, int own);
 void mech_status(dbref player, void *data, char *buffer);
@@ -33,9 +29,7 @@ void mech_weaponspecs(dbref player, void *data, char *buffer);
 char *critstatus_func(MECH * mech, char *arg);
 char *armorstatus_func(MECH * mech, char *arg);
 char *weaponstatus_func(MECH * mech, char *arg);
-#ifdef EXILE_FUNCS_SUPPORT
 char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum, char *buf_flag);
-#endif
 void CriticalStatus(dbref player, MECH * mech, int index);
 char *evaluate_ammo_amount(int now, int max);
 void PrintWeaponStatus(MECH * mech, dbref player);

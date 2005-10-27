@@ -82,7 +82,7 @@ if (!delim_check(fargs, nfargs, xnargs, &sep, buff, bufc, 0,		\
             player, cause, cargs, ncargs))				\
 return;
 
-#ifdef EXILE_FUNCS_SUPPORT
+/* Returns the dbref of the specified channel's channel object. */
 void fun_cobj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;
@@ -105,8 +105,8 @@ void fun_cobj(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     safe_tprintf_str(buff, bufc, "#%d", ch->chan_obj);
 
 }
-#endif
 
+/* Lists who is on a channel. */
 void fun_cwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;
@@ -143,6 +143,7 @@ void fun_cwho(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     }
 }
 
+/* Returns a list of all channels. */
 void fun_clist(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     struct channel *ch;

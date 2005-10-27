@@ -70,10 +70,8 @@ void fun_btgetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
-#ifdef EXILE_FUNCS_SUPPORT
 void fun_btcharlist(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
-#endif
 void debug_xptop(dbref player, void *data, char *buffer);
 void debug_setxplevel(dbref player, void *data, char *buffer);
 int btthreshold_func(char *skillname);

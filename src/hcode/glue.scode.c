@@ -46,12 +46,9 @@
 #include "p.event.h"
 #include "p.mech.restrict.h"
 #include "mech.partnames.h"
-
-#ifdef EXILE_FUNCS_SUPPORT
 #include "p.functions.h"
 #include "p.mech.tech.commands.h"
 #include "p.mech.consistency.h"
-#endif
 
 extern SpecialObjectStruct SpecialObjects[];
 dbref match_thing(dbref player, char *name);
@@ -463,9 +460,7 @@ static GMV xcode_data[] = {
     MeEntry("disabled_hs", MechDisabledHS, TYPE_INT_RO),
     MeEntry("overheat", MechHeat, TYPE_FLOAT),
     MeEntry("dissheat", MechMinusHeat, TYPE_FLOAT),
-#ifdef EXILE_FUNCS_SUPPORT
     MeEntry("heatsinks", MechRealNumsinks, TYPE_CHAR_RO),
-#endif
     MeEntry("last_startup", MechLastStartup, TYPE_INT),
     MeEntry("C3iNetworkSize", MechC3iNetworkSize, TYPE_INT_RO),
     MeEntry("MaxSuits", MechMaxSuits, TYPE_INT),
@@ -703,11 +698,7 @@ void fun_btgetxcodevalue(char *buff, char **bufc, dbref player, dbref cause, cha
     return;
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetrefxcodevalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btgetxcodevalue_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = mech ref
        fargs[1] = name of the value
@@ -1052,11 +1043,7 @@ void fun_btweaponstatus(char *buff, char **bufc, dbref player, dbref cause, char
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btcritref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btcritstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = ref of the mech
      * fargs[1] = location to show
@@ -1070,11 +1057,7 @@ void fun_btcritstatus_ref(char *buff, char **bufc, dbref player, dbref cause, ch
     safe_tprintf_str(buff, bufc, critstr ? critstr : "#-1 ERROR");
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btarmorref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btarmorstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = ref of the mech
      * fargs[1] = location to show
@@ -1088,11 +1071,7 @@ void fun_btarmorstatus_ref(char *buff, char **bufc, dbref player, dbref cause, c
     safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btweaponref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btweaponstatus_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = ref of the mech
      * fargs[1] = location to show
@@ -1190,11 +1169,7 @@ void fun_bttechstatus(char *buff, char **bufc, dbref player, dbref cause, char *
     safe_tprintf_str(buff, bufc, "%s", infostr ? infostr : "#-1 ERROR");
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_bthexlosbroadcast(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_bthexemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = mapref
        fargs[1] = x coordinate
@@ -1256,11 +1231,7 @@ void fun_btmakepilotroll(char *buff, char **bufc, dbref player, dbref cause, cha
     }
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btgetdbreffromid(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btid2db(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = mech 
        fargs[1] = target ID */
@@ -1294,11 +1265,7 @@ void fun_btid2db(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     safe_tprintf_str(buff, bufc, "#%d", (int) mechnum);
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btlostohex(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_bthexlos(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = mech 
        fargs[1] = x
@@ -1330,11 +1297,7 @@ void fun_bthexlos(char *buff, char **bufc, dbref player, dbref cause, char *farg
         safe_tprintf_str(buff, bufc, "0");
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void fun_btlostomech(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
 void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
 {
     /* fargs[0] = mech
        fargs[1] = target
@@ -1490,8 +1453,6 @@ void fun_btmechfreqs(char *buff, char **bufc, dbref player, dbref cause, char *f
 	}
     }
 }
-
-#ifdef EXILE_FUNCS_SUPPORT
 
 void fun_btgetweight(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -2370,5 +2331,4 @@ void fun_bthexinblz(char *buff, char **bufc, dbref player, dbref cause, char *fa
     safe_tprintf_str(buff, bufc, "%d", bl);
 }
 
-#endif
 #endif

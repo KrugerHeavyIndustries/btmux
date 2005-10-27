@@ -88,7 +88,6 @@
   * license agreement as the rest of code in the /src directory :
   * SQL_SUPPORT
   * ARBITRARY_LOGFILES_MODE changes to use '2' as settings.
-  * EXILE_FUNCS_SUPPORT
   * BT_ADVANCED_ECON 
   * BT_FREETECHTIME
   * BT_COMPLEXREPAIRS

@@ -666,23 +666,10 @@ void set_prefix_cmds()
 #endif
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-int In_IC_Loc(dbref player)
-{
-    dbref d = Location(player);
-    int z = 0;
-
-    while (isPlayer(d)) {
-        int od = d;
-
-        if ((d = Location(d)) == od)
-            break;
-        if (z++ >= 100)
-            break;
-    }
-    return In_Character(d);
-}
-#else
+/* 
+ * Returns 1 if player is in an IC location, 0 if not. Take into account
+ * the ooc_comsys directive.
+ */
 int In_IC_Loc(dbref player)
 {
     dbref d = Location(player);
@@ -701,8 +688,7 @@ int In_IC_Loc(dbref player)
     else if (In_Character(d) || Gagged(player))
         return 1;
     return 0;
-}
-#endif
+} /* end In_IC_Loc()
 
 /*
  * ---------------------------------------------------------------------------
@@ -773,12 +759,8 @@ int check_access(player, mask)
                 ((mask & CA_NO_SLAVE) && Slave(player)) ||
                 ((mask & CA_NO_SUSPECT) && Suspect(player)) ||
                 ((mask & CA_NO_GUEST) && Guest(player)) ||
-#ifndef EXILE_FUNCS_SUPPORT
-                ((mask & CA_NO_IC) && In_IC_Loc(player))
-#else
                 (!mudconf.btech_ooc_comsys && (mask & CA_NO_IC) && In_IC_Loc(player)) ||
                 ((mask & CA_NO_IC) && Gagged(player))
-#endif
                 ))
         return 0;
     return 1;

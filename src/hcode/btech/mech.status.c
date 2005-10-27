@@ -42,11 +42,8 @@
 #include "p.mech.enhanced.criticals.h"
 #include "p.mech.contacts.h"
 #include "p.btechstats.h"
-
-#ifdef EXILE_FUNCS_SUPPORT
 #include "p.mech.notify.h"
 #include "mech.tech.h"
-#endif
 
 static int doweird = 0;
 static char *weirdbuf;
@@ -127,11 +124,7 @@ void show_miscbrands(MECH * mech, dbref player)
 /*   notify(player, tprintf("Radio: %s (%3d range)     Computer: %s (%d Scan / %d LRS / %d Tac)", brands[BOUNDED(1, MechRadio(mech), 5)+RADIO_INDEX].name, (int) MechRadioRange(mech), brands[BOUNDED(1, MechComputer(mech), 5)+COMPUTER_INDEX].name, (int) MechScanRange(mech), (int) MechLRSRange(mech), (int) MechTacRange(mech))); */
 }
 
-#ifndef EXILE_FUNCS_SUPPORT
-void PrintGenericStatus(dbref player, MECH * mech, int own)
-#else
 void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
-#endif
 {
     MECH *tempMech = NULL;
     MAP *map = FindObjectsData(mech->mapindex);
@@ -140,13 +133,9 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
     char mech_ref[100];
     char move_type[50];
 
-#ifndef EXILE_FUNCS_SUPPORT
-    strcpy(mech_name, silly_atr_get(mech->mynum, A_MECHNAME));
-    strcpy(mech_ref, silly_atr_get(mech->mynum, A_MECHREF));
-#else
     strcpy(mech_name, usex ? MechType_Name(mech) : silly_atr_get(mech->mynum, A_MECHNAME));
     strcpy(mech_ref, usex ? MechType_Ref(mech) : silly_atr_get(mech->mynum, A_MECHREF));
-#endif
+
     switch (MechType(mech)) {
     case CLASS_MW:
 	notify(player, tprintf("MechWarrior: %-18.18s ID:[%s]",
@@ -562,9 +551,7 @@ void mech_status(dbref player, void *data, char *buffer)
     MECH *mech = (MECH *) data;
     int doweap = 0, doinfo = 0, doarmor = 0, doshort = 0, doheat = 0, loop;
     int i;
-#ifdef EXILE_FUNCS_SUPPORT
     int usex = 0;
-#endif
     char buf[LBUF_SIZE];
 
     doweird = 0;
@@ -574,11 +561,9 @@ void mech_status(dbref player, void *data, char *buffer)
     else {
 	for (loop = 0; buffer[loop]; loop++) {
 	    switch (toupper(buffer[loop])) {
-#ifdef EXILE_FUNCS_SUPPORT
 	    case 'R':
 		doweap = doinfo = doarmor = usex = 1;
 		break;
-#endif
 	    case 'A':
 		if (toupper(buffer[loop + 1]) == 'R')
 		    while (buffer[loop + 1] && buffer[loop + 1] != ' ')
@@ -621,11 +606,7 @@ void mech_status(dbref player, void *data, char *buffer)
 	    (int) (MechJumpSpeed(mech) / MP1), MechActiveNumsinks(mech));
 	weirdbuf = buf;
     } else if (!doheat || (doarmor | doinfo | doweap))
-#ifndef EXILE_FUNCS_SUPPORT
-	PrintGenericStatus(player, mech, 1);
-#else
 	PrintGenericStatus(player, mech, 1, usex);
-#endif
     if (doarmor) {
 	if (!doweird) {
 	    PrintArmorStatus(player, mech, 1);
@@ -956,7 +937,6 @@ char *weaponstatus_func(MECH * mech, char *arg)
     return buffer;
 }
 
-#ifdef EXILE_FUNCS_SUPPORT
 char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum, char *buf_flag)
 {
     int index, crit, flag, type;
@@ -1032,7 +1012,6 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum, char *buf
     snprintf(buffer, MBUF_SIZE, "%s", get_parts_vlong_name(type, GetPartBrand(mech, index, crit)));
     return buffer;
 }
-#endif
 
 void CriticalStatus(dbref player, MECH * mech, int index)
 {
