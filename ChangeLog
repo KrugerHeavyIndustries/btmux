@@ -97,6 +97,10 @@ btonline-btechmux 0.6:
 	* Removed EXTENDED_ADVANTAGES define for much the same
 	  reason as the last two. If admins don't want to use
 	  the feature, don't add the advantages to players. (Greg)
+	* You may now add a one-shot weapon by doing a:
+	  addweap <weap> <loc> <crit> o. Rewrite the addweap
+	  function to be much more expandable and a lot less
+	  hacked. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

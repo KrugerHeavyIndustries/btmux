@@ -897,49 +897,94 @@ void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
     }
 }
 
+/* 
+ * Handles the adding of weapons via the 'addweap' command in the form of:
+ * addweap <weap> <loc> <crits> [<flags>]
+ * Current Flags: O = OS, T = TC, R = Rear
+ */
 void mechrep_Raddweap(dbref player, void *data, char *buffer)
 {
-    char *args[20];
-    int argc;
-    int index;
-    int weapindex;
-    int loop, temp;
-    int isrear = 0;
-    int istc = 0;
+    char *args[20];	/* The argument array */
+    int argc;		/* Count of arguments */
+    int index;		/* Used to determine section validity */
+    int weapindex;	/* Weapon index number */
+    int weapnumcrits;	/* Number of crits the desired weapon occupies. */
+    int loop, temp;	/* Loop Counters */
+    int isrear = 0;	/* Rear mounted? */
+    int istc = 0;	/* Is the weap TC'd? */
+    int isoneshot = 0;  /* If 1, weapon is a One-Shot (OS) Weap */
+    int argstoiter;	/* Holder for figuring out how many args to scan */
+    char flagholder;	/* Holder for flag comparisons */
 
     MECHREP_COMMON(1);
+    
     argc = mech_parseattributes(buffer, args, 20);
     DOCHECK(argc < 3, "Invalid number of arguments!")
-	index =
-	ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
+	    
+    index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
     if (index == -1) {
 	notify(player, "Not a legal area. Must be HEAD, CTORSO");
 	notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
 	notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
 	return;
     }
+    
     weapindex = WeaponIndexFromString(args[0]);
     if (weapindex == -1) {
 	notify(player, "That is not a valid weapon!");
 	DumpWeapons(player);
 	return;
     }
-    if (args[argc - 1][0] == 'T' || args[argc - 1][0] == 't' ||
-	args[argc - 1][1] == 'T' || args[argc - 1][1] == 't')
-	istc = 1;
 
-    if (args[argc - 1][0] == 'R' || args[argc - 1][0] == 'r' ||
-	args[argc - 1][1] == 'R' || args[argc - 1][1] == 'r')
-	isrear = 1;
+    /* 
+     * There are always 3 arguments that preceed flags. 
+     * addweap <weap> <loc> <crit>, 0, 1, and 2 respectively in args[][]. 
+     * By subtracting 3, we figure out how many of our arguments are actually 
+     * flags.
+     */
+    argstoiter = argc - 3;
+    
+    /*
+     * Now we take those additional flags and look for matches. argc is 
+     * decremented to keep track of how many of our arguments are crit
+     * locations.
+     */
+    for (loop = 0; loop < argstoiter; loop++) {
+	flagholder = toupper(args[3 + loop][0]);
 
-    if (isrear || istc)
-	argc--;
+	    if (flagholder == 'T') {
+		/* Targeting Computer */
+	        istc = 1;
+	    } else if (flagholder == 'R') {
+		/* Rear Mounted */
+		isrear = 1;
+	    } else if (flagholder == 'O') {
+		/* One-Shot */
+		isoneshot = 1;
+	    }
 
-    /* Subtract off our two arguments */
+	    /* 
+	     * If it's a letter, it's not a crit location. If a
+	     * player throws numbers in with the crit flags, then
+	     * they'll see error messages about crit counts. Need
+	     * to find a better way to fool-proof this.
+	     */
+	    if (isalpha(flagholder))
+		    argc--;
+	    
+    } /* end for */
+   
+    /* Chop off the first the first two redundant args. */
     argc -= 2;
-    if (argc < GetWeaponCrits(mech, weapindex))
-	notify(player, "Not enough critical slots specified!");
-    else {
+
+    weapnumcrits = GetWeaponCrits(mech, weapindex);
+    
+    /* Check to see if player gives enough crits and start adding if so. */
+    if (argc < weapnumcrits) {
+	notify(player, tprintf("Not enough critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits));
+    } else if (argc > weapnumcrits) {
+	notify(player, tprintf("Too many critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits));
+    } else {
 	for (loop = 0; loop < GetWeaponCrits(mech, weapindex); loop++) {
 	    temp = atoi(args[2 + loop]);
 	    temp--;		/* From 1 based to 0 based */
@@ -957,6 +1002,10 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	    if (istc)
 		MechSections(mech)[index].criticals[temp].firemode |=
 		    ON_TC;
+
+	    if (isoneshot)
+		MechSections(mech)[index].criticals[temp].firemode |=
+		    OS_MODE;
 	}
 	if (IsAMS(weapindex)) {
 	    if (MechWeapons[weapindex].special & CLAT)
@@ -966,7 +1015,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	}
 	notify(player, "Weapon added.");
     }
-}
+} /* end mechrep_Raddweap() */
 
 void mechrep_Rreload(dbref player, void *data, char *buffer)
 {
