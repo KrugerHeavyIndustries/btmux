@@ -1522,8 +1522,28 @@ int SkidMod(float Speed)
     return 4;
 }
 
+/*
+ * Move the unit back to its previous location because of cliff or something
+ */
+void move_unit_back(MECH *mech, float deltax, float deltay, int lastelevation, 
+        int ot, int le) {
+
+    MechFX(mech) -= deltax;
+    MechFY(mech) -= deltay;
+    MechX(mech) = MechLastX(mech);
+    MechY(mech) = MechLastY(mech);
+    MechZ(mech) = lastelevation;
+    MechFZ(mech) = MechZ(mech) * ZSCALE;
+    MechTerrain(mech) = ot;
+    MechElev(mech) = le;
+
+}
+
+/*
+ * Check to see what happens to the unit now that its entered a new hex
+ */
 void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
-    int last_z)
+        int last_z)
 {
     int elevation, lastelevation;
     int oldterrain;
@@ -1531,24 +1551,28 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
     int isunder = 0;
     float f;
 
-    ot = oldterrain =
-	GetTerrain(mech_map, MechLastX(mech), MechLastY(mech));
+    /* Recording the old elevation and terrain */
+    /*! \todo {Wasn't lastelevation passed as an argument 'last_z' ?} */
+    ot = oldterrain = GetTerrain(mech_map, MechLastX(mech), MechLastY(mech));
 
     if ((MechMove(mech) == MOVE_HOVER) &&
             (oldterrain == WATER || oldterrain == ICE ||
              ((oldterrain == BRIDGE) && (last_z == 0)))) {
+        
         le = lastelevation = elevation = 0;
 
     } else {
-        le = lastelevation =
-            Elevation(mech_map, MechLastX(mech), MechLastY(mech));
+
+        le = lastelevation = Elevation(mech_map, MechLastX(mech), MechLastY(mech));
         elevation = MechElevation(mech);
+
         if (MechMove(mech) == MOVE_HOVER && elevation < 0)
             elevation = 0;
 
         if (ot == ICE && MechZ(mech) >= 0) {
             le = lastelevation = 0;
         }
+
         if (MechZ(mech) < le)
             le = MechZ(mech);
     }
@@ -1556,7 +1580,9 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
     switch (MechMove(mech)) {
         case MOVE_BIPED:
         case MOVE_QUAD:
+
             if (Jumping(mech)) {
+
                 if (MechRTerrain(mech) == WATER)
                     return;
 
@@ -1570,18 +1596,22 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechTerrain(mech) = ot;\
                 MechElev(mech) = le;
 
+                /* Did we hit something while jumping */
                 if (collision_check(mech, JUMP, 0, 0)) {
+
                     ed = MAX(1, 1 + MechZ(mech) - Elevation(mech_map,
                                 MechX(mech), MechY(mech)));
-                    MOVE_BACK;
+                    move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                     mech_notify(mech, MECHALL,
                             "%chYou attempt to jump over elevation that is too high!!%c");
-                    if (RGotPilot(mech) &&
-                            MadePilotSkillRoll(mech,
-                                (int) (MechFZ(mech)) / ZSCALE / 3)) {
+                    if (RGotPilot(mech) && 
+                            MadePilotSkillRoll(mech, (int) (MechFZ(mech)) / ZSCALE / 3)) {
+
                         mech_notify(mech, MECHALL, "%chYou land safely.%c");
                         LandMech(mech);
+
                     } else {
+
                         mech_notify(mech, MECHALL,
                                 "%chYou crash into the obstacle and fall from the sky!!!!!%c");
                         MechLOSBroadcast(mech,
@@ -1592,27 +1622,32 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 }
                 return;
             }
+
+            /* Walked into a wall silly */
             if (collision_check(mech, WALK_WALL, lastelevation, oldterrain)) {
-                MOVE_BACK;
+
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 mech_notify(mech, MECHALL,
                         "You attempt to climb a hill too steep for you.");
+
                 if (MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-                            MadePilotSkillRoll(mech,
+                            MadePilotSkillRoll(mech, 
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3))
-                        || (mudconf.btech_skidcliff &&
-                            MadePilotSkillRoll(mech,
+                        || (mudconf.btech_skidcliff && MadePilotSkillRoll(mech,
                                 SkidMod(fabs(MechSpeed(mech)) / MP1)))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before crashing.");
                     MechLOSBroadcast(mech, "stops suddenly to avoid a cliff!");
+
                 } else {
+
                     mech_notify(mech, MECHALL,
                             "You run headlong into the cliff and fall down!!");
                     MechLOSBroadcast(mech,
                             "runs headlong into a cliff and falls down!");
                     if (!mudconf.btech_skidcliff)
-                        MechFalls(mech,
-                                (int) (1 + (MechSpeed(mech)) * MP_PER_KPH) / 4, 0);
+                        MechFalls(mech, (int) (1 + (MechSpeed(mech)) * MP_PER_KPH) / 4, 0);
                     else
                         MechFalls(mech, 1, 0);
                 }
@@ -1620,21 +1655,28 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechSpeed(mech) = 0;
                 MechZ(mech) = lastelevation;
                 return;
+
             } else if (collision_check(mech, WALK_DROP, lastelevation,
                         oldterrain)) {
+
+                /* Walked off a cliff ... */
                 mech_notify(mech, MECHALL,
                         "You notice a large drop in front of you");
                 avoidbth = mudconf.btech_skidcliff ?
                     SkidMod(fabs(MechSpeed(mech)) / MP1) :
                         ((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
+
                 if (MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
                             MadePilotSkillRoll(mech, avoidbth))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before falling off.");
                     MechLOSBroadcast(mech,
                             "stops suddenly to avoid falling off a cliff!");
-                    MOVE_BACK;
+                    move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+
                 } else {
+
                     mech_notify(mech, MECHALL,
                             "You run off the cliff and fall to the ground below.");
                     MechLOSBroadcast(mech,
@@ -1646,26 +1688,43 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-            } else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
-            	mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
-				     (elevation > lastelevation ? "small incline" : "small drop")));
-            		if (MechPilot(mech) == -1
-            		 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
-                		mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
-            		} else {
-						mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation ?
-						 "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
-                		MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ?
-                		 "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
-                		MechFalls(mech, abs(lastelevation - elevation), 1);
-                		MechDesiredSpeed(mech) = 0;
-                		MechSpeed(mech) = 0;
-						if (elevation > lastelevation) {
-							MOVE_BACK;
-						    }
-					}
-        			return;
-            }	 
+
+            } else if (mudconf.btech_roll_on_backwalk && 
+                    (MechSpeed(mech) < 0) && 
+                    (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+
+                mech_printf(mech, MECHALL, "You notice a %s behind you!",
+                        (elevation > lastelevation ? "small incline" : "small drop"));
+
+                if (MechPilot(mech) == -1
+                        || (MadePilotSkillRoll(mech, 
+                                collision_check(mech, WALK_BACK, lastelevation, oldterrain) 
+                                - 1))) {
+
+                    mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+
+                } else {
+
+                    mech_printf(mech, MECHALL, "%s",
+                            (elevation > lastelevation ?
+                             "You stumble on your rear and fall down." :
+                             "You fall on your rear off the small incline."));
+
+                    /*! \todo {Get rid of this tprintf} */
+                    MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ?
+                                    "falls on it's back walking up an incline." : 
+                                    "falls off the back of a small incline.")));
+                    MechFalls(mech, abs(lastelevation - elevation), 1);
+                    MechDesiredSpeed(mech) = 0;
+                    MechSpeed(mech) = 0;
+                    if (elevation > lastelevation) {
+                        move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+                    }
+                }
+                return;
+            } 
+
+            /* Slow the unit if its made an elevation change */
             le = elevation - lastelevation;
             le = (le < 0) ? -le : le;
             if (MechZ(mech) != elevation)
@@ -1682,6 +1741,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MechSpeed(mech) = 0;
                 }
             }
+            
             if (MechType(mech) == CLASS_BSUIT) {
 
                 /* Are they in water, also make sure it affects them */
@@ -1693,20 +1753,23 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
                     mech_notify(mech, MECHALL,
                             "You notice a body of water in front of you");
+
                     if (MechPilot(mech) == -1 ||
                             MadePilotSkillRoll(mech,
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3)) {
+
                         mech_notify(mech, MECHALL,
                                 "You manage to stop before falling in.");
                         MechLOSBroadcast(mech,
                                 "stops suddenly to avoid going for a swim!");
                     } else {
+
                         mech_notify(mech, MECHALL,
                                 "You trip at the edge of the water and plunge in...");
                         MechFloods(mech);
                         return;
                     }
-                    MOVE_BACK;
+                    move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                     MechDesiredSpeed(mech) = 0;
                     MechSpeed(mech) = 0;
                     return;
@@ -1763,7 +1826,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
             if (collision_check(mech, WALK_WALL, lastelevation, oldterrain)) {
                 mech_notify(mech, MECHALL,
                         "You attempt to climb a hill too steep for you.");
-                
+
                 if (MechPilot(mech) == -1 || (!mudconf.btech_skidcliff && 
                             MadePilotSkillRoll(mech, 
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3))
@@ -1774,12 +1837,13 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     mech_notify(mech, MECHALL,
                             "You manage to stop before crashing.");
                     MechLOSBroadcast(mech, "stops suddenly to avoid a cliff!");
+
                 } else {
+                    
                     if (!mudconf.btech_skidcliff) {
                         mech_notify(mech, MECHALL, "You smash into a cliff!!");
                         MechLOSBroadcast(mech, "crashes to a cliff!");
-                        MechFalls(mech,
-                                (int) (MechSpeed(mech) * MP_PER_KPH / 4), 0);
+                        MechFalls(mech, (int) (MechSpeed(mech) * MP_PER_KPH / 4), 0);
                     } else {
                         mech_notify(mech, MECHALL,
                                 "You skid to a violent halt!!");
@@ -1787,7 +1851,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MechFalls(mech, 0, 0);
                     }
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
@@ -1824,29 +1888,40 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
                     return;
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-				} else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
-            		mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!", (elevation > lastelevation ? "small incline" : "small drop")));
-		            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
-		                mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
-            		} else {
-            		    mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation
-            		     ? "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
-                		MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation
-                		 ? "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
-                		MechFalls(mech, abs(lastelevation - elevation), 1);
-                		MechDesiredSpeed(mech) = 0;
-                		MechSpeed(mech) = 0;
-                		if (elevation > lastelevation) {
-                        	    MOVE_BACK;
-				    }
-		            }
-			        return;
-		        }
-            
+
+            } else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && 
+                    (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+
+                mech_printf(mech, MECHALL, "You notice a %s behind you!",
+                        (elevation > lastelevation ? "small incline" : "small drop"));
+
+                if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, 
+                                collision_check(mech, WALK_BACK, lastelevation, oldterrain) 
+                                - 1))) {
+
+                    mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+                } else {
+                    mech_printf(mech, MECHALL, "%s",
+                            (elevation > lastelevation ?
+                             "You stumble on your rear and fall down." :
+                             "You fall on your rear off the small incline."));
+                    MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation
+                                    ? "falls on it's back walking up an incline." : 
+                                    "falls off the back of a small incline.")));
+                    MechFalls(mech, abs(lastelevation - elevation), 1);
+                    MechDesiredSpeed(mech) = 0;
+                    MechSpeed(mech) = 0;
+                    if (elevation > lastelevation) {
+                        move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+                    }
+                }
+                return;
+            }
+
 
             if (!(MechSpecials2(mech) & WATERPROOF_TECH) &&
                     (MechRTerrain(mech) == WATER || 
@@ -1868,26 +1943,29 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     Destroy(mech);
                     return;
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
             }
+
             /* New terrain restrictions */
             if (mudconf.btech_newterrain) {
                 tt = MechRTerrain(mech);
                 if ((tt == HEAVY_FOREST) && fabs(MechSpeed(mech)) > MP1) {
+
 #if 0
                     mech_notify(mech, MECHALL,
                             "You cruise at a bunch of trees!");
 #endif
                     mech_notify(mech, MECHALL,
                             "You try to dodge the larger trees..");
-                    if (MechPilot(mech) == -1 ||
-                            MadePilotSkillRoll(mech,
-                                (int) (fabs(MechSpeed(mech)) / MP1 / 6)))
+
+                    if (MechPilot(mech) == -1 || MadePilotSkillRoll(mech,
+                                (int) (fabs(MechSpeed(mech)) / MP1 / 6))) {
+
                         mech_notify(mech, MECHALL, "You manage to dodge 'em!");
-                    else {
+                    } else {
                         mech_notify(mech, MECHALL,
                                 "You swerve, but not enough! This'll hurt!");
                         MechLOSBroadcast(mech, "cruises headlong at a tree!");
@@ -1897,6 +1975,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     }
                 }
             }
+
+            /* Slow them if they made an elevation change */
             le = elevation - lastelevation;
             le = (le < 0) ? -le : le;
             if (le > 0) {
@@ -1915,24 +1995,28 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
         case MOVE_WHEEL:
 
+            /* Cliff ! */
             if (collision_check(mech, WALK_WALL, lastelevation, oldterrain)) {
+
                 mech_notify(mech, MECHALL,
                         "You attempt to climb a hill too steep for you.");
+
                 if (MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
                             MadePilotSkillRoll(mech,
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3))
-                        || (mudconf.btech_skidcliff &&
-                            MadePilotSkillRoll(mech,
+                        || (mudconf.btech_skidcliff && MadePilotSkillRoll(mech,
                                 SkidMod(fabs(MechSpeed(mech)) / MP1)))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before crashing.");
                     MechLOSBroadcast(mech, "stops suddenly to avoid a cliff!");
+
                 } else {
+
                     if (!mudconf.btech_skidcliff) {
                         mech_notify(mech, MECHALL, "You smash into a cliff!!");
                         MechLOSBroadcast(mech, "crashes to a cliff!");
-                        MechFalls(mech,
-                                (int) (MechSpeed(mech) * MP_PER_KPH / 4), 0);
+                        MechFalls(mech, (int) (MechSpeed(mech) * MP_PER_KPH / 4), 0);
                     } else {
                         mech_notify(mech, MECHALL,
                                 "You skid to a violent halt!");
@@ -1940,20 +2024,24 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MechFalls(mech, 0, 0);
                     }
                 }
-                MOVE_BACK;
+
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
 
             } else if (collision_check(mech, WALK_DROP, lastelevation,
                         oldterrain)) {
+
                 mech_notify(mech, MECHALL,
                         "You notice a large drop in front of you");
                 avoidbth = mudconf.btech_skidcliff ?
                     SkidMod(fabs(MechSpeed(mech)) / MP1) :
                         ((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
+
                 if (MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
                             MadePilotSkillRoll(mech, avoidbth))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before falling off.");
                     MechLOSBroadcast(mech,
@@ -1976,43 +2064,54 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
                     return;
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-         	}  else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
-            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
-                (elevation > lastelevation ? "small incline" : "small drop")));
-            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
-                collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
-                mech_notify(mech, MECHALL,
-                    "You manage to overcome the obstacle.");
-            } else {
-                mech_notify(mech, MECHALL,
-                    tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." :
-                        "You fall on your rear off the small incline.")));
-                MechLOSBroadcast(mech,
-                    tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." :
-                        "falls off the back of a small incline.")));
-                MechFalls(mech, abs(lastelevation - elevation), 1);
-                MechDesiredSpeed(mech) = 0;
-                MechSpeed(mech) = 0;
-                if (elevation > lastelevation)
-                        {
-                        MOVE_BACK;
-                        }
+
+            }  else if (mudconf.btech_roll_on_backwalk && 
+                    (MechSpeed(mech) < 0) && 
+                    (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+
+                mech_printf(mech, MECHALL, "You notice a %s behind you!",
+                        (elevation > lastelevation ? "small incline" : "small drop"));
+
+                if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
+                                collision_check(mech, WALK_BACK, lastelevation, oldterrain) 
+                                - 1))) {
+                    mech_notify(mech, MECHALL,
+                            "You manage to overcome the obstacle.");
+                } else {
+                    mech_printf(mech, MECHALL, "%s",
+                            (elevation > lastelevation ?
+                             "You stumble on your rear and fall down." :
+                             "You fall on your rear off the small incline."));
+                    MechLOSBroadcast(mech,
+                            tprintf("%s",(elevation > lastelevation ? 
+                                    "falls on it's back walking up an incline." :
+                                    "falls off the back of a small incline.")));
+                    MechFalls(mech, abs(lastelevation - elevation), 1);
+                    MechDesiredSpeed(mech) = 0;
+                    MechSpeed(mech) = 0;
+                    if (elevation > lastelevation) {
+                        move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+                    }
+                }
+                return;
             }
-        return;
-        }
+
             if (!(MechSpecials2(mech) & WATERPROOF_TECH) &&
                     (MechRTerrain(mech) == WATER || 
                      (MechRTerrain(mech) == BRIDGE && (lastelevation < (elevation - 1)))) &&
                     elevation < 0) {
+
                 mech_notify(mech, MECHALL,
                         "You notice a body of water in front of you");
+
                 if (MechPilot(mech) == -1 ||
                         MadePilotSkillRoll(mech,
                             (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3)) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before falling in.");
                     MechLOSBroadcast(mech,
@@ -2023,16 +2122,18 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     Destroy(mech);
                     return;
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
             }
+
             /* New terrain restrictions */
             if (mudconf.btech_newterrain) {
                 tt = MechRTerrain(mech);
                 if ((tt == HEAVY_FOREST || tt == LIGHT_FOREST) &&
                         fabs(MechSpeed(mech)) > MP1) {
+
 #if 0
                     mech_notify(mech, MECHALL,
                             "You cruise at a bunch of trees!");
@@ -2041,11 +2142,12 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                             "You try to dodge the larger trees..");
                     if (MechPilot(mech) == -1 ||
                             MadePilotSkillRoll(mech,
-                                (tt ==
-                                 HEAVY_FOREST ? 3 : 0) +
-                                (fabs(MechSpeed(mech)) / MP1 / 6)))
+                                (tt == HEAVY_FOREST ? 3 : 0) +
+                                (fabs(MechSpeed(mech)) / MP1 / 6))) {
+
                         mech_notify(mech, MECHALL, "You manage to dodge 'em!");
-                    else {
+
+                    } else {
                         mech_notify(mech, MECHALL,
                                 "You swerve, but not enough! This'll hurt!");
                         MechLOSBroadcast(mech, "cruises headlong at a tree!");
@@ -2053,17 +2155,17 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MechSpeed(mech) = MechSpeed(mech) / 2.0;
                         MechFalls(mech, MAX(1, (int) sqrt(f / MP1 / 2)), 0);
                     }
+
                 } else if ((tt == ROUGH) && fabs(MechSpeed(mech)) > MP1) {
 #if 0
                     mech_notify(mech, MECHALL,
                             "You cruise at some rough terrain!");
 #endif
                     mech_notify(mech, MECHALL, "You try to avoid the rocks..");
-                    if (MechPilot(mech) == -1 ||
-                            MadePilotSkillRoll(mech,
-                                (int) (fabs(MechSpeed(mech)) / MP1 / 6)))
+                    if (MechPilot(mech) == -1 || MadePilotSkillRoll(mech,
+                                (int) (fabs(MechSpeed(mech)) / MP1 / 6))) {
                         mech_notify(mech, MECHALL, "You manage to dodge 'em!");
-                    else {
+                    } else {
                         mech_notify(mech, MECHALL,
                                 "You swerve, but not enough! This'll hurt!");
                         MechLOSBroadcast(mech, "cruises headlong at a rock!");
@@ -2073,6 +2175,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     }
                 }
             }
+
+            /* Slow them down if they change elevations */
             le = elevation - lastelevation;
             le = (le < 0) ? -le : le;
             if (le > 0) {
@@ -2088,9 +2192,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 }
             }
             break;
+
         case MOVE_HULL:
         case MOVE_FOIL:
         case MOVE_SUB:
+
             if ((MechRTerrain(mech) != WATER && MechRTerrain(mech) != BRIDGE)
                     || abs(MechElev(mech)) < (abs(MechZ(mech)) + (MechMove(mech) ==
                             MOVE_FOIL ? -1 : 0))) {
@@ -2106,7 +2212,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                             "You manage to stop before crashing.");
                     MechLOSBroadcast(mech,
                             "stops suddenly to avoid running aground!");
-                    MOVE_BACK;
+                    move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 } else {
                     mech_notify(mech, MECHALL, "You smash into the ground!!");
                     MechLOSBroadcast(mech, "smashes aground!");
@@ -2121,22 +2227,26 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
             if (elevation > 0)
                 elevation = 0;
             break;
+
         case MOVE_HOVER:
+
             if (collision_check(mech, WALK_WALL, lastelevation, oldterrain)) {
                 MechElev(mech) = le;
                 MechTerrain(mech) = ot;
                 mech_notify(mech, MECHALL,
                         "You attempt to climb a hill too steep for you.");
                 if (MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-                            MadePilotSkillRoll(mech,
+                            MadePilotSkillRoll(mech, 
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3))
-                        || (mudconf.btech_skidcliff &&
-                            MadePilotSkillRoll(mech,
+                        || (mudconf.btech_skidcliff && MadePilotSkillRoll(mech,
                                 SkidMod(fabs(MechSpeed(mech)) / MP1)))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before crashing.");
                     MechLOSBroadcast(mech, "stops suddenly to avoid a cliff!");
+
                 } else {
+
                     if (!mudconf.btech_skidcliff) {
                         mech_notify(mech, MECHALL, "You smash into a cliff!!");
                         MechLOSBroadcast(mech, "smashes into a cliff!");
@@ -2149,24 +2259,31 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MechFalls(mech, 0, 0);
                     }
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
+
             } else if (collision_check(mech, WALK_DROP, lastelevation,
                         oldterrain)) {
+
                 mech_notify(mech, MECHALL,
                         "You notice a large drop in front of you");
+
                 avoidbth = mudconf.btech_skidcliff ?
                     SkidMod(fabs(MechSpeed(mech)) / MP1) :
                         ((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
+
                 if (MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
                             MadePilotSkillRoll(mech, avoidbth))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before falling off.");
                     MechLOSBroadcast(mech,
                             "stops suddenly to avoid falling off a cliff!");
+
                 } else {
+
                     mech_notify(mech, MECHALL,
                             "You drive off the cliff and fall to the ground below.");
                     MechLOSBroadcast(mech,
@@ -2174,20 +2291,25 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     MechFalls(mech, lastelevation - elevation, 0);
                     return;
                 }
-                MOVE_BACK;
+
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
+
             } else if (collision_check(mech, HIT_UNDER_BRIDGE, lastelevation,
                         oldterrain)) {
+
                 mech_notify(mech, MECHALL,
                         "You notice the underside of the bridge in front of you!");
+
                 if (MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
                             MadePilotSkillRoll(mech,
                                 (int) (fabs((MechSpeed(mech)) + MP1) / MP1) / 3))
                         || (mudconf.btech_skidcliff &&
                             MadePilotSkillRoll(mech,
                                 SkidMod(fabs(MechSpeed(mech)) / MP1)))) {
+
                     mech_notify(mech, MECHALL,
                             "You manage to stop before slamming into the bridge.");
                     MechLOSBroadcast(mech,
@@ -2199,33 +2321,45 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                             "drives right into the underside of the bridge.");
                     MechFalls(mech, 1, 0);
                 }
-                MOVE_BACK;
+                move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-        }  else if (mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain)) && !isunder) {
-            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!",
-                (elevation > lastelevation ? "small incline" : "small drop")));
-            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
-                collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
-                mech_notify(mech, MECHALL,
-                    "You manage to overcome the obstacle.");
-            } else {
-                mech_notify(mech, MECHALL,
-                    tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." :
-                        "You fall on your rear off the small incline.")));
-                MechLOSBroadcast(mech,
-                    tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." :
-                        "falls off the back of a small incline.")));
-                MechFalls(mech, abs(lastelevation - elevation), 1);
-                MechDesiredSpeed(mech) = 0;
-                MechSpeed(mech) = 0;
-                if (elevation > lastelevation) {
-                        MOVE_BACK;
-                        }
+
+            }  else if (mudconf.btech_roll_on_backwalk && 
+                    (MechSpeed(mech) < 0) &&
+                    (collision_check(mech, WALK_BACK, lastelevation, oldterrain)) && !isunder) {
+
+                mech_printf(mech, MECHALL, "You notice a %s behind you!",
+                        (elevation > lastelevation ? "small incline" : "small drop"));
+                
+                if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
+                                collision_check(mech, WALK_BACK, lastelevation, oldterrain) 
+                                - 1))) {
+
+                    mech_notify(mech, MECHALL,
+                            "You manage to overcome the obstacle.");
+
+                } else {
+
+                    mech_printf(mech, MECHALL, "%s",
+                            (elevation > lastelevation ?
+                             "You stumble on your rear and fall down." :
+                             "You fall on your rear off the small incline."));
+                    MechLOSBroadcast(mech,
+                            tprintf("%s",(elevation > lastelevation ? 
+                                    "falls on it's back walking up an incline." :
+                                    "falls off the back of a small incline.")));
+                    MechFalls(mech, abs(lastelevation - elevation), 1);
+                    MechDesiredSpeed(mech) = 0;
+                    MechSpeed(mech) = 0;
+                    if (elevation > lastelevation) {
+                        move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+                    }
+                }
+                return;
             }
-        return;
-        }
+
             tt = MechRTerrain(mech);
             if ((tt == HEAVY_FOREST || tt == LIGHT_FOREST) &&
                     fabs(MechSpeed(mech)) > MP1) {
@@ -2234,13 +2368,15 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 #endif
                 mech_notify(mech, MECHALL,
                         "You try to dodge the larger trees..");
+
                 if (MechPilot(mech) == -1 ||
                         MadePilotSkillRoll(mech,
-                            (tt ==
-                             HEAVY_FOREST ? 3 : 0) +
-                            (fabs(MechSpeed(mech)) / MP1 / 6)))
+                            (tt == HEAVY_FOREST ? 3 : 0) +
+                            (fabs(MechSpeed(mech)) / MP1 / 6))) {
+
                     mech_notify(mech, MECHALL, "You manage to dodge 'em!");
-                else {
+
+                } else {
                     mech_notify(mech, MECHALL,
                             "You swerve, but not enough! This'll hurt!");
                     MechLOSBroadcast(mech, "cruises headlong at a tree!");
@@ -2249,6 +2385,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     MechFalls(mech, MAX(1, (int) sqrt(f / MP1 / 2)), 0);
                 }
             }
+
+            /* Slow the unit down if its made an elevation change */
             le = elevation - lastelevation;
             le = (le < 0) ? -le : le;
             if (le > 0) {
@@ -2264,16 +2402,19 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 }
             }
             break;
+
         case MOVE_VTOL:
         case MOVE_FLY:
+
             if (Landed(mech) && MechRTerrain(mech) != ROAD &&
                     MechRTerrain(mech) != BRIDGE && MechRTerrain(mech) != GRASSLAND
                     && MechRTerrain(mech) != BUILDING) {
+
                 mech_notify(mech, MECHALL,
                         "You go where no flying thing has ever gone before..");
                 if (RGotPilot(mech) && MadePilotSkillRoll(mech, 5)) {
                     mech_notify(mech, MECHALL, "You stop in time!");
-                    MOVE_BACK;
+                    move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
                 } else {
                     mech_notify(mech, MECHALL,
                             "Eww.. You've a bad feeling about this.");
@@ -2283,22 +2424,38 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechDesiredSpeed(mech) = 0;
                 MechSpeed(mech) = 0;
                 return;
-        }  else if (Landed(mech) && mudconf.btech_roll_on_backwalk && (MechSpeed(mech) < 0) && (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
-            mech_notify(mech, MECHALL, tprintf("You notice a %s behind of you!", (elevation > lastelevation ? "small incline" : "small drop")));
-            if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, collision_check(mech, WALK_BACK, lastelevation, oldterrain) - 1))) {
-                mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
-            } else { 
-                mech_notify(mech, MECHALL, tprintf("%s",(elevation > lastelevation ? "You stumble on your rear and fall down." : "You fall on your rear off the small incline.")));
-                MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ? "falls on it's back walking up an incline." : "falls off the back of a small incline.")));
-                MechFalls(mech, (abs(lastelevation - elevation) + 1000), 1);
-                MechDesiredSpeed(mech) = 0;
-                MechSpeed(mech) = 0;
-                if (elevation > lastelevation) {
-                        MOVE_BACK;
-                        } 
+
+            }  else if (Landed(mech) && mudconf.btech_roll_on_backwalk && 
+                    (MechSpeed(mech) < 0) && 
+                    (collision_check(mech, WALK_BACK, lastelevation, oldterrain))) {
+
+                mech_printf(mech, MECHALL, "You notice a %s behind you!",
+                        (elevation > lastelevation ? "small incline" : "small drop"));
+
+                if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech, 
+                                collision_check(mech, WALK_BACK, lastelevation, oldterrain) 
+                                - 1))) {
+
+                    mech_notify(mech, MECHALL, "You manage to overcome the obstacle.");
+
+                } else { 
+
+                    mech_printf(mech, MECHALL, "%s", (elevation > lastelevation ?
+                                "You stumble on your rear and fall down." :
+                                "You fall on your rear off the small incline."));
+                    MechLOSBroadcast(mech, tprintf("%s",(elevation > lastelevation ? 
+                                    "falls on it's back walking up an incline." : 
+                                    "falls off the back of a small incline.")));
+                    MechFalls(mech, (abs(lastelevation - elevation) + 1000), 1);
+                    MechDesiredSpeed(mech) = 0;
+                    MechSpeed(mech) = 0;
+                    if (elevation > lastelevation) {
+                        move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
+                    } 
+                }
+                return;
             }
-        return;
-        }
+
             if (MechRTerrain(mech) == WATER)
                 return;
 
@@ -2319,14 +2476,16 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                 MechTerrain(mech) = ot;
                 mech_notify(mech, MECHALL,
                         "You attempt to fly over elevation that is too high!!");
-                if (MechPilot(mech) == -1 ||
-                        (MadePilotSkillRoll(mech,
-                                            (int) (MechFZ(mech) / ZSCALE / 3)) &&
-                         (ot == GRASSLAND || ot == ROAD || ot == BUILDING))) {
+
+                if (MechPilot(mech) == -1 || (MadePilotSkillRoll(mech,
+                                (int) (MechFZ(mech) / ZSCALE / 3)) &&
+                            (ot == GRASSLAND || ot == ROAD || ot == BUILDING))) {
+
                     mech_notify(mech, MECHALL, "You land safely.");
                     MechStatus(mech) |= LANDED;
                     MechSpeed(mech) = 0.0;
                     MechVerticalSpeed(mech) = 0.0;
+
                 } else {
                     mech_notify(mech, MECHALL,
                             "You crash into the obstacle and fall from the sky!!!!!");
@@ -2338,6 +2497,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
             }
             break;
     }
+
     if (!done) {
         possible_mine_poof(mech, MINE_STEP);
         if (mudconf.btech_fasaadvvhlfire &&
