@@ -9,4 +9,11 @@ cscope.in.out
 cscope.out
 cscope.po.out
 buildnum.data
-
+autoconf*
+game
+game.run
+autom4te.cache
+.project
+.cdtproject
+config.status
+.depend
