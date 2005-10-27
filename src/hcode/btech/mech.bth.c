@@ -692,7 +692,7 @@ int TargetMovementMods(MECH * mech, MECH * target, float range)
 	if (is_aero(mech))
 	    m = ACCEL_MOD;
 	target_speed =
-	    (float) my_sqrt((double) MechSpeed(target) / m,
+	    (float) length_hypotenuse((double) MechSpeed(target) / m,
 	    (double) MechVerticalSpeed(target) / m);
     } else {
 	if (Jumping(target)) {

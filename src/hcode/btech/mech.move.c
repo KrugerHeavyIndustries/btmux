@@ -1220,7 +1220,7 @@ void mech_jump(dbref player, void *data, char *buffer)
     MechStartFY(mech) = MechFY(mech);
     MechStartFZ(mech) = MechFZ(mech);
     MechJumpLength(mech) =
-	my_sqrt((double) (realx - MechStartFX(mech)),
+	length_hypotenuse((double) (realx - MechStartFX(mech)),
 	(double) (realy - MechStartFY(mech)));
     MechGoingX(mech) = mapx;
     MechGoingY(mech) = mapy;

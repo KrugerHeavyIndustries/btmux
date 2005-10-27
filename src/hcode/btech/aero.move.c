@@ -423,7 +423,7 @@ void aero_UpdateHeading(MECH * mech)
 	UpdateHeading(mech);
 }
 
-double my_sqrt(double x, double y)
+double length_hypotenuse(double x, double y)
 {
     if (x < 0)
 	x = -x;
@@ -498,7 +498,7 @@ void aero_UpdateSpeed(MECH * mech)
     dx = wx - nx;
     dy = wy - ny;
     dz = wz - nz;
-    vlen = my_sqrt(my_sqrt(dx, dy), dz);
+    vlen = length_hypotenuse(length_hypotenuse(dx, dy), dz);
     if (!(vlen > 0.0))
 	return;
     if (vlen > (m * ab * MMaxSpeed(mech) / AERO_SECS_THRUST)) {
@@ -516,9 +516,9 @@ void aero_UpdateSpeed(MECH * mech)
     nh = (float) atan2(ny, nx) / TWOPIOVER360;
     if (!SpheroidDS(mech))
 	SetFacing(mech, AcceptableDegree((int) nh + 90));
-    xypart = my_sqrt(nx, ny);
+    xypart = length_hypotenuse(nx, ny);
     MechSpeed(mech) = xypart;
-    sp = my_sqrt(my_sqrt(nx, ny), nz);	/* Whole speed */
+    sp = length_hypotenuse(length_hypotenuse(nx, ny), nz);	/* Whole speed */
     MechVerticalSpeed(mech) = nz;
     if (!SpheroidDS(mech) && fabs(MechSpeed(mech)) < MP1)
 	SetFacing(mech, MechDesiredFacing(mech));

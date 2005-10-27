@@ -92,7 +92,7 @@
 
 #define MINE_NEXT_MODIFIER 2/3
 #define MINE_MIN           5
-#define MINE_TABLE         2	/* 0 = General, 2 = KICK */
+#define MINE_TABLE         2    /* 0 = General, 2 = KICK */
 
 /* Have weird jump code? (undef = basic MUSE one) */
 #define ODDJUMP
@@ -145,10 +145,10 @@
 #define BUILDINGS_REBUILD_FROM_DESTRUCTION
 
 #define BUILDING_REPAIR_AMOUNT     1
-#define BUILDING_REPAIR_DELAY    120	/* 1 pt / 1 min */
+#define BUILDING_REPAIR_DELAY    120    /* 1 pt / 1 min */
 
 /* Howlong to wait before rebuilding cf0'd buildings. */
-#define BUILDING_DREBUILD_DELAY 7200	/* 2 hours */
+#define BUILDING_DREBUILD_DELAY 7200    /* 2 hours */
 
 /* Define if ECM status (ECM active, ECCM active, ECM-disturbed and
  * ECM-protected) should show on contacts (as 'E', 'P', 'e' and 'p') */
@@ -157,76 +157,79 @@
 #define LATERAL_TICK  6
 #define HEAT_TICK     2
 #define JUMP_TICK     1
-#define MOVE_TICK     1		/* How oft da mecha move ;-) */
+#define MOVE_TICK     1        /* How oft da mecha move ;-) */
 #define MOVE_MOD      MOVE_TICK / 2
 #define WEAPON_TICK   2
 
-#define ARTY_SPEED    5		/* Artillery round flies 5 hexes / second */
-#define ARTILLERY_MAPSHEET_SIZE 20	/* Size of single arty mapsheet */
-#define ARTILLERY_MINIMUM_FLIGHT 10	/* How long's the minimum flight time */
+#define ARTY_SPEED                  5   /* Artillery round flies 5 hexes / second */
+#define ARTILLERY_MAPSHEET_SIZE     20  /* Size of single arty mapsheet */
+#define ARTILLERY_MINIMUM_FLIGHT    10  /* How long's the minimum flight time */
 
-#define DROP_TO_STAND_RECYCLE (MOVE_TICK * 12)
-#define JUMP_TO_HIT_RECYCLE   (JUMP_TICK * 12 / (MechType(mech) == CLASS_BSUIT ? 4 : 1))
+#define DROP_TO_STAND_RECYCLE   (MOVE_TICK * 12)
+#define JUMP_TO_HIT_RECYCLE     (JUMP_TICK * 12 / (MechType(mech) == CLASS_BSUIT ? 4 : 1))
 
-#define INITIAL_PLOS_TICK 1	/* How many secs after startup */
-#define LOS_TICK          2	/* Update LOS tables */
-#define HIDE_TICK        10
-#define PLOS_TICK         3	/* How many seconds interval between checks */
-#define SCHANGE_TICK     10	/* Sensor change */
-#define SPOT_TICK        10	/* How oft is the range for spotting checked? */
+#define INITIAL_PLOS_TICK       1   /* How many secs after startup */
+#define LOS_TICK                2   /* Update LOS tables */
+#define HIDE_TICK               10
+#define PLOS_TICK               3   /* How many seconds interval between checks */
+#define SCHANGE_TICK            10  /* Sensor change */
+#define SPOT_TICK               10  /* How oft is the range for spotting checked? */
 
-#define PHYSICAL_RECYCLE_TIME 30*WEAPON_TICK
-#define STARTUP_TIME 30
-#define UNCONSCIOUS_TIME 30	/* ORIGINAL authors thought it was UNCONCIOUS */
-#define WEAPON_RECYCLE_TIME 30	/* weapon_tick's */
-#define FALL_TICK     3		/* How oft do we call fall event? */
-#define FALL_ACCEL    1		/* How much do we accelerate each event? */
-#define OOD_SPEED     2		/* 2 Z / tic ; 150 sec for landing */
-#define OOD_TICK      1
-#define DUMP_TICK     30	/* How long does it take to eject 1 ton of ammo? */
-#define DUMP_GRAD_TICK 1	/* This oft we _maybe_ dump stuff */
-#define DUMP_SPEED   (DUMP_TICK/DUMP_GRAD_TICK)
-#define MASC_TICK      60	/* Time for each MASC regen / fail */
-#define SCHARGE_TICK   60	/* Time for each Supercharger regen / fail */
-#define RANDOM_TICK     6	/* How many seconds do we want to use same rnd# for
-				   BTHs etc */
-#define DS_SPAM_TIME   10	/* At max, 1 mapemit every 10 secs concerning a
-				   single DS */
+#define PHYSICAL_RECYCLE_TIME   30*WEAPON_TICK
+#define STARTUP_TIME            30
+#define UNCONSCIOUS_TIME        30  /* ORIGINAL authors thought it was UNCONCIOUS */
+#define WEAPON_RECYCLE_TIME     30  /* weapon_tick's */
+#define FALL_TICK               3   /* How oft do we call fall event? */
+#define FALL_ACCEL              1   /* How much do we accelerate each event? */
+#define OOD_SPEED               2   /* 2 Z / tic ; 150 sec for landing */
+#define OOD_TICK                1
+#define DUMP_TICK               30  /* How long does it take to eject 1 ton of ammo? */
+#define DUMP_GRAD_TICK          1   /* This oft we _maybe_ dump stuff */
+#define DUMP_SPEED              (DUMP_TICK/DUMP_GRAD_TICK)
+#define MASC_TICK               60  /* Time for each MASC regen / fail */
+#define SCHARGE_TICK            60  /* Time for each Supercharger regen / fail */
+#define RANDOM_TICK             6   /* How many seconds do we want to use same rnd# for
+                                       BTHs etc */
+#define DS_SPAM_TIME            10  /* At max, 1 mapemit every 10 secs concerning a
+                                       single DS */
 
-#define MAX_BOOM_TIME  30	/* Max time between first and last CT int hit for
-				   fusion explosion */
-#define BOOM_BTH        9	/* Roll below this or 'boom' */
-#define MAX_C3_SLAVES   3
+#define MAX_BOOM_TIME           30  /* Max time between first and last CT int hit for
+                                       fusion explosion */
+#define BOOM_BTH                9   /* Roll below this or 'boom' */
+#define MAX_C3_SLAVES           3
+
+#define CHARGE_TIMER_LIMIT      60  /* How long should we let them 'charge' for (in seconds) */
+#define CHARGE_DIST_TRIGGER     0.6 /* At what range should we trigger the charge (hexes) */
 
 /* Skills used if pilot's not valid and no default mech skills */
-#define DEFAULT_GUNNERY   6
-#define DEFAULT_PILOTING  6
-#define DEFAULT_SPOTTING  8
-#define DEFAULT_ARTILLERY 8
-#define DEFAULT_COMM      6
+#define DEFAULT_GUNNERY         6
+#define DEFAULT_PILOTING        6
+#define DEFAULT_SPOTTING        8
+#define DEFAULT_ARTILLERY       8
+#define DEFAULT_COMM            6
 
 /* Default ranges and stuff */
-#define DEFAULT_TACRANGE    20
-#define DEFAULT_LRSRANGE    40
-#define DEFAULT_RADIORANGE  80
-#define DEFAULT_SCANRANGE   20
-#define DEFAULT_HEATSINKS   10
+#define DEFAULT_TACRANGE        20
+#define DEFAULT_LRSRANGE        40
+#define DEFAULT_RADIORANGE      80
+#define DEFAULT_SCANRANGE       20
+#define DEFAULT_HEATSINKS       10
 
 /* IS guys suck */
-#define DEFAULT_COMPUTER     2
-#define DEFAULT_RADIO	     3
-#define DEFAULT_PART_LEVEL   3
+#define DEFAULT_COMPUTER        2
+#define DEFAULT_RADIO           3
+#define DEFAULT_PART_LEVEL      3
 
 /* Clans get better stuff */
-#define DEFAULT_CLCOMPUTER   5
-#define DEFAULT_CLRADIO	     5
-#define DEFAULT_CLPART_LEVEL 5
+#define DEFAULT_CLCOMPUTER      5
+#define DEFAULT_CLRADIO         5
+#define DEFAULT_CLPART_LEVEL    5
 
 /* Display Types */
-#define LRS_DISPLAY_WIDTH 70
-#define LRS_DISPLAY_WIDTH2 35
-#define LRS_DISPLAY_HEIGHT 11
-#define LRS_DISPLAY_HEIGHT2 5
+#define LRS_DISPLAY_WIDTH       70
+#define LRS_DISPLAY_WIDTH2      35
+#define LRS_DISPLAY_HEIGHT      11
+#define LRS_DISPLAY_HEIGHT2     5
 
 /* Census config: */
 
@@ -269,8 +272,8 @@
 
 #endif
 
-#define INITIAL_RANK 3		/* When starting chargen */
-#define FINAL_RANK   2		/* When finished with chargen */
+#define INITIAL_RANK 3        /* When starting chargen */
+#define FINAL_RANK   2        /* When finished with chargen */
 
 #define ECM_RANGE    6
 
@@ -294,4 +297,4 @@ typedef unsigned char byte;
 /* Exile Stun Code Timer */
 #define MECHSTUN_TICK 10
 
-#endif				/* BTCONFIG_H */
+#endif                /* BTCONFIG_H */

@@ -20,7 +20,7 @@ void aero_land(dbref player, void *data, char *buffer);
 void aero_ControlEffect(MECH * mech);
 void ds_BridgeHit(MECH * mech);
 void aero_UpdateHeading(MECH * mech);
-double my_sqrt(double x, double y);
+double length_hypotenuse(double x, double y);
 double my_sqrtm(double x, double y);
 void aero_UpdateSpeed(MECH * mech);
 int FuelCheck(MECH * mech);
