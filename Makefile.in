@@ -55,7 +55,6 @@ MUX_OBJECTS    = src/alloc.o       \
                  src/netcommon.o   \
                  src/object.o      \
                  src/player.o      \
-                 src/player_c.o    \
                  src/powers.o      \
                  src/predicates.o  \
                  src/python.o      \
@@ -174,7 +173,14 @@ ALLSRCS = $(ALLOBJS:.o=.c)
 
 TARGETS = src/netmux src/mkindx src/unsplit src/slave
 
-all: $(TARGETS)
+
+
+
+all: Makefile $(TARGETS)
+
+Makefile: Makefile.dist configure.in Makefile.in
+	make -f Makefile.dist clean
+	exec make -f Makefile.dist
 
 # Install copies the 'game' directory to game.run, after trying to get all
 # files from svn. If the svn command fails, we don't really care.

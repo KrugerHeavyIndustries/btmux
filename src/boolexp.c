@@ -395,19 +395,19 @@ static BOOLEXP *parse_boolexp_L(void)
 	 * skip * * the * * * expensive match code. 
 	 */
 
-	if (parsing_internal) {
-	    if (buf[0] != '#') {
-		free_lbuf(buf);
-		free_bool(b);
-		return TRUE_BOOLEXP;
-	    }
-	    b->thing = atoi(&buf[1]);
-	    if (!Good_obj(b->thing)) {
-		free_lbuf(buf);
-		free_bool(b);
-		return TRUE_BOOLEXP;
-	    }
-	} else {
+    if (parsing_internal) {
+        if (buf[0] != '#') {
+            free_lbuf(buf);
+            free_bool(b);
+            return TRUE_BOOLEXP;
+        }
+        b->thing = atoi(&buf[1]);
+        if (!Good_obj(b->thing)) {
+            free_lbuf(buf);
+            free_bool(b);
+            return TRUE_BOOLEXP;
+        }
+    } else {
 	    save_match_state(&mstate);
 	    init_match(parse_player, buf, TYPE_THING);
 	    match_everything(MAT_EXIT_PARENTS);

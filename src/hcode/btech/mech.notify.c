@@ -785,10 +785,9 @@ void mech_sendchannel(dbref player, void *data, char *buffer)
     }
 
     if (mech->freq[chn] == 0 && In_Character(mech->mapindex)) {
-        send_channel("ZeroFrequencies", 
-                tprintf("Player #%d (%s) in mech #%d (channel %c) "
+        send_channel("ZeroFrequencies", "Player #%d (%s) in mech #%d (channel %c) "
                     "on map #%d 0-freqs \"%s\"", player, Name(player),
-                    mech->mynum, chn+'A', mech->mapindex, args[2]));
+                    mech->mynum, chn+'A', mech->mapindex, args[2]);
     }
 
     sendchannelstuff(mech, chn, args[2]);
@@ -1638,7 +1637,7 @@ void mech_notify(MECH * mech, int type, char *buffer)
 
 void mech_printf(MECH * mech, int type, char *format, ...)
 {
-    char buffer[8192];
+    char buffer[LBUF_SIZE];
     int i;
     va_list ap;
 
@@ -1652,7 +1651,7 @@ void mech_printf(MECH * mech, int type, char *format, ...)
     /* Let's do colorization too, just in case. */
 
     va_start(ap, format);
-    vsnprintf(buffer, 8192, format, ap);
+    vsnprintf(buffer, LBUF_SIZE, format, ap);
     va_end(ap);
     
     if (type == MECHPILOT) {

@@ -65,10 +65,7 @@ int *size;
  * * hashinit: Initialize a new hash table.
  */
 
-void hashinit(htab, size)
-HASHTAB *htab;
-int size;
-{
+void hashinit(HASHTAB *htab, int size) {
     int i;
 
     htab->mask = get_hashmask(&size);

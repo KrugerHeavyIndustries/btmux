@@ -14,7 +14,7 @@
 
 /* comsys.c */
 void init_chantab(void);
-void send_channel(char *chan, char *str);
+void send_channel(char *chan, const char *format, ...);
 char *get_channel_from_alias(dbref player, char *alias);
 void load_comsystem(FILE * fp);
 void save_comsystem(FILE * fp);

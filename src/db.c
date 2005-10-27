@@ -853,8 +853,8 @@ char *arg1, *arg2;
 		log_text(arg2);
 		ENDLOG;
 	    } if (Suspect(player)) {
-		send_channel("Suspect", tprintf("%s renamed to %s",
-			Name(thing), arg2));
+		send_channel("Suspect", "%s renamed to %s",
+			Name(thing), arg2);
 	    }
 	    delete_player_name(thing, Name(thing));
 
@@ -2956,7 +2956,8 @@ void load_restart_db() {
     }
 
     while ((val = getref(f)) != 0) {
-        d = alloc_desc("restart");
+        d = malloc(sizeof(DESC));
+        memset(d, 0, sizeof(DESC));
         d->descriptor = val;
         d->flags = getref(f);
         d->connected_at = getref(f);

@@ -688,7 +688,7 @@ int In_IC_Loc(dbref player)
     else if (In_Character(d) || Gagged(player))
         return 1;
     return 0;
-} /* end In_IC_Loc()
+} /* end In_IC_Loc() */
 
 /*
  * ---------------------------------------------------------------------------
@@ -772,10 +772,10 @@ int check_access(player, mask)
  */
 
 void process_cmdent(cmdp, switchp, player, cause, interactive, arg, unp_command, cargs, ncargs)
-CMDENT *cmdp;
-char *switchp, *arg, *unp_command, *cargs[];
-dbref player, cause;
-int interactive, ncargs;
+    CMDENT *cmdp;
+    char *switchp, *arg, *unp_command, *cargs[];
+    dbref player, cause;
+    int interactive, ncargs;
 {
     char *buf1, *buf2, tchar, *bp, *str, *buff, *s, *j, *new;
     char *args[MAX_ARG];
@@ -1134,7 +1134,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     }
 
 
-//    if(isPlayer(player)) choke_player(player);
+    //    if(isPlayer(player)) choke_player(player);
 
     /*
      * Make sure player isn't going or halted 
@@ -1508,7 +1508,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     mudstate.debug_cmd = cmdsave;
 
 exit:
-//    if(isPlayer(player)) release_player(player);
+    //    if(isPlayer(player)) release_player(player);
     return;
 }
 

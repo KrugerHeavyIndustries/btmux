@@ -28,7 +28,7 @@
 #define SBUF_SIZE	32
 */
 
-#ifndef STANDALONE
+#if 0
 
 extern void pool_init(int, int);
 extern char *pool_alloc(int, const char *);
@@ -50,6 +50,7 @@ extern void list_buftrace(dbref);
 #define free_pcache(b)	pool_free(POOL_PCACHE,((char **)&(b)))
 
 #else
+
 
 #define	alloc_lbuf(s)	(char *)malloc(LBUF_SIZE)
 #define	free_lbuf(b)	if (b) free(b)

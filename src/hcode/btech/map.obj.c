@@ -1025,12 +1025,12 @@ static void building_rebuild_event(MUXEVENT * e)
 {
 #ifdef BUILDINGS_REBUILD_FROM_DESTRUCTION
     dbref d = (dbref) e->data;
-    int cf, max;
+    int cf = 0, max = 0;
 
     if (get_building_cf(d, &cf, &max))
-	return;
+        return;
     if (max <= 0)
-	return;
+        return;
     set_building_cf(d, 1, max);
 #endif
 }

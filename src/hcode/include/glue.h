@@ -1049,8 +1049,6 @@ SpecialObjectStruct SpecialObjects[] = {
 #define NUM_SPECIAL_OBJECTS \
    ((sizeof(SpecialObjects))/(sizeof(struct SpecialObjectStruct)))
 
-extern void send_channel();
-
 #undef HEADER
 
 
@@ -1062,6 +1060,6 @@ extern void send_channel();
 #undef memcpy
 #endif
 
-void send_channel(char *, char *);
+void send_channel(char *, const char *, ...);
 
 #endif

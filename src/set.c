@@ -29,10 +29,7 @@ extern char *silly_atr_get(int id, int flag);
 extern void silly_atr_set(int id, int flag, char *dat);
 
 
-dbref match_controlled(player, name)
-dbref player;
-const char *name;
-{
+dbref match_controlled(dbref player, char *name) {
     dbref mat;
 
     init_match(player, name, NOTYPE);
@@ -46,10 +43,7 @@ const char *name;
     }
 }
 
-dbref match_controlled_quiet(player, name)
-dbref player;
-const char *name;
-{
+dbref match_controlled_quiet(dbref player, char *name) {
     dbref mat;
 
     init_match(player, name, NOTYPE);
@@ -62,10 +56,7 @@ const char *name;
     }
 }
 
-dbref match_affected(player, name)
-dbref player;
-const char *name;
-{
+dbref match_affected(dbref player, char *name) {
     dbref mat;
 
     init_match(player, name, NOTYPE);
@@ -79,10 +70,7 @@ const char *name;
     }
 }
 
-dbref match_examinable(player, name)
-dbref player;
-const char *name;
-{
+dbref match_examinable(dbref player, char *name) {
     dbref mat;
 
     init_match(player, name, NOTYPE);
@@ -97,12 +85,7 @@ const char *name;
 }
 
 
-void do_chzone(player, cause, key, name, newobj)
-dbref player, cause;
-int key;
-const char *name;
-const char *newobj;
-{
+void do_chzone(dbref player, dbref cause, int key, char *name, char *newobj) {
     dbref thing;
     dbref zone;
 
@@ -176,12 +159,7 @@ const char *newobj;
     notify(player, "Zone changed.");
 }
 
-void do_name(player, cause, key, name, newname)
-dbref player, cause;
-int key;
-const char *name;
-char *newname;
-{
+void do_name(dbref player, dbref cause, int key, char *name, char *newname) {
     dbref thing;
     char *buff;
     char *buff2;

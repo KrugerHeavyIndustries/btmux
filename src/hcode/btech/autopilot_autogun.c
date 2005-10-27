@@ -426,6 +426,7 @@ int auto_calc_weapon_score(int weapon_db_number, int range) {
 
     /* Assume default values */
     weapon_score = 0;
+    weapon_damage = 0;
     range_score = 500;      /* Since by default we assume its SR */
     damage_score = 0;
     heat_score = 0;

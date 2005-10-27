@@ -42,7 +42,7 @@ rbtree *rb_init(int (*)(void *, void *, void *), void *);
 void rb_destroy(rbtree *);
 
 void rb_insert(rbtree *, void *key, void *data); 
-void *rb_find(rbtree *, const void *key);
+void *rb_find(rbtree *, void *key);
 int rb_exists(rbtree *, void *key);
 void *rb_delete(rbtree *, void *key);
 

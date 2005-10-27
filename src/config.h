@@ -9,10 +9,12 @@
 #include "copyright.h"
 #include "autoconf.h"
 
-#include <sys/fcntl.h>
-#include <sys/types.h>
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/fcntl.h>
+#include <sys/types.h>
 #include <ctype.h>
 #include <string.h>
 #include <sys/time.h>

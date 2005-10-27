@@ -549,32 +549,32 @@ MechStatus(a) &= ~LOCK_MODES
 #define SetElevation(mapn,x,y,e) SetMap(mapn,x,y,GetTerrain(mapn,x,y),e)
 
 /* For now I don't care about allocations */
-#define ScenError(msg...)        send_channel("ScenErrors",tprintf(msg))
-#define ScenStatus(msg...)       send_channel("ScenStatus",tprintf(msg))
-#define SendAI(msg...)           send_channel("MechAI",tprintf(msg))
+#define ScenError(msg...)        send_channel("ScenErrors",msg)
+#define ScenStatus(msg...)       send_channel("ScenStatus",msg)
+#define SendAI(msg...)           send_channel("MechAI",msg)
 #define SendAlloc(msg)
 #define SendLoc(msg)
-#define SendCustom(msg)          send_channel("MechCustom",msg)
-#define SendDB(msg)              send_channel("DBInfo",msg)
-#define SendDebug(msg)           send_channel("MechDebugInfo",msg)
-#define SendEcon(msg)            send_channel("MechEconInfo",msg)
-#define SendError(msg)           send_channel("MechErrors",msg)
-#define SendEvent(msg)           send_channel("EventInfo",msg)
-#define SendSensor(msg)          send_channel("MechSensor",msg)
-#define SendTrigger(msg)         send_channel("MineTriggers",msg)
-#define SendXP(msg)              send_channel("MechXP",msg)
-#define SendDSInfo(msg)          send_channel("DSInfo",msg)
+#define SendCustom(msg...)          send_channel("MechCustom",msg)
+#define SendDB(msg...)              send_channel("DBInfo",msg)
+#define SendDebug(msg...)           send_channel("MechDebugInfo",msg)
+#define SendEcon(msg...)            send_channel("MechEconInfo",msg)
+#define SendError(msg...)           send_channel("MechErrors",msg)
+#define SendEvent(msg...)           send_channel("EventInfo",msg)
+#define SendSensor(msg...)          send_channel("MechSensor",msg)
+#define SendTrigger(msg...)         send_channel("MineTriggers",msg)
+#define SendXP(msg...)              send_channel("MechXP",msg)
+#define SendDSInfo(msg...)          send_channel("DSInfo",msg)
 
 /*
  * Exile Added Channel Message Emits
  */
-#define SendAttackEmits(msg)     send_channel("MechAttackEmits",msg)
-#define SendAttacks(msg)         send_channel("MechAttacks",msg)
-#define SendAttackXP(msg)        send_channel("MechAttackXP",msg)
-#define SendBTHDebug(msg)        send_channel("MechBTHDebug",msg)
-#define SendFreqs(msg)           send_channel("MechFreqs",msg)
-#define SendPilotXP(msg)         send_channel("MechPilotXP",msg)
-#define SendTechXP(msg)          send_channel("MechTechXP",msg)
+#define SendAttackEmits(msg...)     send_channel("MechAttackEmits",msg)
+#define SendAttacks(msg...)         send_channel("MechAttacks",msg)
+#define SendAttackXP(msg...)        send_channel("MechAttackXP",msg)
+#define SendBTHDebug(msg...)        send_channel("MechBTHDebug",msg)
+#define SendFreqs(msg...)           send_channel("MechFreqs",msg)
+#define SendPilotXP(msg...)         send_channel("MechPilotXP",msg)
+#define SendTechXP(msg...)          send_channel("MechTechXP",msg)
 
 /*
  * This is the prototype for functions

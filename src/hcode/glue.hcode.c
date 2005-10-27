@@ -14,6 +14,9 @@
  *
  */
 
+#include "copyright.h"
+#include "config.h"
+
 #include "db.h"
 #include "externs.h"
 #ifdef BT_ENABLED
@@ -136,7 +139,7 @@ char *first_parseattribute(char *buffer) {
         length = SBUF_SIZE;
 
     /* Make it and return it */
-    first = strndup(start, length);
+    first = (char *)strndup(start, length);
 
     return first;
 

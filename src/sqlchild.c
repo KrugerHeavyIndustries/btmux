@@ -10,23 +10,23 @@
 #include "copyright.h"
 #include "config.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <string.h>
-#include <unistd.h>
+#include <dbi/dbi.h>
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <signal.h>
 #include <errno.h>
-#include <dbi/dbi.h>
-#include <string.h>
 
-#include "mudconf.h"
-#include "config.h"
+#include "externs.h"
+#if 0
 #include "db.h"
 #include "file_c.h"
-#include "externs.h"
 #include "interface.h"
 #include "flags.h"
 #include "powers.h"
@@ -34,6 +34,7 @@
 #include "command.h"
 #include "slave.h"
 #include "attrs.h"
+#endif 
 
 /* TODO:
  * String sanitization.
@@ -168,7 +169,7 @@ void sqlchild_kill_all() {
 
 int sqlchild_kill(int requestId) {
     int status;
-    struct query_state_t *iter, *aqt;
+    struct query_state_t *iter=NULL, *aqt=NULL;
 
     dprintk("received request to terminate %d", requestId);
     
@@ -280,13 +281,13 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
             goto fail;
         }
     }
-
+    
     if(resp.n_chars < LBUF_SIZE) {
         if(strnlen(buffer, resp.n_chars) >= LBUF_SIZE) {
             buffer[LBUF_SIZE] = '\0';
         }
     } else {
-        if(strnlen(buffer, LBUF_SIZE) >= LBUF_SIZE) {
+        if(strnlen(buffer, resp.n_chars) >= LBUF_SIZE) {
             buffer[LBUF_SIZE] = '\0';
         }
     }
@@ -383,8 +384,8 @@ static void sqlchild_child_abort_query(struct query_state_t *aqt, char *error) {
 }
 
 static void sqlchild_child_abort_query_dbi(struct query_state_t *aqt, char *error) {
-    const char *error_ptr;
-    if(dbi_conn_error(conn, &error_ptr) != -1) 
+    char *error_ptr;
+    if(dbi_conn_error(conn, (const char **)&error_ptr) != -1) 
         sqlchild_child_abort_query(aqt, error_ptr);
     else 
         sqlchild_child_abort_query(aqt, error);
@@ -477,7 +478,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
 
     long long type_int;
     double type_fp;
-    char *type_string;
+    const char *type_string;
     time_t type_time;
     
     ptr = output_buffer;

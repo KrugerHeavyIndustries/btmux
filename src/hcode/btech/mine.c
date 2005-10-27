@@ -27,6 +27,8 @@
    tons<target              = no explosion
  */
 
+#include "copyright.h"
+#include "config.h"
 #include <math.h>
 #include "mech.h"
 #include "mine.h"
@@ -220,7 +222,7 @@ static void possible_mine_explosion(MECH * mech, MAP * map, int x, int y, int re
                 /* Out side of range */
                 /* Using round here because we get some funky ranges like
                  * 0.999987 and 1.00000072 */
-                if (roundf(FindHexRange(x1, y1, x2, y2)) > ((float) o->datai))
+                if (nearbyintf(FindHexRange(x1, y1, x2, y2)) > ((float) o->datai))
                     continue;
 
                 make_mine_explode(mech, map, o, x, y, reason);
@@ -305,7 +307,7 @@ static void add_mine_on_map(MAP * map, int x, int y, char type, int data)
                 /* We round because of weirdness with FindHexRange returning
                  * values like 1.00215 */
                 MapCoordToRealCoord(x1, y1, &fx1, &fy1);
-                if (roundf(FindHexRange(fx, fy, fx1, fy1)) <= ((float) data))
+                if (nearbyintf(FindHexRange(fx, fy, fx1, fy1)) <= ((float) data))
                     set_hex_mine(map, x1, y1);
             }
 

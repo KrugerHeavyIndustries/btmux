@@ -354,7 +354,7 @@ void clearstrings(DESC *d) {
  * * queue_write: Add text to the output queue for the indicated descriptor.
  */
 
-void queue_write(DESC *d, const char *b, int n) {
+void queue_write(DESC *d, char *b, int n) {
     int retval;
     if (n <= 0)
         return;
@@ -682,14 +682,12 @@ static void announce_connect(dbref player, DESC *d) {
     notify_checked(player, player, buf, key);
     free_lbuf(buf);
     if (Suspect(player)) {
-        send_channel("Suspect", tprintf("%s has connected.",
-                    Name(player), 0, 0, 0, 0, 0));
+        send_channel("Suspect", "%s has connected.", Name(player));
 
     }
     if (d->host_info & H_SUSPECT)
-        send_channel("Suspect",
-                tprintf("[Suspect site: %s] %s has connected.", d->addr,
-                    Name(player), 0, 0, 0, 0));
+        send_channel("Suspect", "[Suspect site: %s] %s has connected.", d->addr,
+                    Name(player));
     buf = atr_pget(player, A_ACONNECT, &aowner, &aflags);
     if (buf)
         wait_que(player, player, 0, NOTHING, 0, buf, (char **) NULL, 0,
@@ -761,13 +759,11 @@ void announce_disconnect(dbref player, DESC *d, const char *reason) {
 
 
     if (Suspect(player)) {
-        send_channel("Suspect", tprintf("%s has disconnected.",
-                    Name(player), 0, 0, 0, 0, 0));
+        send_channel("Suspect", "%s has disconnected.", Name(player));
     }
     if (d->host_info & H_SUSPECT) {
-        send_channel("Suspect",
-                tprintf("[Suspect site: %s] %s has disconnected.", d->addr,
-                    Name(d->player), 0, 0, 0, 0));
+        send_channel("Suspect", "[Suspect site: %s] %s has disconnected.", 
+                d->addr, Name(d->player));
     }
     loc = Location(player);
     num = 0;
@@ -1254,8 +1250,8 @@ void do_doing(dbref player, dbref cause, int key, char *arg) {
         }
         if (foundany) {
             if (over) {
-                notify(player, tprintf("Warning: %d characters lost.",
-                            over));
+                notify_printf(player, "Warning: %d characters lost.",
+                            over);
             }
             if (!Quiet(player))
                 notify(player, "Set.");

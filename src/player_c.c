@@ -16,6 +16,7 @@
 #include "alloc.h"
 #include "attrs.h"
 #include "db.h"
+#include "rbtree.h"
 
 #ifndef STANDALONE
 
@@ -29,17 +30,29 @@ typedef struct player_cache {
 } PCACHE;
 
 NHSHTAB pcache_htab;
+
 PCACHE *pcache_head;
+
+rbtree *pct;
 
 #define	PF_DEAD		0x0001
 #define	PF_REF		0x0002
 #define	PF_MONEY_CH	0x0004
 #define	PF_QMAX_CH	0x0008
 
+static int pcache_compare(void *vleft, void *vright, void *arg) {
+    int left = (int)vleft;
+    int right = (int)vright;
+    return (right-left);
+}
+
 void pcache_init(void)
 {
+#if 0
     pool_init(POOL_PCACHE, sizeof(PCACHE));
-    nhashinit(&pcache_htab, 15 * HASH_FACTOR);
+#endif 
+    pct = rb_init(pcache_compare, NULL);
+//    nhashinit((&pcache_htab), 15 * HASH_FACTOR);
     pcache_head = NULL;
 }
 
@@ -65,26 +78,31 @@ PCACHE *pp;
 }
 
 
-PCACHE *pcache_find(player)
-dbref player;
-{
+PCACHE *pcache_find(dbref player) {
     PCACHE *pp;
 
     if (!Good_obj(player) || !OwnsOthers(player))
-	return NULL;
+        return NULL;
+#if 0
     pp = (PCACHE *) nhashfind(player, &pcache_htab);
+#endif
+    pp = (PCACHE *) rb_find(pct, (void *)player);
     if (pp) {
-	pp->cflags |= PF_REF;
-	return pp;
+        pp->cflags |= PF_REF;
+        return pp;
     }
-    pp = alloc_pcache("pcache_find");
+    // pp = alloc_pcache("pcache_find");
+    pp = malloc(sizeof(PCACHE));
     pp->queue = 0;
     pp->cflags = PF_REF;
     pp->player = player;
     pcache_reload1(player, pp);
     pp->next = pcache_head;
     pcache_head = pp;
-    nhashadd(player, (int *) pp, &pcache_htab);
+#if 0
+    nuashadd(player, (int *) pp, &pcache_htab);
+#endif
+    rb_insert(pct, (void *)player, (void *)pp);
     return pp;
 }
 
@@ -137,7 +155,10 @@ void pcache_trim(void)
 		pcache_head = ppnext;
 	    if (!(pp->cflags & PF_DEAD)) {
 		pcache_save(pp);
-		nhashdelete(pp->player, &pcache_htab);
+#if 0
+        nhashdelete(pp->player, &pcache_htab);
+#endif
+        rb_delete(pct, (void *)pp->player);
 	    }
 	    free_pcache(pp);
 	    pp = ppnext;
@@ -161,11 +182,17 @@ dbref player;
 {
     PCACHE *pp;
 
+#if 0
     pp = (PCACHE *) nhashfind(player, &pcache_htab);
+#endif
+    pp = (PCACHE *) rb_find(pct, (void *)player);
     if (!pp)
 	return;
     pp->cflags = PF_DEAD;
+#if 0
     nhashdelete(pp->player, &pcache_htab);
+#endif 
+    rb_delete(pct, (void *)pp->player);
 }
 
 int a_Queue(player, adj)

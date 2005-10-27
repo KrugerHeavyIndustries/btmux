@@ -1715,7 +1715,7 @@ int cf_set(cp, ap, player)
 {
     CONF *tp;
     int i;
-    char *buff;
+    char *buff=NULL;
 
     /*
      * Search the config parameter table for the command. If we find it,

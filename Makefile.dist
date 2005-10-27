@@ -1,4 +1,4 @@
-configure: src/autoconf.h.in
+configure: src/autoconf.h.in configure.in
 	autoconf
 
 src/autoconf.h.in: 

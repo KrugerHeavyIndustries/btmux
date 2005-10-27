@@ -59,7 +59,7 @@ rbtree *rb_init(int (*)(void *, void *, void *), void *);
 void rb_destroy(rbtree *);
 
 void rb_insert(rbtree *, void *key, void *data); 
-void *rb_find(rbtree *, const void *key);
+void *rb_find(rbtree *, void *key);
 int rb_exists(rbtree *, void *key);
 void *rb_delete(rbtree *, void *key);
 
@@ -336,7 +336,7 @@ void rb_insert(rbtree *bt, void *key, void *data) {
     bt->head->color = NODE_BLACK;
 }
 
-void *rb_find(rbtree *bt, const void *key) {
+void *rb_find(rbtree *bt, void *key) {
     rbtree_node *node;
     int compare_result;
 

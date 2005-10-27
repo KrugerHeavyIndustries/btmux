@@ -31,8 +31,8 @@ struct match_state {
  *	thing = match_result()
  */
 
-extern void init_match(dbref, const char *, int);
-extern void init_match_check_keys(dbref, const char *, int);
+extern void init_match(dbref, char *, int);
+extern void init_match_check_keys(dbref, char *, int);
 extern void match_player(void);
 extern void match_absolute(void);
 extern void match_numeric(void);
@@ -55,7 +55,7 @@ extern dbref dispatched_match_result(dbref);
 extern int matched_locally(void);
 extern void save_match_state(MSTATE *);
 extern void restore_match_state(MSTATE *);
-extern dbref match_controlled_quiet(dbref player, const char *name);
+extern dbref match_controlled_quiet(dbref player, char *name);
 extern void match_zone_exit(void);
 
 #define NOMATCH_MESSAGE "I don't see that here."

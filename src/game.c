@@ -1416,6 +1416,7 @@ int main(int argc, char *argv[]) {
 #endif
     time(&mudstate.start_time);
     time(&mudstate.restart_time);
+#if 0
     pool_init(POOL_LBUF, LBUF_SIZE);
     pool_init(POOL_MBUF, MBUF_SIZE);
     pool_init(POOL_SBUF, SBUF_SIZE);
@@ -1423,6 +1424,7 @@ int main(int argc, char *argv[]) {
 
     pool_init(POOL_DESC, sizeof(DESC));
     pool_init(POOL_QENTRY, sizeof(BQUE));
+#endif
     tcache_init();
     pcache_init();
     cf_init();

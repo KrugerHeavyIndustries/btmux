@@ -690,7 +690,7 @@ void shutdownsock(DESC *d, int reason) {
             }
         }
 
-        free_desc(d);
+        free(d);
         ndescriptors--;
     }
 }
@@ -714,7 +714,12 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     DESC *d;
 
     ndescriptors++;
+#if 0
     d = alloc_desc("init_sock");
+#endif
+    d = malloc(sizeof(DESC));
+    memset(d, 0, sizeof(DESC));
+    
     d->descriptor = s;
     d->flags = 0;
     d->connected_at = mudstate.now;

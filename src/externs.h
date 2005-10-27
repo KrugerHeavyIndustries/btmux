@@ -215,9 +215,9 @@ extern void list_buftrace(dbref);
 extern int parse_attrib(dbref, char *, dbref *, int *);
 extern int parse_attrib_wild(dbref, char *, dbref *, int, int, int);
 extern void edit_string(char *, char **, char *, char *);
-extern dbref match_controlled(dbref, const char *);
-extern dbref match_affected(dbref, const char *);
-extern dbref match_examinable(dbref, const char *);
+extern dbref match_controlled(dbref, char *);
+extern dbref match_affected(dbref, char *);
+extern dbref match_examinable(dbref, char *);
 
 /* From stringutil.c */
 extern char *munge_space(char *);

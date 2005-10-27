@@ -76,8 +76,7 @@ char *what, *costchar;
 	     */
 
 	    if (!payfor(player, cost)) {
-		notify(player, tprintf("You don't have enough %s.",
-			mudconf.many_coins));
+		notify_printf(player, "You don't have enough %s.", mudconf.many_coins);
 		return;
 	    }
 	} else {
@@ -98,15 +97,14 @@ char *what, *costchar;
 	    if (Suspect(player)) {
 		StringCopy(buf1, Name(player));
 		if (player == Owner(player)) {
-		    send_channel("Suspect",
-			tprintf("%s tried to kill %s(#%d).", buf1,
-			    Name(victim), victim));
+		    send_channel("Suspect", "%s tried to kill %s(#%d).", buf1,
+			    Name(victim), victim);
 		} else {
 		    buf2 = alloc_lbuf("do_kill.SUSP.failed");
 		    StringCopy(buf2, Name(Owner(player)));
 		    send_channel("Suspect",
-			tprintf("%s <via %s(#%d)> tried to kill %s(#%d).",
-			    buf2, buf1, player, Name(victim), victim));
+			"%s <via %s(#%d)> tried to kill %s(#%d).",
+			    buf2, buf1, player, Name(victim), victim);
 		    free_lbuf(buf2);
 		}
 	    }
@@ -122,13 +120,12 @@ char *what, *costchar;
 	if (Suspect(player)) {
 	    StringCopy(buf1, Name(player));
 	    if (player == Owner(player)) {
-		send_channel("Suspect", tprintf("%s killed %s(#%d).",
-			buf1, Name(victim), victim));
+		send_channel("Suspect", "%s killed %s(#%d).",
+			buf1, Name(victim), victim);
 	    } else {
 		StringCopy(buf2, Name(Owner(player)));
-		send_channel("Suspect",
-		    tprintf("%s <via %s(#%d)> killed %s(#%d).", buf2, buf1,
-			player, Name(victim), victim));
+		send_channel("Suspect", "%s <via %s(#%d)> killed %s(#%d).", 
+                buf2, buf1, player, Name(victim), victim);
 	    }
 	}
 	sprintf(buf1, "You killed %s!", Name(victim));
@@ -270,26 +267,24 @@ int amount;
      */
 
     if (amount < 0 && !Steal(giver)) {
-	notify(giver,
-	    tprintf("You look through your pockets. Nope, no negative %s.",
-		mudconf.many_coins));
+	notify_printf(giver, "You look through your pockets. Nope, no negative %s.",
+		mudconf.many_coins);
 	return;
     }
     if (!amount) {
-	notify(giver, tprintf("You must specify a positive number of %s.",
-		mudconf.many_coins));
+	notify_printf(giver, "You must specify a positive number of %s.",
+		mudconf.many_coins);
 	return;
     }
     if (!Wizard(giver)) {
 	if ((Typeof(recipient) == TYPE_PLAYER) &&
 	    (Pennies(recipient) + amount > mudconf.paylimit)) {
-	    notify(giver, tprintf("That player doesn't need that many %s!",
-		    mudconf.many_coins));
+	    notify_printf(giver, "That player doesn't need that many %s!",
+		    mudconf.many_coins);
 	    return;
 	}
 	if (!could_doit(giver, recipient, A_LUSE)) {
-	    notify(giver, tprintf("%s won't take your money.",
-		    Name(recipient)));
+	    notify_printf(giver, "%s won't take your money.", Name(recipient));
 	    return;
 	}
     }
@@ -298,9 +293,8 @@ int amount;
      */
 
     if (!payfor(giver, amount)) {
-	notify(giver, tprintf("You don't have that many %s to give!",
-		mudconf.many_coins));
-	return;
+        notify_printf(giver, "You don't have that many %s to give!", mudconf.many_coins);
+        return;
     }
     /*
      * Find out cost if an object 
@@ -333,14 +327,14 @@ int amount;
 
     if (!(key & GIVE_QUIET)) {
 	if (amount == 1) {
-	    notify(giver, tprintf("You give a %s to %s.", mudconf.one_coin,
-		    Name(recipient)));
+	    notify_printf(giver, "You give a %s to %s.", mudconf.one_coin,
+		    Name(recipient));
 	    notify_with_cause(recipient, giver,
-		tprintf("%s gives you a %s.", Name(giver),
+            tprintf("%s gives you a %s.", Name(giver),
 		    mudconf.one_coin));
 	} else {
-	    notify(giver, tprintf("You give %d %s to %s.", amount,
-		    mudconf.many_coins, Name(recipient)));
+	    notify_printf(giver, "You give %d %s to %s.", amount,
+		    mudconf.many_coins, Name(recipient));
 	    notify_with_cause(recipient, giver,
 		tprintf("%s gives you %d %s.", Name(giver), amount,
 		    mudconf.many_coins));
@@ -351,12 +345,11 @@ int amount;
      */
 
     if ((amount - cost) == 1) {
-	notify(giver, tprintf("You get 1 %s in change.",
-		mudconf.one_coin));
+	notify_printf(giver, "You get 1 %s in change.", mudconf.one_coin);
 	giveto(giver, 1);
     } else if (amount != cost) {
-	notify(giver, tprintf("You get %d %s in change.", (amount - cost),
-		mudconf.many_coins));
+	notify_printf(giver, "You get %d %s in change.", (amount - cost),
+		mudconf.many_coins);
 	giveto(giver, (amount - cost));
     }
     /*

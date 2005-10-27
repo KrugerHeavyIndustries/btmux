@@ -45,14 +45,20 @@ void init_chantab(void) {
     hashinit(&mudstate.channel_htab, 30 * HASH_FACTOR);
 }
 
-void send_channel(char *chan, char *str) {
+void send_channel(char *chan, const char *format, ...) {
     struct channel *ch;
     char buf[LBUF_SIZE];
+    char data[LBUF_SIZE];
     char *newline;
+    va_list ap;
 
     if (!(ch = select_channel(chan)))
         return;
-    snprintf(buf, LBUF_SIZE, "[%s] %s", chan, str);
+    va_start(ap, format);
+    vsnprintf(data, LBUF_SIZE, format, ap);
+    va_end(ap);
+    
+    snprintf(buf, LBUF_SIZE, "[%s] %s", chan, data);
     while ((newline = strchr(buf, '\n')))
         *newline = ' ';
     do_comsend(ch, buf);

@@ -503,7 +503,7 @@ MSTATE *mstate;
     free_lbuf(mstate->string);
 }
 
-void init_match(dbref player, const char *name, int type) {
+void init_match(dbref player, char *name, int type) {
     md.confidence = -1;
     md.count = md.check_keys = 0;
     md.pref_type = type;
@@ -513,11 +513,7 @@ void init_match(dbref player, const char *name, int type) {
     md.absolute_form = absolute_name(1);
 }
 
-void init_match_check_keys(player, name, type)
-dbref player;
-const char *name;
-int type;
-{
+void init_match_check_keys(dbref player, char *name, int type) {
     init_match(player, name, type);
     md.check_keys = 1;
 }

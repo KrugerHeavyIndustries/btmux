@@ -158,7 +158,7 @@ void help_write(player, topic, htab, filename, eval)
     int offset;
     struct help_entry *htab_entry;
     char matched;
-    char *topic_list, *buffp;
+    char *topic_list = NULL, *buffp;
 
     if (*topic == '\0')
         topic = (char *) "help";

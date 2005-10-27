@@ -142,7 +142,7 @@ extern void raw_notify_raw(dbref, const char *, char *);
 extern void raw_notify_newline(dbref);
 extern void hudinfo_notify(DESC *, const char *, const char *, const char *);
 extern void clearstrings(DESC *);
-extern void queue_write(DESC *, const char *, int);
+extern void queue_write(DESC *, char *, int);
 extern void queue_string(DESC *, const char *);
 extern void freeqs(DESC *);
 extern void welcome_user(DESC *);
@@ -165,8 +165,10 @@ extern void do_hudinfo(DESC *, char *);
 
 /* From predicates.c */
 
+#if 0
 #define alloc_desc(s) (DESC *)pool_alloc(POOL_DESC,s)
 #define free_desc(b) pool_free(POOL_DESC,((char **)&(b)))
+#endif
 
 #define DESC_ITER_PLAYER(p,d) \
 	for (d=(DESC *)rb_find(mudstate.desctree, (void *)p);d;d=d->hashnext)
