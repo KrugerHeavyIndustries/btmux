@@ -925,16 +925,16 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	    
     index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
     if (index == -1) {
-	notify(player, "Not a legal area. Must be HEAD, CTORSO");
-	notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-	notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+	notify_printf(player, "Not a legal area. Must be HEAD, CTORSO");
+	notify_printf(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
+	notify_printf(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
 	return;
     }
     
     weapindex = WeaponIndexFromString(args[0]);
     
     if (weapindex == -1) {
-	notify(player, "That is not a valid weapon!");
+	notify_printf(player, "That is not a valid weapon!");
 	DumpWeapons(player);
 	return;
     }
@@ -984,13 +984,13 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
     
     /* Check to see if player gives enough crits and start adding if so. */
     if (argc < weapnumcrits) {
-	notify(player, tprintf(
+	notify_printf(player,
 	    "Not enough critical slots specified! (Given: %i, Needed: %i)", 
-	    argc, weapnumcrits));
+	    argc, weapnumcrits);
     } else if (argc > weapnumcrits) {
-	notify(player, tprintf(
+	notify_printf(player,
 	    "Too many critical slots specified! (Given: %i, Needed: %i)", 
-	    argc, weapnumcrits));
+	    argc, weapnumcrits);
     } else {
 	for (loop = 0; loop < GetWeaponCrits(mech, weapindex); loop++) {
 	    temp = atoi(args[2 + loop]);
@@ -1025,7 +1025,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	    else
 		MechSpecials(mech) |= IS_ANTI_MISSILE_TECH;
 	}
-	notify(player, "Weapon added.");
+	notify_printf(player, "Weapon added.");
     }
 } /* end mechrep_Raddweap() */
 
