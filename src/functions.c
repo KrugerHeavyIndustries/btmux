@@ -79,7 +79,6 @@ extern void fun_btgetrefxcodevalue();
 extern void fun_btarmorref();
 extern void fun_btcritref();
 extern void fun_btweaponref();
-extern void fun_bttechref();
 extern void fun_btgetdbreffromid();
 extern void fun_btlostohex();
 extern void fun_btlostomech();
@@ -5459,7 +5458,6 @@ FUN flist[] = {
 {"BTHEXLOSBROADCAST", fun_bthexlosbroadcast, 4, 0, CA_WIZARD},
 {"BTLOSTOHEX", fun_btlostohex, 3, 0,		CA_WIZARD},
 {"BTLOSTOMECH", fun_btlostomech, 2, 0, 		CA_WIZARD},
-{"BTTECHREF",   fun_bttechref,	1, 0,		CA_WIZARD},
 {"BTWEAPONREF", fun_btweaponref,0, FN_VARARGS,		CA_WIZARD},
 #else
 {"BTADDSTORES",			fun_btaddstores,		3, 0,		CA_WIZARD},

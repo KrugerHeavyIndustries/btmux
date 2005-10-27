@@ -1191,23 +1191,6 @@ void fun_bttechstatus(char *buff, char **bufc, dbref player, dbref cause, char *
 }
 
 #ifndef EXILE_FUNCS_SUPPORT
-void fun_bttechref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#else
-void fun_bttech_ref(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
-#endif
-{
-    /* fargs[0] = ref of the mech
-     */
-    char *infostr;
-    MECH *mech;
-
-    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
-    infostr = techstatus_func(mech);
-    safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
-}
-
-#ifndef EXILE_FUNCS_SUPPORT
 void fun_bthexlosbroadcast(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 #else
 void fun_bthexemit(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
