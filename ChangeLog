@@ -82,6 +82,11 @@ btonline-btechmux 0.6:
 	* Removed functions: btgetreftech(), btgetreftech_ref(),
 	  btaddparts(). Use their existing equivalents:
 	  btaddstores(), bttechlist(), bttechlist_ref(). (Greg)
+	* The addstuff command, btaddstores() are now capped at
+	  at 50,000 parts to add at once. If the value is
+	  exceeded, set the quantity to the max and add it.
+	  This is to prevent exceeding the bounds for the
+	  integer data type. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

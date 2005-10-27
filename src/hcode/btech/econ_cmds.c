@@ -248,6 +248,9 @@ void mech_stores(dbref player, void *data, char *buffer)
     if (count > 0) sfun = func; }
 #endif
 
+/* Handles adding or removing parts/commods from a map or unit's manifest.
+ * btaddstores(), addstuff, and removestuff use this.
+ */
 static void stuff_change_sub(dbref player, char *buffer, dbref loc1,
     dbref loc2, int mod, int mort)
 {
@@ -262,7 +265,16 @@ static void stuff_change_sub(dbref player, char *buffer, dbref loc1,
 
     argc = mech_parseattributes(buffer, args, 2);
     DOCHECK(argc < 2, "Invalid number of arguments!");
+    
+    /* 
+     * If we hit the max amount of parts addable at once, set quantity
+     * to add to max.
+     */
     num = atoi(args[1]);
+    if (num > ADDSTORES_MAX) {
+        num = ADDSTORES_MAX;
+    }
+    
     DOCHECK(num <= 0, "Invalid amount!");
     silly_search(find_matching_short_part);
     silly_search(find_matching_vlong_part);

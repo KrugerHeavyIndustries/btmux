@@ -1,38 +1,7 @@
-
-/*
- * $Id: btconfig.h,v 1.9 2005/06/24 04:39:08 av1-op Exp $
- *
- * Author: Markus Stenberg <fingon@iki.fi>
- *
- *  Copyright (c) 1996 Markus Stenberg
- *  Copyright (c) 1999-2005 Kevin Stevens
- *       All rights reserved
- *
- * Created: Wed Oct  9 10:47:12 1996 fingon
- * Last modified: Tue Jun 23 06:56:18 1998 fingon
- *
- */
-
 #include "config.h"
 
 #ifndef BTCONFIG_H
 #define BTCONFIG_H
-/*
- * Define this if you want to use FASA-near-literal (gradiations on
- * engines are cut down to be more feasible) repair part spreads.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_COMPLEXREPAIRS
- */
-
-/* Define this if you want to have "movement modes" on. This includes
- * sprinting, dodging, and evading. Dodging will only be enabled i
- * BT_EXTENDED_ADVANTAGES is defined since it can only be used by
- * the Dodge_Maneuver advantage therein.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_MOVEMENT_MODES
- */
 
 /* Define this if you want to use some of Exile's extended skills
  * added. At this time it is just 'Research'. None of these skills
@@ -41,58 +10,15 @@
  */
 #define BT_EXILE_SKILLS
 
-/* Define this if you want to use MW3-like character skills spreads.
- * This includes gunnery and piloting skills, but also computer
- * for shutdown rolls, and maybe more. Please note due to various
- * reasons these are called MW3-like and now MW-literal because
- * the literal MW3 spread gradiates all the skills too much and it
- * is not prefered for gameplay in this mode. It is a future possible
- * project to make this a #define with a # for parsing to switch out
- * MW3-literal skill spreads and fullfill thsi optionally.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_EXILE_MW3STATS
- */
-
-/* Define this if you want to use extended advantages merged from the
- * Exile tree. This will make charstats in the DB not portable w/o
- * a +charclear to binaries running w/o this option.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_EXTENDED_ADVANTAGES
- */
-
-/* Define this if you want Exile style targeting computers on. This is just
- * a XCode value called 'targcomp'. (0 None, 1 Short, 2, Long, 3 Multi, 4 AA)
- * An extrapolation of some maxtech tweaks.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_TARGCOMP_MODES
- */
-
-/* Define this if you are wanting to have near instant techtime as a config
- * parameter name btech_freetechtime. Could be left at the base level but as
- * part of merge trying to keep defined segregation over new stuff
- */
-/* No need to define here, its part of the configure system now
- * #define BT_FREETECHTIME
- */
-
-/* Define if you want BV calculation functions. This include btgetbv()
+/* 
+ * Define if you want BV calculation functions. This include btgetbv()
  * and btgetbv_ref(), but will also perform damage per time based updates
  * on the mech live to support more balance XP ratio's.
  */
 #define BT_CALCULATE_BV
 
-/* Define if you want hcode to support an econ DB of sorts.
- * At this moment btsetpartcost(), btgetpartcost(), and btfasabasecost()
- * exist to interact with this. Maybe more later.
- */
-/* No need to define here, its part of the configure system now
- * #define BT_ADVANCED_ECON
- */
-
-/* Define if you want extra commands in debug objects for re-loading and
+/* 
+ * Define if you want extra commands in debug objects for re-loading and
  * saving file at econ.db location, loading into econ memory default data, etc...
  * This is configured out since after initialization of the cost data there isn't
  * much use to have the commands around. Normal hcode save includes econ.db write.
@@ -109,21 +35,10 @@
 /* Define if you want part-specific weights for cargo */
 #define BT_PART_WEIGHTS
 
-/* Define if you want speed to be calculated on real weight, allowing
- * 'mechs to go faster than they were templated to 
+/* 
+ * Define if you want 'mech frequencies *not* to be copied to MechWarriors
+ *  but would rather see a random frequency. 
  */
-/* No need to define here, its part of the configure system now
- * #define WEIGHT_OVERSPEEDING 
- */
-
-/* Define if you want 'mech frequencies to be copied to MechWarriors when
-   they eject, autoeject or disembark */
-/* No need to define here, its part of the configure system now
- * #define COPY_CHANS_ON_EJECT 
- */
-
-/* Define if you want 'mech frequencies *not* to be copied to MechWarriors
-   but would rather see a random frequency. */
 /* \todo If COPY_CHANS_ON_EJECT isn't defined, assume RANDOM_CHAN_ON_EJECT.
  * this makes a little more sense and is less configuration 
  */
@@ -137,9 +52,18 @@
 /* Define if you want weight-class based 'status' pictures */
 #define WEIGHTVARIABLE_STATUS
 
-/* Define if you want the radio OBSERVATORIC units to be more
-   Observation-lounge like: hears everything, and reports more. */
+/* 
+ * Define if you want the radio OBSERVATORIC units to be more
+ * Observation-lounge like: hears everything, and reports more. 
+ * */
 #define OBSERVATORIC_OL_RADIO
+
+/* 
+ * This is the maximum amount of parts addable via btaddstores() or the
+ * addstuff command. If the limit is hit, set the number of commods to add
+ * equal to this define.
+ */
+#define ADDSTORES_MAX 50000
 
 #define RS_MECH_IDLE  86400
 #define SIM_MECH_IDLE 3600

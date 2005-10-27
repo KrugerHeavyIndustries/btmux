@@ -1363,6 +1363,11 @@ void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause, char *farg
         safe_tprintf_str(buff, bufc, "0");
 }
 
+/*
+ * btaddstores(<MapDB>, <PartName>, <Amount>)
+ *
+ * Adds the specified parts/commodities to a map. The maximum value for <PartName> is the define, ADDSTORES_MAX.
+ */
 void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = mech/map
@@ -1373,11 +1378,20 @@ void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *f
     int index = -1, id = 0, brand = 0, count;
 
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+    
     loc = match_thing(player, fargs[0]);
     FUNCHECK(!Good_obj(loc), "#-1 INVALID TARGET");
+    
     FUNCHECK(strlen(fargs[1]) >= MBUF_SIZE, "#-1 PARTNAME TOO LONG");
+    
     FUNCHECK(!fargs[1], "#-1 NEED PARTNAME");
+   
+    /* Add a limit to the number of parts you can add at once to prevent reaching the integer limits. */ 
     count = atoi(fargs[2]);
+    if (count > ADDSTORES_MAX) {
+	    count = ADDSTORES_MAX;
+    }
+    
     FUNCHECK(!count, "1");
     FUNCHECK(!find_matching_short_part(fargs[1], &index, &id, &brand) &&
              !find_matching_vlong_part(fargs[1], &index, &id, &brand) &&
@@ -1386,7 +1400,7 @@ void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause, char *f
     SendEcon(tprintf("#%d added %d %s to #%d", player, count,
                      get_parts_vlong_name(id, brand), loc));
     safe_tprintf_str(buff, bufc, "1");
-}
+} /* end btaddstores() */
 
 extern int xlate(char *);
 
