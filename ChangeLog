@@ -101,6 +101,7 @@ btonline-btechmux 0.6:
 	  addweap <weap> <loc> <crit> o. Rewrite the addweap
 	  function to be much more expandable and a lot less
 	  hacked. (Greg)
+	* RocketLaunchers are now completely implemented. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

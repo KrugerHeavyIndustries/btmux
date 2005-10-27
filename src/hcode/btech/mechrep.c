@@ -909,10 +909,12 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
     int index;		/* Used to determine section validity */
     int weapindex;	/* Weapon index number */
     int weapnumcrits;	/* Number of crits the desired weapon occupies. */
+    int weaptype;	/* The weapon type */
     int loop, temp;	/* Loop Counters */
     int isrear = 0;	/* Rear mounted? */
     int istc = 0;	/* Is the weap TC'd? */
     int isoneshot = 0;  /* If 1, weapon is a One-Shot (OS) Weap */
+    int isrocket = 0;	/* Is this a rocket launcher? */
     int argstoiter;	/* Holder for figuring out how many args to scan */
     char flagholder;	/* Holder for flag comparisons */
 
@@ -930,6 +932,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
     }
     
     weapindex = WeaponIndexFromString(args[0]);
+    
     if (weapindex == -1) {
 	notify(player, "That is not a valid weapon!");
 	DumpWeapons(player);
@@ -981,9 +984,13 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
     
     /* Check to see if player gives enough crits and start adding if so. */
     if (argc < weapnumcrits) {
-	notify(player, tprintf("Not enough critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits));
+	notify(player, tprintf(
+	    "Not enough critical slots specified! (Given: %i, Needed: %i)", 
+	    argc, weapnumcrits));
     } else if (argc > weapnumcrits) {
-	notify(player, tprintf("Too many critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits));
+	notify(player, tprintf(
+	    "Too many critical slots specified! (Given: %i, Needed: %i)", 
+	    argc, weapnumcrits));
     } else {
 	for (loop = 0; loop < GetWeaponCrits(mech, weapindex); loop++) {
 	    temp = atoi(args[2 + loop]);
@@ -995,6 +1002,10 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	    MechSections(mech)[index].criticals[temp].firemode = 0;
 	    MechSections(mech)[index].criticals[temp].ammomode = 0;
 
+	    /* If this is a Rocket Launcher, use isrocket to set the OS flag */
+	    if (MechWeapons[weapindex].special & ROCKET)
+		isrocket = 1;
+
 	    if (isrear)
 		MechSections(mech)[index].criticals[temp].firemode |=
 		    REAR_MOUNT;
@@ -1002,8 +1013,9 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	    if (istc)
 		MechSections(mech)[index].criticals[temp].firemode |=
 		    ON_TC;
-
-	    if (isoneshot)
+	    
+	    /* Rockets are OS too */
+	    if (isoneshot || isrocket)
 		MechSections(mech)[index].criticals[temp].firemode |=
 		    OS_MODE;
 	}
