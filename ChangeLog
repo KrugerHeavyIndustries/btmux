@@ -120,6 +120,8 @@ btonline-btechmux 0.6:
 	  mudconf parameter 'btech_exile_stun_code'. (Dany)
 	* Finished hooking Maneuvering Ace to turnmodes. (Power_Shaper)
         * Added Exile's Observer channel code with coloring (Power_Shaper)
+        * Added btech_idf_requies_spotter defaulting to 1 for
+          idf Spotting requirements (Power_Shaper)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)

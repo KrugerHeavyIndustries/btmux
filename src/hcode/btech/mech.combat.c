@@ -411,6 +411,7 @@ int FireWeaponNumber(dbref player,
 #ifdef BT_MOVEMENT_MODES
     DOCHECK0(MoveModeLock(mech), "You cannot fire while using a special movement mode.");
 #endif
+    DOCHECK0(MechSpotter(mech) > 0 && MechSpotter(mech) == mech->mynum, "You cannot fire while spotting.");
     DOCHECK0(weapnum < 0, "The weapons system chirps: 'Illegal Weapon Number!'");
 
     weaptype = FindWeaponNumberOnMech_Advanced(mech, weapnum, &section, &critical, sight);
@@ -572,6 +573,13 @@ int FireWeaponNumber(dbref player,
                         enemyZ = ZSCALE * MechTargZ(mech);
                         MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
                     }
+
+                    /* Check for Spotter here */
+                    if (mudconf.btech_idf_requires_spotter && 
+                    (MechWeapons[weaptype].special & IDF) && (MechSpotter(mech) == -1))
+                        DOCHECK0(!LOS,
+                                "That hex target is not in your direct line of sight"
+                                " and you do not have a spotter set!!");
 
                     /* don't check LOS for missile weapons firing at hex number */
                     range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,

@@ -149,6 +149,7 @@ struct confdata {
     int btech_roll_on_backwalk;     /* wheter a piloting roll should be made to walk backwards over elevation changes */
     int btech_usedmechstore;	/* DBref for the dead mechs to spool into upon IC death */
     int btech_ooc_comsys;	/* Enable bypassing of CA_NO_IC command checks for IC location blocking */
+    int btech_idf_requires_spotter; /* Requires spotter for IDF firing */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

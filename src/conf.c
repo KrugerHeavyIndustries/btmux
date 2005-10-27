@@ -154,6 +154,7 @@ void cf_init(void)
     mudconf.btech_roll_on_backwalk = 1 ;
     mudconf.btech_usedmechstore = 0;
     mudconf.btech_ooc_comsys = 0;
+    mudconf.btech_idf_requires_spotter = 1;
 #ifdef BT_FREETECHTIME
     mudconf.btech_freetechtime = 0;
 #endif
@@ -1231,6 +1232,8 @@ CONF conftable[] = {
         cf_int,         CA_GOD,         &mudconf.btech_usedmechstore,   0},
     {(char *)"btech_ooc_comsys",
         cf_int,         CA_GOD,         &mudconf.btech_ooc_comsys,	0},
+    {(char *)"btech_idf_requires_spotter",
+        cf_int,         CA_GOD,         &mudconf.btech_idf_requires_spotter, 0},
 #ifdef BT_FREETECHTIME
     {(char *)"btech_freetechtime",
         cf_int,		CA_GOD,		&mudconf.btech_freetechtime,	0},
