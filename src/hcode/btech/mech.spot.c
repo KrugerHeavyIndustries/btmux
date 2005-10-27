@@ -238,11 +238,7 @@ int FireSpot(dbref player,
 	    mech_map,
 	    spot_range,
 	    0) + AttackMovementMods(spotter) +
-#ifndef BT_TARGCOMP_MODES
-	   Locking(spotter) 
-#else
 	    (Locking(spotter) && MechTargComp(spotter) != TARGCOMP_MULTI)
-#endif
 	    ? 2 : 0;
 	DOCHECK1(IsArtillery(weapontype) &&
 	    target,
@@ -288,11 +284,7 @@ int FireSpot(dbref player,
 	enemyZ);
     spotTerrain =
 	IsArtillery(weapontype) ? 2 : 1 + AttackMovementMods(spotter) +
-#ifndef BT_TARGCOMP_MODES
-	Locking(spotter)
-#else
 	(Locking(spotter) && MechTargComp(spotter) != TARGCOMP_MULTI)
-#endif
 	? 2 : 0;
     FireWeapon(mech, mech_map, target, 0, weapontype, weaponnum, section,
 	critical, enemyX, enemyY, mapx, mapy, range, spotTerrain,

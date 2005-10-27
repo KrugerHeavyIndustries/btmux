@@ -468,7 +468,6 @@ static GMV xcode_data[] = {
     MeEntry("StaggerDamage", StaggerDamage, TYPE_INT_RO),
     MeEntry("MechPrefs", MechPrefs, TYPE_BV),
 
-#ifdef BT_ENABLED
     {GTYPE_MECH, "mechtype", mechTypefunc, TYPE_STRFUNC_BD},
     {GTYPE_MECH, "mechmovetype", mechMovefunc, TYPE_STRFUNC_BD},
     {GTYPE_MECH, "mechdamage", mechDamagefunc, TYPE_STRFUNC_BD},
@@ -477,7 +476,6 @@ static GMV xcode_data[] = {
     {GTYPE_MECH, "centbearing", mechCentBearingfunc, TYPE_STRFUNC},
     {GTYPE_MECH, "sensors", mechSensorInfo, TYPE_STRFUNC},
     {GTYPE_MECH, "mechref", mech_getset_ref, TYPE_STRFUNC_BD},
-#endif
 
     MeEntry("fuel", AeroFuel, TYPE_INT),
     MeEntry("fuel_orig", AeroFuelOrig, TYPE_INT),
@@ -491,9 +489,7 @@ static GMV xcode_data[] = {
     MeEntry("y", MechY, TYPE_SHORT),
     MeEntry("z", MechZ, TYPE_SHORT),
 
-#ifdef BT_TARGCOMP_MODES
     MeEntry("targcomp", MechTargComp, TYPE_CHAR),
-#endif
     MeEntry("lrsrange", MechLRSRange, TYPE_CHAR),
     MeEntry("radiorange", MechRadioRange, TYPE_SHORT),
     MeEntry("scanrange", MechScanRange, TYPE_CHAR),

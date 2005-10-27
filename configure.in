@@ -100,31 +100,6 @@ AC_ARG_ENABLE([hudinfo-support],
     ]
 )
                    
-AC_MSG_CHECKING([Should we enable the 'Exile' functions [[default=yes]]])
-AC_ARG_ENABLE([exile-funcs-support],
-    AS_HELP_STRING([--disable-exile-funcs-support],
-                   [Disable the 'Exile' functions [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([EXILE_FUNCS_SUPPORT], [1], [Should the 'Exile' functions be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for exile-funcs-support option)
-                ;;
-        esac
-    ],
-    [
-        AC_DEFINE([EXILE_FUNCS_SUPPORT], [1], [Should the 'Exile' functions be enabled])
-        AC_MSG_RESULT([yes])
-    ]
-)
-                   
 AC_MSG_CHECKING([Should we enable the advanced econ system [[default=yes]]])
 AC_ARG_ENABLE([bt-advanced-econ],
     AS_HELP_STRING([--disable-bt-advanced-econ],
@@ -222,31 +197,6 @@ AC_ARG_ENABLE([bt-ext-advantages],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
-    ]
-)
-
-AC_MSG_CHECKING([Should we enable targcomp modes [[default=yes]]])
-AC_ARG_ENABLE([bt-targcomp-modes],
-    AS_HELP_STRING([--disable-bt-targcomp-modes],
-                   [Disable targeting computer modes [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([BT_TARGCOMP_MODES], [1], [Should targeting computer modes be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-targcomp-modes option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_TARGCOMP_MODES], [1], [Should targeting computer modes be enabled])
     ]
 )
 

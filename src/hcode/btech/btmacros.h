@@ -234,9 +234,7 @@
 #define MechLX(a)		(a)->rd.lx
 #define MechLY(a)		(a)->rd.ly
 
-#ifdef BT_TARGCOMP_MODES
 #define MechTargComp(a)              (a)->ud.targcomp
-#endif
 #ifdef BT_CALCULATE_BV
 #define MechBVLast(a)		(a)->ud.mechbv_last
 #endif

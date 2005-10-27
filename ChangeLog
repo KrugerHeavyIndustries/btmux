@@ -87,6 +87,13 @@ btonline-btechmux 0.6:
 	  exceeded, set the quantity to the max and add it.
 	  This is to prevent exceeding the bounds for the
 	  integer data type. (Greg)
+	* Removed the EXILE_FUNCS_SUPPORT define. Completely
+	  redundant with our adjusted priorities. (Greg)
+	* Removed TARGCOMP_MODES define. If people enable/disable
+	  this, it requires a hcode.db rebuild which sucks. If
+	  admins don't want targcomp modes, they can refrain
+	  from setting targcomp to values other than 0 on
+	  units. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

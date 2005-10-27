@@ -761,10 +761,8 @@ typedef struct {
 #else
     int mechbv_last;		/* BV caclulation cacher */
 #endif
-#ifdef BT_TARGCOMP_MODES
-    char targcomp;
+    char targcomp;		/* Targeting comp mode. */
     char unused_char[3];
-#endif
     char carmaxton;             /* Max Tonnage variable for carrier sizing */
 } mech_ud;
 
@@ -1142,14 +1140,12 @@ struct repair_data {
 
 #define STEALTH_TECH (CS_PURIFIER_STEALTH_TECH|DC_KAGE_STEALTH_TECH|FWL_ACHILEUS_STEALTH_TECH|FC_INFILTRATOR_STEALTH_TECH|FC_INFILTRATORII_STEALTH_TECH)
 
-#ifdef BT_TARGCOMP_MODES
 /* TargComp types */
 #define TARGCOMP_NORMAL 0
 #define TARGCOMP_SHORT  1
 #define TARGCOMP_LONG   2
 #define TARGCOMP_MULTI  3
 #define TARGCOMP_AA     4
-#endif
 
 /*
 	Notes on unimplemented stuff:

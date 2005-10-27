@@ -151,7 +151,6 @@ int FindNormalBTH(MECH * mech,
  * For now we just do the below stuff. Besides, it might make BTH debug more obvious
  * that putting it into FindBTH*().
  */
-#ifdef BT_TARGCOMP_MODES
     if (MechTargComp(mech) == TARGCOMP_SHORT || MechTargComp(mech) == TARGCOMP_LONG) {
 	int tmp_range;
 
@@ -167,7 +166,6 @@ int FindNormalBTH(MECH * mech,
 		(SectionUnderwater(mech, section) ? MechWeapons[weapindx].medrange_water : MechWeapons[weapindx].medrange))
 	    BTHADD("TargComp/Short", MechTargComp(mech) == TARGCOMP_SHORT ? -1 : 1);
     }
-#endif
 
     if (target && MechInfantrySpecials(target) & STEALTH_TECH) {
 	if (MechInfantrySpecials(target) & FWL_ACHILEUS_STEALTH_TECH) {
@@ -237,14 +235,12 @@ int FindNormalBTH(MECH * mech,
 	    fabs(MechVerticalSpeed(target)) > 0.0))
 	BTHADD("TargetVTOL", 1);
 
-#ifdef BT_TARGCOMP_MODES
     if (target && MechTargComp(mech) == TARGCOMP_AA) {
 	if (!Landed(target) && (FlyingT(target) || Jumping(target) || OODing(target)))
 	    BTHADD("TargComp/AA-Fly", MechSpecials(mech) & AA_TECH ? -3 : -2);
 	else
 	    BTHADD("TargComp/AA-Ground", 1);
     }
-#endif
 
     /* -1 for LBX, unless it's a VTOL... then -3 */
     if (wAmmoMode & LBX_MODE)
@@ -253,13 +249,8 @@ int FindNormalBTH(MECH * mech,
 
     /* Unstable lock */
     if (!arc_override && (!spotter && target &&
-	    ((MechTarget(mech) != target->mynum) ||
-#ifndef BT_TARGCOMP_MODES
-	    Locking(mech)
-#else
-	    (Locking(mech) && MechTargComp(mech) != TARGCOMP_MULTI)
-#endif
-	   ))) {    
+        ((MechTarget(mech) != target->mynum) ||
+	    (Locking(mech) && MechTargComp(mech) != TARGCOMP_MULTI)))) {    
 	if (FindTargetXY(mech, &enemyX, &enemyY, &enemyZ)) {
 	    if (InWeaponArc(mech, enemyX, enemyY) & (FORWARDARC|TURRETARC))
 		BTHADD("UnstableLock/Fwarc", 1);
@@ -269,14 +260,13 @@ int FindNormalBTH(MECH * mech,
 	    BTHADD("HipShot-NoLock", 2);
 	}
     }
-#ifdef BT_TARGCOMP_MODES
+
     if (MechTargComp(mech) == TARGCOMP_MULTI) {
 	if (FindTargetXY(mech, &enemyX, &enemyY, &enemyZ)) {
             if (!(InWeaponArc(mech, enemyX, enemyY) & FORWARDARC))
                 BTHADD("TargComp/MultiSideArc", 1);
         }
     }
-#endif
 
     /* -4 for firing at a hex */
     if (!target &&
