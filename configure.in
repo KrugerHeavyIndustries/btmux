@@ -175,31 +175,6 @@ AC_ARG_ENABLE([bt-movement-modes],
     ]
 )
 
-AC_MSG_CHECKING([Should we enable extended advantages [[default=yes]]])
-AC_ARG_ENABLE([bt-ext-advantages],
-    AS_HELP_STRING([--disable-bt-ext-advantages],
-                   [Disable extended advantages [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-ext-advantages option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_EXTENDED_ADVANTAGES], [1], [Should extended advantages be enabled])
-    ]
-)
-
 AC_MSG_CHECKING([Should we copy freqs to MW on disembark [[default=yes]]])
 AC_ARG_ENABLE([bt-mwfreqs],
     AS_HELP_STRING([--disable-bt-mwfreqs],

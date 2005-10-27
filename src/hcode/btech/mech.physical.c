@@ -783,11 +783,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     }
 
     /* Add in the movement modifiers */
-#ifndef BT_EXTENDED_ADVANTAGES
-    baseToHit += AttackMovementMods(mech);
-#else
     baseToHit += HasBoolAdvantage(MechPilot(mech), "melee_specialist") ? MIN(0, AttackMovementMods(mech) - 1) : AttackMovementMods(mech);
-#endif
     baseToHit += TargetMovementMods(mech, target, 0.0);
     baseToHit += MechType(target) == CLASS_BSUIT ? 1 : 0;
     baseToHit += ((MechType(target) == CLASS_BSUIT) &&
@@ -991,10 +987,8 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
     if ((MechHeat(mech) >= 9.) &&
 	(MechSpecials(mech) & TRIPLE_MYOMER_TECH))
 	damage = damage * 2;
-#ifdef BT_EXTENDED_ADVANTAGES
     if (HasBoolAdvantage(MechPilot(mech), "melee_specialist"))
 	damage++;
-#endif
     switch (AttackType) {
     case PA_PUNCH:
 	if (sect == LARM) {
@@ -1169,12 +1163,8 @@ int DeathFromAbove(MECH * mech, MECH * target)
     if (mudconf.btech_phys_use_pskill)
         baseToHit = FindPilotPiloting(mech);
 
-#ifndef BT_EXTENDED_ADVANTAGES
-    baseToHit += AttackMovementMods(mech);
-#else
     baseToHit += (HasBoolAdvantage(MechPilot(mech), "melee_specialist") ? 
         MIN(0, AttackMovementMods(mech)) - 1 : AttackMovementMods(mech));
-#endif
     baseToHit += TargetMovementMods(mech, target, 0.0);
     baseToHit += MechType(target) == CLASS_BSUIT ? 1 : 0;
 #ifdef BT_MOVEMENT_MODES
@@ -1209,10 +1199,8 @@ int DeathFromAbove(MECH * mech, MECH * target)
         if (MechTons(mech) % 10)
             target_damage++;
 
-#ifdef BT_EXTENDED_ADVANTAGES
         if (HasBoolAdvantage(MechPilot(mech), "melee_specialist"))
             target_damage++;
-#endif
 
         spread = target_damage / 5;
 
@@ -1569,10 +1557,8 @@ void ChargeMech(MECH * mech, MECH * target)
                 MechFacing(target)) * (M_PI / 180.))) *
                 MP_PER_KPH) * (MechRealTons(mech) + 5) / 10;
 
-#ifdef BT_EXTENDED_ADVANTAGES
         if (HasBoolAdvantage(MechPilot(mech), "melee_specialist"))
             target_damage++;
-#endif
 
         /* Not able to do any damage */
         if (target_damage <= 0) {
@@ -1595,10 +1581,8 @@ void ChargeMech(MECH * mech, MECH * target)
                 MechFacing(mech)) * (M_PI / 180.))) *
                 MP_PER_KPH) * (MechRealTons(target) + 5) / 10;
 
-#ifdef BT_EXTENDED_ADVANTAGES
         if (HasBoolAdvantage(MechPilot(target), "melee_specialist"))
             mech_damage++;
-#endif
 
         /* Not able to do any damage */
         if (mech_damage <= 0) {
@@ -1612,12 +1596,8 @@ void ChargeMech(MECH * mech, MECH * target)
         mech_baseToHit +=
             FindPilotPiloting(mech) - FindSPilotPiloting(target);
 
-#ifndef BT_EXTENDED_ADVANTAGES
-        mech_baseToHit += AttackMovementMods(mech);
-#else
         mech_baseToHit += (HasBoolAdvantage(MechPilot(mech), "melee_specialist") ? 
             MIN(0, AttackMovementMods(mech) - 1) : AttackMovementMods(mech));
-#endif
 
         mech_baseToHit += TargetMovementMods(mech, target, 0.0);
 
@@ -1631,12 +1611,8 @@ void ChargeMech(MECH * mech, MECH * target)
         targ_baseToHit +=
             FindPilotPiloting(target) - FindSPilotPiloting(mech);
 
-#ifndef BT_EXTENDED_ADVANTAGES
-        targ_baseToHit += AttackMovementMods(target);
-#else
         targ_baseToHit += (HasBoolAdvantage(MechPilot(target), "melee_specialist") ? 
             MIN(0, AttackMovementMods(target) - 1 ) : AttackMovementMods(target));
-#endif
 
         targ_baseToHit += TargetMovementMods(target, mech, 0.0);
 
@@ -1959,10 +1935,8 @@ void ChargeMech(MECH * mech, MECH * target)
             MechFacing(target)) * (M_PI / 180.))) *
             MP_PER_KPH) * (MechRealTons(mech) + 5) / 10 + 1;
 
-#ifdef BT_EXTENDED_ADVANTAGES
         if (HasBoolAdvantage(MechPilot(mech), "melee_specialist"))
             target_damage++;
-#endif
 
     /* Not enough damage done so no charge */
     DOCHECKMP(target_damage <= 0,
@@ -1971,12 +1945,8 @@ void ChargeMech(MECH * mech, MECH * target)
     /* BTH */
     baseToHit += FindPilotPiloting(mech) - FindSPilotPiloting(target);
 
-#ifndef BT_EXTENDED_ADVANTAGES
-    baseToHit += AttackMovementMods(mech);
-#else
     baseToHit += (HasBoolAdvantage(MechPilot(mech), "melee_specialist") ? 
         MIN(0, AttackMovementMods(mech) - 1) : AttackMovementMods(mech));
-#endif
 
     baseToHit += TargetMovementMods(mech, target, 0.0);
 

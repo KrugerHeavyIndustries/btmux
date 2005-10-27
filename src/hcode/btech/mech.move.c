@@ -1348,7 +1348,6 @@ void mech_evade(dbref player, void *data, char *buffer)
 return;
 }
 
-#ifdef BT_EXTENDED_ADVANTAGES
 void mech_dodge(dbref player, void *data, char *buffer)
 {
     MECH *mech = (MECH *) data;
@@ -1384,7 +1383,6 @@ void mech_dodge(dbref player, void *data, char *buffer)
     }
 return;
 }
-#endif
 #endif
 
 void mech_hulldown(dbref player, void *data, char *buffer)

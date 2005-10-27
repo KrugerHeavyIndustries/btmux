@@ -211,6 +211,7 @@ clean:
 
 distclean: clean
 	rm -rf .depend Makefile config.status config.log
+	rm -rf src/autoconf*
 
 slave src/slave: src/slave.c
 	$(CC) $(ALLFLAGS) -o src/slave src/slave.c

@@ -29,11 +29,7 @@ int char_getskilltarget(dbref player, char *name, int modifier);
 int char_getxpbycode(dbref player, int code);
 int char_gainxpbycode(dbref player, int code, int amount);
 int char_gainxp(dbref player, char *skill, int amount);
-#ifndef BT_EXTENDED_ADVANTAGES
-int char_getskillsuccess(dbref player, char *name, int modifier);
-#else
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud);
-#endif
 int char_getskillmargsucc(dbref player, char *name, int modifier);
 int char_getopposedskill(dbref first, char *skill1, dbref second,
     char *skill2);
@@ -58,10 +54,8 @@ void AccumulatePilXP(dbref pilot, MECH * mech, int reason, int addanyway);
 void AccumulateSpotXP(dbref pilot, MECH * attacker, MECH * wounded);
 int MadePerceptionRoll(MECH * mech, int modifier);
 void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded);
-#ifdef BT_EXTENDED_ADVANTAGES
 void AccumulateComputerXP(dbref pilot, MECH * mech, int reason);
 int HasBoolAdvantage(dbref player, const char *name);
-#endif
 void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
     int numOccurences, int multiplier, int weapindx, int bth);
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,

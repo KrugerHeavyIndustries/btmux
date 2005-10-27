@@ -203,11 +203,7 @@ void mech_sideslip_event(MUXEVENT * e)
     if (!mech || !Started(mech))
         return;
     mech_notify(mech, MECHALL, "You make a skill roll while sideslipping!");
-#ifdef BT_EXTENDED_ADVANTAGES
     if (!MadePilotSkillRoll(mech, HasBoolAdvantage(MechPilot(mech), "maneuvering_ace") ? -1 : 0))
-#else
-    if (!MadePilotSkillRoll(mech, 0))
-#endif
         {
         mech_notify(mech, MECHALL, "You fail and spin out!");
         MechLOSBroadcast(mech, "spins out while sideslipping!");

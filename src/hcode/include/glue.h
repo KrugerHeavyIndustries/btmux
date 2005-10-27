@@ -224,11 +224,9 @@ CommandsStruct mechcommands[] = {
     {195, "EVADE",
 	    "Toggles evasion mode. While evading you are harder to hit, but cannot attack.",
 	mech_evade},
-#ifdef BT_EXTENDED_ADVANTAGES
     {1, "DODGE",
 	    "Toggles dodge mode on. You must have Dodge_Maneuver advantage. While dodging you can counter physical attack rolls. One per turn.",
 	mech_dodge},
-#endif
 #endif
     /* Radio */
     HEADER("Radio"),

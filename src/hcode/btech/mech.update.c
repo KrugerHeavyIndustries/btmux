@@ -873,11 +873,9 @@ void UpdateSpeed(MECH * mech)
 	DECREASE_OLD(MP1);	/* In truth 1 MP */
 #ifdef BT_MOVEMENT_MODES
     else if (MechLateral(mech)) {
-#ifdef BT_EXTENDED_ADVANTAGES
 	if (HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
 	    DECREASE_OLD(MP2);
 	else
-#endif
 	    DECREASE_OLD(MP3);
     }
 #endif
@@ -900,10 +898,8 @@ void UpdateSpeed(MECH * mech)
 	    acc = maxspeed / 10.;
 	else
 	    acc = maxspeed / 20.;
-#ifdef BT_EXTENDED_ADVANTAGES
 	if (HasBoolAdvantage(MechPilot(mech), "speed_demon"))
 	    acc *= 1.25;
-#endif
 
 	if (tempspeed < MechSpeed(mech)) {
 	    /* Decelerating */
@@ -980,11 +976,9 @@ void ammo_explosion(MECH * attacker, MECH * mech, int ammoloc,
     if (MechType(mech) != CLASS_BSUIT) {
 	mech_notify(mech, MECHPILOT,
 	    "You take personal injury from the ammunition explosion!");
-#ifdef BT_EXTENDED_ADVANTAGES
 	if (HasBoolAdvantage(MechPilot(mech), "pain_resistance"))
 	    headhitmwdamage(mech, 1);
 	else
-#endif
 	headhitmwdamage(mech, 2);
     }
 }

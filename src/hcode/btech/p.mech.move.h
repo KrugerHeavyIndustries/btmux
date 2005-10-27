@@ -33,9 +33,7 @@ void mech_hulldown(dbref player, void *data, char *buffer);
 #ifdef BT_MOVEMENT_MODES
 void mech_sprint(dbref player, void *data, char *buffer);
 void mech_evade(dbref player, void *data, char *buffer);
-#ifdef BT_EXTENDED_ADVANTAGES
 void mech_dodge(dbref player, void *date, char *buffer);
-#endif
 #endif
 int DropGetElevation(MECH * mech);
 void DropSetElevation(MECH * mech, int wantdrop);

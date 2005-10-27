@@ -83,14 +83,13 @@ struct char_value {
     {"Wealth", CHAR_ADVANTAGE, CHAR_ADV_VALUE, 0},
     {"Well-Connected", CHAR_ADVANTAGE, CHAR_ADV_VALUE, 0},
     {"Well_Equipped", CHAR_ADVANTAGE, CHAR_ADV_VALUE, 0},
-#ifdef BT_EXTENDED_ADVANTAGES
     {"Dodge_Maneuver", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
     {"Maneuvering_Ace", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
     {"Melee_Specialist", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
     {"Pain_Resistance", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
     {"Speed_Demon", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
     {"Tech_Aptitude", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},
-#endif
+
 /* Attributes */
     {"Build", CHAR_ATTRIBUTE, 0, 0},
     {"Reflexes", CHAR_ATTRIBUTE, 0, 0},

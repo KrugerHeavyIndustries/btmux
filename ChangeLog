@@ -94,6 +94,9 @@ btonline-btechmux 0.6:
 	  admins don't want targcomp modes, they can refrain
 	  from setting targcomp to values other than 0 on
 	  units. (Greg)
+	* Removed EXTENDED_ADVANTAGES define for much the same
+	  reason as the last two. If admins don't want to use
+	  the feature, don't add the advantages to players. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

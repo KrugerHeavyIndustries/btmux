@@ -39,11 +39,7 @@ int tech_roll(dbref player, MECH * mech, int diff)
 {
     int s;
     int succ;
-#ifndef BT_EXTENDED_ADVANTAGES
-    int r = Roll();
-#else
     int r = (HasBoolAdvantage(player, "tech_aptitude") ? char_rollsaving() : Roll()); 
-#endif
 
     s = FindTechSkill(player, mech);
     s += diff;
@@ -64,11 +60,7 @@ int tech_weapon_roll(dbref player, MECH * mech, int diff)
 {
     int s;
     int succ;
-#ifndef BT_EXTENDED_ADVANTAGES
-    int r = Roll();
-#else
     int r = (HasBoolAdvantage(player, "tech_aptitude") ? char_rollsaving() : Roll()); 
-#endif
 
     s = char_getskilltarget(player, "technician-weapons", 0);
     s += diff;

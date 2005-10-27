@@ -415,11 +415,7 @@ int char_gainxp(dbref player, char *skill, int amount)
     return char_gainxpbycode(player, char_getvaluecode(skill), amount);
 }
 
-#ifndef BT_EXTENDED_ADVANTAGES
-int char_getskillsuccess(dbref player, char *name, int modifier)
-#else
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
-#endif
 {
     int roll, val;
     int code;
@@ -432,13 +428,11 @@ int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
 	roll = char_rollunskilled();
     else
 	roll = char_rollskilled();
-#ifdef BT_EXTENDED_ADVANTAGES
     if (loud)
         {
         notify(player, tprintf("You make a %s skill roll!", name));
         notify(player, tprintf("Modified skill BTH : %d Roll : %d", val, roll));
         }
-#endif
 
     if (roll >= val)
 	return (1);		/* Success! */
@@ -1280,7 +1274,6 @@ void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded)
 */
 }
 
-#ifdef BT_EXTENDED_ADVANTAGES
 void AccumulateComputerXP(dbref pilot, MECH * mech, int reason)
 {
 int xp;
@@ -1305,7 +1298,6 @@ int HasBoolAdvantage(dbref player, const char *name)
     else
         return 0;
 }
-#endif
 
 int bth_modifier[] =		/* Starts from '3' , in 1/36's */
 {
