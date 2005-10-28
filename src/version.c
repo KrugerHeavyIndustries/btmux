@@ -89,8 +89,8 @@ strcat(mux_version, "+ALG");
 
     /* Version Identification string for version() and VERSION command */
     /* BtOnline-BTechMUX x.x build #<x> */
-    snprintf(mudstate.version, 128, "%s build #%s (%s)",
-	PACKAGE_STRING, MUX_BUILD_NUM, mux_version);
+    snprintf(mudstate.version, 128, "%s.%s build #%s (%s)",
+	PACKAGE_STRING, MINOR_REVNUM, MUX_BUILD_NUM, mux_version);
 
     STARTLOG(LOG_ALWAYS, "INI", "START") {
 	log_text((char *) "Starting: ");

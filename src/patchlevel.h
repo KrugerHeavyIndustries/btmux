@@ -5,9 +5,4 @@
 
 #include "copyright.h"
 
-#define	MUX_VERSION		"1.6" 	/* Base version number */
-#define PATCHLEVEL		0	/* Patch sequence number */
-#define	MUX_RELEASE_DATE	"12/21/04"	/* Source release date */
-
-#define BETA			1	/* Define if a BETA release */
-
+#define MINOR_REVNUM		"0-rc1"		/* Minor revision and/or rc number */

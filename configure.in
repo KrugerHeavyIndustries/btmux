@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.53)
-AC_INIT([BtOnline-BTechMux], [0.6.0-rc1])
+AC_INIT([BtOnline-BTechMux], [0.6])
 AC_CONFIG_HEADERS([src/autoconf.h])
 
 # Checks for programs.
