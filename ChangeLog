@@ -102,6 +102,7 @@ btonline-btechmux 0.6:
 	  function to be much more expandable and a lot less
 	  hacked. (Greg)
 	* RocketLaunchers are now completely implemented. (Greg)
+        * VTOLs with ICE set crash/explosion hex ablaze (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
