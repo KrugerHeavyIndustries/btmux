@@ -16,7 +16,6 @@
 #include "alloc.h"
 #include "htab.h"
 #include "externs.h"
-#include "rbtree.h"
 
 static void fixcase(char *);
 static char *store_string(char *);
@@ -39,20 +38,9 @@ static char *stringblock = (char *) 0;
 
 static int stringblock_hwm = 0;
 
-static rbtree *vt;
-
-static int vattr_compare(void *vleft, void *vright, void *arg) {
-    char *left = (char *)vleft;
-    char *right = (char *)vright;
-    return strcmp(left, right);
-}
-
 void vattr_init(void)
 {
-    vt = rb_init(vattr_compare, NULL);
-#if 0
     hashinit(&mudstate.vattr_name_htab, 256 * HASH_FACTOR);
-#endif
 }
 
 VATTR *vattr_find(name)
@@ -63,11 +51,7 @@ char *name;
     if (!ok_attr_name(name))
 	return (NULL);
 
-#if 0
     vp = (VATTR *) hashfind(name, &mudstate.vattr_name_htab);
-#endif 
-
-    vp = (VATTR *) rb_find(vt, (void *)name);
 
     /*
      * vp is NULL or the right thing. It's right, either way. 
@@ -112,11 +96,8 @@ int number, flags;
     vp->name = store_string(name);
     vp->flags = flags;
     vp->number = number;
-#if 0
-    hashadd(vp->name, (int *) vp, &mudstate.vattr_name_htab);
-#endif
 
-    rb_insert(vt, (void *)vp->name, (void *)vp);
+    hashadd(vp->name, (int *) vp, &mudstate.vattr_name_htab);
 
     anum_extend(vp->number);
     anum_set(vp->number, (ATTR *) vp);
@@ -131,31 +112,23 @@ int key;
     dbref i;
     int notfree;
 
-    for(vp = (VATTR *) rb_search(vt, SEARCH_FIRST, NULL);
-            vp != NULL;
-            vp = (VATTR *) rb_search(vt, SEARCH_GT, vp)) {
-#if 0
-        for (vp = (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
-            vp != NULL;
-            vp = (VATTR *) hash_nextentry(&mudstate.vattr_name_htab)) {
-#endif
-        notfree = 0;
+    for (vp = (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
+	vp != NULL;
+	vp = (VATTR *) hash_nextentry(&mudstate.vattr_name_htab)) {
+	notfree = 0;
 
-        DO_WHOLE_DB(i) {
-            if (atr_get_raw(i, vp->number) != NULL) {
-                notfree = 1;
-                break;
-            }
-        }
+	DO_WHOLE_DB(i) {
+	    if (atr_get_raw(i, vp->number) != NULL) {
+		notfree = 1;
+		break;
+	    }
+	}
 
-        if (!notfree) {
-            anum_set(vp->number, NULL);
-#if 0
-            hashdelete(vp->name, &mudstate.vattr_name_htab);
-#endif
-            rb_delete(vt, vp->name);
-            free((char *) vp);
-        }
+	if (!notfree) {
+	    anum_set(vp->number, NULL);
+	    hashdelete(vp->name, &mudstate.vattr_name_htab);
+	    free((char *) vp);
+	}
     }
 #ifndef STANDALONE
     notify(player, "Database cleared of stale attribute entries.");
@@ -174,19 +147,13 @@ char *name;
 
     number = 0;
 
-#if 0
     vp = (VATTR *) hashfind(name, &mudstate.vattr_name_htab);
-#endif
-    vp = (VATTR *) rb_find(vt, name);
 
     if (vp) {
-        number = vp->number;
-        anum_set(number, NULL);
-#if 0
-        hashdelete(name, &mudstate.vattr_name_htab);
-#endif
-        rb_delete(vt, name);
-        free((char *) vp);
+	number = vp->number;
+	anum_set(number, NULL);
+	hashdelete(name, &mudstate.vattr_name_htab);
+	free((char *) vp);
     }
 
     return;
@@ -212,10 +179,7 @@ char *name, *newname;
     if (!ok_attr_name(newname))
 	return (NULL);
 
-#if 0
     vp = (VATTR *) hashfind(name, &mudstate.vattr_name_htab);
-#endif
-    vp = (VATTR *) rb_find(vt, name);
 
     if (vp)
 	vp->name = store_string(newname);
@@ -225,10 +189,7 @@ char *name, *newname;
 
 VATTR *vattr_first(void)
 {
-#if 0
     return (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
-#endif
-    return (VATTR *) rb_search(vt, SEARCH_FIRST, NULL);
 }
 
 VATTR *vattr_next(vp)
@@ -236,10 +197,8 @@ VATTR *vp;
 {
     if (vp == NULL)
 	return (vattr_first());
-#if 0
+
     return ((VATTR *) hash_nextentry(&mudstate.vattr_name_htab));
-#endif
-    return ((VATTR *) rb_search(vt, SEARCH_GT, vp));
 }
 
 static void fixcase(name)

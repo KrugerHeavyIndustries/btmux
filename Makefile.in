@@ -216,7 +216,10 @@ netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
 clean:
 	rm -f $(ALLOBJS) src/version.o $(TARGETS) .depend
 
-distclean: clean
+cleandep:
+	rm -f $(ALLOBJS:%.o=%.d)
+
+distclean: clean cleandep
 	rm -rf .depend Makefile config.status config.log
 	rm -rf src/autoconf*
 
@@ -232,20 +235,17 @@ unsplit src/unsplit: src/unsplit.c
 dbconvert src/dbconvert:
 	echo "dbconvert is no longer supported." && exit 1;
 
+$(ALLSRCS:%.c=%.d): %.d: %.c
+	$(CC) -MM -MF $@ -MT $(@:%.d=%.o) $(ALLFLAGS) $<
+
 $(ALLOBJS): %.o: %.c
 	$(CC) $(ALLFLAGS) -c $< -o $@
+
+-include $(ALLSRCS:%.c=%.d)
 
 # Removed protomaker because it doesn't work and if
 # we used it would wreck lots of things
 #protos: $(PROTOMAKER)
 #	$(PROTOMAKER) "$(INCLUDES)" $(ALLSRCS)
 
-.depend:
-	$(MAKEDEPEND) $(ALLFLAGS) $(ALLSRCS) > .depend
-
-depend dep: .depend
-
 .PHONY: clean protos
-
-include .depend
-
