@@ -150,6 +150,7 @@ struct confdata {
     int btech_usedmechstore;	/* DBref for the dead mechs to spool into upon IC death */
     int btech_ooc_comsys;	/* Enable bypassing of CA_NO_IC command checks for IC location blocking */
     int btech_idf_requires_spotter; /* Requires spotter for IDF firing */
+    int btech_vtol_ice_causes_fire; /* VTOL ICE engines cause fire on crash/explosion */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif
