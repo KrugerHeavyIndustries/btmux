@@ -199,6 +199,17 @@
 #define ClearHexBit(array, offset) (array[offset >> 3] = \
         array[offset >> 3] & ~(1 << (offset & 7)))
 
+#ifdef DEBUG_AUTOGUN
+    #define print_autogun_log(autopilot, args...) \
+    do { \
+        fprintf(stderr, "AI: %d AUTOGUN ", autopilot->mynum); \
+        fprintf(stderr, args); \
+        fprintf(stderr, "\n"); \
+    } while(0)
+#else
+    #define print_autogun_log(autopilot, args...)
+#endif
+
 /*
  * Profile node structure
  */

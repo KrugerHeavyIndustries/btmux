@@ -530,6 +530,9 @@ void auto_update_profile_event(MUXEVENT *muxevent) {
         return;
     }
 
+    /* Log Message */
+    print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
+
     /* Destroy the arrays first, don't worry about the weap
      * structures because we can clear them with the ddlist
      * weaplist */
@@ -669,6 +672,9 @@ void auto_update_profile_event(MUXEVENT *muxevent) {
     /* Run this loop some time later incase we suffer damage */
     AUTOEVENT(autopilot, EVENT_AUTO_PROFILE, 
             auto_update_profile_event, AUTO_PROFILE_TICK, 0);
+
+    /* Log Message */
+    print_autogun_log(autopilot, "Finished Profiling");
 
 }
 
@@ -879,7 +885,6 @@ void auto_gun_event(MUXEVENT *muxevent) {
     float fx, fy;
     char do_chasetarget;                                /* Flag should we do chasetarget
                                                            based on certain conditions */
-    
 
     /* Basic checks */
     if (!mech || !autopilot)
@@ -906,6 +911,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
         return;
     }
 
+    /* Log it */
+    print_autogun_log(autopilot, "Autogun Event Started");
+
     /* Check the profile - if it doesn't exist, calc it, then re-run autogun */
     if (autopilot->weaplist == NULL) {
         AUTOEVENT(autopilot, EVENT_AUTO_PROFILE, auto_update_profile_event, 1, 0);
@@ -915,6 +923,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+        
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
     }
 
@@ -926,6 +937,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
     }
 
@@ -981,6 +995,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
         /* Ok looking for a new target */
 
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Looking for new target");
+
         /* Reset the update ticker */
         autopilot->target_update_tick = 0;
 
@@ -999,6 +1016,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
                 /* Score the target */
                 target_score = auto_calc_target_score(autopilot, target);
+
+                /* Log It */
+                print_autogun_log(autopilot, "Autogun - Possible target #%d with score %d",
+                        target->mynum, target_score);
 
                 /* If target has a score add it to rbtree */
                 if (target_score > 0) {
@@ -1060,6 +1081,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
                 muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
             }
             AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, 10, 0);
+
+            /* Log It */
+            print_autogun_log(autopilot, "Autogun in idle mode");
+            print_autogun_log(autopilot, "Autogun Event Finished");
             return;
         }
 
@@ -1069,6 +1094,12 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
         /* Best target */
         temp_target_node = (target_node *) rb_search(targets, SEARCH_LAST, NULL);
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Best target #%d with score %d",
+                temp_target_node->target_dbref, temp_target_node->target_score);
+        print_autogun_log(autopilot, "Autogun - Current target #%d with score %d",
+                autopilot->target, autopilot->target_score);
 
         if (autopilot->target > -1 && autopilot->target_score > 0) {
 
@@ -1084,6 +1115,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
                     /* Change targets */
                     autopilot->target = temp_target_node->target_dbref;
                     autopilot->target_score = temp_target_node->target_score;
+
+                    print_autogun_log(autopilot, "Switching Target to #%d",
+                            autopilot->target);
 
                 }
 
@@ -1114,6 +1148,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
     /* End of picking a new target */
 
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Current target #%d with score %d",
+            autopilot->target, autopilot->target_score);
+
     /* Setup the current target */
     if (!(target = getMech(autopilot->target))) {
 
@@ -1129,6 +1167,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - No valid current targets");
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
 
     }
@@ -1140,12 +1182,19 @@ void auto_gun_event(MUXEVENT *muxevent) {
         snprintf(buffer, LBUF_SIZE, "%c%c", MechID(target)[0], MechID(target)[1]);
         mech_settarget(autopilot->mynum, mech, buffer);
 
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Locking target #%d",
+                autopilot->target);
+
     }
 
     /* Update autosensor */
 
     /* Now lets get physical */
     
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Start Physical Attack Stage");
+
     /* Get range from mech to current target */
     range = FindHexRange(MechFX(mech), MechFY(mech), MechFX(target), MechFY(target));
 
@@ -1208,6 +1257,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
     /* Now nail it with a physical attack but only if we see it */
     if (physical_target && 
             (MechToMech_LOSFlag(map, mech, physical_target) & MECHLOSFLAG_SEEN)) {
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Attempting physical attack against"
+                " target #%d", physical_target->mynum);
 
         /* Calculate elevation difference */
         elevation_diff = MechZ(mech) - MechZ(target);
@@ -1500,6 +1553,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
     } /* End of physical attack */
 
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - End Physical Attack Stage");
+
     /* Now we mow down our target */
 
     /* Get our current target */
@@ -1519,6 +1575,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - No valid current target");
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
 
     } else if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
@@ -1532,8 +1592,15 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+        
+        /* Log it */
+        print_autogun_log(autopilot, "Autogun - Target Gone");
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
     }
+
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Starting Weapon Attack Phase");
 
     /* Get range from mech to current target */
     range = FindHexRange(MechFX(mech), MechFY(mech), 
@@ -1554,6 +1621,10 @@ void auto_gun_event(MUXEVENT *muxevent) {
             muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
         }
         AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+        
+        /* Log it */
+        print_autogun_log(autopilot, "Autogun - Target out of range");
+        print_autogun_log(autopilot, "Autogun Event Finished");
         return;
     }
 
@@ -1821,10 +1892,12 @@ void auto_gun_event(MUXEVENT *muxevent) {
                     /* Rotate Turret and nail the guy */
                     if (MechTurretFacing(mech) != FindBearing(MechFX(mech),
                         MechFY(mech), MechFX(target), MechFY(target))) {
-                    snprintf(buffer, LBUF_SIZE, "%d", FindBearing(MechFX(mech), 
-                                MechFY(mech), MechFX(target), MechFY(target)));
-                    mech_turret(autopilot->mynum, mech, buffer);
+
+                        snprintf(buffer, LBUF_SIZE, "%d", FindBearing(MechFX(mech), 
+                                    MechFY(mech), MechFX(target), MechFY(target)));
+                        mech_turret(autopilot->mynum, mech, buffer);
                     }
+
                 } else {
 
                     /* Check if in arc of weapon */
@@ -1855,6 +1928,11 @@ void auto_gun_event(MUXEVENT *muxevent) {
             snprintf(buffer, LBUF_SIZE, "%d", temp_weapon_node->weapon_number);
             mech_fireweapon(autopilot->mynum, mech, buffer);
 
+            /* Log It */
+            print_autogun_log(autopilot, "Autogun - Fired Weapon #%d "
+                    "at target #%d", temp_weapon_node->weapon_number,
+                    autopilot->target);
+
             /* Ok check to see if weapon was fired if so account for the
              * heat */
             if (WpnIsRecycling(mech, temp_weapon_node->section, temp_weapon_node->critical)) {
@@ -1868,6 +1946,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
         } /* End of cycling through weapons */
 
     }
+
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - End Weapon Attack Phase");
 
     /* Setup chasetarg 
      * 
@@ -1947,6 +2028,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
                 auto_addcommand(autopilot->mynum, autopilot, buffer);
                 auto_engage(autopilot->mynum, autopilot, "");
 
+                /* Log it */
+                print_autogun_log(autopilot, "Autogun Event Finished");
+
                 return;
 
             } else {
@@ -2009,6 +2093,9 @@ void auto_gun_event(MUXEVENT *muxevent) {
     }
 
     AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
+
+    /* Log it */
+    print_autogun_log(autopilot, "Autogun Event Finished");
 
     /* The End */
 
