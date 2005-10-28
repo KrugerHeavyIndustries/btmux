@@ -4,13 +4,11 @@ ________________________________________
 =              Contents                =
 ========================================
 * S1: Build Dependencies               *
-* S2: Obtaining the Needed Modules     *
-* S2: Obtaining BTMux                  *
-* S3: Compiling and Running the Source *
-* S4: Compile-Time Directives          *
-* S5: Game Configuration File          *
-* S6: Starting and Connecting          *
-* S7: Getting Further help             *
+* S2: Compiling and Running the Source *
+* S3: Compile-Time Directives          *
+* S4: Game Configuration File          *
+* S5: Starting and Connecting          *
+* S6: Getting Further help             *
 ========================================
 
  S1: BUILD DEPENDENCIES
@@ -22,43 +20,9 @@ ________________________________________
  * libevent (http://www.monkey.org/~provos/libevent/)
  * libdbi (If SQL support is enabled)
  * autoconf
+ * Subversion (If you didn't download a complete packaged BTMux)
 
- S2: OBTAINING BTMUX
- -------------------
- You have two methods of obtaining the BTMux source: 
- * Subversion
- * SourceForge Files Page
-
- The Subversion source will be the latest and most up to date, but may have
- bugs in it. The releases are more stable and tested, but may not have bug
- fixes or improvements in them that the Subversion source does have. So,
- choose your poison and see one of the following sections.
-
- S2A: SUBVERSION SOURCE
- ----------------------
- See the instructions on:
-  http://docs.btmux.com/index.php/Getting_and_Updating_the_Source
-
- S2B: SOURCEFORGE RELEASE
- ------------------------
- Head on over to the btonline-btmux project's
- Files section at:
- 
- http://files.btmux.com
- 
- First download a version of the source. This is under the Btech-Online BTMux
- package. Select the version you'd like (usually the latest) and download
- it to your home directory. Un-tar/bzip it like this:
- 
- tar -jxf btonline-btechmux-0.x.tbz2
- 
- Make sure to replace the 'x' with the proper version number. This will leave
- you with a btonline-btechmux directory. We'll call this your BTMux root dir.
-
- This will leave you with a ready-to-compile game, proceed to the next
- section.
-
- S3: COMPILING AND RUNNING THE SOURCE
+ S2: COMPILING AND RUNNING THE SOURCE
  ------------------------------------
  To compile the Battletech MUX source, 'cd' into your root BTMux dir and type
  './configure'. If you downloaded the Subversion trunk, you'll need to do
@@ -88,7 +52,7 @@ ________________________________________
  (/game) and a working copy (/game.run). Once you have a /game.run, you
  may safely delete /game if you so wish.
 
- S4: COMPILE-TIME DIRECTIVES
+ S3: COMPILE-TIME DIRECTIVES
  ---------------------------
  There are a number of compile-time directives available for you to further
  customize your game to your tastes. You may view these at:
@@ -102,7 +66,7 @@ ________________________________________
  require a hcode.db rebuild which means you'll need to remove your
  /game/hcode.db file and setup all of your xcode objects again.
 
- S5: GAME CONFIGURATION FILE
+ S4: GAME CONFIGURATION FILE
  ---------------------------
  If you look under /game.run, you'll see some file with a .conf extension.
  This is generally netmux.conf if you are using BTMux in a Box. You'll 
@@ -119,7 +83,7 @@ ________________________________________
  be saved across restarts unless it's also in your <gamename>.conf
  file.
 
- S6: STARTING AND CONNECTING TO YOUR GAME
+ S5: STARTING AND CONNECTING TO YOUR GAME
  ----------------------------------------
  Once your game is compiled and your game.run directory is populated,
  cd to game.run and type:
@@ -149,7 +113,7 @@ ________________________________________
 
  You should now be set to start tinkering! Good luck :)
 
- S7: GETTING FURTHER HELP
+ S6: GETTING FURTHER HELP
  ------------------------
  For more information on the support available to you, check out the
  SUPPORT file included in your root BTMux directory. This lists
