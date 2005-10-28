@@ -285,6 +285,11 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	    break;
 	}
 	mech_map = getMap(target->mapindex);
+        if(MechSpecials(target) & ICE_TECH && MechType(target) == CLASS_VTOL) {
+           MechLOSBroadcast(target, "explodes in a ball of flames!");
+               add_decoration(mech_map, MechX(target), MechY(target), TYPE_FIRE, FIRE, FIRE_DURATION);
+        }
+
 	if (MechCarrying(target) > 0) {
 	    if ((ttarget = getMech(MechCarrying(target)))) {
 		mech_notify(ttarget, MECHALL,
