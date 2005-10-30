@@ -1002,7 +1002,6 @@ struct repair_data {
 #define MODE_OFF        0x8
 #define MODE_DODGE      0x10
 #define MODE_DG_USED    0x20
-#define MODE_MODEFAIL 0x40
 
 /* MechFullRecycle check flags */
 #define CHECK_WEAPS     0x1

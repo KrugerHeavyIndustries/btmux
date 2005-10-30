@@ -498,12 +498,6 @@ void mech_movemode_event(MUXEVENT *e)
         MechStatus2(mech) &= ~(MOVE_MODES);
         return;
         }
-/* SPRINTING flag needs to be removed already. This is to create a dumby-event to allow
-   blocking of weapons fire still after a sprinting units takes damage. */
-    if (i & MODE_MODEFAIL) {
-        mech_notify(mech, MECHALL, "Your brief movement mode hiatus has ended and you may fire once again!");
-        return;
-        }
     if (dir) {
         if (i & MODE_EVADE) {
             MechStatus2(mech) |= EVADING;

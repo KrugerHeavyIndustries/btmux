@@ -1792,7 +1792,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     mech_notify(mech, MECHALL, "You lose your sprinting momentum as you "
                             "enter water!");
                     MECHEVENT(mech, EVENT_MOVEMODE, mech_movemode_event, TURN, 
-                            MODE_OFF|MODE_SPRINT|MODE_MODEFAIL);
+                            MODE_OFF|MODE_SPRINT);
                 }
 #endif
                 if (IsRunning(MechSpeed(mech), MMaxSpeed(mech))) {
