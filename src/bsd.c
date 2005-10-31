@@ -95,8 +95,10 @@ void set_lastsite(DESC * d, char *lastsite)
 }
 
 
+void flush_sockets();
 
 void shutdown_services() {
+    flush_sockets();
 #ifdef SQL_SUPPORT
     sqlchild_destruct();
 #endif
@@ -273,18 +275,23 @@ void boot_slave() {
 }
 
 void slave_destruct() {
+    int status;
+    dprintk("nuking slave.");
+    if(slave_pid != -1) {
+        if(!kill(slave_pid, SIGTERM))
+            wait(&status);
+        else
+            perror("killing slave");
+        slave_pid = -1; 
+    } else {
+        dprintk("slave_destruct() called without functioning slave.");
+    }
     if(slave_socket != -1) {
         event_del(&slave_sock_ev);
         close(slave_socket);
         slave_socket = -1;
     } else {
         dprintk("slave_destruct() called without functioning slave_socket!");
-    }
-    if(slave_pid != -1) {
-        kill(slave_pid, SIGKILL);
-        slave_pid = -1; 
-    } else {
-        dprintk("slave_destruct() called without functioning slave.");
     }
     dprintk("slave shutdown.");
 }
@@ -316,6 +323,7 @@ int bind_mux_socket(int port) {
         close(s);
         exit(4);
     }
+    dprintk("connection socket raised and bound, %d", s);
     listen(s, 5);
     return s;
 }
@@ -698,6 +706,9 @@ void shutdownsock(DESC *d, int reason) {
 void make_nonblocking(int s) {
     long flags=0;
 
+    if(fcntl(s, F_GETFL, &flags) < 0) {
+        log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_GETFL");
+    }
     flags |= O_NONBLOCK;
     if(fcntl(s, F_SETFL, flags) < 0) {
         log_perror("NET", "FAIL", "make_nonblocking", "fcntl F_SETFL");
@@ -708,6 +719,21 @@ void make_nonblocking(int s) {
     }
 }
 
+void make_blocking(int s) {
+    long flags=0;
+
+    if(fcntl(s, F_GETFL, &flags) < 0) {
+        log_perror("NET", "FAIL", "make_blocking", "fcntl F_GETFL");
+    }
+    flags &= ~O_NONBLOCK;
+    if(fcntl(s, F_SETFL, flags) < 0) {
+        log_perror("NET", "FAIL", "make_blocking", "fcntl F_SETFL");
+    }
+    flags = 0;
+    if(setsockopt(s, IPPROTO_TCP, TCP_NODELAY, &flags, sizeof(flags)) < 0) {
+        log_perror("NET", "FAIL", "make_blocking", "setsockopt NDELAY");
+    }
+}
 extern int fcache_conn_c;
 
 DESC *initializesock(int s, struct sockaddr_in *a) {
@@ -861,6 +887,27 @@ int process_input(DESC *d) {
     return 1;
 }
 
+void flush_sockets() {
+    int null = 0;
+    DESC *d, *dnext;
+    DESC_SAFEITER_ALL(d, dnext) {
+        dprintk("%d output evbuffer misalign: %d, totallen: %d, off: %d", 
+                    d->descriptor,
+                    d->sock_buff->output->misalign,
+                    d->sock_buff->output->totallen,
+                    d->sock_buff->output->off);
+        if(d->chokes) {
+            setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null));
+            d->chokes = 0;
+        }   
+        if(EVBUFFER_LENGTH(d->sock_buff->output)) {
+            dprintk("forcing write.");
+            evbuffer_write(d->sock_buff->output, d->descriptor);
+        }
+        fsync(d->descriptor);
+    }
+}
+
 void close_sockets(int emergency, char *message) {
     DESC *d, *dnext;
 
@@ -869,9 +916,16 @@ void close_sockets(int emergency, char *message) {
             WRITE(d->descriptor, message, strlen(message));
             if (shutdown(d->descriptor, 2) < 0)
                 log_perror("NET", "FAIL", NULL, "shutdown");
-            close(d->descriptor);
-            bufferevent_free(d->sock_buff);
+            dprintk("shutting down fd %d", d->descriptor);
+            dprintk("output evbuffer misalign: %d, totallen: %d, off: %d", 
+                    d->sock_buff->output->misalign,
+                    d->sock_buff->output->totallen,
+                    d->sock_buff->output->off);
+            fsync(d->descriptor);
+            event_loop(EVLOOP_ONCE);
             event_del(&d->sock_ev);
+            bufferevent_free(d->sock_buff);
+            close(d->descriptor);
         } else {
             queue_string(d, message);
             queue_write(d, "\r\n", 2);

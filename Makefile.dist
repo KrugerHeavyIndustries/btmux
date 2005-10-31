@@ -1,5 +1,6 @@
 configure: src/autoconf.h.in configure.in
 	autoconf
+	@echo "Please run ./configure with your intended build options."
 
 src/autoconf.h.in: 
 	autoheader

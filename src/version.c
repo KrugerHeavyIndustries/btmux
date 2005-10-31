@@ -66,40 +66,44 @@ int extra;
     free_mbuf(buff);
 }
 
-void init_version(void)
-{
-char mux_version[MBUF_SIZE] = "";
+void init_version(void) {
+    char mux_version[MBUF_SIZE] = "";
 
 #ifdef HUDINFO_SUPPORT
-strcat(mux_version, "+HUD");
+    strcat(mux_version, "+HUD");
 #endif
 
 #define HAG_WAS_HERE
 #ifdef HAG_WAS_HERE
-strcat(mux_version, "+HAG");
+    strcat(mux_version, "+HAG");
 #endif
 
 #ifdef SQL_SUPPORT
-strcat(mux_version, "+SQL");
+    strcat(mux_version, "+SQL");
 #endif
 
 #ifdef ARBITRARY_LOGFILES
-strcat(mux_version, "+ALG");
+    strcat(mux_version, "+ALG");
 #endif
-
+    
     /* Version Identification string for version() and VERSION command */
     /* BtOnline-BTechMUX x.x build #<x> */
+#ifdef DEBUG
+    snprintf(mudstate.version, 128, "%s.%s%s build #%s DEBUG svn revision %s",
+            PACKAGE_STRING, MINOR_REVNUM, mux_version, MUX_BUILD_NUM, SVN_REVISION);
+#else
     snprintf(mudstate.version, 128, "%s.%s build #%s (%s)",
-	PACKAGE_STRING, MINOR_REVNUM, MUX_BUILD_NUM, mux_version);
+            PACKAGE_STRING, MINOR_REVNUM, MUX_BUILD_NUM, mux_version);
+#endif
 
     STARTLOG(LOG_ALWAYS, "INI", "START") {
-	log_text((char *) "Starting: ");
-	log_text(mudstate.version);
-	ENDLOG;
+        log_text((char *) "Starting: ");
+        log_text(mudstate.version);
+        ENDLOG;
     } STARTLOG(LOG_ALWAYS, "INI", "START") {
-	log_text((char *) "Build date: ");
+        log_text((char *) "Build date: ");
 
-	log_text((char *) MUX_BUILD_DATE);
-	ENDLOG;
+        log_text((char *) MUX_BUILD_DATE);
+        ENDLOG;
     }
 }

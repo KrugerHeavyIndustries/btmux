@@ -19,6 +19,7 @@
 #include <signal.h>
 #include "slave.h"
 #include <arpa/inet.h>
+#include <debug.h>
 
 pid_t parent_pid;
 
@@ -218,9 +219,10 @@ char **argv;
     char *p;
     int len;
 
+    dprintk("slave booting.");
     parent_pid = getppid();
     if (parent_pid == 1) {
-	exit(1);
+        exit(1);
     }
     alarm_signal();
     signal(SIGCHLD, child_signal);
@@ -248,6 +250,7 @@ char **argv;
 				   * child 
 				 */
 	    {
+            dprintk("child booted.\n");
 		/*
 		 * we don't want to try this for more than 5
 		 * * * * * minutes 

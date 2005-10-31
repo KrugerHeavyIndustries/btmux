@@ -1,9 +1,8 @@
 #!/usr/bin/make -f
 
 CC             = @CC@
-MAKEDEPEND     = gcc -MM
+MAKEDEPEND     = @CC@ -MM
 CFLAGS         = -g -Wall -Wno-unused
-CPPFLAGS       = @CPPFLAGS@
 
 INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
 LIBS           = @LIBS@
@@ -11,10 +10,18 @@ LDFLAGS		   = @LDFLAGS@
 
 VERSION_FLAGS  = -DMUX_BUILD_DATE="\"`date`\""              \
                  -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
-BUILDFLAGS     = -DMYFIFO -DMEMORY_BASED -DBT_ENABLED
-ALLFLAGS       = $(CFLAGS) $(CPPFLAGS) $(INCLUDES) $(LDFLAGS) $(BUILDFLAGS)
+ifdef DEBUG
+VERSION_FLAGS += -DSVN_REVISION="\"`svnversion .`\""
+CFLAGS 	      += -DDEBUG
+OBJSUFFIX      = .debug
+else
+CFLAGS        += -O3
+OBJSUFFIX      =
+endif
 
-PROTOMAKER     = bin/protomaker.sh
+BUILDFLAGS     = -DMEMORY_BASED -DBT_ENABLED
+
+ALLFLAGS       = $(CFLAGS) $(INCLUDES) $(LDFLAGS) $(BUILDFLAGS)
 
 MISC_OBJECTS   = misc/myfifo.o
 
@@ -172,12 +179,12 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
-TARGETS = src/netmux src/mkindx src/unsplit src/slave
+TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX) src/unsplit$(OBJSUFFIX) src/slave$(OBJSUFFIX)
 
+debug:
+	@DEBUG=1 make all
 
-
-
-all: Makefile $(TARGETS)
+release all: Makefile $(TARGETS)
 
 Makefile: Makefile.dist configure.in Makefile.in
 	make -f Makefile.dist clean
@@ -209,43 +216,37 @@ install: $(TARGETS)
 update:
 	svn update;
 
-netmux src/netmux: $(ALLOBJS) src/version.c src/buildnum.sh
-	$(CC) $(ALLFLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version.o
-	$(CC) $(ALLFLAGS) -o src/netmux $(ALLOBJS) src/version.o $(LIBS)
+netmux$(OBJSUFFIX) src/netmux$(OBJSUFFIX): $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version.c src/buildnum.sh
+	$(CC) $(ALLFLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version$(OBJSUFFIX).o
+	$(CC) $(ALLFLAGS) -o src/netmux$(OBJSUFFIX) $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version$(OBJSUFFIX).o $(LIBS)
 
 clean:
-	rm -f $(ALLOBJS) src/version.o $(TARGETS) .depend
+	rm -f $(ALLOBJS) $(ALLOBJS:.o=.debug.o) src/version.debug.o src/version.o $(TARGETS) $(TARGETS:=.debug) .depend
 
-cleandep:
+cleandep: clean
 	rm -f $(ALLOBJS:%.o=%.d)
 
 distclean: clean cleandep
-	rm -rf .depend Makefile config.status config.log
-	rm -rf src/autoconf*
+	make -f Makefile.dist clean
 
-slave src/slave: src/slave.c
-	$(CC) $(ALLFLAGS) -o src/slave src/slave.c
+slave$(OBJSUFFIX) src/slave$(OBJSUFFIX): src/slave.c
+	$(CC) $(ALLFLAGS) -o src/slave$(OBJSUFFIX) src/slave.c
 
-mkindx src/mkindx: src/mkindx.c
-	$(CC) $(ALLFLAGS) -o src/mkindx src/mkindx.c
+mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
+	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
 
-unsplit src/unsplit: src/unsplit.c
-	$(CC) $(ALLFLAGS) -o src/unsplit src/unsplit.c
+unsplit$(OBJSUFFIX) src/unsplit$(OBJSUFFIX): src/unsplit.c
+	$(CC) $(ALLFLAGS) -o src/unsplit$(OBJSUFFIX) src/unsplit.c
 
 dbconvert src/dbconvert:
 	echo "dbconvert is no longer supported." && exit 1;
 
 $(ALLSRCS:%.c=%.d): %.d: %.c
-	$(CC) -MM -MF $@ -MT $(@:%.d=%.o) $(ALLFLAGS) $<
+	$(CC) -MM -MF $@ -MT $(@:%.d=%$$\(OBJSUFFIX\).o) $(ALLFLAGS) $<
 
-$(ALLOBJS): %.o: %.c
+$(ALLOBJS:.o=$(OBJSUFFIX).o): %$(OBJSUFFIX).o: %.c
 	$(CC) $(ALLFLAGS) -c $< -o $@
 
 -include $(ALLSRCS:%.c=%.d)
-
-# Removed protomaker because it doesn't work and if
-# we used it would wreck lots of things
-#protos: $(PROTOMAKER)
-#	$(PROTOMAKER) "$(INCLUDES)" $(ALLSRCS)
 
 .PHONY: clean protos

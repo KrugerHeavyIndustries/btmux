@@ -22,14 +22,10 @@
 #include <stdlib.h>
 #include "vixie.h"
 #include "tree.h"
-
-
 #ifdef DEBUG
-#define		MSG(msg)	printf("DEBUG: '%s'\n", msg)
-#else
-#define		MSG(msg)
+#undef DEBUG
 #endif
-
+#include "debug.h"
 
 #ifdef __STDC__
 #define __P(x) x
@@ -142,7 +138,7 @@ static void sprout(tree ** ppr, tree_t p_data, int *pi_balance,
     /* are we grounded?  if so, add the node "here" and set the rebalance
      * flag, then exit.
      */ if (!*ppr) {
-	MSG("grounded. adding new node, setting h=true");
+	dprintk("grounded. adding new node, setting h=true");
 	*ppr = (tree *) malloc(sizeof(tree));
 	(*ppr)->tree_l = NULL;
 	(*ppr)->tree_r = NULL;
@@ -159,33 +155,33 @@ static void sprout(tree ** ppr, tree_t p_data, int *pi_balance,
     /* if LESS, prepare to move to the left.
      */
     if (cmp < 0) {
-	MSG("LESS. sprouting left.");
+	dprintk("LESS. sprouting left.");
 	sprout(&(*ppr)->tree_l, p_data, pi_balance, pfi_compare,
 	    pfv_delete);
 	if (*pi_balance) {	/* left branch has grown longer */
-	    MSG("LESS: left branch has grown");
+	    dprintk("LESS: left branch has grown");
 	    switch ((*ppr)->tree_b) {
 	    case 1:		/* right branch WAS longer; balance is ok now */
-		MSG("LESS: case 1.. balnce restored implicitly")
+		dprintk("LESS: case 1.. balnce restored implicitly");
 		    (*ppr)->tree_b = 0;
 		*pi_balance = FALSE;
 		break;
 	    case 0:		/* balance WAS okay; now left branch longer */
-		MSG("LESS: case 0.. balnce bad but still ok");
+		dprintk("LESS: case 0.. balnce bad but still ok");
 		(*ppr)->tree_b = -1;
 		break;
 	    case -1:
 		/* left branch was already too long. rebalnce */
-		MSG("LESS: case -1: rebalancing");
+		dprintk("LESS: case -1: rebalancing");
 		p1 = (*ppr)->tree_l;
 		if (p1->tree_b == -1) {	/* LL */
-		    MSG("LESS: single LL");
+		    dprintk("LESS: single LL");
 		    (*ppr)->tree_l = p1->tree_r;
 		    p1->tree_r = *ppr;
 		    (*ppr)->tree_b = 0;
 		    *ppr = p1;
 		} else {	/* double LR */
-		    MSG("LESS: double LR");
+		    dprintk("LESS: double LR");
 
 		    p2 = p1->tree_r;
 		    p1->tree_r = p2->tree_l;
@@ -216,33 +212,33 @@ static void sprout(tree ** ppr, tree_t p_data, int *pi_balance,
     /* if MORE, prepare to move to the right.
      */
     if (cmp > 0) {
-	MSG("MORE: sprouting to the right");
+	dprintk("MORE: sprouting to the right");
 	sprout(&(*ppr)->tree_r, p_data, pi_balance, pfi_compare,
 	    pfv_delete);
 	if (*pi_balance) {	/* right branch has grown longer */
-	    MSG("MORE: right branch has grown");
+	    dprintk("MORE: right branch has grown");
 
 	    switch ((*ppr)->tree_b) {
 	    case -1:
-		MSG("MORE: balance was off, fixed implicitly");
+		dprintk("MORE: balance was off, fixed implicitly");
 		(*ppr)->tree_b = 0;
 		*pi_balance = FALSE;
 		break;
 	    case 0:
-		MSG("MORE: balance was okay, now off but ok");
+		dprintk("MORE: balance was okay, now off but ok");
 		(*ppr)->tree_b = 1;
 		break;
 	    case 1:
-		MSG("MORE: balance was off, need to rebalance");
+		dprintk("MORE: balance was off, need to rebalance");
 		p1 = (*ppr)->tree_r;
 		if (p1->tree_b == 1) {	/* RR */
-		    MSG("MORE: single RR");
+		    dprintk("MORE: single RR");
 		    (*ppr)->tree_r = p1->tree_l;
 		    p1->tree_l = *ppr;
 		    (*ppr)->tree_b = 0;
 		    *ppr = p1;
 		} else {	/* double RL */
-		    MSG("MORE: double RL");
+		    dprintk("MORE: double RL");
 
 		    p2 = p1->tree_l;
 		    p1->tree_l = p2->tree_r;
@@ -273,7 +269,7 @@ static void sprout(tree ** ppr, tree_t p_data, int *pi_balance,
     /*if */
     /* not less, not more: this is the same key!  replace...
      */
-    MSG("I found it!  Replacing data value");
+    dprintk("I found it!  Replacing data value");
     *pi_balance = FALSE;
     if (pfv_delete)
 	(*pfv_delete) ((*ppr)->tree_p);
@@ -292,39 +288,39 @@ static int delete(tree ** ppr_p, int (*pfi_compare) ( /* ??? */ ),
     ENTER("delete");
 
     if (*ppr_p == NULL) {
-	MSG("key not in tree");
+	dprintk("key not in tree");
 	EXIT(FALSE);
     }
 
     i_comp = (*pfi_compare) ((*ppr_p)->tree_p, p_user);
 
     if (i_comp > 0) {
-	MSG("too high - scan left");
+	dprintk("too high - scan left");
 	i_ret =
 	    delete(&(*ppr_p)->tree_l, pfi_compare, p_user, pfv_uar,
 	    pi_balance, pi_uar_called);
 	if (*pi_balance)
 	    bal_L(ppr_p, pi_balance);
     } else if (i_comp < 0) {
-	MSG("too low - scan right");
+	dprintk("too low - scan right");
 	i_ret =
 	    delete(&(*ppr_p)->tree_r, pfi_compare, p_user, pfv_uar,
 	    pi_balance, pi_uar_called);
 	if (*pi_balance)
 	    bal_R(ppr_p, pi_balance);
     } else {
-	MSG("equal");
+	dprintk("equal");
 	pr_q = *ppr_p;
 	if (pr_q->tree_r == NULL) {
-	    MSG("right subtree null");
+	    dprintk("right subtree null");
 	    *ppr_p = pr_q->tree_l;
 	    *pi_balance = TRUE;
 	} else if (pr_q->tree_l == NULL) {
-	    MSG("right subtree non-null, left subtree null");
+	    dprintk("right subtree non-null, left subtree null");
 	    *ppr_p = pr_q->tree_r;
 	    *pi_balance = TRUE;
 	} else {
-	    MSG("neither subtree null");
+	    dprintk("neither subtree null");
 	    del(&pr_q->tree_l, pi_balance, &pr_q, pfv_uar, pi_uar_called);
 	    if (*pi_balance)
 		bal_L(ppr_p, pi_balance);
@@ -367,39 +363,39 @@ static void bal_L(tree ** ppr_p, int *pi_balance)
     int b1, b2;
 
     ENTER("bal_L");
-    MSG("left branch has shrunk");
+    dprintk("left branch has shrunk");
 
     switch ((*ppr_p)->tree_b) {
     case -1:
-	MSG("was imbalanced, fixed implicitly");
+	dprintk("was imbalanced, fixed implicitly");
 	(*ppr_p)->tree_b = 0;
 	break;
     case 0:
-	MSG("was okay, is now one off");
+	dprintk("was okay, is now one off");
 	(*ppr_p)->tree_b = 1;
 	*pi_balance = FALSE;
 	break;
     case 1:
-	MSG("was already off, this is too much");
+	dprintk("was already off, this is too much");
 	p1 = (*ppr_p)->tree_r;
 	b1 = p1->tree_b;
 	if (b1 >= 0) {
-	    MSG("single RR");
+	    dprintk("single RR");
 	    (*ppr_p)->tree_r = p1->tree_l;
 	    p1->tree_l = *ppr_p;
 	    if (b1 == 0) {
-		MSG("b1 == 0");
+		dprintk("b1 == 0");
 		(*ppr_p)->tree_b = 1;
 		p1->tree_b = -1;
 		*pi_balance = FALSE;
 	    } else {
-		MSG("b1 != 0");
+		dprintk("b1 != 0");
 		(*ppr_p)->tree_b = 0;
 		p1->tree_b = 0;
 	    }
 	    *ppr_p = p1;
 	} else {
-	    MSG("double RL");
+	    dprintk("double RL");
 	    p2 = p1->tree_l;
 	    b2 = p2->tree_b;
 	    p1->tree_l = p2->tree_r;
@@ -428,38 +424,38 @@ static void bal_R(tree ** ppr_p, int *pi_balance)
     int b1, b2;
 
     ENTER("bal_R");
-    MSG("right branch has shrunk");
+    dprintk("right branch has shrunk");
     switch ((*ppr_p)->tree_b) {
     case 1:
-	MSG("was imbalanced, fixed implicitly");
+	dprintk("was imbalanced, fixed implicitly");
 	(*ppr_p)->tree_b = 0;
 	break;
     case 0:
-	MSG("was okay, is now one off");
+	dprintk("was okay, is now one off");
 	(*ppr_p)->tree_b = -1;
 	*pi_balance = FALSE;
 	break;
     case -1:
-	MSG("was already off, this is too much");
+	dprintk("was already off, this is too much");
 	p1 = (*ppr_p)->tree_l;
 	b1 = p1->tree_b;
 	if (b1 <= 0) {
-	    MSG("single LL");
+	    dprintk("single LL");
 	    (*ppr_p)->tree_l = p1->tree_r;
 	    p1->tree_r = *ppr_p;
 	    if (b1 == 0) {
-		MSG("b1 == 0");
+		dprintk("b1 == 0");
 		(*ppr_p)->tree_b = -1;
 		p1->tree_b = 1;
 		*pi_balance = FALSE;
 	    } else {
-		MSG("b1 != 0");
+		dprintk("b1 != 0");
 		(*ppr_p)->tree_b = 0;
 		p1->tree_b = 0;
 	    }
 	    *ppr_p = p1;
 	} else {
-	    MSG("double LR");
+	    dprintk("double LR");
 	    p2 = p1->tree_r;
 	    b2 = p2->tree_b;
 	    p1->tree_r = p2->tree_l;

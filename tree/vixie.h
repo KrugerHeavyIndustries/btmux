@@ -22,7 +22,7 @@ only existence / nonexistence matters.
 
 						/*--- debugging stuff ---*/
 #define	MAXPROC	256
-#ifdef DEBUG
+#if 0
 #define	ENTER(proc) do { \
 			APC_PROCS[I_PROC] = proc; \
 			printf("ENTER(%d:%s.%s)\n", \

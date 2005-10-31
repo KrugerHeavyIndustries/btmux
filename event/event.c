@@ -65,6 +65,7 @@
 
 #include "muxevent.h"
 #include "create.h"
+#include "debug.h"
 
 int muxevent_tick = 0;
 
@@ -200,7 +201,7 @@ int muxevent_last_type() {
 /* Initialize the events */
 
 void muxevent_initialize() {
-    debug("muxevent_initialize\n");
+    dprintk("muxevent initializing");
 }
 
 /* Event removal functions */

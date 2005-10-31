@@ -162,7 +162,6 @@ void choke_player(dbref player) {
 
     DESC_ITER_PLAYER(player, d) {
         if(d->chokes == 0) {
-            dprintk("Choking player %d, fd %d", d->player, d->descriptor);
             if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &eins, sizeof(eins))<0) {
                 // XXX: currently we ignore the error, because if its not supported,
                 // then we'd spam the logs; other errors will be caught in the event loop.
@@ -179,12 +178,12 @@ void release_player(dbref player) {
     DESC_ITER_PLAYER(player, d) {
         d->chokes--;
         if(d->chokes == 0) {
-            dprintk("Releasing player %d, fd %d", d->player, d->descriptor);
             if(setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null))<0) {
                 // XXX: current we ignore any error, ebcause if its not supported,
                 // then we'd spam the logs; other errors will be caught in the event loop.
             } 
         }
+        if(d->chokes < 0) d->chokes = 0;
     }
 }
 #else
@@ -361,7 +360,6 @@ void queue_write(DESC *d, char *b, int n) {
 
     bufferevent_write(d->sock_buff, b, n);
     d->output_tot += n;
-    dprintk("queued %d bytes.", n);
     return;
 }
 

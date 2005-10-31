@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifndef assert
 #define assert(x) if(!(x)) do { perror(__FUNCTION__); abort(); } while(0)

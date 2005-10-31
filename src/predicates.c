@@ -1103,14 +1103,13 @@ void do_restart(player, cause, key)
     ResetSpecialObjects();
     raw_broadcast(0, "Game: Restart by %s, please wait.",
             Name(Owner(player)));
+    shutdown_services();
+
     STARTLOG(LOG_ALWAYS, "WIZ", "RSTRT") {
         log_text((char *) "Restart by ");
         log_name(player);
         ENDLOG;
     } dump_database_internal(DUMP_RESTART);
-
-    
-    shutdown_services();
 
     dump_restart_db();
     execl("bin/netmux", "netmux", mudconf.config_file, NULL);

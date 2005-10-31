@@ -89,11 +89,9 @@ typedef char	IBUF[16];
  */
 #define EXTENDED_DEFAULT_PARENTS
 
-#ifdef MYFIFO
 #define CHANNEL_HISTORY
 #define CHANNEL_HISTORY_LEN     20	/* at max 20 last msgs */
 #define COMMAND_HISTORY_LEN     10	/* at max 10 last msgs */
-#endif
 
 
 /* ---------------------------------------------------------------------------

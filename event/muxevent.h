@@ -86,15 +86,6 @@ for (t=a;t->c != b;t=t->c); t->c = b->c; }
                                         b->c=NULL
 
 
-/* The standard debugging macro.. Should be more or less useless
- because this is mostly used in daemon type of programs.  */
-
-#ifdef DEBUG
-#define debug(a...) printf(##a)
-#else
-#define debug(a...)
-#endif
-
 void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
     void *data, void *data2);
 void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *));
