@@ -450,12 +450,15 @@ void PrintEnemyStatus(dbref player, MECH * mymech, MECH * mech,
     float range, int opt)
 {
     MECH *tempMech;
+    int owner = 0;
 
     if (!CheckData(player, mech))
 	return;
+    if (MechCritStatus(mymech) & OBSERVATORIC)
+        owner = 1;
     PrintReport(player, mymech, mech, range);
     if (opt & SHOW_ARMOR)
-	PrintArmorStatus(player, mech, 0);
+	PrintArmorStatus(player, mech, owner);
     if (opt & SHOW_INFO) {
 	if (MechStatus(mech) & TORSO_RIGHT)
 	    notify(player, "Torso is 60 degrees right");
@@ -467,8 +470,12 @@ void PrintEnemyStatus(dbref player, MECH * mymech, MECH * mech,
 			    tempMech)));
 	notify(player, " ");
     }
-    if (opt & SHOW_WEAPONS)
-	PrintEnemyWeaponStatus(mech, player);
+    if (opt & SHOW_WEAPONS) {
+        if (owner)
+            PrintWeaponStatus(mech, player);
+        else
+	    PrintEnemyWeaponStatus(mech, player);
+    }
 }
 
 void mech_bearing(dbref player, void *data, char *buffer)
