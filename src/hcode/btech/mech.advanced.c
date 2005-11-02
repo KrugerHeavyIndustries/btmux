@@ -1060,6 +1060,14 @@ void mech_explode(dbref player, void *data, char *buffer)
     cch(MECH_USUALO);
     argc = mech_parseattributes(buffer, args, 2);
     DOCHECK(argc != 1, "Invalid number of arguments!");
+
+    /* Can't do any of the explosion routine if we're recycling! */
+    for (i = 0; i < NUM_SECTIONS; i++)
+	{
+	if (!SectIsDestroyed(mech, i))
+            DOCHECK(SectHasBusyWeap(mech, i), "You have weapons recycling!");
+            DOCHECK(MechSections(mech)[i].recycle, "You are still recovering from your last attack.");
+	}
     
     if (!strcasecmp(buffer, "stop")) {
 	DOCHECK(!mudconf.btech_explode_stop,

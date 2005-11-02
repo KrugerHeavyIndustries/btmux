@@ -104,6 +104,8 @@ btonline-btechmux 0.6:
 	* RocketLaunchers are now completely implemented. (Greg)
         * VTOLs with ICE set crash/explosion hex ablaze (Power_Shaper)
         * Added btech_vtol_ice_causes_fire for VTOLs with ICE (Power_Shaper)
+        * Explode reactor/ammo requires weapons/section to not be busy 
+          (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
