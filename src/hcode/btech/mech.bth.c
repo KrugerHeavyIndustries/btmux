@@ -226,7 +226,16 @@ int FindNormalBTH(MECH * mech,
 
     if (MechWeapons[weapindx].special & HVYW)
 	BTHADD("HeavyWeapon", 1);
+    if (target && (wAmmoMode & STINGER_MODE)) {
+	if (FlyingT(target) && !Landed(target))
+	    BTHADD("Stinger (Flying)", -3);
+	else if (OODing(target))
+	    BTHADD("Stinger (OOD)", -1);
+	else if (Jumping(target))
+	    BTHADD("Stinger (Jumping)", 0);
+	}
 
+ 
     if (MechWeapons[weapindx].special & ROCKET)
 	BTHADD("Rocket Launcher", 1);
 

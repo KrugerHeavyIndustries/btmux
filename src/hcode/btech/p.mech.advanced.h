@@ -19,6 +19,7 @@ void mech_perecm(dbref player, MECH * mech, char *buffer);
 void mech_pereccm(dbref player, MECH * mech, char *buffer);
 void mech_angelecm(dbref player, MECH * mech, char *buffer);
 void mech_angeleccm(dbref player, MECH * mech, char *buffer);
+void mech_stinger(dbref player, MECH * mech, char *buffer);
 void mech_slite(dbref player, MECH * mech, char *buffer);
 void mech_ams(dbref player, void *data, char *buffer);
 void mech_fliparms(dbref player, void *data, char *buffer);

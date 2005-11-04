@@ -310,6 +310,8 @@ CommandsStruct mechcommands[] = {
 	mech_inferno},
     {0, "LBX <weapnum>", "Sets weapon to and from LBX Mode.", mech_lbx},
     {0, "NARC <weapnum>", "Sets weapon to and from NARC Mode.", mech_narc},
+    {0, "STINGER <weaponum", "Sets weapon to and from Stinger Mode.", 
+        mech_stinger},
     {0, "PRECISION <weapnum>",
 	    "Sets/Unsets the autocannon to fire precision rounds.",
 	mech_precision},

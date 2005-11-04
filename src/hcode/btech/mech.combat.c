@@ -769,6 +769,12 @@ void FireWeapon(MECH * mech,
     MECH *c3Mech = NULL;
     int firstCrit = 0;
     int mode = GetPartFireMode(mech, section, critical);
+    int wAmmoMode = GetPartAmmoMode(mech, section, critical);
+
+
+    DOCHECKMA((wAmmoMode & STINGER_MODE) && ishex, "Stinger missiles cannot shoot hexes!");
+    DOCHECKMA((wAmmoMode & STINGER_MODE) && target && (!FlyingT(target) && !OODing(target) && !Jumping(target) && !Landed(target)),
+	"Stinger missiles can only engage airborne targets!");
 
     /* If its a coolant gun set to heat, set the target
      * to the mech (ie it shoots itself with coolant gun) */

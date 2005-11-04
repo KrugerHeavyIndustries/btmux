@@ -95,6 +95,7 @@ static struct {
     'F', "flechette", AC_FLECHETTE_MODE, TAMMO, -1, RFAC, 0}, {
     'D', "incendiary", AC_INCENDIARY_MODE, TAMMO, -1, RFAC, 0}, {
     'P', "precision", AC_PRECISION_MODE, TAMMO, -1, RFAC, 0}, {
+    'T', "stinger", STINGER_MODE, TMISSILE, -1, IDF, DAR}, {
     0, NULL, 0, 0, 0, 0, 0}
 };
 
@@ -265,6 +266,8 @@ int FindAmmoType(MECH * mech, int loc, int part)
 	return Cargo(base) + SWARM1_LRM_AMMO - LRM_AMMO;
     if (m & INFERNO_MODE)
 	return Cargo(base) + INFERNO_SRM_AMMO - SRM_AMMO;
+    if (m & STINGER_MODE)
+        return Cargo(base) + AMMO_LRM_STINGER - LRM_AMMO;
     return Cargo(base);
 }
 

@@ -73,6 +73,8 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 	return " Incendiary";
     if (mode & AC_PRECISION_MODE)
 	return " Precision";
+    if (mode & STINGER_MODE)
+        return " Stinger";
     return "";
 }
 
@@ -115,7 +117,8 @@ char GetWeaponAmmoModeLetter_Model_Mode(int model, int mode)
 	return 'D';
     if (mode & AC_PRECISION_MODE)
 	return 'P';
-
+    if (mode & STINGER_MODE)
+        return 'T';
     return ' ';
 }
 

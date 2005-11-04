@@ -106,6 +106,8 @@ btonline-btechmux 0.6:
         * Added btech_vtol_ice_causes_fire for VTOLs with ICE (Power_Shaper)
         * Explode reactor/ammo requires weapons/section to not be busy 
           (Power_Shaper)
+        * Added STINGER ammotype and related affects. Ammo code is 'T' 
+          (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
