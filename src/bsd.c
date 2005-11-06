@@ -673,10 +673,10 @@ void shutdownsock(DESC *d, int reason) {
         d->output_tot = 0;
         welcome_user(d);
     } else {
-        bufferevent_free(d->sock_buff);
         event_del(&d->sock_ev);
         shutdown(d->descriptor, 2);
         close(d->descriptor);
+        bufferevent_free(d->sock_buff);
 
         freeqs(d);
         *d->prev = d->next;
@@ -897,7 +897,13 @@ void flush_sockets() {
                     d->sock_buff->output->totallen,
                     d->sock_buff->output->off);
         if(d->chokes) {
+#if TCP_CORK
             setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null));
+#else
+#ifdef TCP_NOPUSH
+            setsockopt(d->descriptor, IPPROTO_TCP, TCP_NOPUSH, &null, sizeof(null));
+#endif
+#endif
             d->chokes = 0;
         }   
         if(EVBUFFER_LENGTH(d->sock_buff->output)) {

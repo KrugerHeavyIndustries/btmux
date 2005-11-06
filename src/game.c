@@ -880,31 +880,29 @@ const char *msg;
     }
 }
 
-void do_shutdown(player, cause, key, message)
-dbref player, cause;
-int key;
-char *message;
-{
+void do_shutdown(dbref player, dbref cause, int key, char *message) {
     FILE * fs;
 
     ResetSpecialObjects();
     if (player != NOTHING) {
-	raw_broadcast(0, "Game: Shutdown by %s", Name(Owner(player)));
-	STARTLOG(LOG_ALWAYS, "WIZ", "SHTDN") {
-	    log_text((char *) "Shutdown by ");
-	    log_name(player);
-	    ENDLOG;
-    }} else {
-	raw_broadcast(0, "Game: Fatal Error: %s", message);
-	STARTLOG(LOG_ALWAYS, "WIZ", "SHTDN") {
-	    log_text((char *) "Fatal error: ");
-	    log_text(message);
-	    ENDLOG;
-    }}
+        raw_broadcast(0, "Game: Shutdown by %s", Name(Owner(player)));
+        STARTLOG(LOG_ALWAYS, "WIZ", "SHTDN") {
+            log_text((char *) "Shutdown by ");
+            log_name(player);
+            ENDLOG;
+        }
+    } else {
+        raw_broadcast(0, "Game: Fatal Error: %s", message);
+        STARTLOG(LOG_ALWAYS, "WIZ", "SHTDN") {
+            log_text((char *) "Fatal error: ");
+            log_text(message);
+            ENDLOG;
+        }
+    }
     STARTLOG(LOG_ALWAYS, "WIZ", "SHTDN") {
-	log_text((char *) "Shutdown status: ");
-	log_text(message);
-	ENDLOG;
+        log_text((char *) "Shutdown status: ");
+        log_text(message);
+        ENDLOG;
     }
 
     fs = fopen(mudconf.status_file, "w");
@@ -919,28 +917,29 @@ char *message;
 
     if (key & SHUTDN_PANIC) {
 
-	/*
-	 * Close down the network interface 
-	 */
+        /*
+         * Close down the network interface 
+         */
 
-	emergency_shutdown();
+        emergency_shutdown();
 
-	/*
-	 * Close the attribute text db and dump the header db 
-	 */
+        /*
+         * Close the attribute text db and dump the header db 
+         */
 
-	pcache_sync();
-	STARTLOG(LOG_ALWAYS, "DMP", "PANIC") {
-	    log_text((char *) "Panic dump: ");
-	    log_text(mudconf.crashdb);
-	    ENDLOG;
-	} dump_database_internal(DUMP_CRASHED);
+        pcache_sync();
+        STARTLOG(LOG_ALWAYS, "DMP", "PANIC") {
+            log_text((char *) "Panic dump: ");
+            log_text(mudconf.crashdb);
+            ENDLOG;
+        } dump_database_internal(DUMP_CRASHED);
 
-	STARTLOG(LOG_ALWAYS, "DMP", "DONE") {
-	    log_text((char *) "Panic dump complete: ");
-	    log_text(mudconf.crashdb);
-	    ENDLOG;
-    }}
+        STARTLOG(LOG_ALWAYS, "DMP", "DONE") {
+            log_text((char *) "Panic dump complete: ");
+            log_text(mudconf.crashdb);
+            ENDLOG;
+        }
+    }
     /*
      * Set up for normal shutdown 
      */

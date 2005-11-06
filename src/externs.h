@@ -110,6 +110,7 @@ extern int list_check(dbref, dbref, char, char *, int);
 extern int html_escape(const char *src, char *dest, char **destp);
 /* From bsd.c */
 void shutdown_services();
+void flush_sockets();
 
 /* From help.c */
 extern int helpindex_read(HASHTAB *, char *);

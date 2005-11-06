@@ -62,6 +62,11 @@ if (MechInfantrySpecials(mech) & (neededspecial)) \
 MechStatus2(mech) &= ~(setstatus); } else { mech_notify(mech,MECHALL, msgon); \
 MechStatus2(mech) |= (setstatus); MechStatus2(mech) &= ~(offstatus); } } else notify(player, donthave)
 
+static void mech_toggle_mode_sub(dbref player, MECH * mech, char *buffer,
+    int nspecisspec, int nspec, int mode, int tFireMode, char *onmsg,
+    char *offmsg, char *cant);
+
+
 /* Toggles ECM on / off */
 void mech_ecm(dbref player, MECH * mech, char *buffer)
 {

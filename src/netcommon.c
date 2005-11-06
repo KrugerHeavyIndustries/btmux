@@ -328,6 +328,7 @@ void raw_broadcast(int inflags, char *template, ...) {
             // process_output(d);
         }
     }
+    flush_sockets();
     free_lbuf(buff);
     va_end(ap);
 }

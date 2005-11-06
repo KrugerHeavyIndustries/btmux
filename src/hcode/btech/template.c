@@ -1443,73 +1443,73 @@ char *part_figure_out_sname(int i)
 
 static int dump_item(FILE * fp, MECH * mech, int x, int y)
 {
-    char crit[10];
+    char crit[32];
     int y1;
     int flaggo = 0;
     int z;
     int wFireModes, wAmmoModes;
 
     if (!GetPartType(mech, x, y))
-	return 1;
+        return 1;
     if (MechType(mech) != CLASS_MECH && InvalidVehicleItem(mech, x, y))
-	return 1;
+        return 1;
     for (y1 = y + 1; y1 < 12; y1++) {
-	if (GetPartType(mech, x, y1) != GetPartType(mech, x, y))
-	    break;
-	if (GetPartData(mech, x, y1) != GetPartData(mech, x, y))
-	    break;
-	if (GetPartFireMode(mech, x, y1) != GetPartFireMode(mech, x, y))
-	    break;
-	if (GetPartAmmoMode(mech, x, y1) != GetPartAmmoMode(mech, x, y))
-	    break;
-	if (mudconf.btech_parts)
-	    if (GetPartBrand(mech, x, y1) != GetPartBrand(mech, x, y))
-		break;
+        if (GetPartType(mech, x, y1) != GetPartType(mech, x, y))
+            break;
+        if (GetPartData(mech, x, y1) != GetPartData(mech, x, y))
+            break;
+        if (GetPartFireMode(mech, x, y1) != GetPartFireMode(mech, x, y))
+            break;
+        if (GetPartAmmoMode(mech, x, y1) != GetPartAmmoMode(mech, x, y))
+            break;
+        if (mudconf.btech_parts)
+            if (GetPartBrand(mech, x, y1) != GetPartBrand(mech, x, y))
+                break;
     }
     y1--;
     if (IsWeapon(GetPartType(mech, x, y))) {
-	/* Nonbeams, or flamers don't have TC */
-	if (!TCAble(GetPartType(mech, x, y)))
-	    flaggo = ON_TC;
-	if (((y1 - y) + 1) > (z =
-		GetWeaponCrits(mech, Weapon2I(GetPartType(mech, x, y)))))
-	    y1 = y + z - 1;
+        /* Nonbeams, or flamers don't have TC */
+        if (!TCAble(GetPartType(mech, x, y)))
+            flaggo = ON_TC;
+        if (((y1 - y) + 1) > (z =
+                    GetWeaponCrits(mech, Weapon2I(GetPartType(mech, x, y)))))
+            y1 = y + z - 1;
     }
     if (y != y1)
-	sprintf(crit, "CRIT_%d-%d", y + 1, y1 + 1);
+        snprintf(crit, 32, "CRIT_%d-%d", y + 1, y1 + 1);
     else
-	sprintf(crit, "CRIT_%d", y + 1);
+        snprintf(crit, 32, "CRIT_%d", y + 1);
 
     wFireModes = GetPartFireMode(mech, x, y);
     wFireModes &= ~flaggo;
     wAmmoModes = GetPartAmmoMode(mech, x, y);
 
     if (IsWeapon(GetPartType(mech, x, y)))
-	fprintf(fp, "    %s		  { %s - %s %s}\n", crit,
-	    get_parts_vlong_name(GetPartType(mech, x, y), 0),
-	    (wFireModes ||
-		wAmmoModes) ? BuildBitString2(crit_fire_modes,
-		crit_ammo_modes, wFireModes, wAmmoModes) : "-",
-	    !mudconf.btech_parts ? "" : tprintf("%d ",
-		GetPartBrand(mech, x, y)));
+        fprintf(fp, "    %s		  { %s - %s %s}\n", crit,
+                get_parts_vlong_name(GetPartType(mech, x, y), 0),
+                (wFireModes ||
+                 wAmmoModes) ? BuildBitString2(crit_fire_modes,
+                     crit_ammo_modes, wFireModes, wAmmoModes) : "-",
+                !mudconf.btech_parts ? "" : tprintf("%d ",
+                    GetPartBrand(mech, x, y)));
     else if (IsAmmo(MechSections(mech)[x].criticals[y].type))
-	fprintf(fp, "    %s		  { %s %d %s - }\n", crit,
-	    get_parts_vlong_name(GetPartType(mech, x, y), 0),
-	    FullAmmo(mech, x, y),
-	    (MechSections(mech)[x].criticals[y].firemode ||
-		MechSections(mech)[x].criticals[y].
-		ammomode) ? BuildBitString2(crit_fire_modes,
-		crit_ammo_modes,
-		MechSections(mech)[x].criticals[y].firemode,
-		MechSections(mech)[x].criticals[y].ammomode) : "-");
+        fprintf(fp, "    %s		  { %s %d %s - }\n", crit,
+                get_parts_vlong_name(GetPartType(mech, x, y), 0),
+                FullAmmo(mech, x, y),
+                (MechSections(mech)[x].criticals[y].firemode ||
+                 MechSections(mech)[x].criticals[y].
+                 ammomode) ? BuildBitString2(crit_fire_modes,
+                     crit_ammo_modes,
+                     MechSections(mech)[x].criticals[y].firemode,
+                     MechSections(mech)[x].criticals[y].ammomode) : "-");
     else if (IsBomb(MechSections(mech)[x].criticals[y].type))
-	fprintf(fp, "    %s		  { %s - - - }\n", crit,
-	    get_parts_vlong_name(GetPartType(mech, x, y), 0));
+        fprintf(fp, "    %s		  { %s - - - }\n", crit,
+                get_parts_vlong_name(GetPartType(mech, x, y), 0));
     else {
-	fprintf(fp, "    %s		  { %s - - %s}\n", crit,
-	    get_parts_vlong_name(GetPartType(mech, x, y), 0),
-	    !mudconf.btech_parts ? "" : tprintf("%d ",
-		GetPartBrand(mech, x, y)));
+        fprintf(fp, "    %s		  { %s - - %s}\n", crit,
+                get_parts_vlong_name(GetPartType(mech, x, y), 0),
+                !mudconf.btech_parts ? "" : tprintf("%d ",
+                    GetPartBrand(mech, x, y)));
     }
     return (y1 - y + 1);
 }
@@ -1521,34 +1521,34 @@ void dump_locations(FILE * fp, MECH * mech, const char *locdesc[])
     char *ch;
 
     for (x = 0; locdesc[x]; x++) {
-	if (!GetSectOInt(mech, x))
-	    continue;
-	strcpy(buf, locdesc[x]);
-	for (ch = buf; *ch; ch++)
-	    if (*ch == ' ')
-		*ch = '_';
-	fprintf(fp, "%s\n", buf);
-	if (GetSectOArmor(mech, x))
-	    fprintf(fp, "  Armor            { %d }\n", GetSectOArmor(mech,
-		    x));
-	if (GetSectOInt(mech, x))
-	    fprintf(fp, "  Internals        { %d }\n", GetSectOInt(mech,
-		    x));
-	if (GetSectORArmor(mech, x))
-	    fprintf(fp, "  Rear             { %d }\n", GetSectORArmor(mech,
-		    x));
+        if (!GetSectOInt(mech, x))
+            continue;
+        strcpy(buf, locdesc[x]);
+        for (ch = buf; *ch; ch++)
+            if (*ch == ' ')
+                *ch = '_';
+        fprintf(fp, "%s\n", buf);
+        if (GetSectOArmor(mech, x))
+            fprintf(fp, "  Armor            { %d }\n", GetSectOArmor(mech,
+                        x));
+        if (GetSectOInt(mech, x))
+            fprintf(fp, "  Internals        { %d }\n", GetSectOInt(mech,
+                        x));
+        if (GetSectORArmor(mech, x))
+            fprintf(fp, "  Rear             { %d }\n", GetSectORArmor(mech,
+                        x));
 #if 0				/* Shouldn't be neccessary to save at all */
-	fprintf(fp, "  Recycle          { %d }\n",
-	    MechSections(mech)[x].recycle);
+        fprintf(fp, "  Recycle          { %d }\n",
+                MechSections(mech)[x].recycle);
 #endif
-	y = MechSections(mech)[x].config;
-	y &= ~CASE_TECH;
-	if (y)
-	    fprintf(fp, "  Config           { %s }\n",
-		BuildBitString(section_configs, y));
-	l = CritsInLoc(mech, x);
-	for (y = 0; y < l;)
-	    y += dump_item(fp, mech, x, y);
+        y = MechSections(mech)[x].config;
+        y &= ~CASE_TECH;
+        if (y)
+            fprintf(fp, "  Config           { %s }\n",
+                    BuildBitString(section_configs, y));
+        l = CritsInLoc(mech, x);
+        for (y = 0; y < l;)
+            y += dump_item(fp, mech, x, y);
     }
 }
 
@@ -1751,10 +1751,10 @@ int save_template(dbref player, MECH * mech, char *reference,
 	    BuildBitString(infantry_specials, inf_x));
 
     if ((locs =
-	    ProperSectionStringFromType(MechType(mech), MechMove(mech)))) {
-	dump_locations(fp, mech, locs);
-	fclose(fp);
-	return 0;
+                ProperSectionStringFromType(MechType(mech), MechMove(mech)))) {
+        dump_locations(fp, mech, locs);
+        fclose(fp);
+        return 0;
     }
     fclose(fp);
     return -1;
