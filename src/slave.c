@@ -39,9 +39,7 @@ long addr;
 /*
  * copy a string, returning pointer to the null terminator of dest 
  */
-char *stpcpy(dest, src)
-char *dest;
-const char *src;
+char *string_append(char *dest, const char *src)
 {
     while ((*dest = *src)) {
 	++dest;
@@ -81,9 +79,9 @@ char *orig_arg;
     }
     hp = gethostbyaddr((char *) &addr, sizeof(addr), AF_INET);
     if (hp && !isdigit(*(hp->h_name))) {
-	p = stpcpy(buf, ip);
+	p = string_append(buf, ip);
 	*p++ = ' ';
-	p = stpcpy(p, hp->h_name);
+	p = string_append(p, hp->h_name);
 	*p++ = '\n';
 	*p++ = '\0';
     } else {
@@ -169,7 +167,7 @@ char *orig_arg;
 	(void) fclose(f);
 	p = (char *) format_inet_addr(buf2, ntohl(sin.sin_addr.s_addr));
 	*p++ = ' ';
-	p = stpcpy(p, result);
+	p = string_append(p, result);
 	*p++ = '\n';
 	*p++ = '\0';
     }
