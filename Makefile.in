@@ -184,6 +184,9 @@ TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX) src/unsplit$(OBJSUFFIX) 
 debug:
 	@DEBUG=1 make all
 
+install-debug:
+	@DEBUG=1 make install
+
 release all: Makefile $(TARGETS)
 
 Makefile: Makefile.dist configure.in Makefile.in
