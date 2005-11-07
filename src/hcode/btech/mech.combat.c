@@ -415,9 +415,10 @@ int FireWeaponNumber(dbref player,
     DOCHECK0(weapnum < 0, "The weapons system chirps: 'Illegal Weapon Number!'");
 
     weaptype = FindWeaponNumberOnMech_Advanced(mech, weapnum, &section, &critical, sight);
-    mode = GetPartFireMode(mech, section, critical);
     
     DOCHECK0(weaptype == -1, "The weapons system chirps: 'Illegal Weapon Number!'");
+
+    mode = GetPartFireMode(mech, section, critical);
 
     if (!sight) {
 
