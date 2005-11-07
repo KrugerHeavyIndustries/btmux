@@ -1080,10 +1080,12 @@ char *crit_ammo_modes[] = {
     "iNarc_Explosive",
     "iNarc_Haywire",
     "iNarc_ECM", 
+    "iNarc_Nemesis",
     "AP", 
     "Flechette", 
     "Incendiary", 
     "Precision",
+    "Stinger",
     NULL
 };
 
