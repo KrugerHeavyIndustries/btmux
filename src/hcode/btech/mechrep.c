@@ -1132,6 +1132,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 		MechSections(mech)[index].criticals[subsect].ammomode |=
 		    AC_PRECISION_MODE;
 		break;
+            case 'T':
+                MechSections(mech)[index].criticals[subsect].ammomode |=
+                    STINGER_MODE;
+                break;
 	    }
 
 	MechSections(mech)[index].criticals[subsect].data =
