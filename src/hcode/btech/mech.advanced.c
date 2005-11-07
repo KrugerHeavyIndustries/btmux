@@ -140,17 +140,6 @@ void mech_angeleccm(dbref player, MECH * mech, char *buffer)
     MarkForLOSUpdate(mech);
 }
 
-void mech_stinger(dbref player, void *data, char *buffer)
-{
-    MECH *mech = (MECH *) data;
-
-    cch(MECH_USUALMO);
-    mech_toggle_mode_sub(player, mech, buffer, 2, 0, STINGER_MODE, 0,
-        "Weapon %d has been set to fire stinger missiles.",
-        "Weapon %d has been set to fire normal missiles",
-        "That weapon cannot be set STINGER!");
-}
-
 void MechSliteChangeEvent(MUXEVENT * e)
 {
     MECH *mech = (MECH *) e->data;
@@ -530,6 +519,17 @@ void mech_rapidfire(dbref player, void *data, char *buffer)
 	"Weapon %d has been set to Rapid Fire mode",
 	"Weapon %d has been set to normal fire mode",
 	"That weapon cannot be set to do rapid fire!");
+}
+
+void mech_stinger(dbref player, void *data, char *buffer)
+{
+    MECH *mech = (MECH *) data;
+
+    cch(MECH_USUALMO);
+    mech_toggle_mode_sub(player, mech, buffer, 2, 0, STINGER_MODE, 0,
+        "Weapon %d has been set to fire stinger missiles.",
+        "Weapon %d has been set to fire normal missiles",
+        "That weapon cannot be set STINGER!");
 }
 
 void mech_rac(dbref player, void *data, char *buffer)
