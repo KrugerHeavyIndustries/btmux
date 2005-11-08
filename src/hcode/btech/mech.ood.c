@@ -68,6 +68,7 @@ void mech_ood_event(MUXEVENT * e)
 	return;
     }
     /* Time to hit da ground */
+    mech_notify(mech, MECHALL, "Your unit touches down!");
 
     if (Fallen(mech))
         mof = -10;
