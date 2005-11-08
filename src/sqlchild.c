@@ -24,17 +24,6 @@
 #include <errno.h>
 
 #include "externs.h"
-#if 0
-#include "db.h"
-#include "file_c.h"
-#include "interface.h"
-#include "flags.h"
-#include "powers.h"
-#include "alloc.h"
-#include "command.h"
-#include "slave.h"
-#include "attrs.h"
-#endif 
 
 /* TODO:
  * String sanitization.
@@ -66,6 +55,7 @@ dbi_conn conn=NULL;
 int dbi_initialized = 0;
 int dbi_state;
 int query_counter = 0;
+int recent = 0;
 
 struct query_state_t {
     dbref thing;
@@ -81,7 +71,7 @@ struct query_state_t {
     char slot;
     int fd;
     int pid;
-} *running = NULL, *pending = NULL, *pending_tail = NULL;
+} *running = NULL, *pending = NULL, *pending_tail = NULL, *recent_head = NULL, *recent_tail = NULL;
 
 struct timeval query_timeout = { 10, 0 };
 
@@ -222,13 +212,23 @@ static void sqlchild_kill_query(struct query_state_t *aqt) {
 
 void sqlchild_list(dbref thing) {
     int nactive = 0, npending = 0;
+    int nrecent = recent;
     struct query_state_t *aqt;
+    notify(thing, "/--------------------------- Recent Queries");
+    if(recent) {
+        aqt = recent_tail;
+        while(aqt) {
+            notify_printf(thing, "%08d #%8d %40s", aqt->serial, aqt->thing, aqt->query);
+            aqt = aqt->next;
+        }
+    }
     notify(thing, "/--------------------------- Running Queries");
     if(running) {
         aqt = running;
         while(aqt) {
             notify_printf(thing, "%08d #%8d %40s", aqt->serial, aqt->thing, aqt->query);
             aqt = aqt->next;
+            nactive++;
         }
     } else {
         notify(thing, "- No active queries.");
@@ -239,6 +239,7 @@ void sqlchild_list(dbref thing) {
         while(aqt) {
             notify_printf(thing, "%08d #%-8d %40s", aqt->serial, aqt->thing, aqt->query);
             aqt = aqt->next;
+            npending++;
         }
     } else {
         notify(thing, "- No pending queries.");
@@ -309,6 +310,7 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
 fail:
     argv[2] = aqt->preserve;
     did_it(GOD, aqt->thing, 0, NULL, 0, NULL, aqt->attr, argv, 4);
+
 hardfail:
     iter = running;
     if(running == aqt) {
@@ -322,12 +324,27 @@ hardfail:
             iter = iter->next;
         }
     }
-    if(aqt->preserve) free(aqt->preserve);
-    if(aqt->query) free(aqt->query);
-    if(aqt->rdelim) free(aqt->rdelim);
-    if(aqt->cdelim) free(aqt->cdelim);
     close(aqt->fd);
-    free(aqt);
+    if(recent_tail == NULL) {
+        aqt->next = recent_head;
+        recent_head = aqt;
+        recent_tail = aqt;
+        recent++;
+    } else {
+        recent_head->next = aqt;
+        recent_head = aqt;
+        recent++;
+    }
+    if(recent > 20) {
+        aqt = recent_tail;
+        recent_tail = aqt->next;
+        if(aqt->preserve) free(aqt->preserve);
+        if(aqt->query) free(aqt->query);
+        if(aqt->rdelim) free(aqt->rdelim);
+        if(aqt->cdelim) free(aqt->cdelim);
+        free(aqt);
+        recent--;
+    }
     running_queries--;
     sqlchild_check_queue();
     return;
@@ -450,17 +467,18 @@ static void sqlchild_make_connection(char db_slot) {
         dbi_state = DBIS_EFAIL;
         return;
     }
-    if(dbi_conn_set_option(conn, "username", db_username)) {
+    if(db_username && dbi_conn_set_option(conn, "username", db_username)) {
         dprintk("failed to set username");
         dbi_state = DBIS_EFAIL;
         return;
     }
-    if(dbi_conn_set_option(conn, "password", db_password)) {
+    if(db_password && dbi_conn_set_option(conn, "password", db_password)) {
         dprintk("failed to set password");
         dbi_state = DBIS_EFAIL;
         return;
     } 
-    if(dbi_conn_set_option(conn, "dbname", db_database)) {
+    dbi_conn_set_option(conn, "sqlite_dbdir", ".");
+    if(db_database && dbi_conn_set_option(conn, "dbname", db_database)) {
         dprintk("failed to set database");
         dbi_state = DBIS_EFAIL;
         return;
