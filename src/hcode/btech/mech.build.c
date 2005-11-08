@@ -147,36 +147,36 @@ int ArmorSectionFromString(char type, char mtype, char *string)
     char *c, *d;
 
     if (!string[0])
-	return -1;
+        return -1;
     locs = ProperSectionStringFromType(type, mtype);
     if (!locs)
-	return -1;
+        return -1;
     /* Then, methodically compare against each other until a suitable
        match is found */
     for (i = 0; locs[i]; i++)
-	if (!strcasecmp(string, locs[i]))
-	    return i;
+        if (!strcasecmp(string, locs[i]))
+            return i;
     for (i = 0; locs[i]; i++) {
-	if (toupper(string[0]) != locs[i][0])
-	    continue;
-	for (j = (i + 1); locs[j]; j++)
-	    if (toupper(string[0]) == locs[j][0])
-		break;
-	if (!locs[j])
-	    return i;
-	/* Ok, comparison between these two, then */
-	c = strstr(locs[i], " ");
-	d = strstr(locs[j], " ");
-	if (!c && !string[1] && d)
-	    return i;
-	if (!c && !d)
-	    return -1;
-	if (!string[1])
-	    continue;
-	if (c && toupper(string[1]) == *(++c))
-	    return i;
-	if (d && toupper(string[1]) == *(++d))
-	    return j;
+        if (toupper(string[0]) != locs[i][0])
+            continue;
+        for (j = (i + 1); locs[j]; j++)
+            if (toupper(string[0]) == locs[j][0])
+                break;
+        if (!locs[j])
+            return i;
+        /* Ok, comparison between these two, then */
+        c = strstr(locs[i], " ");
+        d = strstr(locs[j], " ");
+        if (!c && !string[1] && d)
+            return i;
+        if (!c && !d)
+            return -1;
+        if (!string[1])
+            continue;
+        if (c && toupper(string[1]) == *(++c))
+            return i;
+        if (d && toupper(string[1]) == *(++d))
+            return j;
     }
     return -1;
 }

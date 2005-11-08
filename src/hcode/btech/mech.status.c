@@ -860,17 +860,34 @@ char *critstatus_func(MECH * mech, char *arg)
 char *armorstatus_func(MECH * mech, char *arg)
 {
     static char buffer[MBUF_SIZE];
+    char **locs;
     int index;
+    int iter, curarm, curint, totarm, totint;
 
     if (!arg || !*arg)
 	return "#-1 INVALID SECTION";
 
+    if(strcmp(arg, "all")==0) {
+        locs = ProperSectionStringFromType(MechType(mech), MechMove(mech));
+        curarm = totarm = curint = totint = 0;
+        fprintf(stderr, "MechSections: %p\n", MechSections(mech));
+        for(iter = 0; locs[iter]; iter++) {
+            curarm += GetSectArmor(mech, iter) + GetSectRArmor(mech, iter);
+            totarm += GetSectOArmor(mech, iter) + GetSectORArmor(mech, iter);
+            curint += GetSectInt(mech, iter);
+            totint += GetSectOInt(mech, iter);
+        }
+        buffer[0] = '\0';
+        snprintf(buffer, MBUF_SIZE, "%d/%d|%d/%d", curarm, totarm, curint, totint);
+        return buffer;
+    }
+        
     index = ArmorSectionFromString(MechType(mech), MechMove(mech), arg);
     if (index == -1 || !GetSectOInt(mech, index))
 	return "#-1 INVALID SECTION";
 
     buffer[0] = '\0';
-    sprintf(buffer, "%d/%d|%d/%d|%d/%d", GetSectArmor(mech, index),
+    snprintf(buffer, MBUF_SIZE, "%d/%d|%d/%d|%d/%d", GetSectArmor(mech, index),
 	GetSectOArmor(mech, index), GetSectInt(mech, index),
 	GetSectOInt(mech, index), GetSectRArmor(mech, index),
 	GetSectORArmor(mech, index));
