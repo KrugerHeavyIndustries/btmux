@@ -165,6 +165,7 @@ struct confdata {
     int afterscen_dbref;
     int indent_desc;		/* Newlines before and after descs? */
     int name_spaces;		/* allow player names to have spaces */
+    int show_unfindable_who;    /* should players set UNFINDABLE appear on who? */
     int site_chars;		/* where to truncate site name */
     int fork_dump;		/* perform dump in a forked process */
     int fork_vfork;		/* use vfork to fork */

@@ -1575,6 +1575,8 @@ CONF conftable[] = {
         cf_int,		CA_GOD,		&mudconf.searchcost,		0},
     {(char *)"see_owned_dark",
         cf_bool,	CA_GOD,		&mudconf.see_own_dark,		0},
+    {(char *)"show_unfindable_who", 
+        cf_bool,    CA_GOD,     &mudconf.show_unfindable_who,   1},
 #if 0
     {(char *)"signal_action",
         cf_option,	CA_DISABLED,	&mudconf.sig_action,

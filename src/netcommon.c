@@ -1099,7 +1099,7 @@ static void dump_users(DESC *e, char *match, int key) {
     count = 0;
     rcount = 0;
     DESC_ITER_CONN(d) {
-        if (!Hidden(d->player) ||
+        if ((!mudconf.show_unfindable_who || !Hidden(d->player)) ||
                 (e->flags & DS_CONNECTED) & Wizard_Who(e->player)) {
             count++;
             if (match && !(string_prefix(Name(d->player), match)))
