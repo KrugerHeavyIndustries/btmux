@@ -5,4 +5,4 @@
 
 #include "copyright.h"
 
-#define MINOR_REVNUM		"0-rc1"		/* Minor revision and/or rc number */
+#define MINOR_REVNUM		"0-rc2"		/* Minor revision and/or rc number */
