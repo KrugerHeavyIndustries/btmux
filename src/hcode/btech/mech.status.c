@@ -870,7 +870,6 @@ char *armorstatus_func(MECH * mech, char *arg)
     if(strcmp(arg, "all")==0) {
         locs = ProperSectionStringFromType(MechType(mech), MechMove(mech));
         curarm = totarm = curint = totint = 0;
-        fprintf(stderr, "MechSections: %p\n", MechSections(mech));
         for(iter = 0; locs[iter]; iter++) {
             curarm += GetSectArmor(mech, iter) + GetSectRArmor(mech, iter);
             totarm += GetSectOArmor(mech, iter) + GetSectORArmor(mech, iter);
