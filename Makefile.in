@@ -3,7 +3,7 @@
 CC             = @CC@
 MAKEDEPEND     = @CC@ -MM
 CFLAGS         = -g -Wall -Wno-unused
-
+CPPFLAGS	   = @CPPFLAGS@	
 INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
 LIBS           = @LIBS@
 LDFLAGS		   = @LDFLAGS@
@@ -21,7 +21,7 @@ endif
 
 BUILDFLAGS     = -DMEMORY_BASED -DBT_ENABLED
 
-ALLFLAGS       = $(CFLAGS) $(INCLUDES) $(LDFLAGS) $(BUILDFLAGS)
+ALLFLAGS       = $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(LDFLAGS) $(BUILDFLAGS)
 
 MISC_OBJECTS   = misc/myfifo.o
 
