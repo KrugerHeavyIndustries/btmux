@@ -456,9 +456,15 @@ static void sqlchild_make_connection(char db_slot) {
         dbi_state = DBIS_EFAIL;
         return;
     }
-    if(strncmp(db_type, "mysql", 128)==0 && strlen(mudconf.sqlDB_mysql_socket) > 0 &&
-        dbi_conn_set_option(conn, "mysql_unix_socket", mudconf.sqlDB_mysql_socket)) {
+    if(strncmp(db_type, "mysql", 128)==0 && strnlen(mudconf.sqlDB_mysql_socket, 128) > 0 &&
+            dbi_conn_set_option(conn, "mysql_unix_socket", mudconf.sqlDB_mysql_socket)) {
         dprintk("failed to set mysql_unix_socket");
+        dbi_state = DBIS_EFAIL;
+        return;
+    }
+    if(strncmp(db_type, "sqlite", 128)==0 && strnlen(mudconf.sqlDB_sqlite_dbdir, 128) > 0 &&
+            dbi_conn_set_option(conn, "sqlite_dbdir", mudconf.sqlDB_sqlite_dbdir)) {
+        dprintk("failed to set sqlite dir.");
         dbi_state = DBIS_EFAIL;
         return;
     }
@@ -477,7 +483,6 @@ static void sqlchild_make_connection(char db_slot) {
         dbi_state = DBIS_EFAIL;
         return;
     } 
-    dbi_conn_set_option(conn, "sqlite_dbdir", ".");
     if(db_database && dbi_conn_set_option(conn, "dbname", db_database)) {
         dprintk("failed to set database");
         dbi_state = DBIS_EFAIL;

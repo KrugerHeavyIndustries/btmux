@@ -1689,6 +1689,8 @@ CONF conftable[] = {
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_dbname_E,  128},
     {(char *)"sqlDB_mysql_socket",
         cf_string,      CA_GOD,         (int *)mudconf.sqlDB_mysql_socket, 128},
+    {(char *)"sqlDB_sqlite_dbdir",
+        cf_string,      CA_GOD,         (int *)mudconf.sqlDB_sqlite_dbdir, 128},
     {(char *)"sqlDB_max_queries",
         cf_int,      CA_GOD,         &mudconf.sqlDB_max_queries,  0},
 #endif
