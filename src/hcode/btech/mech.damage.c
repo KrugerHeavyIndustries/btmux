@@ -581,7 +581,7 @@ void DamageMech(MECH * wounded,
 
     /* Always a good policy :-> */
     if (damage > 0 && intDamage <= 0 && !was_transfer && !Fallen(wounded)) {
-	if (mudconf.btech_newstagger) {
+	if (mudconf.btech_newstagger && MechType(wounded) == CLASS_MECH) {
 	    StaggerDamage(wounded) += damage;
 	} else {
 	    MechTurnDamage(wounded) += damage;
