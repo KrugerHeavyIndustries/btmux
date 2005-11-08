@@ -89,11 +89,11 @@ void init_version(void) {
     /* Version Identification string for version() and VERSION command */
     /* BtOnline-BTechMUX x.x build #<x> */
 #ifdef DEBUG
-    snprintf(mudstate.version, 128, "%s.%s%s build #%s DEBUG svn revision %s",
-            PACKAGE_STRING, MINOR_REVNUM, mux_version, MUX_BUILD_NUM, SVN_REVISION);
+    snprintf(mudstate.version, 128, "%s.%s%s '%s'  build #%s DEBUG svn revision %s",
+            PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM, SVN_REVISION);
 #else
-    snprintf(mudstate.version, 128, "%s.%s build #%s (%s)",
-            PACKAGE_STRING, MINOR_REVNUM, MUX_BUILD_NUM, mux_version);
+    snprintf(mudstate.version, 128, "%s.%s%s '%s' build #%s RELEASE",
+            PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM);
 #endif
 
     STARTLOG(LOG_ALWAYS, "INI", "START") {
