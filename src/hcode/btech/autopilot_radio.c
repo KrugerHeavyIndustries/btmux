@@ -61,6 +61,7 @@ struct {
 } auto_cmds[] = {
     {
     "auto", "autogun", 1, 0, auto_radio_command_autogun}, {
+    "auto", "autogun", 2, 0, auto_radio_command_autogun}, {
 #if 0
     "att", "attackleg", 1, 0, auto_attackleg}, {
     "chanf", "chanfreq", 2, 0, auto_setchanfreq}, {
@@ -139,6 +140,8 @@ struct {
 void auto_radio_command_autogun(AUTO *autopilot, MECH *mech, 
         char **args, int argc, char *mesg) {
 
+    int threshold;
+
     if (strcmp(args[1], "on") == 0) {
 
         autopilot->target = -1;
@@ -176,7 +179,33 @@ void auto_radio_command_autogun(AUTO *autopilot, MECH *mech,
         snprintf(mesg, LBUF_SIZE, "powering down weapons");
         return;
 
+    } else if (strcmp(args[1], "threshold") == 0) {
+
+        /* Ok user specifying a threshold" */
+        /* Right now we're only going to allow them to specify a value
+         * between 0 and 100 - basicly how much percentage wise over
+         * the current value does the new target have to be to switch */
+        if (argc == 3 && !Readnum(threshold, args[2]) &&
+                threshold >= 0 && threshold <= 100) {
+
+            /* Set the new threshold value */
+            autopilot->target_threshold = threshold;
+
+            snprintf(mesg, LBUF_SIZE, "new threshold set to %d%%",
+                    threshold);
+            return;
+
+        } else {
+
+            /* Bad value for threshold */
+            snprintf(mesg, LBUF_SIZE, "!Invalid value used with threshold: "
+                    "Usage autogun threshold [0-100]");
+            return;
+
+        }
+
     }
+
     snprintf(mesg, LBUF_SIZE, "!Invalid Input for autogun:"
             " use 'on' or 'off'");
 

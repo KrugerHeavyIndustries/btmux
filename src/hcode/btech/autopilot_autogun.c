@@ -682,10 +682,8 @@ void auto_update_profile_event(MUXEVENT *muxevent) {
  * Function to calculate a score based on a target and
  * its range to the AI
  */
-int auto_calc_target_score(AUTO *autopilot, MECH *target) {
+int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) {
 
-    MECH *mech = (MECH *) autopilot->mymech;
-    
     int target_score;
     float range;
     float target_speed;
@@ -759,6 +757,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *target) {
     /* Speed score calc */
     /* Min speed is 0, max is 150 (can go higher tho), and score goes from
      * 300 to 0 (can go negative if the target is faster then 150) */
+    /*! \todo {Check to see what happens when the target is backing} */
     speed_score = - 2 * target_speed + 300;
 
     /* Get the BV of the target */
@@ -825,6 +824,9 @@ int auto_calc_target_score(AUTO *autopilot, MECH *target) {
 
     if (Uncon(target))
         status_score += 100;
+
+    if (MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
+        status_score += 500;
 
     /* Add the individual scores and return the value */
     target_score = range_score + speed_score + bv_score +
@@ -990,7 +992,8 @@ void auto_gun_event(MUXEVENT *muxevent) {
     }
 
     /* Do we need to look for a new target */
-    if (autopilot->target == -1 || (autopilot->target_update_tick >= 30 &&
+    if (autopilot->target == -1 || 
+            (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
             !AssignedTarget(autopilot))) {
 
         /* Ok looking for a new target */
@@ -1015,7 +1018,7 @@ void auto_gun_event(MUXEVENT *muxevent) {
                     continue;
 
                 /* Score the target */
-                target_score = auto_calc_target_score(autopilot, target);
+                target_score = auto_calc_target_score(autopilot, mech, target, map);
 
                 /* Log It */
                 print_autogun_log(autopilot, "Autogun - Possible target #%d with score %d",
@@ -1080,7 +1083,7 @@ void auto_gun_event(MUXEVENT *muxevent) {
             if (muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
                 muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
             }
-            AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, 10, 0);
+            AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_IDLE_TICK, 0);
 
             /* Log It */
             print_autogun_log(autopilot, "Autogun in idle mode");
@@ -1890,8 +1893,11 @@ void auto_gun_event(MUXEVENT *muxevent) {
                 if (GetSectInt(mech, TURRET) && temp_weapon_node->section == TURRET) {
 
                     /* Rotate Turret and nail the guy */
-                    if (MechTurretFacing(mech) != FindBearing(MechFX(mech),
-                        MechFY(mech), MechFX(target), MechFY(target))) {
+                    if (!(MechTankCritStatus(mech) & TURRET_JAMMED) &&
+                            !(MechTankCritStatus(mech) & TURRET_LOCKED) &&
+                            (AcceptableDegree(MechTurretFacing(mech) + MechFacing(mech)) !=
+                             FindBearing(MechFX(mech), MechFY(mech), MechFX(target), 
+                                 MechFY(target)))) {
 
                         snprintf(buffer, LBUF_SIZE, "%d", FindBearing(MechFX(mech), 
                                     MechFY(mech), MechFX(target), MechFY(target)));
@@ -2045,6 +2051,8 @@ void auto_gun_event(MUXEVENT *muxevent) {
                         (!Destroyed(target) && (target->mapindex == mech->mapindex))) {
 
                     /* Generate the target hex */
+                    /*! \todo {Instead of calcing this all the time, possibly add
+                     * variables to the AI to remember it} */
                     FindXY(MechFX(target), MechFY(target), MechFacing(target) + autopilot->ofsx,
                             autopilot->ofsy, &fx, &fy);
 

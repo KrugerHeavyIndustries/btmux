@@ -57,6 +57,7 @@
 #define AUTO_GUN_MAX_TARGETS            100     /* Don't really use this one */
 #define AUTO_GUN_MAX_RANGE              30      /* Max range to look for targets */
 #define AUTO_GUN_UPDATE_TICK            30      /* When to look for a new target */
+#define AUTO_GUN_IDLE_TICK              10      /* How often to call autogun when in idle mode */
 #define AUTO_GUN_PHYSICAL_RANGE_MIN     3.0     /* Min range at which to physically attack 
                                                    other targets if our main target is beyond
                                                    this distance */
