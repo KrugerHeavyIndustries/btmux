@@ -352,7 +352,7 @@ struct weapon_struct MechWeapons[] = {
 
     /* Missing TL2 and TL3 Weapons */
     {"IS.VehicleFlamer", VRT_IS_VFLAMER, TAMMO, 3, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
-    20, 100, -1, CHEAT, 4},
+    20, 50, -1, CHEAT, 4},
     {"IS.VehicleHeavyFlamer", VRT_IS_VHFLAMER, TAMMO, 5, 4, 0, 2, 4, 6, 0, -1, -1,
     -1, 1, 20, 100, -1, CHEAT, 20},
     {"CL.ERMicroLaser", VRT_CL_ERMICRO, TBEAM, 1, 3, 0, 1, 2, 4, 0, 1,
