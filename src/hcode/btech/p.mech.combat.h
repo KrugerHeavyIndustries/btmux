@@ -43,6 +43,6 @@ int determineDamageFromHit(MECH * mech, int wSection, int wCritSlot,
     int modifier, int isTempCalc);
 void HitTarget(MECH * mech, int weapindx, int wSection, int wCritSlot,
     MECH * hitMech, int hitX, int hitY, int LOS, int type, int modifier,
-    int reallyhit, int bth, int wGattlingShots, int tIsSwarmAttack);
+    int reallyhit, int bth, int wGattlingShots, int tIsSwarmAttack, int player_roll);
 
 #endif				/* _P_MECH_COMBAT_H */

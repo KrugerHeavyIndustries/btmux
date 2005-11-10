@@ -16,9 +16,9 @@ int MissileHitIndex(MECH * mech, MECH * hitMech, int weapindx,
     int wSection, int wCritSlot);
 int MissileHitTarget(MECH * mech, int weapindx, int wSection,
     int wCritSlot, MECH * hitMech, int hitX, int hitY, int LOS,
-    int baseToHit, int roll, int incoming, int tIsSwarmAttack);
+    int baseToHit, int roll, int incoming, int tIsSwarmAttack, int player_roll);
 void SwarmHitTarget(MECH * mech, int weapindx, int wSection, int wCritSlot,
     MECH * hitMech, int LOS, int baseToHit, int roll, int incoming,
-    int fof, int tIsSwarmAttack);
+    int fof, int tIsSwarmAttack, int player_roll);
 
-#endif				/* _P_MECH_COMBAT_MISSILE_H */
+#endif              /* _P_MECH_COMBAT_MISSILE_H */

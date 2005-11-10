@@ -108,6 +108,9 @@ btonline-btechmux 0.6:
           (Power_Shaper)
         * Added STINGER ammotype and related affects. Ammo code is 'T' 
           (Power_Shaper)
+        * Formatting cleanup in mech.combat.c (Alex Gowan)
+        * Glancing Blows code (Alex Gowan)
+        * New Config Value -- btech_glancing_blows (Alex Gowan)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
