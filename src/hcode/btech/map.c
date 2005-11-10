@@ -522,6 +522,7 @@ void map_update(dbref obj, void *data)
     if (!(muxevent_tick % 60)) {
 	oldl = map->maplight;
 	oldv = map->mapvis;
+        SendDebug("Running Map Update for %d",obj);
 	if (!(tmps = silly_atr_get(obj, A_MAPVIS)) ||
 	    sscanf(tmps, "%d %d %d %d %d %[^\n]", &ma, &ml, &wind,
 	        &wspeed, &cloudbase, changemsg) < 4) {

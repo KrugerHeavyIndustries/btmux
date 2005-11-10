@@ -394,6 +394,15 @@ int FireWeaponNumber(dbref player,
     int wcDeadLegs = 0;
     char location[20];
     int mode;
+    int i;
+
+    if (MechType(mech) == CLASS_BSUIT) {
+        for (i = 0; i < NUM_BSUIT_MEMBERS; i++) {
+	DOCHECK1(!SectIsDestroyed(mech, i) &&
+	    MechSections(mech)[i].recycle,
+	    tprintf("Suit %d is still recovering from attack.", i + 1));
+        }
+    }
 
     /* If they fire their weapon while hidden, they should appear */
     if (!sight && (MechCritStatus(mech) & HIDDEN)) {

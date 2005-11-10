@@ -170,6 +170,8 @@ btonline-btechmux 0.6:
 	  (Greg)
 	* Units with movetype NONE no longer fall from the sky when shutdown
 	  while floating above ground level in the air. (Greg)
+        * Bsuits could fire immediately after swarming/dismounting 
+          (Power_Shaper)
 
 btonline-btechmux 0.4:
 	- Changes
