@@ -431,6 +431,8 @@ void SwarmHitTarget(MECH * mech,
             for (j = 0; j < present_target; j++)
             if (tempMech == star[j])
                 break;
+            if (MechStatus(tempMech) & COMBAT_SAFE)
+                continue;
             if (j != present_target)
             continue;
             if (!hitMech ||

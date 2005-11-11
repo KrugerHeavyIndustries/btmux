@@ -111,6 +111,10 @@ btonline-btechmux 0.6:
         * Formatting cleanup in mech.combat.c (Alex Gowan)
         * Glancing Blows code (Alex Gowan)
         * New Config Value -- btech_glancing_blows (Alex Gowan)
+        * Only Friendly Bsuits (mounted) prevent torso mounted weapons 
+          from firing (Power_Shaper)
+        * COMBAT_SAFE units are no longer SWARM/SWARM1 targets 
+          (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
