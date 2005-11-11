@@ -496,7 +496,7 @@ int FireWeaponNumber(dbref player,
         }
     }
 
-    if (CountSwarmers(mech) > 0) {
+    if (IsMechMounted(mech)) {
         DOCHECK0(((section == CTORSO) || (section == RTORSO) ||
                     (section == LTORSO)),
                 "You can not fire torso mounted weapons while you have battlesuits on you!");
