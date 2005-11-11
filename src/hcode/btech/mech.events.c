@@ -507,6 +507,10 @@ void mech_movemode_event(MUXEVENT *e)
             MechStatus2(mech) |= SPRINTING;
             mech_notify(mech, MECHALL, "You shimmy side to side as you get more speed from your movement mode.");
             MechLOSBroadcast(mech, "breaks out into a full blown stride as it sprints over the terrain!");
+            if(MechSpeed(mech) < 0) {
+                mech_notify(mech, MECHALL, "You stop your backward momemtum while sprinting and come to a stop!");
+                MechDesiredSpeed(mech) = 0;
+            }
         } else if (i & MODE_DODGE) {
             if (MechFullNoRecycle(mech, CHECK_PHYS) > 0) {
                 mech_notify(mech, MECHALL, "You cannot enter DODGE mode due to physical useage.");

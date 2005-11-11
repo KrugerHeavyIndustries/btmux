@@ -117,6 +117,7 @@ btonline-btechmux 0.6:
           (Power_Shaper)
         * Fixed display of ECM/Protected/Disturbed to be slightly more 
           accurate (Power_Shaper)
+        * Going reverse while sprinting is now prohibited (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

@@ -848,6 +848,9 @@ void mech_speed(dbref player, void *data, char *buffer)
     DOCHECK((newspeed < 0) && (MechCarrying(mech) > 0) &&
             (!(MechSpecials(mech) & SALVAGE_TECH)),
             "You can not backup while towing!");
+  
+    DOCHECK((newspeed < 0) && Sprinting(mech),
+        "You can not backup while sprinting!");
 
     if (IsRunning(newspeed, maxspeed)) {
         DOCHECK(Dumping(mech), "You can not run while dumping ammo!");
