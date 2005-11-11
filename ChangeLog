@@ -115,6 +115,8 @@ btonline-btechmux 0.6:
           from firing (Power_Shaper)
         * COMBAT_SAFE units are no longer SWARM/SWARM1 targets 
           (Power_Shaper)
+        * Fixed display of ECM/Protected/Disturbed to be slightly more 
+          accurate (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

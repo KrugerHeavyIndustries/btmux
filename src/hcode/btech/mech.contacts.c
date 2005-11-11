@@ -252,9 +252,10 @@ char getStatusChar(MECH * mech, MECH * mechTarget, int wCharNum)
 	    checkAllSections(mechTarget, INARC_HOMING_ATTACHED)) ?
 	    (MechTeam(mechTarget) == MechTeam(mech) ? 'n' : 'N') :
 #ifdef ECM_ON_CONTACTS
-	    AnyECCMActive(mech) ? 'P' : 
-	    AnyECMActive(mech) ? 'E' : AnyECMProtected(mech) ? 'p' : 
-	    AnyECMDisturbed(mech) ? 'e' :
+	    AnyECCMActive(mechTarget) ? 'P' : 
+	    AnyECMActive(mechTarget) ? 'E' : 
+            AnyECMProtected(mechTarget) ? 'p' : 
+	    AnyECMDisturbed(mechTarget) ? 'e' :
 #endif
 	    ' ';
 	break;
