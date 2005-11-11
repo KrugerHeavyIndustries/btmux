@@ -1503,10 +1503,10 @@ void HitTarget(MECH * mech,
                 wAmmoMode, type, modifier, 0);
 
         /* Check if it is a glancing blow, if so, make an emit */
-        if(mudconf.btech_use_glancing_blows && (player_roll == (bth - 1))){
-          MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
-          mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
-          wWeapDamage = (int) (wWeapDamage+1) / 2 ;
+        if (mudconf.btech_use_glancing_blows && (player_roll == (bth - 1)) && hitMech) {
+            MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
+            mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
+            wWeapDamage = (int) (wWeapDamage + 1) / 2;
         }
 
 
