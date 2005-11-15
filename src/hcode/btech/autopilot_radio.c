@@ -719,10 +719,10 @@ void auto_radio_command_sensor(AUTO *autopilot, MECH *mech,
 
     char buf[SBUF_SIZE];
 
-    if (argc) {
+    /* Make sure no sensor event running */
+    muxevent_remove_type_data(EVENT_AUTO_SENSOR, autopilot);
 
-        /* Make sure no sensor event running */
-        muxevent_remove_type_data(EVENT_AUTO_SENSOR, autopilot);
+    if ((argc - 1) == 2) {
 
         /* Set the user specified sensors */
         snprintf(buf, SBUF_SIZE, "%s %s", args[1], args[2]);

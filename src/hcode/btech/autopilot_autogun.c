@@ -696,11 +696,11 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
 
     int section;
 
-    int damage_score;
-    int bv_score;
-    int speed_score;
-    int range_score;
-    int status_score;
+    float damage_score;
+    float bv_score;
+    float speed_score;
+    float range_score;
+    float status_score;
 
     /* Default Values */
     target_score = 0;
@@ -710,11 +710,11 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
     total_internal_current = 0;
     total_internal_original = 0;
 
-    damage_score = 0;
-    bv_score = 0;
-    speed_score = 0;
-    range_score = 0;
-    status_score = 0;
+    damage_score = 0.0;
+    bv_score = 0.0;
+    speed_score = 0.0;
+    range_score = 0.0;
+    status_score = 0.0;
 
     /* Here is the meat of the function, basicly I gave each
      * part a maximum score, then fit a linear plot from the
@@ -749,7 +749,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
 
     /* Range score calc */
     /* Min range is 0, max range is 30, so score goes from 300 to 0 */
-    range_score = - 10 * range + 300;
+    range_score = - 10.0 * range + 300.0;
 
     /* Get the Speed of the target */
     target_speed = MechSpeed(target);
@@ -758,7 +758,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
     /* Min speed is 0, max is 150 (can go higher tho), and score goes from
      * 300 to 0 (can go negative if the target is faster then 150) */
     /*! \todo {Check to see what happens when the target is backing} */
-    speed_score = - 2 * target_speed + 300;
+    speed_score = - 2.0 * target_speed + 300.0;
 
     /* Get the BV of the target */
     target_bv = MechBV(target);
@@ -766,7 +766,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
     /* BV score calc */
     /* Min bv is 0, max is around 2000 (can go higher), and score goes from
      * 0 to 100 (can go higher but we don't care much about bv) */
-    bv_score = 0.05 * target_bv;
+    bv_score = 0.05 * ((float) target_bv);
 
     /* Get the damage of the target by cycling through all the sections
      * and adding up the current and original values */
@@ -799,38 +799,38 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map) 
     } else if (total_internal_original == 0) {
 
         /* Just use armor part of the calc */
-        damage_score = - 3 * ((float) total_armor_current / 
-                (float) total_armor_original) + 300;
+        damage_score = - 3.0 * ((float) total_armor_current / 
+                (float) total_armor_original) + 300.0;
 
     } else if (total_armor_original == 0) {
     
         /* Just use internal part of the calc */
-        damage_score = - 2 * ((float) total_internal_current /
-                (float) total_internal_original) + 200;
+        damage_score = - 2.0 * ((float) total_internal_current /
+                (float) total_internal_original) + 200.0;
 
     } else {
 
         /* Use the whole thing */
-        damage_score = - 3 * ((float) total_armor_current /
-                (float) total_armor_original) + 300
-                - 2 * ((float) total_internal_current /
-                (float) total_internal_original) + 200;
+        damage_score = - 3.0 * ((float) total_armor_current /
+                (float) total_armor_original) + 300.0
+                - 2.0 * ((float) total_internal_current /
+                (float) total_internal_original) + 200.0;
 
     }
 
     /* Get the 'state' ie: shutdown, prone whatever */
     if (!Started(target))
-        status_score += 100;
+        status_score += 100.0;
 
     if (Uncon(target))
-        status_score += 100;
+        status_score += 100.0;
 
     if (MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
-        status_score += 500;
+        status_score += 500.0;
 
     /* Add the individual scores and return the value */
-    target_score = range_score + speed_score + bv_score +
-        damage_score + status_score;
+    target_score = (int) floor(range_score + speed_score + bv_score +
+        damage_score + status_score);
 
     return target_score;
 

@@ -873,6 +873,9 @@ void auto_newautopilot(dbref key, void **data, int selector) {
 
         case SPECIAL_FREE:
 
+            /* Make sure the AI is stopped */
+            auto_stop_pilot(autopilot);
+
             /* Go through the list and remove any leftover nodes */
             while (dllist_size(autopilot->commands)) {
 
