@@ -107,6 +107,7 @@
 #define MechCommLast(a)	 	(a)->rd.commconv_last
 #define MechComputer(a)	 	(a)->ud.computer
 #define MechCritStatus(a)	(a)->rd.critstatus
+#define MechCritStatus2(a)      (a)->rd.critstatus2
 #define MechDFATarget(a)	(a)->rd.dfatarget
 #define MechDesiredAngle(a) 	(a)->rd.angle
 #define MechDesiredFacing(a) 	(a)->rd.desiredfacing

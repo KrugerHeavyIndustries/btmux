@@ -233,7 +233,17 @@ void NormalizeAllActuatorCrits(MECH * objMech)
      */
 
     /* If we have a gyro crit, add 3 to our skill */
-    if (MechCritStatus(objMech) & GYRO_DAMAGED)
+    /* Hardened gyro is a +2 on first hit */
+    if(MechSpecials2(objMech) & HDGYRO_TECH) {
+        if(MechCritStatus2(objMech) & HDGYRO_DAMAGED) {
+            if(MechCritStatus(objMech) & GYRO_DAMAGED) {
+                MechPilotSkillBase(objMech) += 3;
+            } else {
+                MechPilotSkillBase(objMech) += 2;
+            }
+        }
+    
+    } else if (MechCritStatus(objMech) & GYRO_DAMAGED)
 	MechPilotSkillBase(objMech) += 3;
 
     /*
@@ -1961,13 +1971,25 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	    }
 	    break;
 	case GYRO:
+                /* Hardened Gyro's take one extra hit before damaged */
+                if (MechSpecials2(wounded) & HDGYRO_TECH)
+                    if (!MechCritStatus2(wounded) & HDGYRO_DAMAGED) {
+                        sprintf(msgbuf, "emits a screech as it's "
+                            "hardened gyro buckles slightly!");
+                        MechLOSBroadcast(wounded, msgbuf);
+                        MechCritStatus2(wounded) |= HDGYRO_DAMAGED;
+                        mech_notify(wounded, MECHALL, 
+                            "Your hardened Gyro takes a hit!");
+                        break;
+                    }
+
 	    if (!(MechCritStatus(wounded) & GYRO_DAMAGED)) {
 		if (!Destroyed(wounded) && Started(wounded)) {
 		    sprintf(msgbuf, "emits a loud screech as "
 			"it's gyro buckles under the impact!");
 		    MechLOSBroadcast(wounded, msgbuf);
 		}
-		MechCritStatus(wounded) |= GYRO_DAMAGED;
+      		MechCritStatus(wounded) |= GYRO_DAMAGED;
 		MechPilotSkillBase(wounded) += 3;
 		mech_notify(wounded, MECHALL,
 		    "Your Gyro has been damaged!");

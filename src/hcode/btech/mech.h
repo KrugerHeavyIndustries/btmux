@@ -865,6 +865,7 @@ typedef struct {
     char scharge_value;		/* Supercharger roll .. updated up/down as needed */
     int staggerDamage;		/* Damage for Stagger MkII */
     int lastStaggerNotify;	/* The level that we were last notified of a stagger */
+    int critstatus2;            /* Starting to fill up. More CritStatus */
     int unused[5];		/* Space for future expansion */
 } mech_rd;
 
@@ -1051,8 +1052,7 @@ struct repair_data {
 #define CHEAD			0x08000000	/* Altered heading */
 #define OBSERVATORIC		0x10000000
 #define BLOODHOUND_DESTROYED	0x20000000
-#define MECH_STUNNED    0x40000000  /* Is the mech stunned (Exile stun code) */
-/* unused			0x80000000 */
+#define MECH_STUNNED            0x40000000  /* Is the mech stunned (Exile stun code) */
 
 /* tankcritstatus element */
 #define TURRET_LOCKED		0x01
@@ -1095,6 +1095,9 @@ struct repair_data {
 #define HARDA_TECH		0x20000000
 #define CRITPROOF_TECH		0x40000000
 /* 0x80000000 can not be used. */
+
+/*critstatus2 element */
+#define HDGYRO_DAMAGED          0x01        /* HDGYRO is damaged */
 
 /* specials2 element: used to tell quickly what type of tech the mech has */
 #define STEALTH_ARMOR_TECH      0x01        /* Stealth armor */

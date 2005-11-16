@@ -451,6 +451,7 @@ static GMV xcode_data[] = {
     MeEntry("status", MechStatus, TYPE_BV),
     MeEntry("status2", MechStatus2, TYPE_BV),
     MeEntry("critstatus", MechCritStatus, TYPE_BV),
+    MeEntry("critstatus2", MechCritStatus2, TYPE_BV),
     MeEntry("tankcritstatus", MechTankCritStatus, TYPE_BV),
     MeEntry("target", MechTarget, TYPE_DBREF),
     MeEntry("team", MechTeam, TYPE_INT),
