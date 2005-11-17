@@ -52,7 +52,7 @@ int FindNormalBTH(MECH * mech,
     int tInWater = 0;
     int tTargetInWater = 0;
     int wTargMoveMod = 0;
-
+    int rangecheck = 0;
 #ifdef BTH_DEBUG
     char buf[LBUF_SIZE];
     int i;
@@ -103,7 +103,10 @@ int FindNormalBTH(MECH * mech,
 	BTHADD("InWater", 1);
 
     /* Add in the rangebase.. */
-    if (EGunRange(weapindx) < range) {
+    rangecheck = EGunRange(weapindx);
+    if (wAmmoMode & STINGER_MODE)
+        rangecheck += 7;
+    if (rangecheck < range) {
 	BTHADD("OutOfRange", 1000);
     } else {
 	if ((MechWeapons[weapindx].min >= range) &&
