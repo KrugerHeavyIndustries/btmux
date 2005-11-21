@@ -584,6 +584,11 @@ int FireWeaponNumber(dbref player,
                         MapCoordToRealCoord(mapx, mapy, &enemyX, &enemyY);
                     }
 
+                    /* don't check LOS for missile weapons firing at hex number */
+                    range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
+                            enemyY, enemyZ);
+                    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
+
                     /* Check for Spotter here */
                     if (mudconf.btech_idf_requires_spotter && 
                     (MechWeapons[weaptype].special & IDF) && (MechSpotter(mech) == -1))
@@ -591,10 +596,6 @@ int FireWeaponNumber(dbref player,
                                 "That hex target is not in your direct line of sight"
                                 " and you do not have a spotter set!!");
 
-                    /* don't check LOS for missile weapons firing at hex number */
-                    range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX,
-                            enemyY, enemyZ);
-                    LOS = LOS_NB(mech, tempMech, mapx, mapy, range);
 
                     if (!(IsArtillery(weaptype) || (MechWeapons[weaptype].special & IDF))) {
                         DOCHECK0(!LOS,
