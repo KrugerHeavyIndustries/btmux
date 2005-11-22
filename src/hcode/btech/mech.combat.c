@@ -1526,7 +1526,9 @@ void HitTarget(MECH * mech,
             if ((IsFlamer(weapindx)) && (wFireMode & HEAT_MODE)) {
 
                 /* Check if it is a glancing blow, if so, make an emit */
-                if(mudconf.btech_use_glancing_blows && (player_roll == (bth - 1))){
+                if(mudconf.btech_use_glancing_blows && 
+                        (player_roll == (bth - 1)) &&
+                        hitMech) {
                   MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
                   mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
                   wBaseWeapDamage = (int) (wBaseWeapDamage+1) / 2 ;
@@ -1548,7 +1550,9 @@ void HitTarget(MECH * mech,
                 if (wFireMode & HEAT_MODE) {
 
                     /* Check if it is a glancing blow, if so, make an emit */
-                    if(mudconf.btech_use_glancing_blows && (player_roll == (bth - 1))){
+                    if(mudconf.btech_use_glancing_blows && 
+                            (player_roll == (bth - 1)) &&
+                            hitMech) {
                       MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
                       mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
                       wBaseWeapDamage = (int) (wBaseWeapDamage+1) / 2 ;
@@ -1561,7 +1565,9 @@ void HitTarget(MECH * mech,
                 } else {
 
                     /* Check if it is a glancing blow, if so, make an emit */
-                    if(mudconf.btech_use_glancing_blows && (player_roll == (bth - 1))){
+                    if(mudconf.btech_use_glancing_blows && 
+                            (player_roll == (bth - 1)) &&
+                            hitMech) {
                       MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
                       mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
                       wBaseWeapDamage = (int) (wBaseWeapDamage+1) / 2 ;

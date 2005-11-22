@@ -353,7 +353,9 @@ int MissileHitTarget(MECH * mech,
         hex_hit(mech, hitX, hitY, weapindx, GetPartAmmoMode(mech,
             wSection, wCritSlot), 0, 0);
     } else {
-      if(mudconf.btech_use_glancing_blows && (player_roll == (baseToHit-1))){
+      if(mudconf.btech_use_glancing_blows && 
+              (player_roll == (baseToHit-1)) &&
+              hitMech) {
         MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
         mech_notify(hitMech, MECHALL, "You are nicked by a glancing blow!");
         Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,
