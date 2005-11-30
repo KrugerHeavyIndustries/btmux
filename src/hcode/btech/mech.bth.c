@@ -163,7 +163,7 @@ int FindNormalBTH(MECH * mech,
 	    tmp_range = (int) (range + 0.95);
 
 	if (tmp_range >
-		(SectionUnderwater(mech, section) ? GunWaterRange(weapindx) : GunRange(weapindx)))
+		(SectionUnderwater(mech, section) ? MechWeapons[weapindx].medrange_water : MechWeapons[weapindx].medrange))
 	    BTHADD("TargComp/Long", MechTargComp(mech) == TARGCOMP_LONG ? -1 : 1); 
 	else if (tmp_range <=
 		(SectionUnderwater(mech, section) ? MechWeapons[weapindx].medrange_water : MechWeapons[weapindx].medrange))
