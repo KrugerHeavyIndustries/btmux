@@ -141,6 +141,7 @@ void cf_init(void)
     mudconf.btech_xp_vrtmod = 0;
     mudconf.btech_limitedrepairs = 0;
     mudconf.btech_newcharge = 0;
+    mudconf.btech_tl3_charge = 0;
     mudconf.btech_xploss = 666;
     mudconf.btech_critlevel = 100;
     mudconf.btech_tankshield = 0;
@@ -1184,6 +1185,8 @@ CONF conftable[] = {
         cf_int,        CA_GOD,         &mudconf.btech_tankfriendly,    0},
     {(char *)"btech_newcharge",
         cf_int,         CA_GOD,         &mudconf.btech_newcharge,      0},
+    {(char *)"btech_tl3_charge",
+        cf_int,         CA_GOD,         &mudconf.btech_tl3_charge,     0},
     {(char *)"btech_newterrain",
         cf_int,		CA_GOD,		&mudconf.btech_newterrain,	0},
     {(char *)"btech_xploss",
