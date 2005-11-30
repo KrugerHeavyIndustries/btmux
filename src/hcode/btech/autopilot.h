@@ -28,7 +28,7 @@
 #define AUTOPILOT_AUTOGUN           1       /* Is autogun enabled, ie: shoot what AI wants to */
 #define AUTOPILOT_GUNZOMBIE         2
 #define AUTOPILOT_PILZOMBIE         4
-#define AUTOPILOT_ROAMMODE          8       /* Are we roaming around */
+#define AUTOPILOT_ROAM              8       /* Are we roaming around */
 #define AUTOPILOT_LSENS             16      /* Should change sensors or user set them */
 #define AUTOPILOT_CHASETARG         32      /* Should chase the target */
 #define AUTOPILOT_WAS_CHASE_ON      64      /* Was chasetarg on, for use with movement stuff */
@@ -45,7 +45,7 @@
 #define AUTOPILOT_PURSUE_TICK           3
 
 #define AUTOPILOT_FOLLOW_TICK           3
-#define AUTOPILOT_FOLLOW_UPDATE_TICK    30  /* When should we update the target hex */
+#define AUTOPILOT_FOLLOW_UPDATE_TICK    10  /* When should we update the target hex */
 
 #define AUTOPILOT_CHASETARG_UPDATE_TICK 30  /* When should we update chasetarg */
 
@@ -66,17 +66,6 @@
 #define AUTO_PROFILE_MAX_SIZE           30      /* Size of the profile array */
 #define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
 
-/* Chase Target stuff for use with auto_set_chasetarget_mode */
-#define AUTO_CHASETARGET_ON             1       /* Turns it on and resets the values */
-#define AUTO_CHASETARGET_OFF            2       /* Turns it off */
-#define AUTO_CHASETARGET_REMEMBER       3       /* Turns it on only if the AI remembers it 
-                                                   being on */
-#define AUTO_CHASETARGET_SAVE           4       /* Turns it off and saves that it was on */
-
-/*! \todo {Not sure what these are look into it} */
-#define AUTO_GOET               15
-#define AUTO_GOTT               240
-
 #define Gunning(a)              ((a)->flags & AUTOPILOT_AUTOGUN)
 #define StartGun(a)             (a)->flags |= AUTOPILOT_AUTOGUN
 #define StopGun(a)              (a)->flags &= ~(AUTOPILOT_AUTOGUN|AUTOPILOT_GUNZOMBIE)
@@ -85,6 +74,13 @@
 #define AssignedTarget(a)       ((a)->flags & AUTOPILOT_ASSIGNED_TARGET)
 #define AssignTarget(a)         (a)->flags |= AUTOPILOT_ASSIGNED_TARGET
 #define UnassignTarget(a)       (a)->flags &= ~(AUTOPILOT_ASSIGNED_TARGET)
+
+/* Chase Target stuff for use with auto_set_chasetarget_mode */
+#define AUTO_CHASETARGET_ON             1       /* Turns it on and resets the values */
+#define AUTO_CHASETARGET_OFF            2       /* Turns it off */
+#define AUTO_CHASETARGET_REMEMBER       3       /* Turns it on only if the AI remembers it 
+                                                   being on */
+#define AUTO_CHASETARGET_SAVE           4       /* Turns it off and saves that it was on */
 
 /* Is chasetarget mode on */
 #define ChasingTarget(a)        ((a)->flags & AUTOPILOT_CHASETARG)
@@ -96,6 +92,27 @@
 #define RememberChasingTarget(a)    (a)->flags |= AUTOPILOT_WAS_CHASE_ON
 #define ForgetChasingTarget(a)      (a)->flags &= ~(AUTOPILOT_WAS_CHASE_ON) 
 
+/* Roam Stuff */
+/* Types of ROAMing */
+#define AUTO_ROAM_MAP                   1       /* Roaming the whole map */
+#define AUTO_ROAM_SPOT                  2       /* Roaming a single area */
+
+/* Tick values etc.. */
+#define AUTO_ROAM_TICK                  3       /* How often to update */
+#define AUTO_ROAM_NEW_HEX_TICK          100     /* How often to pick a new hex */
+#define AUTO_ROAM_MAX_RADIUS            30      /* Max distance a person can make AI
+                                                   radius roam */
+#define AUTO_ROAM_MAX_MAP_DISTANCE      50      /* Max distance an AI will try to roam
+                                                   at a given time if its roaming the
+                                                   whole map */
+#define AUTO_ROAM_MAX_ITERATIONS        3       /* Max number of times AI will look
+                                                   for a new roam hex */
+
+/*! \todo {Not sure what these are look into it} */
+#define AUTO_GOET               15
+#define AUTO_GOTT               240
+
+/* Various AI Macros */
 #define UpdateAutoSensor(a, flag) \
     AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag)
 
@@ -261,6 +278,15 @@ typedef struct {
     /* Max Range of AI's mech's weapons */
     int mech_max_range;
 
+    /* Roam Stuff */
+    unsigned char roam_type;            /* What type of ROAM are we doing */
+    int roam_update_tick;               /* When should we update roam info */
+    short roam_target_hex_x;            /* Target Hex - X Coord */
+    short roam_target_hex_y;            /* Target Hex - Y Coord */
+    short roam_anchor_hex_x;            /* Anchor Hex - X Coord */
+    short roam_anchor_hex_y;            /* Anchor Hex - Y Coord */
+    short roam_anchor_distance;         /* Distance (in hexes) allowed from anchor hex */
+
     /*! \todo {Figure out if we need to keep these variables} */
     /* Temporary AI-pathfind data variables */
     int ahead_ok;
@@ -328,7 +354,7 @@ enum {
     GOAL_GOTO,          /* Uses the new Astar system */ 
     GOAL_LEAVEBASE,
     GOAL_OLDGOTO,       /* Old implementation of goto */
-    GOAL_ROAM,          /* unimplemented */
+    GOAL_ROAM,          /* New version using Astar */
     GOAL_WAIT,          /* unimplemented */
 
     COMMAND_ATTACKLEG,  /* unimplemented */
@@ -388,6 +414,8 @@ void auto_dumbgoto_event(MUXEVENT *muxevent);
 void auto_dumbfollow_event(MUXEVENT *muxevent);
 void auto_leave_event(MUXEVENT *muxevent);
 void auto_enter_event(MUXEVENT *muxevent);
+void auto_command_roam(AUTO *autopilot, MECH *mech);
+void auto_astar_roam_event(MUXEVENT *muxevent);
 
 /* From autopilot_ai.c */
 int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y);

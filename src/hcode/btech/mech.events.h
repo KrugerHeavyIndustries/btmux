@@ -68,21 +68,22 @@
 #define EVENT_AUTOENTERBASE     29  /* Autopilot enterbase */
 #define EVENT_AUTO_REPLY        30  /* Autopilot reply */
 #define EVENT_AUTO_PROFILE      31  /* Autopilot profile change */
-#define LAST_AUTO_EVENT         EVENT_AUTO_PROFILE 
+#define EVENT_AUTO_ROAM         32
+#define LAST_AUTO_EVENT         EVENT_AUTO_ROAM 
 
-#define EVENT_MRECOVERY     32  /* mech */
-#define EVENT_BLINDREC      33
-#define EVENT_BURN          34
-#define EVENT_SS            35
+#define EVENT_MRECOVERY     33  /* mech */
+#define EVENT_BLINDREC      34
+#define EVENT_BURN          35
+#define EVENT_SS            36
 
-#define EVENT_HIDE          36
-#define EVENT_OOD           37
-#define EVENT_NUKEMECH      38
-#define EVENT_LATERAL       39
-#define EVENT_EXPLODE       40
-#define EVENT_DIG           41
+#define EVENT_HIDE          37
+#define EVENT_OOD           38
+#define EVENT_NUKEMECH      39
+#define EVENT_LATERAL       40
+#define EVENT_EXPLODE       41
+#define EVENT_DIG           42
 
-#define FIRST_TECH_EVENT    42
+#define FIRST_TECH_EVENT    43
 
 #define EVENT_REPAIR_REPL       FIRST_TECH_EVENT        /* mech,<part> */
 #define EVENT_REPAIR_REPLG      (FIRST_TECH_EVENT+1)    /* mech,<part> */
@@ -167,38 +168,38 @@ static char *muxevent_names[] = {
     "AutoEnter",        /* 29 */
     "AutoReply",        /* 30 */
     "AutoProfile",      /* 31 */
-    "MRec",             /* 32 */
+    "AutoRoam",         /* 32 */
+    "MRec",             /* 33 */
 
-    "BlindR",           /* 33 */
-    "Burn",             /* 34 */
-    "SixthS",           /* 35 */
+    "BlindR",           /* 34 */
+    "Burn",             /* 35 */
+    "SixthS",           /* 36 */
 
-    "Hidin",            /* 36 */
-    "OOD",              /* 37 */
+    "Hidin",            /* 37 */
+    "OOD",              /* 38 */
 
-    "Misc",             /* 38 */
-    "Lateral",          /* 39 */
-    "SelfExp",          /* 40 */
+    "Misc",             /* 39 */
+    "Lateral",          /* 40 */
+    "SelfExp",          /* 41 */
 
-    "DigIn",            /* 41 */
+    "DigIn",            /* 42 */
 
-    "TRepl",            /* 42 */
-    "TReplG",           /* 43 */
-    "TReat",            /* 44 */
-    "TRelo",            /* 45 */
-    "TFix",             /* 46 */
-    "TFixI",            /* 47 */
-    "TScrL",            /* 48 */
-    "TScrP",            /* 49 */
-    "TScrG",            /* 50 */
-    "TRepaG",           /* 51 */
-    "TRepaP",           /* 52 */
-    "TMoB",             /* 53 */
-    "TUMoB",            /* 54 */
-    "TRese",            /* 55 */
-    "TRepSuit",         /* 56 */
-    "TRepNHCrit",       /* 57 */
-    "58",
+    "TRepl",            /* 43 */
+    "TReplG",           /* 44 */
+    "TReat",            /* 45 */
+    "TRelo",            /* 46 */
+    "TFix",             /* 47 */
+    "TFixI",            /* 48 */
+    "TScrL",            /* 49 */
+    "TScrP",            /* 50 */
+    "TScrG",            /* 51 */
+    "TRepaG",           /* 52 */
+    "TRepaP",           /* 53 */
+    "TMoB",             /* 54 */
+    "TUMoB",            /* 55 */
+    "TRese",            /* 56 */
+    "TRepSuit",         /* 57 */
+    "TRepNHCrit",       /* 58 */
     "59",
     "StandF",           /* 60 */
     "SliteC",           /* 61 */
