@@ -99,7 +99,8 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
     if (argc == 2) {
 	MechElev(mech) = GetElev(mech_map, MechX(mech), MechY(mech));
 	MechZ(mech) = MechElev(mech) - 1;
-	DropSetElevation(mech, 0);
+	MechFZ(mech) = ZSCALE * MechZ(mech);
+        DropSetElevation(mech, 0);
 	z = MechZ(mech);
 	if (!Landed(mech) && FlyingT(mech))
 	    MechStatus(mech) |= LANDED;
