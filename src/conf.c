@@ -362,10 +362,8 @@ void cf_init(void)
     StringCopy(mudstate.doing_hdr, "Doing");
     mudstate.access_list = NULL;
     mudstate.suspect_list = NULL;
-    mudstate.qfirst = NULL;
-    mudstate.qlast = NULL;
-    mudstate.qlfirst = NULL;
-    mudstate.qllast = NULL;
+    mudstate.qhead = NULL;
+    mudstate.qtail = NULL;
     mudstate.qwait = NULL;
     mudstate.qsemfirst = NULL;
     mudstate.qsemlast = NULL;

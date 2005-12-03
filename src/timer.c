@@ -45,7 +45,6 @@ void init_timer() {
     mudstate.idle_counter = mudconf.idle_interval + mudstate.now;
     mudstate.mstats_counter = 15 + mudstate.now;
     mudstate.events_counter = 900 + mudstate.now;
-    // alarm(1);
     evtimer_set(&timer_event, timer_callback, NULL);
     evtimer_add(&timer_event, &tv);
 }

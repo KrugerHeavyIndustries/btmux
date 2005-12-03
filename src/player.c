@@ -434,46 +434,46 @@ char *name;
     safe_str(name, temp, &tp);
     *tp = '\0';
     for (tp = temp; *tp; tp++)
-	*tp = ToLower(*tp);
+        *tp = ToLower(*tp);
 
     p = (int *) hashfind(temp, &mudstate.player_htab);
     if (p) {
 
-	/*
-	 * Entry found in the hashtable.  If a player, succeed if the
-	 * * * numbers match (already correctly in the hash table),
-	 * fail * * if they don't.  Fail if the name is a disallowed
-	 * name * * (value AMBIGUOUS). 
-	 */
+        /*
+         * Entry found in the hashtable.  If a player, succeed if the
+         * * * numbers match (already correctly in the hash table),
+         * fail * * if they don't.  Fail if the name is a disallowed
+         * name * * (value AMBIGUOUS). 
+         */
 
-	if (*p == AMBIGUOUS) {
-	    free_lbuf(temp);
-	    return 0;
-	}
-	if (Good_obj(*p) && (Typeof(*p) == TYPE_PLAYER)) {
-	    free_lbuf(temp);
-	    if (*p == player) {
-		return 1;
-	    } else {
-		return 0;
-	    }
-	}
-	/*
-	 * It's an alias (or an incorrect entry).  Clobber it 
-	 */
-	free(p);
-	p = (dbref *) malloc(sizeof(int));
+        if (*p == AMBIGUOUS) {
+            free_lbuf(temp);
+            return 0;
+        }
+        if (Good_obj(*p) && (Typeof(*p) == TYPE_PLAYER)) {
+            free_lbuf(temp);
+            if (*p == player) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        /*
+         * It's an alias (or an incorrect entry).  Clobber it 
+         */
+        free(p);
+        p = (dbref *) malloc(sizeof(int));
 
-	*p = player;
-	stat = hashrepl(temp, p, &mudstate.player_htab);
-	free_lbuf(temp);
+        *p = player;
+        stat = hashrepl(temp, p, &mudstate.player_htab);
+        free_lbuf(temp);
     } else {
-	p = (dbref *) malloc(sizeof(int));
+        p = (dbref *) malloc(sizeof(int));
 
-	*p = player;
-	stat = hashadd(temp, p, &mudstate.player_htab);
-	free_lbuf(temp);
-	stat = (stat < 0) ? 0 : 1;
+        *p = player;
+        stat = hashadd(temp, p, &mudstate.player_htab);
+        free_lbuf(temp);
+        stat = (stat < 0) ? 0 : 1;
     }
     return stat;
 }

@@ -882,7 +882,7 @@ void init_attrtab(void)
     ATTR *a;
     char *buff, *p, *q;
 
-    hashinit(&mudstate.attr_name_htab, 100 * HASH_FACTOR);
+    hashinit(&mudstate.attr_name_htab, 65536);
     buff = alloc_sbuf("init_attrtab");
     for (a = attr; a->number; a++) {
 	anum_extend(a->number);

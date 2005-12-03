@@ -372,22 +372,22 @@ const char *msg;
 
     buf = atr_pget(object, filter, &aowner, &aflags);
     if (!*buf) {
-	free_lbuf(buf);
-	return (1);
+        free_lbuf(buf);
+        return (1);
     }
     nbuf = dp = alloc_lbuf("check_filter");
     str = buf;
     exec(nbuf, &dp, 0, object, player, EV_FIGNORE | EV_EVAL | EV_TOP, &str,
-	(char **) NULL, 0);
+            (char **) NULL, 0);
     *dp = '\0';
     dp = nbuf;
     free_lbuf(buf);
     do {
-	cp = parse_to(&dp, ',', EV_STRIP);
-	if (quick_wild(cp, (char *) msg)) {
-	    free_lbuf(nbuf);
-	    return (0);
-	}
+        cp = parse_to(&dp, ',', EV_STRIP);
+        if (quick_wild(cp, (char *) msg)) {
+            free_lbuf(nbuf);
+            return (0);
+        }
     } while (dp != NULL);
     free_lbuf(nbuf);
     return (1);
@@ -945,6 +945,7 @@ void do_shutdown(dbref player, dbref cause, int key, char *message) {
      */
 
     mudstate.shutdown_flag = 1;
+    event_loopexit(NULL);
     return;
 }
 
@@ -1104,58 +1105,58 @@ int key;
     char *buff;
 
     if (*mudconf.dump_msg)
-	raw_broadcast(0, "%s", mudconf.dump_msg);
+        raw_broadcast(0, "%s", mudconf.dump_msg);
     check_mail_expiration();
     mudstate.epoch++;
     mudstate.dumping = 1;
     buff = alloc_mbuf("fork_and_dump");
     sprintf(buff, "%s.#%d#", mudconf.outdb, mudstate.epoch);
     STARTLOG(LOG_DBSAVES, "DMP", "CHKPT") {
-	if (!key || (key & DUMP_TEXT)) {
-	    log_text((char *) "SYNCing");
-	    if (!key || (key & DUMP_STRUCT))
-		log_text((char *) " and ");
-	}
-	if (!key || (key & DUMP_STRUCT)) {
-	    log_text((char *) "Checkpointing: ");
-	    log_text(buff);
-	}
-	ENDLOG;
+        if (!key || (key & DUMP_TEXT)) {
+            log_text((char *) "SYNCing");
+            if (!key || (key & DUMP_STRUCT))
+                log_text((char *) " and ");
+        }
+        if (!key || (key & DUMP_STRUCT)) {
+            log_text((char *) "Checkpointing: ");
+            log_text(buff);
+        }
+        ENDLOG;
     } free_mbuf(buff);
 
 #ifndef MEMORY_BASED
     al_store();			/*
-				 * Save cached modified attribute list 
-				 */
+                         * Save cached modified attribute list 
+                         */
 #endif				/*
-				 * MEMORY_BASED 
-				 */
+                     * MEMORY_BASED 
+                     */
     if (!key || (key & DUMP_TEXT))
-	pcache_sync();
+        pcache_sync();
     if (!key || (key & DUMP_STRUCT)) {
-	if (mudconf.fork_dump) {
-	    if (mudconf.fork_vfork) {
-		child = vfork();
-	    } else {
-		child = fork();
-	    }
-	} else {
-	    child = 0;
-	}
-	if (child == 0) {
-	    dump_database_internal(DUMP_NORMAL);
-	    if (mudconf.fork_dump)
-		_exit(0);
-	} else if (child < 0) {
-	    log_perror("DMP", "FORK", NULL, "fork()");
-	}
+        if (mudconf.fork_dump) {
+            if (mudconf.fork_vfork) {
+                child = vfork();
+            } else {
+                child = fork();
+            }
+        } else {
+            child = 0;
+        }
+        if (child == 0) {
+            dump_database_internal(DUMP_NORMAL);
+            if (mudconf.fork_dump)
+                _exit(0);
+        } else if (child < 0) {
+            log_perror("DMP", "FORK", NULL, "fork()");
+        }
     }
 
     if (!mudconf.fork_dump)
-	mudstate.dumping = 0;
+        mudstate.dumping = 0;
 
     if (*mudconf.postdump_msg)
-	raw_broadcast(0, "%s", mudconf.postdump_msg);
+        raw_broadcast(0, "%s", mudconf.postdump_msg);
 }
 
 static int load_game(void)
@@ -1424,6 +1425,7 @@ int main(int argc, char *argv[]) {
     pool_init(POOL_DESC, sizeof(DESC));
     pool_init(POOL_QENTRY, sizeof(BQUE));
 #endif
+    mudstate.executable_path = strdup(argv[0]);
     tcache_init();
     pcache_init();
     cf_init();

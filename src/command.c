@@ -787,6 +787,7 @@ void process_cmdent(cmdp, switchp, player, cause, interactive, arg, unp_command,
 
 #define	Protect(x) (cmdp->perms & x)
 
+
     /*
      * Perform object type checks. 
      */
@@ -1116,6 +1117,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     cmdsave = mudstate.debug_cmd;
     mudstate.debug_cmd = (char *) "< process_command >";
 
+
     if (!command) {
         abort();
     }
@@ -1411,6 +1413,8 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
                 succ++;
             }
     }
+
+    
     /*
      * Check for $-command matches in my inventory 
      */
@@ -1470,6 +1474,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
             (!(No_Command(Zone(player)))) &&
             (Zone(Location(player)) != Zone(player))) {
         succ += atr_match(Zone(player), player, AMATCH_CMD, lcbuf, 1);
+
     }
     /*
      * If we didn't find anything, try in the master room 
@@ -1489,6 +1494,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
         }
     }
     free_lbuf(lcbuf);
+
 
     /*
      * If we still didn't find anything, tell how to get help. 
@@ -2302,7 +2308,7 @@ static void list_hashstats(player)
     dbref player;
 {
     raw_notify(player,
-            "Hash Stats      Size Entries Deleted   Empty Lookups    Hits  Checks Longest");
+            "Hash Stats        Size     Entries     Deleted       Empty     Lookups        Hits      Checks     Longest");
     list_hashstat(player, "Commands", &mudstate.command_htab);
     list_hashstat(player, "Logged-out Cmds", &mudstate.logout_cmd_htab);
     list_hashstat(player, "Functions", &mudstate.func_htab);

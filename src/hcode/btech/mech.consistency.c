@@ -302,118 +302,118 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
     int hs_eff;
     char buf[MBUF_SIZE];
     int ints_c, ints_tot;
-    float gyro_calc;
+    float gyro_calc = -1;
 
     bzero(pile, sizeof(pile));
     if (interactive > 0) {
-	addline();
-	cent(tprintf("Weight totals for %s", GetMechID(mech)));
-	addline();
+        addline();
+        cent(tprintf("Weight totals for %s", GetMechID(mech)));
+        addline();
     }
     calc_ints(mech, &ints_c, &ints_tot);
     for (i = 0; i < NUM_SECTIONS; i++) {
-	if (!GetSectOInt(mech, i))
-	    continue;
-	armor += MyGetSectOArmor(mech, i);
-	armor += MyGetSectORArmor(mech, i);
-	PLOC(i)
-	    for (j = 0; j < NUM_CRITICALS; j++)
-	    if (interactive >= 0 || !IsAmmo(GetPartType(mech, i, j)))
-		pile[GetPartType(mech, i, j)] += AmmoMod(mech, i, j);
+        if (!GetSectOInt(mech, i))
+            continue;
+        armor += MyGetSectOArmor(mech, i);
+        armor += MyGetSectORArmor(mech, i);
+        PLOC(i)
+            for (j = 0; j < NUM_CRITICALS; j++)
+                if (interactive >= 0 || !IsAmmo(GetPartType(mech, i, j)))
+                    pile[GetPartType(mech, i, j)] += AmmoMod(mech, i, j);
     }
     shs_size = HS_Size(mech);
     hs_eff = HS_Efficiency(mech);
     cl = MechSpecials(mech) & CLAN_TECH;
 #define ADDENTRY(text,weight) \
-  if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("      %6.1f", (float) (weight) / 1024.0));}; total += weight; }
+    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("      %6.1f", (float) (weight) / 1024.0));}; total += weight; }
 #define ADDENTRY_C(text,count,weight) \
-  if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("%5d %6.1f", count, (float) (weight) / 1024.0)); }; total += weight; }
+    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("%5d %6.1f", count, (float) (weight) / 1024.0)); }; total += weight; }
     sprintf(buf, "%-12s(%d rating)",
-	MechSpecials(mech) & XL_TECH ? "Engine (XL)" : MechSpecials(mech) &
-	XXL_TECH ? "Engine (XXL)" : MechSpecials(mech) & CE_TECH ?
-	"Engine (Compact)" : MechSpecials(mech) & LE_TECH ?
-	"Engine (Light)" : "Engine", MechEngineSize(mech));
+            MechSpecials(mech) & XL_TECH ? "Engine (XL)" : MechSpecials(mech) &
+            XXL_TECH ? "Engine (XXL)" : MechSpecials(mech) & CE_TECH ?
+            "Engine (Compact)" : MechSpecials(mech) & LE_TECH ?
+            "Engine (Light)" : "Engine", MechEngineSize(mech));
     PLOC(CTORSO)
-	ADDENTRY(buf, engine_weight(mech));
+        ADDENTRY(buf, engine_weight(mech));
     PLOC(HEAD)
-	ADDENTRY("Cockpit", 3 * 1024);
+        ADDENTRY("Cockpit", 3 * 1024);
     PLOC(CTORSO)
-	/* Store the base-line gyro weight */
-    	gyro_calc = (MechEngineSize(mech) / 100.0) * 1024;
-        
-    	/* Figure out what kind of gyro we have and adjust weight accordingly */
-        if (MechSpecials2(mech) & XLGYRO_TECH) {
-	    /* XL Gyro is 1/2 normal gyro weight. */
-	    ADDENTRY("Gyro (XL)", (int) ceil(gyro_calc * 0.5));
-	} else if (MechSpecials2(mech) & HDGYRO_TECH) {
-	    /* Hardened Gyro is 2x normal gyro weight. */
-	    ADDENTRY("Gyro (Hardened)", (int) ceil(gyro_calc * 2));
-	} else if (MechSpecials2(mech) & CGYRO_TECH) {
-	    /* Compact Gyro is 1.5x normal gyro weight. */
-	    ADDENTRY("Gyro (Compact)", (int) ceil(gyro_calc * 1.5));
-	} else {
-	    /* Standard Gyro. */
-	    ADDENTRY("Gyro", (int) ceil(gyro_calc));
-	}
-	
-        ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
-	    MechSpecials(mech) & COMPI_TECH ? "Internals (Composite)" :
-	    MechSpecials(mech) & ES_TECH ? "Internals (ES)" : "Internals",
-	        round_to_halfton(MechTons(mech) * 1024 * (interactive >=
-	        0 ? ints_tot : ints_c) / 5 / ints_tot /
-	        (MechSpecials(mech) & REINFI_TECH ? 1 : (MechSpecials(mech) &
-	        (ES_TECH | COMPI_TECH)) ? 4 : 2)));
+        /* Store the base-line gyro weight */
+        gyro_calc = (MechEngineSize(mech) / 100.0) * 1024;
+
+    /* Figure out what kind of gyro we have and adjust weight accordingly */
+    if (MechSpecials2(mech) & XLGYRO_TECH) {
+        /* XL Gyro is 1/2 normal gyro weight. */
+        ADDENTRY("Gyro (XL)", (int) ceil(gyro_calc * 0.5));
+    } else if (MechSpecials2(mech) & HDGYRO_TECH) {
+        /* Hardened Gyro is 2x normal gyro weight. */
+        ADDENTRY("Gyro (Hardened)", (int) ceil(gyro_calc * 2));
+    } else if (MechSpecials2(mech) & CGYRO_TECH) {
+        /* Compact Gyro is 1.5x normal gyro weight. */
+        ADDENTRY("Gyro (Compact)", (int) ceil(gyro_calc * 1.5));
+    } else {
+        /* Standard Gyro. */
+        ADDENTRY("Gyro", (int) ceil(gyro_calc));
+    }
+
+    ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
+            MechSpecials(mech) & COMPI_TECH ? "Internals (Composite)" :
+            MechSpecials(mech) & ES_TECH ? "Internals (ES)" : "Internals",
+            round_to_halfton(MechTons(mech) * 1024 * (interactive >=
+                    0 ? ints_tot : ints_c) / 5 / ints_tot /
+                (MechSpecials(mech) & REINFI_TECH ? 1 : (MechSpecials(mech) &
+                                                         (ES_TECH | COMPI_TECH)) ? 4 : 2)));
     armor_o = armor;
     if (MechSpecials(mech) & FF_TECH)
-	armor = armor * 50 / (cl ? 60 : 56);
+        armor = armor * 50 / (cl ? 60 : 56);
     else if (MechSpecials2(mech) & HVY_FF_ARMOR_TECH)
-	armor = armor * 50 / 62;
+        armor = armor * 50 / 62;
     else if (MechSpecials2(mech) & LT_FF_ARMOR_TECH)
-	armor = armor * 50 / 53;
+        armor = armor * 50 / 53;
 
     ADDENTRY_C(MechSpecials2(mech) & STEALTH_ARMOR_TECH ? "Armor (Stealth)"
-	: MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? "Armor (Hvy FF)" :
-	MechSpecials2(mech) & LT_FF_ARMOR_TECH ? "Armor (Lt FF)" :
-	MechSpecials(mech) & HARDA_TECH ? "Armor (Hardened)" :
-	MechSpecials(mech) & FF_TECH ? "Armor (FF)" : "Armor", armor_o,
-	ceil(armor / (8. * (MechSpecials(mech) & HARDA_TECH ? 2 : 1))) * 512);
+            : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? "Armor (Hvy FF)" :
+            MechSpecials2(mech) & LT_FF_ARMOR_TECH ? "Armor (Lt FF)" :
+            MechSpecials(mech) & HARDA_TECH ? "Armor (Hardened)" :
+            MechSpecials(mech) & FF_TECH ? "Armor (FF)" : "Armor", armor_o,
+            ceil(armor / (8. * (MechSpecials(mech) & HARDA_TECH ? 2 : 1))) * 512);
 
     if (MyMechNumOsinks(mech)) {
-	pile[Special(HEAT_SINK)] =
-	    MAX(0, MyMechNumOsinks(mech) * shs_size / hs_eff - 
-		(MechSpecials(mech) & ICE_TECH ? 0 : 10) * shs_size);
+        pile[Special(HEAT_SINK)] =
+            MAX(0, MyMechNumOsinks(mech) * shs_size / hs_eff - 
+                    (MechSpecials(mech) & ICE_TECH ? 0 : 10) * shs_size);
     } else if (interactive > 0)
-	cent(tprintf
-	    ("WARNING: HS count may be off, due to certain odd things."));
+        cent(tprintf
+                ("WARNING: HS count may be off, due to certain odd things."));
     for (i = 1; i < NUM_ITEMS_M; i++)
-	if (pile[i]) {
-	    if (IsWeapon(i)) {
-		id = Weapon2I(i);
-		ADDENTRY_C(MechWeapons[id].name,
-		    pile[i] / GetWeaponCrits(mech, id), crit_weight(mech,
-			i) * pile[i]);
-	    } else {
-		if ((w = crit_weight(mech, i)))
-		    ADDENTRY_C(get_parts_long_name(i, 0), pile[i],
-			w * pile[i]);
-	    }
-	}
+        if (pile[i]) {
+            if (IsWeapon(i)) {
+                id = Weapon2I(i);
+                ADDENTRY_C(MechWeapons[id].name,
+                        pile[i] / GetWeaponCrits(mech, id), crit_weight(mech,
+                            i) * pile[i]);
+            } else {
+                if ((w = crit_weight(mech, i)))
+                    ADDENTRY_C(get_parts_long_name(i, 0), pile[i],
+                            w * pile[i]);
+            }
+        }
     if (CargoSpace(mech))
-	ADDENTRY(tprintf("CargoSpace (%.2ft)", (float) CargoSpace(mech) / 100),
-	    (int) (((float) CargoSpace(mech) / (MechSpecials2(mech) & CARRIER_TECH ? 1000 : MechSpecials(mech) & CARGO_TECH ? 100 : 500)) * 1024));
+        ADDENTRY(tprintf("CargoSpace (%.2ft)", (float) CargoSpace(mech) / 100),
+                (int) (((float) CargoSpace(mech) / (MechSpecials2(mech) & CARRIER_TECH ? 1000 : MechSpecials(mech) & CARGO_TECH ? 100 : 500)) * 1024));
 
     if (interactive > 0) {
-	addline();
-	vsi(tprintf("%%cgTotal: %s%.1f tons (offset: %.1f)%%cn",
-		(total / 1024) > MechTons(mech) ? "%ch%cr" : "",
-		(float) (total) / 1024.0,
-		MechTons(mech) - (float) (total) / 1024.0));
-	addline();
-	ShowCoolMenu(player, c);
+        addline();
+        vsi(tprintf("%%cgTotal: %s%.1f tons (offset: %.1f)%%cn",
+                    (total / 1024) > MechTons(mech) ? "%ch%cr" : "",
+                    (float) (total) / 1024.0,
+                    MechTons(mech) - (float) (total) / 1024.0));
+        addline();
+        ShowCoolMenu(player, c);
     }
     KillCoolMenu(c);
     if (interactive < 0)
-	total += ammo_weight(mech);
+        total += ammo_weight(mech);
     return MAX(1, total);
 }
 

@@ -29,7 +29,11 @@
 	 * prints arguments */
 	#define dprintk(args...)	\
 	do {	\
-        fprintf(stderr, "%5d %s (%s:%d)] ", getpid(), __FUNCTION__, __FILE__, __LINE__);	\
+        struct timeval my__tv = { 0, 0 }; \
+        gettimeofday(&my__tv, NULL); \
+        fprintf(stderr, "%02d%02d%02d.%08d:%05d %s (%s:%d)] ",  \
+                (((int)my__tv.tv_sec) % 86400)/3600, ((int)my__tv.tv_sec % 3600)/60, ((int)my__tv.tv_sec % 60), \
+                (int)my__tv.tv_usec, getpid(), __FUNCTION__, __FILE__, __LINE__);	\
         fprintf(stderr, args);	\
         fprintf(stderr, "\n");	\
 	} while(0)
@@ -45,7 +49,7 @@ do {	\
     fprintf(stderr, "\n");	\
 } while(0)
 
-#define IF_FAIL(condition, args...)	\
+#define dassert(condition, args...)	\
 	do {	\
 	if (!(condition)) {	\
 		fprintf(stderr, "%s (%s:%d)] ", __FUNCTION__, __FILE__, __LINE__);	\

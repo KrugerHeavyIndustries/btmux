@@ -25,10 +25,103 @@
 #include "command.h"
 #include "alloc.h"
 #include "functions.h"
+#include "cque.h"
 
 extern int a_Queue(dbref, int);
 extern void s_Queue(dbref, int);
 extern int QueueMax(dbref);
+
+static rbtree obq = NULL;
+
+static int objqe_compare(dbref left, dbref right) {
+    return (right-left);
+}
+
+int cque_init() {
+    obq = rb_init(objqe_compare, NULL);
+    return 1;
+};
+
+static OBJQE *cque_find(dbref player) {
+    OBJQE *tmp;
+
+    if(obq == NULL) {
+        cque_init();
+    }
+    if(!Good_obj(player))
+        return NULL;
+    tmp = rb_find(obq, player);
+
+    if(!tmp) {
+        tmp = malloc(sizeof(OBJQE));
+        tmp->obj = player;
+        tmp->cque = NULL;
+        tmp->ctail = NULL;
+        tmp->next = NULL;
+        tmp->queued = 0;
+        tmp->wait_que = NULL;
+        tmp->pending_que = NULL;
+        rb_insert(obq, player, tmp);
+    }
+
+    return tmp;
+}
+
+static BQUE *cque_peek(dbref player) {
+    OBJQE *tmp;
+    tmp = cque_find(player);
+    return tmp->cque;
+}
+    
+static BQUE *cque_deque(dbref player) {
+    OBJQE *tmp;
+    BQUE *cmd;
+
+    tmp = cque_find(player);
+    dassert(tmp, "brain damage");
+    
+    if(!tmp->cque) return NULL;
+
+    cmd = tmp->cque;
+    if(!cmd->next) {
+        tmp->cque = tmp->ctail = NULL;
+    } else {
+        tmp->cque = cmd->next;
+    }
+    return cmd;
+}
+
+static void cque_enqueue(dbref player, BQUE *cmd) {
+    OBJQE *tmp;
+
+    cmd->next = NULL;
+    cmd->waittime = 0;
+
+    tmp = cque_find(player);
+
+    dassert(tmp, "serious braindamage.");
+
+    if(!tmp->ctail) {
+        tmp->cque = tmp->ctail = cmd;
+        cmd->next = NULL;
+    } else {
+        tmp->ctail->next = cmd;
+        tmp->ctail = cmd;
+        tmp->ctail->next = NULL;
+    }
+
+    if(!tmp->queued) {
+        if(!mudstate.qhead) {
+            mudstate.qhead = mudstate.qtail = tmp;
+            tmp->next = NULL;
+        } else {
+            mudstate.qtail->next = tmp;
+            mudstate.qtail = tmp;
+            mudstate.qtail->next = NULL;
+        }
+        tmp->queued = 1;
+    }
+}
 
 /*
  * ---------------------------------------------------------------------------
@@ -54,44 +147,16 @@ static int add_to(dbref player, int am, int attrnum) {
 
 /*
  * ---------------------------------------------------------------------------
- * * give_que: Thread a queue block onto the high or low priority queue
- */
-
-static void give_que(BQUE *tmp) {
-    tmp->next = NULL;
-    tmp->waittime = 0;
-
-    /*
-     * Thread the command into the correct queue 
-     */
-
-    if (Typeof(tmp->cause) == TYPE_PLAYER) {
-        if (mudstate.qlast != NULL) {
-            mudstate.qlast->next = tmp;
-            mudstate.qlast = tmp;
-        } else
-            mudstate.qlast = mudstate.qfirst = tmp;
-    } else {
-        if (mudstate.qllast) {
-            mudstate.qllast->next = tmp;
-            mudstate.qllast = tmp;
-        } else
-            mudstate.qllast = mudstate.qlfirst = tmp;
-    }
-}
-
-/*
- * ---------------------------------------------------------------------------
  * * que_want: Do we want this queue entry?
  */
 
-    static int que_want(BQUE *entry, dbref ptarg, dbref otarg) {
-        if ((ptarg != NOTHING) && (ptarg != Owner(entry->player)))
-            return 0;
-        if ((otarg != NOTHING) && (otarg != entry->player))
-            return 0;
-        return 1;
-    }
+static int que_want(BQUE *entry, dbref ptarg, dbref otarg) {
+    if ((ptarg != NOTHING) && (ptarg != Owner(entry->player)))
+        return 0;
+    if ((otarg != NOTHING) && (otarg != entry->player))
+        return 0;
+    return 1;
+}
 
 /*
  * ---------------------------------------------------------------------------
@@ -100,26 +165,18 @@ static void give_que(BQUE *tmp) {
 
 int halt_que(dbref player, dbref object) {
     BQUE *trail, *point, *next;
+    PCACHE *pp;
     int numhalted;
 
     numhalted = 0;
 
-    /* Player queue */
+    /* Player's que */
+    // XXX: nuke queue
+    //
 
-    for (point = mudstate.qfirst; point; point = point->next)
-        if (que_want(point, player, object)) {
-            numhalted++;
-            point->player = NOTHING;
-        }
 
-    /* Object queue */
-
-    for (point = mudstate.qlfirst; point; point = point->next)
-        if (que_want(point, player, object)) {
-            numhalted++;
-            point->player = NOTHING;
-        }
-
+    dprintk("HALT_QUE CURRENTLY NEUTERED, MUST FIX.\n");
+    
     /*
      * Wait queue 
      */
@@ -259,7 +316,7 @@ int nfy_que(dbref sem, int attr, int key, int count) {
                  */
 
                 if (key != NFY_DRAIN) {
-                    give_que(point);
+                    cque_enqueue(point->player, point);
                 } else {
                     giveto(point->player, mudconf.waitcost);
                     a_Queue(Owner(point->player), -1);
@@ -364,7 +421,7 @@ static void wakeup_wait_que(int fd, short event, void *arg) {
         }
     }
 
-    give_que(pending);
+    cque_enqueue(pending->player, pending);
 }
 
 
@@ -494,54 +551,60 @@ static BQUE *setup_que(dbref player, dbref cause, char *command, char *args[], i
 
 void wait_que(dbref player, dbref cause, int wait, dbref sem, int attr, char *command, 
         char *args[], int nargs, char *sargs[]) {
-    BQUE *tmp, *point, *trail;
+    BQUE *cmd, *point, *trail;
+    OBJQE *current, *blocker;
     struct timeval tv;
 
     if (mudconf.control_flags & CF_INTERP)
-        tmp = setup_que(player, cause, command, args, nargs, sargs);
+        cmd = setup_que(player, cause, command, args, nargs, sargs);
     else
-        tmp = NULL;
+        cmd = NULL;
 
-    if (tmp == NULL) {
+    if (cmd == NULL) {
         return;
     }
 
     if (wait != 0)
-        tmp->waittime = time(NULL) + wait;
+        cmd->waittime = time(NULL) + wait;
 
     tv.tv_sec = wait;
     tv.tv_usec = 0;
-    
-    tmp->sem = sem;
-    tmp->attr = attr;
-    if (sem == NOTHING) {
+
+    cmd->sem = sem;
+    cmd->attr = attr;
+
+    if (cmd->sem == NOTHING) {
         /*
          * No semaphore, put on wait queue if wait value specified.
          * Otherwise put on the normal queue. 
          */
 
         if (wait <= 0) {
-            give_que(tmp);
+            cque_enqueue(cmd->player, cmd);
         } else {
-            evtimer_add(&tmp->ev, &tv);
+            evtimer_add(&cmd->ev, &tv);
             for (point = mudstate.qwait, trail = NULL;
-                    point && point->waittime <= tmp->waittime;
+                    point && point->waittime <= cmd->waittime;
                     point = point->next) {
                 trail = point;
             }
-            tmp->next = point;
+            cmd->next = point;
             if (trail != NULL)
-                trail->next = tmp;
+                trail->next = cmd;
             else
-                mudstate.qwait = tmp;
+                mudstate.qwait = cmd;
         }
     } else {
-        tmp->next = NULL;
+        if(wait <= 0) {
+            dprintk("adding %d/%s to %d's wait queue.", cmd->player, cmd->comm, cmd->sem);
+        }
+
+        cmd->next = NULL;
         if (mudstate.qsemlast != NULL)
-            mudstate.qsemlast->next = tmp;
+            mudstate.qsemlast->next = cmd;
         else
-            mudstate.qsemfirst = tmp;
-        mudstate.qsemlast = tmp;
+            mudstate.qsemfirst = cmd;
+        mudstate.qsemlast = cmd;
     }
 }
 
@@ -631,64 +694,6 @@ void do_wait(dbref player, dbref cause, int key, char *event, char *cmd, char *c
 
 /*
  * ---------------------------------------------------------------------------
- * * que_next: Return the time in seconds until the next command should be
- * * run from the queue.
- */
-#if 0
-int que_next(void) {
-    int min, this;
-    BQUE *point;
-
-    /*
-     * If there are commands in the player queue, we want to run them
-     * immediately. 
-     */
-
-    if (test_top())
-        return 0;
-
-    /*
-     * If there are commands in the object queue, we want to run them
-     * after a one-second pause. 
-     */
-
-    if (mudstate.qlfirst != NULL)
-        return 1;
-
-    /*
-     * Walk the wait and semaphore queues, looking for the smallest
-     * wait value.  Return the smallest value - 1, because
-     * the command gets moved to the player queue when it has 
-     * 1 second to go.  
-     */
-
-    min = 1000;
-    /*
-    for (point = mudstate.qwait; point; point = point->next) {
-        this = point->waittime - mudstate.now;
-        if (this <= 2)
-            return 1;
-        if (this < min)
-            min = this;
-    }
-    */
-
-    for (point = mudstate.qsemfirst; point; point = point->next) {
-        if (point->waittime == 0)	/*
-                                     * * Skip if no timeout  
-                                     */
-            continue;
-        this = point->waittime - mudstate.now;
-        if (this <= 2)
-            return 1;
-        if (this < min)
-            min = this;
-    }
-    return min - 1;
-}
-#endif 
-/*
- * ---------------------------------------------------------------------------
  * * do_second: Check the wait and semaphore queues for commands to remove.
  */
 
@@ -710,14 +715,7 @@ void do_second(void) {
     cmdsave = mudstate.debug_cmd;
     mudstate.debug_cmd = (char *) "< do_second >";
 
-    if (mudstate.qlfirst) {
-        if (mudstate.qlast)
-            mudstate.qlast->next = mudstate.qlfirst;
-        else
-            mudstate.qfirst = mudstate.qlfirst;
-        mudstate.qlast = mudstate.qllast;
-        mudstate.qllast = mudstate.qlfirst = NULL;
-    }
+    
     /*
      * Note: the point->waittime test would be 0 except the command is
      * being put in the low priority queue to be done in one
@@ -744,7 +742,8 @@ void do_second(void) {
                 mudstate.qsemlast = trail;
             add_to(point->sem, -1, point->attr);
             point->sem = NOTHING;
-            give_que(point);
+            printk("promoting, %d/%s", point->player, point->comm);
+            cque_enqueue(point->player, point);
         } else
             next = (trail = point)->next;
     }
@@ -758,8 +757,9 @@ void do_second(void) {
  */
 
 int do_top(int ncmds) {
-    BQUE *tmp;
-    dbref player;
+    BQUE *tmp, *walk;
+    OBJQE *current_object;
+    dbref object, player, last_player;
     int count, i;
     char *command, *cp, *cmdsave;
 
@@ -768,40 +768,50 @@ int do_top(int ncmds) {
 
     cmdsave = mudstate.debug_cmd;
     mudstate.debug_cmd = (char *) "< do_top >";
+    
+    if(!mudstate.qhead) return 0;
 
-    for (count = 0; count < ncmds; count++) {
-        if (!test_top()) {
-            mudstate.debug_cmd = cmdsave;
-            for (i = 0; i < MAX_GLOBAL_REGS; i++)
-                *mudstate.global_regs[i] = '\0';
-            return count;
+    current_object = mudstate.qhead;
+    count = 0;
+
+    while(count < ncmds && mudstate.qhead) {
+        if(!mudstate.qhead) break;
+        
+        object = mudstate.qhead->obj;
+        tmp = cque_deque(object);
+
+        if(!mudstate.qhead->cque) {
+            mudstate.qhead->queued = 0;
+            mudstate.qhead = mudstate.qhead->next;
+            if(mudstate.qhead == NULL) mudstate.qtail = NULL;
+        } else {
+            mudstate.qtail->next = mudstate.qhead;
+            mudstate.qtail = mudstate.qtail->next;
+            mudstate.qhead = mudstate.qhead->next;
+            mudstate.qtail->next = NULL;
         }
-        player = mudstate.qfirst->player;
-        if ((player >= 0) && !Going(player)) {
-            giveto(player, mudconf.waitcost);
-            mudstate.curr_enactor = mudstate.qfirst->cause;
-            mudstate.curr_player = player;
-            a_Queue(Owner(player), -1);
-            mudstate.qfirst->player = NOTHING;
-            if (!Halted(player)) {
 
-                /*
-                 * Load scratch args 
-                 */
-
+        dassert(tmp, "serious braindamage");
+        count++;
+        if((object >= 0) && !Going(object)) {
+            giveto(object, mudconf.waitcost);
+            mudstate.curr_enactor = tmp->cause;
+            mudstate.curr_player = object;
+            a_Queue(Owner(object), -1);
+            if(!Halted(object)) {
                 for (i = 0; i < MAX_GLOBAL_REGS; i++) {
-                    if (mudstate.qfirst->scr[i]) {
+                    if (tmp->scr[i]) {
                         StringCopy(mudstate.global_regs[i],
-                                mudstate.qfirst->scr[i]);
+                                tmp->scr[i]);
                     } else {
                         *mudstate.global_regs[i] = '\0';
                     }
                 }
 
-                command = mudstate.qfirst->comm;
+                command = tmp->comm;
 
                 if(command) {
-                    if(isPlayer(player)) choke_player(player);
+                    if(isPlayer(object)) choke_player(object);
                     while (command) {
                         cp = parse_to(&command, ';', 0);
                         if (cp && *cp) {
@@ -810,10 +820,9 @@ int do_top(int ncmds) {
                                 mudstate.inpipe = 1;
                                 mudstate.poutnew = alloc_lbuf("process_command.pipe");
                                 mudstate.poutbufc = mudstate.poutnew;
-                                mudstate.poutobj = player;
-                                process_command(player, mudstate.qfirst->cause,
-                                        0, cp, mudstate.qfirst->env,
-                                        mudstate.qfirst->nargs);
+                                mudstate.poutobj = object;
+                                process_command(object, tmp->cause, 0, cp, tmp->env,
+                                        tmp->nargs);
                                 if (mudstate.pout) {
                                     free_lbuf(mudstate.pout);
                                     mudstate.pout = NULL;
@@ -824,23 +833,19 @@ int do_top(int ncmds) {
                                 cp = parse_to(&command, ';', 0);
                             }
                             mudstate.inpipe = 0;
-                            process_command(player, mudstate.qfirst->cause, 0,
-                                    cp, mudstate.qfirst->env,
-                                    mudstate.qfirst->nargs);
+                            process_command(object, tmp->cause, 0,
+                                    cp, tmp->env,
+                                    tmp->nargs);
                             if (mudstate.pout) {
                                 free_lbuf(mudstate.pout);
                                 mudstate.pout = NULL;
                             }
                         }
                     }
-                    if(isPlayer(player)) release_player(player);
+                    if(isPlayer(object)) release_player(object);
                 }
             }
         }
-        tmp = mudstate.qfirst;
-        mudstate.qfirst = mudstate.qfirst->next;
-        if (!mudstate.qfirst)
-            mudstate.qlast = NULL;
         free(tmp->text);
         free_qentry(tmp);
     }
@@ -962,10 +967,14 @@ void do_ps(dbref player, dbref cause, int key, char *target) {
      * Go do it 
      */
 
+/*
     show_que(player, key, mudstate.qfirst, &pqtot, &pqent, &pqdel,
             player_targ, obj_targ, "Player");
     show_que(player, key, mudstate.qlfirst, &oqtot, &oqent, &oqdel,
             player_targ, obj_targ, "Object");
+*/
+
+    notify_printf(player, "XXX: master parse table.\n");
     show_que(player, key, mudstate.qwait, &wqtot, &wqent, &i, player_targ,
             obj_targ, "Wait");
     show_que(player, key, mudstate.qsemfirst, &sqtot, &sqent, &i,
@@ -998,6 +1007,7 @@ void do_queue(dbref player, dbref cause, int key, char *arg) {
     BQUE *point;
     int i, ncmds, was_disabled;
 
+    dprintk("WTF?");
     was_disabled = 0;
     if (key == QUEUE_KICK) {
         i = atoi(arg);
@@ -1045,3 +1055,4 @@ void do_queue(dbref player, dbref cause, int key, char *arg) {
 
     }
 }
+

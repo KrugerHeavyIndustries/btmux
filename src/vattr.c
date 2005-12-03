@@ -40,7 +40,7 @@ static int stringblock_hwm = 0;
 
 void vattr_init(void)
 {
-    hashinit(&mudstate.vattr_name_htab, 256 * HASH_FACTOR);
+    hashinit(&mudstate.vattr_name_htab, 65536);
 }
 
 VATTR *vattr_find(name)

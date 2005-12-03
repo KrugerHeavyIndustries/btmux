@@ -110,8 +110,8 @@ static void muxevent_wakeup(int fd, short event, void *arg) {
 
 void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
         void *data, void *data2) {
-    MUXEVENT *e;
-    struct timeval tv;
+    MUXEVENT *e = 0xDEADBEEF;
+    struct timeval tv = { 0, 0};
 
     int i, spot;
 
@@ -129,8 +129,10 @@ void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
     if (muxevent_free_list) {
         e = muxevent_free_list;
         muxevent_free_list = muxevent_free_list->next;
-    } else
-        Create(e, MUXEVENT, 1);
+    } else {
+        e = malloc(sizeof(MUXEVENT));
+        memset(e, 0, sizeof(MUXEVENT));
+    }
 
     e->flags = flags;
     e->function = func;

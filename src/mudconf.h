@@ -15,6 +15,8 @@
 #include "flags.h"
 #include "mail.h"
 #include "db.h"
+#include "pcache.h"
+#include "cque.h"
 #include "rbtree.h"
 
 /* CONFDATA:	runtime configurable parameters */
@@ -442,10 +444,8 @@ struct statedata {
     HASHTAB plushelp_htab;	/* +help topics hashtable */
     HASHTAB wiznews_htab;	/* wiznews topics hashtable */
     int attr_next;		/* Next attr to alloc when freelist is empty */
-    BQUE *qfirst;		/* Head of player queue */
-    BQUE *qlast;		/* Tail of player queue */
-    BQUE *qlfirst;		/* Head of object queue */
-    BQUE *qllast;		/* Tail of object queue */
+    OBJQE *qhead;        /* Per Object Queue Entries */
+    OBJQE *qtail;        
     BQUE *qwait;		/* Head of wait queue */
     BQUE *qsemfirst;		/* Head of semaphore queue */
     BQUE *qsemlast;		/* Tail of semaphore queue */
@@ -496,6 +496,7 @@ struct statedata {
     MARKBUF *markbits;		/* temp storage for marking/unmarking */
     HASHTAB vattr_name_htab;	/* User attribute names hashtable */
 #endif				/* STANDALONE */
+    char *executable_path;
 };
 
 extern STATEDATA mudstate;

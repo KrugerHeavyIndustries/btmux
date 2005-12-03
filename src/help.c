@@ -138,11 +138,11 @@ void helpindex_load(player)
 
 void helpindex_init(void)
 {
-    hashinit(&mudstate.news_htab, 15 * HASH_FACTOR);
-    hashinit(&mudstate.help_htab, 30 * HASH_FACTOR);
-    hashinit(&mudstate.wizhelp_htab, 30 * HASH_FACTOR);
-    hashinit(&mudstate.plushelp_htab, 30 * HASH_FACTOR);
-    hashinit(&mudstate.wiznews_htab, 30 * HASH_FACTOR);
+    hashinit(&mudstate.news_htab, 30 * HASH_FACTOR);
+    hashinit(&mudstate.help_htab, 400 * HASH_FACTOR);
+    hashinit(&mudstate.wizhelp_htab, 400 * HASH_FACTOR);
+    hashinit(&mudstate.plushelp_htab, 400 * HASH_FACTOR);
+    hashinit(&mudstate.wiznews_htab, 400 * HASH_FACTOR);
 
     helpindex_load(NOTHING);
 }

@@ -65,10 +65,16 @@ extern void send_channel(char *chan, char *str);
 extern void ChangeSpecialObjects(int i);
 
 struct event listen_sock_ev;
+#ifdef IPV6_SUPPORT
+struct event listen6_sock_ev;
+#endif 
 struct event slave_sock_ev;
 struct event sqlslave_sock_ev;
 
 int mux_bound_socket = -1;
+#ifdef IPV6_SUPPORT
+int mux_bound_socket6 = -1;
+#endif
 int ndescriptors = 0;
 
 DESC *descriptor_list = NULL;
@@ -106,6 +112,7 @@ void shutdown_services() {
     logcache_destruct();
 #endif
     slave_destruct();
+    event_loopexit(NULL);
 }
 
 
@@ -333,6 +340,11 @@ void mux_release_socket() {
     event_del(&listen_sock_ev);
     close(mux_bound_socket); 
     mux_bound_socket = -1;
+#ifdef IPV6_SUPPORT
+    event_del(&listen6_sock_ev);
+    close(mux_bound_socket6);
+    mux_bound_socket6 = -1;
+#endif
 }
 
 static int eradicate_broken_fd(void)
@@ -370,6 +382,17 @@ static int eradicate_broken_fd(void)
         mux_bound_socket = -1;
         return -1;
     }
+#ifdef IPV6_SUPPORT
+    if (mux_bound_socket6 != -1 && fstat(mux_bound_socket6, &statbuf) < 0) {
+        STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
+            log_text("Broken descriptor for our ipv6 main port: ");
+            log_number(slave_socket);
+            ENDLOG;
+        }
+        mux_bound_socket6 = -1;
+        return -1;
+    }
+#endif
     return 0;
 }
 
@@ -387,11 +410,9 @@ void accept_client_input(int fd, short event, void *arg) {
 }
 
 void bsd_write_callback(struct bufferevent *bufev, void *arg) {
-    dprintk("write.");
 }
 
 void bsd_read_callback(struct bufferevent *bufev, void *arg) {
-    dprintk("read.");
 }
 
 void bsd_error_callback(struct bufferevent *bufev, short whut, void *arg) {
@@ -415,58 +436,55 @@ void accept_slave_input(int fd, short event, void *arg) {
 #define get_tod(x)	gettimeofday(x, (struct timezone *)0)
 #endif
 
+struct timeval queue_slice = { 0, 0 };
+struct event queue_ev;
+struct timeval last_slice, current_time;
+
+void runqueues(int fd, short event, void *arg) {
+    event_add(&queue_ev, &queue_slice);
+    get_tod(&current_time);
+    last_slice = update_quotas(last_slice, current_time);
+    if(mudconf.queue_chunk)
+        do_top(mudconf.queue_chunk);
+}
+
 void shovechars(int port) {
-    struct timeval last_slice, current_time, next_slice, slice_timeout;
+
+    queue_slice.tv_sec = 0;
+    queue_slice.tv_usec = mudconf.timeslice * 1000;
 
     mudstate.debug_cmd = (char *) "< shovechars >";
 
     dprintk("shovechars starting, sock is %d.", mux_bound_socket);
+#ifdef IPV6_SUPPORT
+    dprintk("shovechars starting, ipv6 sock is %d.", mux_bound_socket);
+#endif
+    
+    signal(SIGPIPE, SIG_IGN);
 
     if(mux_bound_socket < 0) {
-        signal(SIGPIPE, SIG_IGN);
         mux_bound_socket = bind_mux_socket(port);
     }
-    
     event_set(&listen_sock_ev, mux_bound_socket, EV_READ | EV_PERSIST, 
             accept_new_connection, NULL);
     event_add(&listen_sock_ev, NULL);
-    get_tod(&last_slice);
-
-    while (mudstate.shutdown_flag == 0) {
-        get_tod(&current_time);
-        last_slice = update_quotas(last_slice, current_time);
-
-        process_commands();
-        if (mudstate.shutdown_flag)
-            break;
-
-        /*
-         * test for events 
-         */
-
-        dispatch();
-
-        /*
-         * any queued robot commands waiting? 
-         */
-
-        next_slice = msec_add(last_slice, mudconf.timeslice);
-        slice_timeout = timeval_sub(next_slice, current_time);
-
-        /* run event loop */
-
-        if(event_loop(EVLOOP_ONCE) < 0) {
-            perror("event_loop");
-            exit(0);
-        }
-
-        /*
-         * run robot commands
-         */
-
-        if (mudconf.queue_chunk)
-            do_top(mudconf.queue_chunk);
+ 
+#ifdef IPV6_SUPPORT
+    if(mux_bound_socket6 < 0) {
+        mux_bound_socket6 = bind_mux6_socket(port);
     }
+    event_set(&listen6_sock_ev, mux_bound_socket6, EV_READ | EV_PERSIST, 
+            accept_new6_connection, NULL);
+    event_add(&listen6_sock_ev, NULL);
+#endif
+    
+    evtimer_set(&queue_ev, runqueues, NULL);
+    evtimer_add(&queue_ev, &queue_slice); 
+
+    get_tod(&last_slice);
+    get_tod(&current_time);
+    
+    event_dispatch();
 }
 
 DESC *new_connection(int sock) {
@@ -793,7 +811,7 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     descriptor_list = d;
 
     d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
-            bsd_read_callback, bsd_error_callback, NULL);
+            NULL, bsd_error_callback, NULL);
     bufferevent_disable(d->sock_buff, EV_READ);
     bufferevent_enable(d->sock_buff, EV_WRITE);
     event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
@@ -892,10 +910,10 @@ void flush_sockets() {
     DESC *d, *dnext;
     DESC_SAFEITER_ALL(d, dnext) {
         dprintk("%d output evbuffer misalign: %d, totallen: %d, off: %d", 
-                    d->descriptor,
-                    d->sock_buff->output->misalign,
-                    d->sock_buff->output->totallen,
-                    d->sock_buff->output->off);
+                    (int)d->descriptor,
+                    (int)d->sock_buff->output->misalign,
+                    (int)d->sock_buff->output->totallen,
+                    (int)d->sock_buff->output->off);
         if(d->chokes) {
 #if TCP_CORK
             setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null));
@@ -1197,7 +1215,7 @@ static RETSIGTYPE sighandler(sig)
                 if (mudconf.have_specials)
                     ChangeSpecialObjects(0);
                 dump_restart_db();
-                execl("bin/netmux", "netmux", mudconf.config_file, NULL);
+                execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
                 break;
             } else {
                 unset_signals();

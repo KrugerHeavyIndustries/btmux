@@ -53,26 +53,26 @@ typedef struct rbtree_head_t {
     int (*compare_function)(void *, void *, void *);
     void *token;
     unsigned int size;
-} rbtree;
+} *rbtree;
 
-rbtree *rb_init(int (*)(void *, void *, void *), void *);
-void rb_destroy(rbtree *);
+rbtree rb_init(int (*)(void *, void *, void *), void *);
+void rb_destroy(rbtree );
 
-void rb_insert(rbtree *, void *key, void *data); 
-void *rb_find(rbtree *, void *key);
-int rb_exists(rbtree *, void *key);
-void *rb_delete(rbtree *, void *key);
+void rb_insert(rbtree , void *key, void *data); 
+void *rb_find(rbtree , void *key);
+int rb_exists(rbtree , void *key);
+void *rb_delete(rbtree , void *key);
 
-void rb_walk(rbtree *, int, int (*)(void *, void *, int, void *), void *);
-unsigned int rb_size(rbtree *);
-void *rb_search(rbtree *, int, void *);
+void rb_walk(rbtree , int, int (*)(void *, void *, int, void *), void *);
+unsigned int rb_size(rbtree );
+void *rb_search(rbtree , int, void *);
 
-rbtree *rb_init(int (*compare_function)(void *, void *, void *), void *token) {
-    rbtree *temp;
+rbtree rb_init(int (*compare_function)(void *, void *, void *), void *token) {
+    rbtree temp;
 
-    temp = malloc(sizeof(rbtree));
+    temp = malloc(sizeof(struct rbtree_head_t));
     if(temp == NULL) return NULL;
-    memset(temp, 0, sizeof(rbtree));
+    memset(temp, 0, sizeof(struct rbtree_head_t));
     temp->compare_function = compare_function;
     temp->token = token;
     temp->size = 0;
@@ -136,7 +136,7 @@ static rbtree_node *rb_find_predecessor_node(rbtree_node *node) {
 }
 
 
-void rb_destroy(rbtree *bt) {
+void rb_destroy(rbtree bt) {
     rbtree_node *node, *parent;
     node = bt->head;
 
@@ -167,15 +167,15 @@ void rb_destroy(rbtree *bt) {
 
 static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
     rbtree_node *temp;
-    temp = malloc(sizeof(rbtree_node));
-    memset(temp, 0, sizeof(rbtree_node));
+    temp = malloc(sizeof(struct rbtree_node_t));
+    memset(temp, 0, sizeof(struct rbtree_node_t));
     temp->parent = parent;
     temp->key = key;
     temp->data = data;
     return temp;
 }
 
-static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
+static void rb_rotate_right(rbtree bt, rbtree_node *pivot) {
     rbtree_node *child;
 
     if(!pivot || !pivot->left) return;
@@ -197,7 +197,7 @@ static void rb_rotate_right(rbtree *bt, rbtree_node *pivot) {
     pivot->parent = child;
 }
 
-static void rb_rotate_left(rbtree *bt, rbtree_node *pivot) {
+static void rb_rotate_left(rbtree bt, rbtree_node *pivot) {
     rbtree_node *child;
 
     if(!pivot || !pivot->right) return;
@@ -221,7 +221,7 @@ static void rb_rotate_left(rbtree *bt, rbtree_node *pivot) {
 
 
 
-void rb_insert(rbtree *bt, void *key, void *data) {
+void rb_insert(rbtree bt, void *key, void *data) {
     rbtree_node *node;
     rbtree_node *iter;
     int compare_result;
@@ -336,7 +336,7 @@ void rb_insert(rbtree *bt, void *key, void *data) {
     bt->head->color = NODE_BLACK;
 }
 
-void *rb_find(rbtree *bt, void *key) {
+void *rb_find(rbtree bt, void *key) {
     rbtree_node *node;
     int compare_result;
 
@@ -368,7 +368,7 @@ void *rb_find(rbtree *bt, void *key) {
     exit(1);
 }
 
-int rb_exists(rbtree *bt, void *key) {
+int rb_exists(rbtree bt, void *key) {
     rbtree_node *node;
     int compare_result;
     if(!bt->head) {
@@ -402,7 +402,7 @@ int rb_exists(rbtree *bt, void *key) {
 #define rbann(format, args...) printf("%d: " format "\n", __LINE__, ##args)
 #define rbfail(format, args...) do { printf("%d: " format "\n", __LINE__, ##args); abort(); } while (0)
 
-static void rb_unlink_leaf(rbtree *bt, rbtree_node *leaf) {
+static void rb_unlink_leaf(rbtree bt, rbtree_node *leaf) {
     rbtree_node *child=NULL, *sibling=NULL, *node;
 
     node=leaf;
@@ -585,7 +585,7 @@ done:
     return;    
 }
 
-void *rb_delete(rbtree *bt, void *key) {
+void *rb_delete(rbtree bt, void *key) {
     rbtree_node *node = NULL, *child = NULL;
     void *data;
     int compare_result;
@@ -665,7 +665,7 @@ void *rb_delete(rbtree *bt, void *key) {
     return data;
 }
 
-void rb_walk(rbtree *bt, int how, 
+void rb_walk(rbtree bt, int how, 
         int (*callback)(void *, void *, int, void *), void *arg) {
     rbtree_node *last, *node;
     int depth = 0;
@@ -703,11 +703,11 @@ void rb_walk(rbtree *bt, int how,
     }
 }
 
-unsigned int rb_size(rbtree *bt) {
+unsigned int rb_size(rbtree bt) {
     return bt->size;
 }
 
-void *rb_search(rbtree *bt, int method, void *key) {
+void *rb_search(rbtree bt, int method, void *key) {
     rbtree_node *node, *last;
     int compare_result;
     int found = 0;

@@ -10,6 +10,7 @@
 #include "config.h"
 
 #include "db.h"
+#include "cque.h"
 #include "alloc.h"
 #include "mudconf.h"
 #include "externs.h"

@@ -492,6 +492,7 @@ void welcome_user(DESC *d) {
 }
 
 void save_command(DESC *d, CBLK *command) {
+    CBLK *t;
 
     command->hdr.nxt = NULL;
     if (d->input_tail == NULL)
@@ -499,6 +500,21 @@ void save_command(DESC *d, CBLK *command) {
     else
         d->input_tail->hdr.nxt = command;
     d->input_tail = command;
+    
+    if (d->quota > 0 && (t = d->input_head)) {
+        if (d->player <= 0 || !Staff(d->player))
+            d->quota--;
+        d->input_head = (CBLK *) t->hdr.nxt;
+        if (!d->input_head)
+            d->input_tail = NULL;
+        d->input_size -= (strlen(t->cmd) + 1);
+        if (d->program_data != NULL)
+            handle_prog(d, t->cmd);
+        else
+            do_command(d, t->cmd, 1);
+        free_lbuf(t);
+    }
+
 }
 
 static void set_userstring(char **userstring, const char *command) {

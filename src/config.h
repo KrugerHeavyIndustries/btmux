@@ -34,6 +34,8 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
+#include "debug.h"
+
 typedef int	dbref;
 typedef int	FLAG;
 typedef int     POWER;
@@ -71,7 +73,7 @@ typedef char	IBUF[16];
 #define MAX_ARG			100	/* max # args from command processor */
 #define MAX_GLOBAL_REGS		10	/* r() registers */
 
-#define HASH_FACTOR		2	/* How much hashing you want. */
+#define HASH_FACTOR		16	/* How much hashing you want. */
 
 #define PLUSHELP_COMMAND	"+help"	/* What you type to see the +help file */
 #define OUTPUT_BLOCK_SIZE	16384
@@ -192,4 +194,5 @@ size_t strnlen(const char *s, size_t maxlen);
 #ifndef HAVE_STRNDUP
 char *strndup(const char *s, size_t n);
 #endif
+
 #endif				/* CONFIG_H */

@@ -1112,7 +1112,7 @@ void do_restart(player, cause, key)
     } dump_database_internal(DUMP_RESTART);
 
     dump_restart_db();
-    execl("bin/netmux", "netmux", mudconf.config_file, NULL);
+    execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
 }
 
 /*
