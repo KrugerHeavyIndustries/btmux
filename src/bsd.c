@@ -811,7 +811,7 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     descriptor_list = d;
 
     d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
-            NULL, bsd_error_callback, NULL);
+            bsd_read_callback, bsd_error_callback, NULL);
     bufferevent_disable(d->sock_buff, EV_READ);
     bufferevent_enable(d->sock_buff, EV_WRITE);
     event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
@@ -909,11 +909,6 @@ void flush_sockets() {
     int null = 0;
     DESC *d, *dnext;
     DESC_SAFEITER_ALL(d, dnext) {
-        dprintk("%d output evbuffer misalign: %d, totallen: %d, off: %d", 
-                    (int)d->descriptor,
-                    (int)d->sock_buff->output->misalign,
-                    (int)d->sock_buff->output->totallen,
-                    (int)d->sock_buff->output->off);
         if(d->chokes) {
 #if TCP_CORK
             setsockopt(d->descriptor, IPPROTO_TCP, TCP_CORK, &null, sizeof(null));
@@ -925,7 +920,11 @@ void flush_sockets() {
             d->chokes = 0;
         }   
         if(EVBUFFER_LENGTH(d->sock_buff->output)) {
-            dprintk("forcing write.");
+            dprintk("%d output evbuffer misalign: %d, totallen: %d, off: %d. FORCING WRITE.", 
+                    (int)d->descriptor,
+                    (int)d->sock_buff->output->misalign,
+                    (int)d->sock_buff->output->totallen,
+                    (int)d->sock_buff->output->off);
             evbuffer_write(d->sock_buff->output, d->descriptor);
         }
         fsync(d->descriptor);

@@ -78,6 +78,8 @@ static BQUE *cque_deque(dbref player) {
     BQUE *cmd;
 
     tmp = cque_find(player);
+    if(!tmp) return NULL;
+
     dassert(tmp, "brain damage");
     
     if(!tmp->cque) return NULL;
@@ -165,17 +167,25 @@ static int que_want(BQUE *entry, dbref ptarg, dbref otarg) {
 
 int halt_que(dbref player, dbref object) {
     BQUE *trail, *point, *next;
-    PCACHE *pp;
+    OBJQE *pque;
+    
     int numhalted;
 
     numhalted = 0;
 
     /* Player's que */
-    // XXX: nuke queue
-    //
+    // XXX: nuke queu
 
-
-    dprintk("HALT_QUE CURRENTLY NEUTERED, MUST FIX.\n");
+    pque = cque_find(player);
+    if(pque->cque) {
+        while((point = cque_deque(pque)) != NULL) {
+            free(point->text);
+            point->text = NULL;
+            free_qentry(point);
+            point = NULL;
+            numhalted++;
+        }
+    }
     
     /*
      * Wait queue 
@@ -790,6 +800,7 @@ int do_top(int ncmds) {
             mudstate.qhead = mudstate.qhead->next;
             mudstate.qtail->next = NULL;
         }
+        if(!tmp) continue;
 
         dassert(tmp, "serious braindamage");
         count++;
@@ -861,55 +872,48 @@ int do_top(int ncmds) {
  * * do_ps: tell player what commands they have pending in the queue
  */
 
-static void show_que(dbref player, int key, BQUE *queue, int *qtot, int *qent, 
-        int *qdel, dbref player_targ, dbref obj_targ, const char *header) {
+static void show_que(dbref player, int key, BQUE *queue, int *qent, const char *header) {
     BQUE *tmp;
     char *bp, *bufp;
     int i;
 
-    *qtot = 0;
-    *qent = 0;
-    *qdel = 0;
     for (tmp = queue; tmp; tmp = tmp->next) {
-        (*qtot)++;
-        if (que_want(tmp, player_targ, obj_targ)) {
-            (*qent)++;
-            if (key == PS_SUMM)
-                continue;
-            if (*qent == 1)
-                notify(player, tprintf("----- %s Queue -----", header));
-            bufp = unparse_object(player, tmp->player, 0);
-            if ((tmp->waittime > 0) && (Good_obj(tmp->sem)))
-                notify(player, tprintf("[#%d/%d]%s:%s", tmp->sem,
-                            tmp->waittime - mudstate.now, bufp, tmp->comm));
-            else if (tmp->waittime > 0)
-                notify(player, tprintf("[%d]%s:%s",
-                            tmp->waittime - mudstate.now, bufp, tmp->comm));
-            else if (Good_obj(tmp->sem))
-                notify(player, tprintf("[#%d]%s:%s", tmp->sem, bufp,
-                            tmp->comm));
-            else
-                notify(player, tprintf("%s:%s", bufp, tmp->comm));
-            bp = bufp;
-            if (key == PS_LONG) {
-                for (i = 0; i < (tmp->nargs); i++) {
-                    if (tmp->env[i] != NULL) {
-                        safe_str((char *) "; Arg", bufp, &bp);
-                        safe_chr(i + '0', bufp, &bp);
-                        safe_str((char *) "='", bufp, &bp);
-                        safe_str(tmp->env[i], bufp, &bp);
-                        safe_chr('\'', bufp, &bp);
-                    }
+        (*qent)++;
+        if (key == PS_SUMM)
+            continue;
+        if (*qent == 1)
+            notify(player, tprintf("----- %s Queue -----", header));
+        
+        bufp = unparse_object(player, tmp->player, 0);
+        if ((tmp->waittime > 0) && (Good_obj(tmp->sem)))
+            notify_printf(player, "[#%d/%d]%s:%s", tmp->sem,
+                        tmp->waittime - mudstate.now, bufp, tmp->comm);
+        else if (tmp->waittime > 0)
+            notify_printf(player, "[%d]%s:%s", tmp->waittime - mudstate.now, 
+                    bufp, tmp->comm);
+        else if (Good_obj(tmp->sem))
+            notify_printf(player, "[#%d]%s:%s", tmp->sem, bufp,
+                        tmp->comm);
+        else
+            notify_printf(player, "%s:%s", bufp, tmp->comm);
+
+        bp = bufp;
+        if (key == PS_LONG) {
+            for (i = 0; i < (tmp->nargs); i++) {
+                if (tmp->env[i] != NULL) {
+                    safe_str((char *) "; Arg", bufp, &bp);
+                    safe_chr(i + '0', bufp, &bp);
+                    safe_str((char *) "='", bufp, &bp);
+                    safe_str(tmp->env[i], bufp, &bp);
+                    safe_chr('\'', bufp, &bp);
                 }
-                *bp = '\0';
-                bp = unparse_object(player, tmp->cause, 0);
-                notify(player, tprintf("   Enactor: %s%s", bp, bufp));
-                free_lbuf(bp);
             }
-            free_lbuf(bufp);
-        } else if (tmp->player == NOTHING) {
-            (*qdel)++;
+            *bp = '\0';
+            bp = unparse_object(player, tmp->cause, 0);
+            notify(player, tprintf("   Enactor: %s%s", bp, bufp));
+            free_lbuf(bp);
         }
+        free_lbuf(bufp);
     }
     return;
 }
@@ -919,6 +923,7 @@ void do_ps(dbref player, dbref cause, int key, char *target) {
     dbref player_targ, obj_targ;
     int pqent, pqtot, pqdel, oqent, oqtot, oqdel, wqent, wqtot, sqent,
         sqtot, i;
+    OBJQE *objq;
 
     /*
      * Figure out what to list the queue for 
@@ -966,36 +971,36 @@ void do_ps(dbref player, dbref cause, int key, char *target) {
     /*
      * Go do it 
      */
+    pqtot = 0;
+    if(player_targ == NOTHING) {
+        objq = mudstate.qhead;
+        while(objq && (objq = objq->next) != NULL) {
+            pqent = 0;
+            show_que(player, key, objq->cque, &pqent, "PLAYAH");
+            pqtot += pqent;
+        }
+    } else {
+        pqent = 0;
+        objq = cque_find(player_targ);
+        if(objq) {
+            show_que(player, key, objq->cque, &pqent, "PLAYAH");
+        }
+    }
 
-/*
-    show_que(player, key, mudstate.qfirst, &pqtot, &pqent, &pqdel,
-            player_targ, obj_targ, "Player");
-    show_que(player, key, mudstate.qlfirst, &oqtot, &oqent, &oqdel,
-            player_targ, obj_targ, "Object");
-*/
-
-    notify_printf(player, "XXX: master parse table.\n");
-    show_que(player, key, mudstate.qwait, &wqtot, &wqent, &i, player_targ,
-            obj_targ, "Wait");
-    show_que(player, key, mudstate.qsemfirst, &sqtot, &sqent, &i,
-            player_targ, obj_targ, "Semaphore");
+    wqent = 0; sqent = 0; wqtot = 0; sqtot = 0;
+    show_que(player, key, mudstate.qwait, &wqent, "Wait");
+    show_que(player, key, mudstate.qsemfirst, &sqent, "Semaphore"); 
 
     /*
      * Display stats 
      */
 
-    bufp = alloc_mbuf("do_ps");
     if (See_Queue(player))
-        sprintf(bufp,
-                "Totals: Player...%d/%d[%ddel]  Object...%d/%d[%ddel]  Wait...%d/%d  Semaphore...%d/%d",
-                pqent, pqtot, pqdel, oqent, oqtot, oqdel, wqent, wqtot, sqent,
-                sqtot);
+        notify_printf(player, "Totals: Player...%d/%d  Wait...%d/%d  Semaphore...%d/%d",
+                pqent, pqtot, wqent, wqtot, sqent, sqtot);
     else
-        sprintf(bufp,
-                "Totals: Player...%d/%d  Object...%d/%d  Wait...%d/%d  Semaphore...%d/%d",
-                pqent, pqtot, oqent, oqtot, wqent, wqtot, sqent, sqtot);
-    notify(player, bufp);
-    free_mbuf(bufp);
+        notify_printf(player, "Totals: Player...%d/%d  Wait...%d/%d  Semaphore...%d/%d",
+                pqent, pqtot, wqent, wqtot, sqent, sqtot);
 }
 
 /*
