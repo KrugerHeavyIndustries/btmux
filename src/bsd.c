@@ -455,7 +455,12 @@ void shovechars(int port) {
 
         /* run event loop */
 
-        if(event_loop(EVLOOP_ONCE) < 0) {
+        if(event_loopexit(&slice_timeout) < 0) {
+            perror("event_loop");
+            exit(0);
+        }
+        
+        if(event_dispatch() < 0) {
             perror("event_loop");
             exit(0);
         }
