@@ -778,6 +778,7 @@ b. Type list
     'N': NARC-guided mode
     'P': Precision mode
     'S': Swarm mode
+    'T': Stinger mode
     'a': Armor Piercing mode
     'e': iNARC Explode mode
     'i': Incendiary mode
