@@ -1118,6 +1118,7 @@ void mech_jump(dbref player, void *data, char *buffer)
     DOCHECK(RemovingPods(mech), "You are too busy removing iNARC pods!");
     DOCHECK(MapIsUnderground(mech_map),
 	"Realize the ceiling in this grotto is a bit to low for that!");
+    DOCHECK(OODing(mech), "You can't jump while orbital dropping!");
 
     if (Staggering(mech)) {
 	mech_notify(mech, MECHALL,
@@ -1233,7 +1234,7 @@ void mech_jump(dbref player, void *data, char *buffer)
 	mech_notify(mech, MECHALL,
 	    "You engage your jump jets for a Death From Above attack!");
     else
-	mech_notify(mech, MECHALL, "You engage your jump jets");
+	mech_notify(mech, MECHALL, "You engage your jump jets.");
     MechSwarmTarget(mech) = -1;
     MechLOSBroadcast(mech, "engages jumpjets!");
     MECHEVENT(mech, EVENT_JUMP, mech_jump_event, JUMP_TICK, 0);

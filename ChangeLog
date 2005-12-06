@@ -185,6 +185,8 @@ btonline-btechmux 0.6:
           (Power_Shaper)
         * TargComp wasn't looking at the proper range values. 
           (Power_Shaper)
+	* Don't allow using jumpjets while orbital dropping. This was being
+	  used to circumvent the landing roll. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes
