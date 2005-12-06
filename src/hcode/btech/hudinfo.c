@@ -357,6 +357,8 @@ static char *hud_getammomode(MECH * mech, int mode)
 	*p++ = 'e';
     if (mode & SMOKE_MODE)
 	*p++ = 's';
+    if (mode & STINGER_MODE)
+	*p++ = 'T';
 
     if (p == amode)
 	*p++ = '-';
