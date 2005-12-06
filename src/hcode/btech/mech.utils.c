@@ -2905,7 +2905,7 @@ for (i = 0; i < NUM_SECTIONS; i++) {
 #else
              mul = ((temp2 = GetPartAmmoMode(mech, i, ii)) & AC_AP_MODE ? 4 :
                  temp2 & AC_PRECISION_MODE ? 6 :
-                 temp2 & (SWARM_MODE|SWARM1_MODE) ? 1.5 : 1);
+                 temp2 & (SWARM_MODE|SWARM1_MODE|STINGER_MODE) ? 1.5 : 1);
 #endif
 	 	mul = (mul * ((float) ((float) GetPartData(mech, i, ii) /
          (float) MechWeapons[weapindx = Ammo2WeaponI(temp)].ammoperton)));
