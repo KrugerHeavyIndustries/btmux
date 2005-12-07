@@ -1,7 +1,7 @@
 /*
  * rbtree.h
  *
- * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
+ * Copyright (c) 2004,2005 Martin Murray <mmurray@mon.org>
  * All rights reserved.
  * 
  * Permission to use, copy, modify, and distribute this software for any
@@ -41,10 +41,10 @@ typedef void *rbtree;
 rbtree rb_init(int (*)(void *, void *, void *), void *);
 void rb_destroy(rbtree);
 
-void rb_insert(rbtree, void *key, void *data); 
-void *rb_find(rbtree, void *key);
-int rb_exists(rbtree, void *key);
-void *rb_delete(rbtree, void *key);
+void rb_insert(rbtree, void *, void *); 
+void *rb_find(rbtree, void *);
+int rb_exists(rbtree, void *);
+void *rb_delete(rbtree, void *);
 
 void rb_walk(rbtree, int, int (*)(void *, void *, int, void *), void *);
 unsigned int rb_size(rbtree);

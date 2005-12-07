@@ -43,16 +43,16 @@ int cque_init() {
 };
 
 static OBJQE *cque_find(dbref player) {
-    OBJQE *tmp;
+    OBJQE *tmp=NULL;
 
     if(obq == NULL) {
         cque_init();
     }
-    if(!Good_obj(player))
-        return NULL;
+
+   
     tmp = rb_find(obq, player);
 
-    if(!tmp) {
+    if(!tmp && Good_obj(player)) {
         tmp = malloc(sizeof(OBJQE));
         tmp->obj = player;
         tmp->cque = NULL;
@@ -175,9 +175,19 @@ int halt_que(dbref player, dbref object) {
 
     /* Player's que */
     // XXX: nuke queu
-
+    
     pque = cque_find(player);
-    if(pque->cque) {
+    if(pque && pque->cque) {
+        while((point = cque_deque(pque)) != NULL) {
+            free(point->text);
+            point->text = NULL;
+            free_qentry(point);
+            point = NULL;
+            numhalted++;
+        }
+    }
+    pque = cque_find(object);
+    if(pque && pque->cque) {
         while((point = cque_deque(pque)) != NULL) {
             free(point->text);
             point->text = NULL;
