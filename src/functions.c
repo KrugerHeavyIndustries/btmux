@@ -2240,6 +2240,11 @@ static void fun_not(char *buff, char **bufc, dbref player, dbref cause, char *fa
     safe_tprintf_str(buff, bufc, "%d", !xlate(fargs[0]));
 }
 
+static void fun_t(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    safe_tprintf_str(buff, bufc, "%d", !(!xlate(fargs[0])));
+}
+
 static void fun_sqrt(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     double val;
@@ -5670,10 +5675,12 @@ FUN flist[] = {
 {"SWITCH",	fun_switch,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
 {"TAN",		fun_tan,	1,  0,		CA_PUBLIC},
+{"T",           fun_t,          1,  0,          CA_PUBLIC},
 {"TEL",		fun_tel,	2,  0,		CA_PUBLIC},
 {"TIME",	fun_time,	0,  0,		CA_PUBLIC},
 {"TRANSLATE",   fun_translate,  2,  0,          CA_PUBLIC},
 {"TRIM",	fun_trim,	0,  FN_VARARGS,	CA_PUBLIC},
+{"TRUE",        fun_t,          1,  0,          CA_PUBLIC},
 {"TRUNC",	fun_trunc,	1,  0,		CA_PUBLIC},
 {"TYPE",	fun_type,	1,  0,		CA_PUBLIC},
 {"U",		fun_u,		0,  FN_VARARGS,	CA_PUBLIC},
