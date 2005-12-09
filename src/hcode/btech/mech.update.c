@@ -776,7 +776,7 @@ void CheckVTOLHeight(MECH * mech)
 	mech_notify(mech, MECHALL,
 	    "Water pours into the cockpit....gulp!");
 	MechLOSBroadcast(mech, "splashes into the water!");
-	DestroyAndDump(mech);
+	DestroyMech(mech,mech,0);
 	return;
     }
     if (MechZ(mech) >= MechElevation(mech))
