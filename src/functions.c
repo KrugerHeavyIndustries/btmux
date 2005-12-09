@@ -2028,6 +2028,10 @@ char *arg;
 
     if (arg[0] == '#') {
 	arg++;
+        /* #- anything is false */
+        if (arg[1] =='-') {
+            return 0;
+        }
 	if (is_integer(arg)) {
 	    temp = atoi(arg);
 	    if (temp == -1)

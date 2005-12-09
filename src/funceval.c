@@ -1225,7 +1225,7 @@ void fun_ifelse(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
             &str, cargs, ncargs);
     *bp = '\0';
 
-    if (!mbuff || !*mbuff || ((atoi(mbuff) == 0) && is_number(mbuff))) {
+    if (!xlate(mbuff)) {
         str = fargs[2];
         exec(buff, bufc, 0, player, cause, EV_STRIP | EV_FCHECK | EV_EVAL,
                 &str, cargs, ncargs);
