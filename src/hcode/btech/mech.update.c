@@ -1884,6 +1884,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         mech_notify(mech, MECHALL,
                                 "You drive into the water and your vehicle becomes inoperable.");
                         Destroy(mech);
+                        ChannelEmitKill(mech,mech);
                     }
 
                     return;
@@ -1941,6 +1942,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     mech_notify(mech, MECHALL,
                             "You drive into the water and your vehicle becomes inoperable.");
                     Destroy(mech);
+                    ChannelEmitKill(mech,mech);
                     return;
                 }
                 move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
@@ -2060,6 +2062,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         mech_notify(mech, MECHALL,
                                 "You drive into the water and your vehicle becomes inoperable.");
                         Destroy(mech);
+                        ChannelEmitKill(mech,mech);
                     }
 
                     return;
@@ -2120,6 +2123,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                     mech_notify(mech, MECHALL,
                             "You drive into the water and your vehicle becomes inoperable.");
                     Destroy(mech);
+                    ChannelEmitKill(mech,mech);
                     return;
                 }
                 move_unit_back(mech, deltax, deltay, lastelevation, ot, le);

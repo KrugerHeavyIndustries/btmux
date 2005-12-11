@@ -167,8 +167,10 @@ static void char_eject(dbref player, MECH * mech)
     if (MechType(mech) == CLASS_MECH) {
 	DestroyPart(mech, HEAD, 2);
     }
-    if (!Destroyed(mech))
+    if (!Destroyed(mech)) {
 	DestroyAndDump(mech);
+        ChannelEmitKill(mech,mech);
+    }
 }
 
 void mech_eject(dbref player, void *data, char *buffer)

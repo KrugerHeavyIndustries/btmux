@@ -934,6 +934,7 @@ int handlemwconc(MECH * mech, int initial)
 		    "You are killed from personal injuries!!");
 		MechPilot(mech) = -1;
 		Destroy(mech);
+                ChannelEmitKill(mech,mech);
 		MechSpeed(mech) = 0.;
 		MechDesiredSpeed(mech) = 0.;
 		return 0;
