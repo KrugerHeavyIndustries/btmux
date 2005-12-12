@@ -198,10 +198,10 @@ Makefile: Makefile.dist configure.in Makefile.in
 install: $(TARGETS)
 	if [ ! -d game ]; then \
             echo No game directory, attempting to download one from the Subversion repository.; \
-            svn co http://btmux.com/svn/game/trunk game; \
-            svn co http://btmux.com/svn/maps/trunk game/maps; \
-            svn co http://btmux.com/svn/text/trunk game/text; \
-            svn co http://btmux.com/svn/mechs/trunk game/mechs; \
+            svn co http://svn.btmux.com/game/trunk game; \
+            svn co http://svn.btmux.com/maps/trunk game/maps; \
+            svn co http://svn.btmux.com/text/trunk game/text; \
+            svn co http://svn.btmux.com/mechs/trunk game/mechs; \
         fi
 	if [ ! -d game ]; then \
 	    echo No game directory. Please acquire one from http://sourceforge.net/projects/btonline-btech.; \
