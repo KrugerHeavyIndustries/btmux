@@ -998,7 +998,6 @@ static void fun_convuptime(char *buff, char **bufc, dbref player, dbref cause, c
 }
 
 
-#ifdef BT_ENABLED
 static void fun_lag(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     char buf[256];
@@ -1006,7 +1005,6 @@ static void fun_lag(char *buff, char **bufc, dbref player, dbref cause, char *fa
     sprintf(buf, "%d", game_lag());
     safe_str(buf, buff, bufc);
 }
-#endif
 
 /*
  * ---------------------------------------------------------------------------
@@ -1020,6 +1018,18 @@ static void fun_starttime(char *buff, char **bufc, dbref player, dbref cause, ch
     temp = (char *) ctime(&mudstate.start_time);
     temp[strlen(temp) - 1] = '\0';
     safe_str(temp, buff, bufc);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * fun_connrecord: What is the record number of players connected?
+ */
+static void fun_connrecord(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    char buf[256];
+
+    sprintf(buf, "%d", mudstate.record_players);
+    safe_str(buf, buff, bufc);
 }
 
 /*
@@ -5488,6 +5498,7 @@ FUN flist[] = {
 {"CON",		fun_con,	1,  0,		CA_PUBLIC},
 {"CONFIG", 	fun_config,	1,  0,		CA_WIZARD},
 {"CONN",	fun_conn,	1,  0,		CA_PUBLIC},
+{"CONNRECORD",  fun_connrecord, 0,  0,          CA_PUBLIC},
 {"CONTROLS", 	fun_controls,	2,  0,		CA_PUBLIC},
 {"CONVSECS",    fun_convsecs,   1,  0,		CA_PUBLIC},
 {"CONVTIME",    fun_convtime,   1,  0,		CA_PUBLIC},
