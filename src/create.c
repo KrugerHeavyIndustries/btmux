@@ -1,10 +1,5 @@
-
 /*
  * create.c -- Commands that create new objects 
- */
-
-/*
- * $Id: create.c,v 1.2 2005/08/08 09:43:06 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -26,9 +21,7 @@
  * * parse_linkable_room: Get a location to link to.
  */
 
-static dbref parse_linkable_room(player, room_name)
-    dbref player;
-    char *room_name;
+static dbref parse_linkable_room(dbref player, char *room_name)
 {
     dbref room;
 
@@ -63,9 +56,7 @@ static dbref parse_linkable_room(player, room_name)
  * * open_exit, do_open: Open a new exit and optionally link it somewhere.
  */
 
-static void open_exit(player, loc, direction, linkto)
-    dbref player, loc;
-    char *direction, *linkto;
+static void open_exit(dbref player, dbref loc, char *direction, char *linkto)
 {
     dbref exit;
 
@@ -130,10 +121,8 @@ static void open_exit(player, loc, direction, linkto)
     }
 }
 
-void do_open(player, cause, key, direction, links, nlinks)
-    dbref player, cause;
-    int key, nlinks;
-    char *direction, *links[];
+void do_open(dbref player, dbref cause, int key, char *direction, 
+    char *links[], int nlinks)
 {
     dbref loc, destnum;
     char *dest;
@@ -172,8 +161,7 @@ void do_open(player, cause, key, direction, links, nlinks)
  * * home(player,thing)
  */
 
-static void link_exit(player, exit, dest)
-    dbref player, exit, dest;
+static void link_exit(dbref player, dbref exit, dbref dest)
 {
     int cost, quot;
 
@@ -226,10 +214,7 @@ static void link_exit(player, exit, dest)
         notify_quiet(player, "Linked.");
 }
 
-void do_link(player, cause, key, what, where)
-    dbref player, cause;
-    int key;
-    char *what, *where;
+void do_link(dbref player, dbref cause, int key, char *what, char *where)
 {
     dbref thing, room;
     char *buff;
@@ -340,10 +325,7 @@ void do_link(player, cause, key, what, where)
  * * do_parent: Set an object's parent field.
  */
 
-void do_parent(player, cause, key, tname, pname)
-    dbref player, cause;
-    int key;
-    char *tname, *pname;
+void do_parent(dbref player, dbref cause, int key, char *tname, char *pname)
 {
     dbref thing, parent, curr;
     int lev;
@@ -414,10 +396,7 @@ void do_parent(player, cause, key, tname, pname)
  * * do_dig: Create a new room.
  */
 
-void do_dig(player, cause, key, name, args, nargs)
-    dbref player, cause;
-    int key, nargs;
-    char *name, *args[];
+void do_dig(dbref player, dbref cause, int key, char *name, char *args[], int nargs)
 {
     dbref room;
     char *buff;
@@ -455,7 +434,8 @@ void do_dig(player, cause, key, name, args, nargs)
  * * do_create: Make a new object.
  */
 
-void do_create(dbref player, dbref cause, int key, char *name, char *coststr) {
+void do_create(dbref player, dbref cause, int key, char *name, char *coststr) 
+{
     dbref thing;
     int cost;
     char clearbuffer[MBUF_SIZE];
@@ -488,10 +468,7 @@ void do_create(dbref player, dbref cause, int key, char *name, char *coststr) {
  * * do_clone: Create a copy of an object.
  */
 
-void do_clone(player, cause, key, name, arg2)
-    dbref player, cause;
-    int key;
-    char *name, *arg2;
+void do_clone(dbref player, dbref cause, int key, char *name, char *arg2)
 {
     dbref clone, thing, new_owner, loc;
     FLAG rmv_flags;
@@ -667,10 +644,7 @@ void do_clone(player, cause, key, name, arg2)
  * * do_pcreate: Create new players and robots.
  */
 
-void do_pcreate(player, cause, key, name, pass)
-    dbref player, cause;
-    int key;
-    char *name, *pass;
+void do_pcreate(dbref player, dbref cause, int key, char *name, char *pass)
 {
     int isrobot;
     dbref newplayer;
@@ -684,8 +658,9 @@ void do_pcreate(player, cause, key, name, pass)
     if (isrobot) {
         move_object(newplayer, Location(player));
         notify_quiet(player,
-                tprintf("New robot '%s' created with password '%s'", name,
-                    pass));
+            tprintf("New robot '%s' (#%d) created with password '%s'", 
+                name, newplayer, pass));
+
         notify_quiet(player, "Your robot has arrived.");
         STARTLOG(LOG_PCREATES, "CRE", "ROBOT") {
             log_name(newplayer);
@@ -695,8 +670,9 @@ void do_pcreate(player, cause, key, name, pass)
         }} else {
             move_object(newplayer, mudconf.start_room);
             notify_quiet(player,
-                    tprintf("New player '%s' created with password '%s'", name,
-                        pass));
+                tprintf("New player '%s' (#%d) created with password '%s'", 
+                    name, newplayer, pass));
+
             STARTLOG(LOG_PCREATES | LOG_WIZARD, "WIZ", "PCREA") {
                 log_name(newplayer);
                 log_text((char *) " created by ");
@@ -711,8 +687,7 @@ void do_pcreate(player, cause, key, name, pass)
  * * Destroy things.
  */
 
-static int can_destroy_exit(player, exit)
-    dbref player, exit;
+static int can_destroy_exit(dbref player, dbref exit)
 {
     dbref loc;
 
@@ -730,8 +705,7 @@ static int can_destroy_exit(player, exit)
  * * the database.
  */
 
-static int destroyable(victim)
-    dbref victim;
+static int destroyable(dbref victim)
 {
     if ((victim == mudconf.default_home) || (victim == mudconf.start_home)
             || (victim == mudconf.start_room) ||
@@ -742,24 +716,20 @@ static int destroyable(victim)
 }
 
 
-static int can_destroy_player(player, victim)
-    dbref player, victim;
+static int can_destroy_player(dbref player, dbref victim)
 {
     if (!Wizard(player)) {
         notify_quiet(player, "Sorry, no suicide allowed.");
         return 0;
     }
     if (Wizard(victim)) {
-        notify_quiet(player, "Even you can't do that!");
+        notify_quiet(player, "You may not destroy Wizards!");
         return 0;
     }
     return 1;
 }
 
-void do_destroy(player, cause, key, what)
-    dbref player, cause;
-    int key;
-    char *what;
+void do_destroy(dbref player, dbref cause, int key, char *what)
 {
     dbref thing;
 
