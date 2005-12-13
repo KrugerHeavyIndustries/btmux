@@ -1107,7 +1107,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
             bearing = FindBearing(MechFX(tempMech), MechFY(tempMech), 
                     MechFX(mech), MechFY(mech));
             for (i = 0; i < MFreqs(tempMech); i++) {
-                if (tempMech->freq[i] == mech->freq[freq]) {
+                if (tempMech->freq[i] == mech->freq[freq] || obs ) {
                     if ((tempMech->freqmodes[i] & FREQ_MUTE) ||
                             ((mech->freqmodes[freq] & FREQ_DIGITAL) &&
                              (MechRadioInfo(tempMech) & RADIO_NODIGITAL)))
@@ -1216,8 +1216,8 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                 snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
                 else {
-                    		    snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), buf3);
+                    		    snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechID(mech),buf3);
 		}
 
             } else {
@@ -1235,8 +1235,8 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                 snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
                 else {
-		    snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), buf3);
+		    snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechID(mech),buf3);
 		}
 
             }
