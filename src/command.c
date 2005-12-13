@@ -540,13 +540,9 @@ CMDENT command_table[] = {
     {(char *)"version", NULL, 0, 0, CS_NO_ARGS, do_version},
     {(char *)"whisper", NULL, CA_LOCATION|CA_NO_SLAVE, PEMIT_WHISPER, CS_TWO_ARG|CS_INTERP, do_pemit},
     {(char *)"wizhelp", NULL, CA_WIZARD, HELP_WIZHELP, CS_ONE_ARG, do_help},
-#ifdef BT_ENABLED
     {(char *)"+show", NULL, CA_NO_SLAVE|CA_NO_IC, 0,  CS_TWO_ARG, do_show},
-#endif
-#ifdef BT_ENABLED
     {(char *)"+rolls", NULL, CA_NO_SLAVE, 0,  CS_NO_ARGS, do_show_stat},
     {(char *)"+charclear", NULL, CA_WIZARD, 0,  CS_ONE_ARG, do_charclear},
-#endif
 #ifdef HUDINFO_SUPPORT
     {(char *)"hudinfo", NULL, CA_PUBLIC, 0, CS_ONE_ARG, fake_hudinfo},
 #endif
@@ -2328,9 +2324,7 @@ static void list_hashstats(player)
     list_hashstat(player, "Wizhelp topics", &mudstate.wizhelp_htab);
     list_hashstat(player, "+Help topics", &mudstate.plushelp_htab);
     list_hashstat(player, "Wiznews topics", &mudstate.wiznews_htab);
-#ifdef BT_ENABLED
     list_fhashstats(player);
-#endif
     list_chashstats(player);
 }
 

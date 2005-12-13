@@ -78,11 +78,9 @@ static int debug_check_stuff(Node * tmp)
 	if (map->map) {
 	    size +=
 		sizeof(map->map[0][0]) * map->map_width * map->map_height;
-#ifdef BT_ENABLED
 	    size += bit_size(map);
 	    size += obj_size(map);
 	    size += mech_size(map);
-#endif
 	}
 	break;
     }
@@ -142,8 +140,6 @@ void debug_memory(dbref player, void *data, char *buffer)
     free((void *) smallest);
     free((void *) largest);
 }
-
-#ifdef BT_ENABLED
 
 void ShutDownMap(dbref player, dbref mapnumber)
 {
@@ -210,6 +206,3 @@ void debug_setvrt(dbref player, void *data, char *buffer)
 	log_name(player);
 	ENDLOG;
 }}
-
-
-#endif

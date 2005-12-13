@@ -19,11 +19,9 @@
 
 #include "db.h"
 #include "externs.h"
-#ifdef BT_ENABLED
 #include "mech.h"
 #include "macros.h"
 #include "p.glue.h"
-#endif
 
 void set_attr_internal(dbref player, dbref thing, int attrnum,
     char *attrtext, int key);

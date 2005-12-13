@@ -5418,7 +5418,6 @@ FUN flist[] = {
 {"ATAN",	fun_atan,	1,  0,		CA_PUBLIC},
 {"BEEP",        fun_beep,       0,  0,          CA_BUILDER},
 {"BEFORE",	fun_before,	0,  FN_VARARGS,	CA_PUBLIC},
-#ifdef BT_ENABLED
 {"BTARMORSTATUS",fun_btarmorstatus,2,0,		CA_WIZARD},
 {"BTCRITSTATUS",fun_btcritstatus,2,0,		CA_WIZARD},
 {"BTDAMAGEMECH",fun_btdamagemech,7, 0, 		CA_WIZARD},
@@ -5491,7 +5490,6 @@ FUN flist[] = {
 {"BTUNITFIXABLE",		fun_btunitfixable,		1, 0,		CA_WIZARD},
 {"BTWEAPONSTATUS_REF", 		fun_btweaponstatus_ref,		0, FN_VARARGS,	CA_WIZARD},
 {"BTWEAPSTAT",			fun_btweapstat,			2, 0,		CA_WIZARD},
-#endif
 {"CAPSTR",	fun_capstr,	-1, 0,		CA_PUBLIC},
 {"CASE",	fun_case,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},

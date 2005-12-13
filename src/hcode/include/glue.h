@@ -173,8 +173,6 @@ ECMD(f_whisper);
 { a, b, b, NULL }
 #define HEADER(a) SHEADER(0,a)
 
-#ifdef BT_ENABLED
-
 CommandsStruct mechcommands[] = {
     /* Movement */
     HEADER("Movement"),
@@ -952,26 +950,6 @@ CommandsStruct scencommands[] = {
     {0, NULL, NULL, NULL}
 };
 
-#else
-
-#define mechcommands sscommands
-#define mapcommands sscommands
-#define mechrepcommands sscommands
-#define customcommands sscommands
-#define chargencommands sscommands
-#define autopilotcommands sscommands
-#define turretcommands sscommands
-#define scencommands sscommands
-#define newfreemech NULL
-#define newfreemechrep NULL
-#define newfreemap NULL
-#define auto_newautopilot NULL
-#define newturret NULL
-#define mech_update NULL
-#define map_update NULL
-
-#endif
-
 
 ECMD(debug_makemechs);
 ECMD(debug_memory);
@@ -984,9 +962,6 @@ CommandsStruct debugcommands[] = {
 	    "@Shows memory statistics (optionally in long form)",
 	debug_memory},
     {0, "SAVEDB", "@Saves the SpecialObject DB", debug_savedb},
-
-#ifdef BT_ENABLED
-
     {0,
 	    "MAKEMECHS <FACTION> <TONS> [<TYPES> [<OPT_TONNAGE> [<MAX_VARIATION>]]]",
 	    "@Makes list of 'mechs of <faction> with max tonnage of <tons>, and optimum tonnage for each mech <opt_tonnage> (optional)",
@@ -1004,7 +979,6 @@ CommandsStruct debugcommands[] = {
 
     {0, "XPTOP <SKILL>", "@Shows list of people champ in the <SKILL>",
 	debug_xptop},
-#endif
     {0, NULL, NULL, NULL}
 };
 

@@ -130,8 +130,6 @@ char *mechIDfunc(int mode, MECH * mech)
     return buf;
 }
 
-#ifdef BT_ENABLED
-
 static char *mech_getset_ref(int mode, MECH * mech, char *data)
 {
     if (mode) {
@@ -349,8 +347,6 @@ char *mechCentDistfunc(int mode, MECH * mech, char *arg)
     sprintf(buf, "%.2f", FindHexRange(fx, fy, MechFX(mech), MechFY(mech)));
     return buf;
 }
-
-#endif
 
 /* Mode:
    0 = char -> bit field
@@ -827,7 +823,6 @@ void list_xcodestuff(dbref player, void *data, char *buffer)
 }
 
 
-#ifdef BT_ENABLED
 void fun_btunderrepair(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
     /* fargs[0] = ref of the mech to be checked */
@@ -2327,5 +2322,3 @@ void fun_bthexinblz(char *buff, char **bufc, dbref player, dbref cause, char *fa
         }
     safe_tprintf_str(buff, bufc, "%d", bl);
 }
-
-#endif

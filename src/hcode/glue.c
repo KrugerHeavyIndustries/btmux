@@ -274,7 +274,6 @@ static int load_update4(Node * tmp)
     MECH *mech;
     MAP *map;
 
-#ifdef BT_ENABLED
     if (WhichType(tmp) == GTYPE_MECH) {
 	mech = NodeData(tmp);
 	if (!(map = getMap(mech->mapindex))) {
@@ -294,7 +293,6 @@ static int load_update4(Node * tmp)
 	    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(mech),
 		    MechY(mech)));
     }
-#endif
     return 1;
 }
 
@@ -320,7 +318,6 @@ static int load_update1(Node * tmp)
     int i;
 
     switch ((i = WhichType(tmp))) {
-#ifdef BT_ENABLED
     case GTYPE_MAP:
 	map = (MAP *) NodeData(tmp);
 	bzero(map->mapobj, sizeof(map->mapobj));
@@ -370,7 +367,6 @@ static int load_update1(Node * tmp)
 	    if (mech->freq[i] < 0)
 		mech->freq[i] = 0;
 	break;
-#endif
     }
     return 1;
 }
@@ -508,10 +504,9 @@ static void load_xcode()
     /* Read in autopilot data */
     GoThruTree(xcode_tree, load_autopilot_data);
 
-#ifdef BT_ENABLED
     if (!feof(f))
 	loadrepairs(f);
-#endif
+
     my_close_file(f, &filemode);
     fprintf(stderr, "LOADING: %s (done)\n", mudconf.hcode_db);
 #ifdef BT_ADVANCED_ECON
@@ -553,7 +548,6 @@ void LoadSpecialObjects(void)
 
     muxevent_initialize();
     muxevent_count_initialize();
-#ifdef BT_ENABLED
     init_stat();
     initialize_partname_tables();
     for (i = 0; MissileHitTable[i].key != -1; i++) {
@@ -563,7 +557,6 @@ void LoadSpecialObjects(void)
 	else
 	    MissileHitTable[i].key = -2;
     }
-#endif
     /* Loop through the entire database, and if it has the special */
     /* object flag, add it to our linked list. */
     for (i = 0; i < mudstate.db_top; i++)
@@ -582,14 +575,11 @@ void LoadSpecialObjects(void)
 	if (!SpecialObjects[i].updatefunc)
 	    SpecialObjects[i].updateTime = 0;
     }
-#ifdef BT_ENABLED
     init_btechstats();
-#endif
     load_xcode();
     zap_unneccessary_hcode();
 }
 
-#ifdef BT_ENABLED
 static FILE *global_file_kludge;
 
 static int save_maps_func(Node * tmp)
@@ -631,7 +621,6 @@ static int save_autopilot_data(Node *tmp) {
     return 1;
 
 }
-#endif
 
 void ChangeSpecialObjects(int i)
 {
@@ -739,7 +728,6 @@ void SaveSpecialObjects(int i)
     }
     fwrite(&xcode_version, 1, 1, f);
     count = SaveTree(f, xcode_tree);
-#ifdef BT_ENABLED
     global_file_kludge = f;
     /* Then, check each xcode thing for stuff */
     GoThruTree(xcode_tree, save_maps_func);
@@ -748,7 +736,6 @@ void SaveSpecialObjects(int i)
     GoThruTree(xcode_tree, save_autopilot_data);
 
     saverepairs(f);
-#endif
     my_close_file(f, &filemode);
     if (i == DUMP_RESTART || i == DUMP_NORMAL) {
 	if (rename(mudconf.hcode_db, tprintf("%s.prev", mudconf.hcode_db))
@@ -1487,9 +1474,7 @@ void list_chashstats(dbref player)
     for (i = 0; i < NUM_SPECIAL_OBJECTS; i++)
 	list_hashstat(player, tprintf("HCCmd:%s", SpecialObjects[i].type),
 	    &SpecialCommandHash[i]);
-#ifdef BT_ENABLED
     list_phashstats(player);
-#endif
 }
 
 /* 
