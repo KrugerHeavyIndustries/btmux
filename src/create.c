@@ -774,7 +774,7 @@ void do_destroy(dbref player, dbref cause, int key, char *what)
     if (Safe(thing, player) && !(key & DEST_OVERRIDE) && !(isThing(thing)
                 && Destroy_ok(thing))) {
         notify_quiet(player,
-                "Sorry, that object is protected.  Use @destroy/override to destroy it.");
+                "Sorry, that object is protected. Use @destroy/override to destroy it.");
         return;
     }
     /*

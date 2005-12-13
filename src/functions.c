@@ -5851,8 +5851,7 @@ char *fname, *target;
  * * list_functable: List available functions.
  */
 
-void list_functable(player)
-dbref player;
+void list_functable(dbref player)
 {
     FUN *fp;
     UFUN *ufp;
@@ -5860,6 +5859,8 @@ dbref player;
 
     buf = alloc_lbuf("list_functable");
     bp = buf;
+
+    /* Hardcoded Functions */
     for (cp = (char *) "Functions:"; *cp; cp++)
 	*bp++ = *cp;
     for (fp = flist; fp->name; fp++) {
@@ -5869,6 +5870,13 @@ dbref player;
 		*bp++ = *cp;
 	}
     }
+    *bp = '\0';
+    notify(player, buf);
+
+    /* User-Defined functions (via @function) */
+    bp = buf;
+    safe_str("User-Functions:", buf, &bp);
+
     for (ufp = ufun_head; ufp; ufp = ufp->next) {
 	if (check_access(player, ufp->perms)) {
 	    *bp++ = ' ';

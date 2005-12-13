@@ -121,6 +121,8 @@ btonline-btechmux 0.6:
         * Hardened Gyros should have the proper crit effect (Power_Shaper)
 	* @pcreate and @robot now show the dbref of the created player
           or robot (Greg)
+	* @list functions now has built-in and hardcoded functions
+	  separated (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
