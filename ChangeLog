@@ -124,6 +124,7 @@ btonline-btechmux 0.6:
 	* @list functions now has built-in and hardcoded functions
 	  separated (Greg)
 	* Added connrecord() from MUX2 (Greg)
+	* Added startsecs() from MUX2 (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

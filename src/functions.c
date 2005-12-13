@@ -1022,14 +1022,22 @@ static void fun_starttime(char *buff, char **bufc, dbref player, dbref cause, ch
 
 /*
  * ---------------------------------------------------------------------------
+ * * fun_startsecs: What time (in seconds) did this system last reboot?
+ */
+
+static void fun_startsecs(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    safe_tprintf_str(buff, bufc, "%d", mudstate.start_time);
+}
+
+
+/*
+ * ---------------------------------------------------------------------------
  * fun_connrecord: What is the record number of players connected?
  */
 static void fun_connrecord(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
-    char buf[256];
-
-    sprintf(buf, "%d", mudstate.record_players);
-    safe_str(buf, buff, bufc);
+    safe_tprintf_str(buff, bufc, "%d", mudstate.record_players);
 }
 
 /*
@@ -5677,6 +5685,7 @@ FUN flist[] = {
 {"SPLICE",	fun_splice,	0,  FN_VARARGS,	CA_PUBLIC},
 {"SQRT",	fun_sqrt,	1,  0,		CA_PUBLIC},
 {"SQUISH",	fun_squish,	1,  0,		CA_PUBLIC},
+{"STARTSECS",   fun_startsecs,  0,  0,          CA_PUBLIC},
 {"STARTTIME",	fun_starttime,	0,  0,		CA_PUBLIC},
 {"STATS",	fun_stats,	1,  0,		CA_PUBLIC},
 {"STRCAT",	fun_strcat,	0,  FN_VARARGS,	CA_PUBLIC},
