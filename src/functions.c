@@ -118,8 +118,6 @@ extern void fun_cemit();
 extern void fun_beep();
 extern void fun_ansi();
 extern void fun_zone();
-extern void fun_frank2num();
-extern void fun_fnum2rank();
 #ifdef SIDE_EFFECT_FUNCTIONS
 extern void fun_link();
 extern void fun_tel();
@@ -5411,45 +5409,24 @@ FUN flist[] = {
 {"AND",		fun_and,	0,  FN_VARARGS,	CA_PUBLIC},
 {"ANDFLAGS",	fun_andflags,	2,  0,		CA_PUBLIC},
 {"ANSI",        fun_ansi,       2,  0,          CA_PUBLIC},
-{"ANSISECURE",	fun_ansi_secure,	-1, 0,	CA_PUBLIC},
+{"ANSISECURE",	fun_ansi_secure,-1, 0,	        CA_PUBLIC},
 {"APOSS",	fun_aposs,	1,  0,		CA_PUBLIC},
 {"ART",		fun_art,	1,  0,		CA_PUBLIC},
 {"ASIN",	fun_asin,	1,  0,		CA_PUBLIC},
 {"ATAN",	fun_atan,	1,  0,		CA_PUBLIC},
 {"BEEP",        fun_beep,       0,  0,          CA_BUILDER},
 {"BEFORE",	fun_before,	0,  FN_VARARGS,	CA_PUBLIC},
-{"BTARMORSTATUS",fun_btarmorstatus,2,0,		CA_WIZARD},
-{"BTCRITSTATUS",fun_btcritstatus,2,0,		CA_WIZARD},
-{"BTDAMAGEMECH",fun_btdamagemech,7, 0, 		CA_WIZARD},
-{"BTDAMAGES",	fun_btdamages,	1, 0,		CA_WIZARD},
-{"BTDESIGNEX",  fun_btdesignex, 1,  0,		CA_PUBLIC},
-{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0,	CA_WIZARD},
-{"BTGETXCODEVALUE", fun_btgetxcodevalue, 2, 0,	CA_WIZARD},
-{"BTLAG",       fun_lag,        0,  0,		CA_WIZARD},
-{"BTLOADMAP",	fun_btloadmap,	2,  FN_VARARGS,	CA_WIZARD},
-{"BTLOADMECH",	fun_btloadmech, 2,  0,		CA_WIZARD},
-{"BTMAKEMECHS", fun_btmakemechs,0,  FN_VARARGS,	CA_WIZARD},
-{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0,	CA_WIZARD},
-{"BTMAPELEV",   fun_btmapelev,  3,  0,		CA_WIZARD},
-{"BTMAPTERR",   fun_btmapterr,  3,  0,		CA_WIZARD},
-{"BTMAPUNITS",  fun_btmapunits, 0,  FN_VARARGS,     CA_WIZARD},
-{"BTMECHFREQS",	fun_btmechfreqs, 1, 0,		CA_WIZARD},
-{"BTPARTMATCH",	fun_btpartmatch, 1, 0,		CA_WIZARD},
-{"BTPARTNAME",	fun_btpartname, 2, 0,		CA_WIZARD},
-{"BTSETARMORSTATUS",fun_btsetarmorstatus,4,0,	CA_WIZARD},
-{"BTSETCHARVALUE", fun_btsetcharvalue, 4, 0,	CA_WIZARD},
-{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0,	CA_WIZARD},
-{"BTSTORES",    fun_btstores,   0, FN_VARARGS,	CA_WIZARD},
-{"BTTECHSTATUS",fun_bttechstatus,1, 0,		CA_WIZARD},
-{"BTTHRESHOLD", fun_btthreshold, 1, 0,		CA_WIZARD},
-{"BTUNDERREPAIR",    fun_btunderrepair,   1, 0, CA_BUILDER},
-{"BTWEAPONSTATUS",fun_btweaponstatus,0,FN_VARARGS,	CA_WIZARD},
 {"BTADDSTORES",			fun_btaddstores,		3, 0,		CA_WIZARD},
+{"BTARMORSTATUS",		fun_btarmorstatus,		2,0,		CA_WIZARD},
 {"BTARMORSTATUS_REF", 		fun_btarmorstatus_ref,		2, 0,		CA_WIZARD},
 {"BTCHARLIST",			fun_btcharlist,			1, FN_VARARGS,	CA_WIZARD},
 {"BTCRITSLOT",			fun_btcritslot,			0, FN_VARARGS,	CA_WIZARD},
 {"BTCRITSLOT_REF",		fun_btcritslot_ref,		0, FN_VARARGS,	CA_WIZARD},
+{"BTCRITSTATUS",		fun_btcritstatus,		2,0,		CA_WIZARD},
 {"BTCRITSTATUS_REF", 		fun_btcritstatus_ref,		2, 0,		CA_WIZARD},
+{"BTDAMAGEMECH",		fun_btdamagemech,		7, 0, 		CA_WIZARD},
+{"BTDAMAGES",	                fun_btdamages,	                1, 0,		CA_WIZARD},
+{"BTDESIGNEX",                  fun_btdesignex,                 1, 0,		CA_PUBLIC},
 {"BTENGRATE",			fun_btengrate,			1, 0,		CA_WIZARD},
 {"BTENGRATE_REF",		fun_btengrate_ref,		1, 0,		CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
@@ -5457,39 +5434,61 @@ FUN flist[] = {
 #endif
 {"BTGETBV",			fun_btgetbv,			1, 0,		CA_WIZARD},
 {"BTGETBV_REF",			fun_btgetbv_ref,		1, 0,		CA_WIZARD},
+{"BTGETCHARVALUE",              fun_btgetcharvalue,             3, 0,	        CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
 {"BTGETPARTCOST",		fun_btgetpartcost,		1, 0,		CA_WIZARD},
 #endif
 {"BTGETRANGE",			fun_btgetrange,			0, FN_VARARGS,  CA_WIZARD},
 {"BTGETREALMAXSPEED",		fun_btgetrealmaxspeed,		1, 0,		CA_WIZARD},
 {"BTGETWEIGHT",			fun_btgetweight, 		1, 0,		CA_WIZARD},
+{"BTGETXCODEVALUE",             fun_btgetxcodevalue,            2, 0,	        CA_WIZARD},
 {"BTGETXCODEVALUE_REF", 	fun_btgetxcodevalue_ref,	2, 0,		CA_WIZARD},
 {"BTHEXEMIT", 			fun_bthexemit, 			4, 0, 		CA_WIZARD},
 {"BTHEXINBLZ",			fun_bthexinblz,			3, 0,		CA_WIZARD},
 {"BTHEXLOS", 			fun_bthexlos, 			3, 0,		CA_WIZARD},
 {"BTID2DB",			fun_btid2db, 			2, 0, 		CA_WIZARD},
+{"BTLAG",                       fun_lag,                        0, 0,		CA_WIZARD},
 {"BTLISTBLZ",			fun_btlistblz,			1, 0,		CA_WIZARD},
+{"BTLOADMAP",	                fun_btloadmap,	                2, FN_VARARGS,	CA_WIZARD},
+{"BTLOADMECH",	                fun_btloadmech,                 2, 0,		CA_WIZARD},
 {"BTLOSM2M", 			fun_btlosm2m, 			2, 0, 		CA_WIZARD},
+{"BTMAKEMECHS",                 fun_btmakemechs,                0, FN_VARARGS,	CA_WIZARD},
+{"BTMAKEPILOTROLL", 		fun_btmakepilotroll, 		3, 0,	 	CA_WIZARD},
+{"BTMAPELEV",   		fun_btmapelev,  		3, 0,		CA_WIZARD},
 {"BTMAPEMIT",			fun_btmapemit,			0, FN_VARARGS,	CA_WIZARD},
+{"BTMAPTERR",   		fun_btmapterr,  		3, 0,		CA_WIZARD},
+{"BTMAPUNITS",  		fun_btmapunits, 		0, FN_VARARGS,  CA_WIZARD},
+{"BTMECHFREQS",			fun_btmechfreqs, 		1, 0,		CA_WIZARD},
 {"BTNUMREPJOBS",		fun_btnumrepjobs,		1, 0,		CA_WIZARD},
 {"BTPARTTYPE",			fun_btparttype,			1, 0,		CA_WIZARD},
+{"BTPARTMATCH",			fun_btpartmatch, 		1, 0,		CA_WIZARD},
+{"BTPARTNAME",			fun_btpartname, 		2, 0,		CA_WIZARD},
 {"BTPARTWEIGHT",		fun_btgetweight, 		1, 0,		CA_WIZARD},
-{"BTPAYLOAD_REF",       fun_btpayload_ref,      1, 0,       CA_WIZARD},
+{"BTPAYLOAD_REF",       	fun_btpayload_ref,      	1, 0,       	CA_WIZARD},
 {"BTREMOVESTORES",		fun_btremovestores,		3, 0,		CA_WIZARD},
+{"BTSETARMORSTATUS",		fun_btsetarmorstatus,		4, 0,		CA_WIZARD},
+{"BTSETCHARVALUE", 		fun_btsetcharvalue, 		4, 0,		CA_WIZARD},
 {"BTSETMAXSPEED",		fun_btsetmaxspeed,		2, 0,		CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
 {"BTSETPARTCOST",		fun_btsetpartcost,		2, 0,		CA_WIZARD},
 #endif
-{"BTSETXY",			fun_btsetxy,			0, FN_VARARGS, CA_WIZARD},
+{"BTSETXCODEVALUE", 		fun_btsetxcodevalue, 		3, 0,		CA_WIZARD},
+{"BTSETXY",			fun_btsetxy,			0, FN_VARARGS,  CA_WIZARD},
 {"BTSHOWCRITSTATUS_REF",	fun_btshowcritstatus_ref,	3, 0,		CA_WIZARD},
 {"BTSHOWSTATUS_REF",		fun_btshowstatus_ref,		2, 0,		CA_WIZARD},
 {"BTSHOWWSPECS_REF",		fun_btshowwspecs_ref,		2, 0,		CA_WIZARD},
+{"BTSTORES",    		fun_btstores,   		0, FN_VARARGS,	CA_WIZARD},
 {"BTTECHLIST",			fun_bttechlist,			1, 0,		CA_WIZARD},
 {"BTTECHLIST_REF",		fun_bttechlist_ref,		1, 0,		CA_WIZARD},
+{"BTTECHSTATUS",		fun_bttechstatus,		1, 0,		CA_WIZARD},
 {"BTTECHTIME",			fun_bttechtime, 		0, 0,           CA_WIZARD},
+{"BTTHRESHOLD", 		fun_btthreshold, 		1, 0,		CA_WIZARD},
+{"BTUNDERREPAIR",    		fun_btunderrepair,  	        1, 0, 		CA_BUILDER},
 {"BTUNITFIXABLE",		fun_btunitfixable,		1, 0,		CA_WIZARD},
+{"BTWEAPONSTATUS",		fun_btweaponstatus,		0, FN_VARARGS,	CA_WIZARD},
 {"BTWEAPONSTATUS_REF", 		fun_btweaponstatus_ref,		0, FN_VARARGS,	CA_WIZARD},
 {"BTWEAPSTAT",			fun_btweapstat,			2, 0,		CA_WIZARD},
+
 {"CAPSTR",	fun_capstr,	-1, 0,		CA_PUBLIC},
 {"CASE",	fun_case,	0,  FN_VARARGS|FN_NO_EVAL,
 						CA_PUBLIC},
@@ -5542,10 +5541,6 @@ FUN flist[] = {
 {"FIRST",	fun_first,	0,  FN_VARARGS,	CA_PUBLIC},
 {"FLAGS",	fun_flags,	1,  0,		CA_PUBLIC},
 {"FLOOR",	fun_floor,	1,  0,		CA_PUBLIC},
-#if 0
-{"FNUM2RANK",   fun_fnum2rank,  2,  0,          CA_PUBLIC},
-{"FRANK2NUM",   fun_frank2num,  2,  0,          CA_PUBLIC},
-#endif
 {"FOLD",	fun_fold,	0,  FN_VARARGS,	CA_PUBLIC},
 {"FOREACH",	fun_foreach,	0,  FN_VARARGS,	CA_PUBLIC},
 {"FULLNAME",	fun_fullname,	1,  0,		CA_PUBLIC},
@@ -5732,10 +5727,6 @@ FUN flist[] = {
 {NULL,		NULL,		0,  0,		0}};
 
 /* *INDENT-ON* */
-
-
-
-
 
 void init_functab() {
     FUN *fp;
