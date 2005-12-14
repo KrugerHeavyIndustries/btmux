@@ -1333,15 +1333,6 @@ int main(int argc, char *argv[]) {
     corrupt = 0;	/* Database isn't corrupted. */
     time(&mudstate.start_time);
     time(&mudstate.restart_time);
-#if 0
-    pool_init(POOL_LBUF, LBUF_SIZE);
-    pool_init(POOL_MBUF, MBUF_SIZE);
-    pool_init(POOL_SBUF, SBUF_SIZE);
-    pool_init(POOL_BOOL, sizeof(struct boolexp));
-
-    pool_init(POOL_DESC, sizeof(DESC));
-    pool_init(POOL_QENTRY, sizeof(BQUE));
-#endif
     mudstate.executable_path = strdup(argv[0]);
     tcache_init();
     pcache_init();

@@ -30,8 +30,7 @@ EVENT_OBJECTS  = event/event.o
 TREE_OBJECTS   = tree/mux_tree.o \
                  tree/tree.o     \
 
-MUX_OBJECTS    = src/alloc.o       \
-                 src/boolexp.o     \
+MUX_OBJECTS    = src/boolexp.o     \
                  src/bsd.o         \
                  src/commac.o      \
                  src/command.o     \

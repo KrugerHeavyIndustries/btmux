@@ -165,11 +165,6 @@ extern void do_hudinfo(DESC *, char *);
 
 /* From predicates.c */
 
-#if 0
-#define alloc_desc(s) (DESC *)pool_alloc(POOL_DESC,s)
-#define free_desc(b) pool_free(POOL_DESC,((char **)&(b)))
-#endif
-
 #define DESC_ITER_PLAYER(p,d) \
 	for (d=(DESC *)rb_find(mudstate.desctree, (void *)p);d;d=d->hashnext)
 

@@ -2432,11 +2432,9 @@ static void list_process(dbref player)
 #define LIST_LOGFILES   23
 
 NAMETAB list_names[] = {
-    {(char *)"allocations",		2,	CA_WIZARD,	LIST_ALLOCATOR},
     {(char *)"attr_permissions",	5,	CA_WIZARD,	LIST_ATTRPERMS},
     {(char *)"attributes",		2,	CA_PUBLIC,	LIST_ATTRIBUTES},
     {(char *)"bad_names",		2,	CA_WIZARD,	LIST_BADNAMES},
-    {(char *)"buffers",		2,	CA_WIZARD,	LIST_BUFTRACE},
     {(char *)"commands",		3,	CA_PUBLIC,	LIST_COMMANDS},
     {(char *)"config_permissions",	3,	CA_GOD,		LIST_CONF_PERMS},
     {(char *)"costs",		3,	CA_PUBLIC,	LIST_COSTS},
@@ -2467,12 +2465,6 @@ void do_list(dbref player, dbref cause, int extra, char *arg) {
 
     flagvalue = search_nametab(player, list_names, arg);
     switch (flagvalue) {
-        case LIST_ALLOCATOR:
-            list_bufstats(player);
-            break;
-        case LIST_BUFTRACE:
-            list_buftrace(player);
-            break;
         case LIST_ATTRIBUTES:
             list_attrtable(player);
             break;
