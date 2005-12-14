@@ -48,6 +48,7 @@ static OBJQE *cque_find(dbref player) {
     tmp = rb_find(obq, player);
 
     if(!tmp && Good_obj(player)) {
+        dprintk("allocating new queue for %d", player);
         tmp = malloc(sizeof(OBJQE));
         tmp->obj = player;
         tmp->cque = NULL;
@@ -827,7 +828,7 @@ int do_top(int ncmds) {
                 command = tmp->comm;
 
                 if(command) {
-                    if(isPlayer(object)) choke_player(object);
+                    if(isPlayer(object)&&Connected(object)) choke_player(object);
                     while (command) {
                         cp = parse_to(&command, ';', 0);
                         if (cp && *cp) {
@@ -858,7 +859,7 @@ int do_top(int ncmds) {
                             }
                         }
                     }
-                    if(isPlayer(object)) release_player(object);
+                    if(isPlayer(object)&&Connected(object)) release_player(object);
                 }
             }
         }
