@@ -350,7 +350,7 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 	    if (MechTeam(mech) != MechTeam(target))
 		MechNumSeen(mech) = MAX(0, MechNumSeen(mech) - 1);
 	    f &= ~MECHLOSFLAG_SEEN;
-	    if ((Started(target) || SeeWhenShutdown(target) ||
+	    if (!MechIsObservator(mech) && (Started(target) || SeeWhenShutdown(target) ||
 		 MechAutoconSD(mech)) &&
 	        (st = valid_to_notice(mech, target, wlf)) && seeanew < 3) {
 		if (st & AUTOCON_WARN)
@@ -411,7 +411,7 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 	    }
 	    f |= MECHLOSFLAG_SEEN;
 	    *fl = f;
-	    if ((Started(target) || SeeWhenShutdown(target) ||
+	    if (!MechIsObservator(mech) && (Started(target) || SeeWhenShutdown(target) ||
 		 MechAutoconSD(mech)) &&
 	        (st = valid_to_notice(mech, target, -1)) && seeanew < 2) {
 		if (st & AUTOCON_WARN)

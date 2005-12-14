@@ -200,6 +200,9 @@ btonline-btechmux 0.6:
 	  is cumulative if the unit is running/walking. The drop levels
 	  defaults to 1 but if running and staggering, go with the 2
 	  rather than increment it to 3. (Greg)
+	* OBSERVATORIC units don't see the 'You notice blah blah' or
+          'You have lost' LOS messages. These are redundant since they
+          see all and can't lose LOS. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes
