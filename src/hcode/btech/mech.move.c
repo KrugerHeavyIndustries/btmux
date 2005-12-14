@@ -436,9 +436,8 @@ void mech_drop(dbref player, void *data, char *buffer)
 	"You can't prone in this!");
     DOCHECK(Fallen(mech), "You are already prone.");
     DOCHECK(Jumping(mech) ||
-	OODing(mech), "You can't drop while jumping!");
+	OODing(mech), "You can't prone in the air!");
     DOCHECK(Standing(mech), "You can't drop while trying to stand up!");
-    DOCHECK(Staggering(mech),"You can't prone while staggering!");
 
     s1 = MMaxSpeed(mech) / 3.0;
 
@@ -454,6 +453,13 @@ void mech_drop(dbref player, void *data, char *buffer)
 	mech_notify(mech, MECHALL,
 	    "You attempt a controlled drop from your fast walk.");
 	wDropLevels = 1;
+    }
+ 
+    if (Staggering(mech)) {
+        mech_notify(mech, MECHALL,
+            "Still staggering, you try not to fall on your face.");
+            wDropLevels = (wDropLevels == 0 ? 1 : wDropLevels);
+            wDropBTH = wDropBTH + StaggerLevel(mech);
     }
 
     if (tHasSwarmers)

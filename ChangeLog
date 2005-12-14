@@ -193,8 +193,11 @@ btonline-btechmux 0.6:
           (Power_Shaper)
 	* Don't allow using jumpjets while orbital dropping. This was being
 	  used to circumvent the landing roll. (Greg)
-	* Don't allow dropping prone while staggering. Players were
-          circumventing stagger roles by doing this. (Greg)
+	* Proning while staggering is now somewhat de-munched. For
+	  every stagger level (stagger damage/20), +1 to prone BTH. This
+	  is cumulative if the unit is running/walking. The drop levels
+	  defaults to 1 but if running and staggering, go with the 2
+	  rather than increment it to 3. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes
