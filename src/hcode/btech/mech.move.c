@@ -430,14 +430,15 @@ void mech_drop(dbref player, void *data, char *buffer)
     int tHasSwarmers = 0;
 
     cch(MECH_USUAL);
-    DOCHECK(MechType(mech) == CLASS_BSUIT, "No crawling (yet)!");
+    DOCHECK(MechType(mech) == CLASS_BSUIT, "No crawling!");
     DOCHECK(MechType(mech) != CLASS_MECH &&
 	MechType(mech) != CLASS_MW,
-	"This vehicle cannot drop like a 'Mech.");
+	"You can't prone in this!");
     DOCHECK(Fallen(mech), "You are already prone.");
     DOCHECK(Jumping(mech) ||
 	OODing(mech), "You can't drop while jumping!");
     DOCHECK(Standing(mech), "You can't drop while trying to stand up!");
+    DOCHECK(Staggering(mech),"You can't prone while staggering!");
 
     s1 = MMaxSpeed(mech) / 3.0;
 

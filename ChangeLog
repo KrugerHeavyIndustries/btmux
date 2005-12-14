@@ -193,6 +193,8 @@ btonline-btechmux 0.6:
           (Power_Shaper)
 	* Don't allow using jumpjets while orbital dropping. This was being
 	  used to circumvent the landing roll. (Greg)
+	* Don't allow dropping prone while staggering. Players were
+          circumventing stagger roles by doing this. (Greg)
 
 btonline-btechmux 0.4:
 	- Changes
