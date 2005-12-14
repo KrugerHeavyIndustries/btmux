@@ -1,8 +1,5 @@
-
-/* command.c - command parser and support routines */
-
-/*
- * $Id: command.c,v 1.6 2005/08/08 10:30:11 murrayma Exp $ 
+/* 
+ * command.c - command parser and support routines 
  */
 
 #include "copyright.h"
@@ -43,15 +40,14 @@ extern void logcache_init(void);
  */
 
 #define	SW_MULTIPLE	0x80000000	/*
-                                 * * This sw may be spec'd w/others  
-                                 */
+                                         * This sw may be spec'd w/others  
+                                         */
 #define	SW_GOT_UNIQUE	0x40000000	/*
-                                     * * Already have a unique option  
-                                     */
+                                         * Already have a unique option  
+                                         */
 /*
  * (typically via a switch alias) 
  */
-/* *INDENT-OFF* */
 
 #ifdef SQL_SUPPORT
 NAMETAB query_sw[] = {
@@ -573,7 +569,6 @@ CMDENT command_table[] = {
     {(char *)NULL, NULL, 0, 0, 0, NULL}
 };
 
-/* *INDENT-ON* */
 
 CMDENT *prefix_cmds[256];
 
@@ -766,12 +761,8 @@ int check_access(player, mask)
  * ---------------------------------------------------------------------------
  * * process_cmdent: Perform indicated command with passed args.
  */
-
-void process_cmdent(cmdp, switchp, player, cause, interactive, arg, unp_command, cargs, ncargs)
-    CMDENT *cmdp;
-    char *switchp, *arg, *unp_command, *cargs[];
-    dbref player, cause;
-    int interactive, ncargs;
+void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause, 
+    int interactive, char *arg, char *unp_command, char *cargs[], int ncargs)
 {
     char *buf1, *buf2, tchar, *bp, *str, *buff, *s, *j, *new;
     char *args[MAX_ARG];
@@ -1626,8 +1617,7 @@ NAMETAB access_nametab[] = {
     {NULL, 0, 0, 0}
 };
 
-static void list_cmdaccess(player)
-    dbref player;
+static void list_cmdaccess(dbref player)
 {
     char *buff, *p, *q;
     CMDENT *cmdp;
@@ -2248,9 +2238,7 @@ static void list_options(dbref player) {
  * ---------------------------------------------------------------------------
  * * list_vattrs: List user-defined attributes
  */
-
-static void list_vattrs(player)
-    dbref player;
+static void list_vattrs(dbref player)
 {
     VATTR *va;
     int na;
@@ -2275,11 +2263,7 @@ static void list_vattrs(player)
  * ---------------------------------------------------------------------------
  * * list_hashstats: List information from hash tables
  */
-
-void list_hashstat(player, tab_name, htab)
-    dbref player;
-    HASHTAB *htab;
-    const char *tab_name;
+void list_hashstat(dbref player, const char *tab_name, HASHTAB *htab)
 {
     char *buff;
 
@@ -2288,10 +2272,7 @@ void list_hashstat(player, tab_name, htab)
     free_mbuf(buff);
 }
 
-static void list_nhashstat(player, tab_name, htab)
-    dbref player;
-    NHSHTAB *htab;
-    const char *tab_name;
+static void list_nhashstat(dbref player, const char *tab_name, NHSHTAB *htab)
 {
     char *buff;
 
@@ -2300,8 +2281,7 @@ static void list_nhashstat(player, tab_name, htab)
     free_mbuf(buff);
 }
 
-static void list_hashstats(player)
-    dbref player;
+static void list_hashstats(dbref player)
 {
     raw_notify(player,
             "Hash Stats        Size     Entries     Deleted       Empty     Lookups        Hits      Checks     Longest");
@@ -2328,110 +2308,13 @@ static void list_hashstats(player)
     list_chashstats(player);
 }
 
-#ifndef MEMORY_BASED
-
-/*
- * These are from 'udb_cache.c'. 
- */
-extern time_t cs_ltime;
-extern int cs_writes;		/*
-
-
-                             * * total writes  
-                             */
-extern int cs_reads;		/*
-
-
-                             * * total reads  
-                             */
-extern int cs_dbreads;		/*
-
-
-                             * * total read-throughs  
-                             */
-extern int cs_dbwrites;		/*
-
-
-                             * * total write-throughs  
-                             */
-extern int cs_dels;		/*
-
-
-                         * * total deletes  
-                         */
-extern int cs_checks;		/*
-
-
-                             * * total checks  
-                             */
-extern int cs_rhits;		/*
-
-
-                             * * total reads filled from cache  
-                             */
-extern int cs_ahits;		/*
-
-
-                             * * total reads filled active cache  
-                             */
-extern int cs_whits;		/*
-
-
-                             * * total writes to dirty cache  
-                             */
-extern int cs_fails;		/*
-
-
-                             * * attempts to grab nonexistent  
-                             */
-extern int cs_resets;		/*
-
-
-                             * * total cache resets  
-                             */
-extern int cs_syncs;		/*
-
-
-                             * * total cache syncs  
-                             */
-extern int cs_objects;		/*
-
-
-                             * * total cache size  
-                             */
-
-#endif				/*
-                     * * MEMORY_BASED  
-                     */
-
 /*
  * ---------------------------------------------------------------------------
  * * list_db_stats: Get useful info from the DB layer about hash stats, etc.
  */
-
-static void list_db_stats(player)
-    dbref player;
+static void list_db_stats(dbref player)
 {
-#ifdef MEMORY_BASED
     raw_notify(player, "Database is memory based.");
-#else
-    raw_notify(player,
-            tprintf("DB Cache Stats   Writes       Reads  (over %d seconds)",
-                time(0) - cs_ltime));
-    raw_notify(player, tprintf("Calls      %12d%12d", cs_writes,
-                cs_reads));
-    raw_notify(player, tprintf("Cache Hits %12d%12d  (%d in active cache)",
-                cs_whits, cs_rhits, cs_ahits));
-    raw_notify(player, tprintf("I/O        %12d%12d", cs_dbwrites,
-                cs_dbreads));
-    raw_notify(player, tprintf("\nDeletes    %12d", cs_dels));
-    raw_notify(player, tprintf("Checks     %12d", cs_checks));
-    raw_notify(player, tprintf("Resets     %12d", cs_resets));
-    raw_notify(player, tprintf("Syncs      %12d", cs_syncs));
-    raw_notify(player, tprintf("Cache Size %12d", cs_objects));
-#endif				/*
-                     * * MEMORY_BASED  
-                     */
 }
 
 /*
@@ -2441,8 +2324,7 @@ static void list_db_stats(player)
  * *     posted to the net by Howard/Dark_Lord.
  */
 
-static void list_process(player)
-    dbref player;
+static void list_process(dbref player)
 {
     int pid, psize, maxfds;
 
@@ -2544,13 +2426,10 @@ static void list_process(player)
 #define	LIST_POWERS	17
 #define	LIST_SWITCHES	18
 #define	LIST_VATTRS	19
-#define	LIST_DB_STATS	20	/*
-                             * * GAC 4/6/92  
-                             */
+#define	LIST_DB_STATS	20	
 #define	LIST_PROCESS	21
 #define	LIST_BADNAMES	22
 #define LIST_LOGFILES   23
-/* *INDENT-OFF* */
 
 NAMETAB list_names[] = {
     {(char *)"allocations",		2,	CA_WIZARD,	LIST_ALLOCATOR},
@@ -2577,8 +2456,6 @@ NAMETAB list_names[] = {
     {(char *)"user_attributes",	1,	CA_WIZARD,	LIST_VATTRS},
     {(char *)"logfiles", 4, CA_WIZARD, LIST_LOGFILES},
     { NULL,				0,	0,		0}};
-
-/* *INDENT-ON* */
 
 extern NAMETAB enable_names[];
 extern NAMETAB logoptions_nametab[];

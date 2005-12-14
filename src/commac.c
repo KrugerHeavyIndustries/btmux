@@ -2,10 +2,6 @@
  * commac.c 
  */
 
-/*
- * $Id: commac.c,v 1.3 2005/08/08 09:43:05 murrayma Exp $ 
- */
-
 #include "copyright.h"
 #include "config.h"
 #include <ctype.h>

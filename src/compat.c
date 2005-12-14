@@ -1,10 +1,5 @@
-
 /*
  * compat.c -- functions that we need to provide because they are missing 
- */
-
-/*
- * $Id: compat.c,v 1.2 2005/08/08 09:43:05 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -32,8 +27,7 @@ static int mon_size[2][12] = {
 /*
  * e.g: normalize(&tm_secs, &tm_hour, 60); 
  */
-static void normalize(x, y, f)
-int *x, *y, f;
+static void normalize(int *x, int *y, int f)
 {
     if (*x >= f) {
 	*y += *x / f;
@@ -49,8 +43,7 @@ int *x, *y, f;
     }
 }
 
-time_t timelocal(tp)
-struct tm *tp;
+time_t timelocal(struct tm *tp)
 {
     long unsigned k;
     struct tm tm;
@@ -225,7 +218,6 @@ size_t strnlen(const char *s, size_t maxlen) {
  */
 #ifndef HAVE_STRNDUP
 char *strndup(const char *s, size_t n) {
-
     int length; 
     char *buf;
     
@@ -235,6 +227,5 @@ char *strndup(const char *s, size_t n) {
     strncpy(buf, s, length); 
  
     return buf; 
-
 }
 #endif

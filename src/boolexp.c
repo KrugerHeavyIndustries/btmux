@@ -1,11 +1,7 @@
-
 /*
  * boolexp.c 
  */
 
-/*
- * $Id: boolexp.c,v 1.3 2005/08/08 09:43:05 murrayma Exp $ 
- */
 #include "copyright.h"
 #include "config.h"
 
@@ -19,20 +15,13 @@
 #include "powers.h"
 #include "alloc.h"
 
-#ifndef STANDALONE
-
 static int parsing_internal = 0;
 
-/*
- * ---------------------------------------------------------------------------
- * * check_attr: indicate if attribute ATTR on player passes key when checked by
- * * the object lockobj
+/**
+ * Indicate if attribute ATTR on player passes key when checked by
+ * the object lockobj
  */
-
-static int check_attr(player, lockobj, attr, key)
-dbref player, lockobj;
-ATTR *attr;
-char *key;
+static int check_attr(dbref player, dbref lockobj, ATTR *attr, char *key)
 {
     char *buff;
     dbref aowner;
@@ -54,11 +43,9 @@ char *key;
     }
     free_lbuf(buff);
     return checkit;
-}
+} /* end check_attr() */
 
-int eval_boolexp(player, thing, from, b)
-dbref player, thing, from;
-BOOLEXP *b;
+int eval_boolexp(dbref player, dbref thing, dbref from, BOOLEXP *b)
 {
     dbref aowner, obj, source;
     int aflags, c, checkit;
@@ -86,20 +73,15 @@ BOOLEXP *b;
 
 	mudstate.lock_nest_lev++;
 	if (mudstate.lock_nest_lev >= mudconf.lock_nest_lim) {
-#ifndef STANDALONE
 	    STARTLOG(LOG_BUGS, "BUG", "LOCK") {
 		log_name_and_loc(player);
 		log_text((char *) ": Lock exceeded recursion limit.");
 		ENDLOG;
 	    } notify(player, "Sorry, broken lock!");
-#else
-	    fprintf(stderr, "Lock exceeded recursion limit.\n");
-#endif
 	    mudstate.lock_nest_lev--;
 	    return (0);
 	}
 	if ((b->sub1->type != BOOLEXP_CONST) || (b->sub1->thing < 0)) {
-#ifndef STANDALONE
 	    STARTLOG(LOG_BUGS, "BUG", "LOCK") {
 		log_name_and_loc(player);
 		buff = alloc_mbuf("eval_boolexp.LOG.indir");
@@ -110,9 +92,6 @@ BOOLEXP *b;
 		ENDLOG;
 	    }
 	    notify(player, "Sorry, broken lock!");
-#else
-	    fprintf(stderr, "Broken lock.\n");
-#endif
 	    mudstate.lock_nest_lev--;
 	    return (0);
 	}
@@ -218,11 +197,9 @@ BOOLEXP *b;
 				 */
 	return 0;
     }
-}
+} /* end eval_boolexp() */
 
-int eval_boolexp_atr(player, thing, from, key)
-dbref player, thing, from;
-char *key;
+int eval_boolexp_atr(dbref player, dbref thing, dbref from, char *key)
 {
     BOOLEXP *b;
     int ret_value;
@@ -235,9 +212,7 @@ char *key;
 	free_boolexp(b);
     }
     return (ret_value);
-}
-
-#endif
+} /* end eval_boolexp_atr() */
 
 /*
  * If the parser returns TRUE_BOOLEXP, you lose 
@@ -257,14 +232,9 @@ static void skip_whitespace(void)
 	parsebuf++;
 }
 
-static BOOLEXP *parse_boolexp_E(void);	/*
+static BOOLEXP *parse_boolexp_E(void);	/* defined below */
 
-
-					 * * defined below  
-					 */
-
-static BOOLEXP *test_atr(s)
-char *s;
+static BOOLEXP *test_atr(char *s)
 {
     ATTR *attrib;
     BOOLEXP *b;
@@ -320,21 +290,16 @@ char *s;
     b->sub1 = (BOOLEXP *) strsave(s);
     free_lbuf(buff);
     return (b);
-}
+} /* end test_atr() */
 
 /*
  * L -> (E); L -> object identifier 
  */
-
 static BOOLEXP *parse_boolexp_L(void)
 {
     BOOLEXP *b;
     char *p, *buf;
-
-#ifndef STANDALONE
     MSTATE mstate;
-
-#endif
 
     buf = NULL;
     skip_whitespace();
@@ -352,10 +317,9 @@ static BOOLEXP *parse_boolexp_L(void)
     default:
 
 	/*
-	 * must have hit an object ref.  Load the name into our * * * 
-	 * 
-	 * *  * *  * * buffer 
-	 */
+	 * Must have hit an object ref. Load the name into our  
+	 * buffer
+         */
 
 	buf = alloc_lbuf("parse_boolexp_L");
 	p = buf;
@@ -387,12 +351,10 @@ static BOOLEXP *parse_boolexp_L(void)
 	 * do the match 
 	 */
 
-#ifndef STANDALONE
-
 	/*
-	 * If we are parsing a boolexp that was a stored lock then *
-	 * * * * * * we know that object refs are all dbrefs, so we * 
-	 * skip * * the * * * expensive match code. 
+	 * If we are parsing a boolexp that was a stored lock then 
+	 * we know that object refs are all dbrefs, so we  
+	 * skip the expensive match code. 
 	 */
 
     if (parsing_internal) {
@@ -428,25 +390,10 @@ static BOOLEXP *parse_boolexp_L(void)
 	    free_bool(b);
 	    return TRUE_BOOLEXP;
 	}
-#else				/*
-				 * * STANDALONE ... had better be #<num> or we're hosed  
-				 */
-	if (buf[0] != '#') {
-	    free_lbuf(buf);
-	    free_bool(b);
-	    return TRUE_BOOLEXP;
-	}
-	b->thing = atoi(&buf[1]);
-	if (b->thing < 0) {
-	    free_lbuf(buf);
-	    free_bool(b);
-	    return TRUE_BOOLEXP;
-	}
-#endif
 	free_lbuf(buf);
     }
     return b;
-}
+} /* end parse_boolexp_L() */
 
 /*
  * F -> !F; F -> @L; F -> =L; F -> +L; F -> $L 
@@ -548,7 +495,7 @@ static BOOLEXP *parse_boolexp_F(void)
     default:
 	return (parse_boolexp_L());
     }
-}
+} /* end parse_boolexp_F() */
 
 /*
  * T -> F; T -> F & T 
@@ -574,12 +521,11 @@ static BOOLEXP *parse_boolexp_T(void)
 	}
     }
     return b;
-}
+} /* end parse_boolexp_T() */
 
 /*
  * E -> T; E -> T | E 
  */
-
 static BOOLEXP *parse_boolexp_E(void)
 {
     BOOLEXP *b, *b2;
@@ -600,20 +546,15 @@ static BOOLEXP *parse_boolexp_E(void)
 	}
     }
     return b;
-}
+} /* parse_boolexp_E */
 
-BOOLEXP *parse_boolexp(player, buf, internal)
-dbref player;
-const char *buf;
-int internal;
+BOOLEXP *parse_boolexp(dbref player, const char *buf, int internal)
 {
     StringCopy(parsestore, buf);
     parsebuf = parsestore;
     parse_player = player;
     if ((buf == NULL) || (*buf == '\0'))
 	return (TRUE_BOOLEXP);
-#ifndef STANDALONE
     parsing_internal = internal;
-#endif
     return parse_boolexp_E();
-}
+} /* end parse_boolexp() */

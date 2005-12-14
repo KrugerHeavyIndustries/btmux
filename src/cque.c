@@ -1,10 +1,5 @@
-
 /*
  * cque.c -- commands and functions for manipulating the command queue 
- */
-
-/*
- * $Id: cque.c,v 1.4 2005/08/08 09:43:06 murrayma Exp $ 
  */
 
 #include "copyright.h"

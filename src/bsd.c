@@ -2,9 +2,6 @@
  * bsd.c 
  */
 
-/*
- * $Id$ 
- */
 #include "copyright.h"
 #include "config.h"
 

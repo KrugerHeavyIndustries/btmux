@@ -1,10 +1,5 @@
-
 /*
  * conf.c:      set up configuration information and static data
- */
-
-/*
- * $Id: conf.c,v 1.5 2005/08/08 09:43:06 murrayma Exp $
  */
 
 #include "copyright.h"
@@ -38,21 +33,11 @@
 
 typedef struct confparm CONF;
 struct confparm {
-    char *pname;		/*
-                         * parm name
-                         */
-    int (*interpreter) ();	/*
-                             * routine to interp parameter
-                             */
-    int flags;			/*
-                         * control flags
-                         */
-    int *loc;			/*
-                         * where to store value
-                         */
-    long extra;			/*
-                         * extra data for interpreter
-                         */
+    char *pname;		/* parm name */
+    int (*interpreter) ();	/* routine to interp parameter */
+    int flags;			/* control flags */
+    int *loc;			/* where to store value */
+    long extra;			/* extra data for interpreter */
 };
 
 /*
@@ -63,7 +48,6 @@ struct confparm {
 CONFDATA mudconf;
 STATEDATA mudstate;
 
-#ifndef STANDALONE
 extern NAMETAB logdata_nametab[];
 extern NAMETAB logoptions_nametab[];
 extern NAMETAB access_nametab[];
@@ -74,8 +58,6 @@ extern NAMETAB sigactions_nametab[];
 #endif
 extern CONF conftable[];
 
-#endif
-
 /*
  * ---------------------------------------------------------------------------
  * * cf_init: Initialize mudconf to default values.
@@ -83,7 +65,6 @@ extern CONF conftable[];
 
 void cf_init(void)
 {
-#ifndef STANDALONE
     int i;
 
     StringCopy(mudconf.indb, "tinymush.db");
@@ -404,53 +385,6 @@ void cf_init(void)
     mudstate.poutobj = -1;
     for (i = 0; i < MAX_GLOBAL_REGS; i++)
         mudstate.global_regs[i] = NULL;
-#else
-    mudconf.paylimit = 10000;
-    mudconf.digcost = 10;
-    mudconf.opencost = 1;
-    mudconf.robotcost = 1000;
-    mudconf.createmin = 5;
-    mudconf.createmax = 505;
-    mudconf.sacfactor = 5;
-    mudconf.sacadjust = -1;
-    mudconf.room_quota = 1;
-    mudconf.exit_quota = 1;
-    mudconf.thing_quota = 1;
-    mudconf.player_quota = 1;
-    mudconf.quotas = 0;
-    mudconf.start_room = 0;
-    mudconf.start_home = -1;
-    mudconf.default_home = -1;
-    mudconf.vattr_flags = AF_ODARK;
-    mudconf.log_options = 0xffffffff;
-    mudconf.log_info = 0;
-    mudconf.markdata[0] = 0x01;
-    mudconf.markdata[1] = 0x02;
-    mudconf.markdata[2] = 0x04;
-    mudconf.markdata[3] = 0x08;
-    mudconf.markdata[4] = 0x10;
-    mudconf.markdata[5] = 0x20;
-    mudconf.markdata[6] = 0x40;
-    mudconf.markdata[7] = 0x80;
-    mudconf.ntfy_nest_lim = 20;
-    mudconf.cache_trim = 0;
-
-    mudstate.logging = 0;
-    mudstate.attr_next = A_USER_START;
-    mudstate.iter_alist.data = NULL;
-    mudstate.iter_alist.len = 0;
-    mudstate.iter_alist.next = NULL;
-    mudstate.mod_alist = NULL;
-    mudstate.mod_size = 0;
-    mudstate.mod_al_id = NOTHING;
-    mudstate.min_size = 0;
-    mudstate.db_top = 0;
-    mudstate.db_size = 0;
-    mudstate.freelist = NOTHING;
-    mudstate.markbits = NULL;
-#endif				/*
-                     * * STANDALONE
-                     */
 #ifdef SQL_SUPPORT
     memset(mudconf.sqlDB_type_A, '\0', 128);
     memset(mudconf.sqlDB_hostname_A, '\0', 128);
@@ -491,17 +425,11 @@ void cf_init(void)
 #endif
 }
 
-#ifndef STANDALONE
-
 /*
  * ---------------------------------------------------------------------------
  * * cf_log_notfound: Log a 'parameter not found' error.
  */
-
-void cf_log_notfound(player, cmd, thingname, thing)
-    dbref player;
-    char *cmd, *thing;
-    const char *thingname;
+void cf_log_notfound(dbref player, char *cmd, const char *thingname, char *thing)
 {
     char *buff;
 
@@ -526,10 +454,7 @@ void cf_log_notfound(player, cmd, thingname, thing)
  * * cf_log_syntax: Log a syntax error.
  */
 
-void cf_log_syntax(player, cmd, template, arg)
-    dbref player;
-    char *cmd, *arg;
-    const char *template;
+void cf_log_syntax(dbref player, char *cmd, const char *template, char *arg)
 {
     char *buff;
 
@@ -555,10 +480,7 @@ void cf_log_syntax(player, cmd, template, arg)
  * * cf_status_from_succfail: Return command status from succ and fail info
  */
 
-int cf_status_from_succfail(player, cmd, success, failure)
-    dbref player;
-    char *cmd;
-    int success, failure;
+int cf_status_from_succfail(dbref player, char *cmd, int success, int failure)
 {
     char *buff;
 
@@ -1111,7 +1033,6 @@ extern int cf_cmd_alias(long *, char *, long, dbref, char *);
 extern int cf_acmd_access(long *, char *, long, dbref, char *);
 extern int cf_attr_access(long *, char *, long, dbref, char *);
 extern int cf_func_access(long *, char *, long, dbref, char *);
-/* *INDENT-OFF* */
 
 /* ---------------------------------------------------------------------------
  * conftable: Table for parsing the configuration file.
@@ -1709,23 +1630,11 @@ CONF conftable[] = {
     { NULL,
         NULL,		0,		NULL,				0}};
 
-/* *INDENT-ON* */
-
-
-
-
-
-
-
-
 /*
  * ---------------------------------------------------------------------------
  * * cf_set: Set config parameter.
  */
-
-int cf_set(cp, ap, player)
-    char *cp, *ap;
-    dbref player;
+int cf_set(char *cp, char *ap, dbref player)
 {
     CONF *tp;
     int i;
@@ -1787,11 +1696,7 @@ int cf_set(cp, ap, player)
  * ---------------------------------------------------------------------------
  * * do_admin: Command handler to set config params at runtime
  */
-
-void do_admin(player, cause, extra, kw, value)
-    dbref player, cause;
-    int extra;
-    char *kw, *value;
+void do_admin(dbref player, dbref cause, int extra, char *kw, char *value)
 {
     int i;
 
@@ -1805,9 +1710,7 @@ void do_admin(player, cause, extra, kw, value)
  * ---------------------------------------------------------------------------
  * * cf_read: Read in config parameters from named file
  */
-
-int cf_read(fn)
-    char *fn;
+int cf_read(char *fn)
 {
     int retval;
 
@@ -1839,9 +1742,7 @@ int cf_read(fn)
  * ---------------------------------------------------------------------------
  * * list_cf_access: List access to config directives.
  */
-
-void list_cf_access(player)
-    dbref player;
+void list_cf_access(dbref player)
 {
     CONF *tp;
     char *buff;
@@ -1899,7 +1800,3 @@ void fun_config(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
     }
     safe_str( "#-1", buff, bufc );
 }
-
-#endif				/*
-                     * * STANDALONE
-                     */

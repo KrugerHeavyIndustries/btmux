@@ -2,10 +2,6 @@
  * comsys.c 
  */
 
-/*
- * $Id: comsys.c,v 1.6 2005/08/08 09:43:05 murrayma Exp $ 
- */
-
 #include <ctype.h>
 #include <sys/types.h>
 
