@@ -1,11 +1,7 @@
-
 /*
  * alloc.c - memory allocation subsystem 
  */
 
-/*
- * $Id: alloc.c,v 1.2 2005/08/08 09:43:05 murrayma Exp $ 
- */
 #include "copyright.h"
 #include "config.h"
 
@@ -16,51 +12,25 @@
 #include "externs.h"
 
 typedef struct pool_header {
-    int magicnum;		/*
-				 * For consistency check 
-				 */
-    int pool_size;		/*
-				 * For consistency check 
-				 */
-    struct pool_header *next;	/*
-				 * Next pool header in chain 
-				 */
-    struct pool_header *nxtfree;	/*
-					 * Next pool header in freelist 
-					 */
-    char *buf_tag;		/*
-				 * Debugging/trace tag 
-				 */
+    int magicnum;		  /* For consistency check        */
+    int pool_size;		  /* For consistency check        */
+    struct pool_header *next;	  /* Next pool header in chain    */
+    struct pool_header *nxtfree;  /* Next pool header in freelist */
+    char *buf_tag;                /* Debugging/trace tag          */
 } POOLHDR;
 
 typedef struct pool_footer {
-    int magicnum;		/*
-				 * For consistency check 
-				 */
+    int magicnum;                 /* For consistency check        */
 } POOLFTR;
 
 typedef struct pooldata {
-    int pool_size;		/*
-				 * Size in bytes of a buffer 
-				 */
-    POOLHDR *free_head;		/*
-				 * Buffer freelist head 
-				 */
-    POOLHDR *chain_head;	/*
-				 * Buffer chain head 
-				 */
-    int tot_alloc;		/*
-				 * Total buffers allocated 
-				 */
-    int num_alloc;		/*
-				 * Number of buffers currently allocated 
-				 */
-    int max_alloc;		/*
-				 * Max # buffers allocated at one time 
-				 */
-    int num_lost;		/*
-				 * Buffers lost due to corruption 
-				 */
+    int pool_size;		  /* Size in bytes of a buffer    */
+    POOLHDR *free_head;           /* Buffer freelist head         */
+    POOLHDR *chain_head;	  /* Buffer chain head            */
+    int tot_alloc;		  /* Total buffers allocated      */
+    int num_alloc;		  /* Number of buffers currently allocated */
+    int max_alloc;		  /* Max # buffers allocated at one time   */
+    int num_lost;		  /* Buffers lost due to corruption        */
 } POOL;
 
 POOL pools[NUM_POOLS];
@@ -69,8 +39,7 @@ const char *poolnames[] =
 
 #define POOL_MAGICNUM 0xdeadbeef
 
-void pool_init(poolnum, poolsize)
-int poolnum, poolsize;
+void pool_init(int poolnum, int poolsize)
 {
     pools[poolnum].pool_size = poolsize;
     pools[poolnum].free_head = NULL;
@@ -82,10 +51,8 @@ int poolnum, poolsize;
     return;
 }
 
-static void pool_err(logsys, logflag, poolnum, tag, ph, action, reason)
-int logflag, poolnum;
-const char *logsys, *tag, *action, *reason;
-POOLHDR *ph;
+static void pool_err(const char *logsys, int logflag, int poolnum, 
+    const char *tag, POOLHDR *ph, const char *action, const char *reason)
 {
     if (!mudstate.logging) {
 	STARTLOG(logflag, logsys, "ALLOC") {
@@ -101,9 +68,7 @@ POOLHDR *ph;
     }
 }
 
-static void pool_vfy(poolnum, tag)
-int poolnum;
-const char *tag;
+static void pool_vfy(int poolnum, const char *tag)
 {
     POOLHDR *ph, *lastph;
     POOLFTR *pf;
@@ -150,8 +115,7 @@ const char *tag;
     }
 }
 
-void pool_check(tag)
-const char *tag;
+void pool_check(const char *tag)
 {
     pool_vfy(POOL_LBUF, tag);
     pool_vfy(POOL_MBUF, tag);
@@ -161,9 +125,7 @@ const char *tag;
     pool_vfy(POOL_QENTRY, tag);
 }
 
-char *pool_alloc(poolnum, tag)
-int poolnum;
-const char *tag;
+char *pool_alloc(int poolnum, const char *tag)
 {
     int *p;
     char *h;
@@ -250,9 +212,7 @@ const char *tag;
     return (char *) p;
 }
 
-void pool_free(poolnum, buf)
-int poolnum;
-char **buf;
+void pool_free(int poolnum, char **buf)
 {
     int *ibuf;
     char *h;
@@ -320,9 +280,7 @@ char **buf;
     }
 }
 
-static char *pool_stats(poolnum, text)
-int poolnum;
-const char *text;
+static char *pool_stats(int poolnum, const char *text)
 {
     char *buf;
 
@@ -333,10 +291,7 @@ const char *text;
     return buf;
 }
 
-static void pool_trace(player, poolnum, text)
-dbref player;
-int poolnum;
-const char *text;
+static void pool_trace(dbref player, int poolnum, const char *text)
 {
     POOLHDR *ph;
     int numfree, *ibuf;
@@ -363,10 +318,7 @@ const char *text;
     notify(player, tprintf("%d free %s", numfree, text));
 }
 
-static void list_bufstat(player, poolnum, pool_name)
-dbref player;
-int poolnum;
-const char *pool_name;
+static void list_bufstat(dbref player, int poolnum, const char *pool_name)
 {
     char *buff;
 
@@ -375,8 +327,7 @@ const char *pool_name;
     free_mbuf(buff);
 }
 
-void list_bufstats(player)
-dbref player;
+void list_bufstats(dbref player)
 {
     int i;
 
@@ -386,8 +337,7 @@ dbref player;
 	list_bufstat(player, i, poolnames[i]);
 }
 
-void list_buftrace(player)
-dbref player;
+void list_buftrace(dbref player)
 {
     int i;
 
