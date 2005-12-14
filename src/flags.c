@@ -1,10 +1,5 @@
-
 /*
  * flags.c - flag manipulation routines 
- */
-
-/*
- * $Id: flags.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -18,17 +13,14 @@
 #include "alloc.h"
 #include "powers.h"
 
-#ifndef STANDALONE
-
-/*
- * ---------------------------------------------------------------------------
- * * fh_any: set or clear indicated bit, no security checking
+/**
+ * Sets or clears the indicated bit, no security checking.
+ * @param target The target object for setting/unsetting
+ * @param player The object who is setting/unsetting
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag 
  */
-
-int fh_any(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_any(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (fflags & FLAG_WORD3) {
 	if (reset)
@@ -47,93 +39,99 @@ int fflags, reset;
 	    s_Flags(target, Flags(target) | flag);
     }
     return 1;
-}
+} /* end fh_and() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_god: only GOD may set or clear the bit
+/**
+ * Function to block out non-GOD for setting or clearing a bit.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag 
  */
-
-int fh_god(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_god(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!God(player))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_god() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_wiz: only WIZARDS (or GOD) may set or clear the bit
+/**
+ * Blocks out non-WIZARDS setting or clearing a bit.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_wiz(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_wiz(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!Wizard(player) && !God(player))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_wiz() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_fixed: Settable only on players by WIZARDS
+/**
+ * Only allows the bit to be set on players by WIZARDS.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_fixed(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_fixed(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (isPlayer(target))
 	if (!Wizard(player) && !God(player))
 	    return 0;
-    return (fh_any(target, player, flag, fflags, reset));
-}
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_wizroy: only WIZARDS, ROYALTY, (or GOD) may set or clear the bit
+    return (fh_any(target, player, flag, fflags, reset));
+} /* end fh_fixed() */
+
+/**
+ * Only allows WIZARDS, ROYALTY, (or GOD) to set or clear the bit.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
 
-int fh_wizroy(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_wizroy(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!WizRoy(player) && !God(player))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_wizroy() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_inherit: only players may set or clear this bit.
+/**
+ * Only allows players to set or clear this bit.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_inherit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_inherit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!Inherits(player))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_inherit() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_wiz_bit: Only GOD may set/clear this bit on others.
+/**
+ * Only allows GOD to set/clear this bit. Used for WIZARD flag.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_wiz_bit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_wiz_bit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!God(player))
 	return 0;
@@ -141,53 +139,57 @@ int fflags, reset;
 	notify(player, "You cannot make yourself mortal.");
 	return 0;
     }
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_wiz_bit() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_dark_bit: manipulate the dark bit. Nonwizards may not set on players.
+/**
+ * Manipulates the dark bit. Non-Wizards may not set on players.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_dark_bit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_dark_bit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (!reset && isPlayer(target) && !((target == player) &&
 	    Can_Hide(player)) && (!Wizard(player) && !God(player)))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_dark_bit() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_going_bit: manipulate the going bit.  Non-gods may only clear on rooms.
+/**
+ * Manipulates the going bit.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_going_bit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_going_bit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     if (Going(target) && reset && (Typeof(target) != TYPE_GARBAGE)) {
 	notify(player, "Your object has been spared from destruction.");
 	return (fh_any(target, player, flag, fflags, reset));
     }
+
     if (!God(player))
 	return 0;
+
     return (fh_any(target, player, flag, fflags, reset));
-}
+} /* end fh_going_bit() */
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_hear_bit: set or clear bits that affect hearing.
+/**
+ * Sets or clears bits that affect hearing.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_hear_bit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_hear_bit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     int could_hear;
 
@@ -201,19 +203,20 @@ int fflags, reset;
     could_hear = Hearer(target);
     fh_any(target, player, flag, fflags, reset);
     handle_ears(target, could_hear, Hearer(target));
+
     return 1;
-}
+} /* end fh_hear_bit() */
 
 
-/*
- * ---------------------------------------------------------------------------
- * * fh_xcode_bit: set or clear bits that affect xcode in glue.h
+/**
+ * Sets or clears bits that affect xcode in glue.h.
+ * @param target Target object for setting/unsetting
+ * @param player The object that is setting/unsetting
+ * @param flag The flag to be manipulated
+ * @param fflags ??
+ * @param reset If 1, we're resetting the flag
  */
-
-int fh_xcode_bit(target, player, flag, fflags, reset)
-dbref target, player;
-FLAG flag;
-int fflags, reset;
+int fh_xcode_bit(dbref target, dbref player, FLAG flag, int fflags, int reset)
 {
     int got_xcode;
     int new_xcode;
@@ -222,11 +225,19 @@ int fflags, reset;
     fh_wiz(target, player, flag, fflags, reset);
     new_xcode = Hardcode(target);
     handle_xcode(player, target, got_xcode, new_xcode);
+
     return 1;
-}
+} /* end fh_xcode_bit() */
 
-/* *INDENT-OFF* */
-
+/** 
+ * Alphabetized flag listing 
+ * 0 = Flag's visible name
+ * 1 = Flag's bit representation
+ * 2 = Flag's letter alias
+ * 3 = Flag's wordspace
+ * 4 = Who may see the flag (0 = all) 
+ * 5 = Permissions
+ */
 FLAGENT gen_flags[] = { 
 {"ABODE",		ABODE,		'A',
 	FLAG_WORD2,	0,			fh_any},
@@ -234,52 +245,110 @@ FLAGENT gen_flags[] = {
         FLAG_WORD2,     0,                      fh_any},
 {"ANSIMAP",             ANSIMAP,        'P',   
         FLAG_WORD2,     0,                      fh_any},
+{"AUDIBLE",		HEARTHRU,	'a',
+	0,		0,			fh_hear_bit},
 {"AUDITORIUM",		AUDITORIUM,	'b',
 	FLAG_WORD2,	0,			fh_any},
 {"COMPRESS",		COMPRESS,	'.',
 	FLAG_WORD2, 	0,			fh_any},
+{"CONNECTED",		CONNECTED,	'c',
+	FLAG_WORD2,	CA_NO_DECOMP,		fh_god},
 {"CHOWN_OK",		CHOWN_OK,	'C',
 	0,		0,			fh_any},
-{"HAS_DAILY",		HAS_DAILY,	'*',
-	FLAG_WORD2,		CA_GOD|CA_NO_DECOMP,	fh_god},
-{"HAS_HOURLY",		HAS_HOURLY,	'*',
-	FLAG_WORD2,		CA_GOD|CA_NO_DECOMP,	fh_god},
-{"PLAYER_MAILS",	PLAYER_MAILS,	'B',
-	FLAG_WORD2,		CA_GOD|CA_NO_DECOMP,	fh_god},
 {"DARK",		DARK,		'D',
 	0,		0,			fh_dark_bit},
+{"DESTROY_OK",		DESTROY_OK,	'd',
+	0,		0,			fh_any},
+{"ENTER_OK",		ENTER_OK,	'e',
+	0,		0,			fh_any},
+{"FIXED",               FIXED,          'f',
+        FLAG_WORD2,     0,                      fh_fixed}, 
 {"FLOATING",		FLOATING,	'F',
 	FLAG_WORD2,	0,			fh_any},
 {"GAGGED", 		GAGGED,		'j',
 	FLAG_WORD2,	0,			fh_wiz},
 {"GOING",		GOING,		'G',
 	0,		CA_NO_DECOMP,		fh_going_bit},
+{"HALTED",		HALT,		'h',
+	0,		0,			fh_any},
+{"HAS_DAILY",		HAS_DAILY,	'*',
+	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
+{"HAS_FORWARDLIST",	HAS_FWDLIST,	'&',
+	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
+{"HAS_HOURLY",		HAS_HOURLY,	'*',
+	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
+{"HAS_LISTEN",		HAS_LISTEN,	'@',
+	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
+{"HAS_STARTUP",		HAS_STARTUP,	'+',
+	0,		CA_GOD|CA_NO_DECOMP,	fh_god},
 {"HAVEN",		HAVEN,		'H',
 	0,		0,			fh_any},
 {"HEAD",                HEAD_FLAG,      '?',
-        FLAG_WORD2,       0,                      fh_wiz},
+        FLAG_WORD2,     0,                      fh_wiz},
+{"HTML", 		HTML,           '(',
+	FLAG_WORD2,     0,                      fh_any},
+{"IMMORTAL",		IMMORTAL,	'i',
+	0,		0,			fh_wiz},
+{"IN_CHARACTER",        IN_CHARACTER,   '#',
+        FLAG_WORD2,     0,                      fh_wiz},
 {"INHERIT",		INHERIT,	'I',
 	0,		0,			fh_inherit},
 {"JUMP_OK",		JUMP_OK,	'J',
 	0,		0,			fh_any},
 {"KEY",			KEY,		'K',
 	FLAG_WORD2,	0,			fh_any},
+{"LIGHT",		LIGHT,		'l',
+	FLAG_WORD2,	0,			fh_any},
 {"LINK_OK",		LINK_OK,	'L',
 	0,		0,			fh_any},
 {"MONITOR",		MONITOR,	'M',
 	0,		0,			fh_hear_bit},
+{"MULTIOK",		MULTIOK,	'y',
+	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
+{"MYOPIC",		MYOPIC,		'm',
+	0,		0,			fh_any},
+{"NOBLEED",             NOBLEED,         '-',
+        FLAG_WORD2,     0,                      fh_any},
+{"NO_COMMAND",          NO_COMMAND,      'n',
+        FLAG_WORD2,     0,                      fh_any},
 {"NOSPOOF",		NOSPOOF,	'N',
 	0,		0,			fh_any},
 {"OPAQUE",		OPAQUE,		'O',
 	0,		0,			fh_any},
+{"PARENT_OK",		PARENT_OK,	'Y',
+	FLAG_WORD2,	0,			fh_any},
+{"PLAYER_MAILS",	PLAYER_MAILS,	'B',
+	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
+{"PUPPET",		PUPPET,		'p',
+	0,		0,			fh_hear_bit},
 {"QUIET",		QUIET,		'Q',
 	0,		0,			fh_any},
+{"ROBOT",		ROBOT,		'r',
+	0,		0,			fh_any},
+{"ROYALTY",             ROYALTY,        'Z',    
+        0,	        0,                      fh_wiz},
+{"SAFE",		SAFE,		's',
+	0,		0,			fh_any},
+{"SLAVE",		SLAVE,		'x',
+	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
+{"STAFF",		STAFF,		'w',
+	FLAG_WORD2,     0,			fh_wiz},
 {"STICKY",		STICKY,		'S',
 	0,		0,			fh_wiz},
+{"SUSPECT",		SUSPECT,	'u',
+	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
+{"TERSE",		TERSE,		'q',
+	0,		0,			fh_any},
 {"TRACE",		TRACE,		'T',
+	0,		0,			fh_any},
+{"TRANSPARENT",		SEETHRU,	't',
 	0,		0,			fh_any},
 {"UNFINDABLE",		UNFINDABLE,	'U',
 	FLAG_WORD2,	0,			fh_any},
+{"UNINSPECTED",         UNINSPECTED,     'g',
+        FLAG_WORD2,     0,                      fh_wizroy},
+{"VERBOSE",		VERBOSE,	'v',
+	0,		0,			fh_any},
 {"VISUAL",		VISUAL,		'V',
 	0,		0,			fh_any},
 {"VACATION",		VACATION,	'|',
@@ -288,71 +357,14 @@ FLAGENT gen_flags[] = {
 	0,		0,			fh_wiz_bit},
 {"XCODE",               HARDCODE,       'X',
         FLAG_WORD2,     0,                      fh_xcode_bit},
-{"PARENT_OK",		PARENT_OK,	'Y',
-	FLAG_WORD2,	0,			fh_any},
-{"ROYALTY",             ROYALTY,        'Z',    
-        0,	       0,                      fh_wiz},
-{"FIXED",               FIXED,           'f',
-        FLAG_WORD2,       0,                      fh_fixed}, 
-{"UNINSPECTED",         UNINSPECTED,     'g',
-        FLAG_WORD2,       0,                      fh_wizroy},
-{"NO_COMMAND",          NO_COMMAND,      'n',
-        FLAG_WORD2,       0,                      fh_any},
-{"NOBLEED",             NOBLEED,         '-',
-        FLAG_WORD2,       0,                      fh_any},
-{"AUDIBLE",		HEARTHRU,	'a',
-	0,		0,			fh_hear_bit},
-{"CONNECTED",		CONNECTED,	'c',
-	FLAG_WORD2,	CA_NO_DECOMP,		fh_god},
-{"DESTROY_OK",		DESTROY_OK,	'd',
-	0,		0,			fh_any},
-{"ENTER_OK",		ENTER_OK,	'e',
-	0,		0,			fh_any},
-{"HALTED",		HALT,		'h',
-	0,		0,			fh_any},
-{"IMMORTAL",		IMMORTAL,	'i',
-	0,		0,			fh_wiz},
-{"LIGHT",		LIGHT,		'l',
-	FLAG_WORD2,	0,			fh_any},
-{"MYOPIC",		MYOPIC,		'm',
-	0,		0,			fh_any},
-{"PUPPET",		PUPPET,		'p',
-	0,		0,			fh_hear_bit},
-{"TERSE",		TERSE,		'q',
-	0,		0,			fh_any},
-{"ROBOT",		ROBOT,		'r',
-	0,		0,			fh_any},
-{"SAFE",		SAFE,		's',
-	0,		0,			fh_any},
-{"TRANSPARENT",		SEETHRU,	't',
-	0,		0,			fh_any},
-{"SUSPECT",		SUSPECT,	'u',
-	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
-{"VERBOSE",		VERBOSE,	'v',
-	0,		0,			fh_any},
-{"STAFF",		STAFF,		'w',
-	FLAG_WORD2,		0,			fh_wiz},
-{"SLAVE",		SLAVE,		'x',
-	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
-{"MULTIOK",		MULTIOK,	'y',
-	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
 {"ZOMBIE",		ZOMBIE,		'z',
 	FLAG_WORD2,	CA_WIZARD,		fh_wiz},
-{"HAS_STARTUP",		HAS_STARTUP,	'+',
-	0,		CA_GOD|CA_NO_DECOMP,	fh_god},
-{"HAS_FORWARDLIST",	HAS_FWDLIST,	'&',
-	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
-{"HAS_LISTEN",		HAS_LISTEN,	'@',
-	FLAG_WORD2,	CA_GOD|CA_NO_DECOMP,	fh_god},
-{"IN_CHARACTER",        IN_CHARACTER,   '#',
-        FLAG_WORD2,     0,                      fh_wiz},
-{"HTML", 		HTML,           '(',
-	FLAG_WORD2,       0,                      fh_any},
 { NULL,			0,		' ',
 	0,		0,			NULL}};
 
-#endif	/* STANDALONE */
-
+/** 
+ * Listing of valid object types 
+ */
 OBJENT object_types[8] = {
 {"ROOM",	'R', CA_PUBLIC,	OF_CONTENTS|OF_EXITS|OF_DROPTO|OF_HOME},
 {"THING",	' ', CA_PUBLIC,
@@ -365,19 +377,10 @@ OBJENT object_types[8] = {
 	OF_CONTENTS|OF_LOCATION|OF_EXITS|OF_HOME|OF_SIBLINGS},
 {"GARBAGE",	'#', CA_GOD,	0}};
 
-/* *INDENT-ON* */
 
-
-
-
-
-#ifndef STANDALONE
-
-/*
- * ---------------------------------------------------------------------------
- * * init_flagtab: initialize flag hash tables.
+/**
+ * Initializes flag hash tables.
  */
-
 void init_flagtab(void)
 {
     FLAGENT *fp;
@@ -385,28 +388,28 @@ void init_flagtab(void)
 
     hashinit(&mudstate.flags_htab, 100 * HASH_FACTOR);
     nbuf = alloc_sbuf("init_flagtab");
+
     for (fp = gen_flags; fp->flagname; fp++) {
 	for (np = nbuf, bp = (char *) fp->flagname; *bp; np++, bp++)
 	    *np = ToLower(*bp);
 	*np = '\0';
 	hashadd(nbuf, (int *) fp, &mudstate.flags_htab);
     }
+
     free_sbuf(nbuf);
-}
+} /* end init_flagtab() */
 
-/*
- * ---------------------------------------------------------------------------
- * * display_flags: display available flags.
+/**
+ * Displays available flags. Used in @list flags.
  */
-
-void display_flagtab(player)
-dbref player;
+void display_flagtab(dbref player)
 {
     char *buf, *bp;
     FLAGENT *fp;
 
     bp = buf = alloc_lbuf("display_flagtab");
     safe_str((char *) "Flags:", buf, &bp);
+
     for (fp = gen_flags; fp->flagname; fp++) {
 	if ((fp->listperm & CA_WIZARD) && !Wizard(player))
 	    continue;
@@ -418,35 +421,34 @@ dbref player;
 	safe_chr(fp->flaglett, buf, &bp);
 	safe_chr(')', buf, &bp);
     }
+
     *bp = '\0';
     notify(player, buf);
     free_lbuf(buf);
-}
+} /* end display_flagtab() */
 
-FLAGENT *find_flag(thing, flagname)
-dbref thing;
-char *flagname;
+/**
+ * ??
+ */
+FLAGENT *find_flag(dbref thing, char *flagname)
 {
     char *cp;
 
-    /*
-     * Make sure the flag name is valid 
-     */
-
+    /* Make sure the flag name is valid */
     for (cp = flagname; *cp; cp++)
 	*cp = ToLower(*cp);
+
     return (FLAGENT *) hashfind(flagname, &mudstate.flags_htab);
-}
+} /* end find_flag() */
 
-/*
- * ---------------------------------------------------------------------------
- * * flag_set: Set or clear a specified flag on an object. 
+/**
+ * Sets or clears a specified flag on an object. 
+ * @param target Target object
+ * @param player The object doing the setting
+ * @paran flag The flag being set/unset
+ * @param key Are we @set/quiet'in?
  */
-
-void flag_set(target, player, flag, key)
-dbref target, player;
-char *flag;
-int key;
+void flag_set(dbref target, dbref player, char *flag, int key)
 {
     FLAGENT *fp;
     int negate, result;
@@ -492,16 +494,16 @@ int key;
     else if (!(key & SET_QUIET) && !Quiet(player))
 	notify(player, (negate ? "Cleared." : "Set."));
     return;
-}
+} /* end flag_set() */
 
-/*
- * ---------------------------------------------------------------------------
- * * decode_flags: converts a flags word into corresponding letters.
+/**
+ * Converts a flags word into corresponding letters.
+ * @param player The invoking object
+ * @param flagword ??
+ * @param flag2word ??
+ * @param flag3word ??
  */
-
-char *decode_flags(player, flagword, flag2word, flag3word)
-dbref player;
-FLAG flagword, flag2word, flag3word;
+char *decode_flags(dbref player, FLAG flagword, FLAG flag2word, FLAG flag3word)
 {
     char *buf, *bp;
     FLAGENT *fp;
@@ -515,6 +517,7 @@ FLAG flagword, flag2word, flag3word;
 	StringCopy(buf, "#-2 ERROR");
 	return buf;
     }
+
     flagtype = (flagword & TYPE_MASK);
     if (object_types[flagtype].lett != ' ')
 	safe_sb_chr(object_types[flagtype].lett, buf, &bp);
@@ -544,30 +547,29 @@ FLAG flagword, flag2word, flag3word;
 
     *bp = '\0';
     return buf;
-}
+} /* end decode_flags() */
 
-/*
- * ---------------------------------------------------------------------------
- * * has_flag: does object have flag visible to player?
+/**
+ * Does object have flag visible to player?
+ * @param player The player we're looking for
+ * @param target The object with the flag
+ * @param flagname The flag in question
  */
-
-int has_flag(player, it, flagname)
-dbref player, it;
-char *flagname;
+int has_flag(dbref player, dbref target, char *flagname)
 {
     FLAGENT *fp;
     FLAG fv;
 
-    fp = find_flag(it, flagname);
+    fp = find_flag(target, flagname);
     if (fp == NULL)
 	return 0;
 
     if (fp->flagflag & FLAG_WORD3)
-	fv = Flags3(it);
+	fv = Flags3(target);
     else if (fp->flagflag & FLAG_WORD2)
-	fv = Flags2(it);
+	fv = Flags2(target);
     else
-	fv = Flags(it);
+	fv = Flags(target);
 
     if (fv & fp->flagvalue) {
 	if ((fp->listperm & CA_WIZARD) && !Wizard(player))
@@ -577,22 +579,21 @@ char *flagname;
 	/*
 	 * don't show CONNECT on dark wizards to mortals 
 	 */
-	if (isPlayer(it) && (fp->flagvalue == CONNECTED) &&
-	    ((Flags(it) & (WIZARD | DARK)) == (WIZARD | DARK)) &&
+	if (isPlayer(target) && (fp->flagvalue == CONNECTED) &&
+	    ((Flags(target) & (WIZARD | DARK)) == (WIZARD | DARK)) &&
 	    !Wizard(player))
 	    return 0;
 	return 1;
     }
     return 0;
-}
+} /* end has_flag() */
 
-/*
- * ---------------------------------------------------------------------------
- * * flag_description: Return an mbuf containing the type and flags on thing.
+/**
+ * Returns an mbuf containing the type and flags on thing.
+ * @param player The player to send to
+ * @param target The object whose flags we're checking
  */
-
-char *flag_description(player, target)
-dbref player, target;
+char *flag_description(dbref player, dbref target)
 {
     char *buff, *bp;
     FLAGENT *fp;
@@ -651,15 +652,13 @@ dbref player, target;
 
     *bp = '\0';
     return buff;
-}
+} /* end flag_description() */
 
-/*
- * ---------------------------------------------------------------------------
- * * Return an lbuf containing the name and number of an object
+/**
+ * Returns an lbuf containing the name and number of an object.
+ * @param target The target object
  */
-
-char *unparse_object_numonly(target)
-dbref target;
+char *unparse_object_numonly(dbref target)
 {
     char *buf;
 
@@ -674,16 +673,12 @@ dbref target;
 	sprintf(buf, "%s(#%d)", Name(target), target);
     }
     return buf;
-}
+} /* end unparse_object_numonly() */
 
-/*
- * ---------------------------------------------------------------------------
- * * Return an lbuf pointing to the object name and possibly the db# and flags
+/**
+ * Returns an lbuf pointing to the object name and possibly the db# and flags.
  */
-
-char *unparse_object(player, target, obey_myopic)
-dbref player, target;
-int obey_myopic;
+char *unparse_object(dbref player, dbref target, int obey_myopic)
 {
     char *buf, *fp;
     int exam;
@@ -719,19 +714,17 @@ int obey_myopic;
 	}
     }
     return buf;
-}
+} /* end unparse_object() */
 
-/*
- * ---------------------------------------------------------------------------
- * * convert_flags: convert a list of flag letters into its bit pattern.
- * * Also set the type qualifier if specified and not already set.
+/**
+ * Converts a list of flag letters into its bit pattern.
+ * Also set the type qualifier if specified and not already set.
+ * @param player The evoking object
+ * @param flaglist The list of flags to conver to bit pattern
+ * @param fset ??
+ * @param p_type ?? 
  */
-
-int convert_flags(player, flaglist, fset, p_type)
-dbref player;
-char *flaglist;
-FLAGSET *fset;
-FLAG *p_type;
+int convert_flags(dbref player, char *flaglist, FLAGSET *fset, FLAG *p_type)
 {
     int i, handled;
     char *s;
@@ -801,16 +794,15 @@ FLAG *p_type;
     (*fset).word3 = flag3mask;
     *p_type = type;
     return 1;
-}
+} /* end convert_flags() */
 
-/*
- * ---------------------------------------------------------------------------
- * * decompile_flags: Produce commands to set flags on target.
+/**
+ * Produces commands to set flags on target.
+ * @param player The evoking object
+ * @param thing The target object
+ * @param thingname ??
  */
-
-void decompile_flags(player, thing, thingname)
-dbref player, thing;
-char *thingname;
+void decompile_flags(dbref player, dbref thing, char *thingname)
 {
     FLAG f1, f2, f3;
     FLAGENT *fp;
@@ -861,8 +853,4 @@ char *thingname;
 	notify(player, tprintf("@set %s=%s", strip_ansi(thingname),
 		fp->flagname));
     }
-}
-
-#endif				/*
-				 * STANDALONE 
-				 */
+} /* end decompile_flags() */
