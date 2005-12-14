@@ -3,10 +3,6 @@
  * player.c 
  */
 
-/*
- * $Id: player.c,v 1.7 2005/08/08 09:43:07 murrayma Exp $ 
- */
-
 #include "copyright.h"
 #include "config.h"
 
@@ -45,14 +41,10 @@ struct logindata {
 extern char *crypt(const char *, const char *);
 extern time_t time(time_t *);
 
-/*
- * ---------------------------------------------------------------------------
- * * decrypt_logindata, encrypt_logindata: Decode and encode login info.
+/**
+ * Decode login info.
  */
-
-static void decrypt_logindata(atrbuf, info)
-char *atrbuf;
-LDATA *info;
+static void decrypt_logindata(char *atrbuf, LDATA *info)
 {
     int i;
     char *tmpc;
@@ -99,9 +91,10 @@ LDATA *info;
     }
 }
 
-static void encrypt_logindata(atrbuf, info)
-char *atrbuf;
-LDATA *info;
+/**
+ * Encode login info.
+ */
+static void encrypt_logindata(char *atrbuf, LDATA *info)
 {
     char *bp, nullc;
     int i;
@@ -137,17 +130,13 @@ LDATA *info;
     free_lbuf(bp);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * record_login: Record successful or failed login attempt.
- * * If successful, report last successful login and number of failures since
- * * last successful login.
+/**
+ * Record successful or failed login attempt.
+ * If successful, report last successful login and number of failures since
+ * last successful login.
  */
-
-void record_login(player, isgood, ldate, lhost, lusername)
-dbref player;
-int isgood;
-char *ldate, *lhost, *lusername;
+void record_login(dbref player, int isgood, char *ldate, char *lhost, 
+    char *lusername)
 {
     LDATA login_info;
     char *atrbuf;
@@ -204,11 +193,9 @@ char *ldate, *lhost, *lusername;
     free_lbuf(atrbuf);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * check_pass: Test a password to see if it is correct.
+/**
+ * Test a password to see if it is correct.
  */
-
 int check_pass(dbref player, const char *password) {
     dbref aowner;
     int aflags;
@@ -225,7 +212,7 @@ int check_pass(dbref player, const char *password) {
 
     /*
      * This is needed to prevent entering the raw encrypted password from
-     * * * working.  Do it better if you like, but it's needed. 
+     * working. Do it better if you like, but it's needed. 
      *
      * Not really, you should just not really allow unencrypted passwords.
      * -Hag
@@ -238,11 +225,9 @@ int check_pass(dbref player, const char *password) {
     return 1;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * connect_player: Try to connect to an existing player.
+/**
+ * Try to connect to an existing player.
  */
-
 dbref connect_player(char *name, char *password, char *host, char *username) {
     dbref player, aowner;
     int aflags;
@@ -280,15 +265,11 @@ dbref connect_player(char *name, char *password, char *host, char *username) {
     return player;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * create_player: Create a new player.
+/**
+ * Create a new player.
  */
-
-dbref create_player(name, password, creator, isrobot, isguest)
-char *name, *password;
-dbref creator;
-int isrobot, isguest;
+dbref create_player(char *name, char *password, dbref creator, int isrobot, 
+    int isguest)
 {
     dbref player;
     char *pbuf;
@@ -329,15 +310,11 @@ int isrobot, isguest;
     return player;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_password: Change the password for a player
+/**
+ * Change the password for a player
  */
-
-void do_password(player, cause, key, oldpass, newpass)
-dbref player, cause;
-int key;
-char *oldpass, *newpass;
+void do_password(dbref player, dbref cause, int key, char *oldpass, 
+   char *newpass)
 {
     dbref aowner;
     int aflags;
@@ -355,14 +332,10 @@ char *oldpass, *newpass;
     free_lbuf(target);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_last Display login history data.
+/**
+ * Display login history data.
  */
-
-static void disp_from_on(player, dtm_str, host_str)
-dbref player;
-char *dtm_str, *host_str;
+static void disp_from_on(dbref player, char *dtm_str, char *host_str)
 {
     if (dtm_str && *dtm_str && host_str && *host_str) {
 	notify(player, tprintf("     From: %s   On: %s", dtm_str,
@@ -370,10 +343,7 @@ char *dtm_str, *host_str;
     }
 }
 
-void do_last(player, cause, key, who)
-dbref player, cause;
-int key;
-char *who;
+void do_last(dbref player, dbref cause, int key, char *who)
 {
     dbref target, aowner;
     LDATA login_info;
@@ -413,14 +383,10 @@ char *who;
 }
 
 /*
- * ---------------------------------------------------------------------------
- * * add_player_name, delete_player_name, lookup_player:
- * * Manage playername->dbref mapping
+ * add_player_name, delete_player_name, lookup_player:
+ * Manage playername->dbref mapping
  */
-
-int add_player_name(player, name)
-dbref player;
-char *name;
+int add_player_name(dbref player, char *name)
 {
     int stat;
     dbref *p;
@@ -478,9 +444,7 @@ char *name;
     return stat;
 }
 
-int delete_player_name(player, name)
-dbref player;
-char *name;
+int delete_player_name(dbref player, char *name)
 {
     dbref *p;
     char *temp, *tp;
@@ -552,14 +516,6 @@ void load_player_names(void)
     DO_WHOLE_DB(i) {
 	if (Typeof(i) == TYPE_PLAYER) {
 	    add_player_name(i, Name(i));
-#ifndef MEMORY_BASED
-	    if (++j > 20) {
-		cache_reset(0);
-		j = 0;
-	    }
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 	}
     }
     alias = alloc_lbuf("load_player_names");
@@ -569,26 +525,15 @@ void load_player_names(void)
 	    alias = atr_pget_str(alias, i, A_ALIAS, &aowner, &aflags);
 	    if (*alias)
 		add_player_name(i, alias);
-#ifndef MEMORY_BASED
-	    if (++j > 20) {
-		cache_reset(0);
-		j = 0;
-	    }
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 	}
     }
     free_lbuf(alias);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * badname_add, badname_check, badname_list: Add/look for/display bad names.
+/**
+ * badname_add, badname_check, badname_list: Add/look for/display bad names.
  */
-
-void badname_add(bad_name)
-char *bad_name;
+void badname_add(char *bad_name)
 {
     BADNAME *bp;
 
@@ -603,8 +548,7 @@ char *bad_name;
     StringCopy(bp->name, bad_name);
 }
 
-void badname_remove(bad_name)
-char *bad_name;
+void badname_remove(char *bad_name)
 {
     BADNAME *bp, *backp;
 
@@ -626,8 +570,7 @@ char *bad_name;
     }
 }
 
-int badname_check(bad_name)
-char *bad_name;
+int badname_check(char *bad_name)
 {
     BADNAME *bp;
 
@@ -645,9 +588,7 @@ char *bad_name;
     return 1;
 }
 
-void badname_list(player, prefix)
-dbref player;
-const char *prefix;
+void badname_list(dbref player, const char *prefix)
 {
     BADNAME *bp;
     char *buff, *bufp;

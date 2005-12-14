@@ -1,10 +1,5 @@
-
 /*
  * object.c - low-level object manipulation routines 
- */
-
-/*
- * $Id: object.c,v 1.4 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"

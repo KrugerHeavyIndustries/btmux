@@ -1,10 +1,5 @@
-
 /*
  * player_c.c -- Player cache routines 
- */
-
-/*
- * $Id: player_c.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -18,8 +13,6 @@
 #include "db.h"
 #include "pcache.h"
 #include "rbtree.h"
-
-#ifndef STANDALONE
 
 int compare_pcache(dbref left, dbref right) {
     return (left-right);
@@ -193,12 +186,9 @@ int QueueMax(dbref player) {
     return m;
 }
 
-#endif
-
 int Pennies(dbref obj) {
     char *cp;
 
-#ifndef STANDALONE
     PCACHE *pp;
 
     if (OwnsOthers(obj)) {
@@ -206,7 +196,6 @@ int Pennies(dbref obj) {
         if (pp)
             return pp->money;
     }
-#endif
     cp = atr_get_raw(obj, A_MONEY);
     return (safe_atoi(cp));
 }
@@ -214,7 +203,6 @@ int Pennies(dbref obj) {
 void s_Pennies(dbref obj, int howfew) {
     IBUF tbuf;
 
-#ifndef STANDALONE
     PCACHE *pp;
 
     if (OwnsOthers(obj)) {
@@ -224,7 +212,6 @@ void s_Pennies(dbref obj, int howfew) {
             pp->cflags |= PF_MONEY_CH;
         }
     }
-#endif
     sprintf(tbuf, "%d", howfew);
     atr_add_raw(obj, A_MONEY, tbuf);
 }

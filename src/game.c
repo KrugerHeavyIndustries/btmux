@@ -3,10 +3,6 @@
  * game.c 
  */
 
-/*
- * $Id: game.c,v 1.8 2005/08/08 10:30:11 murrayma Exp $ 
- */
-
 #include "copyright.h"
 #include "config.h"
 
@@ -79,19 +75,14 @@ int reserved;
 
 extern pid_t slave_pid;
 extern int slave_socket;
-
-#ifdef MEMORY_BASED
 extern int corrupt;
-#endif
 
 /*
  * used to allocate storage for temporary stuff, cleared before command
  * execution
  */
 
-void do_dump(player, cause, key)
-dbref player, cause;
-int key;
+void do_dump(dbref player, dbref cause, int key)
 {
     notify(player, "Dumping...");
 
@@ -107,27 +98,14 @@ int key;
 	fork_and_dump(key);
 }
 
-void do_dump_optimize(player, cause, key)
-dbref player, cause;
-int key;
+void do_dump_optimize(dbref player, dbref cause, int key)
 {
-#ifdef MEMORY_BASED
     raw_notify(player, "Database is memory based.");
-#else
-    raw_notify(player, "Optimizing database...");
-    if (dddb_optimize() < 0)
-	raw_notify(player, "Database optimization failed.");
-    else
-	raw_notify(player, "Database optmization completed.");
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 }
 
-/*
+/**
  * print out stuff into error file 
  */
-
 void report(void)
 {
     STARTLOG(LOG_BUGS, "BUG", "INFO") {
@@ -148,14 +126,11 @@ void report(void)
     }}
 }
 
-/* ----------------------------------------------------------------------
- * regexp_match: Load a regular expression match and insert it into
+/*
+ * Load a regular expression match and insert it into
  * registers.
- */ int regexp_match(pattern, str, args, nargs)
-char *pattern;
-char *str;
-char *args[];
-int nargs;
+ */ 
+int regexp_match(char *pattern, char *str, char *args[], int nargs)
 {
     regexp *re;
     int got_match;
@@ -214,16 +189,11 @@ int nargs;
 }
 
 
-/*
- * ----------------------------------------------------------------------
- * * atr_match: Check attribute list for wild card matches and queue them.
+/**
+ * Check attribute list for wild card matches and queue them.
  */
-
-static int atr_match1(thing, parent, player, type, str, check_exclude,
-    hash_insert)
-dbref thing, parent, player;
-char type, *str;
-int check_exclude, hash_insert;
+static int atr_match1(dbref thing, dbref parent, dbref player, char type, 
+    char *str, int check_exclude, int hash_insert)
 {
     dbref aowner;
     int match, attr, aflags, i;
@@ -307,10 +277,8 @@ int check_exclude, hash_insert;
     return (match);
 }
 
-int atr_match(thing, player, type, str, check_parents)
-dbref thing, player;
-char type, *str;
-int check_parents;
+int atr_match(dbref thing, dbref player, char type, char *str, 
+    int check_parents)
 {
     int match, lev, result, exclude, insert;
     dbref parent;
@@ -353,16 +321,11 @@ int check_parents;
     return match;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * notify_checked: notifies the object #target of the message msg, and
- * * optionally notify the contents, neighbors, and location also.
+/**
+ * Notifies the object #target of the message msg, and
+ * optionally notify the contents, neighbors, and location also.
  */
-
-int check_filter(object, player, filter, msg)
-dbref object, player;
-int filter;
-const char *msg;
+int check_filter(dbref object, dbref player, int filter, const char *msg)
 {
     int aflags;
     dbref aowner;
@@ -391,10 +354,8 @@ const char *msg;
     return (1);
 }
 
-static char *add_prefix(object, player, prefix, msg, dflt)
-dbref object, player;
-int prefix;
-const char *msg, *dflt;
+static char *add_prefix(dbref object, dbref player, int prefix, 
+    const char *msg, const char *dflt)
 {
     int aflags;
     dbref aowner;
@@ -421,8 +382,7 @@ const char *msg, *dflt;
     return (buf);
 }
 
-static char *dflt_from_msg(sender, sendloc)
-dbref sender, sendloc;
+static char *dflt_from_msg(dbref sender, dbref sendloc)
 {
     char *tp, *tbuff;
 
@@ -447,10 +407,7 @@ dbref sender, sendloc;
  *
  * Returns 0 if the copy succeeded, 1 if it failed.
  */
-int html_escape(src, dest, destp)
-const char *src;
-char *dest;
-char **destp;
+int html_escape(const char *src, char *dest, char **destp)
 {
     const char *msg_orig;
     char *temp;
@@ -841,9 +798,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key) {
     mudstate.ntfy_nest_lev--;
 }
 
-void notify_except(loc, player, exception, msg)
-dbref loc, player, exception;
-const char *msg;
+void notify_except(dbref loc, dbref player, dbref exception, const char *msg)
 {
     dbref first;
 
@@ -861,9 +816,8 @@ const char *msg;
     }
 }
 
-void notify_except2(loc, player, exc1, exc2, msg)
-dbref loc, player, exc1, exc2;
-const char *msg;
+void notify_except2(dbref loc, dbref player, dbref exc1, dbref exc2, 
+    const char *msg)
 {
     dbref first;
 
@@ -947,8 +901,7 @@ void do_shutdown(dbref player, dbref cause, int key, char *message) {
     return;
 }
 
-void dump_database_internal(dump_type)
-int dump_type;
+void dump_database_internal(int dump_type)
 {
     char tmpfile[256], outfn[256], prevfile[256];
     FILE *f;
@@ -1059,7 +1012,6 @@ int dump_type;
         }
     }
 
-#ifndef STANDALONE
     if (mudconf.have_mailer)
         if ((f = fopen(mudconf.mail_db, "w"))) {
             dump_mail(f);
@@ -1069,7 +1021,6 @@ int dump_type;
         save_comsys_and_macros(mudconf.commac_db);
     if (mudconf.have_specials)
         SaveSpecialObjects(DUMP_NORMAL);
-#endif
 }
 
 void dump_database(void)
@@ -1096,8 +1047,7 @@ void dump_database(void)
     mudstate.dumping = 0;
 }
 
-void fork_and_dump(key)
-int key;
+void fork_and_dump(int key)
 {
     int child;
     char *buff;
@@ -1122,13 +1072,6 @@ int key;
         ENDLOG;
     } free_mbuf(buff);
 
-#ifndef MEMORY_BASED
-    al_store();			/*
-                         * Save cached modified attribute list 
-                         */
-#endif				/*
-                     * MEMORY_BASED 
-                     */
     if (!key || (key & DUMP_TEXT))
         pcache_sync();
     if (!key || (key & DUMP_STRUCT)) {
@@ -1230,14 +1173,11 @@ static int load_game(void)
 }
 
 
-/*
+/**
  * match a list of things, using the no_command flag 
  */
-
-int list_check(thing, player, type, str, check_parent)
-dbref thing, player;
-char type, *str;
-int check_parent;
+int list_check(dbref thing, dbref player, char type, char *str, 
+    int check_parent)
 {
     int match, limit;
 
@@ -1255,8 +1195,7 @@ int check_parent;
     return match;
 }
 
-int Hearer(thing)
-dbref thing;
+int Hearer(dbref thing)
 {
     char *as, *buff, *s;
     dbref aowner;
@@ -1309,9 +1248,7 @@ dbref thing;
     return 0;
 }
 
-void do_readcache(player, cause, key)
-dbref player, cause;
-int key;
+void do_readcache(dbref player, dbref cause, int key)
 {
     helpindex_load(player);
     fcache_load(player);
@@ -1352,11 +1289,6 @@ static void process_preload(void)
 
 		do_second();
 		do_top(10);
-#ifndef MEMORY_BASED
-		cache_reset(0);
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 		break;
 	    }
 	}
@@ -1372,11 +1304,6 @@ static void process_preload(void)
 		fwdlist_load(fp, GOD, tstr);
 		if (fp->count > 0)
 		    fwdlist_set(thing, fp);
-#ifndef MEMORY_BASED
-		cache_reset(0);
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 	    }
 	}
     }
@@ -1402,12 +1329,8 @@ int main(int argc, char *argv[]) {
     fpsetmask(fpgetmask() & ~FP_X_OFL);
 #endif
 
-    mindb = 0;			/*
-                         * Are we creating a new db? 
-                         */
-#ifdef MEMORY_BASED
-    corrupt = 0;		/* Database isn't corrupted. */
-#endif
+    mindb = 0;		/* Are we creating a new db? */
+    corrupt = 0;	/* Database isn't corrupted. */
     time(&mudstate.start_time);
     time(&mudstate.restart_time);
 #if 0
@@ -1459,22 +1382,7 @@ int main(int argc, char *argv[]) {
 
     fcache_init();
     helpindex_init();
-
-#ifndef MEMORY_BASED
-    if (mindb)
-        unlink(mudconf.gdbm);
-    if (init_gdbm_db(mudconf.gdbm) < 0) {
-        STARTLOG(LOG_ALWAYS, "INI", "LOAD") {
-            log_text((char *) "Couldn't load text database: ");
-            log_text(mudconf.gdbm);
-            ENDLOG;
-        } exit(2);
-    }
-#else
     db_free();
-#endif				/*
-                     * MEMORY_BASED 
-                     */
 
     mudstate.record_players = 0;
 
