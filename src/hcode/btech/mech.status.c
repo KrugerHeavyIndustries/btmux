@@ -1141,7 +1141,6 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		: ECMEnabled(mech) ? (ECMActive(mech) ? "%ch%cgECM%cn" :
 		    "%ch%crECM%cn") : ECCMEnabled(mech) ? "%ch%cgECCM%cn" :
 		ECMCountered(mech) ? "%crOff%cn" : "%cgOff%cn");
-
 	}
 
 	if (MechSpecials2(mech) & ANGEL_ECM_TECH) {
@@ -1229,8 +1228,18 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		0 ? "%ch%cy" : "%cg", MechMASCCounter(mech),
 		MechStatus(mech) & MASC_ENABLED ? "On" : "Off");
 
+
 	notify(player, tempbuff);
 	tempbuff[0] = 0;
+    }
+
+    if (MechSpecials2(mech) & CARRIER_TECH) {
+        strcpy(tempbuff, "Carrier: ");
+
+        sprintf(tempbuff + strlen(tempbuff), "%d tons free, %d tons max unit size",
+        (CargoSpace(mech) / 100), CarMaxTon(mech));
+notify(player, tempbuff);
+tempbuff[0] = 0;
     }
 
     if ((MechSpecials(mech) & AA_TECH) ||
