@@ -239,7 +239,6 @@ int check_exclude, hash_insert;
 	return -1;
 
     match = 0;
-    atr_push();
     for (attr = atr_head(parent, &as); attr; attr = atr_next(&as)) {
 	ap = atr_num(attr);
 
@@ -305,7 +304,6 @@ int check_exclude, hash_insert;
 	    }
 	}
     }
-    atr_pop();
     return (match);
 }
 
@@ -1275,12 +1273,10 @@ dbref thing;
 	buff = alloc_lbuf("Hearer");
     else
 	buff = NULL;
-    atr_push();
     for (attr = atr_head(thing, &as); attr; attr = atr_next(&as)) {
 	if (attr == A_LISTEN) {
 	    if (buff)
 		free_lbuf(buff);
-	    atr_pop();
 	    return 1;
 	}
 	if (Monitor(thing)) {
@@ -1304,14 +1300,12 @@ dbref thing;
 	    for (s = buff + 1; *s && (*s != ':'); s++);
 	    if (s) {
 		free_lbuf(buff);
-		atr_pop();
 		return 1;
 	    }
 	}
     }
     if (buff)
 	free_lbuf(buff);
-    atr_pop();
     return 0;
 }
 

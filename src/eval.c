@@ -1,10 +1,5 @@
-
 /*
  * eval.c - command evaluation and cracking 
- */
-
-/*
- * $Id: eval.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -27,9 +22,7 @@
  * * returned as NULL.
  */
 
-static char *parse_to_cleanup(eval, first, cstr, rstr, zstr)
-int eval, first;
-char *cstr, *rstr, *zstr;
+static char *parse_to_cleanup(int eval, int first, char *cstr, char *rstr, char *zstr)
 {
     if ((mudconf.space_compress || (eval & EV_STRIP_TS)) &&
 	!(eval & EV_NO_COMPRESS) && !first && (cstr[-1] == ' '))
@@ -63,9 +56,7 @@ problems with copying a memory location to itself. */
 		*zstr++ = *cstr++;} while (0)
 
 
-char *parse_to(dstr, delim, eval)
-char **dstr, delim;
-int eval;
+char *parse_to(char **dstr, char delim, int eval)
 {
 #define stacklim 32
     char stack[stacklim];
@@ -214,10 +205,8 @@ int eval;
  * * is destructively modified.
  */
 
-char *parse_arglist(player, cause, dstr, delim, eval, fargs, nfargs, cargs,
-    ncargs)
-dbref player, cause, eval, nfargs, ncargs;
-char *dstr, delim, *fargs[], *cargs[];
+char *parse_arglist(dbref player, dbref cause, char *dstr, char delim, 
+    dbref eval, char *fargs[], dbref nfargs, char *cargs[], dbref ncargs)
 {
     char *rstr, *tstr, *bp, *str;
     int arg, peval;
@@ -256,8 +245,7 @@ char *dstr, delim, *fargs[], *cargs[];
  * * exec: Process a command line, evaluating function calls and %-substitutions.
  */
 
-int get_gender(player)
-dbref player;
+int get_gender(dbref player)
 {
     char first, *atr_gotten;
     dbref aowner;
@@ -313,8 +301,7 @@ int tcache_empty(void)
     return 0;
 }
 
-static void tcache_add(orig, result)
-char *orig, *result;
+static void tcache_add(char *orig, char *result)
 {
     char *tp;
     TCENT *xp;
@@ -337,8 +324,7 @@ char *orig, *result;
     }
 }
 
-static void tcache_finish(player)
-dbref player;
+static void tcache_finish(dbref player)
 {
     TCENT *xp;
 
@@ -355,13 +341,8 @@ dbref player;
     tcache_count = 0;
 }
 
-void exec(buff, bufc, tflags, player, cause, eval, dstr, cargs, ncargs)
-char *buff, **bufc;
-int tflags;
-dbref player, cause;
-int eval, ncargs;
-char **dstr;
-char *cargs[];
+void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause, 
+    int eval, char **dstr, char *cargs[], int ncargs)
 {
 #define	NFARGS	30
     char *fargs[NFARGS];

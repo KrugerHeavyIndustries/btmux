@@ -1,10 +1,5 @@
-
 /*
  * file_c.c -- File cache management 
- */
-
-/*
- * $Id: file_c.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include <dirent.h>
@@ -37,7 +32,6 @@ struct filecache_block {
 };
 
 #define FBLOCK_SIZE (MBUF_SIZE - sizeof(FBLKHDR))
-/* *INDENT-OFF* */
 
 FCACHE fcache[] = {
 	{ mudconf.conn_file,	NULL,	"Conn" },
@@ -67,16 +61,11 @@ NAMETAB list_files[] = {
 {(char *)"wizard_motd",		1,	CA_WIZARD,	FC_WIZMOTD},
 { NULL,				0,	0,		0}};
 
-/* *INDENT-ON* */
-
 #define MAX_CONN 100
 int fcache_conn_c = 0;
 FCACHE fcache_conn[MAX_CONN];
 
-void do_list_file(player, cause, extra, arg)
-dbref player, cause;
-int extra;
-char *arg;
+void do_list_file(dbref player, dbref cause, int extra, char *arg)
 {
     int flagvalue;
 
@@ -89,9 +78,7 @@ char *arg;
     fcache_send(player, flagvalue);
 }
 
-static FBLOCK *fcache_fill(fp, ch)
-FBLOCK *fp;
-char ch;
+static FBLOCK *fcache_fill(FBLOCK *fp, char ch)
 {
     FBLOCK *tfp;
 
@@ -111,9 +98,7 @@ char ch;
     return fp;
 }
 
-static int fcache_read(cp, filename)
-FBLOCK **cp;
-char *filename;
+static int fcache_read(FBLOCK **cp, char *filename)
 {
     int n, nmax, tchars, fd;
     char *buff;
@@ -223,8 +208,7 @@ void fcache_read_dir(char *dir, FCACHE foo[], int *cnt, int max)
     closedir(d);
 }
 
-void fcache_rawdump(fd, num)
-int fd, num;
+void fcache_rawdump(int fd, int num)
 {
     int cnt, remaining;
     char *start;
@@ -250,10 +234,7 @@ int fd, num;
     return;
 }
 
-void fcache_dumpbase(d, fc, num)
-DESC *d;
-FCACHE fc[];
-int num;
+void fcache_dumpbase(DESC *d, FCACHE fc[], int num)
 {
     FBLOCK *fp;
 
@@ -266,26 +247,20 @@ int num;
 }
 
 
-void fcache_dump(d, num)
-DESC *d;
-int num;
+void fcache_dump(DESC *d, int num)
 {
     if ((num < 0) || (num > FC_LAST))
 	return;
     fcache_dumpbase(d, fcache, num);
 }
 
-void fcache_dump_conn(d, num)
-DESC *d;
-int num;
+void fcache_dump_conn(DESC *d, int num)
 {
     fcache_dumpbase(d, fcache_conn, num);
 }
 
 
-void fcache_send(player, num)
-dbref player;
-int num;
+void fcache_send(dbref player, int num)
 {
     DESC *d;
 
@@ -294,8 +269,7 @@ int num;
     }
 }
 
-void fcache_load(player)
-dbref player;
+void fcache_load(dbref player)
 {
     FCACHE *fp;
     char *buff, *bufc, *sbuf;

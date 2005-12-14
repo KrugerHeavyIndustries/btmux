@@ -975,7 +975,6 @@ int Commer(dbref thing)
     dbref aowner;
     ATTR *ap;
 
-    atr_push();
     for (attr = atr_head(thing, &as); attr; attr = atr_next(&as)) {
 	ap = atr_num(attr);
 	if (!ap || (ap->flags & AF_NOPROG))
@@ -985,11 +984,9 @@ int Commer(dbref thing)
 	c = *s;
 	free_lbuf(s);
 	if ((c == '$') && !(aflags & AF_NOPROG)) {
-	    atr_pop();
 	    return 1;
 	}
     }
-    atr_pop();
     return 0;
 }
 
@@ -1505,7 +1502,6 @@ void atr_cpy(dbref player, dbref dest, dbref source)
     ATTR *at;
 
     owner = Owner(dest);
-    atr_push();
     for (attr = atr_head(source, &as); attr; attr = atr_next(&as)) {
 	buf = atr_get(source, attr, &aowner, &aflags);
 	if (!(aflags & AF_LOCK))
@@ -1522,7 +1518,6 @@ void atr_cpy(dbref player, dbref dest, dbref source)
 	}
 	free_lbuf(buf);
     }
-    atr_pop();
 }
 
 /*
@@ -1538,14 +1533,12 @@ void atr_chown(dbref obj)
     char *as, *buf;
 
     owner = Owner(obj);
-    atr_push();
     for (attr = atr_head(obj, &as); attr; attr = atr_next(&as)) {
 	buf = atr_get(obj, attr, &aowner, &aflags);
 	if ((aowner != owner) && !(aflags & AF_LOCK))
 	    atr_add(obj, attr, buf, owner, aflags);
 	free_lbuf(buf);
     }
-    atr_pop();
 }
 
 /*
@@ -1568,20 +1561,6 @@ int atr_next(char **attrp)
 	atr->count++;
 	return db[atr->thing].ahead[atr->count - 2].number;
     }
-}
-
-/*
- * ---------------------------------------------------------------------------
- * * atr_push, atr_pop: Push and pop attr lists.
- */
-void atr_push(void)
-{
-    /* No longer used without disk-based, safe to remove? */
-}
-
-void atr_pop(void)
-{
-    /* No longer used without disk-based, safe to remove? */
 }
 
 /*

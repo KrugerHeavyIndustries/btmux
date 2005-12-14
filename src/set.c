@@ -1110,7 +1110,6 @@ int check_exclude, hash_insert, get_locks;
      * Walk the attribute list of the object 
      */
 
-    atr_push();
     for (ca = atr_head(thing, &as); ca; ca = atr_next(&as)) {
 	attr = atr_num(ca);
 
@@ -1154,7 +1153,6 @@ int check_exclude, hash_insert, get_locks;
 	    }
 	}
     }
-    atr_pop();
 }
 
 int parse_attrib_wild(player, str, thing, check_parents, get_locks,
