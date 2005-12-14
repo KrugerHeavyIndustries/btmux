@@ -1,10 +1,5 @@
-
 /*
  * vattr.c -- Manages the user-defined attributes. 
- */
-
-/*
- * $Id: vattr.c,v 1.4 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -43,8 +38,7 @@ void vattr_init(void)
     hashinit(&mudstate.vattr_name_htab, 65536);
 }
 
-VATTR *vattr_find(name)
-char *name;
+VATTR *vattr_find(char *name)
 {
     register VATTR *vp;
 
@@ -59,9 +53,7 @@ char *name;
     return (vp);
 }
 
-VATTR *vattr_alloc(name, flags)
-char *name;
-int flags;
+VATTR *vattr_alloc(char *name, int flags)
 {
     int number;
 
@@ -71,9 +63,7 @@ int flags;
     return (vattr_define(name, number, flags));
 }
 
-VATTR *vattr_define(name, number, flags)
-char *name;
-int number, flags;
+VATTR *vattr_define(char *name, int number, int flags)
 {
     VATTR *vp;
 
@@ -104,9 +94,7 @@ int number, flags;
     return (vp);
 }
 
-void do_dbclean(player, cause, key)
-dbref player, cause;
-int key;
+void do_dbclean(dbref player, dbref cause, int key)
 {
     VATTR *vp;
     dbref i;
@@ -130,13 +118,10 @@ int key;
 	    free((char *) vp);
 	}
     }
-#ifndef STANDALONE
     notify(player, "Database cleared of stale attribute entries.");
-#endif
 }
 
-void vattr_delete(name)
-char *name;
+void vattr_delete(char *name)
 {
     VATTR *vp;
     int number;
@@ -159,8 +144,7 @@ char *name;
     return;
 }
 
-VATTR *vattr_rename(name, newname)
-char *name, *newname;
+VATTR *vattr_rename(char *name, char *newname)
 {
     VATTR *vp;
 
@@ -192,8 +176,7 @@ VATTR *vattr_first(void)
     return (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
 }
 
-VATTR *vattr_next(vp)
-VATTR *vp;
+VATTR *vattr_next(VATTR *vp)
 {
     if (vp == NULL)
 	return (vattr_first());
@@ -201,8 +184,7 @@ VATTR *vp;
     return ((VATTR *) hash_nextentry(&mudstate.vattr_name_htab));
 }
 
-static void fixcase(name)
-char *name;
+static void fixcase(char *name)
 {
     char *cp = name;
 
@@ -215,13 +197,11 @@ char *name;
 }
 
 
-/*
+/**
  * Some goop for efficiently storing strings we expect to
  * keep forever. There is no freeing mechanism.
  */
-
-static char *store_string(str)
-char *str;
+static char *store_string(char *str)
 {
     int len;
     char *ret;

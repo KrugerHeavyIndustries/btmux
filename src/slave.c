@@ -1,11 +1,9 @@
-
 /*
  * This slave does iptoname conversions, and identquery lookups.
  * 
  * The philosophy is to keep this program as simple/small as possible.
  * It does normal fork()s, so the smaller it is, the faster it goes.
  * 
- * $Id: slave.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $
  */
 
 #include "config.h"
@@ -26,9 +24,7 @@ pid_t parent_pid;
 #define MAX_STRING 8000
 char *arg_for_errors;
 
-char *format_inet_addr(dest, addr)
-char *dest;
-long addr;
+char *format_inet_addr(char *dest, long addr)
 {
     sprintf(dest, "%ld.%ld.%ld.%ld", (addr & 0xFF000000) >> 24,
 	(addr & 0x00FF0000) >> 16, (addr & 0x0000FF00) >> 8,
@@ -36,7 +32,7 @@ long addr;
     return (dest + strlen(dest));
 }
 
-/*
+/**
  * copy a string, returning pointer to the null terminator of dest 
  */
 char *string_append(char *dest, const char *src)
@@ -53,9 +49,7 @@ void child_timeout_signal()
     exit(1);
 }
 
-int query(ip, orig_arg)
-char *ip;
-char *orig_arg;
+int query(char *ip, char *orig_arg)
 {
     char *comma;
     char *port_pair;
@@ -209,9 +203,7 @@ void alarm_signal()
 }
 
 
-int main(argc, argv)
-int argc;
-char **argv;
+int main(int argc, char **argv)
 {
     char arg[MAX_STRING + 1];
     char *p;

@@ -1,10 +1,5 @@
-
 /*
  * walkdb.c -- Support for commands that walk the entire db 
- */
-
-/*
- * $Id: walkdb.c,v 1.4 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -25,16 +20,12 @@
 #ifdef MCHECK
 #endif
 
-/*
+/**
  * Bind occurances of the universal var in ACTION to ARG, then run ACTION.
- * * Cmds run in low-prio Q after a 1 sec delay for the first one. 
+ * Cmds run in low-prio Q after a 1 sec delay for the first one. 
  */
-
-static void bind_and_queue(player, cause, action, argstr, cargs, ncargs,
-    number)
-dbref player, cause;
-int ncargs, number;
-char *action, *argstr, *cargs[];
+static void bind_and_queue(dbref player, dbref cause, char *action, 
+    char *argstr, char *cargs[], int ncargs, int number)
 {
     char *command, *command2;	/*
 
@@ -49,18 +40,11 @@ char *action, *argstr, *cargs[];
     free_lbuf(command2);
 }
 
-/*
- * New @dolist.  i.e.:
- * * @dolist #12 #34 #45 #123 #34644=@emit [name(##)]
- * *
- * * New switches added 12/92, /space (default) delimits list using spaces,
- * * and /delimit allows specification of a delimiter.
+/**
+ * Iterates through a delimited string. Used in @dolist. 
  */
-
-void do_dolist(player, cause, key, list, command, cargs, ncargs)
-dbref player, cause;
-int key, ncargs;
-char *list, *command, *cargs[];
+void do_dolist(dbref player, dbref cause, int key, char *list, char *command, 
+    char *cargs[], int ncargs)
 {
     char *curr, *objstring, delimiter = ' ';
     int number = 0;
@@ -93,14 +77,10 @@ char *list, *command, *cargs[];
     }
 }
 
-/*
+/**
  * Regular @find command 
  */
-
-void do_find(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_find(dbref player, dbref cause, int key, char *name)
 {
     dbref i, low_bound, high_bound;
     char *buff;
@@ -112,12 +92,6 @@ char *name;
     }
     parse_range(&name, &low_bound, &high_bound);
     for (i = low_bound; i <= high_bound; i++) {
-#ifndef MEMORY_BASED
-	if ((i % 100) == 0)
-	    cache_reset(0);
-#endif				/*
-				 * MEMORY_BASED 
-				 */
 	if ((Typeof(i) != TYPE_EXIT) && controls(player, i) && (!*name ||
 		string_match(PureName(i), name))) {
 	    buff = unparse_object(player, i, 0);
@@ -128,14 +102,10 @@ char *name;
     notify(player, "***End of List***");
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * get_stats, do_stats: Get counts of items in the db.
+/**
+ * Get counts of items in the db.
  */
-
-int get_stats(player, who, info)
-dbref player, who;
-STATS *info;
+int get_stats(dbref player, dbref who, STATS *info)
 {
     dbref i;
 
@@ -191,15 +161,10 @@ STATS *info;
     return 1;
 }
 
-void do_stats(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
-
 /*
- * reworked by R'nice 
+ * Get counts of items in the db.
  */
-
+void do_stats(dbref player, dbref cause, int key, char *name)
 {
     dbref owner;
     STATS statinfo;
@@ -262,8 +227,10 @@ char *name;
 				 */
 }
 
-int chown_all(from_player, to_player)
-dbref from_player, to_player;
+/**
+ * Transfers ownership of all a player's objects to another player.
+ */
+int chown_all(dbref from_player, dbref to_player)
 {
     int i, count, quota_out, quota_in;
 
@@ -308,10 +275,11 @@ dbref from_player, to_player;
     return count;
 }
 
-void do_chownall(player, cause, key, from, to)
-dbref player, cause;
-int key;
-char *from, *to;
+/**
+ * Transfers ownership of all a player's objects to another player.
+ * Used in @chownall
+ */ 
+void do_chownall(dbref player, dbref cause, int key, char *from, char *to)
 {
     int count;
     dbref victim, recipient;
@@ -342,8 +310,7 @@ char *from, *to;
 
 #define ANY_OWNER -2
 
-void er_mark_disabled(player)
-dbref player;
+void er_mark_disabled(dbref player)
 {
     notify(player,
 	"The mark commands are not allowed while DB cleaning is enabled.");
@@ -354,16 +321,11 @@ dbref player;
 }
 
 
-/*
- * ---------------------------------------------------------------------------
- * * do_search: Walk the db reporting various things (or setting/clearing
- * * mark bits)
+/**
+ * Walk the db reporting various things (or setting/clearing
+ * mark bits)
  */
-
-int search_setup(player, searchfor, parm)
-dbref player;
-char *searchfor;
-SEARCH *parm;
+int search_setup(dbref player, char *searchfor, SEARCH *parm)
 {
     char *pname, *searchtype, *t;
     int err;
@@ -612,9 +574,7 @@ SEARCH *parm;
     return 1;
 }
 
-void search_perform(player, cause, parm)
-dbref player, cause;
-SEARCH *parm;
+void search_perform(dbref player, dbref cause, SEARCH *parm)
 {
     FLAG thing1flags, thing2flags, thing3flags;
     POWER thing1powers, thing2powers;
@@ -626,15 +586,6 @@ SEARCH *parm;
     save_invk_ctr = mudstate.func_invk_ctr;
 
     for (thing = parm->low_bound; thing <= parm->high_bound; thing++) {
-
-#ifndef MEMORY_BASED
-	if ((thing % 100) == 0) {
-	    cache_reset(0);
-	}
-#endif				/*
-				 * MEMORY_BASED 
-				 */
-
 	mudstate.func_invk_ctr = save_invk_ctr;
 
 	/*
@@ -732,9 +683,7 @@ SEARCH *parm;
     mudstate.func_invk_ctr = save_invk_ctr;
 }
 
-static void search_mark(player, key)
-dbref player;
-int key;
+static void search_mark(dbref player, int key)
 {
     dbref thing;
     int nchanged, is_marked;
@@ -767,10 +716,7 @@ int key;
     return;
 }
 
-void do_search(player, cause, key, arg)
-dbref player, cause;
-int key;
-char *arg;
+void do_search(dbref player, dbref cause, int key, char *arg)
 {
     int flag, destitute;
     int rcount, ecount, tcount, pcount, gcount;
@@ -965,14 +911,10 @@ char *arg;
     olist_pop();
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_markall: set or clear the mark bits of all objects in the db.
+/**
+ * Sets or clear the mark bits of all objects in the db.
  */
-
-void do_markall(player, cause, key)
-dbref player, cause;
-int key;
+void do_markall(dbref player, dbref cause, int key)
 {
     int i;
 
@@ -988,15 +930,11 @@ int key;
 	notify(player, "Done.");
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_apply_marked: Perform a command for each marked obj in the db.
+/**
+ *Perform a command for each marked obj in the db.
  */
-
-void do_apply_marked(player, cause, key, command, cargs, ncargs)
-dbref player, cause;
-int key, ncargs;
-char *command, *cargs[];
+void do_apply_marked(dbref player, dbref cause, int key, char *command, 
+    char *cargs[], int ncargs)
 {
     char *buff;
     int i;
@@ -1020,16 +958,14 @@ char *command, *cargs[];
 	notify(player, "Done.");
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * Object list management routines:
- * * olist_push, olist_pop, olist_add, olist_first, olist_next
+/**
+ * Object list management routines:
+ * olist_push, olist_pop, olist_add, olist_first, olist_next
  */
 
-/*
- * olist_push: Create a new object list at the top of the object list stack
+/**
+ * Create a new object list at the top of the object list stack
  */
-
 void olist_push(void)
 {
     OLSTK *ol;
@@ -1045,10 +981,9 @@ void olist_push(void)
     ol->citm = 0;
 }
 
-/*
- * olist_pop: Pop one entire list off the object list stack
+/**
+ * Pop one entire list off the object list stack
  */
-
 void olist_pop(void)
 {
     OLSTK *ol;
@@ -1064,12 +999,10 @@ void olist_pop(void)
     mudstate.olist = ol;
 }
 
-/*
- * olist_add: Add an entry to the object list 
+/**
+ * Add an entry to the object list 
  */
-
-void olist_add(item)
-dbref item;
+void olist_add(dbref item)
 {
     OBLOCK *op;
 
@@ -1090,10 +1023,9 @@ dbref item;
     op->data[mudstate.olist->count++] = item;
 }
 
-/*
- * olist_first: Return the first entry in the object list 
+/**
+ * Return the first entry in the object list 
  */
-
 dbref olist_first(void)
 {
     if (!mudstate.olist->head)

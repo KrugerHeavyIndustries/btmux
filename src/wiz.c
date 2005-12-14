@@ -1,10 +1,5 @@
-
 /*
  * wiz.c -- Wizard-only commands 
- */
-
-/*
- * $Id: wiz.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -42,10 +37,7 @@ int recursive_check_contents(dbref victim, dbref destination)
 
 extern char *crypt(const char *, const char *);
 
-void do_teleport(player, cause, key, arg1, arg2)
-dbref player, cause;
-int key;
-char *arg1, *arg2;
+void do_teleport(dbref player, dbref cause, int key, char *arg1, char *arg2)
 {
     dbref victim, destination, loc, exitloc;
     char *to;
@@ -122,12 +114,6 @@ char *arg1, *arg2;
     }
 
 
-#if 0				/* shouldn't be a danger, anymore */
-    if (recursive_check_contents(victim, destination)) {
-	notify_quiet(player, "DUH! Do you want the game to go *boom*?");
-	return;
-    }
-#endif
     /*
      * If fascist teleport is on, you must control the victim's ultimate
      * location (after LEAVEing any objects) or it must be JUMP_OK.  
@@ -145,7 +131,7 @@ char *arg1, *arg2;
 
 	/*
 	 * You must control the destination, or it must be a JUMP_OK
-	 * * * * * room where you pass its TELEPORT lock. 
+	 * room where you pass its TELEPORT lock. 
 	 */
 
 	if (((!Controls(player, destination) && !Jump_ok(destination)) &&
@@ -191,15 +177,11 @@ char *arg1, *arg2;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_force_prefixed: Interlude to do_force for the # command
+/**
+ * Interlude to do_force for the # command
  */
-
-void do_force_prefixed(player, cause, key, command, args, nargs)
-dbref player, cause;
-int key, nargs;
-char *command, *args[];
+void do_force_prefixed(dbref player, dbref cause, int key, char *command, 
+    char *args[], int nargs)
 {
     char *cp;
 
@@ -212,15 +194,11 @@ char *command, *args[];
 	do_force(player, cause, key, cp, command, args, nargs);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_force: Force an object to do something.
+/**
+ * Force an object to do something.
  */
-
-void do_force(player, cause, key, what, command, args, nargs)
-dbref player, cause;
-int key, nargs;
-char *what, *command, *args[];
+void do_force(dbref player, dbref cause, int key, char *what, char *command, 
+    char *args[], int nargs)
 {
     dbref victim;
 
@@ -255,9 +233,8 @@ void do_query(dbref player, dbref cause, int key, char *what, char *qry) {
 }
 
 
-/*
- * ---------------------------------------------------------------------------
- *  * do_query: Calls a externalized query.
+/**
+ * Calls a externalized query.
  */
 void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
     dbref thing, aowner;
@@ -361,15 +338,10 @@ void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry) {
 }
 #endif
 
-/*
- * ---------------------------------------------------------------------------
- * * do_toad: Turn a player into an object.
+/**
+ * Turn a player into an object.
  */
-
-void do_toad(player, cause, key, toad, newowner)
-dbref player, cause;
-int key;
-char *toad, *newowner;
+void do_toad(dbref player, dbref cause, int key, char *toad, char *newowner)
 {
     dbref victim, recipient, loc, aowner;
     char *buf;
@@ -459,10 +431,8 @@ char *toad, *newowner;
 	    (count == 1 ? "" : "s")));
 }
 
-void do_newpassword(player, cause, key, name, password)
-dbref player, cause;
-int key;
-char *name, *password;
+void do_newpassword(dbref player, dbref cause, int key, char *name, 
+    char *password)
 {
     dbref victim;
     char *buf;
@@ -500,10 +470,7 @@ char *name, *password;
     free_lbuf(buf);
 }
 
-void do_boot(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_boot(dbref player, dbref cause, int key, char *name)
 {
     dbref victim;
     char *buf, *bp;
@@ -571,15 +538,10 @@ char *name;
 	free_lbuf(buf);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_poor: Reduce the wealth of anyone over a specified amount.
+/**
+ * Reduce the wealth of anyone over a specified amount.
  */
-
-void do_poor(player, cause, key, arg1)
-dbref player, cause;
-int key;
-char *arg1;
+void do_poor(dbref player, dbref cause, int key, char *arg1)
 {
     dbref a;
     int amt, curamt;
@@ -596,15 +558,10 @@ char *arg1;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_cut: Chop off a contents or exits chain after the named item.
+/**
+ * Chop off a contents or exits chain after the named item.
  */
-
-void do_cut(player, cause, key, thing)
-dbref player, cause;
-int key;
-char *thing;
+void do_cut(dbref player, dbref cause, int key, char *thing)
 {
     dbref object;
 
@@ -622,13 +579,10 @@ char *thing;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * count_quota, mung_quota, show_quota, do_quota: Manage quotas.
+/**
+ * count_quota, mung_quota, show_quota, do_quota: Manage quotas.
  */
-
-static int count_quota(player)
-dbref player;
+static int count_quota(dbref player)
 {
     int i, q;
 
@@ -656,9 +610,7 @@ dbref player;
     return q;
 }
 
-static void mung_quotas(player, key, value)
-dbref player;
-int key, value;
+static void mung_quotas(dbref player, int key, int value)
 {
     dbref aowner;
     int aq, rq, xq, aflags;
@@ -667,9 +619,8 @@ int key, value;
     if (key & QUOTA_FIX) {
 
 	/*
-	 * Get value of stuff owned and good value, set other value * 
-	 * 
-	 * *  * *  * * from that. 
+	 * Get value of stuff owned and good value, set other value 
+	 * from that. 
 	 */
 
 	xq = count_quota(player);
@@ -726,8 +677,7 @@ int key, value;
     }
 }
 
-static void show_quota(player, victim)
-dbref player, victim;
+static void show_quota(dbref player, dbref victim)
 {
     dbref aowner;
     int aq, rq, aflags;
@@ -747,10 +697,7 @@ dbref player, victim;
 		Name(victim), rq));
 }
 
-void do_quota(player, cause, key, arg1, arg2)
-dbref player, cause;
-int key;
-char *arg1, *arg2;
+void do_quota(dbref player, dbref cause, int key, char *arg1, char *arg2)
 {
     dbref who;
     int set, value, i;
@@ -838,15 +785,10 @@ char *arg1, *arg2;
     show_quota(player, who);
 }
 
-/*
- * --------------------------------------------------------------------------
- * * do_motd: Wizard-settable message of the day (displayed on connect)
+/**
+ * Wizard-settable message of the day (displayed on connect)
  */
-
-void do_motd(player, cause, key, message)
-dbref player, cause;
-int key;
-char *message;
+void do_motd(dbref player, dbref cause, int key, char *message)
 {
     int is_brief;
 
@@ -909,12 +851,9 @@ char *message;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_enable: enable or disable global control flags
+/**
+ * Enable or disable global control flags
  */
-/* *INDENT-OFF* */
-
 NAMETAB enable_names[] = {
 {(char *)"building",		1,	CA_PUBLIC,	CF_BUILD},
 {(char *)"checkpointing",	2,	CA_PUBLIC,	CF_CHECKPOINT},
@@ -926,17 +865,7 @@ NAMETAB enable_names[] = {
 {(char *)"eventchecking",	2,	CA_PUBLIC,	CF_EVENTCHECK},
 { NULL,				0,	0,		0}};
 
-/* *INDENT-ON* */
-
-
-
-
-
-
-void do_global(player, cause, key, flag)
-dbref player, cause;
-int key;
-char *flag;
+void do_global(dbref player, dbref cause, int key, char *flag)
 {
     int flagvalue;
 

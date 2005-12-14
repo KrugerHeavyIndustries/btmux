@@ -4,7 +4,6 @@
  * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
  * All rights reserved.
  *
- * $Id$
  */
 
 #include "copyright.h"
@@ -25,13 +24,15 @@
 
 #include "externs.h"
 
-/* TODO:
+/* /TODO
  * String sanitization.
  *  - dbi_driver_quote_string_copy ?
  * 
  * Handle Timezones in DATETIME
  *
  * Handle final write() failing.
+ * 
+ * Correct handling of TEXT data type.
  */
 
 #define DEBUG_SQL

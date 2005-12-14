@@ -2,10 +2,6 @@
  * version.c - version information 
  */
 
-/*
- * $Id: version.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
- */
-
 #include "copyright.h"
 #include "config.h"
 
@@ -53,9 +49,7 @@
  * * big enough revision to increment the TinyCWRU version #.
  */
 
-void do_version(player, cause, extra)
-dbref player, cause;
-int extra;
+void do_version(dbref player, dbref cause, int extra)
 {
     char *buff;
 

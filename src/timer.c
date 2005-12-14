@@ -1,10 +1,5 @@
-
 /*
  * timer.c -- Subroutines for (system-) timed events 
- */
-
-/*
- * $Id: timer.c,v 1.5 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -166,11 +161,9 @@ void timer_callback(int fd, short event, void *arg) {
 }
 
 
-/*
- * ---------------------------------------------------------------------------
- * * do_timewarp: Adjust various internal timers.
+/**
+ * Adjust various internal timers.
  */
-
 void do_timewarp(dbref player, dbref cause, int key, char *arg) {
     int secs;
 

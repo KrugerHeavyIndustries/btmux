@@ -1,10 +1,5 @@
-
 /*
  * unparse.c 
- */
-
-/*
- * $Id: unparse.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -42,8 +37,7 @@
  * only internal currently, so it's not a problem.
  */
 
-static char *unparse_object_quiet(player, loc)
-dbref player, loc;
+static char *unparse_object_quiet(dbref player, dbref loc)
 {
     static char buf[SBUF_SIZE];
 
@@ -61,19 +55,12 @@ dbref player, loc;
 static char boolexp_buf[LBUF_SIZE];
 static char *buftop;
 
-static void unparse_boolexp1(player, b, outer_type, format)
-dbref player;
-BOOLEXP *b;
-char outer_type;
-int format;
+static void unparse_boolexp1(dbref player, BOOLEXP *b, char outer_type, 
+    int format)
 {
     ATTR *ap;
     char *tbuf, sep_ch;
-
-#ifndef STANDALONE
     char *buff;
-
-#endif
 
     if ((b == TRUE_BOOLEXP)) {
 	if (format == F_EXAMINE) {
@@ -125,7 +112,6 @@ int format;
 	unparse_boolexp1(player, b->sub1, b->type, format);
 	break;
     case BOOLEXP_CONST:
-#ifndef STANDALONE
 	switch (format) {
 	case F_QUIET:
 
@@ -191,10 +177,6 @@ int format;
 		free_sbuf(buff);
 	    }
 	}
-#else
-	safe_str((char *) unparse_object_quiet(player, b->thing),
-	    boolexp_buf, &buftop);
-#endif
 	break;
     case BOOLEXP_ATR:
     case BOOLEXP_EVAL:
@@ -230,9 +212,7 @@ int format;
     }
 }
 
-char *unparse_boolexp_quiet(player, b)
-dbref player;
-BOOLEXP *b;
+char *unparse_boolexp_quiet(dbref player, BOOLEXP *b)
 {
     buftop = boolexp_buf;
     unparse_boolexp1(player, b, BOOLEXP_CONST, F_QUIET);
@@ -240,11 +220,7 @@ BOOLEXP *b;
     return boolexp_buf;
 }
 
-#ifndef STANDALONE
-
-char *unparse_boolexp(player, b)
-dbref player;
-BOOLEXP *b;
+char *unparse_boolexp(dbref player, BOOLEXP *b)
 {
     buftop = boolexp_buf;
     unparse_boolexp1(player, b, BOOLEXP_CONST, F_EXAMINE);
@@ -252,9 +228,7 @@ BOOLEXP *b;
     return boolexp_buf;
 }
 
-char *unparse_boolexp_decompile(player, b)
-dbref player;
-BOOLEXP *b;
+char *unparse_boolexp_decompile(dbref player, BOOLEXP *b)
 {
     buftop = boolexp_buf;
     unparse_boolexp1(player, b, BOOLEXP_CONST, F_DECOMPILE);
@@ -262,14 +236,10 @@ BOOLEXP *b;
     return boolexp_buf;
 }
 
-char *unparse_boolexp_function(player, b)
-dbref player;
-BOOLEXP *b;
+char *unparse_boolexp_function(dbref player, BOOLEXP *b)
 {
     buftop = boolexp_buf;
     unparse_boolexp1(player, b, BOOLEXP_CONST, F_FUNCTION);
     *buftop++ = '\0';
     return boolexp_buf;
 }
-
-#endif

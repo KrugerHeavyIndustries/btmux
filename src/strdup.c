@@ -1,4 +1,3 @@
-
 /*
  * strdup.c - For systems like Ultrix that don't have it. 
  */

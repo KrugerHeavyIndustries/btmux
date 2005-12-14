@@ -1,10 +1,5 @@
-
 /*
  * stringutil.c -- string utilities 
- */
-
-/*
- * $Id: stringutil.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -21,12 +16,11 @@ char *___strtok;
 
 #endif
 
-/* Convert raw character sequences into MUX substitutions (type = 1)
- * or strips them (type = 0). */
-
-char *translate_string(str, type)
-    const char *str;
-    int type;
+/**
+ * Convert raw character sequences into MUX substitutions (type = 1)
+ * or strips them (type = 0). 
+ */
+char *translate_string(const char *str, int type)
 {
     char old[LBUF_SIZE];
     static char new[LBUF_SIZE];
@@ -189,8 +183,7 @@ char *translate_string(str, type)
  * capitalizes an entire string
  */
 
-char *upcasestr(s)
-    char *s;
+char *upcasestr(char *s)
 {
     char *p;
 
@@ -203,8 +196,7 @@ char *upcasestr(s)
  * returns a pointer to the non-space character in s, or a NULL if s == NULL
  * or *s == NULL or s has only spaces.
  */
-char *skip_space(s)
-    const char *s;
+char *skip_space(const char *s)
 {
     char *cp;
 
@@ -214,13 +206,11 @@ char *skip_space(s)
     return (cp);
 }
 
-/*
+/**
  * returns a pointer to the next character in s matching c, or a pointer to
- * the \0 at the end of s.  Yes, this is a lot like index, but not exactly.
+ * the \0 at the end of s. Yes, this is a lot like index, but not exactly.
  */
-char *seek_char(s, c)
-    const char *s;
-    char c;
+char *seek_char(const char *s, char c)
 {
     char *cp;
 
@@ -230,14 +220,11 @@ char *seek_char(s, c)
     return (cp);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * munge_space: Compress multiple spaces to one space, also remove leading and
- * * trailing spaces.
+/**
+ * Compress multiple spaces to one space, also remove leading and
+ * trailing spaces.
  */
-
-char *munge_space(string)
-    char *string;
+char *munge_space(char *string)
 {
     char *buffer, *p, *q;
 
@@ -263,13 +250,10 @@ char *munge_space(string)
     return (buffer);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * trim_spaces: Remove leading and trailing spaces.
+/**
+ * Remove leading and trailing spaces.
  */
-
-char *trim_spaces(string)
-    char *string;
+char *trim_spaces(char *string)
 {
     char *buffer, *p, *q;
 
@@ -300,14 +284,11 @@ char *trim_spaces(string)
     return (buffer);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * grabto: Return portion of a string up to the indicated character.  Also
- * * returns a modified pointer to the string ready for another call.
+/**
+ * Return portion of a string up to the indicated character. Also
+ * returns a modified pointer to the string ready for another call.
  */
-
-char *grabto(str, targ)
-    char **str, targ;
+char *grabto(char **str, char targ)
 {
     char *savec, *cp;
 
@@ -323,17 +304,14 @@ char *grabto(str, targ)
     return savec;
 }
 
-int string_compare(s1, s2)
-    const char *s1, *s2;
+int string_compare(const char *s1, const char *s2)
 {
-#ifndef STANDALONE
     if (!mudconf.space_compress) {
         while (*s1 && *s2 && ToLower(*s1) == ToLower(*s2))
             s1++, s2++;
 
         return (ToLower(*s1) - ToLower(*s2));
     } else {
-#endif
         while (isspace(*s1))
             s1++;
         while (isspace(*s2))
@@ -341,11 +319,9 @@ int string_compare(s1, s2)
         while (*s1 && *s2 && ((ToLower(*s1) == ToLower(*s2)) ||
                     (isspace(*s1) && isspace(*s2)))) {
             if (isspace(*s1) && isspace(*s2)) {	/*
-                                                 * skip all * 
-                                                 * 
-                                                 * *  * *
-                                                 * other * *
-                                                 * * spaces 
+                                                 * skip all  
+                                                 * other
+                                                 * spaces 
                                                  */
                 while (isspace(*s1))
                     s1++;
@@ -371,13 +347,10 @@ int string_compare(s1, s2)
         if ((*s1) || (*s2))
             return (1);
         return (0);
-#ifndef STANDALONE
     }
-#endif
 }
 
-int string_prefix(string, prefix)
-    const char *string, *prefix;
+int string_prefix(const char *string, const char *prefix)
 {
     int count = 0;
 
@@ -391,12 +364,10 @@ int string_prefix(string, prefix)
         return (0);
 }
 
-/*
- * accepts only nonempty matches starting at the beginning of a word 
+/**
+ * Accepts only nonempty matches starting at the beginning of a word 
  */
-
-const char *string_match(src, sub)
-    const char *src, *sub;
+const char *string_match(const char *src, const char *sub)
 {
     if ((*sub != '\0') && (src)) {
         while (*src) {
@@ -414,15 +385,11 @@ const char *string_match(src, sub)
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * replace_string: Returns an lbuf containing string STRING with all occurances
- * * of OLD replaced by NEW. OLD and NEW may be different lengths.
- * * (mitch 1 feb 91)
+/**
+ * Returns an lbuf containing string STRING with all occurances
+ * of OLD replaced by NEW. OLD and NEW may be different lengths.
  */
-
-char *replace_string(old, new, string)
-    const char *old, *new, *string;
+char *replace_string(const char *old, const char *new, const char *string)
 {
     char *result, *r, *s;
     int olen;
@@ -464,15 +431,12 @@ char *replace_string(old, new, string)
     return result;
 }
 
-/*
+/**
  * Returns string STRING with all occurances * of OLD replaced by NEW. OLD
  * and NEW may be different lengths. Modifies string, so: Note - STRING must
  * already be allocated large enough to handle the new size. (mitch 1 feb 91)
  */
-
-char *replace_string_inplace(old, new, string)
-    const char *old, *new;
-    char *string;
+char *replace_string_inplace(const char *old, const char *new, char *string)
 {
     char *s;
 
@@ -482,12 +446,10 @@ char *replace_string_inplace(old, new, string)
     return string;
 }
 
-/*
+/**
  * Counts occurances of C in STR. - mnp 7 feb 91 
  */
-
-int count_chars(str, c)
-    const char *str, c;
+int count_chars(const char *str, const char c)
 {
     int out = 0;
     const char *p = str;
@@ -499,11 +461,10 @@ int count_chars(str, c)
     return out;
 }
 
-/*
+/**
  * returns the number of identical characters in the two strings 
  */
-int prefix_match(s1, s2)
-    const char *s1, *s2;
+int prefix_match(const char *s1, const char *s2)
 {
     int count = 0;
 
@@ -517,9 +478,7 @@ int prefix_match(s1, s2)
     return count;
 }
 
-int minmatch(str, target, min)
-    char *str, *target;
-    int min;
+int minmatch(char *str, char *target, int min)
 {
     while (*str && *target && (ToLower(*str) == ToLower(*target))) {
         str++;
@@ -533,8 +492,7 @@ int minmatch(str, target, min)
     return ((min <= 0) ? 1 : 0);
 }
 
-char *strsave(s)
-    const char *s;
+char *strsave(const char *s)
 {
     char *p;
     p = (char *) XMALLOC(sizeof(char) * (strlen(s) + 1), "strsave");
@@ -544,11 +502,9 @@ char *strsave(s)
     return p;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * safe_copy_str, safe_copy_chr - Copy buffers, watching for overflows.
+/**
+ * Copy buffers, watching for overflows.
  */
-
 int safe_copy_str(char *src, char *buff, char **bufp, int max) {
     char *tp;
 
@@ -561,9 +517,10 @@ int safe_copy_str(char *src, char *buff, char **bufp, int max) {
     return strlen(src);
 }
 
-int safe_copy_chr(src, buff, bufp, max)
-    char src, *buff, **bufp;
-    int max;
+/**
+ * Copy buffers, watching for overflows.
+ */
+int safe_copy_chr(char src, char *buff, char **bufp, int max)
 {
     char *tp;
     int retval;
@@ -579,8 +536,7 @@ int safe_copy_chr(src, buff, bufp, max)
     return retval;
 }
 
-int matches_exit_from_list(str, pattern)
-    char *str, *pattern;
+int matches_exit_from_list(char *str, char *pattern)
 {
     char *s;
 

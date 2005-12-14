@@ -1,4 +1,3 @@
-
 /*
  * wild.c - wildcard routines
  * *
@@ -12,8 +11,8 @@
  * * This code is hereby placed under GNU copyleft,
  * * see copyright.h for details.
  * *
- * * $Id: wild.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $
  */
+
 #include "copyright.h"
 #include "config.h"
 
@@ -27,23 +26,14 @@
 #define EQUAL(a,b) ((a == b) || (FIXCASE(a) == FIXCASE(b)))
 #define NOTEQUAL(a,b) ((a != b) && (FIXCASE(a) != FIXCASE(b)))
 
-static char **arglist;		/*
+static char **arglist;		/* Argument return space */
+static int numargs;		/* Argument return size  */
 
-				 * argument return space 
-				 */
-static int numargs;		/*
-
-				 * argument return size 
-				 */
-
-/*
- * ---------------------------------------------------------------------------
- * * quick_wild: do a wildcard match, without remembering the wild data.
- * *
- * * This routine will cause crashes if fed NULLs instead of strings.
+/**
+ * Do a wildcard match, without remembering the wild data.
+ * This routine will cause crashes if fed NULLs instead of strings.
  */
-int quick_wild(tstr, dstr)
-char *tstr, *dstr;
+int quick_wild(char *tstr, char *dstr)
 {
     while (*tstr != '*') {
 	switch (*tstr) {
@@ -130,19 +120,16 @@ char *tstr, *dstr;
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * wild1: INTERNAL: do a wildcard match, remembering the wild data.
- * *
- * * DO NOT CALL THIS FUNCTION DIRECTLY - DOING SO MAY RESULT IN
- * * SERVER CRASHES AND IMPROPER ARGUMENT RETURN.
- * *
- * * Side Effect: this routine modifies the 'arglist' static global
- * * variable.
+/**
+ * wild1: INTERNAL: do a wildcard match, remembering the wild data.
+ *
+ * DO NOT CALL THIS FUNCTION DIRECTLY - DOING SO MAY RESULT IN
+ * SERVER CRASHES AND IMPROPER ARGUMENT RETURN.
+ *
+ * Side Effect: this routine modifies the 'arglist' static global
+ * variable.
  */
-int wild1(tstr, dstr, arg)
-char *tstr, *dstr;
-int arg;
+int wild1(char *tstr, char *dstr, int arg)
 {
     char *datapos;
     int argpos, numextra;
@@ -337,20 +324,17 @@ int arg;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * wild: do a wildcard match, remembering the wild data.
- * *
- * * This routine will cause crashes if fed NULLs instead of strings.
- * *
- * * This function may crash if alloc_lbuf() fails.
- * *
- * * Side Effect: this routine modifies the 'arglist' and 'numargs'
- * * static global variables.
+/**
+ * wild: do a wildcard match, remembering the wild data.
+ *
+ * This routine will cause crashes if fed NULLs instead of strings.
+ * 
+ * This function may crash if alloc_lbuf() fails.
+ *
+ * Side Effect: this routine modifies the 'arglist' and 'numargs'
+ * static global variables.
  */
-int wild(tstr, dstr, args, nargs)
-char *tstr, *dstr, *args[];
-int nargs;
+int wild(char *tstr, char *dstr, char *args[], int nargs)
 {
     int i, value;
     char *scan;
@@ -421,15 +405,13 @@ int nargs;
     return value;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * wild_match: do either an order comparison or a wildcard match,
- * * remembering the wild data, if wildcard match is done.
- * *
- * * This routine will cause crashes if fed NULLs instead of strings.
+/**
+ * wild_match: do either an order comparison or a wildcard match,
+ * remembering the wild data, if wildcard match is done.
+ * 
+ * This routine will cause crashes if fed NULLs instead of strings.
  */
-int wild_match(tstr, dstr)
-char *tstr, *dstr;
+int wild_match(char *tstr, char *dstr)
 {
     switch (*tstr) {
     case '>':

@@ -1,10 +1,5 @@
-
 /*
  * speech.c -- Commands which involve speaking 
- */
-
-/*
- * $Id: speech.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -24,8 +19,7 @@
 extern char *next_token(char *, char);
 extern int In_IC_Loc(dbref);
 
-int sp_ok(player)
-dbref player;
+int sp_ok(dbref player)
 {
     if (Gagged(player) && (!(Wizard(player)))) {
 	notify(player, "Sorry. Gagged players cannot speak.");
@@ -47,11 +41,8 @@ dbref player;
     return 1;
 }
 
-static void say_shout(target, prefix, flags, player, message)
-int target, flags;
-dbref player;
-char *message;
-const char *prefix;
+static void say_shout(int target, const char *prefix, int flags, dbref player, 
+    char *message)
 {
     if (flags & SAY_NOTAG)
 	raw_broadcast(target, "%s%s", Name(player), message);
@@ -63,10 +54,7 @@ static const char *announce_msg = "Announcement: ";
 static const char *broadcast_msg = "Broadcast: ";
 static const char *admin_msg = "Admin: ";
 
-void do_think(player, cause, key, message)
-dbref player, cause;
-int key;
-char *message;
+void do_think(dbref player, dbref cause, int key, char *message)
 {
     char *str, *buf, *bp;
 
@@ -79,10 +67,7 @@ char *message;
     free_lbuf(buf);
 }
 
-void do_say(player, cause, key, message)
-dbref player, cause;
-int key;
-char *message;
+void do_say(dbref player, dbref cause, int key, char *message)
 {
     dbref loc;
     char *buf2, *bp;
@@ -340,10 +325,8 @@ char *message;
  * * Page-pose code from shadow@prelude.cc.purdue.
  */
 
-static void page_return(player, target, tag, anum, dflt)
-dbref player, target;
-int anum;
-const char *tag, *dflt;
+static void page_return(dbref player, dbref target, const char *tag, int anum, 
+    const char *dflt)
 {
     dbref aowner;
     int aflags;
@@ -377,8 +360,7 @@ const char *tag, *dflt;
     free_lbuf(str);
 }
 
-static int page_check(player, target)
-dbref player, target;
+static int page_check(dbref player, dbref target)
 {
     if (!payfor(player, Guest(player) ? 0 : mudconf.pagecost)) {
 	notify(player, tprintf("You don't have enough %s.",
@@ -422,11 +404,8 @@ dbref player, target;
 /*
  * Used in do_page 
  */
-static char *dbrefs_to_names(player, list, namelist, ismessage)
-dbref player;
-char *list;
-char *namelist;
-int ismessage;
+static char *dbrefs_to_names(dbref player, char *list, char *namelist, 
+    int ismessage)
 {
     char *bp, *p;
     char oldlist[LBUF_SIZE];
@@ -448,10 +427,7 @@ int ismessage;
     return bp;
 }
 
-void do_page(player, cause, key, tname, message)
-dbref player, cause;
-int key;
-char *tname, *message;
+void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 {
     dbref target, aowner;
     char *p, *buf1, *bp, *buf2, *bp2, *mp, *str;
@@ -640,14 +616,10 @@ char *tname, *message;
     free_lbuf(buf2);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_pemit: Messages to specific players, or to all but specific players.
+/**
+ * Messages to specific players, or to all but specific players.
  */
-
-void whisper_pose(player, target, message)
-dbref player, target;
-char *message;
+void whisper_pose(dbref player, dbref target, char *message)
 {
     char *buff;
 
@@ -660,10 +632,7 @@ char *message;
     free_lbuf(buff);
 }
 
-void do_pemit_list(player, list, message)
-dbref player;
-char *list;
-const char *message;
+void do_pemit_list(dbref player, char *list, const char *message)
 {
     /*
      * Send a message to a list of dbrefs. To avoid repeated generation * 
@@ -716,10 +685,8 @@ const char *message;
 }
 
 
-void do_pemit(player, cause, key, recipient, message)
-dbref player, cause;
-int key;
-char *recipient, *message;
+void do_pemit(dbref player, dbref cause, int key, char *recipient, 
+    char *message)
 {
     dbref target, loc;
     char *buf2, *bp;
