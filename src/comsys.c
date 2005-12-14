@@ -406,9 +406,12 @@ static void do_joinchannel(dbref player, struct channel *ch) {
         user->on = 1;
     } else {
         notify_printf(player, "You are already on channel %s.",
-                    ch->name);
+            ch->name);
         return;
     }
+
+    notify_printf(player, "You have joined channel %s.",
+        ch->name);
 
     if (!Dark(player)) {
         do_comsend(ch, tprintf("[%s] %s has joined this channel.",

@@ -125,6 +125,8 @@ btonline-btechmux 0.6:
 	  separated (Greg)
 	* Added connrecord() from MUX2 (Greg)
 	* Added startsecs() from MUX2 (Greg)
+	* Re-joining channels now sends 'You have joined channel <blah>'
+	  so dark wizzen don't get confused when quietly joining. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
