@@ -1,8 +1,3 @@
-
-/*
- * $Id: predicates.c,v 1.5 2005/08/08 10:30:11 murrayma Exp $ 
- */
-
 #include "copyright.h"
 #include "config.h"
 
@@ -96,20 +91,19 @@ va_dcl
     **bp = '\0';
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * insert_first, remove_first: Insert or remove objects from lists.
+/**
+ * Puts an object at the head of a list 
  */
-
-dbref insert_first(head, thing)
-dbref head, thing;
+dbref insert_first(dbref head, dbref thing)
 {
     s_Next(thing, head);
     return thing;
 }
 
-dbref remove_first(head, thing)
-dbref head, thing;
+/*
+ * Removes first object from a list
+ */
+dbref remove_first(dbref head, dbref thing)
 {
     dbref prev;
 
@@ -125,13 +119,10 @@ dbref head, thing;
     return head;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * reverse_list: Reverse the order of members in a list.
+/**
+ * Reverse the order of members in a list.
  */
-
-dbref reverse_list(list)
-dbref list;
+dbref reverse_list(dbref list)
 {
     dbref newlist, rest;
 
@@ -145,13 +136,10 @@ dbref list;
     return newlist;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * member - indicate if thing is in list
+/**
+ * Indicate if thing is in list
  */
-
-int member(thing, list)
-dbref thing, list;
+int member(dbref thing, dbref list)
 {
     DOLIST(list, list) {
 	if (list == thing)
@@ -160,13 +148,10 @@ dbref thing, list;
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * is_integer, is_number: see if string contains just a number.
+/**
+ * Checks for the presence of an integer 
  */
-
-int is_integer(str)
-char *str;
+int is_integer(char *str)
 {
     while (*str && isspace(*str))
 	str++;			/*
@@ -196,8 +181,10 @@ char *str;
     return (*str ? 0 : 1);
 }
 
-int is_number(str)
-char *str;
+/**
+ * Checks for the presence of a number
+ */
+int is_number(char *str)
 {
     int got_one;
 
@@ -242,11 +229,7 @@ char *str;
     return ((*str || !got_one) ? 0 : 1);
 }
 
-#ifndef STANDALONE
-
-int could_doit(player, thing, locknum)
-dbref player, thing;
-int locknum;
+int could_doit(dbref player, dbref thing, int locknum)
 {
     char *key;
     dbref aowner;
@@ -268,9 +251,7 @@ int locknum;
     return doit;
 }
 
-int can_see(player, thing, can_see_loc)
-dbref player, thing;
-int can_see_loc;
+int can_see(dbref player, dbref thing, int can_see_loc)
 {
     /*
      * Don't show if all the following apply: * Sleeping players should * 
@@ -307,9 +288,7 @@ int can_see_loc;
     }
 }
 
-static int pay_quota(who, cost)
-dbref who;
-int cost;
+static int pay_quota(dbref who, int cost)
 {
     dbref aowner;
     int quota, aflags;
@@ -347,9 +326,7 @@ int cost;
     return 1;
 }
 
-int canpayfees(player, who, pennies, quota)
-dbref player, who;
-int pennies, quota;
+int canpayfees(dbref player, dbref who, int pennies, int quota)
 {
     if (!Wizard(who) && !Wizard(Owner(who)) && !Free_Money(who) &&
 	!Free_Money(Owner(who)) && (Pennies(Owner(who)) < pennies)) {
@@ -379,9 +356,7 @@ int pennies, quota;
     return 1;
 }
 
-int payfor(who, cost)
-dbref who;
-int cost;
+int payfor(dbref who, int cost)
 {
     dbref tmp;
 
@@ -397,13 +372,7 @@ int cost;
     return 0;
 }
 
-#endif				/*
-				 * STANDALONE 
-				 */
-
-void add_quota(who, payment)
-dbref who;
-int payment;
+void add_quota(dbref who, int payment)
 {
     dbref aowner;
     int aflags;
@@ -415,9 +384,10 @@ int payment;
     atr_add_raw(who, A_RQUOTA, buf);
 }
 
-void giveto(who, pennies)
-dbref who;
-int pennies;
+/**
+ * Give moner to a player.
+ */
+void giveto(dbref who, int pennies)
 {
     if (Wizard(who) || Wizard(Owner(who)) || Free_Money(who) ||
 	Free_Money(Owner(who)) || Immortal(who) || Immortal(Owner(who))) {
@@ -427,8 +397,7 @@ int pennies;
     s_Pennies(who, Pennies(who) + pennies);
 }
 
-int ok_name(name)
-const char *name;
+int ok_name(const char *name)
 {
     const char *cp;
 
@@ -469,8 +438,7 @@ const char *name;
 	string_compare(name, "here"));
 }
 
-int ok_player_name(name)
-const char *name;
+int ok_player_name(const char *name)
 {
     const char *cp, *good_chars;
 
@@ -488,14 +456,11 @@ const char *name;
     if (!ok_name(name) || (strlen(name) >= PLAYER_NAME_LIMIT))
 	return 0;
 
-#ifndef STANDALONE
     if (mudconf.name_spaces)
 	good_chars = " `$_-.,'";
     else
 	good_chars = "`$_-.,'";
-#else
-    good_chars = " `$_-.,'";
-#endif
+
     /*
      * Make sure name only contains legal characters 
      */
@@ -509,8 +474,7 @@ const char *name;
     return 1;
 }
 
-int ok_attr_name(attrname)
-const char *attrname;
+int ok_attr_name(const char *attrname)
 {
     const char *scan;
 
@@ -525,8 +489,7 @@ const char *attrname;
     return 1;
 }
 
-int ok_password(password)
-const char *password;
+int ok_password(const char *password)
 {
     const char *scan;
 
@@ -549,16 +512,10 @@ const char *password;
     return 1;
 }
 
-#ifndef STANDALONE
-
-/*
- * ---------------------------------------------------------------------------
- * * handle_ears: Generate the 'grows ears' and 'loses ears' messages.
+/**
+ * Generate the 'grows ears' and 'loses ears' messages.
  */
-
-void handle_ears(thing, could_hear, can_hear)
-dbref thing;
-int could_hear, can_hear;
+void handle_ears(dbref thing, int could_hear, int can_hear)
 {
     char *buff, *bp;
     int gender;
@@ -597,11 +554,8 @@ int could_hear, can_hear;
 /*
  * for lack of better place the @switch code is here 
  */
-
-void do_switch(player, cause, key, expr, args, nargs, cargs, ncargs)
-dbref player, cause;
-int key, nargs, ncargs;
-char *expr, *args[], *cargs[];
+void do_switch(dbref player, dbref cause, int key, char *expr, char *args[], 
+    int nargs, char *cargs[], int ncargs)
 {
     int a, any;
     char *buff, *bp, *str;
@@ -643,10 +597,8 @@ char *expr, *args[], *cargs[];
 	    mudstate.global_regs);
 }
 
-void do_addcommand(player, cause, key, name, command)
-dbref player, cause;
-int key;
-char *name, *command;
+void do_addcommand(dbref player, dbref cause, int key, char *name, 
+    char *command)
 {
     CMDENT *old, *cmd;
     ADDENT *add, *nextp;
@@ -733,10 +685,7 @@ char *name, *command;
     notify(player, tprintf("%s added.", name));
 }
 
-void do_listcommands(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_listcommands(dbref player, dbref cause, int key, char *name)
 {
     CMDENT *old;
     ADDENT *nextp;
@@ -794,10 +743,8 @@ char *name;
 	notify(player, "No added commands found in command table.");
 }
 
-void do_delcommand(player, cause, key, name, command)
-dbref player, cause;
-int key;
-char *name, *command;
+void do_delcommand(dbref player, dbref cause, int key, char *name, 
+    char *command)
 {
     CMDENT *old, *cmd;
     ADDENT *prev = NULL, *nextp;
@@ -892,16 +839,13 @@ char *name, *command;
 }
 
 
-/*
+/**
  * @prog 'glues' a user's input to a command. Once executed, the first string
  * input from any of the doers's logged in descriptors, will go into
  * A_PROGMSG, which can be substituted in <command> with %0. Commands already
  * queued by the doer will be processed normally.
  */
-
-void handle_prog(d, message)
-DESC *d;
-char *message;
+void handle_prog(DESC *d, char *message)
 {
     DESC *all;
     char *cmd;
@@ -944,10 +888,7 @@ char *message;
     free_lbuf(cmd);
 }
 
-void do_quitprog(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_quitprog(dbref player, dbref cause, int key, char *name)
 {
     DESC *d;
     dbref doer;
@@ -1000,10 +941,7 @@ char *name;
     notify(doer, "Your @program has been terminated.");
 }
 
-void do_prog(player, cause, key, name, command)
-dbref player, cause;
-int key;
-char *name, *command;
+void do_prog(dbref player, dbref cause, int key, char *name, char *command)
 {
     DESC *d;
     PROG *program;
@@ -1088,12 +1026,10 @@ char *name, *command;
 
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_restart: Restarts the game.
+/**
+ * Restarts the game.
  */
-
-void do_restart(player, cause, key)
+void do_restart(dbref player, dbref cause, int key)
 {
     if (mudstate.dumping) {
         notify(player, "Dumping. Please try again later.");
@@ -1115,19 +1051,14 @@ void do_restart(player, cause, key)
     execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_comment: Implement the @@ (comment) command. Very cpu-intensive :-)
+/**
+ * Implement the @@ (comment) command. Very cpu-intensive :-)
  */
-
-void do_comment(player, cause, key)
-dbref player, cause;
-int key;
+void do_comment(dbref player, dbref cause, int key)
 {
 }
 
-static dbref promote_dflt(old, new)
-dbref old, new;
+static dbref promote_dflt(dbref old, dbref new)
 {
     switch (new) {
     case NOPERM:
@@ -1266,14 +1197,10 @@ dbref match_possessed(dbref player, dbref thing, char *target, dbref dflt, int c
     return dflt;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * parse_range: break up <what>,<low>,<high> syntax
+/**
+ * break up <what>,<low>,<high> syntax
  */
-
-void parse_range(name, low_bound, high_bound)
-char **name;
-dbref *low_bound, *high_bound;
+void parse_range(char **name, dbref *low_bound, dbref *high_bound)
 {
     char *buff1, *buff2;
 
@@ -1343,10 +1270,8 @@ int parse_thing_slash(dbref player, char *thing, char **after, dbref *it) {
 
 extern NAMETAB lock_sw[];
 
-int get_obj_and_lock(player, what, it, attr, errmsg, bufc)
-dbref player, *it;
-char *what, *errmsg, **bufc;
-ATTR **attr;
+int get_obj_and_lock(dbref player, char *what, dbref *it, ATTR **attr, 
+    char *errmsg, char **bufc)
 {
     char *str, *tbuf;
     int anum;
@@ -1393,18 +1318,11 @@ ATTR **attr;
     return 1;
 }
 
-#endif				/*
-				 * STANDALONE 
-				 */
-
-/*
- * ---------------------------------------------------------------------------
- * * where_is: Returns place where obj is linked into a list.
- * * ie. location for players/things, source for exits, NOTHING for rooms.
+/**
+ * Returns place where obj is linked into a list.
+ * ie. location for players/things, source for exits, NOTHING for rooms.
  */
-
-dbref where_is(what)
-dbref what;
+dbref where_is(dbref what)
 {
     dbref loc;
 
@@ -1426,14 +1344,11 @@ dbref what;
     return loc;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * where_room: Return room containing player, or NOTHING if no room or
- * * recursion exceeded.  If player is a room, returns itself.
+/**
+ * Return room containing player, or NOTHING if no room or
+ * recursion exceeded.  If player is a room, returns itself.
  */
-
-dbref where_room(what)
-dbref what;
+dbref where_room(dbref what)
 {
     int count;
 
@@ -1449,8 +1364,7 @@ dbref what;
     return NOTHING;
 }
 
-int locatable(player, it, cause)
-dbref player, it, cause;
+int locatable(dbref player, dbref it, dbref cause)
 {
     dbref loc_it, room_it;
     int findable_room;
@@ -1499,14 +1413,11 @@ dbref player, it, cause;
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nearby: Check if thing is nearby player (in inventory, in same room, or
- * * IS the room.
+/**
+ * Check if thing is nearby player (in inventory, in same room, or
+ * IS the room.
  */
-
-int nearby(player, thing)
-dbref player, thing;
+int nearby(dbref player, dbref thing)
 {
     int thing_loc, player_loc;
 
@@ -1521,73 +1432,42 @@ dbref player, thing;
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * exit_visible, exit_displayable: Is exit visible?
+/**
+ * Checks to see if the exit is visible. Used in lexits(). 
  */
-
-int exit_visible(exit, player, key)	/*
-					   * exit visible to lexits() 
-					 */
-dbref exit, player;
-int key;
+int exit_visible(dbref exit, dbref player, int key)
 {
-    if (key & VE_LOC_XAM)
-	return 1;		/*
-				 * Exam exit's loc 
-				 */
-    if (Examinable(player, exit))
-	return 1;		/*
-				 * Exam exit 
-				 */
-    if (Light(exit))
-	return 1;		/*
-				 * Exit is light 
-				 */
+    if (key & VE_LOC_XAM)         // Exam exit's loc
+	return 1;		
+    if (Examinable(player, exit)) // Exam exit 
+	return 1;		
+    if (Light(exit))              // Exit is light
+	return 1;		
     if (key & (VE_LOC_DARK | VE_BASE_DARK))
-	return 0;		/*
-				 * Dark Loc or base 
-				 */
-    if (Dark(exit))
-	return 0;		/*
-				 * Dark exit 
-				 */
-    return 1;			/*
-				 * Default 
-				 */
+	return 0;	          // Dark loc or base	
+    if (Dark(exit))               // Dark exit
+	return 0;		
+    return 1;			  // Default
 }
 
-int exit_displayable(exit, player, key)	/*
-					   * exit visible to look 
-					 */
-dbref exit, player;
-int key;
+/**
+ * Checks to see if the exit is visible to look.
+ */
+int exit_displayable(dbref exit, dbref player, int key)	
 {
-    if (Dark(exit))
-	return 0;		/*
-				 * Dark exit 
-				 */
-    if (Light(exit))
-	return 1;		/*
-				 * Light exit 
-				 */
+    if (Dark(exit))              // Dark exit
+	return 0;		
+    if (Light(exit))             // Light exit
+	return 1;		
     if (key & (VE_LOC_DARK | VE_BASE_DARK))
-	return 0;		/*
-				 * Dark Loc or base 
-				 */
-    return 1;			/*
-				 * Default 
-				 */
+	return 0;	         // Dark loc or base	
+    return 1;		         // Default	
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * next_exit: return next exit that is ok to see.
+/**
+ * Return next exit that is ok to see.
  */
-
-dbref next_exit(player, this, exam_here)
-dbref player, this;
-int exam_here;
+dbref next_exit(dbref player, dbref this, int exam_here)
 {
     if (isRoom(this))
 	return NOTHING;
@@ -1601,13 +1481,9 @@ int exam_here;
     return this;
 }
 
-#ifndef STANDALONE
-
-/*
- * ---------------------------------------------------------------------------
- * * did_it: Have player do something to/with thing
+/**
+ * Have player do something to/with thing
  */
-
 void did_it(dbref player, dbref thing, int what, const char *def, int owhat, 
         const char *odef, int awhat, char *args[], int nargs) {
     char *d, *buff, *act, *charges, *bp, *str;
@@ -1700,15 +1576,11 @@ void did_it(dbref player, dbref thing, int what, const char *def, int owhat,
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_verb: Command interface to did_it.
+/**
+ * Command interface to did_it.
  */
-
-void do_verb(player, cause, key, victim_str, args, nargs)
-dbref player, cause;
-int key, nargs;
-char *victim_str, *args[];
+void do_verb(dbref player, dbref cause, int key, char *victim_str, 
+    char *args[], int nargs)
 {
     dbref actor, victim, aowner;
     int what, owhat, awhat, nxargs, restriction, aflags, i;
@@ -1749,12 +1621,12 @@ char *victim_str, *args[];
     }
 
     /*
-     * Check permissions.  There are two possibilities * 1: Player * * *
-     * controls both victim and actor.  In this case victim runs *    his 
-     * 
-     * *  * *  * * action list. * 2: Player controls actor.  In this case
-     * * victim * does  * not run his *    action list and any attributes
-     * * that * player cannot  * read from *    victim are defaulted. 
+     * Check permissions. There are two possibilities 
+     *   1: Player controls both victim and actor. In this case, victim
+     *      runs his action list. 
+     *   2: Player controls actor. In this case, victim does not run his
+     *      action list and any attributes that player cannot read from
+     *      victim are defaulted.
      */
 
     if (!controls(player, actor)) {
@@ -1862,7 +1734,3 @@ char *victim_str, *args[];
 	free_lbuf(xargs[i]);
 
 }
-
-#endif				/*
-				 * STANDALONE 
-				 */

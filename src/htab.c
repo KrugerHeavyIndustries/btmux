@@ -1,10 +1,6 @@
  /*
-    * htab.c - table hashing routines 
+  * htab.c - table hashing routines 
   */
-
-/*
- * $Id: htab.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
- */
 
 #include "copyright.h"
 #include "config.h"
@@ -16,9 +12,8 @@
 
 #include "mudconf.h"
 
-/*
- * ---------------------------------------------------------------------------
- * * hashval: Compute hash value of a string for a hash table.
+/**
+ * Compute hash value of a string for a hash table.
  */
 
 int hashval(char *str, int hashmask) {
@@ -40,13 +35,10 @@ int hashval(char *str, int hashmask) {
 }
 
 
-/*
- * ----------------------------------------------------------------------
- * * get_hashmask: Get hash mask for mask-style hashing.
+/**
+ * Get hash mask for mask-style hashing.
  */
-
-int get_hashmask(size)
-int *size;
+int get_hashmask(int *size)
 {
     int tsize;
 
@@ -60,11 +52,9 @@ int *size;
     return tsize - 1;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashinit: Initialize a new hash table.
+/**
+ * Initialize a new hash table.
  */
-
 void hashinit(HASHTAB *htab, int size) {
     int i;
 
@@ -83,28 +73,21 @@ void hashinit(HASHTAB *htab, int size) {
 	htab->entry->element[i] = NULL;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashreset: Reset hash table stats.
+/**
+ * Reset hash table stats.
  */
-
-void hashreset(htab)
-HASHTAB *htab;
+void hashreset(HASHTAB *htab)
 {
     htab->checks = 0;
     htab->scans = 0;
     htab->hits = 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashfind: Look up an entry in a hash table and return a pointer to its
- * * hash data.
+/**
+ * Look up an entry in a hash table and return a pointer to its
+ * hash data.
  */
-
-int *hashfind(str, htab)
-char *str;
-HASHTAB *htab;
+int *hashfind(char *str, HASHTAB *htab)
 {
     int hval, numchecks;
     HASHENT *hptr, *prev;
@@ -143,22 +126,17 @@ HASHTAB *htab;
     return NULL;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashadd: Add a new entry to a hash table.
+/**
+ * Add a new entry to a hash table.
  */
-
-int hashadd(str, hashdata, htab)
-char *str;
-int *hashdata;
-HASHTAB *htab;
+int hashadd(char *str, int *hashdata, HASHTAB *htab)
 {
     int hval;
     HASHENT *hptr;
 
     /*
-     * Make sure that the entry isn't already in the hash table.  If it
-     * is, exit with an error.  Otherwise, create a new hash block and
+     * Make sure that the entry isn't already in the hash table. If it
+     * is, exit with an error. Otherwise, create a new hash block and
      * link it in at the head of its thread.
      */
 
@@ -177,14 +155,10 @@ HASHTAB *htab;
     return (0);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashdelete: Remove an entry from a hash table.
+/**
+ * Remove an entry from a hash table.
  */
-
-void hashdelete(str, htab)
-char *str;
-HASHTAB *htab;
+void hashdelete(char *str, HASHTAB *htab)
 {
     int hval;
     HASHENT *hptr, *last;
@@ -209,14 +183,10 @@ HASHTAB *htab;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashflush: free all the entries in a hashtable.
+/**
+ * Free all the entries in a hashtable.
  */
-
-void hashflush(htab, size)
-HASHTAB *htab;
-int size;
+void hashflush(HASHTAB *htab, int size)
 {
     HASHENT *hent, *thent;
     int i;
@@ -233,7 +203,7 @@ int size;
     }
 
     /*
-     * Resize if needed.  Otherwise, just zero all the stats 
+     * Resize if needed. Otherwise, just zero all the stats 
      */
 
     if ((size > 0) && (size != htab->hashsize)) {
@@ -250,15 +220,10 @@ int size;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * hashrepl: replace the data part of a hash entry.
+/**
+ * Replace the data part of a hash entry.
  */
-
-int hashrepl(str, hashdata, htab)
-char *str;
-int *hashdata;
-HASHTAB *htab;
+int hashrepl(char *str, int *hashdata, HASHTAB *htab)
 {
     HASHENT *hptr;
     int hval;
@@ -274,9 +239,7 @@ HASHTAB *htab;
     return 0;
 }
 
-void hashreplall(old, new, htab)
-int *old, *new;
-HASHTAB *htab;
+void hashreplall(int *old, int *new, HASHTAB *htab)
 {
     int hval;
     HASHENT *hptr;
@@ -290,14 +253,10 @@ HASHTAB *htab;
 }
 
 
-/*
- * ---------------------------------------------------------------------------
- * * hashinfo: return an mbuf with hashing stats
+/**
+ * Return an mbuf with hashing stats
  */
-
-char *hashinfo(tab_name, htab)
-const char *tab_name;
-HASHTAB *htab;
+char *hashinfo(const char *tab_name, HASHTAB *htab)
 {
     char *buff;
 
@@ -308,12 +267,10 @@ HASHTAB *htab;
     return buff;
 }
 
-/*
+/**
  * Returns the key for the first hash entry in 'htab'. 
  */
-
-int *hash_firstentry(htab)
-HASHTAB *htab;
+int *hash_firstentry(HASHTAB *htab)
 {
     int hval;
 
@@ -326,8 +283,7 @@ HASHTAB *htab;
     return NULL;
 }
 
-int *hash_nextentry(htab)
-HASHTAB *htab;
+int *hash_nextentry(HASHTAB *htab)
 {
     int hval;
     HASHENT *hptr;
@@ -355,8 +311,7 @@ HASHTAB *htab;
     return NULL;
 }
 
-char *hash_firstkey(htab)
-HASHTAB *htab;
+char *hash_firstkey(HASHTAB *htab)
 {
     int hval;
 
@@ -369,8 +324,7 @@ HASHTAB *htab;
     return NULL;
 }
 
-char *hash_nextkey(htab)
-HASHTAB *htab;
+char *hash_nextkey(HASHTAB *htab)
 {
     int hval;
     HASHENT *hptr;
@@ -398,10 +352,7 @@ HASHTAB *htab;
     return NULL;
 }
 
-#ifndef STANDALONE
-
-int *nhash_firstentry(htab)
-NHSHTAB *htab;
+int *nhash_firstentry(NHSHTAB *htab)
 {
     int hval;
 
@@ -414,8 +365,7 @@ NHSHTAB *htab;
     return NULL;
 }
 
-int *nhash_nextentry(htab)
-NHSHTAB *htab;
+int *nhash_nextentry(NHSHTAB *htab)
 {
     int hval;
     NHSHENT *hptr;
@@ -443,15 +393,11 @@ NHSHTAB *htab;
     return NULL;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nhashfind: Look up an entry in a numeric hash table and return a pointer
- * * to its hash data.
+/**
+ * Look up an entry in a numeric hash table and return a pointer
+ * to its hash data.
  */
-
-int *nhashfind(val, htab)
-int val;
-NHSHTAB *htab;
+int *nhashfind(int val, NHSHTAB *htab)
 {
     int hval, numchecks;
     NHSHENT *hptr, *prev;
@@ -484,21 +430,17 @@ NHSHTAB *htab;
     return NULL;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nhashadd: Add a new entry to a numeric hash table.
+/**
+ * Add a new entry to a numeric hash table.
  */
-
-int nhashadd(val, hashdata, htab)
-int val, *hashdata;
-NHSHTAB *htab;
+int nhashadd(int val, int *hashdata, NHSHTAB *htab)
 {
     int hval;
     NHSHENT *hptr;
 
     /*
-     * Make sure that the entry isn't already in the hash table.  If it
-     * is, exit with an error.  Otherwise, create a new hash block and
+     * Make sure that the entry isn't already in the hash table. If it
+     * is, exit with an error. Otherwise, create a new hash block and
      * link it in at the head of its thread.
      */
 
@@ -517,14 +459,10 @@ NHSHTAB *htab;
     return (0);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nhashdelete: Remove an entry from a numeric hash table.
+/**
+ * Remove an entry from a numeric hash table.
  */
-
-void nhashdelete(val, htab)
-int val;
-NHSHTAB *htab;
+void nhashdelete(int val, NHSHTAB *htab)
 {
     int hval;
     NHSHENT *hptr, *last;
@@ -548,14 +486,10 @@ NHSHTAB *htab;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nhashflush: free all the entries in a hashtable.
+/**
+ * Free all the entries in a hashtable.
  */
-
-void nhashflush(htab, size)
-NHSHTAB *htab;
-int size;
+void nhashflush(NHSHTAB *htab, int size)
 {
     NHSHENT *hent, *thent;
     int i;
@@ -588,14 +522,10 @@ int size;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * nhashrepl: replace the data part of a hash entry.
+/**
+ * Replace the data part of a hash entry.
  */
-
-int nhashrepl(val, hashdata, htab)
-int val, *hashdata;
-NHSHTAB *htab;
+int nhashrepl(int val, int *hashdata, NHSHTAB *htab)
 {
     NHSHENT *hptr;
     int hval;
@@ -611,15 +541,10 @@ NHSHTAB *htab;
     return 0;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * search_nametab: Search a name table for a match and return the flag value.
+/**
+ * Search a name table for a match and return the flag value.
  */
-
-int search_nametab(player, ntab, flagname)
-dbref player;
-NAMETAB *ntab;
-char *flagname;
+int search_nametab(dbref player, NAMETAB *ntab, char *flagname)
 {
     NAMETAB *nt;
 
@@ -634,15 +559,10 @@ char *flagname;
     return -1;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * find_nametab_ent: Search a name table for a match and return a pointer to it.
+/**
+ * Search a name table for a match and return a pointer to it.
  */
-
-NAMETAB *find_nametab_ent(player, ntab, flagname)
-dbref player;
-NAMETAB *ntab;
-char *flagname;
+NAMETAB *find_nametab_ent(dbref player, NAMETAB *ntab, char *flagname)
 {
     NAMETAB *nt;
 
@@ -656,16 +576,11 @@ char *flagname;
     return NULL;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * display_nametab: Print out the names of the entries in a name table.
+/**
+ * Print out the names of the entries in a name table.
  */
-
-void display_nametab(player, ntab, prefix, list_if_none)
-dbref player;
-NAMETAB *ntab;
-char *prefix;
-int list_if_none;
+void display_nametab(dbref player, NAMETAB *ntab, char *prefix, 
+    int list_if_none)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;
@@ -692,16 +607,11 @@ int list_if_none;
 
 
 
-/*
- * ---------------------------------------------------------------------------
- * * interp_nametab: Print values for flags defined in name table.
+/**
+ * Print values for flags defined in name table.
  */
-
-void interp_nametab(player, ntab, flagword, prefix, true_text, false_text)
-dbref player;
-NAMETAB *ntab;
-int flagword;
-char *prefix, *true_text, *false_text;
+void interp_nametab(dbref player, NAMETAB *ntab, int flagword, char *prefix, 
+   char *true_text, char *false_text)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;
@@ -734,16 +644,11 @@ char *prefix, *true_text, *false_text;
     free_lbuf(buf);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * listset_nametab: Print values for flags defined in name table.
+/**
+ * Print values for flags defined in name table.
  */
-
-void listset_nametab(player, ntab, flagword, prefix, list_if_none)
-dbref player;
-NAMETAB *ntab;
-int flagword, list_if_none;
-char *prefix;
+void listset_nametab(dbref player, NAMETAB *ntab, int flagword, char *prefix, 
+    int list_if_none)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;
@@ -770,11 +675,9 @@ char *prefix;
     free_lbuf(buf);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * cf_ntab_access: Change the access on a nametab entry.
+/**
+ * Change the access on a nametab entry.
  */
-
 extern void cf_log_notfound(dbref, char *, const char *, char *);
 
 int cf_ntab_access(int *vp, char *str, long extra, dbref player, char *cmd)
@@ -795,5 +698,3 @@ int cf_ntab_access(int *vp, char *str, long extra, dbref player, char *cmd)
     cf_log_notfound(player, cmd, "Entry", str);
     return -1;
 }
-
-#endif				/* STANDALONE */

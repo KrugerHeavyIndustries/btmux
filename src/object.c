@@ -26,61 +26,12 @@ extern int boot_off(dbref player, char *message);
 extern void do_mail_clear(dbref player, char *msglist);
 
 
-#ifdef STANDALONE
-
-/*
- * Functions needed in standalone mode 
+/**
+ * Log_pointer_err, Log_header_err, Log_simple_damage: Write errors to the
+ * log file.
  */
-
-/*
- * move_object: taken from move.c with look and penny check extracted 
- */
-
-void move_object(thing, dest)
-dbref thing, dest;
-{
-    dbref src;
-
-    /*
-     * Remove from the source location 
-     */
-
-    src = Location(thing);
-    if (src != NOTHING)
-	s_Contents(src, remove_first(Contents(src), thing));
-
-    /*
-     * Special check for HOME 
-     */
-
-    if (dest == HOME)
-	dest = Home(thing);
-
-    /*
-     * Add to destination location 
-     */
-
-    if (dest != NOTHING) {
-	s_Contents(dest, insert_first(Contents(dest), thing));
-    } else {
-	s_Next(thing, NOTHING);
-    }
-    s_Location(thing, dest);
-}
-
-#define move_via_generic(obj,where,extra,hush) move_object(obj,where)
-
-#endif
-
-/*
- * ---------------------------------------------------------------------------
- * * Log_pointer_err, Log_header_err, Log_simple_damage: Write errors to the
- * * log file.
- */
-
-static void Log_pointer_err(prior, obj, loc, ref, reftype, errtype)
-dbref prior, obj, loc, ref;
-const char *reftype, *errtype;
+static void Log_pointer_err(dbref prior, dbref obj, dbref loc, dbref ref, 
+    const char *reftype, const char *errtype)
 {
     STARTLOG(LOG_PROBLEMS, "OBJ", "DAMAG") {
 	log_type_and_name(obj);
@@ -101,10 +52,8 @@ const char *reftype, *errtype;
 	ENDLOG;
 }}
 
-static void Log_header_err(obj, loc, val, is_object, valtype, errtype)
-dbref obj, loc, val;
-int is_object;
-const char *valtype, *errtype;
+static void Log_header_err(dbref obj, dbref loc, dbref val, int is_object, 
+    const char *valtype, const char *errtype)
 {
     STARTLOG(LOG_PROBLEMS, "OBJ", "DAMAG") {
 	log_type_and_name(obj);
@@ -124,9 +73,7 @@ const char *valtype, *errtype;
 	ENDLOG;
 }}
 
-static void Log_simple_err(obj, loc, errtype)
-dbref obj, loc;
-const char *errtype;
+static void Log_simple_err(dbref obj, dbref loc, const char *errtype)
 {
     STARTLOG(LOG_PROBLEMS, "OBJ", "DAMAG") {
 	log_type_and_name(obj);
@@ -139,12 +86,10 @@ const char *errtype;
 	ENDLOG;
 }}
 
-/*
- * ---------------------------------------------------------------------------
- * * start_home, default_home, can_set_home, new_home, clone_home:
- * * Routines for validating and determining homes.
+/**
+ * start_home, default_home, can_set_home, new_home, clone_home:
+ * Routines for validating and determining homes.
  */
-
 dbref start_home(void)
 {
     if (mudconf.start_home != NOTHING)
@@ -161,8 +106,7 @@ dbref default_home(void)
     return mudconf.start_room;
 }
 
-int can_set_home(player, thing, home)
-dbref player, thing, home;
+int can_set_home(dbref player, dbref thing, dbref home)
 {
     if (!Good_obj(player) || !Good_obj(home) || (thing == home))
 	return 0;
@@ -179,8 +123,7 @@ dbref player, thing, home;
     return 0;
 }
 
-dbref new_home(player)
-dbref player;
+dbref new_home(dbref player)
 {
     dbref loc;
 
@@ -193,8 +136,7 @@ dbref player;
     return default_home();
 }
 
-dbref clone_home(player, thing)
-dbref player, thing;
+dbref clone_home(dbref player, dbref thing)
 {
     dbref loc;
 
@@ -204,18 +146,11 @@ dbref player, thing;
     return new_home(player);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * create_obj: Create an object of the indicated type IF the player can
- * * afford it.
+/**
+ * Create an object of the indicated type IF the player can
+ * afford it.
  */
-
-#ifndef STANDALONE
-
-dbref create_obj(player, objtype, name, cost)
-dbref player;
-int objtype, cost;
-char *name;
+dbref create_obj(dbref player, int objtype, char *name, int cost)
 {
     dbref obj, owner;
     int quota, okname = 0, value, self_owned, require_inherit;
@@ -337,9 +272,9 @@ char *name;
 	return NOTHING;
 
     /*
-     * Get the first object from the freelist.  If the object is not * *
-     * * clean, * discard the remainder of the freelist and go get a * *
-     * * completely new * object. 
+     * Get the first object from the freelist. If the object is not 
+     * clean, discard the remainder of the freelist and go get a
+     * completely new object. 
      */
 
     obj = NOTHING;
@@ -358,9 +293,7 @@ char *name;
 	obj = mudstate.db_top;
 	db_grow(mudstate.db_top + 1);
     }
-    atr_free(obj);		/*
-				 * just in case... 
-				 */
+    atr_free(obj);		// Just in case...
 
     /*
      * Set things up according to the object type 
@@ -410,25 +343,16 @@ char *name;
     return obj;
 }
 
-#endif
-
-/*
- * ---------------------------------------------------------------------------
- * * destroy_obj: Destroy an object.  Assumes it has already been removed from
- * * all lists and has no contents or exits.
+/**
+ * Destroy an object. Assumes it has already been removed from
+ * all lists and has no contents or exits.
  */
-
-void destroy_obj(player, obj)
-dbref player, obj;
+void destroy_obj(dbref player, dbref obj)
 {
     dbref owner;
     int good_owner, val, quota;
     STACK *sp, *next;
-
-#ifndef STANDALONE
     char *tname;
-
-#endif
 
     if (!Good_obj(obj))
 	return;
@@ -444,15 +368,12 @@ dbref player, obj;
     /*
      * Halt any pending commands (waiting or semaphore) 
      */
-
-#ifndef STANDALONE
     if (halt_que(NOTHING, obj) > 0) {
 	if (good_owner && !Quiet(obj) && !Quiet(owner)) {
 	    notify(owner, "Halted.");
 	}
     }
     nfy_que(obj, 0, NFY_DRAIN, 0);
-#endif
 
     /*
      * Compensate the owner for the object 
@@ -485,14 +406,12 @@ dbref player, obj;
 	if (mudconf.quotas)
 	    add_quota(owner, quota);
 
-#ifndef STANDALONE
 	if (!Quiet(owner) && !Quiet(obj))
 	    notify(owner,
 		tprintf("You get back your %d %s deposit for %s(#%d).",
 		    val, mudconf.one_coin, Name(obj), obj));
-#endif
     }
-#ifndef STANDALONE
+
     if ((player != NOTHING) && !Quiet(player)) {
 	if (good_owner && Owner(player) != owner) {
 	    if (owner == obj) {
@@ -509,7 +428,7 @@ dbref player, obj;
 	    notify(player, "Destroyed.");
 	}
     }
-#endif
+
     atr_free(obj);
     s_Name(obj, NULL);
     s_Flags(obj, (TYPE_GARBAGE | GOING));
@@ -538,18 +457,15 @@ dbref player, obj;
 
     s_Stack(obj, NULL);
 
-#ifndef STANDALONE
     if (mudconf.have_comsys)
 	toast_player(obj);
-#endif
+
     return;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * make_freelist: Build a freelist
+/**
+ * Build a freelist
  */
-
 static void make_freelist(void)
 {
     dbref i;
@@ -563,13 +479,10 @@ static void make_freelist(void)
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * divest_object: Get rid of KEY contents of object.
+/**
+ * Get rid of KEY contents of object.
  */
-
-void divest_object(thing)
-dbref thing;
+void divest_object(dbref thing)
 {
     dbref curr, temp;
 
@@ -580,13 +493,10 @@ dbref thing;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * empty_obj, purge_going: Get rid of GOING objects in the db.
+/**
+ * Empties the contents of a GOING object.
  */
-
-void empty_obj(obj)
-dbref obj;
+void empty_obj(dbref obj)
 {
     dbref targ, next;
 
@@ -632,13 +542,10 @@ dbref obj;
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * destroy_exit, destroy_thing, destroy_player
+/**
+ * Destroys an exit.
  */
-
-void destroy_exit(exit)
-dbref exit;
+void destroy_exit(dbref exit)
 {
     dbref loc;
 
@@ -647,18 +554,21 @@ dbref exit;
     destroy_obj(NOTHING, exit);
 }
 
-void destroy_thing(thing)
-dbref thing;
+/**
+ * Destroys a thing.
+ */
+void destroy_thing(dbref thing)
 {
     move_via_generic(thing, NOTHING, Owner(thing), 0);
     empty_obj(thing);
     destroy_obj(NOTHING, thing);
 }
 
-void destroy_player(victim)
-dbref victim;
+/** 
+ * Destroys a player.
+ */
+void destroy_player(dbref victim)
 {
-#ifndef STANDALONE
     dbref aowner, player;
     int count, aflags;
     char *buf;
@@ -686,9 +596,11 @@ dbref victim;
     do_mail_purge(victim);
     destroy_obj(NOTHING, victim);
     notify_quiet(player, tprintf("(%d objects @chowned to you)", count));
-#endif
 }
 
+/**
+ * Purges a GOING object. 
+ */
 static void purge_going(void)
 {
     dbref i;
@@ -731,15 +643,10 @@ static void purge_going(void)
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * check_dead_refs: Look for references to GOING or illegal objects.
+/**
+ * Look for references to GOING or illegal objects.
  */
-
-static void check_pennies(thing, limit, qual)
-dbref thing;
-int limit;
-const char *qual;
+static void check_pennies(dbref thing, int limit, const char *qual)
 {
     int j;
 
@@ -778,16 +685,12 @@ static void check_dead_refs(void)
 	if (Good_obj(targ)) {
 	    if (Going(targ)) {
 		s_Parent(i, NOTHING);
-#ifndef STANDALONE
 		owner = Owner(i);
+
 		if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
 		    notify(owner, tprintf("Parent cleared on %s(#%d)",
 			    Name(i), i));
 		}
-#else
-		Log_header_err(i, Location(i), targ, 1, "Parent",
-		    "is invalid.  Cleared.");
-#endif
 	    }
 	} else if (targ != NOTHING) {
 	    Log_header_err(i, Location(i), targ, 1, "Parent",
@@ -802,16 +705,11 @@ static void check_dead_refs(void)
 	if (Good_obj(targ)) {
 	    if (Going(targ)) {
 		s_Zone(i, NOTHING);
-#ifndef STANDALONE
 		owner = Owner(i);
 		if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
 		    notify(owner, tprintf("Zone cleared on %s(#%d)",
 			    Name(i), i));
 		}
-#else
-		Log_header_err(i, Location(i), targ, 1, "Zone",
-		    "is invalid. Cleared.");
-#endif
 	    }
 	} else if (targ != NOTHING) {
 	    Log_header_err(i, Location(i), targ, 1, "Zone",
@@ -833,16 +731,11 @@ static void check_dead_refs(void)
 	    if (Good_obj(targ)) {
 		if (Going(targ)) {
 		    s_Home(i, new_home(i));
-#ifndef STANDALONE
 		    owner = Owner(i);
 		    if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
 			notify(owner, tprintf("Home reset on %s(#%d)",
 				Name(i), i));
 		    }
-#else
-		    Log_header_err(i, Location(i), targ, 1, "Home",
-			"is invalid.  Reset.");
-#endif
 		}
 	    } else if (targ != NOTHING) {
 		Log_header_err(i, Location(i), targ, 1, "Home",
@@ -894,17 +787,12 @@ static void check_dead_refs(void)
 	    if (Good_obj(targ)) {
 		if (Going(targ)) {
 		    s_Dropto(i, NOTHING);
-#ifndef STANDALONE
 		    owner = Owner(i);
 		    if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
 			notify(owner,
 			    tprintf("Dropto removed from %s(#%d)", Name(i),
 				i));
 		    }
-#else
-		    Log_header_err(i, NOTHING, targ, 1, "Dropto",
-			"is invalid.  Removed.");
-#endif
 		}
 	    } else if ((targ != NOTHING) && (targ != HOME)) {
 		Log_header_err(i, NOTHING, targ, 1, "Dropto",
@@ -1048,18 +936,14 @@ static void check_dead_refs(void)
 		"is invalid.  Set to GOD.");
 	    owner = GOD;
 	    s_Owner(i, owner);
-#ifndef STANDALONE
 	    halt_que(NOTHING, i);
-#endif
 	    s_Halted(i);
 	} else if (check_type & DBCK_FULL) {
 	    if (Going(owner)) {
 		Log_header_err(i, NOTHING, owner, 1, "Owner",
 		    "is set GOING.  Set to GOD.");
 		s_Owner(i, owner);
-#ifndef STANDALONE
 		halt_que(NOTHING, i);
-#endif
 		s_Halted(i);
 	    } else if (!OwnsOthers(owner)) {
 		Log_header_err(i, NOTHING, owner, 1, "Owner",
@@ -1088,25 +972,22 @@ static void check_dead_refs(void)
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * check_loc_exits, check_exit_chains: Validate the exits chains
- * * of objects and attempt to correct problems.  The following errors are
- * * found and corrected:
- * *      Location not in database                        - skip it.
- * *      Location GOING                                  - skip it.
- * *      Location not a PLAYER, ROOM, or THING           - skip it.
- * *      Location already visited                        - skip it.
- * *      Exit/next pointer not in database               - NULL it.
- * *      Member is not an EXIT                           - terminate chain.
- * *      Member is GOING                                 - destroy exit.
- * *      Member already checked (is in another list)     - terminate chain.
- * *      Member in another chain (recursive check)       - terminate chain.
- * *      Location of member is not specified location    - reset it.
+/**
+ * check_loc_exits, check_exit_chains: Validate the exits chains
+ * of objects and attempt to correct problems. The following errors are
+ * found and corrected:
+ *       Location not in database                        - skip it.
+ *       Location GOING                                  - skip it.
+ *       Location not a PLAYER, ROOM, or THING           - skip it.
+ *       Location already visited                        - skip it.
+ *       Exit/next pointer not in database               - NULL it.
+ *       Member is not an EXIT                           - terminate chain.
+ *       Member is GOING                                 - destroy exit.
+ *       Member already checked (is in another list)     - terminate chain.
+ *       Member in another chain (recursive check)       - terminate chain.
+ *       Location of member is not specified location    - reset it.
  */
-
-static void check_loc_exits(loc)
-dbref loc;
+static void check_loc_exits(dbref loc)
 {
     dbref exit, back, temp, exitloc, dest;
 
@@ -1213,11 +1094,11 @@ dbref loc;
 	} else if (exitloc != loc) {
 
 	    /*
-	     * Exit thinks it's in another place.  Check the * *
-	     * * * exitlist there and see if it contains this
-	     * exit.  * *  *  * * If it does, then our exitlist
-	     * somehow * pointed * * * into the middle of their
-	     * exitlist. * If not, * * * assume we own the exit. 
+	     * Exit thinks it's in another place. Check the
+	     * exitlist there and see if it contains this
+	     * exit. If it does, then our exitlist
+	     * somehow pointed into the middle of their
+	     * exitlist. If not, assume we own the exit. 
 	     */
 
 	    check_loc_exits(exitloc);
@@ -1290,34 +1171,32 @@ static void check_exit_chains(void)
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * check_misplaced_obj, check_loc_contents, check_contents_chains: Validate
- * * the contents chains of objects and attempt to correct problems.  The
- * * following errors are found and corrected:
- * *      Location not in database                        - skip it.
- * *      Location GOING                                  - skip it.
- * *      Location not a PLAYER, ROOM, or THING           - skip it.
- * *      Location already visited                        - skip it.
- * *      Contents/next pointer not in database           - NULL it.
- * *      Member is not an PLAYER or THING                - terminate chain.
- * *      Member is GOING                                 - destroy exit.
- * *      Member already checked (is in another list)     - terminate chain.
- * *      Member in another chain (recursive check)       - terminate chain.
- * *      Location of member is not specified location    - reset it.
+/**
+ * check_misplaced_obj, check_loc_contents, check_contents_chains: Validate
+ * the contents chains of objects and attempt to correct problems.  The
+ * following errors are found and corrected:
+ *       Location not in database                        - skip it.
+ *       Location GOING                                  - skip it.
+ *       Location not a PLAYER, ROOM, or THING           - skip it.
+ *       Location already visited                        - skip it.
+ *       Contents/next pointer not in database           - NULL it.
+ *       Member is not an PLAYER or THING                - terminate chain.
+ *       Member is GOING                                 - destroy exit.
+ *       Member already checked (is in another list)     - terminate chain.
+ *       Member in another chain (recursive check)       - terminate chain.
+ *       Location of member is not specified location    - reset it.
  */
 
 static void check_loc_contents(dbref);
 
-static void check_misplaced_obj(obj, back, loc)
-dbref *obj, back, loc;
+static void check_misplaced_obj(dbref *obj, dbref back, dbref loc)
 {
     /*
-     * Object thinks it's in another place.  Check the contents list * *
-     * * there * and see if it contains this object.  If it does, then
-     * our * * * contents * list somehow pointed into the middle of their 
-     * * * contents * list and * we should truncate our list. If not,
-     * assume * * we own the * object. 
+     * Object thinks it's in another place. Check the contents list
+     * there and see if it contains this object. If it does, then
+     * our contents list somehow pointed into the middle of their 
+     * contents list and we should truncate our list. If not,
+     * assume we own the object. 
      */
 
     if (!Good_obj(*obj))
@@ -1353,8 +1232,7 @@ dbref *obj, back, loc;
     return;
 }
 
-static void check_loc_contents(loc)
-dbref loc;
+static void check_loc_contents(dbref loc)
 {
     dbref obj, back, temp;
 
@@ -1499,13 +1377,10 @@ static void check_contents_chains(void)
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * mark_place, check_floating: Look for floating rooms not set FLOATING.
+/**
+ * mark_place, check_floating: Look for floating rooms not set FLOATING.
  */
-
-static void mark_place(loc)
-dbref loc;
+static void mark_place(dbref loc)
 {
     dbref exit;
 
@@ -1547,26 +1422,18 @@ static void check_floating(void)
     DO_WHOLE_DB(i) {
 	if (isRoom(i) && !Floating(i) && !Going(i) && !Marked(i)) {
 	    owner = Owner(i);
-#ifndef STANDALONE
 	    if (Good_owner(owner)) {
 		notify(owner, tprintf("You own a floating room: %s(#%d)",
 			Name(i), i));
 	    }
-#else
-	    Log_simple_err(i, NOTHING, "Disconnected room.");
-#endif
 	}
     }
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * do_dbck: Perform a database consistency check and clean up damage.
+/**
+ * Perform a database consistency check and clean up damage.
  */
-
-void do_dbck(player, cause, key)
-dbref player, cause;
-int key;
+void do_dbck(dbref player, dbref cause, int key)
 {
     check_type = key;
     make_freelist();
@@ -1575,10 +1442,9 @@ int key;
     check_contents_chains();
     check_floating();
     purge_going();
-#ifndef STANDALONE
+
     if (player != NOTHING) {
         if (!Quiet(player))
             notify(player, "Done.");
     }
-#endif
 }
