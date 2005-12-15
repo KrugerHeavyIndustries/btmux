@@ -125,7 +125,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 
     switch (key) {
     case SAY_SAY:
-	notify(player, tprintf("You say \"%s\"", message));
+	notify_printf(player, "You say \"%s\"", message);
 	notify_except(loc, player, player, tprintf("%s says \"%s\"",
 		Name(player), message));
 	break;
@@ -363,8 +363,8 @@ static void page_return(dbref player, dbref target, const char *tag, int anum,
 static int page_check(dbref player, dbref target)
 {
     if (!payfor(player, Guest(player) ? 0 : mudconf.pagecost)) {
-	notify(player, tprintf("You don't have enough %s.",
-		mudconf.many_coins));
+	notify_printf(player, "You don't have enough %s.",
+		mudconf.many_coins);
 	return 0;
     }
     if (In_IC_Loc(player) && !Wizard(target) && !Wizard(player)) {
@@ -389,12 +389,12 @@ static int page_check(dbref player, dbref target)
     }
     if (!could_doit(target, player, A_LPAGE)) {
 	if (Wizard(player)) {
-	    notify(player, tprintf("Warning: %s can't return your page.",
-		    Name(target)));
+	    notify_printf(player, "Warning: %s can't return your page.",
+		    Name(target));
 	    return 1;
 	} else {
-	    notify(player, tprintf("Sorry, %s can't return your page.",
-		    Name(target)));
+	    notify_printf(player, "Sorry, %s can't return your page.",
+		    Name(target));
 	    return 0;
 	}
     }
@@ -462,8 +462,8 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 		for (p = (char *) strtok(targetname, " "); p != NULL;
 		    p = (char *) strtok(NULL, " ")) {
 		    target = atoi(p);
-		    notify(player, tprintf("You last paged %s.",
-			    Name(target)));
+		    notify_printf(player, "You last paged %s.",
+			    Name(target));
 		}
 
 	    free_lbuf(buf1);
@@ -504,7 +504,7 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 	    message = mp;
 
 	    if (target == NOTHING) {
-		notify(player, tprintf("I don't recognize \"%s\".", p));
+		notify_printf(player, "I don't recognize \"%s\".", p);
 	    } else if (!page_check(player, target)) {
 		;
 	    } else {
@@ -537,7 +537,7 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 	if (ismessage)
 	    target = atoi(tname);
 	if (target == NOTHING) {
-	    notify(player, tprintf("I don't recognize \"%s\".", tname));
+	    notify_printf(player, "I don't recognize \"%s\".", tname);
 	} else if (!page_check(player, target)) {
 	    ;
 	} else {
@@ -581,15 +581,15 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
     if (count == 1) {
 	if (*buf1) {
 	    if (ispose != 1) {
-		notify(player, tprintf("You paged %s with '%s'.", buf1,
-			mp));
+		notify_printf(player, "You paged %s with '%s'.", buf1,
+			mp);
 	    } else {
 		if (mp[0] == ':')
-		    notify(player, tprintf("Long distance to %s: %s %s",
-			    buf1, Name(player), mp + 1));
+		    notify_printf(player, "Long distance to %s: %s %s",
+			    buf1, Name(player), mp + 1);
 		else
-		    notify(player, tprintf("Long distance to %s: %s%s",
-			    buf1, Name(player), mp + 1));
+		    notify_printf(player, "Long distance to %s: %s%s",
+			    buf1, Name(player), mp + 1);
 	    }
 	}
     } else {
@@ -598,15 +598,15 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 
 	if (*buf1) {
 	    if (ispose != 1) {
-		notify(player, tprintf("You paged (%s with '%s'.", buf1,
-			mp));
+		notify_printf(player, "You paged (%s with '%s'.", buf1,
+			mp);
 	    } else {
 		if (mp[0] == ':')
-		    notify(player, tprintf("Long distance to (%s: %s %s",
-			    buf1, Name(player), mp + 1));
+		    notify_printf(player, "Long distance to (%s: %s %s",
+			    buf1, Name(player), mp + 1);
 		else
-		    notify(player, tprintf("Long distance to (%s: %s%s",
-			    buf1, Name(player), mp + 1));
+		    notify_printf(player, "Long distance to (%s: %s%s",
+			    buf1, Name(player), mp + 1);
 	    }
 	}
     }
@@ -625,8 +625,8 @@ void whisper_pose(dbref player, dbref target, char *message)
 
     buff = alloc_lbuf("do_pemit.whisper.pose");
     StringCopy(buff, Name(player));
-    notify(player, tprintf("%s senses \"%s%s\"", Name(target), buff,
-	    message));
+    notify_printf(player, "%s senses \"%s%s\"", Name(target), buff,
+	    message);
     notify_with_cause(target, player, tprintf("You sense %s%s", buff,
 	    message));
     free_lbuf(buff);
@@ -797,8 +797,8 @@ void do_pemit(dbref player, dbref cause, int key, char *recipient,
 	    case '"':
 		message++;
 	    default:
-		notify(player, tprintf("You whisper \"%s\" to %s.",
-			message, Name(target)));
+		notify_printf(player, "You whisper \"%s\" to %s.",
+			message, Name(target));
 		notify_with_cause(target, player,
 		    tprintf("%s whispers \"%s\"", Name(player), message));
 	    }
@@ -818,7 +818,7 @@ void do_pemit(dbref player, dbref cause, int key, char *recipient,
 	    }
 	    break;
 	case PEMIT_FSAY:
-	    notify(target, tprintf("You say \"%s\"", message));
+	    notify_printf(target, "You say \"%s\"", message);
 	    if (loc != NOTHING) {
 		notify_except(loc, player, target,
 		    tprintf("%s says \"%s\"", Name(target), message));
