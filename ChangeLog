@@ -134,6 +134,10 @@ btonline-btechmux 0.6:
           details:
 	  http://sourceforge.net/tracker/index.php?func=detail&aid=1376850&group_id=128056&atid=711029
           Added the --bt-scaled-infrared and defaulted to on. (Fitz)
+	* Staggering is now considered on any damaged mech within 5 tics
+	  of initially being hit. After the roll is made, knock 10 off the
+	  unit's staggerdamage. Old interval was 30, little bit too
+	  delayed. (Fitz)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

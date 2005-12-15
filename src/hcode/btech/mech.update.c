@@ -2520,8 +2520,15 @@ void CheckDamage(MECH * wounded)
     int headingChange = 0;
 
     if (mudconf.btech_newstagger) {
-	if (StaggerDamage(wounded) <= 0)
+
+        /* phase out post-stagger assistance - see check_stagger_event() */
+	if (StaggerDamage(wounded) < 0) {
+	    StaggerDamage(wounded) += 1; 
 	    return;
+	}
+	if (StaggerDamage(wounded) == 0) {
+	    return;
+	}
 
 	staggerLevel = StaggerLevel(wounded);
 

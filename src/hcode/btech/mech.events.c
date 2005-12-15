@@ -485,6 +485,12 @@ void check_stagger_event(MUXEVENT * event)
     }
 
     StopStaggerCheck(mech);
+    /* Since stagger rolls happen much more often now, this adds 10 damage
+     * points of 'buffer' to mech that was just forced to make a stager roll.
+     * Mechs whose damage accumulation times out without making a roll (<20
+     * damage) don't get this help. This 10 points of damage assistance slowly
+     * times out in CheckDamage, or can be erased by weapons fire */
+    mech->rd.staggerDamage=-10; 
 }
 
 #ifdef BT_MOVEMENT_MODES

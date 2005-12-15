@@ -851,7 +851,7 @@ if (FlyingT(mech)) { \
 /* New stagger stuff */
 #define Staggering(mech)        ( StaggerLevel(mech) > 0 )
 #define CheckingStaggerDamage(mech) muxevent_count_type_data(EVENT_CHECK_STAGGER,(void *) mech)
-#define StartStaggerCheck(mech)   do { MECHEVENT(mech, EVENT_CHECK_STAGGER, check_stagger_event, 30, 0); SendDebug(tprintf("Starting stagger check for %d.", mech->mynum)); } while (0)
+#define StartStaggerCheck(mech)   do { MECHEVENT(mech, EVENT_CHECK_STAGGER, check_stagger_event, 5, 0); SendDebug(tprintf("Starting stagger check for %d.", mech->mynum)); } while (0)
 #define StopStaggerCheck(mech)    do { muxevent_remove_type_data(EVENT_CHECK_STAGGER, (void *) mech); (mech)->rd.staggerDamage=0; (mech)->rd.lastStaggerNotify=0; SendDebug(tprintf("Stopping stagger check for %d.", mech->mynum)); } while (0)
 #define StaggerDamage(mech)     ( (mech)->rd.staggerDamage )
 #define LastStaggerNotify(mech) ( (mech)->rd.lastStaggerNotify )
