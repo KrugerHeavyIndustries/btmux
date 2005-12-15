@@ -1,10 +1,5 @@
-
 /*
  * rob.c -- Commands dealing with giving/taking/killing things or money 
- */
-
-/*
- * $Id: rob.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -21,10 +16,7 @@
 #include "powers.h"
 #include "p.comsys.h"
 
-void do_kill(player, cause, key, what, costchar)
-dbref player, cause;
-int key;
-char *what, *costchar;
+void do_kill(dbref player, dbref cause, int key, char *what, char *costchar)
 {
     dbref victim;
     char *buf1, *buf2;
@@ -179,10 +171,7 @@ char *what, *costchar;
  * * give_thing, give_money, do_give: Give away money or things.
  */
 
-static void give_thing(giver, recipient, key, what)
-dbref giver, recipient;
-int key;
-char *what;
+static void give_thing(dbref giver, dbref recipient, int key, char *what)
 {
     dbref thing;
     char *str, *sp;
@@ -253,10 +242,7 @@ char *what;
 	(char **) NULL, 0);
 }
 
-static void give_money(giver, recipient, key, amount)
-dbref giver, recipient;
-int key;
-int amount;
+static void give_money(dbref giver, dbref recipient, int key, int amount)
 {
     dbref aowner;
     int cost, aflags;
@@ -362,10 +348,7 @@ int amount;
     return;
 }
 
-void do_give(player, cause, key, who, amnt)
-dbref player, cause;
-int key;
-char *who, *amnt;
+void do_give(dbref player, dbref cause, int key, char *who, char *amnt)
 {
     dbref recipient;
 

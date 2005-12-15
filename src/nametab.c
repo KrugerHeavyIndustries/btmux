@@ -1,10 +1,6 @@
 /*
- *  * htab.c - table hashing routines 
- *   */
-
-/*
- *  * $Id: htab.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
- *   */
+ * htab.c - table hashing routines 
+ */
 
 #include "copyright.h"
 #include "config.h"
@@ -21,11 +17,7 @@
  * ---------------------------------------------------------------------------
  * * search_nametab: Search a name table for a match and return the flag value.
  */
-
-int search_nametab(player, ntab, flagname)
-    dbref player;
-    NAMETAB *ntab;
-    char *flagname;
+int search_nametab(dbref player, NAMETAB *ntab, char *flagname)
 {
     NAMETAB *nt;
 
@@ -63,11 +55,8 @@ NAMETAB *find_nametab_ent(dbref player, NAMETAB *ntab, char *flagname) {
  * * display_nametab: Print out the names of the entries in a name table.
  */
 
-void display_nametab(player, ntab, prefix, list_if_none)
-    dbref player;
-    NAMETAB *ntab;
-    char *prefix;
-    int list_if_none;
+void display_nametab(dbref player, NAMETAB *ntab, char *prefix, 
+    int list_if_none)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;
@@ -99,11 +88,8 @@ void display_nametab(player, ntab, prefix, list_if_none)
  * * interp_nametab: Print values for flags defined in name table.
  */
 
-void interp_nametab(player, ntab, flagword, prefix, true_text, false_text)
-    dbref player;
-    NAMETAB *ntab;
-    int flagword;
-    char *prefix, *true_text, *false_text;
+void interp_nametab(dbref player, NAMETAB *ntab, int flagword, char *prefix, 
+    char *true_text, char *false_text)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;
@@ -141,11 +127,8 @@ void interp_nametab(player, ntab, flagword, prefix, true_text, false_text)
  * * listset_nametab: Print values for flags defined in name table.
  */
 
-void listset_nametab(player, ntab, flagword, prefix, list_if_none)
-    dbref player;
-    NAMETAB *ntab;
-    int flagword, list_if_none;
-    char *prefix;
+void listset_nametab(dbref player, NAMETAB *ntab, int flagword, char *prefix, 
+    int list_if_none)
 {
     char *buf, *bp, *cp;
     NAMETAB *nt;

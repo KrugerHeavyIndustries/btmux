@@ -1,10 +1,5 @@
-
 /*
  * match.c -- Routines for parsing arguments 
- */
-
-/*
- * $Id: match.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -39,9 +34,7 @@
 
 static MSTATE md;
 
-static void promote_match(what, confidence)
-dbref what;
-int confidence;
+static void promote_match(dbref what, int confidence)
 {
     /*
      * Check for type and locks, if requested 
@@ -103,8 +96,7 @@ int confidence;
  * * names are being matched.  It also removes inital and terminal spaces.
  */
 
-static char *munge_space_for_match(name)
-char *name;
+static char *munge_space_for_match(char *name)
 {
     static char buffer[LBUF_SIZE];
     char *p, *q;
@@ -155,8 +147,7 @@ void match_player(void)
  * returns nnn if name = #nnn, else NOTHING 
  */
 
-static dbref absolute_name(need_pound)
-int need_pound;
+static dbref absolute_name(int need_pound)
 {
     dbref match;
     char *mname;
@@ -237,9 +228,7 @@ void match_here(void)
     }
 }
 
-static void match_list(first, local)
-dbref first;
-int local;
+static void match_list(dbref first, int local)
 {
     char *namebuf;
 
@@ -288,9 +277,7 @@ void match_neighbor(void)
     }
 }
 
-static int match_exit_internal(loc, baseloc, local)
-dbref loc, baseloc;
-int local;
+static int match_exit_internal(dbref loc, dbref baseloc, int local)
 {
     dbref exit;
     int result, key;

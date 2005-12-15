@@ -1,10 +1,5 @@
-
 /*
  * funceval.c - MUX function handlers 
- */
-
-/*
- * $Id: funceval.c,v 1.4 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -30,10 +25,10 @@
 
 /*
  * Note: Many functions in this file have been taken, whole or in part, from
- * * PennMUSH 1.50, and TinyMUSH 2.2, for softcode compatibility. The
- * * maintainers of MUX would like to thank those responsible for PennMUSH 1.50
- * * and TinyMUSH 2.2, and hope we have adequately noted in the source where
- * * credit is due.
+ * PennMUSH 1.50, and TinyMUSH 2.2, for softcode compatibility. The
+ * maintainers of MUX would like to thank those responsible for PennMUSH 1.50
+ * and TinyMUSH 2.2, and hope we have adequately noted in the source where
+ * credit is due.
  */
 
 extern NAMETAB indiv_attraccess_nametab[];
@@ -424,12 +419,8 @@ void fun_create(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
  * fun_set: sets an attribute on an object
  */
 
-static void set_attr_internal(player, thing, attrnum, attrtext, key, buff,
-        bufc)
-dbref player, thing;
-int attrnum, key;
-char *attrtext, *buff;
-char **bufc;
+static void set_attr_internal(dbref player, dbref thing, int attrnum, 
+    char *attrtext, int key, char *buff, char **bufc) 
 {
     dbref aowner;
     int aflags, could_hear;
@@ -601,8 +592,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], 
 /*
  * Copy over only alphanumeric chars 
  */
-static char *crunch_code(code)
-    char *code;
+static char *crunch_code(char *code)
 {
     char *in;
     char *out;
@@ -621,10 +611,7 @@ static char *crunch_code(code)
     return (output);
 }
 
-static char *crypt_code(code, text, type)
-    char *code;
-    char *text;
-    int type;
+static char *crypt_code(char *code, char *text, int type)
 {
     static char textbuff[LBUF_SIZE];
     char codebuff[LBUF_SIZE];
@@ -997,8 +984,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 /*
  * Code for objmem and playmem borrowed from PennMUSH 1.50 
  */
-static int mem_usage(thing)
-    dbref thing;
+static int mem_usage(dbref thing)
 {
     int k;
     int ca;
@@ -1052,16 +1038,10 @@ void fun_playmem(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 }
 
 /*
- * Code for andflags() and orflags() borrowed from PennMUSH 1.50 
+ * Code for andflags() and orflags() borrowed from PennMUSH 1.50.
+ * type = 0 for orflags, 1 for andflags. 
  */
-static int handle_flaglists(player, name, fstr, type)
-    dbref player;
-    char *name;
-    char *fstr;
-    int type;			/*
-
-                         * 0 for orflags, 1 for andflags 
-                         */
+static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 {
     char *s;
     char flagletter[2];
@@ -1845,9 +1825,7 @@ void fun_scramble(char *buff, char **bufc, dbref player, dbref cause, char *farg
 /*
  * Borrowed from PennMUSH 1.50 
  */
-static void swap(p, q)
-    char **p;
-    char **q;
+static void swap(char **p, char **q)
 {
     /*
      * swaps two points to strings 
@@ -1888,8 +1866,7 @@ static char ucomp_buff[LBUF_SIZE];
 static dbref ucomp_cause;
 static dbref ucomp_player;
 
-static int u_comp(s1, s2)
-    const void *s1, *s2;
+static int u_comp(const void *s1, const void *s2)
 {
     /*
      * Note that this function is for use in conjunction with our own * * 
@@ -1923,10 +1900,7 @@ static int u_comp(s1, s2)
     return n;
 }
 
-static void sane_qsort(array, left, right, compare)
-    void *array[];
-    int left, right;
-    int (*compare) ();
+static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 {
     /*
      * Andrew Molitor's qsort, which doesn't require transitivity between
@@ -2421,8 +2395,7 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause, char *fargs[]
 /*
  * die() code borrowed from PennMUSH 1.50 
  */
-int getrandom(x)
-    int x;
+int getrandom(int x)
 {
     /*
      * In order to be perfectly anal about not introducing any further *
@@ -2755,12 +2728,8 @@ void fun_strcat(char *buff, char **bufc, dbref player, dbref cause, char *fargs[
 /*
  * grep() and grepi() code borrowed from PennMUSH 1.50 
  */
-char *grep_util(player, thing, pattern, lookfor, len, insensitive)
-    dbref player, thing;
-    char *pattern;
-    char *lookfor;
-    int len;
-    int insensitive;
+char *grep_util(dbref player, dbref thing, char *pattern, char *lookfor, 
+    int len, int insensitive)
 {
     /*
      * returns a list of attributes which match <pattern> on <thing> * *
@@ -3013,8 +2982,7 @@ void fun_lparent(char *buff, char **bufc, dbref player, dbref cause, char *fargs
 
 /* stacksize - returns how many items are stuffed onto an object stack */
 
-int stacksize(doer)
-    dbref doer;
+int stacksize(dbref doer)
 {
     int i;
     STACK *sp;

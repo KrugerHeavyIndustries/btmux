@@ -1,10 +1,5 @@
-
 /*
  * mguests.c - multiguest code originally ported from DarkZone 
- */
-
-/*
- * $Id: mguests.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include <stdlib.h>
@@ -26,9 +21,7 @@ extern void do_lock(dbref player, dbref cause, int key, char *name,
     char *keytext);
 typedef int object_flag_type;
 
-dbref create_guest(name, password)
-char *name;
-char *password;
+dbref create_guest(char *name, char *password)
 {
     dbref player;
     char *buff;
@@ -73,8 +66,7 @@ char *password;
     return player;
 }
 
-void destroy_guest(guest)
-dbref guest;
+void destroy_guest(dbref guest)
 {
     if (!Wizard(mudconf.guest_nuker) || !Good_obj(mudconf.guest_nuker))
 	mudconf.guest_nuker = 1;
@@ -88,8 +80,7 @@ dbref guest;
     destroy_obj(mudconf.guest_nuker, guest);
 }
 
-char *make_guest(d)
-DESC *d;
+char *make_guest(DESC *d)
 {
     int i;
     dbref player, p2;

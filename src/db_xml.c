@@ -1,10 +1,5 @@
-
 /*
  * db_rw.c 
- */
-
-/*
- * $Id: db_rw.c,v 1.4 2005/08/08 09:43:06 murrayma Exp $ 
  */
 
 #include "copyright.h"

@@ -1,10 +1,5 @@
-
 /*
  * mkindx.c -- make help/news file indexes 
- */
-
-/*
- * $Id: mkindx.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -14,9 +9,7 @@
 #include "help.h"
 
 char line[LINE_SIZE];
-int main(argc, argv)
-int argc;
-char *argv[];
+int main(int argc, char *argv[])
 {
     long pos;
     int i, n, lineno, ntopics;

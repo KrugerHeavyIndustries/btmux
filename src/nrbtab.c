@@ -1,10 +1,6 @@
 /*
- *  * htab.c - table hashing routines 
- *   */
-
-/*
- *  * $Id: htab.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
- *   */
+ * htab.c - table hashing routines 
+ */
 
 #include "copyright.h"
 #include "config.h"

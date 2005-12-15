@@ -1,13 +1,10 @@
-
 /*
- * $Id: python.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $
- *
  * Author: Thomas Wouters <thomas@xs4all.net>
  *
  * Copyright (c) 2001-2002 Thomas Wouters
  *   All rights reserved.
  *
- * Loosely based on Markus Stenberg's python-patch to TinyMUX 3.0.
+ * Loosely based on Markus Stenberg's python-patch to TinyMUSH 3.0.
  */
 
 #include "config.h"
