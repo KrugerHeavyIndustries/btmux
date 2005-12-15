@@ -1477,9 +1477,8 @@ void do_chboot(dbref player, dbref cause, int key, char *channel, char *victim) 
     /*
      * We should be in the clear now. :) 
      */
-
     do_comsend(ch, tprintf("[%s] %s boots %s off the channel.", ch->name,
-                Name(player), Name(thing)));
+                unparse_object_numonly(player), unparse_object_numonly(thing)));
     do_delcomchannel(thing, channel);
 
 }
