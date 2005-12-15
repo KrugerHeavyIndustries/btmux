@@ -492,7 +492,7 @@ void flag_set(dbref target, dbref player, char *flag, int key)
     if (!result)
 	notify(player, "Permission denied.");
     else if (!(key & SET_QUIET) && !Quiet(player))
-	notify(player, (negate ? "Cleared." : "Set."));
+	notify_printf(player, "%s - %s %s", Name(target), fp->flagname, negate ? "cleared." : "set.");
     return;
 } /* end flag_set() */
 

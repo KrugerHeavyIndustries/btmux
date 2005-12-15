@@ -684,7 +684,8 @@ void set_attr_internal(dbref player, dbref thing, int attrnum, char *attrtext,
 	if (mudconf.have_specials)
 	    handle_xcode(player, thing, have_xcode, Hardcode(thing));
 	if (!(key & SET_QUIET) && !Quiet(player) && !Quiet(thing))
-	    notify_quiet(player, "Set.");
+	    notify_printf(player, "%s/%s - %s", Name(thing), 
+attr->name, strlen(attrtext) ? "Set." : "Cleared.");
     } else {
 	notify_quiet(player, "Permission denied.");
     }
@@ -769,10 +770,9 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
 	    if (mudconf.have_specials)
 		handle_xcode(player, thing, have_xcode, Hardcode(thing));
 	    if (!(key & SET_QUIET) && !Quiet(player) && !Quiet(thing)) {
-		if (clear)
-		    notify_quiet(player, "Cleared.");
-		else
-		    notify_quiet(player, "Set.");
+                FLAGENT *fp;
+                fp = find_flag(thing, flag);
+                notify_printf(player, "%s/%s - %s %s", Name(thing), attr->name, fp->flagname, clear ? "cleared." : "set."); 
 	    }
 	    return;
 	}
@@ -989,8 +989,7 @@ void do_mvattr(dbref player, dbref cause, int key, char *what, char *args[],
 		atr_add(thing, out_attr->number, astr, Owner(player),
 		    aflags);
 		if (!Quiet(player))
-		    notify_quiet(player, tprintf("%s: Set.",
-			    out_attr->name));
+                    notify_printf(player,"%s/%s - Set.", Name(thing), out_attr->name);
 	    }
 	}
     }
@@ -1004,8 +1003,7 @@ void do_mvattr(dbref player, dbref cause, int key, char *what, char *args[],
 	if (in_attr && Set_attr(player, thing, in_attr, aflags)) {
 	    atr_clr(thing, in_attr->number);
 	    if (!Quiet(player))
-		notify_quiet(player, tprintf("%s: Cleared.",
-			in_attr->name));
+		notify_printf(player, "%s/%s - Cleared.", Name(thing), in_attr->name);
 	} else {
 	    if (in_attr)
 		notify_quiet(player,
@@ -1429,15 +1427,17 @@ void do_wipe(dbref player, dbref cause, int key, char *it)
      * Clean up 
      */
 
-    free_lbuf(atext);
-    olist_pop();
-
     if (!got_one) {
 	notify_quiet(player, "No matching attributes.");
     } else {
 	if (!Quiet(player))
-	    notify_quiet(player, "Wiped.");
+	    notify_printf(player, "%s - Attributes wiped.", Name(thing));
     }
+
+    free_lbuf(atext);
+    olist_pop();
+
+
 }
 
 void do_trigger(dbref player, dbref cause, int key, char *object, 
