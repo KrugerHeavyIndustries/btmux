@@ -1,7 +1,4 @@
-
 /*
- * $Id: btechstats.c,v 1.8 2005/06/27 19:27:30 gregtaylor Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -10,12 +7,7 @@
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
  *
- * Last modified: Tue Sep  8 09:54:45 1998 fingon
- *
  */
-
-/* Mostly rewritten btech stat routines, only calling scheme
-   is same. */
 
 #include "config.h"
 #include <stdio.h>
@@ -171,8 +163,8 @@ void list_charvaluestuff(dbref player, int flag)
     if (flag == -1)
 	notify(player, "List of charvalues available:");
     if (flag >= 0) {
-	notify(player, tprintf("List of %s available:",
-		btech_charvaluetype_names[flag]));
+	notify_printf(player, "List of %s available:",
+		btech_charvaluetype_names[flag]);
     }
     buf[0] = 0;
     for (i = 0; i < NUM_CHARVALUES; i++) {
@@ -194,7 +186,7 @@ void list_charvaluestuff(dbref player, int flag)
 	notify(player, buf);
     }
     notify(player, " ");
-    notify(player, tprintf("Total of %d things found.", found));
+    notify_printf(player, "Total of %d things found.", found);
 }
 
 /*****************************/
@@ -430,8 +422,8 @@ int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
 	roll = char_rollskilled();
     if (loud)
         {
-        notify(player, tprintf("You make a %s skill roll!", name));
-        notify(player, tprintf("Modified skill BTH : %d Roll : %d", val, roll));
+        notify_printf(player, "You make a %s skill roll!", name);
+        notify_printf(player, "Modified skill BTH : %d Roll : %d", val, roll);
         }
 
     if (roll >= val)
@@ -722,7 +714,7 @@ void do_charclear(dbref player, dbref cause, int key, char *arg1)
     silly_atr_set(thing, A_SKILLS, "");
     silly_atr_set(thing, A_ADVS, "");
     silly_atr_set(thing, A_HEALTH, "");
-    notify(player, tprintf("Player #%d stats cleared", thing));
+    notify_printf(player, "Player #%d stats cleared", thing);
 }
 
 #if 0
@@ -953,15 +945,15 @@ int handlemwconc(MECH * mech, int initial)
 	if (initial) {
 	    mech_notify(mech, MECHPILOT,
 		"You attempt to keep consciousness!");
-	    mech_notify(mech, MECHPILOT,
-		tprintf("Retain Conciousness on: %d  \tRoll: %d", abs(m),
-		    roll));
+	    mech_printf(mech, MECHPILOT,
+		"Retain Conciousness on: %d  \tRoll: %d", abs(m),
+		    roll);
 	} else {
 	    mech_notify(mech, MECHPILOT,
 		"You attempt to regain consciousness!");
-	    mech_notify(mech, MECHPILOT,
-		tprintf("Regain Consciousness on: %d  \tRoll: %d", abs(m),
-		    roll));
+	    mech_printf(mech, MECHPILOT,
+		"Regain Consciousness on: %d  \tRoll: %d", abs(m),
+		    roll);
 	}
     }
     if (roll < (abs(m))) {
@@ -1106,17 +1098,11 @@ void AccumulateTechXP(dbref pilot, MECH * mech, int reason)
 	    skname = techw;
 
     xp = MAX(1, reason);
-    /* Using Exile method of spliting the xp off to different
-     * channels for monitoring. TechXP goes to MechTechXP
-     */
+
+    // We emit all tech XP gains to the MechTechXP channel.
     if (char_gainxp(pilot, skname, xp))
 	    SendTechXP(tprintf("%s gained %d %s XP (changing mech #%d)",
 		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
-/*
-    if (char_gainxp(pilot, skname, xp))
-	    SendXP(tprintf("%s gained %d %s XP (changing mech #%d)",
-		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
-*/
 }
 
 void AccumulateTechWeaponsXP(dbref pilot, MECH * mech, int reason)
@@ -1127,17 +1113,11 @@ void AccumulateTechWeaponsXP(dbref pilot, MECH * mech, int reason)
 
     skname = techw;
     xp = MAX(1, reason);
-    /* Using Exile method of spliting the xp off to different
-     * channels for monitoring. TechXP goes to MechTechXP
-     */
+
+    // We emit all tech xp gains to MechTechXP channel.
     if (char_gainxp(pilot, skname, xp))
 	    SendTechXP(tprintf("%s gained %d %s XP (changing mech #%d)",
 		    Name(pilot), xp, skname, mech ? mech->mynum : -1));
-/*
-    if (char_gainxp(pilot, skname, xp))
-	SendXP(tprintf("%s gained %d %s XP (changing mech #%d)",
-		Name(pilot), xp, skname, mech ? mech->mynum : -1));
-*/
 }
 
 void AccumulateCommXP(dbref pilot, MECH * mech)
@@ -1269,10 +1249,6 @@ void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded)
      */
     if (char_gainxp(pilot, "Gunnery-Artillery", xp))
 	    SendAttackXP(tprintf("%s gained %d artillery XP", Name(pilot), xp));
-/*
-    if (char_gainxp(pilot, "Gunnery-Artillery", xp))
-	    SendXP(tprintf("%s gained %d artillery XP", Name(pilot), xp));
-*/
 }
 
 void AccumulateComputerXP(dbref pilot, MECH * mech, int reason)
@@ -1480,12 +1456,6 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
             "(%d occurences) against %s", Name(pilot), xp, multiplier, 
             numOccurences, buf));
-/*
-    if (char_gainxp(pilot, skname, xp))
-	    SendXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
-            "(%d occurences) against %s", Name(pilot), xp, multiplier, 
-            numOccurences, buf));
-*/
 }
 
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
@@ -1568,12 +1538,6 @@ void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
 	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% "
             "difficulty (%d occurences) against %s", Name(pilot), xp, 
             multiplier, numOccurences, buf));
-/*
-    if (char_gainxp(pilot, skname, xp))
-	SendXP(tprintf
-	    ("%s gained %d gun XP from feat of %d %% difficulty (%d occurences) against %s",
-		Name(pilot), xp, multiplier, numOccurences, buf));
-*/
 }
 
 void fun_btgetcharvalue(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)

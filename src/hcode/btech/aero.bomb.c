@@ -1,7 +1,4 @@
-
 /*
- * $Id: aero.bomb.c,v 1.1.1.1 2005/01/11 21:18:00 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
@@ -132,10 +129,9 @@ void bomb_aim(MECH * mech, dbref player)
 
     t = calc_dest(mech, &x, &y);
     sprintf(toi, "%.1f second%s", t, (t >= 2.0 || t < 1.0) ? "" : "s");
-    mech_notify(mech, MECHALL,
-	tprintf
-	("Estimated bomb flight time %s, estimated landing hex %d,%d.",
-	    toi, x, y));
+    mech_printf(mech, MECHALL,
+	"Estimated bomb flight time %s, estimated landing hex %d,%d.",
+	    toi, x, y);
 }
 
 void bomb_hit_hexes(MAP * map, int x, int y, int hitnb, int iscluster,

@@ -1,7 +1,4 @@
-
 /*
- * $Id: bsuit.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
@@ -10,9 +7,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Created: Thu Feb 13 21:19:23 1997 fingon
- * Last modified: Mon Jul 20 00:35:23 1998 fingon
  *
  */
 
@@ -77,8 +71,8 @@ void StopSwarming(MECH * mech, int intentional)
     if (intentional > 0) {
 	mech_notify(mech, MECHALL,
 	    "You let your hold loosen and you drop from the 'mech!");
-	mech_notify(target, MECHALL, tprintf("%s lets go of you!",
-		GetMechToMechID(target, mech)));
+	mech_printf(target, MECHALL, "%s lets go of you!",
+		GetMechToMechID(target, mech));
 	MechLOSBroadcasti(mech, target, "lets go of %s!");
 
 	StartBSuitRecycle(mech, RECYCLE_INT_STOPSWARM);
@@ -87,16 +81,16 @@ void StopSwarming(MECH * mech, int intentional)
 	    mech_notify(mech, MECHALL,
 		"The hold loosens and you drop from the 'mech!");
 	    MechLOSBroadcasti(mech, target, "jumps off of %s!");
-	    mech_notify(target, MECHALL, tprintf("%s jumps off!",
-		    GetMechToMechID(target, mech)));
+	    mech_printf(target, MECHALL, "%s jumps off!",
+		    GetMechToMechID(target, mech));
 
 	    StartBSuitRecycle(mech, RECYCLE_UNINT_STOPSWARM);
 	} else {
 	    mech_notify(mech, MECHALL,
 		"You're suprised by the sudden action and find yourself rapidly approaching the ground!");
 	    MechLOSBroadcasti(mech, target, "falls off %s!");
-	    mech_notify(target, MECHALL, tprintf("%s falls off!",
-		    GetMechToMechID(target, mech)));
+	    mech_printf(target, MECHALL, "%s falls off!",
+		    GetMechToMechID(target, mech));
 
 	    DamageMech(mech, mech, 1, -1, Number(0, NUM_BSUIT_MEMBERS - 1),
 		0, 0, 11, 0, -1, 0, -1, 0, 1);
@@ -324,10 +318,9 @@ int doJettisonChecks(MECH * mech)
 	for (j = 0; j < NUM_CRITICALS; j++) {
 	    if ((GetPartFireMode(mech, i, j) & WILL_JETTISON_MODE) &&
 		(!(GetPartFireMode(mech, i, j) & IS_JETTISONED_MODE))) {
-		mech_notify(mech, MECHALL,
-		    tprintf
-		    ("Suit %d can not perform this feat before it jettisons its backpack!",
-			i + 1));
+		mech_printf(mech, MECHALL,
+		    "Suit %d can not perform this feat before it jettisons its backpack!",
+			i + 1);
 
 		return 1;
 	    }
@@ -422,12 +415,12 @@ void bsuit_swarm(dbref player, void *data, char *buffer)
 
     /* Well, we're here. Let's see if it works. */
     if (MadePilotSkillRoll(mech, baseToHit)) {
-	mech_notify(target, MECHALL, tprintf("%s %s you!",
+	mech_printf(target, MECHALL, "%s %s you!",
 		GetMechToMechID(target, mech),
-		(tIsMount ? "mounts" : "swarms")));
-	mech_notify(mech, MECHALL, tprintf("You %s %s!",
+		(tIsMount ? "mounts" : "swarms"));
+	mech_printf(mech, MECHALL, "You %s %s!",
 		(tIsMount ? "mount" : "swarm"), GetMechToMechID(mech,
-		    target)));
+		    target));
 
 	MechSwarmTarget(mech) = target->mynum;
 
@@ -444,14 +437,13 @@ void bsuit_swarm(dbref player, void *data, char *buffer)
 	MirrorPosition(target, mech, 1);
 	StopLock(mech);
     } else {
-	mech_notify(target, MECHALL, tprintf("%s attempts to %s you!",
+	mech_printf(target, MECHALL, "%s attempts to %s you!",
 		GetMechToMechID(target, mech),
-		(tIsMount ? "mount" : "swarm")));
-	mech_notify(mech, MECHALL,
-	    tprintf
-	    ("Nice try, but you don't succeed in your attempt at %s %s!",
+		(tIsMount ? "mount" : "swarm"));
+	mech_printf(mech, MECHALL,
+	    "Nice try, but you don't succeed in your attempt at %s %s!",
 		(tIsMount ? "mounting" : "swarming"), GetMechToMechID(mech,
-		    target)));
+		    target));
     }
 
     StartBSuitRecycle(mech, RECYCLE_SWARM);
@@ -553,15 +545,14 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
     ArmorStringFromIndex(wLegID, strAttackLoc, MechType(target),
 	MechMove(target));
 
-    mech_notify(mech, MECHALL,
-	tprintf("You go for %s's %s, placing explosives in the joints!",
-	    GetMechToMechID(mech, target), strAttackLoc));
+    mech_printf(mech, MECHALL,
+	"You go for %s's %s, placing explosives in the joints!",
+	    GetMechToMechID(mech, target), strAttackLoc);
 
     if (MadePilotSkillRoll(mech, baseToHit)) {
-	mech_notify(target, MECHALL,
-	    tprintf
-	    ("%s swarms your %s putting small packets of explosives all over it!",
-		GetMechToMechID(target, mech), strAttackLoc));
+	mech_printf(target, MECHALL,
+	    "%s swarms your %s putting small packets of explosives all over it!",
+		GetMechToMechID(target, mech), strAttackLoc);
 
 	MechLOSBroadcasti(mech, target, "attacks %s's legs!");
 
@@ -569,10 +560,9 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
 	wCritRoll = Roll();
 
 	if (wCritRoll >= 8) {
-	    mech_notify(target, MECHALL,
-		tprintf
-		("The explosives manage to rip into the internals of your %s!",
-		    strAttackLoc));
+	    mech_printf(target, MECHALL,
+		"The explosives manage to rip into the internals of your %s!",
+		    strAttackLoc);
 
 	    switch (wCritRoll) {
 	    case 8:
@@ -605,23 +595,20 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
 		break;
 	    }
 	} else {
-	    mech_notify(target, MECHALL,
-		tprintf
-		("The explosives explode on the surface of your %s!",
-		    strAttackLoc));
+	    mech_printf(target, MECHALL,
+		"The explosives explode on the surface of your %s!",
+		    strAttackLoc);
 	    DamageMech(target, mech, 1, MechPilot(mech), wLegID, 0, 1, 4,
 		0, -1, 0, -1, 0, 1);
 	}
     } else {
-	mech_notify(target, MECHALL,
-	    tprintf
-	    ("%s attempts to attacks your legs, but misses miserably.",
-		GetMechToMechID(target, mech)));
+	mech_printf(target, MECHALL,
+	    "%s attempts to attacks your legs, but misses miserably.",
+		GetMechToMechID(target, mech));
 
-	mech_notify(mech, MECHALL,
-	    tprintf
-	    ("You realize that this is harder than it looks and fail in your attempt at hitting %s's legs!",
-		GetMechToMechID(mech, target)));
+	mech_printf(mech, MECHALL,
+	    "You realize that this is harder than it looks and fail in your attempt at hitting %s's legs!",
+		GetMechToMechID(mech, target));
 
 	MechLOSBroadcasti(mech, target,
 	    "attacks to climb %s's legs, but fails miserably!");

@@ -1,15 +1,10 @@
-
 /*
- * $Id: aero.move.c,v 1.2 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Mon Jul 20 00:34:50 1998 fingon
  *
  */
 
@@ -83,11 +78,11 @@ static void aero_takeoff_event(MUXEVENT * e)
     if (count > 0) {
 	if (count > 5) {
 	    if (!(count % 10))
-		mech_notify(mech, MECHALL, tprintf("Launch countdown: %d.",
-			count));
+		mech_printf(mech, MECHALL, "Launch countdown: %d.",
+			count);
 	} else
-	    mech_notify(mech, MECHALL, tprintf("Launch countdown: %d.",
-		    count));
+	    mech_printf(mech, MECHALL, "Launch countdown: %d.",
+		    count);
 	if (i >= 0) {
 	    if (count == (land_data[i].launchtime / 4))
 		DSSpam_O(mech,
@@ -327,8 +322,8 @@ void aero_land(dbref player, void *data, char *buffer)
 	(MechType(mech) != CLASS_VTOL), "The engines are dead!");
     if (MechStatus(mech) & LANDED) {
 	if (TakingOff(mech)) {
-	    mech_notify(mech, MECHALL, tprintf("Launch aborted by %s.",
-		    Name(player)));
+	    mech_printf(mech, MECHALL, "Launch aborted by %s.",
+		    Name(player));
 	    if (IsDS(mech))
 		SendDSInfo(tprintf("DS #%d aborted takeoff at %d %d "
 			"on map #%d", mech->mynum, MechX(mech),
@@ -630,8 +625,8 @@ void aero_thrust(dbref player, void *data, char *arg)
 	!Landed(mech),
 	"You are unable to control your craft at the moment.");
     if (mech_parseattributes(arg, args, 1) != 1) {
-	notify(player, tprintf("Your current thrust is %.2f.",
-		MechDesiredSpeed(mech)));
+	notify_printf(player, "Your current thrust is %.2f.",
+		MechDesiredSpeed(mech));
 	return;
     }
     newspeed = atof(args[0]);
@@ -646,12 +641,12 @@ void aero_thrust(dbref player, void *data, char *arg)
     DOCHECK(newspeed < 0,
 	"Doh, thrust backwards.. where's your sense of adventure?");
     if (newspeed > maxspeed) {
-	notify(player, tprintf("Maximum thrust: %.2f (%.2f kb/sec2)",
-		maxspeed, maxspeed / 10));
+	notify_printf(player, "Maximum thrust: %.2f (%.2f kb/sec2)",
+		maxspeed, maxspeed / 10);
 	return;
     }
     MechDesiredSpeed(mech) = newspeed;
-    mech_notify(mech, MECHALL, tprintf("Thrust set to %.2f.", newspeed));
+    mech_printf(mech, MECHALL, "Thrust set to %.2f.", newspeed);
     MaybeMove(mech);
 }
 
@@ -662,8 +657,8 @@ void aero_vheading(dbref player, void *data, char *arg, int flag)
     MECH *mech = (MECH *) data;
 
     if (mech_parseattributes(arg, args, 1) != 1) {
-	notify(player, tprintf("Present angle: %d degrees.",
-		MechDesiredAngle(mech)));
+	notify_printf(player, "Present angle: %d degrees.",
+		MechDesiredAngle(mech));
 	return;
     }
     i = flag * atoi(args[0]);
@@ -673,11 +668,11 @@ void aero_vheading(dbref player, void *data, char *arg, int flag)
 	SpheroidDS(mech), tprintf("You can go only up / down at <%d z!",
 	    ATMO_Z));
     if (i >= 0)
-	mech_notify(mech, MECHALL,
-	    tprintf("Climbing angle set to %d degrees.", i));
+	mech_printf(mech, MECHALL,
+	    "Climbing angle set to %d degrees.", i);
     else
-	mech_notify(mech, MECHALL,
-	    tprintf("Diving angle set to %d degrees.", 0 - i));
+	mech_printf(mech, MECHALL,
+	    "Diving angle set to %d degrees.", 0 - i);
     MechDesiredAngle(mech) = i;
 }
 
@@ -707,11 +702,11 @@ void DS_LandWarning(MECH * mech, int serious)
     if (!ilz)
 	return;
     ilz--;
-    mech_notify(mech, MECHALL, tprintf("%sWARNING: %s - %s%%cn",
+    mech_printf(mech, MECHALL, "%sWARNING: %s - %s%%cn",
 	    colorstr(serious), reasons[ilz],
 	    serious == 1 ? "CLIMB UP NOW!!!" : serious ==
 	    0 ? "No further descent is advisable." :
-	    "Please do not even consider landing here."));
+	    "Please do not even consider landing here.");
 }
 
 void aero_checklz(dbref player, MECH * mech, char *buffer)
@@ -748,7 +743,7 @@ void aero_checklz(dbref player, MECH * mech, char *buffer)
 	      tprintf("The hex (%d,%d) looks good enough for a landing.",
 		      x, y));
     ilz--;
-    mech_notify(mech, MECHALL,
-	tprintf("The hex (%d,%d) doesn't look good for landing: %s.",
-		x, y, reasons[ilz]));
+    mech_printf(mech, MECHALL,
+	"The hex (%d,%d) doesn't look good for landing: %s.",
+		x, y, reasons[ilz]);
 }

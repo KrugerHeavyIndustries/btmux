@@ -1,15 +1,10 @@
 /*
- * $Id: artillery.c,v 1.1.1.1 2005/01/11 21:18:01 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Thu Sep 12 17:28:45 1996 fingon
- * Last modified: Sat Jul 18 01:54:03 1998 fingon
  *
  */
 
@@ -431,12 +426,12 @@ void artillery_FriendlyAdjustment(dbref mechnum, MAP * map, int x, int y)
     if (!Started(tempMech) || !Started(mech))
 	return;
     if (spotter) {
-	mech_notify(mech, MECHSTARTED,
-	    tprintf("%s sent you some trajectory-correction data.",
-		GetMechToMechID(mech, tempMech)));
-	mech_notify(tempMech, MECHSTARTED,
-	    tprintf("You provide %s with information about the miss.",
-		GetMechToMechID(tempMech, mech)));
+	mech_printf(mech, MECHSTARTED,
+	    "%s sent you some trajectory-correction data.",
+		GetMechToMechID(mech, tempMech));
+	mech_printf(tempMech, MECHSTARTED,
+	    "You provide %s with information about the miss.",
+		GetMechToMechID(tempMech, mech));
     }
     MechFireAdjustment(mech)++;
 }
