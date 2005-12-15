@@ -45,10 +45,14 @@ void nhashreset(RBTAB *htab) {
  */
 
 int *nhashfind(int val, RBTAB *htab) {
+    struct int_dict_entry *ent;
     int hval, numchecks;
    
     htab->checks++;
-    return rb_find(htab->tree, (void *)val);
+    ent = rb_find(htab->tree, (void *)val);
+    if(ent) 
+        return ent->data;
+    else return NULL;
 }
 
 /*

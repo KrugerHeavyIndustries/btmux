@@ -40,6 +40,7 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/cque.o        \
                  src/create.o      \
                  src/db.o          \
+				 src/db_xml.o	   \
                  src/db_rw.o       \
                  src/dllist.o      \
                  src/eval.o        \

@@ -423,22 +423,22 @@ int fwdlist_rewrite(FWDLIST *fp, char *atext)
     int i, count;
 
     if (fp && fp->count) {
-	count = fp->count;
-	tp = alloc_sbuf("fwdlist_rewrite.errors");
-	bp = atext;
-	for (i = 0; i < fp->count; i++) {
-	    if (Good_obj(fp->data[i])) {
-		sprintf(tp, "#%d ", fp->data[i]);
-		safe_str(tp, atext, &bp);
-	    } else {
-		count--;
-	    }
-	}
-	*bp = '\0';
-	free_sbuf(tp);
+        count = fp->count;
+        tp = alloc_sbuf("fwdlist_rewrite.errors");
+        bp = atext;
+        for (i = 0; i < fp->count; i++) {
+            if (Good_obj(fp->data[i])) {
+                sprintf(tp, "#%d ", fp->data[i]);
+                safe_str(tp, atext, &bp);
+            } else {
+                count--;
+            }
+        }
+        *bp = '\0';
+        free_sbuf(tp);
     } else {
-	count = 0;
-	*atext = '\0';
+        count = 0;
+        *atext = '\0';
     }
     return count;
 }

@@ -677,298 +677,298 @@ static void check_dead_refs(void)
 
     DO_WHOLE_DB(i) {
 
-	/*
-	 * Check the parent 
-	 */
+        /*
+         * Check the parent 
+         */
 
-	targ = Parent(i);
-	if (Good_obj(targ)) {
-	    if (Going(targ)) {
-		s_Parent(i, NOTHING);
-		owner = Owner(i);
+        targ = Parent(i);
+        if (Good_obj(targ)) {
+            if (Going(targ)) {
+                s_Parent(i, NOTHING);
+                owner = Owner(i);
 
-		if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-		    notify(owner, tprintf("Parent cleared on %s(#%d)",
-			    Name(i), i));
-		}
-	    }
-	} else if (targ != NOTHING) {
-	    Log_header_err(i, Location(i), targ, 1, "Parent",
-		"is invalid.  Cleared.");
-	    s_Parent(i, NOTHING);
-	}
-	/*
-	 * Check the zone 
-	 */
+                if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
+                    notify(owner, tprintf("Parent cleared on %s(#%d)",
+                                Name(i), i));
+                }
+            }
+        } else if (targ != NOTHING) {
+            Log_header_err(i, Location(i), targ, 1, "Parent",
+                    "is invalid.  Cleared.");
+            s_Parent(i, NOTHING);
+        }
+        /*
+         * Check the zone 
+         */
 
-	targ = Zone(i);
-	if (Good_obj(targ)) {
-	    if (Going(targ)) {
-		s_Zone(i, NOTHING);
-		owner = Owner(i);
-		if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-		    notify(owner, tprintf("Zone cleared on %s(#%d)",
-			    Name(i), i));
-		}
-	    }
-	} else if (targ != NOTHING) {
-	    Log_header_err(i, Location(i), targ, 1, "Zone",
-		"is invalid. Cleared.");
-	    s_Zone(i, NOTHING);
-	}
-	switch (Typeof(i)) {
-	case TYPE_PLAYER:
-	case TYPE_THING:
+        targ = Zone(i);
+        if (Good_obj(targ)) {
+            if (Going(targ)) {
+                s_Zone(i, NOTHING);
+                owner = Owner(i);
+                if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
+                    notify(owner, tprintf("Zone cleared on %s(#%d)",
+                                Name(i), i));
+                }
+            }
+        } else if (targ != NOTHING) {
+            Log_header_err(i, Location(i), targ, 1, "Zone",
+                    "is invalid. Cleared.");
+            s_Zone(i, NOTHING);
+        }
+        switch (Typeof(i)) {
+            case TYPE_PLAYER:
+            case TYPE_THING:
 
-	    if (Going(i))
-		break;
+                if (Going(i))
+                    break;
 
-	    /*
-	     * Check the home 
-	     */
+                /*
+                 * Check the home 
+                 */
 
-	    targ = Home(i);
-	    if (Good_obj(targ)) {
-		if (Going(targ)) {
-		    s_Home(i, new_home(i));
-		    owner = Owner(i);
-		    if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-			notify(owner, tprintf("Home reset on %s(#%d)",
-				Name(i), i));
-		    }
-		}
-	    } else if (targ != NOTHING) {
-		Log_header_err(i, Location(i), targ, 1, "Home",
-		    "is invalid.  Cleared.");
-		s_Home(i, new_home(i));
-	    }
-	    /*
-	     * Check the location 
-	     */
+                targ = Home(i);
+                if (Good_obj(targ)) {
+                    if (Going(targ)) {
+                        s_Home(i, new_home(i));
+                        owner = Owner(i);
+                        if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
+                            notify(owner, tprintf("Home reset on %s(#%d)",
+                                        Name(i), i));
+                        }
+                    }
+                } else if (targ != NOTHING) {
+                    Log_header_err(i, Location(i), targ, 1, "Home",
+                            "is invalid.  Cleared.");
+                    s_Home(i, new_home(i));
+                }
+                /*
+                 * Check the location 
+                 */
 
-	    targ = Location(i);
-	    if (!Good_obj(targ)) {
-		Log_pointer_err(NOTHING, i, NOTHING, targ, "Location",
-		    "is invalid.  Moved to home.");
-		ZAP_LOC(i);
-		move_object(i, HOME);
-	    }
-	    /*
-	     * Check for self-referential Next() 
-	     */
+                targ = Location(i);
+                if (!Good_obj(targ)) {
+                    Log_pointer_err(NOTHING, i, NOTHING, targ, "Location",
+                            "is invalid.  Moved to home.");
+                    ZAP_LOC(i);
+                    move_object(i, HOME);
+                }
+                /*
+                 * Check for self-referential Next() 
+                 */
 
-	    if (Next(i) == i) {
-		Log_simple_err(i, NOTHING,
-		    "Next points to self.  Next cleared.");
-		s_Next(i, NOTHING);
-	    }
-	    if (check_type & DBCK_FULL) {
+                if (Next(i) == i) {
+                    Log_simple_err(i, NOTHING,
+                            "Next points to self.  Next cleared.");
+                    s_Next(i, NOTHING);
+                }
+                if (check_type & DBCK_FULL) {
 
-		/*
-		 * Check wealth or value 
-		 */
+                    /*
+                     * Check wealth or value 
+                     */
 
-		targ = OBJECT_ENDOWMENT(mudconf.createmax);
-		if (OwnsOthers(i)) {
-		    targ += mudconf.paylimit;
-		    check_pennies(i, targ, "Wealth");
-		} else {
-		    check_pennies(i, targ, "Value");
-		}
-	    }
-	    break;
-	case TYPE_ROOM:
+                    targ = OBJECT_ENDOWMENT(mudconf.createmax);
+                    if (OwnsOthers(i)) {
+                        targ += mudconf.paylimit;
+                        check_pennies(i, targ, "Wealth");
+                    } else {
+                        check_pennies(i, targ, "Value");
+                    }
+                }
+                break;
+            case TYPE_ROOM:
 
-	    /*
-	     * Check the dropto 
-	     */
+                /*
+                 * Check the dropto 
+                 */
 
-	    targ = Dropto(i);
-	    if (Good_obj(targ)) {
-		if (Going(targ)) {
-		    s_Dropto(i, NOTHING);
-		    owner = Owner(i);
-		    if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-			notify(owner,
-			    tprintf("Dropto removed from %s(#%d)", Name(i),
-				i));
-		    }
-		}
-	    } else if ((targ != NOTHING) && (targ != HOME)) {
-		Log_header_err(i, NOTHING, targ, 1, "Dropto",
-		    "is invalid.  Cleared.");
-		s_Dropto(i, NOTHING);
-	    }
-	    if (check_type & DBCK_FULL) {
+                targ = Dropto(i);
+                if (Good_obj(targ)) {
+                    if (Going(targ)) {
+                        s_Dropto(i, NOTHING);
+                        owner = Owner(i);
+                        if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
+                            notify(owner,
+                                    tprintf("Dropto removed from %s(#%d)", Name(i),
+                                        i));
+                        }
+                    }
+                } else if ((targ != NOTHING) && (targ != HOME)) {
+                    Log_header_err(i, NOTHING, targ, 1, "Dropto",
+                            "is invalid.  Cleared.");
+                    s_Dropto(i, NOTHING);
+                }
+                if (check_type & DBCK_FULL) {
 
-		/*
-		 * NEXT should be null 
-		 */
+                    /*
+                     * NEXT should be null 
+                     */
 
-		if (Next(i) != NOTHING) {
-		    Log_header_err(i, NOTHING, Next(i), 1, "Next pointer",
-			"should be NOTHING.  Reset.");
-		    s_Next(i, NOTHING);
-		}
-		/*
-		 * LINK should be null 
-		 */
+                    if (Next(i) != NOTHING) {
+                        Log_header_err(i, NOTHING, Next(i), 1, "Next pointer",
+                                "should be NOTHING.  Reset.");
+                        s_Next(i, NOTHING);
+                    }
+                    /*
+                     * LINK should be null 
+                     */
 
-		if (Link(i) != NOTHING) {
-		    Log_header_err(i, NOTHING, Link(i), 1, "Link pointer ",
-			"should be NOTHING.  Reset.");
-		    s_Link(i, NOTHING);
-		}
-		/*
-		 * Check value 
-		 */
+                    if (Link(i) != NOTHING) {
+                        Log_header_err(i, NOTHING, Link(i), 1, "Link pointer ",
+                                "should be NOTHING.  Reset.");
+                        s_Link(i, NOTHING);
+                    }
+                    /*
+                     * Check value 
+                     */
 
-		check_pennies(i, 1, "Value");
-	    }
-	    break;
-	case TYPE_EXIT:
+                    check_pennies(i, 1, "Value");
+                }
+                break;
+            case TYPE_EXIT:
 
-	    /*
-	     * If it points to something GOING, set it going 
-	     */
+                /*
+                 * If it points to something GOING, set it going 
+                 */
 
-	    targ = Location(i);
-	    if (Good_obj(targ)) {
-		if (Going(targ)) {
-		    s_Going(i);
-		}
-	    } else if (targ == HOME) {
-		/*
-		 * null case, HOME is always valid 
-		 */
-	    } else if (targ != NOTHING) {
-		Log_header_err(i, Exits(i), targ, 1, "Destination",
-		    "is invalid.  Exit destroyed.");
-		s_Going(i);
-	    } else {
-		if (!Has_contents(targ)) {
-		    Log_header_err(i, Exits(i), targ, 1, "Destination",
-			"is not a valid type.  Exit destroyed.");
-		    s_Going(i);
-		}
-	    }
+                targ = Location(i);
+                if (Good_obj(targ)) {
+                    if (Going(targ)) {
+                        s_Going(i);
+                    }
+                } else if (targ == HOME) {
+                    /*
+                     * null case, HOME is always valid 
+                     */
+                } else if (targ != NOTHING) {
+                    Log_header_err(i, Exits(i), targ, 1, "Destination",
+                            "is invalid.  Exit destroyed.");
+                    s_Going(i);
+                } else {
+                    if (!Has_contents(targ)) {
+                        Log_header_err(i, Exits(i), targ, 1, "Destination",
+                                "is not a valid type.  Exit destroyed.");
+                        s_Going(i);
+                    }
+                }
 
-	    /*
-	     * Check for self-referential Next() 
-	     */
+                /*
+                 * Check for self-referential Next() 
+                 */
 
-	    if (Next(i) == i) {
-		Log_simple_err(i, NOTHING,
-		    "Next points to self.  Next cleared.");
-		s_Next(i, NOTHING);
-	    }
-	    if (check_type & DBCK_FULL) {
+                if (Next(i) == i) {
+                    Log_simple_err(i, NOTHING,
+                            "Next points to self.  Next cleared.");
+                    s_Next(i, NOTHING);
+                }
+                if (check_type & DBCK_FULL) {
 
-		/*
-		 * CONTENTS should be null 
-		 */
+                    /*
+                     * CONTENTS should be null 
+                     */
 
-		if (Contents(i) != NOTHING) {
-		    Log_header_err(i, Exits(i), Contents(i), 1, "Contents",
-			"should be NOTHING.  Reset.");
-		    s_Contents(i, NOTHING);
-		}
-		/*
-		 * LINK should be null 
-		 */
+                    if (Contents(i) != NOTHING) {
+                        Log_header_err(i, Exits(i), Contents(i), 1, "Contents",
+                                "should be NOTHING.  Reset.");
+                        s_Contents(i, NOTHING);
+                    }
+                    /*
+                     * LINK should be null 
+                     */
 
-		if (Link(i) != NOTHING) {
-		    Log_header_err(i, Exits(i), Link(i), 1, "Link",
-			"should be NOTHING.  Reset.");
-		    s_Link(i, NOTHING);
-		}
-		/*
-		 * Check value 
-		 */
+                    if (Link(i) != NOTHING) {
+                        Log_header_err(i, Exits(i), Link(i), 1, "Link",
+                                "should be NOTHING.  Reset.");
+                        s_Link(i, NOTHING);
+                    }
+                    /*
+                     * Check value 
+                     */
 
-		check_pennies(i, 1, "Value");
-	    }
-	    break;
-	case TYPE_GARBAGE:
-	    break;
-	default:
+                    check_pennies(i, 1, "Value");
+                }
+                break;
+            case TYPE_GARBAGE:
+                break;
+            default:
 
-	    /*
-	     * Funny object type, destroy it 
-	     */
+                /*
+                 * Funny object type, destroy it 
+                 */
 
-	    Log_simple_err(i, NOTHING, "Funny object type.  Destroyed.");
-	    destroy_obj(NOTHING, i);
-	}
+                Log_simple_err(i, NOTHING, "Funny object type.  Destroyed.");
+                destroy_obj(NOTHING, i);
+        }
 
-	/*
-	 * Check forwardlist 
-	 */
+        /*
+         * Check forwardlist 
+         */
 
-	dirty = 0;
-	fp = fwdlist_get(i);
-	if (fp) {
-	    for (j = 0; j < fp->count; j++) {
-		targ = fp->data[j];
-		if (Good_obj(targ) && Going(targ)) {
-		    fp->data[j] = NOTHING;
-		    dirty = 1;
-		} else if (!Good_obj(targ) && (targ != NOTHING)) {
-		    fp->data[j] = NOTHING;
-		    dirty = 1;
-		}
-	    }
-	}
-	if (dirty) {
-	    str = alloc_lbuf("purge_going");
-	    (void) fwdlist_rewrite(fp, str);
-	    atr_get_info(i, A_FORWARDLIST, &owner, &aflags);
-	    atr_add(i, A_FORWARDLIST, str, owner, aflags);
-	    free_lbuf(str);
-	}
-	/*
-	 * Check owner 
-	 */
+        dirty = 0;
+        fp = fwdlist_get(i);
+        if (fp) {
+            for (j = 0; j < fp->count; j++) {
+                targ = fp->data[j];
+                if (Good_obj(targ) && Going(targ)) {
+                    fp->data[j] = NOTHING;
+                    dirty = 1;
+                } else if (!Good_obj(targ) && (targ != NOTHING)) {
+                    fp->data[j] = NOTHING;
+                    dirty = 1;
+                }
+            }
+        }
+        if (dirty) {
+            str = alloc_lbuf("purge_going");
+            (void) fwdlist_rewrite(fp, str);
+            atr_get_info(i, A_FORWARDLIST, &owner, &aflags);
+            atr_add(i, A_FORWARDLIST, str, owner, aflags);
+            free_lbuf(str);
+        }
+        /*
+         * Check owner 
+         */
 
-	owner = Owner(i);
-	if (!Good_obj(owner)) {
-	    Log_header_err(i, NOTHING, owner, 1, "Owner",
-		"is invalid.  Set to GOD.");
-	    owner = GOD;
-	    s_Owner(i, owner);
-	    halt_que(NOTHING, i);
-	    s_Halted(i);
-	} else if (check_type & DBCK_FULL) {
-	    if (Going(owner)) {
-		Log_header_err(i, NOTHING, owner, 1, "Owner",
-		    "is set GOING.  Set to GOD.");
-		s_Owner(i, owner);
-		halt_que(NOTHING, i);
-		s_Halted(i);
-	    } else if (!OwnsOthers(owner)) {
-		Log_header_err(i, NOTHING, owner, 1, "Owner",
-		    "is not a valid owner type.");
-	    } else if (isPlayer(i) && (owner != i)) {
-		Log_header_err(i, NOTHING, owner, 1, "Player",
-		    "is the owner instead of the player.");
-	    }
-	}
-	if (check_type & DBCK_FULL) {
+        owner = Owner(i);
+        if (!Good_obj(owner)) {
+            Log_header_err(i, NOTHING, owner, 1, "Owner",
+                    "is invalid.  Set to GOD.");
+            owner = GOD;
+            s_Owner(i, owner);
+            halt_que(NOTHING, i);
+            s_Halted(i);
+        } else if (check_type & DBCK_FULL) {
+            if (Going(owner)) {
+                Log_header_err(i, NOTHING, owner, 1, "Owner",
+                        "is set GOING.  Set to GOD.");
+                s_Owner(i, owner);
+                halt_que(NOTHING, i);
+                s_Halted(i);
+            } else if (!OwnsOthers(owner)) {
+                Log_header_err(i, NOTHING, owner, 1, "Owner",
+                        "is not a valid owner type.");
+            } else if (isPlayer(i) && (owner != i)) {
+                Log_header_err(i, NOTHING, owner, 1, "Player",
+                        "is the owner instead of the player.");
+            }
+        }
+        if (check_type & DBCK_FULL) {
 
-	    /*
-	     * Check for wizards 
-	     */
+            /*
+             * Check for wizards 
+             */
 
-	    if (Wizard(i)) {
-		if (isPlayer(i)) {
-		    Log_simple_err(i, NOTHING, "Player is a WIZARD.");
-		}
-		if (!Wizard(Owner(i))) {
-		    Log_header_err(i, NOTHING, Owner(i), 1, "Owner",
-			"of a WIZARD object is not a wizard");
-		}
-	    }
-	}
+            if (Wizard(i)) {
+                if (isPlayer(i)) {
+                    Log_simple_err(i, NOTHING, "Player is a WIZARD.");
+                }
+                if (!Wizard(Owner(i))) {
+                    Log_header_err(i, NOTHING, Owner(i), 1, "Owner",
+                            "of a WIZARD object is not a wizard");
+                }
+            }
+        }
     }
 }
 

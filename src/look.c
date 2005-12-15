@@ -1131,19 +1131,19 @@ char *name;
 	     * Check for forwarding 
 	     */
 
-	    if (H_Fwdlist(i)) {
-		fp = fwdlist_get(i);
-		if (!fp)
-		    continue;
-		for (j = 0; j < fp->count; j++) {
-		    if (fp->data[j] != thing)
-			continue;
-		    exit = unparse_object(player, i, 0);
-		    notify(player, tprintf("%s [forward]", exit));
-		    free_lbuf(exit);
-		    count++;
-		}
-	    }
+        if (H_Fwdlist(i)) {
+            fp = fwdlist_get(i);
+            if (!fp)
+                continue;
+            for (j = 0; j < fp->count; j++) {
+                if (fp->data[j] != thing)
+                    continue;
+                exit = unparse_object(player, i, 0);
+                notify(player, tprintf("%s [forward]", exit));
+                free_lbuf(exit);
+                count++;
+            }
+        }
 	}
     }
     free_lbuf(message);
