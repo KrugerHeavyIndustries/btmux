@@ -74,7 +74,6 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/set.o         \
                  src/speech.o      \
 @SQLCHILD@
-                 src/strhandler.o  \
                  src/stringutil.o  \
                  src/timer.o       \
                  src/unparse.o     \
