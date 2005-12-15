@@ -2,7 +2,7 @@
 
 CC             = @CC@
 MAKEDEPEND     = @CC@ -MM
-CFLAGS         = -g -Wall -Wno-unused
+CFLAGS         = -Wall -Wno-unused --std=gnu99
 CPPFLAGS	   = @CPPFLAGS@	
 INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
 LIBS           = @LIBS@
@@ -12,10 +12,10 @@ VERSION_FLAGS  = -DMUX_BUILD_DATE="\"`date`\""              \
                  -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
 ifdef DEBUG
 VERSION_FLAGS += -DSVN_REVISION="\"`svnversion .`\""
-CFLAGS 	      += -DDEBUG
+CFLAGS 	      += -g3 -DDEBUG
 OBJSUFFIX      = .debug
 else
-CFLAGS        += -O3
+CFLAGS        += -g -O3
 OBJSUFFIX      =
 endif
 
@@ -49,7 +49,6 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/functions.o   \
                  src/game.o        \
                  src/help.o        \
-                 src/htab.o        \
                  src/log.o         \
 @LOGCACHE@
                  src/look.o        \
@@ -58,7 +57,9 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/match.o       \
                  src/mguests.o     \
                  src/move.o        \
+				 src/nametab.o     \
                  src/netcommon.o   \
+				 src/nrbtab.o      \
                  src/object.o      \
                  src/player.o      \
 				 src/player_c.o    \
@@ -67,7 +68,8 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/python.o      \
                  src/regexp.o      \
 				 src/rbtree.o	   \
-                 src/rob.o         \
+                 src/rbtab.o	   \
+				 src/rob.o         \
                  src/set.o         \
                  src/speech.o      \
 @SQLCHILD@

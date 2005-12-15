@@ -110,7 +110,7 @@ static void muxevent_wakeup(int fd, short event, void *arg) {
 
 void muxevent_add(int time, int flags, int type, void (*func) (MUXEVENT *),
         void *data, void *data2) {
-    MUXEVENT *e = 0xDEADBEEF;
+    MUXEVENT *e = (MUXEVENT *)0xDEADBEEF;
     struct timeval tv = { 0, 0};
 
     int i, spot;

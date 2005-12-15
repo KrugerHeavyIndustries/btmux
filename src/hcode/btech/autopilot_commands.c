@@ -2532,10 +2532,10 @@ void auto_command_roam(AUTO *autopilot, MECH *mech) {
  */
 void auto_roam_generate_target_hex(AUTO *autopilot, MECH *mech, MAP *map, int attempt) {
 
-    short start_hex_x;
-    short start_hex_y;
-    short target_hex_x;
-    short target_hex_y;
+    short start_hex_x = 0;
+    short start_hex_y = 0;
+    short target_hex_x = 0;
+    short target_hex_y = 0;
     float x1, y1, x2, y2;
     float range;
     int bearing;

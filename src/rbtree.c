@@ -46,6 +46,7 @@ typedef struct rbtree_node_t {
     void *key;
     void *data;
     int color;
+    int count;
 } rbtree_node;
 
 typedef struct rbtree_head_t {
@@ -135,6 +136,35 @@ static rbtree_node *rb_find_predecessor_node(rbtree_node *node) {
     return NULL;
 }
 
+void rb_release(rbtree bt, void (*release)(void *, void *, void *), void *arg) {
+    rbtree_node *node, *parent;
+    node = bt->head;
+
+    if(bt->head) {
+        while(node != NULL) {
+            if(node->left != NULL) {
+                node = node->left;
+                continue;
+            } else if(node->right != NULL) {
+                node = node->right;
+                continue;
+            } else {
+                parent = node->parent;
+                if(parent && parent->left == node) parent->left = NULL;
+                else if(parent && parent->right == node) parent->right = NULL;
+                else if(parent) {
+                    fprintf(stderr, "serious braindamage.\n");
+                    exit(1);
+                }
+                release(node->key, node->data, arg);
+                free(node);
+                node = parent;
+            }
+        }
+    }
+    free(bt);
+    return;
+}
 
 void rb_destroy(rbtree bt) {
     rbtree_node *node, *parent;
@@ -172,6 +202,7 @@ static rbtree_node *rb_allocate(rbtree_node *parent, void *key, void *data) {
     temp->parent = parent;
     temp->key = key;
     temp->data = data;
+    temp->count = 1;
     return temp;
 }
 
@@ -180,7 +211,7 @@ static void rb_rotate_right(rbtree bt, rbtree_node *pivot) {
 
     if(!pivot || !pivot->left) return;
     child = pivot->left;
-    
+
     pivot->left = child->right;
     if(child->right != NULL)
         child->right->parent = pivot;
@@ -195,6 +226,8 @@ static void rb_rotate_right(rbtree bt, rbtree_node *pivot) {
     } else bt->head = child;
     child->right = pivot;
     pivot->parent = child;
+    child->count = pivot->count;
+    pivot->count = 1 + (pivot->left?pivot->left->count:0) + (pivot->right?pivot->right->count:0);
 }
 
 static void rb_rotate_left(rbtree bt, rbtree_node *pivot) {
@@ -217,6 +250,8 @@ static void rb_rotate_left(rbtree bt, rbtree_node *pivot) {
     } else bt->head = child;
     child->left = pivot;
     pivot->parent = child;
+    child->count = pivot->count;
+    pivot->count = 1 + (pivot->left?pivot->left->count:0) + (pivot->right?pivot->right->count:0);
 }
 
 
@@ -261,6 +296,12 @@ void rb_insert(rbtree bt, void *key, void *data) {
                 break;
             }
         }
+    }
+
+    iter = node->parent;
+    while(iter) {
+        iter->count++;
+        iter = iter->parent;
     }
 
     node->color = NODE_RED;
@@ -403,7 +444,7 @@ int rb_exists(rbtree bt, void *key) {
 #define rbfail(format, args...) do { printf("%d: " format "\n", __LINE__, ##args); abort(); } while (0)
 
 static void rb_unlink_leaf(rbtree bt, rbtree_node *leaf) {
-    rbtree_node *child=NULL, *sibling=NULL, *node;
+    rbtree_node *sibling=NULL, *node;
 
     node=leaf;
 
@@ -586,7 +627,7 @@ done:
 }
 
 void *rb_delete(rbtree bt, void *key) {
-    rbtree_node *node = NULL, *child = NULL;
+    rbtree_node *node = NULL, *child = NULL, *tail;
     void *data;
     int compare_result;
 
@@ -644,6 +685,11 @@ void *rb_delete(rbtree bt, void *key) {
 
     // our child has at most one child (or none.)
     if(node->left == NULL || node->right == NULL) {
+        tail = node;
+        while(tail) {
+            tail->count--;
+            tail = tail->parent;
+        }
         rb_unlink_leaf(bt, node);
         free(node);
         return data;
@@ -653,7 +699,11 @@ void *rb_delete(rbtree bt, void *key) {
     // without empty children.
 
     child=rb_find_successor_node(node);
-
+    tail = child;
+    while(tail) {
+        tail->count--;
+        tail = tail->parent;
+    }
     rb_unlink_leaf(bt, child);
 
     node->data = child->data;
@@ -793,4 +843,26 @@ void *rb_search(rbtree bt, int method, void *key) {
     }
 
     return NULL;
+}
+
+
+void *rb_index(rbtree bt, int index) {
+    rbtree_node *iter;
+    int leftcount;
+    iter = bt->head;
+
+    while(iter) {
+        leftcount = (iter->left?iter->left->count:0);
+
+        if(index == leftcount) {
+            return iter->data;
+        }
+        if(index < leftcount ) {
+            iter = iter->left;
+        } else {
+            index -= leftcount+1;
+            iter = iter->right;
+        }
+    }
+    rbfail("major braindamage.");
 }

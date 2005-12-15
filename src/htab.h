@@ -4,9 +4,10 @@
 /* $Id: htab.h,v 1.3 2005/08/08 09:43:07 murrayma Exp $ */
 
 #include "copyright.h"
-
+#include "rbtab.h"
 #ifndef __HTAB_H
 #define __HTAB_H
+#if 0
 
 #include "config.h"
 #include "db.h"
@@ -110,5 +111,5 @@ extern NAMETAB powers_nametab[];
 #define nhashinit(h,s) hashinit((HASHTAB *)h, s)
 #define nhashreset(h) hashreset((HASHTAB *)h)
 #define nhashinfo(t,h) hashinfo(t,(HASHTAB *)h)
-
+#endif
 #endif

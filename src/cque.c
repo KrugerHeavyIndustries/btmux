@@ -28,12 +28,12 @@ extern int QueueMax(dbref);
 
 static rbtree obq = NULL;
 
-static int objqe_compare(dbref left, dbref right) {
+static int objqe_compare(dbref left, dbref right, void *arg) {
     return (right-left);
 }
 
 int cque_init() {
-    obq = rb_init(objqe_compare, NULL);
+    obq = rb_init((void *)objqe_compare, NULL);
     return 1;
 };
 
@@ -45,7 +45,7 @@ static OBJQE *cque_find(dbref player) {
     }
 
    
-    tmp = rb_find(obq, player);
+    tmp = rb_find(obq, (void *)player);
 
     if(!tmp && Good_obj(player)) {
         dprintk("allocating new queue for %d", player);
@@ -57,7 +57,7 @@ static OBJQE *cque_find(dbref player) {
         tmp->queued = 0;
         tmp->wait_que = NULL;
         tmp->pending_que = NULL;
-        rb_insert(obq, player, tmp);
+        rb_insert(obq, (void *)player, tmp);
     }
 
     return tmp;
@@ -174,7 +174,7 @@ int halt_que(dbref player, dbref object) {
     
     pque = cque_find(player);
     if(pque && pque->cque) {
-        while((point = cque_deque(pque)) != NULL) {
+        while((point = cque_deque(player)) != NULL) {
             free(point->text);
             point->text = NULL;
             free_qentry(point);
@@ -184,7 +184,7 @@ int halt_que(dbref player, dbref object) {
     }
     pque = cque_find(object);
     if(pque && pque->cque) {
-        while((point = cque_deque(pque)) != NULL) {
+        while((point = cque_deque(object)) != NULL) {
             free(point->text);
             point->text = NULL;
             free_qentry(point);

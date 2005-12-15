@@ -350,199 +350,199 @@ void PrintShortInfo(dbref player, MECH * mech)
 
 #define HEAT_LEVEL_NONE 27
 
-static char *MakeHeatScaleInfo(MECH * mech, char *fillchar)
+static char *MakeHeatScaleInfo(MECH * mech, char *fillchar, char *heatstr, int length)
 {
-    static char heatstr[128];
     int counter = 0, heat = MechPlusHeat(mech), minheat =
-	MechMinusHeat(mech), start = 0;
+        MechMinusHeat(mech), start = 0;
     char state = 1;
 
-    memset(heatstr, 0, sizeof(char) * 128);
+    memset(heatstr, 0, sizeof(char) * length);
 
     strcat(heatstr, "%cx%ch");
 
     if (minheat > HEAT_LEVEL_NONE)
-	start = minheat - HEAT_LEVEL_NONE;
+        start = minheat - HEAT_LEVEL_NONE;
 
     if (heat <= start) {
-	heat = 0;
-	state = 0;
+        heat = 0;
+        state = 0;
     } else
-	heat -= start;
+        heat -= start;
 
     if (start)
-	strcat(heatstr, "<%cx%ch");
+        strcat(heatstr, "<%cx%ch");
     else
-	strcat(heatstr, " %cx%ch");
+        strcat(heatstr, " %cx%ch");
 
     for (counter = start; counter < minheat; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%cg%ch|%c%cg");
     for (; counter < minheat + HEAT_LEVEL_BGREEN; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%ch");
     for (; counter < minheat + HEAT_LEVEL_LYELLOW; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%c%cy%ch|%c%cy");
     for (; counter < minheat + HEAT_LEVEL_BYELLOW; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%ch");
     for (; counter < minheat + HEAT_LEVEL_LRED; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%c%cr%ch|%c%cr");
     for (; counter < minheat + HEAT_LEVEL_BRED; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     if (state)
-	state++;
+        state++;
 
     strcat(heatstr, "%ch");
     for (; counter < minheat + HEAT_LEVEL_TOP; counter++) {
-	strncat(heatstr, &fillchar[(short) state], 1);
-	if (heat && !--heat)
-	    state = 0;
+        strncat(heatstr, &fillchar[(short) state], 1);
+        if (heat && !--heat)
+            state = 0;
     }
     strcat(heatstr, "%cw%ch|%c");
     return heatstr;
 }
 
-void PrintInfoStatus(dbref player, MECH * mech, int own)
-{
+void PrintInfoStatus(dbref player, MECH * mech, int own) {
     char buff[256];
+    char subbuff[256];
     char heatstr[9] = ".:::::::";
     MECH *tempMech;
     int f;
     char *tmpstr;
 
     switch (MechType(mech)) {
-    case CLASS_MECH:
-	sprintf(buff,
-	    "X, Y, Z:%3d,%3d,%3d  Excess Heat:  %3d deg C.  Heat Production:  %3d deg C.",
-	    MechX(mech), MechY(mech), MechZ(mech),
-	    (int) (10. * MechHeat(mech)),
-	    (int) (10. * MechPlusHeat(mech)));
-	notify(player, buff);
-	sprintf(buff,
-	    "Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg     Heat Sinks:       %3d",
-	    (int) (MechSpeed(mech)), MechFacing(mech),
-	    MechActiveNumsinks(mech));
-	notify(player, buff);
-	sprintf(buff,
-	    "Des. Speed: %3d KPH  Des. Heading: %3d deg     Heat Dissipation: %3d deg C.",
-	    (int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
-	    (int) (10. * MechMinusHeat(mech)));
-	notify(player, buff);
-	tmpstr = silly_atr_get(player, A_HEATCHARS);
-	if (!tmpstr || !strlen(tmpstr) ||
-	    sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-		&heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-		&heatstr[6], &heatstr[7]) == 8) {
-	    sprintf(buff, "Temp:%s", MakeHeatScaleInfo(mech, heatstr));
-	    notify(player, buff);
-	}
-	if (MechLateral(mech))
-	    notify(player, tprintf("You are moving laterally %s",
-		    LateralDesc(mech)));
-	break;
-    case CLASS_VEH_GROUND:
-    case CLASS_VEH_NAVAL:
-    case CLASS_VTOL:
-    case CLASS_AERO:
-    case CLASS_DS:
-    case CLASS_SPHEROID_DS:
-	sprintf(buff,
-	    "X, Y, Z:%3d,%3d,%3d  Heat Sinks:          %3d       %s",
-	    MechX(mech), MechY(mech), MechZ(mech),
-	    MechActiveNumsinks(mech),
-	    is_aero(mech) ? tprintf("%s angle: %%ch%%cg%d%%cn",
-		MechDesiredAngle(mech) >= 0 ? "Climbing" : "Diving",
-		abs(MechDesiredAngle(mech))
-	    ) : "");
-	notify(player, buff);
-	if (FlyingT(mech) || MechMove(mech) == MOVE_SUB) {
-	    sprintf(buff,
-		"Speed:      %%ch%%cg%3d%%cn KPH  Vertical Speed:      %%ch%%cg%3d%%cn KPH   Des. Speed %3d KPH",
-		(int) (MechSpeed(mech)), (int) (MechVerticalSpeed(mech)),
-		(int) (MechDesiredSpeed(mech)));
-	    notify(player, buff);
-	    f = MAX(0, AeroFuel(mech));
-	    if (MechMove(mech) == MOVE_SUB) {
-		sprintf(buff, "Heading: %3d KPH  Des. Heading: %3d deg",
-		    (int) MechFacing(mech), MechDesiredFacing(mech));
-	    } else if (AeroFreeFuel(mech)) {
-		sprintf(buff,
-		    "Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: Unlimited",
-		    MechFacing(mech), MechDesiredFacing(mech));
-	    } else {
-		sprintf(buff,
-		    "Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: %d (%.2f %%)",
-		    MechFacing(mech), MechDesiredFacing(mech), f,
-		    100.0 * f / AeroFuelOrig(mech));
-	    }
+        case CLASS_MECH:
+            snprintf(buff, 256, 
+                    "X, Y, Z:%3d,%3d,%3d  Excess Heat:  %3d deg C.  Heat Production:  %3d deg C.",
+                    MechX(mech), MechY(mech), MechZ(mech),
+                    (int) (10. * MechHeat(mech)),
+                    (int) (10. * MechPlusHeat(mech)));
+            notify(player, buff);
+            snprintf(buff, 256, 
+                    "Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg     Heat Sinks:       %3d",
+                    (int) (MechSpeed(mech)), MechFacing(mech),
+                    MechActiveNumsinks(mech));
+            notify(player, buff);
+            sprintf(buff,
+                    "Des. Speed: %3d KPH  Des. Heading: %3d deg     Heat Dissipation: %3d deg C.",
+                    (int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
+                    (int) (10. * MechMinusHeat(mech)));
+            notify(player, buff);
+            tmpstr = silly_atr_get(player, A_HEATCHARS);
+            if (!tmpstr || !strlen(tmpstr) ||
+                    sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
+                        &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
+                        &heatstr[6], &heatstr[7]) == 8) {
+                MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
+                snprintf(buff, 256, "Temp:%s", subbuff);
+                notify(player, buff);
+            }
+            if (MechLateral(mech))
+                notify(player, tprintf("You are moving laterally %s",
+                            LateralDesc(mech)));
+            break;
+        case CLASS_VEH_GROUND:
+        case CLASS_VEH_NAVAL:
+        case CLASS_VTOL:
+        case CLASS_AERO:
+        case CLASS_DS:
+        case CLASS_SPHEROID_DS:
+            snprintf(buff, 256, 
+                    "X, Y, Z:%3d,%3d,%3d  Heat Sinks:          %3d       %s",
+                    MechX(mech), MechY(mech), MechZ(mech),
+                    MechActiveNumsinks(mech),
+                    is_aero(mech) ? tprintf("%s angle: %%ch%%cg%d%%cn",
+                        MechDesiredAngle(mech) >= 0 ? "Climbing" : "Diving",
+                        abs(MechDesiredAngle(mech))
+                        ) : "");
+            notify(player, buff);
+            if (FlyingT(mech) || MechMove(mech) == MOVE_SUB) {
+                sprintf(buff,
+                        "Speed:      %%ch%%cg%3d%%cn KPH  Vertical Speed:      %%ch%%cg%3d%%cn KPH   Des. Speed %3d KPH",
+                        (int) (MechSpeed(mech)), (int) (MechVerticalSpeed(mech)),
+                        (int) (MechDesiredSpeed(mech)));
+                notify(player, buff);
+                f = MAX(0, AeroFuel(mech));
+                if (MechMove(mech) == MOVE_SUB) {
+                    sprintf(buff, "Heading: %3d KPH  Des. Heading: %3d deg",
+                            (int) MechFacing(mech), MechDesiredFacing(mech));
+                } else if (AeroFreeFuel(mech)) {
+                    sprintf(buff,
+                            "Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: Unlimited",
+                            MechFacing(mech), MechDesiredFacing(mech));
+                } else {
+                    sprintf(buff,
+                            "Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: %d (%.2f %%)",
+                            MechFacing(mech), MechDesiredFacing(mech), f,
+                            100.0 * f / AeroFuelOrig(mech));
+                }
 
-	    notify(player, buff);
-	} else if (MechMove(mech) != MOVE_NONE) {
-	    sprintf(buff,
-		"Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
-		(int) (MechSpeed(mech)), MechFacing(mech));
-	    notify(player, buff);
-	    sprintf(buff, "Des. Speed: %3d KPH  Des. Heading: %3d deg",
-		(int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
-	    notify(player, buff);
+                notify(player, buff);
+            } else if (MechMove(mech) != MOVE_NONE) {
+                sprintf(buff,
+                        "Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
+                        (int) (MechSpeed(mech)), MechFacing(mech));
+                notify(player, buff);
+                sprintf(buff, "Des. Speed: %3d KPH  Des. Heading: %3d deg",
+                        (int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
+                notify(player, buff);
 
-	}
-	ShowTurretFacing(player, 0, mech);
-	break;
-    case CLASS_MW:
-    case CLASS_BSUIT:
-	sprintf(buff,
-	    "X, Y, Z:%3d,%3d,%3d  Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
-	    MechX(mech), MechY(mech), MechZ(mech), (int) (MechSpeed(mech)),
-	    MechFacing(mech));
-	notify(player, buff);
-	sprintf(buff,
-	    "                     Des. Speed: %3d KPH  Des. Heading: %3d deg",
-	    (int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
-	notify(player, buff);
-	break;
+            }
+            ShowTurretFacing(player, 0, mech);
+            break;
+        case CLASS_MW:
+        case CLASS_BSUIT:
+            sprintf(buff,
+                    "X, Y, Z:%3d,%3d,%3d  Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
+                    MechX(mech), MechY(mech), MechZ(mech), (int) (MechSpeed(mech)),
+                    MechFacing(mech));
+            notify(player, buff);
+            sprintf(buff,
+                    "                     Des. Speed: %3d KPH  Des. Heading: %3d deg",
+                    (int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
+            notify(player, buff);
+            break;
     }
     DisplayTarget(player, mech);
     if (MechCarrying(mech) > 0)
-	if ((tempMech = getMech(MechCarrying(mech))))
-	    notify(player, tprintf("Towing %s.", GetMechToMechID(mech,
-			tempMech)));
+        if ((tempMech = getMech(MechCarrying(mech))))
+            notify(player, tprintf("Towing %s.", GetMechToMechID(mech,
+                            tempMech)));
 }
 
 /* Status commands! */
@@ -553,98 +553,100 @@ void mech_status(dbref player, void *data, char *buffer)
     int i;
     int usex = 0;
     char buf[LBUF_SIZE];
+    char subbuff[256];
 
     doweird = 0;
     cch(MECH_USUALSM);
     if (!buffer || !strlen(buffer))
-	doweap = doinfo = doarmor = 1;
+        doweap = doinfo = doarmor = 1;
     else {
-	for (loop = 0; buffer[loop]; loop++) {
-	    switch (toupper(buffer[loop])) {
-	    case 'R':
-		doweap = doinfo = doarmor = usex = 1;
-		break;
-	    case 'A':
-		if (toupper(buffer[loop + 1]) == 'R')
-		    while (buffer[loop + 1] && buffer[loop + 1] != ' ')
-			loop++;
-		doarmor = 1;
-		break;
-	    case 'I':
-		doinfo = 1;
-		if (toupper(buffer[loop + 1]) == 'N')
-		    while (buffer[loop + 1] && buffer[loop + 1] != ' ')
-			loop++;
-		break;
-	    case 'W':
-		doweap = 1;
-		if (toupper(buffer[loop + 1]) == 'E')
-		    while (buffer[loop + 1] && buffer[loop + 1] != ' ')
-			loop++;
-		break;
-	    case 'N':
-		doweird = 1;
-		break;
-	    case 'S':
-		doshort = 1;
-		break;
-	    case 'H':
-		doheat = 1;
-		break;
-	    }
-	}
+        for (loop = 0; buffer[loop]; loop++) {
+            switch (toupper(buffer[loop])) {
+                case 'R':
+                    doweap = doinfo = doarmor = usex = 1;
+                    break;
+                case 'A':
+                    if (toupper(buffer[loop + 1]) == 'R')
+                        while (buffer[loop + 1] && buffer[loop + 1] != ' ')
+                            loop++;
+                    doarmor = 1;
+                    break;
+                case 'I':
+                    doinfo = 1;
+                    if (toupper(buffer[loop + 1]) == 'N')
+                        while (buffer[loop + 1] && buffer[loop + 1] != ' ')
+                            loop++;
+                    break;
+                case 'W':
+                    doweap = 1;
+                    if (toupper(buffer[loop + 1]) == 'E')
+                        while (buffer[loop + 1] && buffer[loop + 1] != ' ')
+                            loop++;
+                    break;
+                case 'N':
+                    doweird = 1;
+                    break;
+                case 'S':
+                    doshort = 1;
+                    break;
+                case 'H':
+                    doheat = 1;
+                    break;
+            }
+        }
     }
     if (doshort) {
-	PrintShortInfo(player, mech);
-	return;
+        PrintShortInfo(player, mech);
+        return;
     }
     if (doweird) {
-	sprintf(buf, "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
-	    MechType_Name(mech), MechTons(mech),
-	    (int) (MechMaxSpeed(mech) / MP1) * 2 / 3,
-	    (int) (MechMaxSpeed(mech) / MP1),
-	    (int) (MechJumpSpeed(mech) / MP1), MechActiveNumsinks(mech));
-	weirdbuf = buf;
+        sprintf(buf, "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
+                MechType_Name(mech), MechTons(mech),
+                (int) (MechMaxSpeed(mech) / MP1) * 2 / 3,
+                (int) (MechMaxSpeed(mech) / MP1),
+                (int) (MechJumpSpeed(mech) / MP1), MechActiveNumsinks(mech));
+        weirdbuf = buf;
     } else if (!doheat || (doarmor | doinfo | doweap))
-	PrintGenericStatus(player, mech, 1, usex);
+        PrintGenericStatus(player, mech, 1, usex);
     if (doarmor) {
-	if (!doweird) {
-	    PrintArmorStatus(player, mech, 1);
-	    notify(player, " ");
-	} else {
-	    for (i = 0; i < NUM_SECTIONS; i++)
-		if (GetSectOArmor(mech, i)) {
-		    if (GetSectORArmor(mech, i))
-			sprintf(buf + strlen(buf), "%d|%d|%d ",
-			    GetSectOArmor(mech, i), GetSectOInt(mech, i),
-			    GetSectORArmor(mech, i));
-		    else
-			sprintf(buf + strlen(buf), "%d|%d ",
-			    GetSectOArmor(mech, i), GetSectOInt(mech, i));
-		}
-	}
+        if (!doweird) {
+            PrintArmorStatus(player, mech, 1);
+            notify(player, " ");
+        } else {
+            for (i = 0; i < NUM_SECTIONS; i++)
+                if (GetSectOArmor(mech, i)) {
+                    if (GetSectORArmor(mech, i))
+                        sprintf(buf + strlen(buf), "%d|%d|%d ",
+                                GetSectOArmor(mech, i), GetSectOInt(mech, i),
+                                GetSectORArmor(mech, i));
+                    else
+                        sprintf(buf + strlen(buf), "%d|%d ",
+                                GetSectOArmor(mech, i), GetSectOInt(mech, i));
+                }
+        }
     }
     if (doinfo && !doweird) {
-	PrintInfoStatus(player, mech, 1);
-	notify(player, " ");
+        PrintInfoStatus(player, mech, 1);
+        notify(player, " ");
     }
     if (doheat && !doinfo && MechType(mech) == CLASS_MECH) {
-	char *tmpstr, heatstr[9] = ".:::::::";
+        char *tmpstr, heatstr[9] = ".:::::::";
 
-	tmpstr = silly_atr_get(player, A_HEATCHARS);
-	if (!tmpstr || !strlen(tmpstr) ||
-	    sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-		&heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-		&heatstr[6], &heatstr[7]) == 8) {
-	    sprintf(buf, "Temp:%s", MakeHeatScaleInfo(mech, heatstr));
-	    notify(player, buf);
-	}
+        tmpstr = silly_atr_get(player, A_HEATCHARS);
+        if (!tmpstr || !strlen(tmpstr) ||
+                sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
+                    &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
+                    &heatstr[6], &heatstr[7]) == 8) {
+            MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
+            sprintf(buf, "Temp:%s", subbuff);
+            notify(player, buf);
+        }
     }
 
     if (doweap)
-	PrintWeaponStatus(mech, player);
+        PrintWeaponStatus(mech, player);
     if (doweird)
-	notify(player, buf);
+        notify(player, buf);
 }
 
 void mech_critstatus(dbref player, void *data, char *buffer)

@@ -212,10 +212,10 @@
 #define WhichBit(hex_offset) ((hex_offset) & 7)
 
 #define CheckHexBit(array, offset) (array[WhichByte(offset)] & (1 << WhichBit(offset)) ? 1 : 0)
-#define SetHexBit(array, offset) (array[offset >> 3] = \
-        array[offset >> 3] | (1 << (offset & 7)))
-#define ClearHexBit(array, offset) (array[offset >> 3] = \
-        array[offset >> 3] & ~(1 << (offset & 7)))
+#define SetHexBit(array, offset) do { array[offset >> 3] = \
+        array[offset >> 3] | (1 << (offset & 7)); } while (0)
+#define ClearHexBit(array, offset) do { array[offset >> 3] = \
+        array[offset >> 3] & ~(1 << (offset & 7)); } while (0)
 
 #ifdef DEBUG_AUTOGUN
     #define print_autogun_log(autopilot, args...) \
