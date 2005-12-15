@@ -24,7 +24,6 @@
 #include "create.h"
 #include "p.mech.utils.h"
 #include "p.mine.h"
-#include "scen.h"
 #include "p.btechstats.h"
 
 #define FIRESPEED(map) (MAX(20,60 - map->windspeed))
@@ -1065,7 +1064,6 @@ static void damage_cf(MECH * mech, mapobj * o, int from, int to,
 	destroy = 1;
     from -= damage;
     set_building_cf(o->obj, from, to);
-    scen_see_base(FindObjectsData(mech->mapindex), mech, o);
     if (destroy) {
 	mech_notify(mech, MECHALL,
 	    tprintf("You hit %s for %d points of damage, destroying it!",
@@ -1076,7 +1074,6 @@ static void damage_cf(MECH * mech, mapobj * o, int from, int to,
 		MyToUpper(structure_name(o)), damage));
 	MechLOSBroadcast(mech, tprintf("hits %s, destroying it!",
 		structure_name(o), damage));
-	scen_destroy_base(FindObjectsData(mech->mapindex), mech, o);
 	start_regen = 2;
     } else {
 	mech_notify(mech, MECHALL,
@@ -1085,7 +1082,6 @@ static void damage_cf(MECH * mech, mapobj * o, int from, int to,
 	notify_except(o->obj, NOTHING, o->obj,
 	    tprintf("%s is hit for %d points of damage.",
 		MyToUpper(structure_name(o)), damage));
-	scen_damage_base(FindObjectsData(mech->mapindex), mech, o);
     }
     if (start_regen)
 	possibly_start_building_regen(o->obj);
@@ -1186,7 +1182,6 @@ void steppable_base_check(MECH * mech, int x, int y)
 	return;
     mech_notify(mech, MECHALL, tprintf("%s has CF of %d.",
 	    MyToUpper(structure_name(o)), nmap->cf));
-    scen_see_base(map, mech, o);
 }
 
 void show_building_in_hex(MECH * mech, int x, int y)
@@ -1219,7 +1214,6 @@ void show_building_in_hex(MECH * mech, int x, int y)
     }
     mech_notify(mech, MECHALL, tprintf("%s's CF is %d.",
 	    MyToUpper(structure_name(o)), nmap->cf));
-    scen_see_base(map, mech, o);
 }
 
 int obj_size(MAP * map)

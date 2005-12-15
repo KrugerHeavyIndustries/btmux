@@ -25,7 +25,6 @@
 #define MINE_VIBRA    4
 #define MINE_TRIGGER  5		/* Same as vibra, except shows _no_ message,
 				   and doesn't get destroyed */
-#define MINE_STRIGGER 6		/* Same as trigger, except doesn't broadcast anywhere */
-#define VIBRO(a)      (a == MINE_VIBRA || a == MINE_TRIGGER || a == MINE_STRIGGER)
+#define VIBRO(a)      (a == MINE_VIBRA || a == MINE_TRIGGER)
 
 #endif				/* MINE_H */

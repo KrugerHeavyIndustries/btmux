@@ -27,7 +27,6 @@
 #include "mycool.h"
 #include "turret.h"
 #include "mech.custom.h"
-#include "scen.h"
 #include "p.template.h"
 #include "p.mech.tech.h"
 #include "p.mech.utils.h"
@@ -68,9 +67,6 @@ static MECH tmpm;
 static MAP tmpmap;
 static TURRET_T tmpturret;
 static CUSTOM tmpcustom;
-static SCEN tmpscen;
-static SSIDE tmpsside;
-static SSOBJ tmpssobj;
 
 enum { TYPE_STRING, TYPE_CHAR, TYPE_SHORT, TYPE_INT, TYPE_FLOAT,
     TYPE_DBREF, TYPE_STRFUNC, TYPE_STRFUNC_S, TYPE_BV,
@@ -106,18 +102,6 @@ static int scode_in_out[TYPE_LAST_TYPE] =
 #define UglieC(dat) (void *)&((CUSTOM *)0)->dat
 #define CuEntry(Name,Func,Type) {GTYPE_CUSTOM,Name,UglieC(Func),Type,0}
 #define CuEntryS(Name,Func,Type,Size) {GTYPE_CUSTOM,Name,UglieC(Func),Type,Size}
-
-#define UglieScen(dat) (void *)&((SCEN *)0)->dat
-#define SEntry(Name,Func,Type) {GTYPE_SCEN,Name,UglieScen(Func),Type,0}
-#define SEntryS(Name,Func,Type,Size) {GTYPE_SCEN,Name,UglieScen(Func),Type,Size}
-
-#define UglieSside(dat) (void *)&((SSIDE *)0)->dat
-#define SSEntry(Name,Func,Type) {GTYPE_SSIDE,Name,UglieSside(Func),Type,0}
-#define SSEntryS(Name,Func,Type,Size) {GTYPE_SSIDE,Name,UglieSside(Func),Type,Size}
-
-#define UglieSsobj(dat) (void *)&((SSOBJ *)0)->dat
-#define SSOEntry(Name,Func,Type) {GTYPE_SSOBJ,Name,UglieSsobj(Func),Type,0}
-#define SSOEntryS(Name,Func,Type,Size) {GTYPE_SSOBJ,Name,UglieSsobj(Func),Type,Size}
 
 
 char *mechIDfunc(int mode, MECH * mech)
@@ -515,7 +499,6 @@ static GMV xcode_data[] = {
     MaEntry("cf", cf, TYPE_SHORT),
     MaEntry("cfmax", cfmax, TYPE_SHORT),
     MaEntry("gravity", grav, TYPE_CHAR),
-    MaEntry("maxcf", cfmax, TYPE_SHORT),
     MaEntry("firstfree", first_free, TYPE_CHAR_RO),
     MaEntry("mapheight", map_height, TYPE_SHORT_RO),
     MaEntry("maplight", maplight, TYPE_CHAR),
@@ -543,13 +526,6 @@ static GMV xcode_data[] = {
     CuEntry("user", user, TYPE_DBREF),
     CuEntry("submit", submit, TYPE_DBREF),
     CuEntry("allow", allow, TYPE_INT),
-
-    SEntry("state", state, TYPE_INT),
-    SEntry("start", start_t, TYPE_INT),
-    SEntry("end", end_t, TYPE_INT),
-
-    SSEntryS("slet", slet, TYPE_STRING, 10),
-    SSOEntry("state", state, TYPE_INT),
 
     MeEntry("radio", MechRadio, TYPE_CHAR),
     MeEntry("computer", MechComputer, TYPE_CHAR),

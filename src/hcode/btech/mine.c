@@ -34,7 +34,6 @@
 #include "mine.h"
 #include "p.artillery.h"
 #include "p.map.obj.h"
-#include "scen.h"
 #include "p.mine.h"
 #include "p.mech.utils.h"
 #include "p.btechstats.h"
@@ -101,10 +100,10 @@ void make_mine_explode(MECH * mech, MAP * map, mapobj * o, int x, int y,
 {
     int cool = (o->datas >= MINE_MIN);
 
-    if ((o->datac == MINE_TRIGGER || o->datac == MINE_STRIGGER)
+    if ((o->datac == MINE_TRIGGER)
             && reason != MINE_STEP && reason != MINE_LAND)
         return;
-    if (o->datac != MINE_TRIGGER && o->datac != MINE_STRIGGER) {
+    if (o->datac != MINE_TRIGGER) {
         if (o->datac != MINE_COMMAND) {
             switch (reason) {
                 case MINE_STEP:
@@ -153,9 +152,6 @@ void make_mine_explode(MECH * mech, MAP * map, mapobj * o, int x, int y,
         case MINE_TRIGGER:
             SendTrigger(tprintf("#%d %s activated trigger at %d,%d.",
                         mech->mynum, GetMechID(mech), o->x, o->y));
-            return;
-        case MINE_STRIGGER:
-            scen_trigger_mine(map, mech, o->x, o->y);
             return;
         case MINE_VIBRA:
             unset_hex_mine(map, o->x, o->y);

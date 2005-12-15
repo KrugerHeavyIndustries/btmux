@@ -104,7 +104,6 @@ typedef struct SpecialObjectStruct {
 #include "p.mine.h"
 #include "mech.custom.h"
 #include "p.mech.custom.h"
-#include "scen.h"
 #include "p.btechstats.h"
 #include "autopilot.h"
 #include "p.events.h"
@@ -911,19 +910,6 @@ CommandsStruct turretcommands[] = {
     {0, NULL, NULL, NULL}
 };
 
-CommandsStruct scencommands[] = {
-    {0, "@SETXCODE <NAME> <VALUE|DATA>", "@Sets xcode value on object",
-	set_xcodestuff},
-    {0, "@VIEWXCODE", "@Views xcode values on object", list_xcodestuff},
-    {0, "ENGAGE", "Starts the scenario", scen_start},
-    {0, "END", "Ends the scenario", scen_end},
-
-    {0, "STATUS [SIDE]",
-	"Reports status of the scenario [/for one side]", scen_status},
-    {0, NULL, NULL, NULL}
-};
-
-
 ECMD(debug_makemechs);
 ECMD(debug_memory);
 ECMD(debug_setvrt);
@@ -987,11 +973,6 @@ SpecialObjectStruct SpecialObjects[] = {
     LINE_NU("AUTOPILOT", autopilotcommands, AUTO, auto_newautopilot, POW_SECURITY),
     LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
     LINE_NU("CUSTOM", customcommands, struct custom_struct, newfreecustom, POW_MECHREP),
-    LINE_NFS("SCEN", scencommands, SCEN, POW_SECURITY),
-    LINE_NFS("SSIDE", sscommands, SSIDE, POW_SECURITY),
-    LINE_NFS("SSOBJ", sscommands, SSOBJ, POW_SECURITY),
-    LINE_NFS("SSINS", sscommands, SSINS, POW_SECURITY),
-    LINE_NFS("SSEXT", sscommands, SSEXT, POW_SECURITY)
 };
 
 #define NUM_SPECIAL_OBJECTS \

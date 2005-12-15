@@ -172,7 +172,6 @@ BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/mechrep.o                  \
                  src/hcode/btech/mine.o                     \
                  src/hcode/btech/pcombat.o                  \
-                 src/hcode/btech/scen.o                     \
                  src/hcode/btech/template.o                 \
 
 ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
