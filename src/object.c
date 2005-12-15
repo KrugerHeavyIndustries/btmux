@@ -234,8 +234,8 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 	if (okname) {
 	    okname = (lookup_player(NOTHING, buff, 0) == NOTHING);
 	    if (!okname) {
-		notify(player, tprintf("The name %s is already taken.",
-			name));
+		notify_printf(player, "The name %s is already taken.",
+			name);
 		free_lbuf(buff);
 		return NOTHING;
 	    }
@@ -407,21 +407,21 @@ void destroy_obj(dbref player, dbref obj)
 	    add_quota(owner, quota);
 
 	if (!Quiet(owner) && !Quiet(obj))
-	    notify(owner,
-		tprintf("You get back your %d %s deposit for %s(#%d).",
-		    val, mudconf.one_coin, Name(obj), obj));
+	    notify_printf(owner,
+		"You get back your %d %s deposit for %s(#%d).",
+		    val, mudconf.one_coin, Name(obj), obj);
     }
 
     if ((player != NOTHING) && !Quiet(player)) {
 	if (good_owner && Owner(player) != owner) {
 	    if (owner == obj) {
-		notify(player, tprintf("Destroyed. %s(#%d)", Name(obj),
-			obj));
+		notify_printf(player, "Destroyed. %s(#%d)", Name(obj),
+			obj);
 	    } else {
 		tname = alloc_sbuf("destroy_obj");
 		StringCopy(tname, Name(owner));
-		notify(player, tprintf("Destroyed. %s's %s(#%d)", tname,
-			Name(obj), obj));
+		notify_printf(player, "Destroyed. %s's %s(#%d)", tname,
+			Name(obj), obj);
 		free_sbuf(tname);
 	    }
 	} else if (!Quiet(obj)) {
@@ -688,8 +688,8 @@ static void check_dead_refs(void)
                 owner = Owner(i);
 
                 if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-                    notify(owner, tprintf("Parent cleared on %s(#%d)",
-                                Name(i), i));
+                    notify_printf(owner, "Parent cleared on %s(#%d)",
+                                Name(i), i);
                 }
             }
         } else if (targ != NOTHING) {
@@ -707,8 +707,8 @@ static void check_dead_refs(void)
                 s_Zone(i, NOTHING);
                 owner = Owner(i);
                 if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-                    notify(owner, tprintf("Zone cleared on %s(#%d)",
-                                Name(i), i));
+                    notify_printf(owner, "Zone cleared on %s(#%d)",
+                                Name(i), i);
                 }
             }
         } else if (targ != NOTHING) {
@@ -733,8 +733,8 @@ static void check_dead_refs(void)
                         s_Home(i, new_home(i));
                         owner = Owner(i);
                         if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-                            notify(owner, tprintf("Home reset on %s(#%d)",
-                                        Name(i), i));
+                            notify_printf(owner, "Home reset on %s(#%d)",
+                                        Name(i), i);
                         }
                     }
                 } else if (targ != NOTHING) {
@@ -789,9 +789,9 @@ static void check_dead_refs(void)
                         s_Dropto(i, NOTHING);
                         owner = Owner(i);
                         if (Good_owner(owner) && !Quiet(i) && !Quiet(owner)) {
-                            notify(owner,
-                                    tprintf("Dropto removed from %s(#%d)", Name(i),
-                                        i));
+                            notify_printf(owner,
+                                    "Dropto removed from %s(#%d)", Name(i),
+                                        i);
                         }
                     }
                 } else if ((targ != NOTHING) && (targ != HOME)) {
@@ -1423,8 +1423,8 @@ static void check_floating(void)
 	if (isRoom(i) && !Floating(i) && !Going(i) && !Marked(i)) {
 	    owner = Owner(i);
 	    if (Good_owner(owner)) {
-		notify(owner, tprintf("You own a floating room: %s(#%d)",
-			Name(i), i));
+		notify_printf(owner, "You own a floating room: %s(#%d)",
+			Name(i), i);
 	    }
 	}
     }

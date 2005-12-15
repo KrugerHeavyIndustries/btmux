@@ -177,7 +177,7 @@ int decode_power(dbref player, char *powername, POWERSET *pset)
 
     pent = (POWERENT *) hashfind(powername, &mudstate.powers_htab);
     if (!pent) {
-	notify(player, tprintf("%s: Power not found.", powername));
+	notify_printf(player, "%s: Power not found.", powername);
 	return 0;
     }
     if (pent->powerpower & POWER_EXT)
@@ -362,7 +362,7 @@ void decompile_powers(dbref player, dbref thing, char *thingname)
 	 * We made it this far, report this power 
 	 */
 
-	notify(player, tprintf("@power %s=%s", strip_ansi(thingname),
-		fp->powername));
+	notify_printf(player, "@power %s=%s", strip_ansi(thingname),
+		fp->powername);
     }
 }

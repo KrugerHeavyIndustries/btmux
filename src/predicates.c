@@ -331,12 +331,12 @@ int canpayfees(dbref player, dbref who, int pennies, int quota)
     if (!Wizard(who) && !Wizard(Owner(who)) && !Free_Money(who) &&
 	!Free_Money(Owner(who)) && (Pennies(Owner(who)) < pennies)) {
 	if (player == who) {
-	    notify(player, tprintf("Sorry, you don't have enough %s.",
-		    mudconf.many_coins));
+	    notify_printf(player, "Sorry, you don't have enough %s.",
+		    mudconf.many_coins);
 	} else {
-	    notify(player,
-		tprintf("Sorry, that player doesn't have enough %s.",
-		    mudconf.many_coins));
+	    notify_printf(player,
+		"Sorry, that player doesn't have enough %s.",
+		    mudconf.many_coins);
 	}
 	return 0;
     }
@@ -632,7 +632,7 @@ void do_addcommand(dbref player, dbref cause, int key, char *name,
 	for (nextp = (ADDENT *) old->handler; nextp != NULL;
 	    nextp = nextp->next) {
 	    if ((nextp->thing == thing) && (nextp->atr == atr)) {
-		notify(player, tprintf("%s already added.", name));
+		notify_printf(player, "%s already added.", name);
 		return;
 	    }
 	}
@@ -682,7 +682,7 @@ void do_addcommand(dbref player, dbref cause, int key, char *name,
     /* We reset the one letter commands here so you can overload them */
 
     set_prefix_cmds();
-    notify(player, tprintf("%s added.", name));
+    notify_printf(player, "%s added.", name);
 }
 
 void do_listcommands(dbref player, dbref cause, int key, char *name)
@@ -709,13 +709,13 @@ void do_listcommands(dbref player, dbref cause, int key, char *name)
 
 	    for (nextp = (ADDENT *) old->handler; nextp != NULL;
 		nextp = nextp->next) {
-		notify(player, tprintf("%s: #%d/%s", nextp->name,
+		notify_printf(player, "%s: #%d/%s", nextp->name,
 			nextp->thing,
-			((ATTR *) atr_num(nextp->atr))->name));
+			((ATTR *) atr_num(nextp->atr))->name);
 	    }
 	} else {
-	    notify(player, tprintf("%s not found in command table.",
-		    name));
+	    notify_printf(player, "%s not found in command table.",
+		    name);
 	}
 	return;
     } else {
@@ -731,9 +731,9 @@ void do_listcommands(dbref player, dbref cause, int key, char *name)
 		    nextp = nextp->next) {
 		    if (strcmp(keyname, nextp->name))
 			continue;
-		    notify(player, tprintf("%s: #%d/%s", nextp->name,
+		    notify_printf(player, "%s: #%d/%s", nextp->name,
 			    nextp->thing,
-			    ((ATTR *) atr_num(nextp->atr))->name));
+			    ((ATTR *) atr_num(nextp->atr))->name);
 		    didit = 1;
 		}
 	    }

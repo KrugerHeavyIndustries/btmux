@@ -148,21 +148,20 @@ void record_login(dbref player, int isgood, char *ldate, char *lhost,
     if (isgood) {
 	if (login_info.new_bad > 0) {
 	    notify(player, "");
-	    notify(player,
-		tprintf
-		("**** %d failed connect%s since your last successful connect. ****",
+	    notify_printf(player,
+		"**** %d failed connect%s since your last successful connect. ****",
 		    login_info.new_bad,
-		    (login_info.new_bad == 1 ? "" : "s")));
-	    notify(player,
-		tprintf("Most recent attempt was from %s on %s.",
-		    login_info.bad[0].host, login_info.bad[0].dtm));
+		    (login_info.new_bad == 1 ? "" : "s"));
+	    notify_printf(player,
+		"Most recent attempt was from %s on %s.",
+		    login_info.bad[0].host, login_info.bad[0].dtm);
 	    notify(player, "");
 	    login_info.new_bad = 0;
 	}
 	if (login_info.good[0].host && *login_info.good[0].host &&
 	    login_info.good[0].dtm && *login_info.good[0].dtm) {
-	    notify(player, tprintf("Last connect was from %s on %s.",
-		    login_info.good[0].host, login_info.good[0].dtm));
+	    notify_printf(player, "Last connect was from %s on %s.",
+		    login_info.good[0].host, login_info.good[0].dtm);
 	}
 	if (mudconf.have_mailer)
 	    check_mail(player, 0, 0);
@@ -338,8 +337,8 @@ void do_password(dbref player, dbref cause, int key, char *oldpass,
 static void disp_from_on(dbref player, char *dtm_str, char *host_str)
 {
     if (dtm_str && *dtm_str && host_str && *host_str) {
-	notify(player, tprintf("     From: %s   On: %s", dtm_str,
-		host_str));
+	notify_printf(player, "     From: %s   On: %s", dtm_str,
+		host_str);
     }
 }
 
@@ -366,14 +365,14 @@ void do_last(dbref player, dbref cause, int key, char *who)
 	atrbuf = atr_get(target, A_LOGINDATA, &aowner, &aflags);
 	decrypt_logindata(atrbuf, &login_info);
 
-	notify(player, tprintf("Total successful connects: %d",
-		login_info.tot_good));
+	notify_printf(player, "Total successful connects: %d",
+		login_info.tot_good);
 	for (i = 0; i < NUM_GOOD; i++) {
 	    disp_from_on(player, login_info.good[i].host,
 		login_info.good[i].dtm);
 	}
-	notify(player, tprintf("Total failed connects: %d",
-		login_info.tot_bad));
+	notify_printf(player, "Total failed connects: %d",
+		login_info.tot_bad);
 	for (i = 0; i < NUM_BAD; i++) {
 	    disp_from_on(player, login_info.bad[i].host,
 		login_info.bad[i].dtm);
