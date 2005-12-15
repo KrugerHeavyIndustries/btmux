@@ -1,10 +1,5 @@
-
 /*
  * netcommon.c 
- */
-
-/*
- * $Id: netcommon.c,v 1.7 2005/08/08 10:30:11 murrayma Exp $ 
  */
 
 /*
@@ -77,9 +72,7 @@ void make_portlist(dbref player, dbref target, char *buff, char **bufc) {
  * * timeval_sub: return difference between two times as a timeval
  */
 
-struct timeval timeval_sub(now, then)
-    struct timeval now, then;
-
+struct timeval timeval_sub(struct timeval now, struct timeval then)
 {
     now.tv_sec -= then.tv_sec;
     now.tv_usec -= then.tv_usec;
@@ -658,7 +651,7 @@ static void announce_connect(dbref player, DESC *d) {
     buf = atr_get(player, A_LPAGE, &aowner, &aflags);
     if (buf && *buf) {
         raw_notify(player,
-                "Your PAGE LOCK is set.  You may be unable to receive some pages.");
+                "Your PAGE LOCK is set. You may be unable to receive some pages.");
     }
     num = 0;
     DESC_ITER_PLAYER(player, dtemp) num++;
@@ -1287,28 +1280,26 @@ void do_doing(dbref player, dbref cause, int key, char *arg) {
             *c = '\0';
         }
         if (over) {
-            notify(player, tprintf("Warning: %d characters lost.", over));
+            notify_printf(player, "Warning: %d characters lost.", over);
         }
         if (!Quiet(player))
             notify(player, "Set.");
     } else {
-        notify(player, tprintf("Poll: %s", mudstate.doing_hdr));
+        notify_printf(player, "Poll: %s", mudstate.doing_hdr);
     }
 }
-/* *INDENT-OFF* */
 
 NAMETAB logout_cmdtable[] = {
-    {(char *)"DOING",	5,	CA_PUBLIC,	CMD_DOING},
-    {(char *)"LOGOUT",	6,	CA_PUBLIC,	CMD_LOGOUT},
-    {(char *)"OUTPUTPREFIX",12,	CA_PUBLIC,	CMD_PREFIX|CMD_NOxFIX},
-    {(char *)"OUTPUTSUFFIX",12,	CA_PUBLIC,	CMD_SUFFIX|CMD_NOxFIX},
-    {(char *)"QUIT",	4,	CA_PUBLIC,	CMD_QUIT},
-    {(char *)"SESSION",	7,	CA_PUBLIC,	CMD_SESSION},
+    {(char *)"DOING",		5,	CA_PUBLIC,	CMD_DOING},
+    {(char *)"LOGOUT",		6,	CA_PUBLIC,	CMD_LOGOUT},
+    {(char *)"OUTPUTPREFIX",	12,	CA_PUBLIC,	CMD_PREFIX|CMD_NOxFIX},
+    {(char *)"OUTPUTSUFFIX",	12,	CA_PUBLIC,	CMD_SUFFIX|CMD_NOxFIX},
+    {(char *)"QUIT",		4,	CA_PUBLIC,	CMD_QUIT},
+    {(char *)"SESSION",		7,	CA_PUBLIC,	CMD_SESSION},
     {(char *)"WHO",		3,	CA_PUBLIC,	CMD_WHO},
-    {(char *)"PUEBLOCLIENT", 12,	CA_PUBLIC,      CMD_PUEBLOCLIENT},
+    {(char *)"PUEBLOCLIENT", 	12,	CA_PUBLIC,      CMD_PUEBLOCLIENT},
     {NULL,			0,	0,		0}};
 
-/* *INDENT-ON* */
 
 void init_logout_cmdtab(void) {
     NAMETAB *cp;
@@ -1358,9 +1349,9 @@ static void failconn(const char *logcode, const char *logtype, const char *logre
 }
 
 static const char *connect_fail =
-"Either that player does not exist, or has a different password.\r\n";
+    "Either that player does not exist, or has a different password.\r\n";
 static const char *create_fail =
-"Either there is already a player with that name, or that name is illegal.\r\n";
+    "Either there is already a player with that name, or that name is illegal.\r\n";
 
 static int check_connect(DESC *d, char *msg) {
     char *command, *user, *password, *buff, *cmdsave;
