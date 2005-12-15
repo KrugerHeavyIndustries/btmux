@@ -1,10 +1,5 @@
-
 /*
  * move.c -- Routines for moving about 
- */
-
-/*
- * $Id: move.c,v 1.2 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -25,9 +20,8 @@
  * * a place.
  */
 
-static void process_leave_loc(thing, dest, cause, canhear, hush)
-dbref thing, dest, cause;
-int canhear, hush;
+static void process_leave_loc(dbref thing, dbref dest, dbref cause, 
+    int canhear, int hush)
 {
     dbref loc;
     int quiet, pattr, oattr, aattr;
@@ -89,10 +83,8 @@ int canhear, hush;
  * * process_enter_loc: Generate messages and actions resulting from entering
  * * a place.
  */
-
-static void process_enter_loc(thing, src, cause, canhear, hush)
-dbref thing, src, cause;
-int canhear, hush;
+static void process_enter_loc(dbref thing, dbref src, dbref cause, 
+    int canhear, int hush)
 {
     dbref loc;
     int quiet, pattr, oattr, aattr;
@@ -144,8 +136,7 @@ int canhear, hush;
  * * Does not generate any messages or actions.
  */
 
-void move_object(thing, dest)
-dbref thing, dest;
+void move_object(dbref thing, dbref dest)
 {
     dbref src;
 
@@ -183,7 +174,7 @@ dbref thing, dest;
 	(Pennies(thing) < mudconf.paylimit) && (!Controls(thing, dest)) &&
 	((random() % mudconf.payfind) == 0)) {
 	giveto(thing, 1);
-	notify(thing, tprintf("You found a %s!", mudconf.one_coin));
+	notify_printf(thing, "You found a %s!", mudconf.one_coin);
     }
 }
 
@@ -197,8 +188,7 @@ dbref thing, dest;
  * send_dropto: Send an object through the dropto of a room 
  */
 
-static void send_dropto(thing, player)
-dbref thing, player;
+static void send_dropto(dbref thing, dbref player)
 {
     if (!Sticky(thing))
 	move_via_generic(thing, Dropto(Location(thing)), player, 0);
@@ -213,8 +203,7 @@ dbref thing, player;
  * * we should empty the room
  */
 
-static void process_sticky_dropto(loc, player)
-dbref loc, player;
+static void process_sticky_dropto(dbref loc, dbref player)
 {
     dbref dropto, thing, next;
 
@@ -256,8 +245,7 @@ dbref loc, player;
  * process_dropped_dropto: Check what to do when someone drops an object. 
  */
 
-static void process_dropped_dropto(thing, player)
-dbref thing, player;
+static void process_dropped_dropto(dbref thing, dbref player)
 {
     dbref loc;
 
@@ -285,9 +273,7 @@ dbref thing, player;
  * * actions.
  */
 
-void move_via_generic(thing, dest, cause, hush)
-dbref thing, dest, cause;
-int hush;
+void move_via_generic(dbref thing, dbref dest, dbref cause, int hush)
 {
     dbref src;
     int canhear;
@@ -308,9 +294,7 @@ int hush;
  * * move_via_exit: Exit move routine, generic + exit messages + dropto check.
  */
 
-void move_via_exit(thing, dest, cause, exit, hush)
-dbref thing, dest, cause, exit;
-int hush;
+void move_via_exit(dbref thing, dbref dest, dbref cause, dbref exit, int hush)
 {
     dbref src;
     int canhear, darkwiz, quiet, pattr, oattr, aattr;
@@ -357,9 +341,7 @@ int hush;
  * * divestiture + dropto check.
  */
 
-int move_via_teleport(thing, dest, cause, hush)
-dbref thing, dest, cause;
-int hush;
+int move_via_teleport(dbref thing, dbref dest, dbref cause, int hush)
 {
     dbref src, curr;
     int canhear, count;
@@ -411,10 +393,8 @@ int hush;
  * * move_exit: Try to move a player through an exit.
  */
 
-void move_exit(player, exit, divest, failmsg, hush)
-dbref player, exit;
-int divest, hush;
-const char *failmsg;
+void move_exit(dbref player, dbref exit, int divest, const char *failmsg, 
+    int hush)
 {
     dbref loc;
     int oattr, aattr;
@@ -461,10 +441,7 @@ const char *failmsg;
  * * do_move: Move from one place to another via exits or 'home'.
  */
 
-void do_move(player, cause, key, direction)
-dbref player, cause;
-int key;
-char *direction;
+void do_move(dbref player, dbref cause, int key, char *direction)
 {
     dbref exit, loc;
     int i, quiet;
@@ -527,10 +504,7 @@ char *direction;
  * * do_get: Get an object.
  */
 
-void do_get(player, cause, key, what)
-dbref player, cause;
-int key;
-char *what;
+void do_get(dbref player, dbref cause, int key, char *what)
 {
     dbref thing, playerloc, thingloc;
     char *failmsg;
@@ -597,8 +571,8 @@ char *what;
 	    notify(player, "You cannot get yourself!");
 	} else if (could_doit(player, thing, A_LOCK)) {
 	    if (thingloc != Location(player)) {
-		notify(thingloc, tprintf("%s was taken from you.",
-			Name(thing)));
+		notify_printf(thingloc, "%s was taken from you.",
+			Name(thing));
 	    }
 	    move_via_generic(thing, player, player, 0);
 	    notify(thing, "Taken.");
@@ -657,10 +631,7 @@ char *what;
  * * do_drop: Drop an object.
  */
 
-void do_drop(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_drop(dbref player, dbref cause, int key, char *name)
 {
     dbref loc, exitloc, thing;
     char *buf, *bp;
@@ -758,9 +729,7 @@ char *name;
  * * do_enter, do_leave: The enter and leave commands.
  */
 
-void do_enter_internal(player, thing, quiet)
-dbref player, thing;
-int quiet;
+void do_enter_internal(dbref player, dbref thing, int quiet)
 {
     dbref loc = Location(player);
     int oattr, aattr;
@@ -791,10 +760,7 @@ int quiet;
     }
 }
 
-void do_enter(player, cause, key, what)
-dbref player, cause;
-int key;
-char *what;
+void do_enter(dbref player, dbref cause, int key, char *what)
 {
     dbref thing;
     int quiet;
@@ -823,9 +789,7 @@ char *what;
     return;
 }
 
-void do_leave(player, cause, key)
-dbref player, cause;
-int key;
+void do_leave(dbref player, dbref cause, int key)
 {
     dbref loc;
     int quiet, oattr, aattr;
