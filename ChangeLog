@@ -203,6 +203,10 @@ btonline-btechmux 0.6:
 	* OBSERVATORIC units don't see the 'You notice blah blah' or
           'You have lost' LOS messages. These are redundant since they
           see all and can't lose LOS. (Greg)
+	* If a location got flooded, the ammo in it became unfirable
+          and undumpable, but still exploded if critted or overheated.
+          Ammo destroyed by flooding is now set to 0 rounds in addition
+          to disabling the slot. (Fitz)
 
 btonline-btechmux 0.4:
 	- Changes

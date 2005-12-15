@@ -198,6 +198,9 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 		DestroyPart(wounded, hitloc, i);
 
 	    critType = GetPartType(wounded, hitloc, i);
+	    if (IsAmmo(critType)) {
+		GetPartData(wounded, hitloc, i) = 0;
+	    }
 	    if (IsSpecial(critType)) {
 		switch (Special2I(critType)) {
 		case UPPER_ACTUATOR:
