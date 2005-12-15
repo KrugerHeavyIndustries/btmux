@@ -2259,54 +2259,6 @@ static void list_vattrs(dbref player)
     free_lbuf(buff);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * * list_hashstats: List information from hash tables
- */
-void list_hashstat(dbref player, const char *tab_name, HASHTAB *htab)
-{
-    char *buff;
-
-    buff = hashinfo(tab_name, htab);
-    raw_notify(player, buff);
-    free_mbuf(buff);
-}
-
-static void list_nhashstat(dbref player, const char *tab_name, NHSHTAB *htab)
-{
-    char *buff;
-
-    buff = nhashinfo(tab_name, htab);
-    raw_notify(player, buff);
-    free_mbuf(buff);
-}
-
-static void list_hashstats(dbref player)
-{
-    raw_notify(player,
-            "Hash Stats        Size     Entries     Deleted       Empty     Lookups        Hits      Checks     Longest");
-    list_hashstat(player, "Commands", &mudstate.command_htab);
-    list_hashstat(player, "Logged-out Cmds", &mudstate.logout_cmd_htab);
-    list_hashstat(player, "Functions", &mudstate.func_htab);
-    list_hashstat(player, "Flags", &mudstate.flags_htab);
-    list_hashstat(player, "Powers", &mudstate.powers_htab);
-    list_hashstat(player, "Attr names", &mudstate.attr_name_htab);
-    list_hashstat(player, "Vattr names", &mudstate.vattr_name_htab);
-    list_hashstat(player, "Player Names", &mudstate.player_htab);
-    //list_nhashstat(player, "Net Descriptors", &mudstate.desc_htab);
-    list_nhashstat(player, "Forwardlists", &mudstate.fwdlist_htab);
-    list_nhashstat(player, "Overlaid $-cmds", &mudstate.parent_htab);
-    list_nhashstat(player, "Mail messages", &mudstate.mail_htab);
-    list_hashstat(player, "Channel names", &mudstate.channel_htab);
-    list_hashstat(player, "Macro cmds", &mudstate.macro_htab);
-    list_hashstat(player, "News topics", &mudstate.news_htab);
-    list_hashstat(player, "Help topics", &mudstate.help_htab);
-    list_hashstat(player, "Wizhelp topics", &mudstate.wizhelp_htab);
-    list_hashstat(player, "+Help topics", &mudstate.plushelp_htab);
-    list_hashstat(player, "Wiznews topics", &mudstate.wiznews_htab);
-    list_fhashstats(player);
-    list_chashstats(player);
-}
 
 /*
  * ---------------------------------------------------------------------------
@@ -2443,7 +2395,6 @@ NAMETAB list_names[] = {
     {(char *)"flags",		2,	CA_PUBLIC,	LIST_FLAGS},
     {(char *)"functions",		2,	CA_PUBLIC,	LIST_FUNCTIONS},
     {(char *)"globals",		1,	CA_WIZARD,	LIST_GLOBALS},
-    {(char *)"hashstats",		1,	CA_WIZARD,	LIST_HASHSTATS},
     {(char *)"logging",		4,	CA_GOD,		LIST_LOGGING},
     {(char *)"options",		1,	CA_PUBLIC,	LIST_OPTIONS},
     {(char *)"permissions",		2,	CA_WIZARD,	LIST_PERMS},
@@ -2479,9 +2430,6 @@ void do_list(dbref player, dbref cause, int extra, char *arg) {
             break;
         case LIST_OPTIONS:
             list_options(player);
-            break;
-        case LIST_HASHSTATS:
-            list_hashstats(player);
             break;
         case LIST_SITEINFO:
             list_siteinfo(player);

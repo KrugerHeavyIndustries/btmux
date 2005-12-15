@@ -31,22 +31,6 @@
 extern HASHTAB playervaluehash;
 extern HASHTAB playervaluehash2;
 
-void list_hashstat(dbref player, const char *tab_name, HASHTAB * htab);
-
-void list_fhashstats(dbref player)
-{
-#if 0
-    int i;
-
-    for (i = 0; factions[i].name; i++)
-	if (factions[i].factnewshash)
-	    list_hashstat(player, tprintf("FNews:%s", factions[i].key),
-		factions[i].factnewshash);
-#endif
-    list_hashstat(player, "PValues", &playervaluehash);
-    list_hashstat(player, "PValues(S)", &playervaluehash2);
-}
-
 #define IsHCO(ref) WizP(ref)
 
 void do_show(dbref player, dbref cause, int key, char *arg1, char *arg2)

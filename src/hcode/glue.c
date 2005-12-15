@@ -1467,16 +1467,6 @@ void mecha_notify_except(dbref loc, dbref player, dbref exception,
     }
 }
 
-void list_chashstats(dbref player)
-{
-    int i;
-
-    for (i = 0; i < NUM_SPECIAL_OBJECTS; i++)
-	list_hashstat(player, tprintf("HCCmd:%s", SpecialObjects[i].type),
-	    &SpecialCommandHash[i]);
-    list_phashstats(player);
-}
-
 /* 
    Basically, finish all the repairs etc in one fell swoop. That's the
    best we can do for now, I'm afraid. 

@@ -98,12 +98,6 @@ static int create_brandname(int id, int b)
 
 static HASHTAB short_hash, vlong_hash;
 
-void list_phashstats(dbref player)
-{
-    list_hashstat(player, "Part:Short", &short_hash);
-    list_hashstat(player, "Part:VLong", &vlong_hash);
-}
-
 void initialize_partname_tables()
 {
     int i, j, c = 0, m, n;

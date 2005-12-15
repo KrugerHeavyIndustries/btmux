@@ -188,6 +188,9 @@ debug:
 install-debug:
 	@DEBUG=1 make install
 
+mudflap:
+	$(CC) -g3 -DDEBUG -DSVN_REVISION="\"`svnversion .`\"" $(ALLFLAGS) $(VERSION_FLAGS) -fmudflap -o src/netmux.mudflap $(ALLSRCS) src/version.c $(LIBS) -lmudflap
+
 release all: Makefile $(TARGETS)
 
 Makefile: Makefile.dist configure.in Makefile.in
