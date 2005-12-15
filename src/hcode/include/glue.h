@@ -830,33 +830,6 @@ CommandsStruct customcommands[] = {
 #endif
 };
 
-#ifdef MENU_CHARGEN
-#include "coolmenu_interface.h"
-ECOMMANDSET(cm);
-#endif
-
-CommandsStruct chargencommands[] = {
-#ifdef MENU_CHARGEN
-    GCOMMANDSET(cm) {0, "DONE", "Finishes your chargen (permanent)",
-	chargen_done},
-    {0, "BEGIN", "Starts chargen", chargen_begin},
-    {0, "NEXT", "Goes to next stage of chargen", chargen_next},
-    {0, "PREV", "Goes to previous stage of chargen", chargen_prev},
-
-    {0, "APPLY",
-	    "Applies the values to your character (fixes them, only reset/done can be done after)",
-	chargen_apply},
-    {0, "RESET", "Resets your stats and lets you begin again",
-	chargen_reset},
-    {0, "L", "Shows menu", chargen_look},
-    {0, "LO", "Shows menu", chargen_look},
-    {0, "LOO", "Shows menu", chargen_look},
-    {0, "LOOK", "Shows menu", chargen_look},
-    {0, "STATUS", "Shows menu", chargen_look},
-    {0, "HELP", "Shows help for chargen", chargen_help},
-#endif
-    {0, NULL, NULL, NULL}
-};
 
 CommandsStruct autopilotcommands[] = {
     {0, "ENGAGE", "Engages the autopilot", auto_engage},
@@ -1011,7 +984,6 @@ SpecialObjectStruct SpecialObjects[] = {
     LINE_ND("DEBUG", debugcommands, POW_SECURITY),
     LINE_NU("MECHREP", mechrepcommands, struct mechrep_data, newfreemechrep, POW_MECHREP),
     LINE("MAP", mapcommands, MAP, newfreemap, LOS_TICK, map_update, POW_MAP),
-    LINE_ND("CHARGEN", chargencommands, POW_SECURITY),
     LINE_NU("AUTOPILOT", autopilotcommands, AUTO, auto_newautopilot, POW_SECURITY),
     LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
     LINE_NU("CUSTOM", customcommands, struct custom_struct, newfreecustom, POW_MECHREP),

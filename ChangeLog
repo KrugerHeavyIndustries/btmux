@@ -138,6 +138,7 @@ btonline-btechmux 0.6:
 	  of initially being hit. After the roll is made, knock 10 off the
 	  unit's staggerdamage. Old interval was 30, little bit too
 	  delayed. (Fitz)
+	* CHARGEN XTYPE has been removed. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

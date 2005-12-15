@@ -1980,8 +1980,3 @@ int btthreshold_func(char *skillname)
 	return -1;
     return char_values[code].xpthreshold;
 }
-
-
-#ifdef MENU_CHARGEN
-#include "chargen.c"
-#endif

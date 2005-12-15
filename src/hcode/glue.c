@@ -827,7 +827,7 @@ void CreateNewSpecialObject(dbref player, dbref key)
 	notify(player,
 	    "You must first set the XTYPE using @xtype <object>=<type>");
 	notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
-	    "CHARGEN, AUTOPILOT, TURRET, CUSTOM, SCEN, SSIDE, SSOBJ, "
+	    "AUTOPILOT, TURRET, CUSTOM, SCEN, SSIDE, SSOBJ, "
 	    "SSINS, SSEXT");
 	notify(player, "Resetting hardcode flag.");
 	c_Hardcode(key);	/* Reset the flag */
@@ -847,7 +847,7 @@ void CreateNewSpecialObject(dbref player, dbref key)
     } else {
 	notify(player, "That is not a valid XTYPE!");
 	notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
-	    "CHARGEN, AUTOPILOT, TURRET, CUSTOM, SCEN, SSIDE, SSOBJ, "
+	    "AUTOPILOT, TURRET, CUSTOM, SCEN, SSIDE, SSOBJ, "
 	    "SSINS, SSEXT");
 	notify(player, "Resetting HARDCODE flag.");
 	c_Hardcode(key);
