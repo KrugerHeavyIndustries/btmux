@@ -837,9 +837,9 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause,
                 *buf1++ = '\0';
             xkey = search_nametab(player, cmdp->switches, switchp);
             if (xkey == -1) {
-                notify(player,
-                        tprintf("Unrecognized switch '%s' for command '%s'.",
-                            switchp, cmdp->cmdname));
+                notify_printf(player,
+                        "Unrecognized switch '%s' for command '%s'.",
+                            switchp, cmdp->cmdname);
                 return;
             } else if (xkey == -2) {
                 notify(player, "Permission denied.");
@@ -858,8 +858,8 @@ void process_cmdent(CMDENT *cmdp, char *switchp, dbref player, dbref cause,
             hasswitch = 1;
         } while (buf1);
     } else if (switchp && !(cmdp->callseq & CS_ADDED)) {
-        notify(player, tprintf("Command %s does not take switches.",
-                    cmdp->cmdname));
+        notify_printf(player, "Command %s does not take switches.",
+                    cmdp->cmdname);
         return;
     }
     /*
@@ -1131,9 +1131,9 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
 
     if (Going(player) || (Halted(player) &&
                 !((Typeof(player) == TYPE_PLAYER) && interactive))) {
-        notify(Owner(player),
-                tprintf("Attempt to execute command by halted object #%d",
-                    player));
+        notify_printf(Owner(player),
+                "Attempt to execute command by halted object #%d",
+                    player);
         mudstate.debug_cmd = cmdsave;
         goto exit;
     }
@@ -1172,7 +1172,7 @@ void process_command(dbref player, dbref cause, int interactive, char *command, 
     mudstate.lock_nest_lev = 0;
 
     if (Verbose(player))
-        notify(Owner(player), tprintf("%s] %s", Name(player), command));
+        notify_printf(Owner(player), "%s] %s", Name(player), command);
 
     /*
      * Eat leading whitespace, and space-compress if configured 
@@ -1956,14 +1956,14 @@ static void list_costs(dbref player) {
     *buff = '\0';
     if (mudconf.quotas)
         sprintf(buff, " and %d quota", mudconf.room_quota);
-    notify(player, tprintf("Digging a room costs %d %s%s.",
-                mudconf.digcost, coin_name(mudconf.digcost), buff));
+    notify_printf(player, "Digging a room costs %d %s%s.",
+                mudconf.digcost, coin_name(mudconf.digcost), buff);
     if (mudconf.quotas)
         sprintf(buff, " and %d quota", mudconf.exit_quota);
-    notify(player, tprintf("Opening a new exit costs %d %s%s.",
-                mudconf.opencost, coin_name(mudconf.opencost), buff));
-    notify(player, tprintf("Linking an exit, home, or dropto costs %d %s.",
-                mudconf.linkcost, coin_name(mudconf.linkcost)));
+    notify_printf(player, "Opening a new exit costs %d %s%s.",
+                mudconf.opencost, coin_name(mudconf.opencost), buff);
+    notify_printf(player, "Linking an exit, home, or dropto costs %d %s.",
+                mudconf.linkcost, coin_name(mudconf.linkcost));
     if (mudconf.quotas)
         sprintf(buff, " and %d quota", mudconf.thing_quota);
     if (mudconf.createmin == mudconf.createmax)
@@ -1976,8 +1976,8 @@ static void list_costs(dbref player) {
                     buff));
     if (mudconf.quotas)
         sprintf(buff, " and %d quota", mudconf.player_quota);
-    notify(player, tprintf("Creating a robot costs %d %s%s.",
-                mudconf.robotcost, coin_name(mudconf.robotcost), buff));
+    notify_printf(player, "Creating a robot costs %d %s%s.",
+                mudconf.robotcost, coin_name(mudconf.robotcost), buff);
     if (mudconf.killmin == mudconf.killmax) {
         raw_notify(player,
                 tprintf("Killing costs %d %s, with a %d%% chance of success.",

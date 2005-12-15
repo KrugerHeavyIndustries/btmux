@@ -1,10 +1,5 @@
-
 /*
  * help.c -- commands for giving help 
- */
-
-/*
- * $Id: help.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -37,9 +32,7 @@ struct help_entry {
                          */
 };
 
-int helpindex_read(htab, filename)
-    HASHTAB *htab;
-    char *filename;
+int helpindex_read(HASHTAB *htab, char *filename)
 {
     help_indx entry;
     char *p;
@@ -118,8 +111,7 @@ int helpindex_read(htab, filename)
     return count;
 }
 
-void helpindex_load(player)
-    dbref player;
+void helpindex_load(dbref player)
 {
     int news, help, whelp;
     int phelp, wnhelp;
@@ -130,10 +122,9 @@ void helpindex_load(player)
     help = helpindex_read(&mudstate.help_htab, mudconf.help_indx);
     whelp = helpindex_read(&mudstate.wizhelp_htab, mudconf.whelp_indx);
     if ((player != NOTHING) && !Quiet(player))
-        notify(player,
-                tprintf
-                ("Index entries: News...%d  Help...%d  Wizhelp...%d  +Help...%d  Wiznews...%d",
-                 news, help, whelp, phelp, wnhelp));
+        notify_printf(player,
+                "Index entries: News...%d  Help...%d  Wizhelp...%d  +Help...%d  Wiznews...%d",
+                 news, help, whelp, phelp, wnhelp);
 }
 
 void helpindex_init(void)
@@ -147,11 +138,8 @@ void helpindex_init(void)
     helpindex_load(NOTHING);
 }
 
-void help_write(player, topic, htab, filename, eval)
-    dbref player;
-    char *topic, *filename;
-    HASHTAB *htab;
-    int eval;
+void help_write(dbref player, char *topic, HASHTAB *htab, char *filename, 
+    int eval)
 {
     FILE *fp;
     char *p, *line, *bp, *str, *result;
@@ -184,10 +172,10 @@ void help_write(player, topic, htab, filename, eval)
             }
         }
         if (matched == 0)
-            notify(player, tprintf("No entry for '%s'.", topic));
+            notify_printf(player, "No entry for '%s'.", topic);
         else {
-            notify(player,
-                    tprintf("Here are the entries which match '%s':", topic));
+            notify_printf(player,
+                    "Here are the entries which match '%s':", topic);
             *buffp = '\0';
             notify(player, topic_list);
             free_lbuf(topic_list);
@@ -249,10 +237,7 @@ void help_write(player, topic, htab, filename, eval)
  * * do_help: display information from new-format news and help files
  */
 
-void do_help(player, cause, key, message)
-    dbref player, cause;
-    int key;
-    char *message;
+void do_help(dbref player, dbref cause, int key, char *message)
 {
     char *buf;
 

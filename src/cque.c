@@ -292,8 +292,8 @@ void do_halt(dbref player, dbref cause, int key, char *target) {
     if (numhalted == 1)
         notify(Owner(player), "1 queue entries removed.");
     else
-        notify(Owner(player), tprintf("%d queue entries removed.",
-                    numhalted));
+        notify_printf(Owner(player), "%d queue entries removed.",
+                    numhalted);
 }
 
 /*
@@ -888,7 +888,7 @@ static void show_que(dbref player, int key, BQUE *queue, int *qent, const char *
         if (key == PS_SUMM)
             continue;
         if (*qent == 1)
-            notify(player, tprintf("----- %s Queue -----", header));
+            notify_printf(player, "----- %s Queue -----", header);
         
         bufp = unparse_object(player, tmp->player, 0);
         if ((tmp->waittime > 0) && (Good_obj(tmp->sem)))
@@ -916,7 +916,7 @@ static void show_que(dbref player, int key, BQUE *queue, int *qent, const char *
             }
             *bp = '\0';
             bp = unparse_object(player, tmp->cause, 0);
-            notify(player, tprintf("   Enactor: %s%s", bp, bufp));
+            notify_printf(player, "   Enactor: %s%s", bp, bufp);
             free_lbuf(bp);
         }
         free_lbuf(bufp);
@@ -1031,7 +1031,7 @@ void do_queue(dbref player, dbref cause, int key, char *arg) {
         if (was_disabled)
             mudconf.control_flags &= ~CF_DEQUEUE;
         if (!Quiet(player))
-            notify(player, tprintf("%d commands processed.", ncmds));
+            notify_printf(player, "%d commands processed.", ncmds);
     } else if (key == QUEUE_WARP) {
         i = atoi(arg);
         if ((mudconf.control_flags & CF_DEQUEUE) == 0) {
@@ -1058,12 +1058,11 @@ void do_queue(dbref player, dbref cause, int key, char *arg) {
         if (Quiet(player))
             return;
         if (i > 0)
-            notify(player, tprintf("WaitQ timer advanced %d seconds.", i));
+            notify_printf(player, "WaitQ timer advanced %d seconds.", i);
         else if (i < 0)
-            notify(player, tprintf("WaitQ timer set back %d seconds.", i));
+            notify_printf(player, "WaitQ timer set back %d seconds.", i);
         else
             notify(player, "Object queue appended to player queue.");
 
     }
 }
-

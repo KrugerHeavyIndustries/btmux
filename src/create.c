@@ -413,7 +413,7 @@ void do_dig(dbref player, dbref cause, int key, char *name, char *args[], int na
     if (room == NOTHING)
         return;
 
-    notify(player, tprintf("%s created with room number %d.", name, room));
+    notify_printf(player, "%s created with room number %d.", name, room);
 
     buff = alloc_sbuf("do_dig");
     if ((nargs >= 1) && args[0] && *args[0]) {
@@ -457,8 +457,8 @@ void do_create(dbref player, dbref cause, int key, char *name, char *coststr)
     move_via_generic(thing, player, NOTHING, 0);
     s_Home(thing, new_home(player));
     if (!Quiet(player)) {
-        notify(player, tprintf("%s created as object #%d", Name(thing),
-                    thing));
+        notify_printf(player, "%s created as object #%d", Name(thing),
+                    thing);
     }
 }
 
@@ -590,12 +590,12 @@ void do_clone(dbref player, dbref cause, int key, char *name, char *arg2)
 
     if (!Quiet(player)) {
         if (arg2 && *arg2)
-            notify(player,
-                    tprintf("%s cloned as %s, new copy is object #%d.",
-                        Name(thing), arg2, clone));
+            notify_printf(player,
+                    "%s cloned as %s, new copy is object #%d.",
+                        Name(thing), arg2, clone);
         else
-            notify(player, tprintf("%s cloned, new copy is object #%d.",
-                        Name(thing), clone));
+            notify_printf(player, "%s cloned, new copy is object #%d.",
+                        Name(thing), clone);
     }
     /*
      * Put the new thing in its new home.  Break any dropto or link, then

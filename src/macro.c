@@ -1,10 +1,5 @@
-
 /*
  * macro.c - ported from BattleTech 3056 MUSE 
- */
-
-/*
- * $Id: macro.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -19,7 +14,6 @@
 #include "alloc.h"
 
 extern dbref match_thing(dbref player, char *name);
-
 
 MACENT macro_table[] = {
     {(char *) "add", do_add_macro},
@@ -49,9 +43,7 @@ void init_mactab(void)
 	hashadd(mp->cmdname, (int *) mp, &mudstate.macro_htab);
 }
 
-int do_macro(player, in, out)
-dbref player;
-char *in, **out;
+int do_macro(dbref player, char *in, char **out)
 {
     char *s;
     char *cmd;
@@ -93,9 +85,7 @@ char *in, **out;
 				 */
 }
 
-void do_list_macro(player, s)
-dbref player;
-char *s;
+void do_list_macro(dbref player, char *s)
 {
     int i;
     int notified = 0;
@@ -112,10 +102,10 @@ char *s;
 		notified = 1;
 	    }
 	    unparse = unparse_object(player, m->player, 0);
-	    notify(player, tprintf("%-4d %-35.35s %-24.24s  %c%c%c", i,
+	    notify_printf(player, "%-4d %-35.35s %-24.24s  %c%c%c", i,
 		    m->desc, unparse, m->status & MACRO_L ? 'L' : '-',
 		    m->status & MACRO_R ? 'R' : '-',
-		    m->status & MACRO_W ? 'W' : '-'));
+		    m->status & MACRO_W ? 'W' : '-');
 	    free_lbuf(unparse);
 	}
     }
@@ -124,9 +114,7 @@ char *s;
 	notify(player, "MACRO: There are no macro sets you can read.");
 }
 
-void do_add_macro(player, s)
-dbref player;
-char *s;
+void do_add_macro(dbref player, char *s)
 {
     int first;
     int set;
@@ -150,9 +138,9 @@ char *s;
 	    m = macros[set];
 	    if (can_read_macros(player, m)) {
 		c->macros[first] = set;
-		notify(player,
-		    tprintf("MACRO: Macro set %d added in the %d slot.",
-			set, first));
+		notify_printf(player,
+		    "MACRO: Macro set %d added in the %d slot.",
+			set, first);
 	    } else {
 		notify(player, "MACRO: Permission denied.");
 	    }
@@ -166,9 +154,7 @@ char *s;
     }
 }
 
-void do_del_macro(player, s)
-dbref player;
-char *s;
+void do_del_macro(dbref player, char *s)
 {
     struct commac *c;
     int set;
@@ -179,7 +165,7 @@ char *s;
 	set = atoi(s);
 	if (set >= 0 && set < 5 && c->macros[set] >= 0) {
 	    c->macros[set] = -1;
-	    notify(player, tprintf("MACRO: Macro slot %d cleared.", set));
+	    notify_printf(player, "MACRO: Macro slot %d cleared.", set);
 	    if (set == c->curmac) {
 		c->curmac = -1;
 		notify(player,
@@ -192,9 +178,7 @@ char *s;
 	    "MACRO: What set did you want to delete from your macro system?");
 }
 
-void do_desc_macro(player, s)
-dbref player;
-char *s;
+void do_desc_macro(dbref player, char *s)
 {
     struct macros *m;
 
@@ -203,15 +187,13 @@ char *s;
 	free(m->desc);
 	m->desc = (char *) malloc(strlen(s) + 1);
 	StringCopy(m->desc, s);
-	notify(player, tprintf("MACRO: Current slot description to %s.",
-		s));
+	notify_printf(player, "MACRO: Current slot description to %s.",
+		s);
     } else
 	notify(player, "MACRO: You have no current slot set.");
 }
 
-void do_chmod_macro(player, s)
-dbref player;
-char *s;
+void do_chmod_macro(dbref player, char *s)
 {
     struct macros *m;
     int sign;
@@ -274,9 +256,7 @@ char *s;
 	notify(player, "MACRO: You have no current slot set.");
 }
 
-void do_gex_macro(player, s)
-dbref player;
-char *s;
+void do_gex_macro(dbref player, char *s)
 {
     struct macros *m;
     int which;
@@ -290,10 +270,9 @@ char *s;
     if (is_number(s)) {
 	which = atoi(s);
 	if ((which >= nummacros) || (which < 0) || (nummacros == 0)) {
-	    notify(player,
-		tprintf
-		("MACRO: Illegal Macro Set.  Macros go from 0 to %d.",
-		    nummacros - 1));
+	    notify_printf(player,
+		"MACRO: Illegal Macro Set.  Macros go from 0 to %d.",
+		    nummacros - 1);
 	    return;
 	} else
 	    m = macros[which];
@@ -303,7 +282,7 @@ char *s;
     }
 
     if (m && can_read_macros(player, m)) {
-	notify(player, tprintf("Macro Definitions for %s", m->desc));
+	notify_printf(player, "Macro Definitions for %s", m->desc);
 	for (i = 0; i < m->nummacros; i++) {
 	    sprintf(buffer, "  %-5.5s: %s", m->alias + i * 5,
 		m->string[i]);
@@ -314,9 +293,7 @@ char *s;
 
 }
 
-void do_edit_macro(player, s)
-dbref player;
-char *s;
+void do_edit_macro(dbref player, char *s)
 {
     struct commac *c;
     int set;
@@ -327,16 +304,14 @@ char *s;
 	set = atoi(s);
 	if (set >= 0 && set < 5 && GMac(c->macros[set])) {
 	    c->curmac = set;
-	    notify(player, tprintf("MACRO: Current slot set to %d.", set));
+	    notify_printf(player, "MACRO: Current slot set to %d.", set);
 	} else
 	    notify(player, "MACRO: That is not a legal macro slot.");
     } else
 	notify(player, "MACRO: What slot did you want to make current?");
 }
 
-void do_status_macro(player, s)
-dbref player;
-char *s;
+void do_status_macro(dbref player, char *s)
 {
     int i;
     struct commac *c;
@@ -350,26 +325,24 @@ char *s;
     for (i = 0; i < 5; i++) {
 	if (c->macros[i] >= 0)
 	    if (!(GMac(c->macros[i])))
-		notify(player, tprintf("%d: INVALID MACRO SET!", i));
+		notify_printf(player, "%d: INVALID MACRO SET!", i);
 	    else {
 		m = macros[c->macros[i]];
 		unparse = unparse_object(player, m->player, 0);
-		notify(player,
-		    tprintf("%d: %-4d %-35.35s %-24.24s  %c%c%c", i,
+		notify_printf(player,
+		    "%d: %-4d %-35.35s %-24.24s  %c%c%c", i,
 			c->macros[i], m->desc, unparse,
 			m->status & MACRO_L ? 'L' : '-',
 			m->status & MACRO_R ? 'R' : '-',
-			m->status & MACRO_W ? 'W' : '-'));
+			m->status & MACRO_W ? 'W' : '-');
 		free_lbuf(unparse);
 	} else
-	    notify(player, tprintf("%d:", i));
+	    notify_printf(player, "%d:", i);
     }
-    notify(player, tprintf("Current Macro Slot: %d", c->curmac));
+    notify_printf(player, "Current Macro Slot: %d", c->curmac);
 }
 
-void do_ex_macro(player, s)
-dbref player;
-char *s;
+void do_ex_macro(dbref player, char *s)
 {
     struct macros *m;
     int which;
@@ -383,7 +356,7 @@ char *s;
 	m = get_macro_set(player, -1);
 
     if (m) {
-	notify(player, tprintf("Macro Definitions for %s", m->desc));
+	notify_printf(player, "Macro Definitions for %s", m->desc);
 	for (i = 0; i < m->nummacros; i++) {
 	    sprintf(buffer, "  %-5.5s: %s", m->alias + i * 5,
 		m->string[i]);
@@ -394,9 +367,7 @@ char *s;
 
 }
 
-void do_chown_macro(player, cmd)
-dbref player;
-char *cmd;
+void do_chown_macro(dbref player, char *cmd)
 {
     struct macros *m;
     dbref thing;
@@ -424,8 +395,8 @@ char *cmd;
     }
     m->player = thing;
     unparse = unparse_object(player, thing, 0);
-    notify(player, tprintf("MACRO: Macro %s chowned to %s.", m->desc,
-	    unparse));
+    notify_printf(player, "MACRO: Macro %s chowned to %s.", m->desc,
+	    unparse);
     free_lbuf(unparse);
 }
 
@@ -467,9 +438,7 @@ static void clear_macro_set(int set)
     }
 }
 
-void do_clear_macro(player, s)
-dbref player;
-char *s;
+void do_clear_macro(dbref player, char *s)
 {
     int set;
     struct macros *m;
@@ -498,14 +467,12 @@ char *s;
 	    return;
 	}
     }
-    notify(player, tprintf("MACRO: Clearing macro set %d: %s.", set,
-	    GMac(set) ? m->desc : "Nonexistent"));
+    notify_printf(player, "MACRO: Clearing macro set %d: %s.", set,
+	    GMac(set) ? m->desc : "Nonexistent");
     clear_macro_set(set);
 }
 
-void do_def_macro(player, cmd)
-dbref player;
-char *cmd;
+void do_def_macro(dbref player, char *cmd)
 {
     int i, j, where;
     struct macros *m;
@@ -589,9 +556,7 @@ char *cmd;
     notify(player, buffer);
 }
 
-void do_undef_macro(player, cmd)
-dbref player;
-char *cmd;
+void do_undef_macro(dbref player, char *cmd)
 {
     int i;
     struct macros *m;
@@ -617,10 +582,7 @@ char *cmd;
     notify(player, "MACRO: That macro is not in this set.");
 }
 
-char *do_process_macro(player, in, s)
-dbref player;
-char *in;
-char *s;
+char *do_process_macro(dbref player, char *in, char *s)
 {
     char *cmd;
     char *tar;
@@ -707,9 +669,7 @@ char *s;
     return NULL;
 }
 
-struct macros *get_macro_set(player, which)
-dbref player;
-int which;
+struct macros *get_macro_set(dbref player, int which)
 {
     int set;
     struct commac *c;
@@ -731,8 +691,7 @@ int which;
 	return NULL;
 }
 
-void do_sort_macro_set(m)
-struct macros *m;
+void do_sort_macro_set(struct macros *m)
 {
     int i;
     int cont;
@@ -755,9 +714,7 @@ struct macros *m;
     }
 }
 
-void do_create_macro(player, s)
-dbref player;
-char *s;
+void do_create_macro(dbref player, char *s)
 {
     int first;
     int i;
@@ -799,14 +756,12 @@ char *s;
     c->curmac = first;
     c->macros[first] = set;
 
-    notify(player,
-	tprintf("MACRO: Macro set %d created with description %s.", set,
-	    s));
+    notify_printf(player,
+	"MACRO: Macro set %d created with description %s.", set,
+	    s);
 }
 
-int can_write_macros(player, m)
-dbref player;
-struct macros *m;
+int can_write_macros(dbref player, struct macros *m)
 {
     if (m->status & MACRO_L)
 	return 0;
@@ -817,9 +772,7 @@ struct macros *m;
 	return m->status & MACRO_W;
 }
 
-int can_read_macros(player, m)
-dbref player;
-struct macros *m;
+int can_read_macros(dbref player, struct macros *m)
 {
     if (Wizard(player))
 	return 1;
@@ -835,8 +788,7 @@ struct macros *m;
 
 #define TST(cmd,msg) if (cmd) { fprintf(stderr, msg); exit(1); }
 
-void load_macros(fp)
-FILE *fp;
+void load_macros(FILE *fp)
 {
     int i, j;
     char *c;
@@ -913,8 +865,7 @@ FILE *fp;
     }
 }
 
-void save_macros(fp)
-FILE *fp;
+void save_macros(FILE *fp)
 {
     int i, j;
     struct macros *m;

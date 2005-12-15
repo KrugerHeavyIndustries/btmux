@@ -1,10 +1,5 @@
-
 /*
  * look.c -- commands which look at things 
- */
-
-/*
- * $Id: look.c,v 1.3 2005/08/08 09:43:07 murrayma Exp $ 
  */
 
 #include "copyright.h"
@@ -25,9 +20,7 @@
 
 extern void ufun(char *, char *, int, int, int, dbref, dbref);
 
-static void look_exits(player, loc, exit_name)
-dbref player, loc;
-const char *exit_name;
+static void look_exits(dbref player, dbref loc, const char *exit_name)
 {
     dbref thing, parent;
     char *buff, *e, *s, *buff1, *e1;
@@ -81,8 +74,8 @@ const char *exit_name;
 		    StringCopy(buff, Name(thing));
 		    for (e = buff; *e && (*e != ';'); e++);
 		    *e = '\0';
-		    notify(player, tprintf("%s leads to %s.", buff,
-			    Name(Location(thing))));
+		    notify_printf(player, "%s leads to %s.", buff,
+			    Name(Location(thing)));
 		}
 	    }
 	} else {
@@ -132,10 +125,8 @@ const char *exit_name;
 #define CONTENTS_NESTED 1
 #define CONTENTS_REMOTE 2
 
-static void look_contents(player, loc, contents_name, style)
-dbref player, loc;
-const char *contents_name;
-int style;
+static void look_contents(dbref player, dbref loc, const char *contents_name, 
+    int style)
 {
     dbref thing;
     dbref can_see_loc;
@@ -209,11 +200,8 @@ int style;
 }
 
 
-static void view_atr(player, thing, ap, text, aowner, aflags, skip_tag)
-dbref player, thing, aowner;
-int aflags, skip_tag;
-ATTR *ap;
-char *text;
+static void view_atr(dbref player, dbref thing, ATTR *ap, char *text, 
+    dbref aowner, int aflags, int skip_tag)
 {
     char *buf;
     char xbuf[6];
@@ -274,9 +262,8 @@ char *text;
     notify(player, buf);
 }
 
-static void look_atrs1(player, thing, othing, check_exclude, hash_insert)
-dbref player, thing, othing;
-int check_exclude, hash_insert;
+static void look_atrs1(dbref player, dbref thing, dbref othing, 
+    int check_exclude, int hash_insert)
 {
     dbref aowner;
     int ca, aflags;
@@ -319,9 +306,7 @@ int check_exclude, hash_insert;
     free(cattr);
 }
 
-static void look_atrs(player, thing, check_parents)
-dbref player, thing;
-int check_parents;
+static void look_atrs(dbref player, dbref thing, int check_parents)
 {
     dbref parent;
     int lev, check_exclude, hash_insert;
@@ -341,9 +326,7 @@ int check_parents;
     }
 }
 
-static void look_simple(player, thing, obey_terse)
-dbref player, thing;
-int obey_terse;
+static void look_simple(dbref player, dbref thing, int obey_terse)
 {
     int pattr;
     char *buff;
@@ -374,8 +357,7 @@ int obey_terse;
     }
 }
 
-static void show_a_desc(player, loc)
-dbref player, loc;
+static void show_a_desc(dbref player, dbref loc)
 {
     char *got2;
     dbref aowner;
@@ -408,9 +390,7 @@ dbref player, loc;
     }
 }
 
-static void show_desc(player, loc, key)
-dbref player, loc;
-int key;
+static void show_desc(dbref player, dbref loc, int key)
 {
     char *got;
     dbref aowner;
@@ -431,9 +411,7 @@ int key;
     }
 }
 
-void look_in(player, loc, key)
-dbref player, loc;
-int key;
+void look_in(dbref player, dbref loc, int key)
 {
     int pattr, oattr, aattr, is_terse, showkey;
     char *buff;
@@ -509,10 +487,7 @@ int key;
 	look_exits(player, loc, "Obvious exits:");
 }
 
-void do_look(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_look(dbref player, dbref cause, int key, char *name)
 {
     dbref thing, loc, look_key;
 
@@ -593,8 +568,7 @@ char *name;
     }
 }
 
-static void debug_examine(player, thing)
-dbref player, thing;
+static void debug_examine(dbref player, dbref thing)
 {
     dbref aowner;
     char *buf;
@@ -603,29 +577,29 @@ dbref player, thing;
     ATTR *attr;
     char *as, *cp;
 
-    notify(player, tprintf("Number  = %d", thing));
+    notify_printf(player, "Number  = %d", thing);
     if (!Good_obj(thing))
 	return;
 
-    notify(player, tprintf("Name    = %s", Name(thing)));
-    notify(player, tprintf("Location= %d", Location(thing)));
-    notify(player, tprintf("Contents= %d", Contents(thing)));
-    notify(player, tprintf("Exits   = %d", Exits(thing)));
-    notify(player, tprintf("Link    = %d", Link(thing)));
-    notify(player, tprintf("Next    = %d", Next(thing)));
-    notify(player, tprintf("Owner   = %d", Owner(thing)));
-    notify(player, tprintf("Pennies = %d", Pennies(thing)));
-    notify(player, tprintf("Zone    = %d", Zone(thing)));
+    notify_printf(player, "Name    = %s", Name(thing));
+    notify_printf(player, "Location= %d", Location(thing));
+    notify_printf(player, "Contents= %d", Contents(thing));
+    notify_printf(player, "Exits   = %d", Exits(thing));
+    notify_printf(player, "Link    = %d", Link(thing));
+    notify_printf(player, "Next    = %d", Next(thing));
+    notify_printf(player, "Owner   = %d", Owner(thing));
+    notify_printf(player, "Pennies = %d", Pennies(thing));
+    notify_printf(player, "Zone    = %d", Zone(thing));
     buf = flag_description(player, thing);
-    notify(player, tprintf("Flags   = %s", buf));
+    notify_printf(player, "Flags   = %s", buf);
     free_mbuf(buf);
     buf = power_description(player, thing);
-    notify(player, tprintf("Powers  = %s", buf));
+    notify_printf(player, "Powers  = %s", buf);
     free_mbuf(buf);
     buf = atr_get(thing, A_LOCK, &aowner, &aflags);
     bool = parse_boolexp(player, buf, 1);
     free_lbuf(buf);
-    notify(player, tprintf("Lock    = %s", unparse_boolexp(player, bool)));
+    notify_printf(player, "Lock    = %s", unparse_boolexp(player, bool));
     free_boolexp(bool);
 
     buf = alloc_lbuf("debug_dexamine");
@@ -665,9 +639,7 @@ dbref player, thing;
     }
 }
 
-static void exam_wildattrs(player, thing, do_parent)
-dbref player, thing;
-int do_parent;
+static void exam_wildattrs(dbref player, dbref thing, int do_parent)
 {
     int atr, aflags, got_any;
     char *buf;
@@ -732,10 +704,7 @@ int do_parent;
 
 }
 
-void do_examine(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_examine(dbref player, dbref cause, int key, char *name)
 {
     dbref thing, content, exit, aowner, loc;
     char savec;
@@ -804,11 +773,11 @@ char *name;
 	    if (mudconf.read_rem_name) {
 		buf2 = alloc_lbuf("do_examine.pub_name");
 		StringCopy(buf2, Name(thing));
-		notify(player, tprintf("%s is owned by %s", buf2,
-			Name(Owner(thing))));
+		notify_printf(player, "%s is owned by %s", buf2,
+			Name(Owner(thing)));
 		free_lbuf(buf2);
 	    } else {
-		notify(player, tprintf("Owned by %s", Name(Owner(thing))));
+		notify_printf(player, "Owned by %s", Name(Owner(thing)));
 	    }
 	    return;
 	}
@@ -843,14 +812,14 @@ char *name;
 	buf = unparse_boolexp(player, bool);
 	free_boolexp(bool);
 	StringCopy(buf2, Name(Owner(thing)));
-	notify(player, tprintf("Owner: %s  Key: %s %s: %d", buf2, buf,
-		mudconf.many_coins, Pennies(thing)));
+	notify_printf(player, "Owner: %s  Key: %s %s: %d", buf2, buf,
+		mudconf.many_coins, Pennies(thing));
 	free_lbuf(buf2);
 	mudconf.many_coins[0] = savec;
 
 	if (mudconf.have_zones) {
 	    buf2 = unparse_object(player, Zone(thing), 0);
-	    notify(player, tprintf("Zone: %s", buf2));
+	    notify_printf(player, "Zone: %s", buf2);
 	    free_lbuf(buf2);
 	}
 	/*
@@ -860,7 +829,7 @@ char *name;
 	loc = Parent(thing);
 	if (loc != NOTHING) {
 	    buf2 = unparse_object(player, loc, 0);
-	    notify(player, tprintf("Parent: %s", buf2));
+	    notify_printf(player, "Parent: %s", buf2);
 	    free_lbuf(buf2);
 	}
 	buf2 = power_description(player, thing);
@@ -917,7 +886,7 @@ char *name;
 
 	    if (Dropto(thing) != NOTHING) {
 		buf2 = unparse_object(player, Dropto(thing), 0);
-		notify(player, tprintf("Dropped objects go to: %s", buf2));
+		notify_printf(player, "Dropped objects go to: %s", buf2);
 		free_lbuf(buf2);
 	    }
 	    break;
@@ -945,7 +914,7 @@ char *name;
 
 	    loc = Home(thing);
 	    buf2 = unparse_object(player, loc, 0);
-	    notify(player, tprintf("Home: %s", buf2));
+	    notify_printf(player, "Home: %s", buf2);
 	    free_lbuf(buf2);
 
 	    /*
@@ -956,13 +925,13 @@ char *name;
 	    if ((Location(thing) != NOTHING) && (Examinable(player, loc) ||
 		    Examinable(player, thing) || Linkable(player, loc))) {
 		buf2 = unparse_object(player, loc, 0);
-		notify(player, tprintf("Location: %s", buf2));
+		notify_printf(player, "Location: %s", buf2);
 		free_lbuf(buf2);
 	    }
 	    break;
 	case TYPE_EXIT:
 	    buf2 = unparse_object(player, Exits(thing), 0);
-	    notify(player, tprintf("Source: %s", buf2));
+	    notify_printf(player, "Source: %s", buf2);
 	    free_lbuf(buf2);
 
 	    /*
@@ -977,7 +946,7 @@ char *name;
 		break;
 	    default:
 		buf2 = unparse_object(player, Location(thing), 0);
-		notify(player, tprintf("Destination: %s", buf2));
+		notify_printf(player, "Destination: %s", buf2);
 		free_lbuf(buf2);
 		break;
 	    }
@@ -997,27 +966,23 @@ char *name;
 	if (mudconf.read_rem_name) {
 	    buf2 = alloc_lbuf("do_examine.pub_name");
 	    StringCopy(buf2, Name(thing));
-	    notify(player, tprintf("%s is owned by %s", buf2,
-		    Name(Owner(thing))));
+	    notify_printf(player, "%s is owned by %s", buf2,
+		    Name(Owner(thing)));
 	    free_lbuf(buf2);
 	} else {
-	    notify(player, tprintf("Owned by %s", Name(Owner(thing))));
+	    notify_printf(player, "Owned by %s", Name(Owner(thing)));
 	}
     }
 }
 
-void do_score(player, cause, key)
-dbref player, cause;
-int key;
+void do_score(dbref player, dbref cause, int key)
 {
-    notify(player, tprintf("You have %d %s.", Pennies(player),
+    notify_printf(player, "You have %d %s.", Pennies(player),
 	    (Pennies(player) ==
-		1) ? mudconf.one_coin : mudconf.many_coins));
+		1) ? mudconf.one_coin : mudconf.many_coins);
 }
 
-void do_inventory(player, cause, key)
-dbref player, cause;
-int key;
+void do_inventory(dbref player, dbref cause, int key)
 {
     dbref thing;
     char *buff, *s, *e;
@@ -1053,10 +1018,7 @@ int key;
     do_score(player, player, 0);
 }
 
-void do_entrances(player, cause, key, name)
-dbref player, cause;
-int key;
-char *name;
+void do_entrances(dbref player, dbref cause, int key, char *name)
 {
     dbref thing, i, j;
     char *exit, *message;
@@ -1080,8 +1042,8 @@ char *name;
     }
 
     if (!payfor(player, mudconf.searchcost)) {
-	notify(player, tprintf("You don't have enough %s.",
-		mudconf.many_coins));
+	notify_printf(player, "You don't have enough %s.",
+		mudconf.many_coins);
 	return;
     }
     message = alloc_lbuf("do_entrances");
@@ -1093,7 +1055,7 @@ char *name;
 	    case TYPE_EXIT:
 		if (Location(i) == thing) {
 		    exit = unparse_object(player, Exits(i), 0);
-		    notify(player, tprintf("%s (%s)", exit, Name(i)));
+		    notify_printf(player, "%s (%s)", exit, Name(i));
 		    free_lbuf(exit);
 		    count++;
 		}
@@ -1101,7 +1063,7 @@ char *name;
 	    case TYPE_ROOM:
 		if (Dropto(i) == thing) {
 		    exit = unparse_object(player, i, 0);
-		    notify(player, tprintf("%s [dropto]", exit));
+		    notify_printf(player, "%s [dropto]", exit);
 		    free_lbuf(exit);
 		    count++;
 		}
@@ -1110,7 +1072,7 @@ char *name;
 	    case TYPE_PLAYER:
 		if (Home(i) == thing) {
 		    exit = unparse_object(player, i, 0);
-		    notify(player, tprintf("%s [home]", exit));
+		    notify_printf(player, "%s [home]", exit);
 		    free_lbuf(exit);
 		    count++;
 		}
@@ -1123,7 +1085,7 @@ char *name;
 
 	    if (Parent(i) == thing) {
 		exit = unparse_object(player, i, 0);
-		notify(player, tprintf("%s [parent]", exit));
+		notify_printf(player, "%s [parent]", exit);
 		free_lbuf(exit);
 		count++;
 	    }
@@ -1139,7 +1101,7 @@ char *name;
                 if (fp->data[j] != thing)
                     continue;
                 exit = unparse_object(player, i, 0);
-                notify(player, tprintf("%s [forward]", exit));
+                notify_printf(player, "%s [forward]", exit);
                 free_lbuf(exit);
                 count++;
             }
@@ -1147,17 +1109,15 @@ char *name;
 	}
     }
     free_lbuf(message);
-    notify(player, tprintf("%d entrance%s found.", count,
-	    (count == 1) ? "" : "s"));
+    notify_printf(player, "%d entrance%s found.", count,
+	    (count == 1) ? "" : "s");
 }
 
 /*
  * check the current location for bugs 
  */
 
-static void sweep_check(player, what, key, is_loc)
-dbref player, what;
-int key, is_loc;
+static void sweep_check(dbref player, dbref what, int key, int is_loc)
 {
     dbref aowner, parent;
     int canhear, cancom, isplayer, ispuppet, isconnected, attr, aflags;
@@ -1265,24 +1225,21 @@ int key, is_loc;
 	    safe_str((char *) "parent ", buf, &bp);
 	bp[-1] = '\0';
 	if (Typeof(what) != TYPE_EXIT) {
-	    notify(player, tprintf("  %s is listening. [%s]", Name(what),
-		    buf));
+	    notify_printf(player, "  %s is listening. [%s]", Name(what),
+		    buf);
 	} else {
 	    buf2 = alloc_lbuf("sweep_check.name");
 	    StringCopy(buf2, Name(what));
 	    for (bp = buf2; *bp && (*bp != ';'); bp++);
 	    *bp = '\0';
-	    notify(player, tprintf("  %s is listening. [%s]", buf2, buf));
+	    notify_printf(player, "  %s is listening. [%s]", buf2, buf);
 	    free_lbuf(buf2);
 	}
 	free_lbuf(buf);
     }
 }
 
-void do_sweep(player, cause, key, where)
-dbref player, cause;
-int key;
-char *where;
+void do_sweep(dbref player, dbref cause, int key, char *where)
 {
     dbref here, sweeploc;
     int where_key, what_key;
@@ -1369,10 +1326,7 @@ char *where;
 
 extern NAMETAB indiv_attraccess_nametab[];
 
-void do_decomp(player, cause, key, name, qual)
-dbref player, cause;
-int key;
-char *name, *qual;
+void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 {
     BOOLEXP *bool;
     char *got, *thingname, *as, *ltext, *buff, *s;
@@ -1405,8 +1359,8 @@ char *name, *qual;
 		    bool = parse_boolexp(player, got, 1);
 		    ltext = unparse_boolexp_decompile(player, bool);
 		    free_boolexp(bool);
-		    notify(player, tprintf("@lock/%s %s=%s", attr->name,
-			    strip_ansi(thingname), ltext));
+		    notify_printf(player, "@lock/%s %s=%s", attr->name,
+			    strip_ansi(thingname), ltext);
 		} else {
 		    StringCopy(buff, attr->name);
 		    for (s = thingname; *s; s++) {
@@ -1415,13 +1369,13 @@ char *name, *qual;
 			    break;
 			}
 		    }
-		    notify(player, tprintf("%c%s %s=%s",
+		    notify_printf(player, "%c%s %s=%s",
 			    ((atr < A_USER_START) ? '@' : '&'), buff,
-			    strip_ansi(thingname), got));
+			    strip_ansi(thingname), got);
 
 		    if (aflags & AF_LOCK) {
-			notify(player, tprintf("@lock %s/%s",
-				strip_ansi(thingname), buff));
+			notify_printf(player, "@lock %s/%s",
+				strip_ansi(thingname), buff);
 		    }
 
 		    for (np = indiv_attraccess_nametab; np->name; np++) {
@@ -1430,9 +1384,9 @@ char *name, *qual;
 			    check_access(player, np->perm) &&
 			    (!(np->perm & CA_NO_DECOMP))) {
 
-			    notify(player, tprintf("@set %s/%s = %s",
+			    notify_printf(player, "@set %s/%s = %s",
 				    strip_ansi(thingname), buff,
-				    np->name));
+				    np->name);
 			}
 		    }
 		}
@@ -1476,18 +1430,18 @@ char *name, *qual;
 	case TYPE_THING:
 	    StringCopy(thingname, Name(thing));
 	    val = OBJECT_DEPOSIT(Pennies(thing));
-	    notify(player, tprintf("@create %s=%d",
-		    translate_string(thingname, 1), val));
+	    notify_printf(player, "@create %s=%d",
+		    translate_string(thingname, 1), val);
 	    break;
 	case TYPE_ROOM:
 	    StringCopy(thingname, "here");
-	    notify(player, tprintf("@dig/teleport %s",
-		    translate_string(Name(thing), 1)));
+	    notify_printf(player, "@dig/teleport %s",
+		    translate_string(Name(thing), 1));
 	    break;
 	case TYPE_EXIT:
 	    StringCopy(thingname, Name(thing));
-	    notify(player, tprintf("@open %s",
-		    translate_string(Name(thing), 1)));
+	    notify_printf(player, "@open %s",
+		    translate_string(Name(thing), 1));
 	    for (got = thingname; *got; got++) {
 		if (*got == EXIT_DELIMITER) {
 		    *got = '\0';
@@ -1506,8 +1460,8 @@ char *name, *qual;
      */
 
     if (bool != TRUE_BOOLEXP) {
-	notify(player, tprintf("@lock %s=%s", strip_ansi(thingname),
-		unparse_boolexp_decompile(player, bool)));
+	notify_printf(player, "@lock %s=%s", strip_ansi(thingname),
+		unparse_boolexp_decompile(player, bool));
     }
     free_boolexp(bool);
 
@@ -1531,17 +1485,17 @@ char *name, *qual;
 		bool = parse_boolexp(player, got, 1);
 		ltext = unparse_boolexp_decompile(player, bool);
 		free_boolexp(bool);
-		notify(player, tprintf("@lock/%s %s=%s", attr->name,
-			thingname, ltext));
+		notify_printf(player, "@lock/%s %s=%s", attr->name,
+			thingname, ltext);
 	    } else {
 		StringCopy(buff, attr->name);
-		notify(player, tprintf("%c%s %s=%s",
+		notify_printf(player, "%c%s %s=%s",
 			((ca < A_USER_START) ? '@' : '&'), buff,
-			strip_ansi(thingname), got));
+			strip_ansi(thingname), got);
 
 		if (aflags & AF_LOCK) {
-		    notify(player, tprintf("@lock %s/%s",
-			    strip_ansi(thingname), buff));
+		    notify_printf(player, "@lock %s/%s",
+			    strip_ansi(thingname), buff);
 		}
 		for (np = indiv_attraccess_nametab; np->name; np++) {
 
@@ -1549,8 +1503,8 @@ char *name, *qual;
 			check_access(player, np->perm) &&
 			(!(np->perm & CA_NO_DECOMP))) {
 
-			notify(player, tprintf("@set %s/%s = %s",
-				strip_ansi(thingname), buff, np->name));
+			notify_printf(player, "@set %s/%s = %s",
+				strip_ansi(thingname), buff, np->name);
 		    }
 		}
 	    }
@@ -1567,23 +1521,22 @@ char *name, *qual;
      */
 
     if (Parent(thing) != NOTHING)
-	notify(player, tprintf("@parent %s=#%d", strip_ansi(thingname),
-		Parent(thing)));
+	notify_printf(player, "@parent %s=#%d", strip_ansi(thingname),
+		Parent(thing));
 
     /*
      * If the object has a zone, report it 
      */
     if (Zone(thing) != NOTHING)
-	notify(player, tprintf("@chzone %s=#%d", strip_ansi(thingname),
-		Zone(thing)));
+	notify_printf(player, "@chzone %s=#%d", strip_ansi(thingname),
+		Zone(thing));
 
     free_lbuf(thingname);
 }
 
 /* show_vrml_url
  */
-void show_vrml_url(thing, loc)
-dbref thing, loc;
+void show_vrml_url(dbref thing, dbref loc)
 {
     char *vrml_url;
     dbref aowner;

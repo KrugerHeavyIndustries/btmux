@@ -746,9 +746,9 @@ int convert_flags(dbref player, char *flaglist, FLAGSET *fset, FLAG *p_type)
 		!(((object_types[i].perm & CA_WIZARD) && !Wizard(player))
 		    || ((object_types[i].perm & CA_GOD) && !God(player)))) {
 		if ((type != NOTYPE) && (type != i)) {
-		    notify(player,
-			tprintf("%c: Conflicting type specifications.",
-			    *s));
+		    notify_printf(player,
+			"%c: Conflicting type specifications.",
+			    *s);
 		    return 0;
 		}
 		type = i;
@@ -777,10 +777,9 @@ int convert_flags(dbref player, char *flaglist, FLAGSET *fset, FLAG *p_type)
 	}
 
 	if (!handled) {
-	    notify(player,
-		tprintf
-		("%c: Flag unknown or not valid for specified object type",
-		    *s));
+	    notify_printf(player,
+		"%c: Flag unknown or not valid for specified object type",
+		    *s);
 	    return 0;
 	}
     }
@@ -850,7 +849,7 @@ void decompile_flags(dbref player, dbref thing, char *thingname)
 	 * We made it this far, report this flag 
 	 */
 
-	notify(player, tprintf("@set %s=%s", strip_ansi(thingname),
-		fp->flagname));
+	notify_printf(player, "@set %s=%s", strip_ansi(thingname),
+		fp->flagname);
     }
 } /* end decompile_flags() */

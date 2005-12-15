@@ -12,14 +12,13 @@
 #include "alloc.h"
 #include "ansi.h"
 
-/*
- * ---------------------------------------------------------------------------
- * * parse_to: Split a line at a character, obeying nesting.  The line is
- * * destructively modified (a null is inserted where the delimiter was found)
- * * dstr is modified to point to the char after the delimiter, and the function
- * * return value points to the found string (space compressed if specified).
- * * If we ran off the end of the string without finding the delimiter, dstr is
- * * returned as NULL.
+/**
+ * Split a line at a character, obeying nesting. The line is
+ * destructively modified (a null is inserted where the delimiter was found)
+ * dstr is modified to point to the char after the delimiter, and the function
+ * return value points to the found string (space compressed if specified).
+ * If we ran off the end of the string without finding the delimiter, dstr is
+ * returned as NULL.
  */
 
 static char *parse_to_cleanup(int eval, int first, char *cstr, char *rstr, char *zstr)
@@ -331,8 +330,8 @@ static void tcache_finish(dbref player)
     while (tcache_head != NULL) {
 	xp = tcache_head;
 	tcache_head = xp->next;
-	notify(Owner(player), tprintf("%s(#%d)} '%s' -> '%s'",
-		Name(player), player, xp->orig, xp->result));
+	notify_printf(Owner(player), "%s(#%d)} '%s' -> '%s'",
+		Name(player), player, xp->orig, xp->result);
 	free_lbuf(xp->orig);
 	free_lbuf(xp->result);
 	free_sbuf(xp);

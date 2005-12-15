@@ -378,14 +378,14 @@ static BOOLEXP *parse_boolexp_L(void)
 	}
 
 	if (b->thing == NOTHING) {
-	    notify(parse_player, tprintf("I don't see %s here.", buf));
+	    notify_printf(parse_player, "I don't see %s here.", buf);
 	    free_lbuf(buf);
 	    free_bool(b);
 	    return TRUE_BOOLEXP;
 	}
 	if (b->thing == AMBIGUOUS) {
-	    notify(parse_player, tprintf("I don't know which %s you mean!",
-		    buf));
+	    notify_printf(parse_player, "I don't know which %s you mean!",
+		    buf);
 	    free_lbuf(buf);
 	    free_bool(b);
 	    return TRUE_BOOLEXP;

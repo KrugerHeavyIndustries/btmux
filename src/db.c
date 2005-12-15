@@ -399,9 +399,9 @@ int fwdlist_load(FWDLIST *fp, dbref player, char *atext)
 		    !controls(player, target) && (!Link_ok(target) ||
 			!could_doit(player, target, A_LLINK))));
 	    if (fail) {
-		notify(player,
-		    tprintf("Cannot forward to #%d: Permission denied.",
-			target));
+		notify_printf(player,
+		    "Cannot forward to #%d: Permission denied.",
+			target);
 		errors++;
 	    } else {
 		fp->data[count++] = target;
@@ -637,7 +637,7 @@ void do_attribute(dbref player, dbref cause, int key, char *aname, char *value)
 		else
 		    va->flags |= f;
 	    } else {
-		notify(player, tprintf("Unknown permission: %s.", sp));
+		notify_printf(player, "Unknown permission: %s.", sp);
 	    }
 
 	    /*
@@ -717,32 +717,32 @@ void do_fixdb(dbref player, dbref cause, int key, char *arg1, char *arg2)
     case FIXDB_OWNER:
 	s_Owner(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Owner set to #%d", res));
+	    notify_printf(player, "Owner set to #%d", res);
 	break;
     case FIXDB_LOC:
 	s_Location(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Location set to #%d", res));
+	    notify_printf(player, "Location set to #%d", res);
 	break;
     case FIXDB_CON:
 	s_Contents(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Contents set to #%d", res));
+	    notify_printf(player, "Contents set to #%d", res);
 	break;
     case FIXDB_EXITS:
 	s_Exits(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Exits set to #%d", res));
+	    notify_printf(player, "Exits set to #%d", res);
 	break;
     case FIXDB_NEXT:
 	s_Next(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Next set to #%d", res));
+	    notify_printf(player, "Next set to #%d", res);
 	break;
     case FIXDB_PENNIES:
 	s_Pennies(thing, res);
 	if (!Quiet(player))
-	    notify(player, tprintf("Pennies set to %d", res));
+	    notify_printf(player, "Pennies set to %d", res);
 	break;
     case FIXDB_NAME:
 	if (Typeof(thing) == TYPE_PLAYER) {
@@ -773,7 +773,7 @@ void do_fixdb(dbref player, dbref cause, int key, char *arg1, char *arg2)
 	    s_Name(thing, arg2);
 	}
 	if (!Quiet(player))
-	    notify(player, tprintf("Name set to %s", arg2));
+	    notify_printf(player, "Name set to %s", arg2);
 	break;
     }
 }
