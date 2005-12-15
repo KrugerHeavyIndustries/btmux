@@ -102,8 +102,6 @@ typedef struct SpecialObjectStruct {
 #include "p.glue.scode.h"
 #include "mechrep.h"
 #include "p.mine.h"
-#include "mech.custom.h"
-#include "p.mech.custom.h"
 #include "p.btechstats.h"
 #include "autopilot.h"
 #include "p.events.h"
@@ -793,43 +791,6 @@ CommandsStruct mechrepcommands[] = {
     {0, NULL, NULL, NULL}
 };
 
-#ifdef MENU_CUSTOMIZE
-#include "coolmenu_interface.h"
-ECOMMANDSET(cu);
-#endif
-
-CommandsStruct customcommands[] = {
-#ifdef MENU_CUSTOMIZE
-    GCOMMANDSET(cu) {0, "@SETXCODE <NAME> <VALUE|DATA>",
-	    "@Sets xcode value on object",
-	set_xcodestuff},
-    {0, "@VIEWXCODE", "@Views xcode values on object", list_xcodestuff},
-
-    {0, "@WEIGHT", "@Checks the weight allocated in the new mech",
-	custom_weight1},
-    {0, "@WEIGHTO", "@Checks the weight allocated in the old mech",
-	custom_weight2},
-    {0, "EDIT <ref>", "Alters <ref>", custom_edit},
-    {0, "FINISH", "Quit editing mode", custom_finish},
-    {0, "Z", "Back", custom_back},
-    {0, "L", "Shows menu", custom_look},
-    {0, "LO", "Shows menu", custom_look},
-    {0, "LOO", "Shows menu", custom_look},
-    {0, "LOOK", "Shows menu", custom_look},
-    {0, "HELP", "Shows help for customization", custom_help},
-
-    {0, "CRITSTATUS <SECTION>", "Shows the Critical hits status",
-	custom_critstatus},
-    {0, "STATUS [A(rmor) | I(nfo)] | W(eapons)]",
-	    "Prints the mech's status",
-	custom_status},
-    {0, "WEAPONSPECS", "Shows the specifications for your weapons",
-	custom_weaponspecs},
-    {0, NULL, NULL, NULL}
-#endif
-};
-
-
 CommandsStruct autopilotcommands[] = {
     {0, "ENGAGE", "Engages the autopilot", auto_engage},
     {0, "DISENGAGE", "Disengages the autopilot", auto_disengage},
@@ -972,7 +933,6 @@ SpecialObjectStruct SpecialObjects[] = {
     LINE("MAP", mapcommands, MAP, newfreemap, LOS_TICK, map_update, POW_MAP),
     LINE_NU("AUTOPILOT", autopilotcommands, AUTO, auto_newautopilot, POW_SECURITY),
     LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
-    LINE_NU("CUSTOM", customcommands, struct custom_struct, newfreecustom, POW_MECHREP),
 };
 
 #define NUM_SPECIAL_OBJECTS \

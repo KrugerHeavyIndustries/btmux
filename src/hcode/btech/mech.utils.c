@@ -40,7 +40,6 @@
 #include "autopilot.h"
 
 #ifdef BT_ADVANCED_ECON
-#include "p.mech.custom.h"
 #include "p.mech.tech.do.h"
 #endif
 

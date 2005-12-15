@@ -26,7 +26,6 @@
 #include "coolmenu.h"
 #include "mycool.h"
 #include "turret.h"
-#include "mech.custom.h"
 #include "p.template.h"
 #include "p.mech.tech.h"
 #include "p.mech.utils.h"
@@ -66,7 +65,6 @@ typedef struct {
 static MECH tmpm;
 static MAP tmpmap;
 static TURRET_T tmpturret;
-static CUSTOM tmpcustom;
 
 enum { TYPE_STRING, TYPE_CHAR, TYPE_SHORT, TYPE_INT, TYPE_FLOAT,
     TYPE_DBREF, TYPE_STRFUNC, TYPE_STRFUNC_S, TYPE_BV,
@@ -98,11 +96,6 @@ static int scode_in_out[TYPE_LAST_TYPE] =
 
 #define TuEntry(Name,Func,Type)  {GTYPE_TURRET,Name,UglieT(Func),Type,0}
 #define TuEntryS(Name,Func,Type,Size)  {GTYPE_TURRET,Name,UglieT(Func),Type,Size}
-
-#define UglieC(dat) (void *)&((CUSTOM *)0)->dat
-#define CuEntry(Name,Func,Type) {GTYPE_CUSTOM,Name,UglieC(Func),Type,0}
-#define CuEntryS(Name,Func,Type,Size) {GTYPE_CUSTOM,Name,UglieC(Func),Type,Size}
-
 
 char *mechIDfunc(int mode, MECH * mech)
 {
@@ -521,11 +514,6 @@ static GMV xcode_data[] = {
     TuEntry("targy", target, TYPE_SHORT),
     TuEntry("targz", target, TYPE_SHORT),
     TuEntry("lockmode", lockmode, TYPE_INT),
-
-    CuEntry("state", state, TYPE_INT),
-    CuEntry("user", user, TYPE_DBREF),
-    CuEntry("submit", submit, TYPE_DBREF),
-    CuEntry("allow", allow, TYPE_INT),
 
     MeEntry("radio", MechRadio, TYPE_CHAR),
     MeEntry("computer", MechComputer, TYPE_CHAR),

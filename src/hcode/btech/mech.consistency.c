@@ -17,7 +17,6 @@
 #include "mech.h"
 #include "coolmenu.h"
 #include "mycool.h"
-#include "p.mech.custom.h"
 #include "p.mech.utils.h"
 #include "mech.partnames.h"
 #include <math.h>
@@ -218,6 +217,64 @@ static int round_to_halfton(int weight)
     	return weight - over;
     return weight + (512 - over);
 }
+
+int crit_weight(MECH * mech, int t)
+{
+    int cl;
+
+    if (IsWeapon(t))
+        return MechWeapons[Weapon2I(t)].weight * 1024 / 100 /
+            GetWeaponCrits(mech, Weapon2I(t));
+    if (IsAmmo(t))
+        return 512;
+    if (!(IsSpecial(t)))
+        return 1024;
+
+    t = Special2I(t);
+    cl = MechSpecials(mech) & CLAN_TECH;
+
+    switch (t) {
+    case HEAT_SINK:
+        return 1024 / HS_Size(mech);
+    case TARGETING_COMPUTER:
+    case AXE:
+    case MACE:
+    case ARTEMIS_IV:
+    case MASC:
+    case C3_SLAVE:
+    case TAG:
+    case LAMEQUIP:
+        return 1024;
+    case C3I:
+        return 1280 * (MechType(mech) == CLASS_MECH ? 1 : 2);
+    case ANGELECM:
+    case BLOODHOUND_PROBE:
+        return 1024 * (MechType(mech) == CLASS_MECH ? 1 : 2);
+    case C3_MASTER:
+        return 1024 * (MechType(mech) == CLASS_MECH ? 1 : 5);
+    case SWORD:
+        /* A Sword weighs 1/20th of the 'mech tonnage, rounded up to the half
+           ton, and is 1/15th (rounded up to int) number of crits. */
+        return (ceil(MechTons(mech) / 10.) * 512) /
+            (ceil(MechTons(mech) / 15.));
+    case BEAGLE_PROBE:
+        return 1024 * 3 / (MechType(mech) == CLASS_MECH ? 4 : 2);
+    case ECM:
+        /* IS ECM is 1.5 tons for 2 crits, Clan ECM 1 ton for 1 crit. */
+        return 1024 * (cl ? 4 : MechType(mech) == CLASS_MECH ? 3 : 6) / 4;
+    case CASE:
+        return 512;
+    case JUMP_JET:
+        if (MechTons(mech) <= 55)
+            return 512;
+        if (MechTons(mech) <= 85)
+            return 1024;
+        return 2048;
+    default:
+        return 0;
+    }
+}
+
 
 static int engine_weight(MECH * mech)
 {

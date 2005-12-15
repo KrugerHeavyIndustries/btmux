@@ -110,12 +110,6 @@
 /* Whether we support C3 or not */
 #define C3_SUPPORT
 
-/* Whether we want it enabled or not */
-#define MENU_CHARGEN
-
-/* Whether we want customization code or not */
-#define MENU_CUSTOMIZE
-
 /* Show BTHs on Debug */
 #define BTH_DEBUG
 

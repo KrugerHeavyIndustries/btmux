@@ -132,7 +132,6 @@ BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/mech.combat.o              \
                  src/hcode/btech/mech.consistency.o         \
                  src/hcode/btech/mech.contacts.o            \
-                 src/hcode/btech/mech.custom.o              \
                  src/hcode/btech/mech.damage.o              \
                  src/hcode/btech/mech.ecm.o                 \
                  src/hcode/btech/mech.enhanced.criticals.o  \

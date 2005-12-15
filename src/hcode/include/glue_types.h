@@ -22,6 +22,5 @@
 #define GTYPE_UNUSED1 4 // Placeholder for old chargen object.
 #define GTYPE_AUTO    5
 #define GTYPE_TURRET  6
-#define GTYPE_CUSTOM  7
 
 #endif				/* GLUE_TYPES_H */
