@@ -1,15 +1,10 @@
-
 /*
- * $Id: crit.c,v 1.1.1.1 2005/01/11 21:18:06 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Mon Sep 28 08:56:57 1998 fingon
  *
  */
 
@@ -378,13 +373,13 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
     /* Gauss rifle-ish weapons explode when critted */
     if ((MechWeapons[Weapon2I(critType)].special & GAUSS) &&
 	!wWeapDestroyed) {
-	mech_notify(wounded, MECHALL,
-	    tprintf("Your %s has been destroyed!!",
-		&MechWeapons[Weapon2I(critType)].name[3]));
+	mech_printf(wounded, MECHALL,
+	    "Your %s has been destroyed!!",
+		&MechWeapons[Weapon2I(critType)].name[3]);
 
-	mech_notify(wounded, MECHALL,
-	    tprintf("It explodes for %d points damage",
-		MechWeapons[Weapon2I(critType)].explosiondamage));
+	mech_printf(wounded, MECHALL,
+	    "It explodes for %d points damage",
+		MechWeapons[Weapon2I(critType)].explosiondamage);
 
 	if (LOS && wounded != attacker && attacker)
 	    mech_notify(attacker, MECHALL,
@@ -401,9 +396,9 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 
 	return 1;
     } else if (IsAMS(Weapon2I(critType))) {	/* Have to shut down AMS when its critted */
-	mech_notify(wounded, MECHALL,
-	    tprintf("Your %s has been destroyed!!",
-		&MechWeapons[Weapon2I(critType)].name[3]));
+	mech_printf(wounded, MECHALL,
+	    "Your %s has been destroyed!!",
+		&MechWeapons[Weapon2I(critType)].name[3]);
 
 	MechStatus(wounded) &= ~AMS_ENABLED;
 	MechSpecials(wounded) &=
@@ -423,14 +418,13 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 		}
 	    }
 
-	    mech_notify(wounded, MECHALL,
-		tprintf("Your %s has been destroyed!!",
-		    &MechWeapons[Weapon2I(critType)].name[3]));
+	    mech_printf(wounded, MECHALL,
+		"Your %s has been destroyed!!",
+		    &MechWeapons[Weapon2I(critType)].name[3]);
 
-	    mech_notify(wounded, MECHALL,
-		tprintf
-		("%%ch%%crYour hotloaded launcher explodes for %d points of damage!%%cn",
-		    damage));
+	    mech_printf(wounded, MECHALL,
+		"%%ch%%crYour hotloaded launcher explodes for %d points of damage!%%cn",
+		    damage);
 
 	    if (LOS && wounded != attacker && attacker)
 		MechLOSBroadcast(wounded,
@@ -454,14 +448,13 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 		0, &wAmmoSection, &wAmmoCritSlot, 0,
 		AC_INCENDIARY_MODE) > 0) {
 
-	    mech_notify(wounded, MECHALL,
-		tprintf("Your %s has been destroyed!!",
-		    &MechWeapons[Weapon2I(critType)].name[3]));
+	    mech_printf(wounded, MECHALL,
+		"Your %s has been destroyed!!",
+		    &MechWeapons[Weapon2I(critType)].name[3]);
 
-	    mech_notify(wounded, MECHALL,
-		tprintf
-		("%%ch%%crThe incendiary ammunition in your launcher ignites for %d points of damage!%%cn",
-		    MechWeapons[Weapon2I(critType)].damage));
+	    mech_printf(wounded, MECHALL,
+		"%%ch%%crThe incendiary ammunition in your launcher ignites for %d points of damage!%%cn",
+		    MechWeapons[Weapon2I(critType)].damage);
 
 	    if (LOS && wounded != attacker && attacker) {
 		sprintf(msgbuf,
@@ -526,8 +519,8 @@ void JamMainWeapon(MECH * mech)
 
     if (critfound) {
 	SetPartTempNuke(mech, maxloc, critnum, FAIL_DESTROYED);
-	mech_notify(mech, MECHALL, tprintf("%%ch%%crYour %s is jammed!%%c",
-		&MechWeapons[maxtype].name[3]));
+	mech_printf(mech, MECHALL, "%%ch%%crYour %s is jammed!%%c",
+		&MechWeapons[maxtype].name[3]);
     }
 }
 
@@ -600,15 +593,13 @@ void DoVehicleStablizerCrit(MECH * objMech, int wLoc)
 	MechMove(objMech));
 
     if (MechSections(objMech)[wLoc].config & STABILIZERS_DESTROYED)
-	mech_notify(objMech, MECHALL,
-	    tprintf
-	    ("The destroyed weapon stabilizers in your %s take another hit!",
-		strLocName));
+	mech_printf(objMech, MECHALL,
+	    "The destroyed weapon stabilizers in your %s take another hit!",
+		strLocName);
     else {
-	mech_notify(objMech, MECHALL,
-	    tprintf
-	    ("The weapon stabilizers in your %s have been destroyed!",
-		strLocName));
+	mech_printf(objMech, MECHALL,
+	    "The weapon stabilizers in your %s have been destroyed!",
+		strLocName);
 	MechSections(objMech)[wLoc].config |= STABILIZERS_DESTROYED;
     }
 }
@@ -693,23 +684,21 @@ void DoWeaponJamCrit(MECH * objMech, int wLoc)
 	case TMISSILE:
 	case TARTILLERY:
 	    wCritType = FAIL_SHORTED;
-	    mech_notify(objMech, MECHALL,
-		tprintf
-		("%%ch%%crThe shot causes your %s to temporarily short out!%%c",
-		    &MechWeapons[wWeapIdx].name[3]));
+	    mech_printf(objMech, MECHALL,
+		"%%ch%%crThe shot causes your %s to temporarily short out!%%c",
+		    &MechWeapons[wWeapIdx].name[3]);
 	    break;
 	case TAMMO:
 	    wCritType = FAIL_JAMMED;
-	    mech_notify(objMech, MECHALL,
-		tprintf("%%ch%%crThe shot temporarily jams your %s!%%c",
-		    &MechWeapons[wWeapIdx].name[3]));
+	    mech_printf(objMech, MECHALL,
+		"%%ch%%crThe shot temporarily jams your %s!%%c",
+		    &MechWeapons[wWeapIdx].name[3]);
 	    break;
 	default:
 	    wCritType = FAIL_SHORTED;
-	    mech_notify(objMech, MECHALL,
-		tprintf
-		("%%ch%%crThe shot causes your %s to temporarily short out!%%c",
-		    &MechWeapons[wWeapIdx].name[3]));
+	    mech_printf(objMech, MECHALL,
+		"%%ch%%crThe shot causes your %s to temporarily short out!%%c",
+		    &MechWeapons[wWeapIdx].name[3]);
 	    break;
 	}
 
@@ -754,9 +743,9 @@ void DoWeaponDestroyedCrit(MECH * objAttacker, MECH * objMech, int wLoc,
 	    FindFirstWeaponCrit(objMech, wLoc, -1, 0, wCritType, 1);
 
 	DestroyWeapon(objMech, wLoc, wCritType, firstCrit, 1, 1);
-	mech_notify(objMech, MECHALL,
-	    tprintf("%%ch%%crYour %s is destroyed!%%c",
-		&MechWeapons[wWeapIdx].name[3]));
+	mech_printf(objMech, MECHALL,
+	    "%%ch%%crYour %s is destroyed!%%c",
+		&MechWeapons[wWeapIdx].name[3]);
     }
 }
 
@@ -1509,9 +1498,9 @@ void DestroyMainWeapon(MECH * mech)
 	    I2Weapon(maxtype), 1);
 	DestroyWeapon(mech, maxloc, I2Weapon(maxtype), 1, firstCrit,
 	    GetWeaponCrits(mech, maxtype));
-	mech_notify(mech, MECHALL,
-	    tprintf("%%ch%%crYour %s is destroyed!%%c",
-		&MechWeapons[maxtype].name[3]));
+	mech_printf(mech, MECHALL,
+	    "%%ch%%crYour %s is destroyed!%%c",
+		&MechWeapons[maxtype].name[3]);
     }
 }
 
@@ -1740,9 +1729,9 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	    GetPartType(wounded, hitloc, critHit) == critType)
 	    if (PartIsDestroyed(wounded, hitloc, critHit))
 		break;
-	mech_notify(wounded, MECHALL,
-	    tprintf("Your destroyed %s is damaged some more!",
-		&MechWeapons[Weapon2I(critType)].name[3]));
+	mech_printf(wounded, MECHALL,
+	    "Your destroyed %s is damaged some more!",
+		&MechWeapons[Weapon2I(critType)].name[3]);
 	DestroyPart(wounded, hitloc, critHit + 1);
 	return 1;
     }
@@ -1843,8 +1832,8 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	    }
 	}
 
-	mech_notify(wounded, MECHALL,
-	    tprintf("Part of your non-working %s has been hit!", partBuf));
+	mech_printf(wounded, MECHALL,
+	    "Part of your non-working %s has been hit!", partBuf);
 	DestroyPart(wounded, hitloc, critHit);
 	return 1;
     }
@@ -2081,15 +2070,15 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 
 	    if (tLocIsArm) {
 		if (Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
-		    mech_notify(wounded, MECHALL,
-			tprintf("Your %s hand actuator is destroyed!!",
-			    hitloc == LARM ? "left" : "right"));
+		    mech_printf(wounded, MECHALL,
+			"Your %s hand actuator is destroyed!!",
+			    hitloc == LARM ? "left" : "right");
 		else
-		    mech_notify(wounded, MECHALL,
-			tprintf("Your %s %s arm actuator is destroyed!!",
+		    mech_printf(wounded, MECHALL,
+			"Your %s %s arm actuator is destroyed!!",
 			    hitloc == LARM ? "left" : "right",
 			    Special2I(critType) ==
-			    LOWER_ACTUATOR ? "lower" : "upper"));
+			    LOWER_ACTUATOR ? "lower" : "upper");
 
 		if ((Special2I(critType) == HAND_OR_FOOT_ACTUATOR) &&
 		    (MechSections(mech)[hitloc].specials & CARRYING_CLUB))
