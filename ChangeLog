@@ -130,6 +130,10 @@ btonline-btechmux 0.6:
         * You may now 'stand careful' to get a -2 BTH to your piloting
           roll while standing. The downside is it requires a full turn
 	  (30 tics) to stand carefully. (Fitz)
+	* Added '65 style IR sensor heat scale. See the SF page for more
+          details:
+	  http://sourceforge.net/tracker/index.php?func=detail&aid=1376850&group_id=128056&atid=711029
+          Added the --bt-scaled-infrared and defaulted to on. (Fitz)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
@@ -212,6 +216,8 @@ btonline-btechmux 0.6:
           to disabling the slot. (Fitz)
 	* The 'stand anyway' command has been fixed to behave as
 	  expected. (Fitz)
+	* Jumping mechs can no longer see or be seen on seismic 
+          sensors. (Fitz)
 
 btonline-btechmux 0.4:
 	- Changes

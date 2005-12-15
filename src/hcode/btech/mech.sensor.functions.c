@@ -78,10 +78,9 @@ CSEEFUNC(electrom_csee, !(map->sensorflags & (1 << SENSOR_EM)) &&
    ground. Period. */
 CSEEFUNC(seismic_csee, 
     !(map->sensorflags & (1 << SENSOR_SE)) &&
-    t && 
-    (!Jumping(m) && mudconf.btech_seismic_see_stopped ? 1 : 
-        (abs(MechSpeed(t)) > MP1) &&
-    ((MechMove(m) != MOVE_VTOL) || ((MechMove(m) == MOVE_VTOL) && Landed(m))) && 
+    t && (!Jumping(m)) &&
+    (mudconf.btech_seismic_see_stopped ? 1 : (abs(MechSpeed(t)) > MP1)) &&
+    (((MechMove(m) != MOVE_VTOL) || ((MechMove(m) == MOVE_VTOL) && Landed(m))) && 
     ((MechMove(m) != MOVE_FLY) || ((MechMove(m) == MOVE_FLY) && Landed(m))) && 
     Started(t) &&
     !Jumping(t) && 
@@ -120,13 +119,16 @@ CSEEFUNC(blood_csee,
 
 /* Basically, mechs w/o heat are +2 tohit, mechs in utter overheat are
    -2 tohit */
+#ifdef BT_SCALED_INFRARED
+#define HEAT_MODIFIER(a) ((a) <= 0 ? 2 : (a) > 50 ? -2 : (a) > 35 ? -1 : (a) > 20 ? 0 : 1)
+#else
 
 /*
 #define HEAT_MODIFIER(a) ((a) <= 7 ? 2 : (a) > 28 ? -2 : (a) > 21 ? -1 : (a) > 14 ? 0 : 1)
 */
 
 #define HEAT_MODIFIER(a) ((a) <= 7 ? 2 : (a) <= 10 ? 1 : (a) <= 15 ? 0 : (a) <= 22 ? -1 : -2)
-
+#endif
 /* Heavy/assault -1 tohit, medium 0, light +1 */
 #define WEIGHT_MODIFIER(a) (a > 65 ? -1 : a > 35 ? 0 : 1)
 
@@ -151,10 +153,15 @@ TOHITFUNC(liteamp_tohit, ((2 - l) / 2) + ((nwood_count(t,
 	(IsHulldown(t) ? 2 : 0) : 0));
 
 /* Infrared - Interrupting Woods, partial LOS, Hulldown, heat. */
+#ifdef BT_SCALED_INFRARED
+TOHITFUNC(infrared_tohit, ((nwood_count(t, f) * 4) / 3) +
+		          ((f & MECHLOSFLAG_PARTIAL) ? 3 : 0) +
+			            HEAT_MODIFIER((2*(MechPlusHeat(t)-MechMinusHeat(t))) + MIN(MechPlusHeat(t), MechMinusHeat(t))) );
+#else
 TOHITFUNC(infrared_tohit, ((nwood_count(t,
 		f) * 4) / 3) + ((f & MECHLOSFLAG_PARTIAL) ? 3 +
 	(IsHulldown(t) ? 2 : 0) : 0) + HEAT_MODIFIER(MechHeat(t) + 7));
-
+#endif
 /* Emag - Interrupting woods, partial LOS, hulldwon, weight/movement,
  * recently fired. */
 TOHITFUNC(electrom_tohit, ((nwood_count(t,
