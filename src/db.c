@@ -37,9 +37,7 @@ OBJ *db = NULL;
 NAME *names = NULL;
 NAME *purenames = NULL;
 
-#ifdef MEMORY_BASED
 int corrupt;
-#endif
 
 extern pid_t slave_pid;
 extern void desc_addhash(DESC *);

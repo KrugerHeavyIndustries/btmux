@@ -1,8 +1,6 @@
 
 /* db.h */
 
-/* $Id: db.h,v 1.4 2005/06/23 02:59:58 murrayma Exp $ */
-
 #include "copyright.h"
 
 #ifndef	__DB_H
@@ -30,14 +28,12 @@ struct attr {
     int (*check)(int, dbref, dbref, int, char *);
 };
 
-#ifdef MEMORY_BASED
 typedef struct atrlist ATRLIST;
 struct atrlist {
     char *data;			/* Attribute text. */
     int size;			/* Length of attribute */
     int number;			/* Attribute number. */
 };
-#endif
 
 typedef struct stack STACK;
 struct stack {
@@ -152,10 +148,8 @@ struct object {
 
     STACK *stackhead;		/* Every object has a stack. */
 
-#ifdef MEMORY_BASED
     ATRLIST *ahead;		/* The head of the attribute list. */
     int at_count;		/* How many attributes do we have? */
-#endif
 };
 
 typedef char *NAME;
@@ -182,12 +176,7 @@ extern NAME *names;
 #define	Home(t)			Link(t)
 #define	Dropto(t)		Location(t)
 
-#ifndef MEMORY_BASED
-#define	i_Name(t)		names[t] = NULL;	\
-				if (mudconf.cache_names) purenames[t] = NULL;
-#else
 #define	i_Name(t)		if (mudconf.cache_names) purenames[t] = NULL;
-#endif
 
 #define	s_Location(t,n)		db[t].location = (n)
 

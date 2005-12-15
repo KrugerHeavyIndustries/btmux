@@ -1,7 +1,4 @@
-
 /* config.h */
-
-/* $Id: config.h,v 1.3 2005/08/08 09:43:06 murrayma Exp $ */
 
 #ifndef CONFIG_H
 #define CONFIG_H
@@ -107,12 +104,7 @@ typedef char	IBUF[16];
 #define OFLAGS2		(V_ATRNAME|V_ATRMONEY)
 
 #define OUTPUT_VERSION	1	/* Version 1 */
-#ifdef MEMORY_BASED
 #define OUTPUT_FLAGS	(MANDFLAGS)
-#else
-#define OUTPUT_FLAGS	(MANDFLAGS|OFLAGS1|OFLAGS2)
-						/* format for dumps */
-#endif				/* MEMORY_BASED */
 
 #define UNLOAD_VERSION	1	/* verison for export */
 #define UNLOAD_OUTFLAGS	(MANDFLAGS)	/* format for export */
