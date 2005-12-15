@@ -129,8 +129,8 @@ int get_stats(dbref player, dbref who, STATS *info)
      */
 
     if (!payfor(player, mudconf.searchcost)) {
-	notify(player, tprintf("You don't have enough %s.",
-		mudconf.many_coins));
+	notify_printf(player, "You don't have enough %s.",
+		mudconf.many_coins);
 	return 0;
     }
     DO_WHOLE_DB(i) {
@@ -178,8 +178,8 @@ void do_stats(dbref player, dbref cause, int key, char *name)
 	break;
     case STAT_PLAYER:
 	if (!(name && *name)) {
-	    notify(player, tprintf("The universe contains %d objects.",
-		    mudstate.db_top));
+	    notify_printf(player, "The universe contains %d objects.",
+		    mudstate.db_top);
 	    return;
 	}
 	owner = lookup_player(player, name, 1);
@@ -195,15 +195,14 @@ void do_stats(dbref player, dbref cause, int key, char *name)
 
     if (!get_stats(player, owner, &statinfo))
 	return;
-    notify(player,
-	tprintf
-	("%d objects = %d rooms, %d exits, %d things, %d players. (%d garbage)",
+    notify_printf(player,
+	"%d objects = %d rooms, %d exits, %d things, %d players. (%d garbage)",
 	    statinfo.s_total, statinfo.s_rooms, statinfo.s_exits,
-	    statinfo.s_things, statinfo.s_players, statinfo.s_garbage));
+	    statinfo.s_things, statinfo.s_players, statinfo.s_garbage);
 
 #ifdef TEST_MALLOC
     if (Wizard(player))
-	notify(player, tprintf("Malloc count = %d.", malloc_count));
+	notify_printf(player, "Malloc count = %d.", malloc_count);
 #endif				/*
 				 * TEST_MALLOC 
 				 */
@@ -212,15 +211,14 @@ void do_stats(dbref player, dbref cause, int key, char *name)
 	struct mstats mval;
 
 	mval = mstats();
-	notify(player, tprintf("Total size of the heap: %d",
-		mval.bytes_total));
-	notify(player,
-	    tprintf
-	    ("Chunks allocated: %d -- Total size of allocated chunks: %d",
-		mval.chunks_used, mval.bytes_used));
-	notify(player,
-	    tprintf("Chunks free: %d -- Total size of free chunks: %d",
-		mval.chunks_free, mval.bytes_free));
+	notify_printf(player, "Total size of the heap: %d",
+		mval.bytes_total);
+	notify_printf(player,
+	    "Chunks allocated: %d -- Total size of allocated chunks: %d",
+		mval.chunks_used, mval.bytes_used);
+	notify_printf(player,
+	    "Chunks free: %d -- Total size of free chunks: %d",
+		mval.chunks_free, mval.bytes_free);
     }
 #endif				/*
 				 * MCHECK 
@@ -304,7 +302,7 @@ void do_chownall(dbref player, dbref cause, int key, char *from, char *to)
 
     count = chown_all(victim, recipient);
     if (!Quiet(player)) {
-	notify(player, tprintf("%d objects @chowned.", count));
+	notify_printf(player, "%d objects @chowned.", count);
     }
 }
 
@@ -395,7 +393,7 @@ int search_setup(dbref player, char *searchfor, SEARCH *parm)
     }
 
     if (parm->s_rst_owner == NOTHING) {
-	notify(player, tprintf("%s: No such player", pname));
+	notify_printf(player, "%s: No such player", pname);
 	return 0;
     }
     /*
@@ -521,7 +519,7 @@ int search_setup(dbref player, char *searchfor, SEARCH *parm)
 		if (!*pname)
 		    parm->s_rst_owner = ANY_OWNER;
 	    } else {
-		notify(player, tprintf("%s: unknown type", searchfor));
+		notify_printf(player, "%s: unknown type", searchfor);
 		return 0;
 	    }
 	} else if (string_prefix("things", searchtype)) {
@@ -548,7 +546,7 @@ int search_setup(dbref player, char *searchfor, SEARCH *parm)
     }
 
     if (err) {
-	notify(player, tprintf("%s: unknown class", searchtype));
+	notify_printf(player, "%s: unknown class", searchtype);
 	return 0;
     }
     /*
@@ -566,9 +564,9 @@ int search_setup(dbref player, char *searchfor, SEARCH *parm)
      */
 
     if (!payfor(player, mudconf.searchcost)) {
-	notify(player,
-	    tprintf("You don't have enough %s to search. (You need %d)",
-		mudconf.many_coins, mudconf.searchcost));
+	notify_printf(player,
+	    "You don't have enough %s to search. (You need %d)",
+		mudconf.many_coins, mudconf.searchcost);
 	return 0;
     }
     return 1;
@@ -711,8 +709,8 @@ static void search_mark(dbref player, int key)
 	    nchanged++;
 	}
     }
-    notify(player, tprintf("%d objects %smarked", nchanged,
-	    ((key == SRCH_MARK) ? "" : "un")));
+    notify_printf(player, "%d objects %smarked", nchanged,
+	    ((key == SRCH_MARK) ? "" : "un"));
     return;
 }
 
