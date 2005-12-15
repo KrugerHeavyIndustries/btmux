@@ -510,7 +510,7 @@ void mech_stand(dbref player, void *data, char *buffer)
     int wcDeadLegs = 0;
     int tNeedsPSkill = 1;
     int tDoStand = 1;
-    int bth, standanyway = 0;
+    int bth, mechstandtime, standanyway = 0, standcarefulmod = 0;
     int i;
 
     cch(MECH_USUAL);
@@ -539,27 +539,31 @@ void mech_stand(dbref player, void *data, char *buffer)
     
     bth = MechPilotSkillRoll_BTH(mech, 0);
 
-    DOCHECK(!standanyway && bth > 12,
-            "You would fail; use 'stand anyway' if you really want to stand.");
 
     /* Check to see if the user specified an argument for the command */
     if (proper_explodearguments(buffer, args, 2)) {
-        switch (tolower(args[0][0])) {
-            case 'c':
+	    if (strcmp(args[0], "check") == 0) {
                 notify_printf(player, "Your BTH to stand would be: %d", bth);
                 for(i = 0; i < 2; i++) {
                     if(args[i]) free(args[i]);
                 }
                 return;
-            case 'a':
-                standanyway = 1;
-                break;
-            default:
-                notify(player, "Unknown argument! use 'stand check' or "
-                        "'stand anyway'");
-                break;
-        }
+            } else if (strcmp(args[0], "anyway") == 0) {    
+		standanyway = 1;
+	    } else if (strcmp(args[0], "careful") == 0) {
+		standcarefulmod = -2;
+	    } else {
+                notify(player, "Unknown argument! use 'stand check', "
+                        "'stand anyway', or 'stand careful'");
+		for(i = 0; i < 2; i++) {
+		    if(args[i]) free(args[i]);
+		}
+		return;
+	    }
     }
+
+    DOCHECK(!standanyway && bth > 12,
+            "You would fail; use 'stand anyway' if you really want to stand.");
 
     MakeMechStand(mech);
 
@@ -575,13 +579,18 @@ void mech_stand(dbref player, void *data, char *buffer)
         break_thru_ice(mech);
 
     if (tNeedsPSkill) {
-        if (!MadePilotSkillRoll(mech, 0)) {
+        if (!MadePilotSkillRoll(mech, standcarefulmod)) {
             mech_notify(mech, MECHALL,
                     "You fail your attempt to stand and fall back on the ground");
             MechFalls(mech, 1, 1);
+	    mechstandtime = ((MechType(mech) == CLASS_MW) ? 
+			    DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech));
+	    /* Not strictly FASA, but allows legged mechs to stand careful */
+	    if (standcarefulmod) {
+		    mechstandtime = MAX(30,mechstandtime * 2);
+	    }
             MECHEVENT(mech, EVENT_STANDFAIL, mech_standfail_event,
-                    MechType(mech) ==
-                    CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech),
+                    mechstandtime,
                     0);
             tDoStand = 0;
         }
@@ -590,11 +599,14 @@ void mech_stand(dbref player, void *data, char *buffer)
     if (tDoStand) {
         /* Now we set a counter in goingy to keep him from moving or jumping until he is finished standing */
         mech_notify(mech, MECHALL, "You begin to stand up.");
-        MECHEVENT(mech, EVENT_STAND, mech_stand_event,
-                MechType(mech) ==
-                CLASS_MW ? DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech), 0);
+        mechstandtime = ((MechType(mech) == CLASS_MW) ?
+                          DROP_TO_STAND_RECYCLE / 3 : StandMechTime(mech));
+        /* Not strictly FASA, but allows legged mechs to stand careful */
+        if (standcarefulmod) {
+            mechstandtime = mechstandtime * 2;
+	}
+        MECHEVENT(mech, EVENT_STAND, mech_stand_event, mechstandtime, 0);
     }
-
     /* Free args */
     for(i = 0; i < 2; i++) {
         if(args[i]) free(args[i]);

@@ -127,6 +127,9 @@ btonline-btechmux 0.6:
 	* Added startsecs() from MUX2 (Greg)
 	* Re-joining channels now sends 'You have joined channel <blah>'
 	  so dark wizzen don't get confused when quietly joining. (Greg)
+        * You may now 'stand careful' to get a -2 BTH to your piloting
+          roll while standing. The downside is it requires a full turn
+	  (30 tics) to stand carefully. (Fitz)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
@@ -207,6 +210,8 @@ btonline-btechmux 0.6:
           and undumpable, but still exploded if critted or overheated.
           Ammo destroyed by flooding is now set to 0 rounds in addition
           to disabling the slot. (Fitz)
+	* The 'stand anyway' command has been fixed to behave as
+	  expected. (Fitz)
 
 btonline-btechmux 0.4:
 	- Changes
