@@ -1,7 +1,4 @@
-
 /*
- * $Id: coolmenu_interface.h,v 1.1 2005/06/13 20:50:52 murrayma Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg

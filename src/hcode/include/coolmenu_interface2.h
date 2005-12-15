@@ -1,7 +1,4 @@
-
 /*
- * $Id: coolmenu_interface2.h,v 1.1 2005/06/13 20:50:52 murrayma Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -59,11 +56,11 @@ static void update_entry(dbref player, coolmenu * c, char l, int val)
     DOCHECK(!val,
 	"Uh.. You think about changing something and then don't.");
     if (val > 0)
-	notify(player, tprintf("%s increased by %d to %d!", d->text, val,
-		d->value));
+	notify_printf(player, "%s increased by %d to %d!", d->text, val,
+		d->value);
     else
-	notify(player, tprintf("%s decreased by %d to %d!", d->text,
-		0 - val, d->value));
+	notify_printf(player, "%s decreased by %d to %d!", d->text,
+		0 - val, d->value);
     DASMAGIC3;
     MAYBESHOW;
 }
@@ -76,9 +73,9 @@ static void update_entry_toggle(dbref player, coolmenu * c, char l)
     DOCHECK(!(d->flags & CM_TOGGLE), "Invalid type of field!");
 #ifndef REAL_SNEAKY_SET
     if (d->value)
-	notify(player, tprintf("%s set off!", d->text));
+	notify_printf(player, "%s set off!", d->text);
     else
-	notify(player, tprintf("%s set on!", d->text));
+	notify_printf(player, "%s set on!", d->text);
 #endif
     d->value = !d->value;
     DASMAGIC3;
@@ -104,7 +101,7 @@ static void update_entry_set(dbref player, coolmenu * c, char l,
 	    i = d->maxvalue;
 	DOCHECK(i < 0,
 	    "You consider a negative value, and then forget about it.");
-	notify(player, tprintf("%s set to %d!", d->text, i));
+	notify_printf(player, "%s set to %d!", d->text, i);
 	d->value = i;
     }
     DASMAGIC3;

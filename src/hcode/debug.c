@@ -1,16 +1,10 @@
-
 /*
-  Debug.c
-
-  File for debug of the hardcode routines.
-
-  2.15.93- rdm created
-
-* $Id: debug.c,v 1.1 2005/06/13 20:50:49 murrayma Exp $
-* Last modified: Sun Jun 28 20:54:06 1998 fingon
-
-  Serious knifing / new functions by Markus Stenberg <fingon@iki.fi>
-*/
+ * Debug.c
+ *
+ *  File for debug of the hardcode routines.
+ *
+ * Serious knifing / new functions by Markus Stenberg <fingon@iki.fi>
+ */
 
 #include "config.h"
 #include "externs.h"
@@ -26,7 +20,7 @@
 #include "p.mech.partnames.h"
 
 void GoThruTree(Tree tree, int (*func) (Node *));
-
+ 
 void debug_list(dbref player, void *data, char *buffer)
 {
     char *args[3];
@@ -91,8 +85,8 @@ static int debug_check_stuff(Node * tmp)
     total[t] += size;
     number[t]++;
     if (cheat_player > 0 && osize != size)
-	notify(cheat_player, tprintf("#%d: %s (%d bytes)", NodeKey(tmp),
-		SpecialObjects[t].type, size));
+	notify_printf(cheat_player, "#%d: %s (%d bytes)", NodeKey(tmp),
+		SpecialObjects[t].type, size);
     return 1;
 }
 
@@ -121,20 +115,19 @@ void debug_memory(dbref player, void *data, char *buffer)
     for (i = 0; i < global_specials; i++) {
 	if (number[i]) {
 	    if (smallest[i] == largest[i])
-		notify(player,
-		    tprintf("%4d %-20s: %d bytes total, %d each",
+		notify_printf(player,
+		    "%4d %-20s: %d bytes total, %d each",
 			number[i], SpecialObjects[i].type, total[i],
-			total[i] / number[i]));
+			total[i] / number[i]);
 	    else
-		notify(player,
-		    tprintf
-		    ("%4d %-20s: %d bytes total, %d avg, %d/%d small/large",
+		notify_printf(player,
+		    "%4d %-20s: %d bytes total, %d avg, %d/%d small/large",
 			number[i], SpecialObjects[i].type, total[i],
-			total[i] / number[i], smallest[i], largest[i]));
+			total[i] / number[i], smallest[i], largest[i]);
 	}
 	gtotal += total[i];
     }
-    notify(player, tprintf("Grand total: %d bytes.", gtotal));
+    notify_printf(player, "Grand total: %d bytes.", gtotal);
     free((void *) number);
     free((void *) total);
     free((void *) smallest);
@@ -155,10 +148,9 @@ void ShutDownMap(dbref player, dbref mapnumber)
 	    if (map->mechsOnMap[j] != -1) {
 		mech = getMech(map->mechsOnMap[j]);
 		if (mech) {
-		    notify(player,
-			tprintf
-			("Shutting down Mech #%d and restting map index to -1....",
-			    map->mechsOnMap[j]));
+		    notify_printf(player,
+			"Shutting down Mech #%d and restting map index to -1....",
+			    map->mechsOnMap[j]);
 		    mech_shutdown(GOD, (void *) mech, "");
 		    MechLastX(mech) = 0;
 		    MechLastY(mech) = 0;
@@ -198,8 +190,8 @@ void debug_setvrt(dbref player, void *data, char *buffer)
 	"That is no weapon!");
     DOCHECK(!IsWeapon(id), "That is no weapon!");
     MechWeapons[Weapon2I(id)].vrt = vrt;
-    notify(player, tprintf("VRT for %s set to %d.",
-	    MechWeapons[Weapon2I(id)].name, vrt));
+    notify_printf(player, "VRT for %s set to %d.",
+	    MechWeapons[Weapon2I(id)].name, vrt);
     STARTLOG(LOG_ALWAYS, "WIZ", "CHANGE") {
 	log_text(tprintf("VRT for %s set to %d by ",
 		MechWeapons[Weapon2I(id)].name, vrt));

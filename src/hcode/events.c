@@ -1,16 +1,10 @@
-
 /*
- * $Id: events.c,v 1.2 2005/06/22 22:07:17 murrayma Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1998 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters 
  *  Copyright (c) 2000-2002 Cord Awtry 
  *       All rights reserved
- *
- * Created: Wed Apr 29 20:17:02 1998 fingon
- * Last modified: Tue Jul 28 10:20:35 1998 fingon
  *
  */
 
@@ -67,10 +61,10 @@ void debug_EventTypes(dbref player, void *data, char *buffer) {
         notify(player, "Event history (by use)");
         for (i = 0; i < MAX_EVENTS; i++)
             if (muxevent_exec_count[t[i]])
-                notify(player, tprintf("%-3d%-20s%10d %.3f%%", t[i],
+                notify_printf(player, "%-3d%-20s%10d %.3f%%", t[i],
                             muxevent_names[t[i]], muxevent_exec_count[t[i]],
                             ((float) 100.0 * muxevent_exec_count[t[i]] /
-                             (tot_ev ? tot_ev : 1))));
+                             (tot_ev ? tot_ev : 1)));
 
         return;
     }
@@ -82,11 +76,11 @@ void debug_EventTypes(dbref player, void *data, char *buffer) {
         if (!j)
             continue;
         tot += j;
-        notify(player, tprintf("%-20s%d", muxevent_names[i], j));
+        notify_printf(player, "%-20s%d", muxevent_names[i], j);
     }
     if (tot)
         notify(player, "-------------------------------");
-    notify(player, tprintf("%d total", tot));
+    notify_printf(player, "%d total", tot);
 }
 
 void prerun_event(MUXEVENT * e)
