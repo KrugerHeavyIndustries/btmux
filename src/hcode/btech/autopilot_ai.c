@@ -959,7 +959,7 @@ static astar_node *auto_create_astar_node(short x, short y,
  * Returns 1 if it found a path and 0 if it doesn't
  */
 int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y) {
-    int astar_compare(int a, int b, void *arg) { return b-a; }
+    int astar_compare(int a, int b, void *arg) { return a-b; }
     void astar_release(void *key, void *data) { free(data); }
     MAP * map = getMap(autopilot->mapindex);
     int found_path = 0;
