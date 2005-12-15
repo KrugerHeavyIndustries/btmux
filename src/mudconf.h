@@ -1,7 +1,4 @@
-
 /* mudconf.h */
-
-/* $Id: mudconf.h,v 1.6 2005/08/08 10:30:11 murrayma Exp $ */
 
 #include "config.h"
 
@@ -30,7 +27,6 @@ struct confdata {
     int cache_depth;		/* Number of entries in each cache cell */
     int cache_width;		/* Number of cache cells */
     int cache_names;		/* Should object names be cached separately */
-#ifndef STANDALONE
     char indb[128];		/* database file name */
     char outdb[128];		/* checkpoint the database to here */
     char crashdb[128];		/* write database here on crash */
@@ -271,29 +267,6 @@ struct confdata {
     int lock_nest_lim;		/* Max nesting of lock evals */
     int parent_nest_lim;	/* Max levels of parents */
     int zone_nest_lim;		/* Max nesting of zones */
-#else
-    int paylimit;		/* getting money gets hard over this much */
-    int digcost;		/* cost of @dig command */
-    int opencost;		/* cost of @open command */
-    int robotcost;		/* cost of @robot command */
-    int createmin;		/* default (and minimum) cost of @create cmd */
-    int createmax;		/* max cost of @create command */
-    int sacfactor;		/* sacrifice earns (obj_cost/sfactor) + sadj */
-    int sacadjust;		/* ... */
-    int room_quota;		/* quota needed to make a room */
-    int exit_quota;		/* quota needed to make an exit */
-    int thing_quota;		/* quota needed to make a thing */
-    int player_quota;		/* quota needed to make a robot player */
-    int quotas;			/* TRUE = have building quotas */
-    int start_room;		/* initial location and home for players */
-    int start_home;		/* initial HOME for players */
-    int default_home;		/* HOME when home is inaccessable */
-    int vattr_flags;		/* Attr flags for all user-defined attrs */
-    int log_options;		/* What gets logged */
-    int log_info;		/* Info that goes into log entries */
-    Uchar markdata[8];		/* Masks for marking/unmarking */
-    int ntfy_nest_lim;		/* Max nesting of notifys */
-#endif				/* STANDALONE */
 #ifdef SQL_SUPPORT
     int sqlDB_init_A;
     char sqlDB_type_A[128];     /* Currently only 'MySQL' */
@@ -390,7 +363,6 @@ struct forward_list {
 typedef struct statedata STATEDATA;
 struct statedata {
     int record_players;		/* The maximum # of player logged on */
-#ifndef STANDALONE
     int initializing;		/* are we reading config file at startup? */
     int panicking;		/* are we in the middle of dying horribly? */
     int restarting;		/* Are we restarting? */
@@ -481,21 +453,6 @@ struct statedata {
     char *poutnew;		/* The output being build by the current command */
     char *poutbufc;		/* Buffer position for poutnew */
     dbref poutobj;		/* Object doing the piping */
-#else
-    int logging;		/* Are we in the middle of logging? */
-    char buffer[256];		/* A buffer for holding temp stuff */
-    int attr_next;		/* Next attr to alloc when freelist is empty */
-    ALIST iter_alist;		/* Attribute list for iterations */
-    char *mod_alist;		/* Attribute list for modifying */
-    int mod_size;		/* Length of modified buffer */
-    dbref mod_al_id;		/* Where did mod_alist come from? */
-    int min_size;		/* Minimum db size (from file header) */
-    int db_top;			/* Number of items in the db */
-    int db_size;		/* Allocated size of db structure */
-    dbref freelist;		/* Head of object freelist */
-    MARKBUF *markbits;		/* temp storage for marking/unmarking */
-    HASHTAB vattr_name_htab;	/* User attribute names hashtable */
-#endif				/* STANDALONE */
     char *executable_path;
 };
 
