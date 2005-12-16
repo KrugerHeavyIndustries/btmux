@@ -518,8 +518,11 @@ void map_update(dbref obj, void *data)
     int ma, ml, wind, wspeed, cloudbase = 200;
     int oldl, oldv, i, j;
     AUTO *au;
+   
+/* Changed from % 25 to % 60. %60 never hit when muxevent_tick came here and was odd.
+   % 25 should hit when its odd or even (25 75 125... when odd 50 100 150... when even */
 
-    if (!(muxevent_tick % 60)) {
+    if (!(muxevent_tick % 25)) {
 	oldl = map->maplight;
 	oldv = map->mapvis;
 	if (!(tmps = silly_atr_get(obj, A_MAPVIS)) ||
