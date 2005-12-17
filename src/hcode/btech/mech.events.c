@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.events.c,v 1.1.1.1 2005/01/11 21:18:15 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,10 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Created: Sat Aug 31 15:53:12 1996 fingon
- * Last modified: Tue Jul 28 10:17:58 1998 fingon
- *
  */
 
 #include <math.h>
@@ -90,13 +83,13 @@ void mech_lock_event(MUXEVENT * e)
 	if (!InLineOfSight(mech, target, MechX(target), MechY(target),
 		FlMechRange(map, mech, target)))
 	    return;
-	mech_notify(mech, MECHALL,
-	    tprintf("The sensors acquire a stable lock on %s.",
-		GetMechToMechID(mech, target)));
+	mech_printf(mech, MECHALL,
+	    "The sensors acquire a stable lock on %s.",
+		GetMechToMechID(mech, target));
     } else if (MechTargX(mech) >= 0 && MechTargY(mech) >= 0)
-	mech_notify(mech, MECHALL,
-	    tprintf("The sensors acquire a stable lock on (%d,%d).",
-		MechTargX(mech), MechTargY(mech)));
+	mech_printf(mech, MECHALL,
+	    "The sensors acquire a stable lock on (%d,%d).",
+		MechTargX(mech), MechTargY(mech));
 
 }
 
@@ -227,9 +220,9 @@ void mech_lateral_event(MUXEVENT * e)
 
     if (!mech || !Started(mech))
 	return;
-    mech_notify(mech, MECHALL,
-	tprintf("Lateral movement mode change to %s completed.",
-	    lateral_modes[latmode].full));
+    mech_printf(mech, MECHALL,
+	"Lateral movement mode change to %s completed.",
+	    lateral_modes[latmode].full);
     MechLateral(mech) = lateral_modes[latmode].ofs;
 #ifdef BT_MOVEMENT_MODES
     if (MechMove(mech) != MOVE_QUAD) {
@@ -420,10 +413,9 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
     if (!ammoLeft) {
 	SetPartTempNuke(objMech, wSect, wSlot, 0);
 
-	mech_notify(objMech, MECHALL,
-	    tprintf
-	    ("You finish bouncing around and realize you no longer have ammo for your %s!",
-		get_parts_long_name(I2Weapon(wWeapIdx), 0)));
+	mech_printf(objMech, MECHALL,
+	    "You finish bouncing around and realize you no longer have ammo for your %s!",
+		get_parts_long_name(I2Weapon(wWeapIdx), 0));
 	return;
     }
 
@@ -433,9 +425,9 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
 
 	mech_notify(objMech, MECHPILOT,
 	    "You make a roll to unjam the weapon!");
-	mech_notify(objMech, MECHPILOT,
-	    tprintf("Modified Gunnery Skill: BTH %d\tRoll: %d",
-		wRollNeeded, wRoll));
+	mech_printf(objMech, MECHPILOT,
+	    "Modified Gunnery Skill: BTH %d\tRoll: %d",
+		wRollNeeded, wRoll);
 
 	if (wRoll < wRollNeeded) {
 	    mech_notify(objMech, MECHALL,
@@ -451,9 +443,9 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
     }
 
     SetPartTempNuke(objMech, wSect, wSlot, 0);
-    mech_notify(objMech, MECHALL,
-	tprintf("You manage to clear the jam on your %s!",
-	    get_parts_long_name(I2Weapon(wWeapIdx), 0)));
+    mech_printf(objMech, MECHALL,
+	"You manage to clear the jam on your %s!",
+	    get_parts_long_name(I2Weapon(wWeapIdx), 0));
     MechLOSBroadcast(objMech, "ejects a mangled shell!");
 
     SetPartData(objMech, ammoLoc, ammoCrit, GetPartData(objMech, ammoLoc,

@@ -1,7 +1,4 @@
-
 /*
-* $Id: mech.combat.misc.c,v 1.2 2005/01/15 16:57:14 kstevens Exp $
-*
 * Author: Cord Awtry <kipsta@mediaone.net>
 *  Copyright (c) 2000-2002 Cord Awtry
 *       All rights reserved
@@ -127,10 +124,10 @@ void mech_ammowarn_event(MUXEVENT * e)
 	return;
     if (weapindx < 0)
 	return;
-    mech_notify(mech, MECHALL,
-	tprintf("%sWARNING: Ammo for %s is running low.%%c",
+    mech_printf(mech, MECHALL,
+	"%sWARNING: Ammo for %s is running low.%%c",
 	    sev ? "%ch%cr" : "%ch%cy",
-	    get_parts_long_name(I2Weapon(weapindx), 0)));
+	    get_parts_long_name(I2Weapon(weapindx), 0));
 }
 
 void ammo_expedinture_check(MECH * mech, int weapindx, int ns)

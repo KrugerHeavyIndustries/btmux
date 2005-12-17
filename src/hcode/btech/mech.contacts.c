@@ -1,16 +1,10 @@
-
 /*
- * $Id: mech.contacts.c,v 1.1.1.1 2005/01/11 21:18:14 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Tue Oct  6 17:15:16 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -46,14 +40,14 @@ static char *c_desc[] = {
 
 void show_brief_flags(dbref player, MECH * mech)
 {
-    notify(player, tprintf("Brief status for %s:", GetMechToMechID(mech,
-		mech)));
+    notify_printf(player, "Brief status for %s:", GetMechToMechID(mech,
+		mech));
 #ifdef ADVANCED_LOS
-    notify(player, tprintf("    (A)utocontacts: %s",
-	    ac_desc[mech->brief / 4]));
+    notify_printf(player, "    (A)utocontacts: %s",
+	    ac_desc[mech->brief / 4]);
 #endif
-    notify(player, tprintf("    (C)ontacts:     %s",
-	    c_desc[mech->brief % 4]));
+    notify_printf(player, "    (C)ontacts:     %s",
+	    c_desc[mech->brief % 4]);
 }
 
 void mech_brief(dbref player, void *data, char *buffer)
@@ -80,16 +74,16 @@ void mech_brief(dbref player, void *data, char *buffer)
 	v = BOUNDED(0, v, 6);
 	mech->brief = mech->brief % 4;
 	mech->brief += v * 4;
-	mech_notify(mech, MECHALL,
-	    tprintf("Autocontact brevity set to %s.", ac_desc[v]));
+	mech_printf(mech, MECHALL,
+	    "Autocontact brevity set to %s.", ac_desc[v]);
 	return;
 #endif
     case 'C':
 	DOCHECK(v < 0 || v > 3, "Number out of range!");
 	v = BOUNDED(0, v, 3);
 	mech->brief = ((mech->brief / 4) * 4) + v;
-	mech_notify(mech, MECHALL, tprintf("Contact brevity set to %s.",
-		c_desc[v]));
+	mech_printf(mech, MECHALL, "Contact brevity set to %s.",
+		c_desc[v]);
 	return;
     }
 }
@@ -347,8 +341,8 @@ void mech_contacts(dbref player, void *data, char *buffer)
 			(SEE_NEGNEXT | SEE_DEAD | SEE_SHUTDOWN | SEE_ENEMA
 			| SEE_ALLY | SEE_TARGET);
 		} else
-		    notify(player,
-			tprintf("Ignoring %c as contact option.", c));
+		    notify_printf(player,
+			"Ignoring %c as contact option.", c);
 	    }
 	}
     } else {
@@ -493,9 +487,9 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	    notify(player, buff);
 	    sprintf(buff, "      Movement Type: %s", move_type);
 	    notify(player, buff);
-	    notify(player, tprintf("      Mech is in %s Arc",
+	    notify_printf(player, "      Mech is in %s Arc",
 		    GetArcID(mech, InWeaponArc(mech, MechFX(tempMech),
-			    MechFY(tempMech)))));
+			    MechFY(tempMech))));
 	    if (MechStatus(tempMech) & DESTROYED)
 		notify(player, "      Mech Destroyed");
 	    if (!(MechStatus(tempMech) & STARTED))
@@ -503,9 +497,9 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	    if (Fallen(tempMech))
 		notify(player, "      Mech has Fallen!");
 	    if (Jumping(tempMech))
-		notify(player,
-		    tprintf("      Mech is Jumping!\tJump Heading: %d",
-			MechJumpHeading(tempMech)));
+		notify_printf(player,
+		    "      Mech is Jumping!\tJump Heading: %d",
+			MechJumpHeading(tempMech));
 	    notify(player, " ");
 	}
     }

@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.combat.missile.c,v 1.2 2005/01/15 16:57:14 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
@@ -91,15 +88,15 @@ void Missile_Hit(MECH * mech,
     else
         sprintf(buf, "%s", "damage");
 
-    mech_notify(mech, MECHALL,
-        tprintf("%s %s %s absorbed by the trees!",
+    mech_printf(mech, MECHALL,
+        "%s %s %s absorbed by the trees!",
         (orig_num_missiles == 1 ? "The" : num_missiles_hit ==
             0 ? "All of the" : "Some of the"), buf,
-        (orig_num_missiles == 1 ? "is" : "are")));
-    mech_notify(target, MECHALL, tprintf("The trees absorb %s %s",
+        (orig_num_missiles == 1 ? "is" : "are"));
+    mech_printf(target, MECHALL, "The trees absorb %s %s",
         ((orig_num_missiles == 1) ||
             (num_missiles_hit == 0) ? "the" : "some of the"),
-        buf));
+        buf);
     }
 
     while (num_missiles_hit) {
@@ -278,14 +275,12 @@ int MissileHitTarget(MECH * mech,
             checkECM(hitMech);
             }
 
-            mech_notify(hitMech, MECHALL,
-            tprintf
-            ("A NARC Beacon has been attached to your %s%s!",
-                strLocName, tIsRear == 1 ? " (Rear)" : ""));
-            mech_notify(mech, MECHALL,
-            tprintf
-            ("Your NARC Beacon attaches to the target's %s%s!",
-                strLocName, tIsRear == 1 ? " (Rear)" : ""));
+            mech_printf(hitMech, MECHALL,
+            "A NARC Beacon has been attached to your %s%s!",
+                strLocName, tIsRear == 1 ? " (Rear)" : "");
+            mech_printf(mech, MECHALL,
+            "Your NARC Beacon attaches to the target's %s%s!",
+                strLocName, tIsRear == 1 ? " (Rear)" : "");
         }
         } else
         mech_notify(mech, MECHALL,
@@ -316,9 +311,9 @@ int MissileHitTarget(MECH * mech,
         hitMech, weapindx, wSection, wCritSlot)]);
 
     if (LOS) {
-    mech_notify(mech, MECHALL, tprintf("%%cg%s with %d missile%s!%%c",
+    mech_printf(mech, MECHALL, "%%cg%s with %d missile%s!%%c",
         LOS == 1 ? "You hit" : "The swarm hits", hit,
-        hit > 1 ? "s" : ""));
+        hit > 1 ? "s" : "");
     }
 
     if (AMSShotdown > 0) {
@@ -330,14 +325,13 @@ int MissileHitTarget(MECH * mech,
         mech_notify(hitMech, MECHALL,
         "Your Anti-Missile System activates and shoots all the incoming missiles!");
     } else {
-        mech_notify(mech, MECHALL,
-        tprintf("The target shoots down %d of your missiles!",
-            AMSShotdown));
+        mech_printf(mech, MECHALL,
+        "The target shoots down %d of your missiles!",
+            AMSShotdown);
 
-        mech_notify(hitMech, MECHALL,
-        tprintf
-        ("Your Anti-Missile System activates and shoots down %d incoming missiles!",
-            AMSShotdown));
+        mech_printf(hitMech, MECHALL,
+        "Your Anti-Missile System activates and shoots down %d incoming missiles!",
+            AMSShotdown);
     }
     }
 
@@ -452,12 +446,11 @@ void SwarmHitTarget(MECH * mech,
         "The missile-swarm turns towards you!");
     if (InLineOfSight_NB(mech, source, MechX(mech), MechY(mech),
         FaMechRange(mech, source)))
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("Your missile-swarm of %d missile%s targets %s!",
+        mech_printf(mech, MECHALL,
+        "Your missile-swarm of %d missile%s targets %s!",
             missiles, missiles > 1 ? "s" : "",
             mech == hitMech ? "YOU!!" : GetMechToMechID(mech,
-            hitMech)));
+            hitMech));
     MechLOSBroadcasti(mech, hitMech, "'s missile-swarm targets %s!");
     }
 }

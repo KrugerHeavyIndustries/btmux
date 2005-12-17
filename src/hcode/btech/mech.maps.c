@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.maps.c,v 1.7 2005/08/03 21:40:54 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Fri Sep 18 13:09:09 1998 fingon
- *
  */
 
 #include "config.h"
@@ -46,10 +40,10 @@ void mech_findcenter(dbref player, void *data, char *buffer)
     x = MechX(mech);
     y = MechY(mech);
     MapCoordToRealCoord(x, y, &fx, &fy);
-    notify(player, tprintf("Current hex: (%d,%d,%d)\tRange to center: %.2f\t"
+    notify_printf(player, "Current hex: (%d,%d,%d)\tRange to center: %.2f\t"
 			   "Bearing to center: %d", x, y, MechZ(mech),
 			   FindHexRange(fx, fy, MechFX(mech), MechFY(mech)),
-			   FindBearing(MechFX(mech), MechFY(mech), fx, fy)));
+			   FindBearing(MechFX(mech), MechFY(mech), fx, fy));
 }
 
 static int parse_tacargs(dbref player, MECH *mech, char ** args, int argc,
@@ -187,8 +181,8 @@ static void set_colorscheme(dbref player)
 		custom_color_str[i] = '\0';
 		break;
 	    default:
-		notify(player, tprintf("Invalid character '%c' in MAPCOLOR "
-				       "attribute!", custom_color_str[i]));
+		notify_printf(player, "Invalid character '%c' in MAPCOLOR "
+				       "attribute!", custom_color_str[i]);
 		notify(player, "Using default: " DEFAULT_COLOR_STRING);
 		memcpy(custom_color_str, DEFAULT_COLOR_SCHEME, NUM_COLOR_IDX);
 		return;
@@ -687,7 +681,7 @@ void mech_lrsmap(dbref player, void *data, char *buffer)
 	mode |= LRS_LOSMODE | LRS_MECHMODE | LRS_TERRAINMODE;
 	break;
     default:
-	notify(player, tprintf("Unknown LRS sensor type '%s'!", args[0]));
+	notify_printf(player, "Unknown LRS sensor type '%s'!", args[0]);
 	return;
     }
     
@@ -1636,8 +1630,8 @@ static void mech_enter_event(MUXEVENT * e)
     }
 
     StopBSuitSwarmers(FindObjectsData(mech->mapindex), mech, 1);
-    mech_notify(mech, MECHALL, tprintf("You enter %s.",
-	    structure_name(mapo)));
+    mech_printf(mech, MECHALL, "You enter %s.",
+	    structure_name(mapo));
     MechLOSBroadcast(mech, tprintf("has entered %s at %d,%d.",
 	    structure_name(mapo), MechX(mech), MechY(mech)));
     MarkForLOSUpdate(mech);

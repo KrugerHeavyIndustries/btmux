@@ -1,7 +1,4 @@
-
 /*
- * $Id: eject.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Created: Mon Oct  7 01:09:08 1996 fingon
- * Last modified: Sat Jun  6 20:45:29 1998 fingon
  *
  */
 
@@ -98,13 +92,13 @@ void pickup_mw(MECH * mech, MECH * target)
 	(MechType(mech) != CLASS_VTOL) &&
 	!(MechSpecials(mech) & SALVAGE_TECH),
 	"You can't pick up, period.") if (mw > 0)
-	notify(mw,
-	    tprintf("%s scoops you up and brings you into the cockpit.",
-		GetMechToMechID(target, mech)));
+	notify_printf(mw,
+	    "%s scoops you up and brings you into the cockpit.",
+		GetMechToMechID(target, mech));
     /* Put the player in the picker uppper and clear him from the map */
     MechLOSBroadcast(mech, tprintf("picks up %s.", GetMechID(target)));
-    mech_notify(mech, MECHALL,
-	tprintf("You pick up the stray mechwarrior from the field."));
+    mech_printf(mech, MECHALL,
+	"You pick up the stray mechwarrior from the field.");
     if (MechTeam(target) != MechTeam(mech))
 	tele_contents(target->mynum, mech->mynum, TELE_ALL | TELE_SLAVE);
     else
@@ -160,7 +154,7 @@ static void char_eject(dbref player, MECH * mech)
 #else
 #ifdef RANDOM_CHAN_ON_EJECT
     m->freq[0] = random() % 1000000;
-    notify(player, tprintf("Emergency radio channel set to %d.", m->freq[0]));
+    notify_printf(player, "Emergency radio channel set to %d.", m->freq[0]);
 #endif
 #endif
     notify(player, "You eject from the unit!");
@@ -256,7 +250,7 @@ static void char_disembark(dbref player, MECH * mech)
 #else
 #ifdef RANDOM_CHAN_ON_EJECT
     m->freq[0] = random() % 1000000;
-    notify(player, tprintf("Emergency radio channel set to %d.", m->freq[0]));
+    notify_printf(player, "Emergency radio channel set to %d.", m->freq[0]);
 #endif
 #endif
     mymap = getMap(m->mapindex);

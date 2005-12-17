@@ -1,12 +1,8 @@
-
 /*
- * $Id: mech.fire.c,v 1.1.1.1 2005/01/11 21:18:15 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *
  *  Copyright (c) 2001-2002 Cord Awtry
  *       All rights reserved
- *
  */
 
 #include "mech.h"
@@ -61,9 +57,9 @@ static void vehicle_burn_event(MUXEVENT * objEvent)
     if (!GetSectInt(objMech, wLoc))	/* if our loc is gone, no damage to do */
 	return;
 
-    mech_notify(objMech, MECHALL,
-	tprintf("%%cr%%chYour %s takes damage from the fire!%%cn",
-	    strLocName));
+    mech_printf(objMech, MECHALL,
+	"%%cr%%chYour %s takes damage from the fire!%%cn",
+	    strLocName);
     DamageMech(objMech, objMech, 0, -1, wLoc, 0, 0, wDamRoll, 0, 0, 0, -1,
 	0, 1);
 
@@ -75,9 +71,9 @@ static void vehicle_burn_event(MUXEVENT * objEvent)
 	    VEHICLEBURN_TICK, wLoc);
     else {
 	if (GetSectInt(objMech, wLoc))
-	    mech_notify(objMech, MECHALL,
-		tprintf("The fire burning on your %s finally goes out.",
-		    strLocName));
+	    mech_printf(objMech, MECHALL,
+		"The fire burning on your %s finally goes out.",
+		    strLocName);
 	if (!Burning(objMech))
 	    MechLOSBroadcast(objMech, "is no longer engulfed in flames.");
     }
@@ -100,8 +96,8 @@ void vehicle_start_burn(MECH * objMech, MECH * objAttacker)
 	    wDamage = Number(1, 6);
 	    ArmorStringFromIndex(wIter, strLocName, MechType(objMech),
 		MechMove(objMech));
-	    mech_notify(objMech, MECHALL,
-		tprintf("Your %s catches on fire!", strLocName));
+	    mech_printf(objMech, MECHALL,
+		"Your %s catches on fire!", strLocName);
 
 	    DamageMech(objMech, objAttacker, 0, -1, wIter, 0, 0, wDamage,
 		0, 0, 0, -1, 0, 1);

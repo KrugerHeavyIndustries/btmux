@@ -1,7 +1,4 @@
-
 /*
-* $Id: mech.damage.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
-*
 * Author: Cord Awtry <kipsta@mediaone.net>
 *  Copyright (c) 2000-2002 Cord Awtry
 *  Copyright (c) 1999-2005 Kevin Stevens
@@ -10,7 +7,6 @@
 * Based on work that was:
 *  Copyright (c) 1997 Markus Stenberg
 *  Copyright (c) 1998-2000 Thomas Wouters
-*
 */
 
 #include "mech.h"
@@ -236,11 +232,11 @@ int cause_armordamage(MECH * wounded,
     }
 
     if (seriousness > 0 && MechArmorWarn(wounded))
-        mech_notify(wounded, MECHALL, tprintf("%sWARNING: %s%s Armor %s",
+        mech_printf(wounded, MECHALL, "%sWARNING: %s%s Armor %s",
                     MySeriousColorStr(wounded, seriousness),
                     ShortArmorSectionString(MechType(wounded),
                         MechMove(wounded), hitloc),
-                    isrear ? " (Rear)" : "", MySeriousStr(wounded, seriousness)));
+                    isrear ? " (Rear)" : "", MySeriousStr(wounded, seriousness));
 
     return intDamage > 0 ? intDamage : 0;
 }
@@ -563,11 +559,11 @@ void DamageMech(MECH * wounded,
     /*  if (LOS && attackPilot != -1) */
     if (LOS) {
 	if (!was_transfer)
-	    mech_notify(attacker, MECHALL, tprintf("%%cgYou hit %s%%c",
-		    notificationBuff));
+	    mech_printf(attacker, MECHALL, "%%cgYou hit %s%%c",
+		    notificationBuff);
 	else
-	    mech_notify(attacker, MECHALL,
-		tprintf("%%cgDamage transfer.. %s%%c", notificationBuff));
+	    mech_printf(attacker, MECHALL,
+		"%%cgDamage transfer.. %s%%c", notificationBuff);
     }
     if (MechType(wounded) == CLASS_MW && !was_transfer)
 	if (damage > 0)
@@ -575,9 +571,9 @@ void DamageMech(MECH * wounded,
 		    armor_effect(wounded, cause, hitloc, damage,
 			intDamage)))
 		return;
-    mech_notify(wounded, MECHALL,
-	tprintf("%%ch%%cyYou have been hit %s%s%%c",
-	    notificationBuff, was_transfer ? "(transfer)" : ""));
+    mech_printf(wounded, MECHALL,
+	"%%ch%%cyYou have been hit %s%s%%c",
+	    notificationBuff, was_transfer ? "(transfer)" : "");
 
     /* Always a good policy :-> */
     if (damage > 0 && intDamage <= 0 && !was_transfer && !Fallen(wounded)) {
@@ -811,8 +807,8 @@ void LoseWeapon(MECH * mech, int hitloc)
 
     DestroyWeapon(mech, hitloc, I2Weapon(b), firstCrit, 1,
 	GetWeaponCrits(mech, b));
-    mech_notify(mech, MECHALL, tprintf("%%ch%%crYour %s is destroyed!%%c",
-	    &MechWeapons[b].name[3]));
+    mech_printf(mech, MECHALL, "%%ch%%crYour %s is destroyed!%%c",
+	    &MechWeapons[b].name[3]);
 }
 
 void DestroyHeatSink(MECH * mech, int hitloc)
@@ -869,8 +865,8 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 	ArmorStringFromIndex(hitloc, locname, MechType(wounded),
 	    MechMove(wounded));
 	if (LOS >= 0)
-	    mech_notify(wounded, MECHALL,
-		tprintf("Your %s has been destroyed!", locname));
+	    mech_printf(wounded, MECHALL,
+		"Your %s has been destroyed!", locname);
 	sprintf(msgbuf, "'s %s has been destroyed!", locname);
 	MechLOSBroadcast(wounded, msgbuf);
     }

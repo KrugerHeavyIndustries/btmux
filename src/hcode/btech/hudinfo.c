@@ -1,7 +1,4 @@
-
 /*
- * $Id: hudinfo.c,v 1.2 2005/06/24 04:39:07 av1-op Exp $
- *
  * Copyright (c) 2002 Thomas Wouters <thomas@xs4all.net>
  *
  * HUDINFO support.

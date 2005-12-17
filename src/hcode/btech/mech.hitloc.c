@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.hitloc.c,v 1.1.1.1 2005/01/11 21:18:17 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Fri Sep 20 19:54:48 1996 fingon
- * Last modified: Tue Jun 16 18:23:58 1998 fingon
- *
  */
 
 
@@ -1196,10 +1189,9 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 	    mech_notify(mech, MECHALL,
 		"%cr%chYour destroyed motive system takes another hit!%cn");
 	else
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("%%cr%%chYour motive system takes a minor hit, making it harder to control your %s!%%cn",
-		    strVhlTypeName));
+	    mech_printf(mech, MECHALL,
+		"%%cr%%chYour motive system takes a minor hit, making it harder to control your %s!%%cn",
+		    strVhlTypeName);
 
 	if (MechSpeed(mech) != 0.0)
 	    MechLOSBroadcast(mech, "wobbles slightly.");
@@ -1210,10 +1202,9 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 	    mech_notify(mech, MECHALL,
 		"%cr%chYour destroyed motive system takes another hit!%cn");
 	else
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("%%cr%%chYour motive system takes a moderate hit, slowing you down and making it harder to control your %s!%%cn",
-		    strVhlTypeName));
+	    mech_printf(mech, MECHALL,
+		"%%cr%%chYour motive system takes a moderate hit, slowing you down and making it harder to control your %s!%%cn",
+		    strVhlTypeName);
 
 	if (MechSpeed(mech) != 0.0)
 	    MechLOSBroadcast(mech, "wobbles violently.");
@@ -1225,10 +1216,9 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 	    mech_notify(mech, MECHALL,
 		"%cr%chYour destroyed motive system takes another hit!%cn");
 	else
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("%%cr%%chYour motive system is destroyed! Your %s can no longer move!%%cn",
-		    strVhlTypeName));
+	    mech_printf(mech, MECHALL,
+		"%%cr%%chYour motive system is destroyed! Your %s can no longer move!%%cn",
+		    strVhlTypeName);
 
 	if (MechSpeed(mech) > 0)
 	    MechLOSBroadcast(mech,

@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.advanced.c,v 1.3 2005/06/23 18:31:42 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Tue Sep  8 10:12:37 1998 fingon
- *
- * Complete rewrite of the original MUSE code (because original sucked)
  *
  */
 
@@ -438,9 +431,9 @@ void mech_inarc_ammo_toggle(dbref player, void *data, char *buffer)
 	}
     }
 
-    mech_notify(mech, MECHALL,
-	tprintf("Weapon %d set to fire iNARC %s pods.", wWeapNum,
-	    strMode));
+    mech_printf(mech, MECHALL,
+	"Weapon %d set to fire iNARC %s pods.", wWeapNum,
+	    strMode);
 }
 
 void mech_explosive(dbref player, void *data, char *buffer)
@@ -592,8 +585,8 @@ void mech_rac(dbref player, void *data, char *buffer)
 	}
     }
 
-    mech_notify(mech, MECHALL,
-	tprintf("Weapon %d set to fire %s at a time.", wWeapNum, strMode));
+    mech_printf(mech, MECHALL,
+	"Weapon %d set to fire %s at a time.", wWeapNum, strMode);
 }
 
 static int mech_unjamammo_func(MECH * mech, dbref player, int index,
@@ -619,9 +612,9 @@ static int mech_unjamammo_func(MECH * mech, dbref player, int index,
 	if (SectHasBusyWeap(mech, i)) {
 	    ArmorStringFromIndex(i, location, MechType(mech),
 		MechMove(mech));
-	    mech_notify(mech, MECHALL,
-		tprintf("You have weapons recycling on your %s.",
-		    location));
+	    mech_printf(mech, MECHALL,
+		"You have weapons recycling on your %s.",
+		    location);
 	    return 0;
 	}
     }
@@ -629,9 +622,9 @@ static int mech_unjamammo_func(MECH * mech, dbref player, int index,
     DOCHECK0(UnJammingAmmo(mech), "You are already unjamming a weapon!");
 
     MECHEVENT(mech, EVENT_UNJAM_AMMO, mech_unjam_ammo_event, 60, index);
-    mech_notify(mech, MECHALL,
-	tprintf("You begin to shake the jammed ammo loose on weapon #%d",
-	    index));
+    mech_printf(mech, MECHALL,
+	"You begin to shake the jammed ammo loose on weapon #%d",
+	    index);
     return 0;
 }
 void mech_unjamammo(dbref player, void *data, char *buffer)
@@ -743,14 +736,14 @@ void mech_hotload(dbref player, void *data, char *buffer)
 	"The weapon system chirps: 'That weapon can not be hotloaded!'");
 
     if (GetPartFireMode(mech, wSection, wCritSlot) & HOTLOAD_MODE) {
-	mech_notify(mech, MECHALL,
-	    tprintf("Hotloading for weapon %d has been toggled off.",
-		wWeapNum));
+	mech_printf(mech, MECHALL,
+	    "Hotloading for weapon %d has been toggled off.",
+		wWeapNum);
 	GetPartFireMode(mech, wSection, wCritSlot) &= ~HOTLOAD_MODE;
     } else {
-	mech_notify(mech, MECHALL,
-	    tprintf("Hotloading for weapon %d has been toggled on.",
-		wWeapNum));
+	mech_printf(mech, MECHALL,
+	    "Hotloading for weapon %d has been toggled on.",
+		wWeapNum);
 	GetPartFireMode(mech, wSection, wCritSlot) |= HOTLOAD_MODE;
     }
 }
@@ -818,8 +811,8 @@ static void mech_masc_event(MUXEVENT * e)
 	roll--;
     if (needed < 10 && Good_obj(MechPilot(mech)) && WizP(MechPilot(mech)))
 	roll = Number(needed + 1, 12);
-    mech_notify(mech, MECHALL, tprintf("MASC: BTH %d+, Roll: %d",
-	    needed + 1, roll));
+    mech_printf(mech, MECHALL, "MASC: BTH %d+, Roll: %d",
+	    needed + 1, roll);
     if (roll > needed) {
 	MECHEVENT(mech, EVENT_MASC_FAIL, mech_masc_event, MASC_TICK, 0);
 	return;
@@ -910,8 +903,8 @@ static void mech_scharge_event(MUXEVENT * e)
 	roll = roll - 1;
     if (needed < 10 && Good_obj(MechPilot(mech)) && WizP(MechPilot(mech)))
 	roll = Number(needed + 1, 12);
-    mech_notify(mech, MECHALL, tprintf("Supercharger: BTH %d, Roll: %d",
-	    needed + 1, roll));
+    mech_printf(mech, MECHALL, "Supercharger: BTH %d, Roll: %d",
+	    needed + 1, roll);
     if (roll > needed) {
 	MECHEVENT(mech, EVENT_SCHARGE_FAIL, mech_scharge_event,
 	    SCHARGE_TICK, 0);
@@ -1012,9 +1005,9 @@ static void mech_explode_event(MUXEVENT * e)
 
     if ((--extra) % 256) {
 
-        mech_notify(mech, MECHALL,
-                tprintf("Self-destruction in %d second%s..", extra % 256,
-                    extra > 1 ? "s" : ""));
+        mech_printf(mech, MECHALL,
+                "Self-destruction in %d second%s..", extra % 256,
+                    extra > 1 ? "s" : "");
         MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, extra);
 
     } else {
@@ -1131,9 +1124,9 @@ void mech_explode(dbref player, void *data, char *buffer)
     }
     mech_notify(mech, MECHALL,
 	"Self-destruction sequence engaged ; please stand by.");
-    mech_notify(mech, MECHALL, tprintf("%s in %d seconds.",
+    mech_printf(mech, MECHALL, "%s in %d seconds.",
 	    ammo ? "The ammunition will explode" :
-	    "The reactor will blow up", time));
+	    "The reactor will blow up", time);
     /* Null out the pilot to disallow further commands */
     MechPilot(mech) = -1;
 }
@@ -1234,8 +1227,8 @@ static int mech_disableweap_func(MECH * mech, dbref player, int index,
 	"You can only disable Gauss weapons.");
 
     SetPartTempNuke(mech, section, critical, FAIL_DESTROYED);
-    mech_notify(mech, MECHALL, tprintf("You power down weapon %d.",
-	    index));
+    mech_printf(mech, MECHALL, "You power down weapon %d.",
+	    index);
     return 0;
 }
 
@@ -1450,14 +1443,12 @@ void show_narc_pods(dbref player, MECH * mech, char *buffer)
 		MechMove(mech));
 
 	    if (SectIsDestroyed(mech, i)) {
-		notify(player,
-		    tprintf
-		    (" %-14.13s||********||***********||************||********||************* ",
-			location));
+		notify_printf(player,
+		    " %-14.13s||********||***********||************||********||************* ",
+			location);
 	    } else {
-		notify(player,
-		    tprintf
-		    (" %-14.13s||....%s...||.....%s.....||......%s.....||....%s...||......%s...... ",
+		notify_printf(player,
+		    " %-14.13s||....%s...||.....%s.....||......%s.....||....%s...||......%s...... ",
 			location, checkSectionForSpecial(mech,
 			    NARC_ATTACHED, i) ? "X" : ".",
 			checkSectionForSpecial(mech, INARC_HOMING_ATTACHED,
@@ -1465,7 +1456,7 @@ void show_narc_pods(dbref player, MECH * mech, char *buffer)
 			    INARC_HAYWIRE_ATTACHED, i) ? "X" : ".",
 			checkSectionForSpecial(mech, INARC_ECM_ATTACHED,
 			    i) ? "X" : ".", checkSectionForSpecial(mech,
-			    INARC_NEMESIS_ATTACHED, i) ? "X" : "."));
+			    INARC_NEMESIS_ATTACHED, i) ? "X" : ".");
 	    }
 	}
     }
@@ -1607,10 +1598,9 @@ void remove_inarc_pods_mech(dbref player, MECH * mech, char *buffer)
     ArmorStringFromIndex(wArmToUse, strPunchWith, MechType(mech),
 	MechMove(mech));
 
-    mech_notify(mech, MECHALL,
-	tprintf
-	("You try to swat at the iNarc pods attached to your %s with your %s.  BTH:  %d,\tRoll:  %d",
-	    strLocation, strPunchWith, wBTH, wRoll));
+    mech_printf(mech, MECHALL,
+	"You try to swat at the iNarc pods attached to your %s with your %s.  BTH:  %d,\tRoll:  %d",
+	    strLocation, strPunchWith, wBTH, wRoll);
 
     /* Oops, we failed! */
     if (wRoll < wBTH) {
@@ -1632,9 +1622,9 @@ void remove_inarc_pods_mech(dbref player, MECH * mech, char *buffer)
     } else {
 	MechSections(mech)[wLoc].specials &= ~wPodType;
 
-	mech_notify(mech, MECHALL,
-	    tprintf("You knock a %s pod off your %s!", strPodType,
-		strLocation));
+	mech_printf(mech, MECHALL,
+	    "You knock a %s pod off your %s!", strPodType,
+		strLocation);
 	MechLOSBroadcast(mech, "knocks an iNarc pod off itself.");
     }
 
@@ -1707,9 +1697,9 @@ void mech_auto_turret(dbref player, MECH * mech, char *buffer)
 
     DOCHECK(!GetSectInt(mech, TURRET), "You have no turret to autoturn!");
 
-    mech_notify(mech, MECHALL,
-	tprintf("Automatic turret turning is now %s",
-	    (MechStatus2(mech) & AUTOTURN_TURRET) ? "OFF" : "ON"));
+    mech_printf(mech, MECHALL,
+	"Automatic turret turning is now %s",
+	    (MechStatus2(mech) & AUTOTURN_TURRET) ? "OFF" : "ON");
 
     if (MechStatus2(mech) & AUTOTURN_TURRET)
 	MechStatus2(mech) &= ~AUTOTURN_TURRET;
@@ -1745,9 +1735,9 @@ void mech_usebin(dbref player, MECH * mech, char *buffer)
     DOCHECK(IsEnergy(wWeapType), "Energy weapons do not use ammo!");
 
     if (args[1][0] == '-') {
-	mech_notify(mech, MECHALL,
-	    tprintf("Prefered ammo source reset for weapon #%d",
-		wWeapNum));
+	mech_printf(mech, MECHALL,
+	    "Prefered ammo source reset for weapon #%d",
+		wWeapNum);
 	SetPartDesiredAmmoLoc(mech, wSection, wCritSlot, -1);
 	return;
     }
@@ -1766,9 +1756,9 @@ void mech_usebin(dbref player, MECH * mech, char *buffer)
 	tprintf("Prefered ammo source already set to %s for weapon #%d",
 	    strLocation, wWeapNum));
 
-    mech_notify(mech, MECHALL,
-	tprintf("Prefered ammo source set to %s for weapon #%d",
-	    strLocation, wWeapNum));
+    mech_printf(mech, MECHALL,
+	"Prefered ammo source set to %s for weapon #%d",
+	    strLocation, wWeapNum);
     SetPartDesiredAmmoLoc(mech, wSection, wCritSlot, wLoc);
 }
 
@@ -1789,8 +1779,8 @@ void mech_safety(dbref player, void *data, char *buffer)
 	return;
     }
 
-    mech_notify(mech, MECHPILOT, tprintf("Weapon safeties are %%ch%s%%cn",
-	    MechPKiller(mech) ? "%crOFF" : "%cgON"));
+    mech_printf(mech, MECHPILOT, "Weapon safeties are %%ch%s%%cn",
+	    MechPKiller(mech) ? "%crOFF" : "%cgON");
     return;
 }
 

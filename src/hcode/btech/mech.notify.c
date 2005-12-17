@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.notify.c,v 1.6 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Tue Oct  6 17:17:03 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -546,7 +540,7 @@ void mech_set_channelfreq(dbref player, void *data, char *buffer)
     DOCHECK(freq < 0, "Are you trying to kid me?");
     DOCHECK(freq > 999999,
 	"Invalid frequency - range is from 0 to 999999.");
-    notify(player, tprintf("Channel %c set to %d.", 'A' + chn, freq));
+    notify_printf(player, "Channel %c set to %d.", 'A' + chn, freq);
     mech->freq[chn] = freq;
 
     /* Code added from Exile to check for possible cheat freq acquring.
@@ -592,13 +586,13 @@ void mech_set_channeltitle(dbref player, void *data, char *buffer)
     skipws(buffer);
     if (!*buffer) {
 	mech->chantitle[chn][0] = 0;
-	notify(player, tprintf("Channel %c title cleared.", 'A' + chn));
+	notify_printf(player, "Channel %c title cleared.", 'A' + chn);
 	return;
     }
     strncpy(mech->chantitle[chn], buffer, CHTITLELEN);
     mech->chantitle[chn][CHTITLELEN] = 0;
-    notify(player, tprintf("Channel %c title set to set to %s.", 'A' + chn,
-	    buffer));
+    notify_printf(player, "Channel %c title set to set to %s.", 'A' + chn,
+	    buffer);
 }
 
 /*                    1234567890123456 */
@@ -650,8 +644,8 @@ void mech_set_channelmode(dbref player, void *data, char *buffer)
     skipws(buffer);
     if (!buffer || !*buffer) {
 	mech->freqmodes[chn] = 0;
-	notify(player, tprintf("Channel %c <send> mode set to analog.",
-		'A' + chn));
+	notify_printf(player, "Channel %c <send> mode set to analog.",
+		'A' + chn);
 	return;
     }
     while (buffer && *buffer) {
@@ -721,8 +715,8 @@ void mech_set_channelmode(dbref player, void *data, char *buffer)
 	i = strlen(buf);
     }
     buf[i] = 0;
-    notify(player, tprintf("Channel %c <send> mode set to %s (flags:%s).",
-	    'A' + chn, nm & FREQ_DIGITAL ? "digital" : "analog", buf));
+    notify_printf(player, "Channel %c <send> mode set to %s (flags:%s).",
+	    'A' + chn, nm & FREQ_DIGITAL ? "digital" : "analog", buf);
 }
 
 void mech_list_freqs(dbref player, void *data, char *buffer)
@@ -733,7 +727,7 @@ void mech_list_freqs(dbref player, void *data, char *buffer)
     /* UH, this is code that _pretends_ it works :-) */
     notify(player, "# -- Mode -- Frequency -- Comtitle");
     for (i = 0; i < MFreqs(mech); i++)
-	notify(player, tprintf("%c    %c%c%c%c    %-9d    %s", 'A' + i,
+	notify_printf(player, "%c    %c%c%c%c    %-9d    %s", 'A' + i,
 		mech->freqmodes[i] & FREQ_DIGITAL ? 'D' : 'A',
 		mech->freqmodes[i] & FREQ_RELAY ? 'R' : '-',
 		mech->freqmodes[i] & FREQ_MUTE ? 'M' : '-',
@@ -741,7 +735,7 @@ void mech_list_freqs(dbref player, void *data, char *buffer)
 		freqmodes[i] >= FREQ_REST ?
 		    radio_colorstr[mech->freqmodes[i] / FREQ_REST - 1] :
 		    mech->freqmodes[i] & FREQ_INFO ? 'I' : '-',
-		mech->freq[i], mech->chantitle[i]));
+		mech->freq[i], mech->chantitle[i]);
 }
 
 void mech_sendchannel(dbref player, void *data, char *buffer)
@@ -1147,11 +1141,11 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
 
                                 t = MAX(1, Number(1, MIN(99, l)) * diff / 100);
                                 pr = t * 100 / diff;
-                                mech_notify(tempMech, MECHALL, tprintf("Your systems "
+                                mech_printf(tempMech, MECHALL, "Your systems "
                                             "manage to zero on it %s on channel %c.",
                                             pr < 30 ? "somewhat" : pr < 60 ? 
                                             "fairly well" : pr < 95 ? 
-                                            "precisely" : "exactly", i + 'A'));
+                                            "precisely" : "exactly", i + 'A');
                                 tempMech->freq[i] += mod * t;
                             }
 
@@ -1282,11 +1276,11 @@ void mech_radio(dbref player, void *data, char *buffer)
                 !InLineOfSight(mech, tempMech, MechX(tempMech),
                     MechY(tempMech), FlMechRange(map, mech, tempMech)),
                 "Target is not in line of sight!");
-        mech_notify(mech, MECHSTARTED, tprintf("You radio %s with, '%s'",
-                    GetMechToMechID(mech, tempMech), args[2]));
-        mech_notify(tempMech, MECHSTARTED,
-                tprintf("%s radios you with, '%s'", GetMechToMechID(tempMech,
-                        mech), args[2]));
+        mech_printf(mech, MECHSTARTED, "You radio %s with, '%s'",
+                    GetMechToMechID(mech, tempMech), args[2]);
+        mech_printf(tempMech, MECHSTARTED,
+                "%s radios you with, '%s'", GetMechToMechID(tempMech,
+                        mech), args[2]);
         auto_reply(tempMech, tprintf("%s radio'ed me '%s'",
                     GetMechToMechID(tempMech, mech), args[2]));
     }
@@ -1545,20 +1539,20 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 		    sprintf(buff, "%s", GetMechToMechID(tempMech, target));
 		if (attacker) {
 		    if (defender)
-			mech_notify(tempMech, MECHSTARTED,
-			    tprintf("%s %s %s with a %s",
+			mech_printf(tempMech, MECHSTARTED,
+			    "%s %s %s with a %s",
 				GetMechToMechID(tempMech, mech),
 				IsHit ? "hits" : "misses", buff,
-				weapname));
+				weapname);
 		    else
-			mech_notify(tempMech, MECHSTARTED,
-			    tprintf("%s fires a %s at something!",
+			mech_printf(tempMech, MECHSTARTED,
+			    "%s fires a %s at something!",
 				GetMechToMechID(tempMech, mech),
-				weapname));
+				weapname);
 		} else
-		    mech_notify(tempMech, MECHSTARTED,
-			tprintf("Something %s %s with a %s",
-			    IsHit ? "hits" : "misses", buff, weapname));
+		    mech_printf(tempMech, MECHSTARTED,
+			"Something %s %s with a %s",
+			    IsHit ? "hits" : "misses", buff, weapname);
 	    }
     } else {
 	mapx = x;
@@ -1590,19 +1584,19 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 		    continue;
 		if (attacker) {
 		    if (defender)	/* att + def */
-			mech_notify(tempMech, MECHSTARTED,
-			    tprintf("%s fires a %s at %s",
+			mech_printf(tempMech, MECHSTARTED,
+			    "%s fires a %s at %s",
 				GetMechToMechID(tempMech, mech), weapname,
-				buff));
+				buff);
 		    else	/* att */
-			mech_notify(tempMech, MECHSTARTED,
-			    tprintf("%s fires a %s at something!",
+			mech_printf(tempMech, MECHSTARTED,
+			    "%s fires a %s at something!",
 				GetMechToMechID(tempMech, mech),
-				weapname));
+				weapname);
 		} else		/* def */
-		    mech_notify(tempMech, MECHSTARTED,
-			tprintf("Something fires a %s at %s", weapname,
-			    buff));
+		    mech_printf(tempMech, MECHSTARTED,
+			"Something fires a %s at %s", weapname,
+			    buff);
 	    }
     }
 }

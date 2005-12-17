@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.ammodump.c,v 1.1.1.1 2005/01/11 21:18:10 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2000-2002 Cord Awtry
@@ -64,8 +61,8 @@ static void mech_dump_event(MUXEVENT * ev)
 		arg);
 	else if (e == 1 && Started(mech)) {
 	    ArmorStringFromIndex(loc, buf, MechType(mech), MechMove(mech));
-	    mech_notify(mech, MECHALL,
-		tprintf("All ammunition in %s dumped.", buf));
+	    mech_printf(mech, MECHALL,
+		"All ammunition in %s dumped.", buf);
 	    MechLOSBroadcast(mech,
 		"no longer has ammo dumping from hatches on its back.");
 	}
@@ -83,8 +80,8 @@ static void mech_dump_event(MUXEVENT * ev)
 	    MECHEVENT(mech, EVENT_DUMP, mech_dump_event, DUMP_GRAD_TICK,
 		arg);
 	else {
-	    mech_notify(mech, MECHALL, tprintf("Ammunition for %s dumped!",
-		    get_parts_long_name(I2Weapon(weapindx), 0)));
+	    mech_printf(mech, MECHALL, "Ammunition for %s dumped!",
+		    get_parts_long_name(I2Weapon(weapindx), 0));
 	    MechLOSBroadcast(mech,
 		"no longer has ammo dumping from hatches on its back.");
 	}
@@ -99,8 +96,8 @@ static void mech_dump_event(MUXEVENT * ev)
 	MECHEVENT(mech, EVENT_DUMP, mech_dump_event, DUMP_GRAD_TICK, arg);
     } else {
 	ArmorStringFromIndex(l, buf, MechType(mech), MechMove(mech));
-	mech_notify(mech, MECHALL,
-	    tprintf("Ammunition in %s crit %i dumped!", buf, i + 1));
+	mech_printf(mech, MECHALL,
+	    "Ammunition in %s crit %i dumped!", buf, i + 1);
 	MechLOSBroadcast(mech,
 	    "no longer has ammo dumping from hatches on its back.");
     }
@@ -178,10 +175,9 @@ void mech_dump(dbref player, void *data, char *buffer)
 		DOCHECKMA(type & ~0xFFFF,
 		    "Internal inconsistency, dump failed!");
 		type = type << 16;
-		mech_notify(mech, MECHALL,
-		    tprintf
-		    ("Starting dumping of ammunition in %s crit %i..",
-			buf, i + 1));
+		mech_printf(mech, MECHALL,
+		    "Starting dumping of ammunition in %s crit %i..",
+			buf, i + 1);
 		MechLOSBroadcast(mech,
 		    "starts dumping ammo from hatches on its back.");
 		MECHEVENT(mech, EVENT_DUMP, mech_dump_event,
@@ -197,8 +193,8 @@ void mech_dump(dbref player, void *data, char *buffer)
 			count++;
 	DOCHECKMA(!count, tprintf("There is no ammunition in %s!", buf));
 	type = loc + 1;
-	mech_notify(mech, MECHALL,
-	    tprintf("Starting dumping of ammunition in %s..", buf));
+	mech_printf(mech, MECHALL,
+	    "Starting dumping of ammunition in %s..", buf);
 	MechLOSBroadcast(mech,
 	    "starts dumping ammo from hatches on its back.");
 	MECHEVENT(mech, EVENT_DUMP, mech_dump_event, DUMP_GRAD_TICK, type);
@@ -221,16 +217,16 @@ void mech_dump(dbref player, void *data, char *buffer)
     DOCHECK(GetPartData(mech, ammoLoc, ammoCrit) == 0,
 	"You are out of ammunition for that weapon already!");
     type = 256 * (weapindx + 1);
-    mech_notify(mech, MECHALL, tprintf("Starting dumping %s ammunition..",
-	    get_parts_long_name(I2Weapon(weapindx), 0)));
+    mech_printf(mech, MECHALL, "Starting dumping %s ammunition..",
+	    get_parts_long_name(I2Weapon(weapindx), 0));
     MechLOSBroadcast(mech,
 	"starts dumping ammo from hatches on its back.");
     MECHEVENT(mech, EVENT_DUMP, mech_dump_event, DUMP_GRAD_TICK, type);
 #if 0
     while (FindAmmoForWeapon(mech, weapindx, 0, &ammoLoc, &ammoCrit))
 	GetPartData(mech, ammoLoc, ammoCrit) = 0;
-    mech_notify(mech, MECHALL, tprintf("Ammunition for %s dumped!",
-	    get_parts_long_name(I2Weapon(weapindx), 0)));
+    mech_printf(mech, MECHALL, "Ammunition for %s dumped!",
+	    get_parts_long_name(I2Weapon(weapindx), 0));
 #endif
 }
 
@@ -370,10 +366,9 @@ void BlowDumpingAmmo(MECH * mech, MECH * attacker, int wHitLoc)
 	if (wBlowDamage > 0) {
 	    MechLOSBroadcast(mech,
 		"'s rear armor lights up as ammo being dumped ignites!");
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("%%ch%%crSome of the %s ammo dumping out of your mech ignites!%%cn",
-		    get_parts_long_name(I2Weapon(wWeapIdx), 0)));
+	    mech_printf(mech, MECHALL,
+		"%%ch%%crSome of the %s ammo dumping out of your mech ignites!%%cn",
+		    get_parts_long_name(I2Weapon(wWeapIdx), 0));
 	    DamageMech(mech, attacker, 0, -1, wHitLoc, 1, 0,
 		wBlowDamage, -1, -1, 0, -1, 0, 1);
 	    /*

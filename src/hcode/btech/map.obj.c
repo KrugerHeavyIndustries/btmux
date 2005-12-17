@@ -1,16 +1,10 @@
-
 /*
- * $Id: map.obj.c,v 1.1.1.1 2005/01/11 21:18:09 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Wed Oct  9 11:29:42 1996 fingon
- * Last modified: Tue Oct 13 07:52:27 1998 fingon
  *
  */
 
@@ -606,9 +600,9 @@ void list_mapobjs(dbref player, MAP * map)
 	    if (i == TYPE_BITS)
 		notify(player, "--- MAP/HANGAR INFORMATION OBJECT ---");
 	    else
-		notify(player, tprintf("%-3d %-3d %-5s %-5d %-4d %-6d %d",
+		notify_printf(player, "%-3d %-3d %-5s %-5d %-4d %-6d %d",
 			tmp->x, tmp->y, map_types[i], (int) tmp->obj,
-			tmp->datac, tmp->datas, tmp->datai));
+			tmp->datac, tmp->datas, tmp->datai);
 	}
     notify(player, "--------------------------------------------");
 }
@@ -630,8 +624,8 @@ void map_addfire(dbref player, void *data, char *buffer)
     y = atoi(args[1]);
     d = atoi(args[2]);
     add_decoration(map, x, y, TYPE_FIRE, FIRE, d);
-    notify(player, tprintf("Added: Fire at (%d,%d) with duration of %ds.",
-	    x, y, d));
+    notify_printf(player, "Added: Fire at (%d,%d) with duration of %ds.",
+	    x, y, d);
 }
 
 void map_addsmoke(dbref player, void *data, char *buffer)
@@ -650,8 +644,8 @@ void map_addsmoke(dbref player, void *data, char *buffer)
     y = atoi(args[1]);
     d = atoi(args[2]);
     add_decoration(map, x, y, TYPE_SMOKE, SMOKE, d);
-    notify(player, tprintf("Added: Smoke at (%d,%d) with duration of %ds.",
-	    x, y, d));
+    notify_printf(player, "Added: Smoke at (%d,%d) with duration of %ds.",
+	    x, y, d);
 }
 
 /* x y dist */
@@ -682,9 +676,9 @@ void map_add_block(dbref player, void *data, char *buffer)
     foo.obj = player;
     foo.datac = team;
     add_mapobj(map, &map->mapobj[TYPE_B_LZ], &foo, 1);
-    notify(player,
-	tprintf("Landingzone-block added to %d,%d (distance: %d)", x, y,
-	    str));
+    notify_printf(player,
+	"Landingzone-block added to %d,%d (distance: %d)", x, y,
+	    str);
 }
 
 int is_blocked_lz(MECH * mech, MAP * map, int x, int y)
@@ -714,7 +708,7 @@ void map_setlinked(dbref player, void *data, char *buffer)
     bzero(&foo, sizeof(mapobj));
     foo.datac = 1;
     add_mapobj(map, &map->mapobj[TYPE_LINKED], &foo, 1);
-    notify(player, tprintf("Map set to linked."));
+    notify_printf(player, "Map set to linked.");
 }
 
 int mapobj_del(MAP * map, int x, int y, int tt)
@@ -753,7 +747,7 @@ void map_delobj(dbref player, void *data, char *buffer)
 	    del_mapobj(map, foo, tt, 1);
 	    count++;
 	}
-	notify(player, tprintf("%d objects deleted!", count));
+	notify_printf(player, "%d objects deleted!", count);
 	if (tt == TYPE_MINE)
 	    mdel = 1;
 	break;
@@ -770,8 +764,8 @@ void map_delobj(dbref player, void *data, char *buffer)
 		    count++;
 		}
 	    }
-	notify(player, tprintf("%d objects at (%d,%d) deleted.", count, x,
-		y));
+	notify_printf(player, "%d objects at (%d,%d) deleted.", count, x,
+		y);
 	break;
     case 3:
 	DOCHECK((tt = listmatch(map_types, args[0])) < 0, "Invalid type!");
@@ -786,8 +780,8 @@ void map_delobj(dbref player, void *data, char *buffer)
 		count++;
 	    }
 	}
-	notify(player, tprintf("%d %s at (%d,%d) deleted.", count,
-		map_types[tt], x, y));
+	notify_printf(player, "%d %s at (%d,%d) deleted.", count,
+		map_types[tt], x, y);
 	break;
     default:
 	notify(player, "Invalid number of arguments!");
@@ -958,9 +952,9 @@ void map_updatelinks(dbref player, void *data, char *buffer)
     ourloc = Location(player);
     bzero(update_stats, sizeof(update_stats));
     recursively_updatelinks(NOTHING, ourloc);
-    notify(player,
-	tprintf("Updated %d BUILD objs, %d LEAVE objs, %d ENTRANCE objs.",
-	    update_stats[0], update_stats[1], update_stats[2]));
+    notify_printf(player,
+	"Updated %d BUILD objs, %d LEAVE objs, %d ENTRANCE objs.",
+	    update_stats[0], update_stats[1], update_stats[2]);
 }
 
 int map_linked(dbref mapobj)
@@ -1065,9 +1059,9 @@ static void damage_cf(MECH * mech, mapobj * o, int from, int to,
     from -= damage;
     set_building_cf(o->obj, from, to);
     if (destroy) {
-	mech_notify(mech, MECHALL,
-	    tprintf("You hit %s for %d points of damage, destroying it!",
-		structure_name(o), damage));
+	mech_printf(mech, MECHALL,
+	    "You hit %s for %d points of damage, destroying it!",
+		structure_name(o), damage);
 	notify_except(o->obj, NOTHING, o->obj,
 	    tprintf
 	    ("%s is hit for %d more points of damage, destroying it!",
@@ -1076,9 +1070,9 @@ static void damage_cf(MECH * mech, mapobj * o, int from, int to,
 		structure_name(o), damage));
 	start_regen = 2;
     } else {
-	mech_notify(mech, MECHALL,
-	    tprintf("You hit %s for %d points of damage.",
-		structure_name(o), damage));
+	mech_printf(mech, MECHALL,
+	    "You hit %s for %d points of damage.",
+		structure_name(o), damage);
 	notify_except(o->obj, NOTHING, o->obj,
 	    tprintf("%s is hit for %d points of damage.",
 		MyToUpper(structure_name(o)), damage));
@@ -1149,12 +1143,12 @@ void fire_hex(MECH * mech, int x, int y, int meant)
     }
     if (meant) {
 	MechLOSBroadcast(mech, tprintf("'s shot ignites %d,%d!", x, y));
-	mech_notify(mech, MECHALL, tprintf("You ignite %d,%d.", x, y));
+	mech_printf(mech, MECHALL, "You ignite %d,%d.", x, y);
     } else {
 	MechLOSBroadcast(mech, tprintf("'s stray shot ignites %d,%d!", x,
 		y));
-	mech_notify(mech, MECHALL,
-	    tprintf("You accidentally ignite %d,%d!", x, y));
+	mech_printf(mech, MECHALL,
+	    "You accidentally ignite %d,%d!", x, y);
     }
     add_decoration(map, x, y, TYPE_FIRE, FIRE, FIRE_DURATION);
 }
@@ -1180,8 +1174,8 @@ void steppable_base_check(MECH * mech, int x, int y)
 	return;
     if (BuildIsHidden(nmap) && !MadePerceptionRoll(mech, 0))
 	return;
-    mech_notify(mech, MECHALL, tprintf("%s has CF of %d.",
-	    MyToUpper(structure_name(o)), nmap->cf));
+    mech_printf(mech, MECHALL, "%s has CF of %d.",
+	    MyToUpper(structure_name(o)), nmap->cf);
 }
 
 void show_building_in_hex(MECH * mech, int x, int y)
@@ -1212,8 +1206,8 @@ void show_building_in_hex(MECH * mech, int x, int y)
 	    "The sensors detect no building in the hex!");
 	return;
     }
-    mech_notify(mech, MECHALL, tprintf("%s's CF is %d.",
-	    MyToUpper(structure_name(o)), nmap->cf));
+    mech_printf(mech, MECHALL, "%s's CF is %d.",
+	    MyToUpper(structure_name(o)), nmap->cf);
 }
 
 int obj_size(MAP * map)

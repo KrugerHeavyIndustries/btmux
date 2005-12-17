@@ -1,7 +1,4 @@
-
 /*
- * $Id: map.c,v 1.2 2005/06/22 15:08:03 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  * Last modified: Fri Dec 11 00:59:48 1998 fingon
@@ -44,7 +41,7 @@ void debug_fixmap(dbref player, void *data, char *buffer)
 
     if (!m)
 	return;
-    notify(player, tprintf("Checking %d entries..", m->first_free));
+    notify_printf(player, "Checking %d entries..", m->first_free);
     DOLIST(k, Contents(m->mynum)) {
 	if (Hardcode(k)) {
 	    if (WhichSpecial(k) == GTYPE_MECH) {
@@ -65,25 +62,23 @@ void debug_fixmap(dbref player, void *data, char *buffer)
     for (i = 0; i < m->first_free; i++)
 	if ((k = m->mechsOnMap[i]) >= 0) {
 	    if (!IsMech(k)) {
-		notify(player,
-		    tprintf
-		    ("Error: #%d isn't mech yet is in mapindex. Fixing..",
-			k));
+		notify_printf(player,
+		    "Error: #%d isn't mech yet is in mapindex. Fixing..",
+			k);
 		m->mechsOnMap[i] = -1;
 	    } else if (!(mek = getMech(k))) {
-		notify(player,
-		    tprintf("Error: #%d has no mech data. Removing..", k));
+		notify_printf(player,
+		    "Error: #%d has no mech data. Removing..", k);
 		m->mechsOnMap[i] = -1;
 	    } else if (mek->mapindex != m->mynum) {
-		notify(player,
-		    tprintf("Error: #%d isn't really here! Removing..",
-			k));
+		notify_printf(player,
+		    "Error: #%d isn't really here! Removing..",
+			k);
 		m->mechsOnMap[i] = -1;
 	    } else if (mek->mapnumber != i) {
-		notify(player,
-		    tprintf
-		    ("Error: #%d has invalid mapnumber (mn:%d <-> real:%d)..",
-			k, mek->mapnumber, i));
+		notify_printf(player,
+		    "Error: #%d has invalid mapnumber (mn:%d <-> real:%d)..",
+			k, mek->mapnumber, i);
 	    }
 	}
     notify(player, "Done.");
@@ -351,7 +346,7 @@ void map_loadmap(dbref player, void *data, char *buffer)
 
     DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 	"Invalid number of arguments!");
-    notify(player, tprintf("Loading %s", args[0]));
+    notify_printf(player, "Loading %s", args[0]);
     switch (map_load(map, args[0])) {
     case -1:
 	notify(player, "Map not found.");
@@ -395,7 +390,7 @@ void map_savemap(dbref player, void *data, char *buffer)
 	"Invalid number of arguments!");
     if (strlen(args[0]) >= MAP_NAME_SIZE)
 	args[MAP_NAME_SIZE] = 0;
-    notify(player, tprintf("Saving %s", args[0]));
+    notify_printf(player, "Saving %s", args[0]);
     sprintf(openfile, "%s/", MAP_PATH);
     strcat(openfile, args[0]);
     DOCHECK(!(fp =
@@ -651,18 +646,18 @@ void map_listmechs(dbref player, void *data, char *buffer)
 		else
 		    strcpy(valid,
 			"Invalid Object Data!  Remove this Mech!");
-		notify(player, tprintf("Mech DB Number: %d : [%s]\t%s",
-			map->mechsOnMap[i], ID, valid));
+		notify_printf(player, "Mech DB Number: %d : [%s]\t%s",
+			map->mechsOnMap[i], ID, valid);
 		count++;
 	    }
 	}
-	notify(player, tprintf("%d Mechs On Map", count));
-	notify(player, tprintf("%d positions open",
-		MAX_MECHS_PER_MAP - count));
+	notify_printf(player, "%d Mechs On Map", count);
+	notify_printf(player, "%d positions open",
+		MAX_MECHS_PER_MAP - count);
 	if (count != map->first_free)
-	    notify(player,
-		tprintf("%d is first free slot, according to db.",
-		    map->first_free));
+	    notify_printf(player,
+		"%d is first free slot, according to db.",
+		    map->first_free);
 	return;
 	break;
     case OBJS:
@@ -670,7 +665,7 @@ void map_listmechs(dbref player, void *data, char *buffer)
 	return;
 	break;
     }
-    notify(player, tprintf("Invalid argument (%s)!", args[0]));
+    notify_printf(player, "Invalid argument (%s)!", args[0]);
     return;
 }
 
@@ -695,12 +690,12 @@ void clear_hex(MECH * mech, int x, int y, int meant)
     }
     if (meant) {
 	MechLOSBroadcast(mech, tprintf("'s shot clears %d,%d!", x, y));
-	mech_notify(mech, MECHALL, tprintf("You clear %d,%d.", x, y));
+	mech_printf(mech, MECHALL, "You clear %d,%d.", x, y);
     } else {
 	MechLOSBroadcast(mech, tprintf("'s stray shot clears %d,%d!", x,
 		y));
-	mech_notify(mech, MECHALL,
-	    tprintf("You accidentally clear the %d,%d!", x, y));
+	mech_printf(mech, MECHALL,
+	    "You accidentally clear the %d,%d!", x, y);
     }
 }
 

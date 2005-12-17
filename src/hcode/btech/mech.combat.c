@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.combat.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997-2002 Markus Stenberg
@@ -9,11 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Created: Thu Feb 13 21:19:23 1997 fingon
- * Last modified: Mon Jul 20 00:35:23 1998 fingon
- *
- * Last modified: Mon Sep 28 08:56:46 1998 fingon
  */
 
 #include <stdio.h>
@@ -128,7 +120,7 @@ void mech_target(dbref player, void *data, char *buffer)
     MechAim(mech) = index;
     MechAimType(mech) = type;
     ArmorStringFromIndex(index, section, type, move);
-    notify(player, tprintf("%s targetted.", section));
+    notify_printf(player, "%s targetted.", section);
 }
 
 /* Varying messages based on the distance to foe, and size of your vehicle
@@ -235,8 +227,8 @@ void mech_settarget(dbref player, void *data, char *buffer)
         }
     }
 
-    mech_notify(mech, MECHALL, tprintf("Target set to %s.",
-        GetMechToMechID(mech, target)));
+    mech_printf(mech, MECHALL, "Target set to %s.",
+        GetMechToMechID(mech, target));
     StopLock(mech);
     MechTarget(mech) = targetref;
     MechStatus(mech) |= LOCK_TARGET;
@@ -265,8 +257,8 @@ void mech_settarget(dbref player, void *data, char *buffer)
     if (MechSpotter(mech) == mech->mynum)
         ClearFireAdjustments(mech_map, mech->mynum);
     MechTargZ(mech) = Elevation(mech_map, newx, newy);
-    notify(player, tprintf("Target coordinates set at (X,Y) %d, %d",
-        newx, newy));
+    notify_printf(player, "Target coordinates set at (X,Y) %d, %d",
+        newx, newy);
     StopLock(mech);
     MechStatus(mech) |= LOCK_TARGET;
 #if LOCK_TICK > 0
@@ -313,27 +305,24 @@ void mech_settarget(dbref player, void *data, char *buffer)
     MechTargZ(mech) = Elevation(mech_map, newx, newy);
     switch (mode) {
     case LOCK_HEX:
-        notify(player,
-        tprintf("Target coordinates set to hex at (X,Y) %d, %d",
-            newx, newy));
+        notify_printf(player,
+        "Target coordinates set to hex at (X,Y) %d, %d",
+            newx, newy);
         break;
     case LOCK_HEX_CLR:
-        notify(player,
-        tprintf
-        ("Target coordinates set to clearing hex at (X,Y) %d, %d",
-            newx, newy));
+        notify_printf(player,
+        "Target coordinates set to clearing hex at (X,Y) %d, %d",
+            newx, newy);
         break;
     case LOCK_HEX_IGN:
-        notify(player,
-        tprintf
-        ("Target coordinates set to igniting hex at (X,Y) %d, %d",
-            newx, newy));
+        notify_printf(player,
+        "Target coordinates set to igniting hex at (X,Y) %d, %d",
+            newx, newy);
         break;
     default:
-        notify(player,
-        tprintf
-        ("Target coordinates set to building at (X,Y) %d, %d",
-            newx, newy));
+        notify_printf(player,
+        "Target coordinates set to building at (X,Y) %d, %d",
+            newx, newy);
         break;
     }
 
@@ -738,10 +727,10 @@ int weapon_failure_stuff(MECH * mech,
 void sendC3TrackEmit(MECH * mech, dbref c3Ref, MECH * c3Mech)
 {
     if (c3Mech && (c3Mech->mynum != mech->mynum)) {
-    mech_notify(mech, MECHALL,
-        tprintf("Using range data from %s [%s]",
+    mech_printf(mech, MECHALL,
+        "Using range data from %s [%s]",
         silly_atr_get(c3Mech->mynum,
-            A_MECHNAME), MechIDS(c3Mech, 1)));
+            A_MECHNAME), MechIDS(c3Mech, 1));
     }
 }
 
@@ -896,13 +885,13 @@ void FireWeapon(MECH * mech,
 
         sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-        mech_notify(mech, MECHALL,
-        tprintf("You aim %s at %s%s - BTH: %d %s",
+        mech_printf(mech, MECHALL,
+        "You aim %s at %s%s - BTH: %d %s",
             &MechWeapons[weapindx].name[3],
             GetMechToMechID(mech, target), buf2,
             baseToHit,
             MechStatus(target) & PARTIAL_COVER ?
-            "(Partial cover)" : ""));
+            "(Partial cover)" : "");
         return;
     }
     if (baseToHit > 12) {
@@ -910,40 +899,37 @@ void FireWeapon(MECH * mech,
         tprintf("Fire %s at %s%s - Out of range.",
             &MechWeapons[weapindx].name[3],
             GetMechToMechID(mech, target), buf2));
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("Fire %s at %s%s - BTH: %d  Roll: Impossible! %s",
+        mech_printf(mech, MECHALL,
+        "Fire %s at %s%s - BTH: %d  Roll: Impossible! %s",
             &MechWeapons[weapindx].name[3],
             GetMechToMechID(mech, target), buf2, baseToHit,
             MechStatus(target) & PARTIAL_COVER ?
-            "(Partial cover)" : ""));
+            "(Partial cover)" : "");
         return;
     }
     } else {
     /* Hex target sight info */
     if (sight) {
         if (baseToHit > 900)
-        mech_notify(mech, MECHPILOT,
-            tprintf
-            ("You aim your %s at (%d,%d) - Out of Range.",
-            &MechWeapons[weapindx].name[3], mapx, mapy));
+        mech_printf(mech, MECHPILOT,
+            "You aim your %s at (%d,%d) - Out of Range.",
+            &MechWeapons[weapindx].name[3], mapx, mapy);
         else {
         sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-        mech_notify(mech, MECHPILOT,
-            tprintf("You aim your %s at (%d,%d) - BTH: %d",
+        mech_printf(mech, MECHPILOT,
+            "You aim your %s at (%d,%d) - BTH: %d",
             &MechWeapons[weapindx].name[3], mapx,
-            mapy, baseToHit));
+            mapy, baseToHit);
         }
 
         return;
     }
     if (!isarty && baseToHit > 12) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("Fire %s at (%d,%d) - BTH: %d  Roll: Impossible!",
+        mech_printf(mech, MECHALL,
+        "Fire %s at (%d,%d) - BTH: %d  Roll: Impossible!",
             &MechWeapons[weapindx].name[3], mapx, mapy,
-            baseToHit));
+            baseToHit);
         return;
     }
     }
@@ -951,13 +937,13 @@ void FireWeapon(MECH * mech,
     if (target && !ishex) {
         sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-        mech_notify(mech, MECHALL,
-            tprintf("You fire %s at %s%s - BTH: %d  %s%s",
+        mech_printf(mech, MECHALL,
+            "You fire %s at %s%s - BTH: %d  %s%s",
             &MechWeapons[weapindx].name[3],
             GetMechToMechID(mech, target), buf2, baseToHit,
             buf,
             MechStatus(target) & PARTIAL_COVER ?
-            "(Partial cover)" : ""));
+            "(Partial cover)" : "");
     
         /* Switching to Exile method of tracking xp, where we split
          * Attacking and Piloting xp into two different channels
@@ -979,10 +965,10 @@ void FireWeapon(MECH * mech,
     } else {
         sendC3TrackEmit(mech, c3Ref, c3Mech);
 
-        mech_notify(mech, MECHALL,
-            tprintf("You fire %s %s (%d,%d) - BTH: %d  %s",
+        mech_printf(mech, MECHALL,
+            "You fire %s %s (%d,%d) - BTH: %d  %s",
             &MechWeapons[weapindx].name[3],
-            hex_target_id(mech), mapx, mapy, baseToHit, buf));
+            hex_target_id(mech), mapx, mapy, baseToHit, buf);
 
         /* Switching to Exile method of tracking xp, where we split
          * Attacking and Piloting xp into two different channels
@@ -1053,10 +1039,9 @@ void FireWeapon(MECH * mech,
     /* Check for RFAC explosion/jams */
     if (GetPartFireMode(mech, section, critical) & RFAC_MODE) {
     if (roll == 2) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("%%ch%%crA catastrophic misload on your %s destroys it and causes an internal explosion!%%cn",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "%%ch%%crA catastrophic misload on your %s destroys it and causes an internal explosion!%%cn",
+            &(MechWeapons[weapindx].name[3]));
         firstCrit =
         FindFirstWeaponCrit(mech, section, -1, 0,
         I2Weapon(weapindx), GetWeaponCrits(mech, weapindx));
@@ -1070,10 +1055,9 @@ void FireWeapon(MECH * mech,
         ammoLoc, ammoCrit, ammoLoc1, ammoCrit1, wGattlingShots);
         return;
     } else if (roll < 5) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
+            &(MechWeapons[weapindx].name[3]));
         SetPartTempNuke(mech, section, critical, FAIL_AMMOJAMMED);
         return;
     }
@@ -1087,10 +1071,9 @@ void FireWeapon(MECH * mech,
         && (roll <= 3)) ||
         ((GetPartFireMode(mech, section, critical) & RAC_SIXSHOT_MODE)
         && (roll <= 4))) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
+            &(MechWeapons[weapindx].name[3]));
         SetPartTempNuke(mech, section, critical, FAIL_AMMOJAMMED);
         return;
     }
@@ -1099,10 +1082,9 @@ void FireWeapon(MECH * mech,
     /* Check for Ultra explosion/jams */
     if (GetPartFireMode(mech, section, critical) & ULTRA_MODE) {
     if (roll == 2) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("The loader jams on your %s, destroying it!",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "The loader jams on your %s, destroying it!",
+            &(MechWeapons[weapindx].name[3]));
         firstCrit =
         FindFirstWeaponCrit(mech, section, -1, 0,
         I2Weapon(weapindx), GetWeaponCrits(mech, weapindx));
@@ -1116,15 +1098,13 @@ void FireWeapon(MECH * mech,
     /* See if the sucker will explode from damage taken */
     if (canWeapExplodeFromDamage(mech, section, critical, roll)) {
     if (IsEnergy(weapindx)) {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("%%ch%%crThe damaged charging crystal on your %s overloads!%%cn",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "%%ch%%crThe damaged charging crystal on your %s overloads!%%cn",
+            &(MechWeapons[weapindx].name[3]));
     } else {
-        mech_notify(mech, MECHALL,
-        tprintf
-        ("%%ch%%crThe damaged ammo feed on your %s triggers an internal explosion!%%cn",
-            &(MechWeapons[weapindx].name[3])));
+        mech_printf(mech, MECHALL,
+        "%%ch%%crThe damaged ammo feed on your %s triggers an internal explosion!%%cn",
+            &(MechWeapons[weapindx].name[3]));
         decrement_ammunition(mech, weapindx, section, critical,
         ammoLoc, ammoCrit, ammoLoc1, ammoCrit1, wGattlingShots);
     }
@@ -1144,9 +1124,9 @@ void FireWeapon(MECH * mech,
 
     /* See if the sucker will jam from damage taken */
     if (canWeapJamFromDamage(mech, section, critical, roll)) {
-    mech_notify(mech, MECHALL, tprintf
-        ("%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
-        &(MechWeapons[weapindx].name[3])));
+    mech_printf(mech, MECHALL, 
+        "%%ch%%crThe ammo loader mechanism jams on your %s!%%cn",
+        &(MechWeapons[weapindx].name[3]));
     SetPartTempNuke(mech, section, critical, FAIL_AMMOCRITJAMMED);
 
     return;
@@ -1180,17 +1160,16 @@ void FireWeapon(MECH * mech,
     /* Tell our target they were just shot at... */
     if (target) {
     if (InLineOfSight(target, mech, MechX(mech), MechY(mech), range))
-        mech_notify(target, MECHALL,
-        tprintf("%s has fired a %s at you!",
+        mech_printf(target, MECHALL,
+        "%s has fired a %s at you!",
             GetMechToMechID(target, mech),
-            &MechWeapons[weapindx].name[3]));
+            &MechWeapons[weapindx].name[3]);
     else
-        mech_notify(target, MECHALL,
-        tprintf
-        ("Something has fired a %s at you from bearing %d!",
+        mech_printf(target, MECHALL,
+        "Something has fired a %s at you from bearing %d!",
             &MechWeapons[weapindx].name[3],
             FindBearing(MechFX(target), MechFY(target),
-            MechFX(mech), MechFY(mech))));
+            MechFX(mech), MechFY(mech)));
     }
 
     /* Time to decide if we've really hit them and wot to do */
@@ -1674,11 +1653,11 @@ void HitTarget(MECH * mech,
      * Check for non-missile, multiple hit weapons, like LBXs, RACs, RFACs and Ultras
      */
     if (LOS)
-        mech_notify(mech, MECHALL,
-                tprintf("%%cgYou hit with %d %s%s!%%c",
+        mech_printf(mech, MECHALL,
+                "%%cgYou hit with %d %s%s!%%c",
                     num_missiles_hit, (tIsUltra ||
                         tIsRAC ? "slug" : tIsLBX ? "pellet" : "missile"),
-                    (num_missiles_hit > 1 ? "s" : "")));
+                    (num_missiles_hit > 1 ? "s" : ""));
 
     if (tIsLBX)
         Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,

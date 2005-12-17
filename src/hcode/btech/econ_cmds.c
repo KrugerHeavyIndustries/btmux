@@ -1,7 +1,4 @@
-
 /*
- * $Id: econ_cmds.c,v 1.1.1.1 2005/01/11 21:18:06 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Created: Sat Oct  5 14:31:07 1996 fingon
- * Last modified: Sun Jun 14 14:53:05 1998 fingon
  *
  */
 
@@ -96,9 +90,9 @@ int loading_bay_whine(dbref player, dbref cargobay, MECH * mech)
 	    if (MechX(mech) != i1 || MechY(mech) != i2) {
 		notify(player, "You're not where the cargo is!");
 		if (i3)
-		    notify(player,
-			tprintf("Try looking around %d,%d instead.", i1,
-			    i2));
+		    notify_printf(player,
+			"Try looking around %d,%d instead.", i1,
+			    i2);
 		return 1;
 	    }
     return 0;
@@ -134,11 +128,11 @@ void mech_Rfixstuff(dbref player, void *data, char *buffer)
 	    }
     t = silly_atr_get(loc, A_ECONPARTS);
     nl = strlen(t);
-    notify(player,
-	tprintf("Fixing done. Original length: %d. New length: %d.", ol,
-	    nl));
-    notify(player, tprintf("Items in new: %d. Unique items in new: %d.",
-	    items, kinds));
+    notify_printf(player,
+	"Fixing done. Original length: %d. New length: %d.", ol,
+	    nl);
+    notify_printf(player, "Items in new: %d. Unique items in new: %d.",
+	    items, kinds);
 }
 
 
@@ -312,15 +306,15 @@ static void stuff_change_sub(dbref player, char *buffer, dbref loc1,
 	if (count)
 	    switch (mort) {
 	    case 0:
-		notify(player, tprintf("You %s %d %s%s.",
+		notify_printf(player, "You %s %d %s%s.",
 			mod > 0 ? "add" : "remove", count, c,
-			count > 1 ? "s" : ""));
+			count > 1 ? "s" : "");
 		break;
 	    case 1:
 		MY_ECON_MODIFY(loc2, (0 - mod) * count);
-		notify(player, tprintf("You %s %d %s%s.",
+		notify_printf(player, "You %s %d %s%s.",
 			mod > 0 ? "load" : "unload", count, c,
-			count > 1 ? "s" : ""));
+			count > 1 ? "s" : "");
 		break;
 	    }
     }

@@ -1,16 +1,10 @@
-
 /*
- * $Id: ds.bay.c,v 1.4 2005/06/24 04:39:07 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Wed Nov 20 20:48:28 1996 fingon
- * Last modified: Sat Jul 18 22:25:57 1998 fingon
  *
  */
 
@@ -51,7 +45,7 @@ void mech_createbays(dbref player, void *data, char *buffer)
     }
     for (i = argc; i < NUM_BAYS; i++)
 	AeroBay(ds, i) = -1;
-    notify(player, tprintf("%d bay(s) set up!", argc));
+    notify_printf(player, "%d bay(s) set up!", argc);
 }
 
 extern int dirs[6][2];

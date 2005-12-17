@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.c3.misc.c,v 1.1.1.1 2005/01/11 21:18:12 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
@@ -230,7 +227,7 @@ void showNetworkTargets(dbref player, MECH * mech, int tIsC3)
      * Send then a 'contacts' style report. This is different from the
      * normal contacts since it has a 'physical' range in it too.
      */
-    notify(player, tprintf("%s Contacts:", tIsC3 ? "C3" : "C3i"));
+    notify_printf(player, "%s Contacts:", tIsC3 ? "C3" : "C3i");
 
     for (i = 0; i < objMap->first_free; i++) {
 	if (!(objMap->mechsOnMap[i] != mech->mynum &&
@@ -350,7 +347,7 @@ void showNetworkTargets(dbref player, MECH * mech, int tIsC3)
     for (i = 0; i < buffindex; i++)
 	notify(player, bufflist[sbuff[i]]);
 
-    notify(player, tprintf("End %s Contact List", tIsC3 ? "C3" : "C3i"));
+    notify_printf(player, "End %s Contact List", tIsC3 ? "C3" : "C3i");
 }
 
 void showNetworkData(dbref player, MECH * mech, int tIsC3)
@@ -364,7 +361,7 @@ void showNetworkData(dbref player, MECH * mech, int tIsC3)
     int networkSize;
     dbref myNetwork[C3_NETWORK_SIZE];
 
-    notify(player, tprintf("%s Network Status:", tIsC3 ? "C3" : "C3i"));
+    notify_printf(player, "%s Network Status:", tIsC3 ? "C3" : "C3i");
 
     buildTempNetwork(mech, myNetwork, &networkSize, 1, 1, 0, tIsC3);
 
@@ -398,7 +395,7 @@ void showNetworkData(dbref player, MECH * mech, int tIsC3)
 
     }
 
-    notify(player, tprintf("End %s Network Status", tIsC3 ? "C3" : "C3i"));
+    notify_printf(player, "End %s Network Status", tIsC3 ? "C3" : "C3i");
 }
 
 int mechSeenByNetwork(MECH * mech, MECH * mechTarget, int tIsC3)

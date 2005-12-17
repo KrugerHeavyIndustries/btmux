@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.enhanced.criticals.c,v 1.1.1.1 2005/01/11 21:18:15 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
@@ -281,17 +278,15 @@ void scoreEnhancedWeaponCriticalHit(MECH * mech, MECH * attacker, int LOS,
 	    } else if (wCritRoll <= 5) {
 		tModerateCrit = 1;
 	    } else if (wCritRoll <= 7) {
-		mech_notify(mech, MECHALL,
-		    tprintf
-		    ("Your %s's focusing mechanism gets knocked out of alignment!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's focusing mechanism gets knocked out of alignment!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_EN_FOCUS;
 	    } else if (wCritRoll <= 9) {
-		mech_notify(mech, MECHALL,
-		    tprintf
-		    ("Your %s's charging crystal takes a direct hit!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's charging crystal takes a direct hit!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_EN_CRYSTAL;
 	    } else {
@@ -303,15 +298,15 @@ void scoreEnhancedWeaponCriticalHit(MECH * mech, MECH * attacker, int LOS,
 	    } else if (wCritRoll <= 5) {
 		tModerateCrit = 1;
 	    } else if (wCritRoll <= 7) {
-		mech_notify(mech, MECHALL,
-		    tprintf("Your %s's ranging system takes a hit!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's ranging system takes a hit!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_MSL_RANGING;
 	    } else if (wCritRoll <= 9) {
-		mech_notify(mech, MECHALL,
-		    tprintf("Your %s's ammo feed is damaged!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's ammo feed is damaged!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_MSL_AMMO;
 	    } else {
@@ -323,15 +318,15 @@ void scoreEnhancedWeaponCriticalHit(MECH * mech, MECH * attacker, int LOS,
 	    } else if (wCritRoll <= 5) {
 		tModerateCrit = 1;
 	    } else if (wCritRoll <= 7) {
-		mech_notify(mech, MECHALL,
-		    tprintf("Your %s's barrel warps from the damage!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's barrel warps from the damage!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_BALL_BARREL;
 	    } else if (wCritRoll <= 9) {
-		mech_notify(mech, MECHALL,
-		    tprintf("Your %s's ammo feed is damaged!!",
-			&MechWeapons[wWeapIndex].name[3]));
+		mech_printf(mech, MECHALL,
+		    "Your %s's ammo feed is damaged!!",
+			&MechWeapons[wWeapIndex].name[3]);
 		GetPartDamageFlags(mech, section, critical) |=
 		    WEAP_DAM_BALL_AMMO;
 	    } else {
@@ -343,22 +338,21 @@ void scoreEnhancedWeaponCriticalHit(MECH * mech, MECH * attacker, int LOS,
     }
 
     if (tDestroyWeapon) {
-	mech_notify(mech, MECHALL, tprintf("Your %s has been destroyed!!",
-		&MechWeapons[wWeapIndex].name[3]));
+	mech_printf(mech, MECHALL, "Your %s has been destroyed!!",
+		&MechWeapons[wWeapIndex].name[3]);
 	DestroyWeapon(mech, section, GetPartType(mech, section, critical),
 	    wFirstCrit, 1, wWeapSize);
     } else {
 	DamagePart(mech, section, critical);
 
 	if (tNoCrit)
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("Your %s takes a hit but suffers no noticeable damage!!",
-		    &MechWeapons[wWeapIndex].name[3]));
+	    mech_printf(mech, MECHALL,
+		"Your %s takes a hit but suffers no noticeable damage!!",
+		    &MechWeapons[wWeapIndex].name[3]);
 	else if (tModerateCrit) {
-	    mech_notify(mech, MECHALL,
-		tprintf("Your %s takes a hit but continues working!!",
-		    &MechWeapons[wWeapIndex].name[3]));
+	    mech_printf(mech, MECHALL,
+		"Your %s takes a hit but continues working!!",
+		    &MechWeapons[wWeapIndex].name[3]);
 	    GetPartDamageFlags(mech, section, critical) |=
 		WEAP_DAM_MODERATE;
 	}
@@ -503,54 +497,47 @@ void showWeaponDamageAndInfo(dbref player, MECH * mech, int section,
 	tPrintSpace = 1;
 
 	if (awDamage[0] > 0)
-	    notify(player,
-		tprintf
-		("      %%cr%%chGeneral damage (%d hit%s): +%d to hit.",
-		    awDamage[0], awDamage[0] > 1 ? "s" : "", awDamage[0]));
+	    notify_printf(player,
+		"      %%cr%%chGeneral damage (%d hit%s): +%d to hit.",
+		    awDamage[0], awDamage[0] > 1 ? "s" : "", awDamage[0]);
 
 	if (IsEnergy(wWeapIndex)) {
 	    if (awDamage[1] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chFocus misalignment (%d hit%s): -%d damage. +%d to hit at >%d hexes.%%c",
+		notify_printf(player,
+		    "      %%cr%%chFocus misalignment (%d hit%s): -%d damage. +%d to hit at >%d hexes.%%c",
 			awDamage[1], awDamage[1] > 1 ? "s" : "",
 			awDamage[1], awDamage[1],
-			MechWeapons[wWeapIndex].shortrange));
+			MechWeapons[wWeapIndex].shortrange);
 
 	    if (awDamage[2] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chCharging crystal damage (%d hit%s): +%d heat. Explodes on %d or less.%%c",
+		notify_printf(player,
+		    "      %%cr%%chCharging crystal damage (%d hit%s): +%d heat. Explodes on %d or less.%%c",
 			awDamage[2], awDamage[2] > 1 ? "s" : "",
-			awDamage[2], awDamage[2] + 1));
+			awDamage[2], awDamage[2] + 1);
 	} else if (IsMissile(wWeapIndex)) {
 	    if (awDamage[1] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chRanging system damage (%d hit%s): +%d to hit at >%d hexes.%%c",
+		notify_printf(player,
+		    "      %%cr%%chRanging system damage (%d hit%s): +%d to hit at >%d hexes.%%c",
 			awDamage[1], awDamage[1] > 1 ? "s" : "",
-			awDamage[1], MechWeapons[wWeapIndex].shortrange));
+			awDamage[1], MechWeapons[wWeapIndex].shortrange);
 
 	    if (awDamage[2] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chAmmo feed damage (%d hit%s): Can't switch ammo. Explodes on %d or less.%%c",
+		notify_printf(player,
+		    "      %%cr%%chAmmo feed damage (%d hit%s): Can't switch ammo. Explodes on %d or less.%%c",
 			awDamage[2], awDamage[2] > 1 ? "s" : "",
-			awDamage[2] + 1));
+			awDamage[2] + 1);
 	} else if (IsBallistic(wWeapIndex) || IsArtillery(wWeapIndex)) {
 	    if (awDamage[1] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chBarrel damage (%d hit%s): Jams on a %d or less.%%c",
+		notify_printf(player,
+		    "      %%cr%%chBarrel damage (%d hit%s): Jams on a %d or less.%%c",
 			awDamage[1], awDamage[1] > 1 ? "s" : "",
-			awDamage[1] + 1));
+			awDamage[1] + 1);
 
 	    if (awDamage[2] > 0)
-		notify(player,
-		    tprintf
-		    ("      %%cr%%chAmmo feed damage (%d hit%s): Can't switch ammo. Explodes on %d or less.%%c",
+		notify_printf(player,
+		    "      %%cr%%chAmmo feed damage (%d hit%s): Can't switch ammo. Explodes on %d or less.%%c",
 			awDamage[2], awDamage[2] > 1 ? "s" : "",
-			awDamage[2] + 1));
+			awDamage[2] + 1);
 	}
 
 	if ((awDamage[0] == 0) && (awDamage[1] == 0) && (awDamage[2] == 0))
@@ -562,17 +549,16 @@ void showWeaponDamageAndInfo(dbref player, MECH * mech, int section,
     if (wAmmoLoc >= 0) {
 	ArmorStringFromIndex(wAmmoLoc, strLocation, MechType(mech),
 	    MechMove(mech));
-	notify(player, tprintf("      %%cg%%chPrefered ammo source: %s%%c",
-		strLocation));
+	notify_printf(player, "      %%cg%%chPrefered ammo source: %s%%c",
+		strLocation);
 	tPrintSpace = 1;
     }
 
     if ((awNonOpCrits[0] > 0) || (awNonOpCrits[1] > 0) ||
 	(awNonOpCrits[2] > 0)) {
-	notify(player,
-	    tprintf
-	    ("      %%cr%%chSlot status: Damaged: %d. Destroyed: %d. Disabled: %d%%c",
-		awNonOpCrits[0], awNonOpCrits[1], awNonOpCrits[2]));
+	notify_printf(player,
+	    "      %%cr%%chSlot status: Damaged: %d. Destroyed: %d. Disabled: %d%%c",
+		awNonOpCrits[0], awNonOpCrits[1], awNonOpCrits[2]);
 	tPrintSpace = 1;
     }
 

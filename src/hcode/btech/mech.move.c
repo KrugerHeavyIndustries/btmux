@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.move.c,v 1.6 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Mon Oct 26 20:15:47 1998 fingon
- *
  */
 
 #include "config.h"
@@ -98,9 +92,9 @@ void mech_lateral(dbref player, void *data, char *buffer)
 	StopLateral(mech);
 	return;
     }
-    mech_notify(mech, MECHALL,
-	tprintf("Wanted lateral movement mode changed to %s.",
-	    lateral_modes[i].full));
+    mech_printf(mech, MECHALL,
+	"Wanted lateral movement mode changed to %s.",
+	    lateral_modes[i].full);
     StopLateral(mech);
     MECHEVENT(mech, EVENT_LATERAL, mech_lateral_event, LATERAL_TICK, i);
 }
@@ -128,8 +122,8 @@ void mech_turnmode(dbref player, void *data, char *buffer)
 		mech_notify(mech, MECHALL, "You assume a normal turn mode."); 
 		return;
 	}
-	mech_notify(mech, MECHALL, tprintf("Your turning type is : %s",
-		GetTurnMode(mech) ? "TIGHT" : "NORMAL"));
+	mech_printf(mech, MECHALL, "Your turning type is : %s",
+		GetTurnMode(mech) ? "TIGHT" : "NORMAL");
 	return;
 }
 
@@ -177,17 +171,16 @@ void mech_bootlegger(dbref player, void *data, char *buffer)
 		MechMove(mech));
 
 	    if (SectHasBusyWeap(mech, i)) {
-		mech_notify(mech, MECHALL,
-		    tprintf("You have weapons recycling in your %s.",
-			strLocation));
+		mech_printf(mech, MECHALL,
+		    "You have weapons recycling in your %s.",
+			strLocation);
 		return;
 	    }
 
 	    if (MechSections(mech)[i].recycle) {
-		mech_notify(mech, MECHALL,
-		    tprintf
-		    ("Your %s is still recovering from its last action.",
-			strLocation));
+		mech_printf(mech, MECHALL,
+		    "Your %s is still recovering from its last action.",
+			strLocation);
 		return;
 	    }
 
@@ -232,10 +225,9 @@ void mech_bootlegger(dbref player, void *data, char *buffer)
 	MechDesiredFacing(mech) = wNewHeading;
 	MechSpeed(mech) = MechSpeed(mech) / 2;
 
-	mech_notify(mech, MECHALL,
-	    tprintf
-	    ("You plant a foot and swivel, changing your heading to %d.",
-		wNewHeading));
+	mech_printf(mech, MECHALL,
+	    "You plant a foot and swivel, changing your heading to %d.",
+		wNewHeading);
 
 	for (i = 0; i < NUM_SECTIONS; i++) {
 	    if ((i == LLEG) || (i == RLEG) || (MechIsQuad(mech) &&
@@ -292,17 +284,16 @@ void mech_eta(dbref player, void *data, char *buffer)
     MapCoordToRealCoord(eta_x, eta_y, &fx, &fy);
     range = FindRange(MechFX(mech), MechFY(mech), 0, fx, fy, 0);
     if (fabs(MechSpeed(mech)) < 0.1)
-	mech_notify(mech, MECHALL,
-	    tprintf
-	    ("Range to hex (%d,%d) is %.1f.  ETA: Never, mech not moving.",
-		eta_x, eta_y, range));
+	mech_printf(mech, MECHALL,
+	    "Range to hex (%d,%d) is %.1f.  ETA: Never, mech not moving.",
+		eta_x, eta_y, range);
     else {
 	etamin = abs(range / (MechSpeed(mech) / KPH_PER_MP));
 	etahr = etamin / 60;
 	etamin = etamin % 60;
-	mech_notify(mech, MECHALL,
-	    tprintf("Range to hex (%d,%d) is %.1f.  ETA: %.2d:%.2d.",
-		eta_x, eta_y, range, etahr, etamin));
+	mech_printf(mech, MECHALL,
+	    "Range to hex (%d,%d) is %.1f.  ETA: %.2d:%.2d.",
+		eta_x, eta_y, range, etahr, etamin);
     }
 }
 
@@ -679,12 +670,12 @@ void mech_heading(dbref player, void *data, char *buffer)
 	}
 	newheading = AcceptableDegree(atoi(args[0]));
 	MechDesiredFacing(mech) = newheading;
-	mech_notify(mech, MECHALL, tprintf("Heading changed to %d.",
-		newheading));
+	mech_printf(mech, MECHALL, "Heading changed to %d.",
+		newheading);
 	MaybeMove(mech);
     } else {
-	notify(player, tprintf("Your current heading is %i.",
-		MechFacing(mech)));
+	notify_printf(player, "Your current heading is %i.",
+		MechFacing(mech));
     }
 }
 
@@ -705,13 +696,13 @@ void mech_turret(dbref player, void *data, char *buffer)
     if (mech_parseattributes(buffer, args, 1) == 1) {
 	newheading = AcceptableDegree(atoi(args[0]) - MechFacing(mech));
 	MechTurretFacing(mech) = newheading;
-	mech_notify(mech, MECHALL, tprintf("Turret facing changed to %d.",
+	mech_printf(mech, MECHALL, "Turret facing changed to %d.",
 		AcceptableDegree(MechTurretFacing(mech) +
-		    MechFacing(mech))));
+		    MechFacing(mech)));
     } else {
-	notify(player, tprintf("Your turret is currently facing %d.",
+	notify_printf(player, "Your turret is currently facing %d.",
 		AcceptableDegree(MechTurretFacing(mech) +
-		    MechFacing(mech))));
+		    MechFacing(mech)));
     }
 
     MarkForLOSUpdate(mech);
@@ -815,7 +806,7 @@ void mech_speed(dbref player, void *data, char *buffer)
             "You are busy changing your hulldown mode");
 
     if (mech_parseattributes(buffer, args, 1) != 1) {
-        notify(player, tprintf("Your current speed is %.2f.", MechSpeed(mech)));
+        notify_printf(player, "Your current speed is %.2f.", MechSpeed(mech));
         return;
     }
     DOCHECK(FlyingT(mech) && AeroFuel(mech) <= 0 &&
@@ -919,8 +910,8 @@ void mech_speed(dbref player, void *data, char *buffer)
         }
         MechTankCritStatus(mech) &= ~DUG_IN;
     }
-    mech_notify(mech, MECHALL, tprintf("Desired speed changed to %d KPH",
-                (int) newspeed));
+    mech_printf(mech, MECHALL, "Desired speed changed to %d KPH",
+                (int) newspeed);
 }
 
 void mech_vertical(dbref player, void *data, char *buffer)
@@ -955,8 +946,8 @@ void mech_vertical(dbref player, void *data, char *buffer)
 	DOCHECK(MechType(mech) == CLASS_VTOL &&
 	    Landed(mech), "You need to take off first.");
 	MechVerticalSpeed(mech) = newspeed;
-	mech_notify(mech, MECHALL,
-	    tprintf("Vertical speed changed to %d KPH", (int) newspeed));;
+	mech_printf(mech, MECHALL,
+	    "Vertical speed changed to %d KPH", (int) newspeed);
 	MaybeMove(mech);
     }
 }
@@ -1054,11 +1045,11 @@ void mech_thrash(dbref player, void *data, char *buffer)
 	    if (FaMechRange(mech, target) > 1.0)
 		continue;
 
-	    mech_notify(mech, MECHALL, tprintf("You manage to hit %s!",
-		    GetMechToMechID(mech, target)));
-	    mech_notify(target, MECHALL,
-		tprintf("You get hit by %s's thrashing limbs!",
-		    GetMechToMechID(target, mech)));
+	    mech_printf(mech, MECHALL, "You manage to hit %s!",
+		    GetMechToMechID(mech, target));
+	    mech_printf(target, MECHALL,
+		"You get hit by %s's thrashing limbs!",
+		    GetMechToMechID(target, mech));
 
 	    tempDamage = damage;
 
@@ -1314,7 +1305,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
     d |= MODE_SPRINT|((MechStatus2(mech) & SPRINTING) ? MODE_OFF : MODE_ON);
     if (d & MODE_ON) {
         if ((i = MechFullNoRecycle(mech, CHECK_BOTH)) > 0) {
-            mech_notify(mech, MECHALL, tprintf("You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error")));
+            mech_printf(mech, MECHALL, "You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
             return;
             }
         mech_notify(mech, MECHALL, "You begin the process of sprinting.....");
@@ -1359,7 +1350,7 @@ void mech_evade(dbref player, void *data, char *buffer)
     d |= MODE_EVADE|((MechStatus2(mech) & EVADING) ? MODE_OFF : MODE_ON);
     if (d & MODE_ON) {
         if ((i = MechFullNoRecycle(mech, CHECK_BOTH)) > 0) {
-            mech_notify(mech, MECHALL, tprintf("You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error")));
+            mech_printf(mech, MECHALL, "You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
             return;
             }
         mech_notify(mech, MECHALL, "You begin the process of evading.....");
@@ -1395,7 +1386,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
     d |= MODE_DODGE|((MechStatus2(mech) & DODGING) ? MODE_OFF : MODE_ON);
     if (d & MODE_ON) {
         if ((i = MechFullNoRecycle(mech, CHECK_PHYS)) > 0) {
-            mech_notify(mech, MECHALL, tprintf("You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error")));
+            mech_printf(mech, MECHALL, "You have %s recycling!", (i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
             return;
             }
         mech_notify(mech, MECHALL, "You begin the process of dodging.....");
@@ -1653,10 +1644,9 @@ void MechFloodsLoc(MECH * mech, int loc, int lev)
 
     /* Woo, valid target. */
     ArmorStringFromIndex(loc, locbuff, MechType(mech), MechMove(mech));
-    mech_notify(mech, MECHALL,
-	tprintf
-	("%%ch%%crWater floods into your %s disabling everything that was there!%%c",
-	    locbuff));
+    mech_printf(mech, MECHALL,
+	"%%ch%%crWater floods into your %s disabling everything that was there!%%c",
+	    locbuff);
     MechLOSBroadcast(mech,
 	tprintf("has a gaping hole in %s, and water pours in!", locbuff));
 
@@ -1969,10 +1959,10 @@ int domino_space_in_hex(MAP * map, MECH * me, int x, int y, int friendly,
     case 2:
 	if (mudconf.btech_stacking == 2) {
 	    int factor = mudconf.btech_stackdamage;
-	    mech_notify(me, MECHALL, tprintf("You land on %s!",
-					     GetMechToMechID(me, mech)));
-	    mech_notify(mech, MECHALL, tprintf("%s lands on you!",
-					       GetMechToMechID(mech, me)));
+	    mech_printf(me, MECHALL, "You land on %s!",
+					     GetMechToMechID(me, mech));
+	    mech_printf(mech, MECHALL, "%s lands on you!",
+					       GetMechToMechID(mech, me));
 	    MechLOSBroadcasti(me, mech, "lands on %s!");
 	    if (IsDS(mech)) {
 		cause_damage(me, mech, MAX(1, td * factor / 500), PUNCH);
@@ -1982,10 +1972,10 @@ int domino_space_in_hex(MAP * map, MECH * me, int x, int y, int friendly,
 		cause_damage(me, me, MAX(1, td * factor / 500), KICK);
 	    }
 	} else {
-	    mech_notify(me, MECHALL, tprintf("You nearly land on %s!",
-					     GetMechToMechID(me, mech)));
-	    mech_notify(mech, MECHALL, tprintf("%s nearly lands on you!",
-					       GetMechToMechID(mech, me)));
+	    mech_printf(me, MECHALL, "You nearly land on %s!",
+					     GetMechToMechID(me, mech));
+	    mech_printf(mech, MECHALL, "%s nearly lands on you!",
+					       GetMechToMechID(mech, me));
 	    MechLOSBroadcasti(me, mech, "nearly lands on %s!");
 	    if (!MadePilotSkillRoll(me, cnt + JumpSpeedMP(me, map) / 2))
 		MechFalls(me, 1, JumpSpeedMP(me, map) / 2);
@@ -1994,10 +1984,10 @@ int domino_space_in_hex(MAP * map, MECH * me, int x, int y, int friendly,
     }
     if (mudconf.btech_stacking == 2) {
 	int factor = mudconf.btech_stackdamage;
-	mech_notify(me, MECHALL, tprintf("You bump into %s!",
-					 GetMechToMechID(me, mech)));
-	mech_notify(mech, MECHALL, tprintf("%s bumps into you!",
-					   GetMechToMechID(mech, me)));
+	mech_printf(me, MECHALL, "You bump into %s!",
+					 GetMechToMechID(me, mech));
+	mech_printf(mech, MECHALL, "%s bumps into you!",
+					   GetMechToMechID(mech, me));
 	MechLOSBroadcasti(me, mech, "bumps into %s!");
 	if (IsDS(mech)) {
 	    cause_damage(me, mech, MAX(1, td * factor / 500), NORMAL);
@@ -2007,10 +1997,10 @@ int domino_space_in_hex(MAP * map, MECH * me, int x, int y, int friendly,
 	    cause_damage(me, me, MAX(1, td * factor / 500), NORMAL);
 	}
     } else {
-	mech_notify(me, MECHALL, tprintf("You nearly bump into %s!",
-					 GetMechToMechID(me, mech)));
-	mech_notify(mech, MECHALL, tprintf("%s nearly bumps into you!",
-					   GetMechToMechID(mech, me)));
+	mech_printf(me, MECHALL, "You nearly bump into %s!",
+					 GetMechToMechID(me, mech));
+	mech_printf(mech, MECHALL, "%s nearly bumps into you!",
+					   GetMechToMechID(mech, me));
 	MechLOSBroadcasti(me, mech, "nearly bumps into %s!");
 	if (!MadePilotSkillRoll(me, cnt))
 	    MechFalls(me, 1, 0);
