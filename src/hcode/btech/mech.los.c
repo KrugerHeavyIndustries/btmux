@@ -302,6 +302,8 @@ int InLineOfSight_NB(MECH * mech, MECH * target, int x, int y,
 {
     int i;
 
+    if(mech == target) return 1;
+
     i = InLineOfSight(mech, target, x, y, hexRange);
     if (i & MECHLOSFLAG_BLOCK)
 	return 0;

@@ -152,7 +152,7 @@
 #define HEAT_TICK     2
 #define JUMP_TICK     1
 #define MOVE_TICK     1        /* How oft da mecha move ;-) */
-#define MOVE_MOD      MOVE_TICK / 2
+#define MOVE_MOD      1
 #define WEAPON_TICK   2
 
 #define ARTY_SPEED                  5   /* Artillery round flies 5 hexes / second */
@@ -163,9 +163,9 @@
 #define JUMP_TO_HIT_RECYCLE     (JUMP_TICK * 12 / (MechType(mech) == CLASS_BSUIT ? 4 : 1))
 
 #define INITIAL_PLOS_TICK       1   /* How many secs after startup */
-#define LOS_TICK                2   /* Update LOS tables */
+#define LOS_TICK                1   /* Update LOS tables */
 #define HIDE_TICK               10
-#define PLOS_TICK               3   /* How many seconds interval between checks */
+#define PLOS_TICK               1   /* How many seconds interval between checks */
 #define SCHANGE_TICK            10  /* Sensor change */
 #define SPOT_TICK               10  /* How oft is the range for spotting checked? */
 
