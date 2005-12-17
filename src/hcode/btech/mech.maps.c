@@ -1006,9 +1006,14 @@ static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
             if(base[0] == '*'  ||(isalpha(base[0]) && isupper(base[0])))
                 continue;
 
-            char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
-            base[0] = id[0];
-            base[1] = id[1];
+            if(mech == player_mech) {
+                base[0] = '*';
+                base[1] = '*';
+            } else {
+                char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
+                base[0] = id[0];
+                base[1] = id[1];
+            }
 
         } else if (mech == player_mech) {
             if(isalpha(base[0]) && isupper(base[0]))
