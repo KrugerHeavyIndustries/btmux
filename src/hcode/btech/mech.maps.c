@@ -1003,7 +1003,8 @@ static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
             } else {
                 sketch_tac_ds(base, dispcols, 'X');
             }
-            if(base[0] == '*'  ||(isalpha(base[0]) && isupper(base[0])))
+
+            if(isalpha(base[0]))
                 continue;
 
             if(mech == player_mech) {
@@ -1016,13 +1017,12 @@ static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
             }
 
         } else if (mech == player_mech) {
-            if(isalpha(base[0]) && isupper(base[0]))
+            if(isalpha(base[0]))
                 continue;
             base[0] = '*';
             base[1] = '*';
         } else {
             char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
-
             base[0] = id[0];
             base[1] = id[1];
         }
