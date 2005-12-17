@@ -491,6 +491,20 @@ static void sqlchild_make_connection(char db_slot) {
     }
     return;
 }
+
+static char *sqlchild_sanitize_string(char *input, int length) {
+    char *retval = malloc(length);
+    int i = 0;
+    memset(retval, 0, length);
+    for(i = 0; i < length; i++) {
+        if(isprint(input[i])) {
+            retval[i] = length[i];
+        } else {
+            retval[i] = ' ';
+        }
+    }
+    return retval;
+}
  
 static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     struct query_response resp = { DBIS_READY, -1 };
@@ -564,7 +578,10 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
                 case DBI_TYPE_BINARY:
-                    sqlchild_child_abort_query(aqt, "can't handle type BINARY");
+                    type_string = dbi_result_get_string_idx(result, i);
+                    type_string = sqlchild_sanitize_string(result, dbi_result_get_field_length_idx(result, i));
+                    ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
+                    free(type_string);
                     return;
                 case DBI_TYPE_DATETIME:
                     // HANDLE TIMEZONE
