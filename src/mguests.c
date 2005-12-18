@@ -18,7 +18,7 @@
 
 extern void destroy_player(dbref);
 extern void do_lock(dbref player, dbref cause, int key, char *name,
-    char *keytext);
+        char *keytext);
 typedef int object_flag_type;
 
 dbref create_guest(char *name, char *password)
@@ -27,7 +27,7 @@ dbref create_guest(char *name, char *password)
     char *buff;
 
     if (!Wizard(mudconf.guest_nuker) || !Good_obj(mudconf.guest_nuker))
-	mudconf.guest_nuker = 1;
+        mudconf.guest_nuker = 1;
 
     buff = alloc_lbuf("create_guest");
 
@@ -38,8 +38,8 @@ dbref create_guest(char *name, char *password)
     player = create_player(name, password, mudconf.guest_nuker, 0, 1);
 
     if (player == NOTHING) {
-	log_text("GUEST: failed in create_player\n");
-	return NOTHING;
+        log_text("GUEST: failed in create_player\n");
+        return NOTHING;
     }
     /*
      * Turn the player into a guest. 
@@ -69,10 +69,10 @@ dbref create_guest(char *name, char *password)
 void destroy_guest(dbref guest)
 {
     if (!Wizard(mudconf.guest_nuker) || !Good_obj(mudconf.guest_nuker))
-	mudconf.guest_nuker = 1;
+        mudconf.guest_nuker = 1;
 
     if (!Guest(guest))
-	return;
+        return;
 
     toast_player(guest);
     atr_add_raw(guest, A_DESTROYER, tprintf("%d", mudconf.guest_nuker));
@@ -91,10 +91,10 @@ char *make_guest(DESC *d)
      */
 
     for (i = 0; i < mudconf.number_guests; i++) {
-	sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
-	p2 = lookup_player(GOD, name, 0);
-	if (p2 != NOTHING && !Connected(p2))
-	    destroy_guest(p2);
+        sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
+        p2 = lookup_player(GOD, name, 0);
+        if (p2 != NOTHING && !Connected(p2))
+            destroy_guest(p2);
     }
 
     /*
@@ -102,27 +102,27 @@ char *make_guest(DESC *d)
      */
 
     for (i = 0; i < mudconf.number_guests; i++) {
-	sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
-	player = lookup_player(GOD, name, 0);
-	if (player == NOTHING)
-	    break;
+        sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
+        player = lookup_player(GOD, name, 0);
+        if (player == NOTHING)
+            break;
     }
 
     if (i == mudconf.number_guests) {
-	queue_string(d,
-	    "GAME: All guest ID's are busy, please try again later.\n");
-	return NULL;
+        queue_string(d,
+                "GAME: All guest ID's are busy, please try again later.\n");
+        return NULL;
     }
     sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
     player = create_guest(name, mudconf.guest_prefix);
 
     if (player == NOTHING) {
-	queue_string(d,
-	    "GAME: Error creating guest ID, please try again later.\n");
-	log_text(tprintf
-	    ("GUEST: Error creating guest ID. '%s' already exists.\n",
-		name));
-	return NULL;
+        queue_string(d,
+                "GAME: Error creating guest ID, please try again later.\n");
+        log_text(tprintf
+                ("GUEST: Error creating guest ID. '%s' already exists.\n",
+                 name));
+        return NULL;
     }
     return Name(player);
 }

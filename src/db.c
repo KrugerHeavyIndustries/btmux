@@ -1595,27 +1595,26 @@ void initialize_objects(dbref first, dbref last)
     dbref thing;
 
     for (thing = first; thing < last; thing++) {
-	s_Owner(thing, GOD);
-	s_Flags(thing, (TYPE_GARBAGE | GOING));
-	s_Flags2(thing, 0);
-	s_Flags3(thing, 0);
-	s_Powers(thing, 0);
-	s_Powers2(thing, 0);
-	s_Location(thing, NOTHING);
-	s_Contents(thing, NOTHING);
-	s_Exits(thing, NOTHING);
-	s_Link(thing, NOTHING);
-	s_Next(thing, NOTHING);
-	s_Zone(thing, NOTHING);
-	s_Parent(thing, NOTHING);
-	s_Stack(thing, NULL);
-	db[thing].ahead = NULL;
-	db[thing].at_count = 0;
+        s_Owner(thing, GOD);
+        s_Flags(thing, (TYPE_GARBAGE | GOING));
+        s_Flags2(thing, 0);
+        s_Flags3(thing, 0);
+        s_Powers(thing, 0);
+        s_Powers2(thing, 0);
+        s_Location(thing, NOTHING);
+        s_Contents(thing, NOTHING);
+        s_Exits(thing, NOTHING);
+        s_Link(thing, NOTHING);
+        s_Next(thing, NOTHING);
+        s_Zone(thing, NOTHING);
+        s_Parent(thing, NOTHING);
+        s_Stack(thing, NULL);
+        db[thing].ahead = NULL;
+        db[thing].at_count = 0;
     }
 }
 
-void db_grow(dbref newtop)
-{
+void db_grow(dbref newtop) {
     int newsize, marksize, delta, i;
     MARKBUF *newmarkbuf;
     OBJ *newdb;
@@ -1638,7 +1637,7 @@ void db_grow(dbref newtop)
      */
 
     if (newtop <= mudstate.db_top) {
-	return;
+        return;
     }
     /*
      * If requested size is greater than the current db size but smaller
@@ -1647,22 +1646,22 @@ void db_grow(dbref newtop)
      */
 
     if (newtop <= mudstate.db_size) {
-	for (i = mudstate.db_top; i < newtop; i++) {
-	    if (mudconf.cache_names)
-		purenames[i] = NULL;
-	}
-	initialize_objects(mudstate.db_top, newtop);
-	mudstate.db_top = newtop;
-	return;
+        for (i = mudstate.db_top; i < newtop; i++) {
+            if (mudconf.cache_names)
+                purenames[i] = NULL;
+        }
+        initialize_objects(mudstate.db_top, newtop);
+        mudstate.db_top = newtop;
+        return;
     }
     /*
      * Grow by a minimum of delta objects 
      */
 
     if (newtop <= mudstate.db_size + delta) {
-	newsize = mudstate.db_size + delta;
+        newsize = mudstate.db_size + delta;
     } else {
-	newsize = newtop;
+        newsize = newtop;
     }
 
     /*
@@ -1670,109 +1669,109 @@ void db_grow(dbref newtop)
      */
 
     if (newsize < mudstate.min_size)
-	newsize = mudstate.min_size + delta;;
+        newsize = mudstate.min_size + delta;;
 
     /*
      * Grow the name tables 
      */
 
     if (mudconf.cache_names) {
-	newpurenames =
-	    (NAME *) XMALLOC((newsize + SIZE_HACK) * sizeof(NAME),
-	    "db_grow.purenames");
+        newpurenames =
+            (NAME *) XMALLOC((newsize + SIZE_HACK) * sizeof(NAME),
+                             "db_grow.purenames");
 
-	if (!newpurenames) {
-	    LOG_SIMPLE(LOG_ALWAYS, "ALC", "DB",
-		tprintf("Could not allocate space for %d item name cache.",
-		    newsize));
-	    abort();
-	}
-	bzero((char *) newpurenames, (newsize + SIZE_HACK) * sizeof(NAME));
+        if (!newpurenames) {
+            LOG_SIMPLE(LOG_ALWAYS, "ALC", "DB",
+                    tprintf("Could not allocate space for %d item name cache.",
+                        newsize));
+            abort();
+        }
+        bzero((char *) newpurenames, (newsize + SIZE_HACK) * sizeof(NAME));
 
-	if (purenames) {
+        if (purenames) {
 
-	    /*
-	     * An old name cache exists.  Copy it. 
-	     */
+            /*
+             * An old name cache exists.  Copy it. 
+             */
 
-	    purenames -= SIZE_HACK;
-	    bcopy((char *) purenames, (char *) newpurenames,
-		(newtop + SIZE_HACK) * sizeof(NAME));
-	    cp = (char *) purenames;
-	    XFREE(cp, "db_grow.purename");
-	} else {
+            purenames -= SIZE_HACK;
+            bcopy((char *) purenames, (char *) newpurenames,
+                    (newtop + SIZE_HACK) * sizeof(NAME));
+            cp = (char *) purenames;
+            XFREE(cp, "db_grow.purename");
+        } else {
 
-	    /*
-	     * Creating a brand new struct database.  Fill in the
-	     * 'reserved' area in case it gets referenced.  
-	     */
+            /*
+             * Creating a brand new struct database.  Fill in the
+             * 'reserved' area in case it gets referenced.  
+             */
 
-	    purenames = newpurenames;
-	    for (i = 0; i < SIZE_HACK; i++) {
-		purenames[i] = NULL;
-	    }
-	}
-	purenames = newpurenames + SIZE_HACK;
-	newpurenames = NULL;
+            purenames = newpurenames;
+            for (i = 0; i < SIZE_HACK; i++) {
+                purenames[i] = NULL;
+            }
+        }
+        purenames = newpurenames + SIZE_HACK;
+        newpurenames = NULL;
     }
     /*
      * Grow the db array 
      */
 
     newdb = (OBJ *)
-	XMALLOC((newsize + SIZE_HACK) * sizeof(OBJ), "db_grow.db");
+        XMALLOC((newsize + SIZE_HACK) * sizeof(OBJ), "db_grow.db");
     if (!newdb) {
 
-	LOG_SIMPLE(LOG_ALWAYS, "ALC", "DB",
-	    tprintf
-	    ("Could not allocate space for %d item struct database.",
-		newsize));
-	abort();
+        LOG_SIMPLE(LOG_ALWAYS, "ALC", "DB",
+                tprintf
+                ("Could not allocate space for %d item struct database.",
+                 newsize));
+        abort();
     }
     if (db) {
 
-	/*
-	 * An old struct database exists.  Copy it to the new buffer 
-	 */
+        /*
+         * An old struct database exists.  Copy it to the new buffer 
+         */
 
-	db -= SIZE_HACK;
-	bcopy((char *) db, (char *) newdb,
-	    (mudstate.db_top + SIZE_HACK) * sizeof(OBJ));
-	cp = (char *) db;
-	XFREE(cp, "db_grow.db");
+        db -= SIZE_HACK;
+        bcopy((char *) db, (char *) newdb,
+                (mudstate.db_top + SIZE_HACK) * sizeof(OBJ));
+        cp = (char *) db;
+        XFREE(cp, "db_grow.db");
     } else {
 
-	/*
-	 * Creating a brand new struct database.  Fill in the * * * * 
-	 * 
-	 * *  * * 'reserved' area in case it gets referenced. 
-	 */
+        /*
+         * Creating a brand new struct database.  Fill in the * * * * 
+         * 
+         * *  * * 'reserved' area in case it gets referenced. 
+         */
 
-	db = newdb;
-	for (i = 0; i < SIZE_HACK; i++) {
-	    s_Owner(i, GOD);
-	    s_Flags(i, (TYPE_GARBAGE | GOING));
-	    s_Powers(i, 0);
-	    s_Powers2(i, 0);
-	    s_Location(i, NOTHING);
-	    s_Contents(i, NOTHING);
-	    s_Exits(i, NOTHING);
-	    s_Link(i, NOTHING);
-	    s_Next(i, NOTHING);
-	    s_Zone(i, NOTHING);
-	    s_Parent(i, NOTHING);
-	    s_Stack(i, NULL);
-	    db[i].ahead = NULL;
-	    db[i].at_count = 0;
-	}
+        db = newdb;
+        for (i = 0; i < SIZE_HACK; i++) {
+            s_Owner(i, GOD);
+            s_Flags(i, (TYPE_GARBAGE | GOING));
+            s_Powers(i, 0);
+            s_Powers2(i, 0);
+            s_Location(i, NOTHING);
+            s_Contents(i, NOTHING);
+            s_Exits(i, NOTHING);
+            s_Link(i, NOTHING);
+            s_Next(i, NOTHING);
+            s_Zone(i, NOTHING);
+            s_Parent(i, NOTHING);
+            s_Stack(i, NULL);
+            db[i].ahead = NULL;
+            db[i].at_count = 0;
+        }
     }
     db = newdb + SIZE_HACK;
     newdb = NULL;
 
     for (i = mudstate.db_top; i < newtop; i++) {
-	if (mudconf.cache_names) {
-	    purenames[i] = NULL;
-	}
+        if (mudconf.cache_names) {
+            purenames[i] = NULL;
+        }
     }
     initialize_objects(mudstate.db_top, newtop);
     mudstate.db_top = newtop;
@@ -1786,10 +1785,10 @@ void db_grow(dbref newtop)
     newmarkbuf = (MARKBUF *) XMALLOC(marksize, "db_grow");
     bzero((char *) newmarkbuf, marksize);
     if (mudstate.markbits) {
-	marksize = (newtop + 7) >> 3;
-	bcopy((char *) mudstate.markbits, (char *) newmarkbuf, marksize);
-	cp = (char *) mudstate.markbits;
-	XFREE(cp, "db_grow");
+        marksize = (newtop + 7) >> 3;
+        bcopy((char *) mudstate.markbits, (char *) newmarkbuf, marksize);
+        cp = (char *) mudstate.markbits;
+        XFREE(cp, "db_grow");
     }
     mudstate.markbits = newmarkbuf;
 }

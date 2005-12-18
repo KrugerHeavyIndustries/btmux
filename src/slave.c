@@ -240,7 +240,7 @@ int main(int argc, char **argv)
 				   * child 
 				 */
 	    {
-            dprintk("child booted.\n");
+            dprintk("child booted.");
 		/*
 		 * we don't want to try this for more than 5
 		 * * * * * minutes 
