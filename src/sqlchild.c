@@ -498,7 +498,7 @@ static char *sqlchild_sanitize_string(char *input, int length) {
     memset(retval, 0, length);
     for(i = 0; i < length; i++) {
         if(isprint(input[i])) {
-            retval[i] = length[i];
+            retval[i] = input[i];
         } else {
             retval[i] = ' ';
         }
