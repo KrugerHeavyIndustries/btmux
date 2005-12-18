@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.physical.c,v 1.5 2005/07/25 15:14:55 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Thu Sep 10 07:37:00 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -96,16 +90,16 @@ static int get_arm_args(int *using, int *argc, char ***args, MECH * mech,
     switch (*using) {
     case P_LEFT:
 	if (!have_fn(mech, LARM)) {
-	    mech_notify(mech, MECHALL,
-		tprintf("You don't have %s in your left arm!", weapon));
+	    mech_printf(mech, MECHALL,
+		"You don't have %s in your left arm!", weapon);
 	    return 1;
 	}
 	break;
 
     case P_RIGHT:
 	if (!have_fn(mech, RARM)) {
-	    mech_notify(mech, MECHALL,
-		tprintf("You don't have %s in your right arm!", weapon));
+	    mech_printf(mech, MECHALL,
+		"You don't have %s in your right arm!", weapon);
 	    return 1;
 	}
 	break;
@@ -497,9 +491,9 @@ void mech_charge(dbref player, void *data, char *buffer)
 	    return;
 	}
 	MechChargeTarget(mech) = targetnum;
-	mech_notify(mech, MECHALL, tprintf("%s target set to %s.",
+	mech_printf(mech, MECHALL, "%s target set to %s.",
 		MechType(mech) == CLASS_MECH ? "Charge" : "Ram",
-		GetMechToMechID(mech, target)));
+		GetMechToMechID(mech, target));
 	break;
     default:
 	notify(player, "Invalid number of arguments!");
@@ -589,8 +583,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     if (SectHasBusyWeap(mech, sect)) {
 	ArmorStringFromIndex(sect, location, MechType(mech),
 	    MechMove(mech));
-	mech_notify(mech, MECHALL,
-	    tprintf("You have weapons recycling on your %s.", location));
+	mech_printf(mech, MECHALL,
+	    "You have weapons recycling on your %s.", location);
 	return;
     }
     switch (AttackType) {
@@ -646,8 +640,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     if (MechSections(mech)[sect].recycle != 0) {
 	ArmorStringFromIndex(sect, location, MechType(mech),
 	    MechMove(mech));
-	mech_notify(mech, MECHALL,
-	    tprintf("Your %s is not ready to attack again.", location));
+	mech_printf(mech, MECHALL,
+	    "Your %s is not ready to attack again.", location);
 	return;
     }
     switch (argc) {
@@ -820,11 +814,11 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 		MechType(target) == CLASS_MECH),
 	    "You cannot physically attack a jumping mech!");
 	DOCHECKMA(Standing(mech), "You are still trying to stand up!");
-	mech_notify(mech, MECHALL,
-	    tprintf("You try to punch the %s.  BTH:  %d,\tRoll:  %d",
-		GetMechToMechID(mech, target), baseToHit, roll));
-	mech_notify(target, MECHSTARTED, tprintf("%s tries to punch you!",
-		GetMechToMechID(target, mech)));
+	mech_printf(mech, MECHALL,
+	    "You try to punch the %s.  BTH:  %d,\tRoll:  %d",
+		GetMechToMechID(mech, target), baseToHit, roll);
+	mech_printf(target, MECHSTARTED, "%s tries to punch you!",
+		GetMechToMechID(target, mech));
 
     /* Switching to Exile method of tracking xp, where we split
      * Attacking and Piloting xp into two different channels
@@ -832,10 +826,6 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
      */
 	SendAttacks(tprintf("#%i attacks #%i (punch) (%i/%i)", mech->mynum,
 		target->mynum, baseToHit, roll));
-/*
-	SendXP(tprintf("#%i attacks #%i (punch) (%i/%i)", mech->mynum,
-		target->mynum, baseToHit, roll));
-*/
 	break;
     case PA_SWORD:
     case PA_AXE:
@@ -845,12 +835,12 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	    "You cannot physically attack a jumping mech!");
 	DOCHECKMA(Standing(mech), "You are still trying to stand up!");
 	if (AttackType == PA_CLUB) {
-	    mech_notify(mech, MECHALL,
-		tprintf("You try and club %s.  BaseToHit:  %d,\tRoll:  %d",
-		    GetMechToMechID(mech, target), baseToHit, roll));
-	    mech_notify(target, MECHSTARTED,
-		tprintf("%s tries to club you!", GetMechToMechID(target,
-			mech)));
+	    mech_printf(mech, MECHALL,
+		"You try and club %s.  BaseToHit:  %d,\tRoll:  %d",
+		    GetMechToMechID(mech, target), baseToHit, roll);
+	    mech_printf(target, MECHSTARTED,
+		"%s tries to club you!", GetMechToMechID(target,
+			mech));
 
         /* Switching to Exile method of tracking xp, where we split
          * Attacking and Piloting xp into two different channels
@@ -858,19 +848,14 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
          */
 	    SendAttacks(tprintf("#%i attacks #%i (club) (%i/%i)", mech->mynum,
 		    target->mynum, baseToHit, roll));
-/*
-	    SendXP(tprintf("#%i attacks #%i (club) (%i/%i)", mech->mynum,
-		    target->mynum, baseToHit, roll));
-*/
 	} else {
-	    mech_notify(mech, MECHALL,
-		tprintf
-		("You try to swing your %s at %s.  BTH:  %d,\tRoll:  %d",
+	    mech_printf(mech, MECHALL,
+		"You try to swing your %s at %s.  BTH:  %d,\tRoll:  %d",
 		    AttackType == PA_SWORD ? "sword" : "axe",
-		    GetMechToMechID(mech, target), baseToHit, roll));
-	    mech_notify(target, MECHSTARTED, tprintf("%s tries to %s you!",
+		    GetMechToMechID(mech, target), baseToHit, roll);
+	    mech_printf(target, MECHSTARTED, "%s tries to %s you!",
 		    GetMechToMechID(target, mech),
-		    AttackType == PA_SWORD ? "swing a sword at" : "axe"));
+		    AttackType == PA_SWORD ? "swing a sword at" : "axe");
 
         /* Switching to Exile method of tracking xp, where we split
          * Attacking and Piloting xp into two different channels
@@ -880,12 +865,6 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 		    target->mynum,
 		    AttackType == PA_SWORD ? "sword" : "axe", baseToHit,
 		    roll));
-/*
-	    SendXP(tprintf("#%i attacks #%i (%s) (%i/%i)", mech->mynum,
-		    target->mynum,
-		    AttackType == PA_SWORD ? "sword" : "axe", baseToHit,
-		    roll));
-*/
 	}
 
 	break;
@@ -894,11 +873,11 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 		    MechType(target) == CLASS_MECH),
 	        "You cannot physically attack a jumping mech!");
 	    DOCHECKMA(Standing(mech), "You are still trying to stand up!");
-	    mech_notify(mech, MECHALL,
-	        tprintf("You try and kick %s.  BaseToHit:  %d,\tRoll:  %d",
-		    GetMechToMechID(mech, target), baseToHit, roll));
-    	mech_notify(target, MECHSTARTED, tprintf("%s tries to kick you!",
-		    GetMechToMechID(target, mech)));
+	    mech_printf(mech, MECHALL,
+	        "You try and kick %s.  BaseToHit:  %d,\tRoll:  %d",
+		    GetMechToMechID(mech, target), baseToHit, roll);
+    	mech_printf(target, MECHSTARTED, "%s tries to kick you!",
+		    GetMechToMechID(target, mech));
 
         /* Switching to Exile method of tracking xp, where we split
          * Attacking and Piloting xp into two different channels
@@ -906,10 +885,6 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
          */
 	    SendAttacks(tprintf("#%i attacks #%i (kick) (%i/%i)", mech->mynum,
 		    target->mynum, baseToHit, roll));
-/*
-	    SendXP(tprintf("#%i attacks #%i (kick) (%i/%i)", mech->mynum,
-		    target->mynum, baseToHit, roll));
-*/
     }
 
     /* set the sections to recycling */
@@ -1131,9 +1106,9 @@ int DeathFromAbove(MECH * mech, MECH * target)
         if (SectHasBusyWeap(mech, resect[i])) {
             ArmorStringFromIndex(resect[i], location, MechType(mech),
                 MechMove(mech));
-            mech_notify(mech, MECHALL,
-                tprintf("You have weapons recycling on your %s.",
-                    location));
+            mech_printf(mech, MECHALL,
+                "You have weapons recycling on your %s.",
+                    location);
             return 0;
         }
 
@@ -1177,16 +1152,16 @@ int DeathFromAbove(MECH * mech, MECH * target)
             baseToHit));
 
     roll = Roll();
-    mech_notify(mech, MECHALL, tprintf("DFA: BTH %d\tRoll: %d", baseToHit, roll));
+    mech_printf(mech, MECHALL, "DFA: BTH %d\tRoll: %d", baseToHit, roll);
 
     MechStatus(mech) &= ~JUMPING;
     MechStatus(mech) &= ~DFA_ATTACK;
 
     if (roll >= baseToHit) {
         /* OUCH */
-        mech_notify(target, MECHSTARTED,
-            tprintf("DEATH FROM ABOVE!!!\n%s lands on you from above!",
-                GetMechToMechID(target, mech)));
+        mech_printf(target, MECHSTARTED,
+            "DEATH FROM ABOVE!!!\n%s lands on you from above!",
+                GetMechToMechID(target, mech));
         mech_notify(mech, MECHALL, "You land on your target legs first!");
         MechLOSBroadcasti(mech, target, "lands on %s!");
 
@@ -1341,9 +1316,9 @@ void ChargeMech(MECH * mech, MECH * target)
             if (SectHasBusyWeap(mech, resect[i])) {
                 ArmorStringFromIndex(resect[i], location, MechType(mech),
                     MechMove(mech));
-                mech_notify(mech, MECHALL,
-                    tprintf("You have weapons recycling on your %s.",
-                        location));
+                mech_printf(mech, MECHALL,
+                    "You have weapons recycling on your %s.",
+                        location);
                 mech_charge = 0;
                 done = 1;
             }
@@ -1355,9 +1330,9 @@ void ChargeMech(MECH * mech, MECH * target)
             if (SectHasBusyWeap(target, resect[i])) {
                 ArmorStringFromIndex(resect[i], location, MechType(target),
                     MechMove(target));
-                mech_notify(target, MECHALL,
-                    tprintf("You have weapons recycling on your %s.",
-                        location));
+                mech_printf(target, MECHALL,
+                    "You have weapons recycling on your %s.",
+                        location);
                 target_charge = 0;
                 done = 1;
             }
@@ -1624,17 +1599,17 @@ void ChargeMech(MECH * mech, MECH * target)
         /* Now check to see if its possible for them to even charge */
         if (mech_charge)
             if (mech_baseToHit > 12) {
-                mech_notify(mech, MECHALL,
-                    tprintf("Charge: BTH %d\tYou choose not to charge.",
-                    mech_baseToHit));
+                mech_printf(mech, MECHALL,
+                    "Charge: BTH %d\tYou choose not to charge.",
+                    mech_baseToHit);
                 mech_charge = 0;
             }
 
         if (target_charge)
             if (targ_baseToHit > 12) {
-                mech_notify(target, MECHALL,
-                    tprintf("Charge: BTH %d\tYou choose not to charge.",
-                    targ_baseToHit));
+                mech_printf(target, MECHALL,
+                    "Charge: BTH %d\tYou choose not to charge.",
+                    targ_baseToHit);
                 target_charge = 0;
             }
 
@@ -1653,21 +1628,21 @@ void ChargeMech(MECH * mech, MECH * target)
         targ_roll = Roll();
 
         if (mech_charge)
-            mech_notify(mech, MECHALL, 
-                tprintf("Charge: BTH %d\tRoll: %d", mech_baseToHit, 
-                mech_roll));
+            mech_printf(mech, MECHALL, 
+                "Charge: BTH %d\tRoll: %d", mech_baseToHit, 
+                mech_roll);
 
         if (target_charge)
-            mech_notify(target, MECHALL,
-                tprintf("Charge: BTH %d\tRoll: %d", targ_baseToHit,
-                targ_roll));
+            mech_printf(target, MECHALL,
+                "Charge: BTH %d\tRoll: %d", targ_baseToHit,
+                targ_roll);
 
         /* Ok the first unit made its roll */
         if (mech_charge && mech_roll >= mech_baseToHit) {
             /* OUCH */
-            mech_notify(target, MECHALL,
-                tprintf("CRASH!!!\n%s charges into you!",
-                    GetMechToMechID(target, mech)));
+            mech_printf(target, MECHALL,
+                "CRASH!!!\n%s charges into you!",
+                    GetMechToMechID(target, mech));
             mech_notify(mech, MECHALL,
                 "SMASH!!! You crash into your target!");
             hitGroup = FindAreaHitGroup(mech, target);
@@ -1754,9 +1729,9 @@ void ChargeMech(MECH * mech, MECH * target)
         /* Ok the second unit made its roll */
         if (target_charge && targ_roll >= targ_baseToHit) {
             /* OUCH */
-            mech_notify(mech, MECHALL,
-                tprintf("CRASH!!!\n%s charges into you!",
-                    GetMechToMechID(mech, target)));
+            mech_printf(mech, MECHALL,
+                "CRASH!!!\n%s charges into you!",
+                    GetMechToMechID(mech, target));
             mech_notify(target, MECHALL,
                 "SMASH!!! You crash into your target!");
             hitGroup = FindAreaHitGroup(target, mech);
@@ -1868,9 +1843,9 @@ void ChargeMech(MECH * mech, MECH * target)
         if (SectHasBusyWeap(mech, i)) {
             ArmorStringFromIndex(i, location, MechType(mech),
                 MechMove(mech));
-            mech_notify(mech, MECHALL,
-                tprintf("You have weapons recycling on your %s.",
-                    location));
+            mech_printf(mech, MECHALL,
+                "You have weapons recycling on your %s.",
+                    location);
             return;
         }
     }
@@ -1960,17 +1935,17 @@ void ChargeMech(MECH * mech, MECH * target)
 
     /* Roll */
     roll = Roll();
-    mech_notify(mech, MECHALL, tprintf("Charge: BTH %d\tRoll: %d",
-        baseToHit, roll));
+    mech_printf(mech, MECHALL, "Charge: BTH %d\tRoll: %d",
+        baseToHit, roll);
 
     /* Did the charge work ? */
     if (roll >= baseToHit) {
         /* OUCH */
         MechLOSBroadcasti(mech, target, tprintf("%ss %%s!",
             MechType(mech) == CLASS_MECH ? "charge" : "ram"));
-        mech_notify(target, MECHSTARTED,
-            tprintf("CRASH!!!\n%s %ss into you!", GetMechToMechID(target, mech),
-                MechType(mech) == CLASS_MECH ? "charge" : "ram"));
+        mech_printf(target, MECHSTARTED,
+            "CRASH!!!\n%s %ss into you!", GetMechToMechID(target, mech),
+                MechType(mech) == CLASS_MECH ? "charge" : "ram");
         mech_notify(mech, MECHALL, "SMASH!!! You crash into your target!");
         hitGroup = FindAreaHitGroup(mech, target);
 
@@ -2175,10 +2150,9 @@ void mech_grabclub(dbref player, void *data, char *buffer)
 
     MechLOSBroadcast(mech,
 	"reaches down and yanks a tree out of the ground!");
-    mech_notify(mech, MECHALL,
-	tprintf
-	("You reach down and yank a tree out of the ground with your %s.",
-	    locname));
+    mech_printf(mech, MECHALL,
+	"You reach down and yank a tree out of the ground with your %s.",
+	    locname);
 
     MechSections(mech)[location].specials |= CARRYING_CLUB;
     SetRecycleLimb(mech, location, PHYSICAL_RECYCLE_TIME);

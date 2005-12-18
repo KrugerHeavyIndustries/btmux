@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.status.c,v 1.5 2005/06/24 04:39:08 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Thu Jul  9 02:10:43 1998 fingon
- *
  */
 
 #include "config.h"
@@ -87,34 +81,33 @@ void DisplayTarget(dbref player, MECH * mech)
 	notify(player, buff);
     } else if (MechTargX(mech) != -1 && MechTargY(mech) != -1) {
 	if (MechStatus(mech) & LOCK_BUILDING)
-	    notify(player, tprintf("\nTarget: Building at %d %d",
-		    MechTargX(mech), MechTargY(mech)));
+	    notify_printf(player, "\nTarget: Building at %d %d",
+		    MechTargX(mech), MechTargY(mech));
 	else if (MechStatus(mech) & LOCK_HEX)
-	    notify(player, tprintf("\nTarget: Hex %d %d", MechTargX(mech),
-		    MechTargY(mech)));
+	    notify_printf(player, "\nTarget: Hex %d %d", MechTargX(mech),
+		    MechTargY(mech));
 	else
-	    notify(player, tprintf("\nTarget: %d %d", MechTargX(mech),
-		    MechTargY(mech)));
+	    notify_printf(player, "\nTarget: %d %d", MechTargX(mech),
+		    MechTargY(mech));
 
     }
     if (MechPKiller(mech))
 	notify(player, "\nWeapon Safeties are %ch%crOFF%cn.");
     if (GotPilot(mech) && HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
-        notify(player, tprintf("Turn Mode: %s", GetTurnMode(mech) ? "TIGHT" : "NORMAL"));        
+        notify_printf(player, "Turn Mode: %s", GetTurnMode(mech) ? "TIGHT" : "NORMAL");  
     if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
 	tempMech = getMech(MechChargeTarget(mech));
 	if (!tempMech)
 	    return;
 	if (InLineOfSight(mech, tempMech, MechX(tempMech), MechY(tempMech),
 		FaMechRange(mech, tempMech))) {
-	    notify(player, tprintf("\nChargeTarget: %s\t  ChargeTimer: %d",
+	    notify_printf(player, "\nChargeTarget: %s\t  ChargeTimer: %d",
 		    GetMechToMechID(mech, tempMech),
-		    MechChargeTimer(mech) / 2));
+		    MechChargeTimer(mech) / 2);
 	} else {
-	    notify(player,
-		tprintf
-		("\nChargeTarget: NOT in line of sight!\t Timer: %d",
-		    MechChargeTimer(mech) / 2));
+	    notify_printf(player,
+		"\nChargeTarget: NOT in line of sight!\t Timer: %d",
+		    MechChargeTimer(mech) / 2);
 	}
     }
 }
@@ -138,18 +131,18 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 
     switch (MechType(mech)) {
     case CLASS_MW:
-	notify(player, tprintf("MechWarrior: %-18.18s ID:[%s]",
-		Name(player), MechIDS(mech, 0)));
-	notify(player, tprintf("MaxSpeed: %3d", (int) MMaxSpeed(mech)));
+	notify_printf(player, "MechWarrior: %-18.18s ID:[%s]",
+		Name(player), MechIDS(mech, 0));
+	notify_printf(player, "MaxSpeed: %3d", (int) MMaxSpeed(mech));
 	break;
     case CLASS_BSUIT:
 	sprintf(buff, "%s Name: %-18.18s  ID:[%s]   %s Reference: %s",
 	    GetBSuitName(mech), mech_name, MechIDS(mech, 0),
 	    GetBSuitName(mech), mech_ref);
 	notify(player, buff);
-	notify(player,
-	    tprintf("MaxSpeed: %3d                  JumpRange: %d",
-		(int) MMaxSpeed(mech), JumpSpeedMP(mech, map)));
+	notify_printf(player,
+	    "MaxSpeed: %3d                  JumpRange: %d",
+		(int) MMaxSpeed(mech), JumpSpeedMP(mech, map));
 	show_miscbrands(mech, player);
 	if (MechPilot(mech) == -1)
 	    notify(player, "Leader: NONE");
@@ -182,10 +175,10 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 	sprintf(buff, "Mech Name: %-18.18s  ID:[%s]   Mech Reference: %s",
 	    mech_name, MechIDS(mech, 0), mech_ref);
 	notify(player, buff);
-	notify(player,
-	    tprintf("Tonnage:   %3d     MaxSpeed: %3d       JumpRange: %d",
+	notify_printf(player,
+	    "Tonnage:   %3d     MaxSpeed: %3d       JumpRange: %d",
 		MechTons(mech), (int) MMaxSpeed(mech), JumpSpeedMP(mech,
-		    map)));
+		    map));
 	show_miscbrands(mech, player);
 	if (MechPilot(mech) == -1)
 	    notify(player, "Pilot: NONE");
@@ -473,8 +466,8 @@ void PrintInfoStatus(dbref player, MECH * mech, int own) {
                 notify(player, buff);
             }
             if (MechLateral(mech))
-                notify(player, tprintf("You are moving laterally %s",
-                            LateralDesc(mech)));
+                notify_printf(player, "You are moving laterally %s",
+                            LateralDesc(mech));
             break;
         case CLASS_VEH_GROUND:
         case CLASS_VEH_NAVAL:
@@ -541,8 +534,8 @@ void PrintInfoStatus(dbref player, MECH * mech, int own) {
     DisplayTarget(player, mech);
     if (MechCarrying(mech) > 0)
         if ((tempMech = getMech(MechCarrying(mech))))
-            notify(player, tprintf("Towing %s.", GetMechToMechID(mech,
-                            tempMech)));
+            notify_printf(player, "Towing %s.", GetMechToMechID(mech,
+                            tempMech));
 }
 
 /* Status commands! */

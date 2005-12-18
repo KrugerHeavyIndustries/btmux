@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.update.c,v 1.4 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Tue Jul 21 00:16:07 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -1251,9 +1245,9 @@ static int EnableSomeHS(MECH * mech)
     MechDisabledHS(mech) -= numsinks;
     MechMinusHeat(mech) += numsinks;	/* We dont check for water and such after enabling them, only the next tic. */
 #ifdef HEATCUTOFF_DEBUG
-    mech_notify(mech, MECHALL,
-	tprintf("%%cg%d heatsink%s kick%s into action.%%c", numsinks,
-	    numsinks == 1 ? "" : "s", numsinks == 1 ? "s" : ""));
+    mech_printf(mech, MECHALL,
+	"%%cg%d heatsink%s kick%s into action.%%c", numsinks,
+	    numsinks == 1 ? "" : "s", numsinks == 1 ? "s" : "");
 #endif
     return numsinks;
 }
@@ -1267,9 +1261,9 @@ static int DisableSomeHS(MECH * mech)
     MechDisabledHS(mech) += numsinks;
     MechMinusHeat(mech) -= numsinks;	/* Submerged heatsinks silently still dissipate some heat */
 #ifdef HEATCUTOFF_DEBUG
-    mech_notify(mech, MECHALL,
-	tprintf("%%cy%d heatsink%s hum%s into silence.%%c", numsinks,
-	    numsinks == 1 ? "" : "s", numsinks == 1 ? "s" : ""));
+    mech_printf(mech, MECHALL,
+	"%%cy%d heatsink%s hum%s into silence.%%c", numsinks,
+	    numsinks == 1 ? "" : "s", numsinks == 1 ? "s" : "");
 #endif
     return numsinks;
 }
@@ -1450,8 +1444,8 @@ int recycle_weaponry(MECH * mech)
 	    if (WpnIsRecycling(mech, loop, crit[i])) {
 		if (diff >= GetPartData(mech, loop, crit[i])) {
 		    GetPartData(mech, loop, crit[i]) = 0;
-		    mech_notify(mech, MECHSTARTED,
-			tprintf(MechType(mech) ==
+		    mech_printf(mech, MECHSTARTED,
+			MechType(mech) ==
 			    CLASS_MW ?
 			    "%%cgYou are ready to attack again with %s.%%c"
 			    : PartTempNuke(mech, loop,
@@ -1460,7 +1454,7 @@ int recycle_weaponry(MECH * mech)
 			    (GetPartFireMode(mech, loop,
 				    crit[i]) & ROCKET_FIRED) ? "" :
 			    "%%cg%s finished recycling.%%c",
-			    &MechWeapons[weaptype[i]].name[3]));
+			    &MechWeapons[weaptype[i]].name[3]);
 		    SetPartTempNuke(mech, loop, crit[i], 0);
 		} else {
 		    if (PartTempNuke(mech, loop,
@@ -1489,10 +1483,10 @@ int recycle_weaponry(MECH * mech)
             ArmorStringFromIndex(loop, location, MechType(mech),
                     MechMove(mech));
 
-            mech_notify(mech, MECHSTARTED,
-                    tprintf("%%cg%s%s has finished its previous action.%%c",
+            mech_printf(mech, MECHSTARTED,
+                    "%%cg%s%s has finished its previous action.%%c",
                         MechType(mech) == CLASS_BSUIT ? "" : "Your ",
-                        location));
+                        location);
 
         } else {
 

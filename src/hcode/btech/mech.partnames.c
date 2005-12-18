@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.partnames.c,v 1.4 2005/06/30 18:37:37 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Sat Oct  5 14:38:09 1996 fingon
- * Last modified: Mon Aug 18 20:43:06 1997 fingon
- *
  */
 
 #include <stdio.h>
@@ -211,9 +204,9 @@ void ListForms(dbref player, void *data, char *buffer)
 
     notify(player, "Listing of forms:");
     for (i = 0; i < object_count; i++)
-	notify(player, tprintf("%3d %-20s %-25s %s", i,
+	notify_printf(player, "%3d %-20s %-25s %s", i,
 		short_sorted[i]->shorty, short_sorted[i]->longy,
-		short_sorted[i]->vlongy));
+		short_sorted[i]->vlongy);
 
 }
 

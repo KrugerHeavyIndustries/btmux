@@ -1,16 +1,10 @@
-
 /*
- * $Id: mech.tech.do.c,v 1.4 2005/06/24 04:39:08 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Sun Sep  1 16:21:57 1996 fingon
- * Last modified: Thu Jul  9 20:39:04 1998 fingon
  *
  */
 
@@ -391,15 +385,14 @@ TFUNC_LOCPOS(replaceg_fail)
     int w = (IsWeapon(GetPartType(mech, loc, part)));
 
     if (tech_roll(player, mech, REPLACE_DIFFICULTY) < 0) {
-	notify(player,
-	    tprintf("You muck around, wasting the %s in the progress.",
-		w ? "weapon" : "part"));
+	notify_printf(player,
+	    "You muck around, wasting the %s in the progress.",
+		w ? "weapon" : "part");
 	return -1;
     }
-    notify(player,
-	tprintf
-	("Despite messing the repair, you manage not to waste the %s.",
-	    w ? "weapon" : "part"));
+    notify_printf(player,
+	"Despite messing the repair, you manage not to waste the %s.",
+	    w ? "weapon" : "part");
 #ifndef BT_COMPLEXREPAIRS
     AddPartsM(mech, FindAmmoType(mech, loc, part), GetPartBrand(mech, loc,
 	    part), 1);
@@ -469,8 +462,8 @@ TFUNC_LOC_VAL(fixarmor_fail)
 	tot = 1;
     if (tot == should)
 	tot = should - 1;
-    notify(player, tprintf("Your armor patching isn't exactly perfect.. "
-	    "You managed to fix %d out of %d.", tot, should));
+    notify_printf(player, "Your armor patching isn't exactly perfect.. "
+	    "You managed to fix %d out of %d.", tot, should);
     *val = tot;
     return 0;
 }
@@ -488,10 +481,9 @@ TFUNC_LOC_VAL(fixinternal_fail)
 	tot = 1;
     if (tot == should)
 	tot = should - 1;
-    notify(player,
-	tprintf
-	("Your internal patching isn't exactly perfect.. You managed to fix %d out of %d.",
-	    tot, should));
+    notify_printf(player,
+	"Your internal patching isn't exactly perfect.. You managed to fix %d out of %d.",
+	    tot, should);
     *val = tot;
     return 0;
 }
@@ -507,10 +499,9 @@ TFUNC_LOC(reattach_fail)
     if (tech_roll(player, mech, REATTACH_DIFFICULTY) >= 0)
 	return 0;
     tot = random() % 90 + 5;
-    notify(player,
-	tprintf
-	("Despite your disastrous failure, you recover %d%% of the materials.",
-	    tot));
+    notify_printf(player,
+	"Despite your disastrous failure, you recover %d%% of the materials.",
+	    tot);
     tot = (tot * GetSectOInt(mech, loc)) / 100;
     if (tot == 0)
 	tot = 1;
@@ -536,10 +527,9 @@ TFUNC_LOC(replacesuit_fail)
 	return 0;
 
     wRand = random() % 90 + 5;
-    notify(player,
-	tprintf
-	("Despite your disastrous failure, you recover %d%% of the materials.",
-	    wRand));
+    notify_printf(player,
+	"Despite your disastrous failure, you recover %d%% of the materials.",
+	    wRand);
 #ifndef BT_COMPLEXREPAIRS
     AddPartsM(mech, Cargo(BSUIT_SENSOR), 0,
 	MAX(((BSUIT_REPAIR_SENSORS_NEEDED * wRand) / 100), 1));
@@ -574,10 +564,9 @@ TFUNC_LOC_RESEAL(reseal_fail)
     if (tech_roll(player, mech, RESEAL_DIFFICULTY) >= 0)
 	return 0;
     tot = random() % 90 + 5;
-    notify(player,
-	tprintf
-	("You don't manage to get all the water out and seal the section, though you recover %d%% of the materials.",
-	    tot));
+    notify_printf(player,
+	"You don't manage to get all the water out and seal the section, though you recover %d%% of the materials.",
+	    tot);
     tot = (tot * GetSectOInt(mech, loc)) / 100;
     if (tot == 0)
 	tot = 1;

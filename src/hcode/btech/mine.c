@@ -1,17 +1,10 @@
-
 /*
- * $Id: mine.c,v 1.1.1.1 2005/01/11 21:18:29 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry 
  *       All rights reserved
- *
- * Created: Tue Oct 22 18:25:30 1996 fingon
- * Last modified: Sun Jun 14 22:29:54 1998 fingon
- *
  */
 
 /*
@@ -109,8 +102,8 @@ void make_mine_explode(MECH * mech, MAP * map, mapobj * o, int x, int y,
                 case MINE_STEP:
                     MechLOSBroadcast(mech,
                             tprintf("moves to %d,%d, and triggers a mine!", x, y));
-                    mech_notify(mech, MECHALL,
-                            tprintf("As you move to %d,%d, you trigger a mine!", x, y));
+                    mech_printf(mech, MECHALL,
+                            "As you move to %d,%d, you trigger a mine!", x, y);
                     break;
                 case MINE_LAND:
                     MechLOSBroadcast(mech, tprintf("triggers a mine!", x, y));
@@ -371,8 +364,8 @@ void map_add_mine(dbref player, void *data, char *buffer) {
     foo.obj = player;
     add_mapobj(map, &map->mapobj[TYPE_MINE], &foo, 1);
 
-    notify(player, tprintf("%s mine added to (%d,%d) (strength: %d / extra: %d)",
-	    mine_type_names[type], x, y, str, extra));
+    notify_printf(player, "%s mine added to (%d,%d) (strength: %d / extra: %d)",
+	    mine_type_names[type], x, y, str, extra);
     recalculate_minefields(map);
 }
 

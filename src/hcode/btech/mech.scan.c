@@ -1,16 +1,10 @@
-
 /*
- * $Id: mech.scan.c,v 1.1.1.1 2005/01/11 21:18:22 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Tue Oct  6 17:07:19 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -221,9 +215,9 @@ void mech_scan(dbref player, void *data, char *buffer)
 	    "Your scanners cannot give you precise information on targets that small!");
 	PrintEnemyStatus(player, mech, tempMech, range, options);
 	if (!MechIsObservator(mech)) {
-	    mech_notify(tempMech, MECHSTARTED,
-		tprintf("You are being scanned by %s",
-		    GetMechToMechID(tempMech, mech)));
+	    mech_printf(tempMech, MECHSTARTED,
+		"You are being scanned by %s",
+		    GetMechToMechID(tempMech, mech));
 	    auto_reply(tempMech, tprintf("%s just scanned me.",
 		    GetMechToMechID(tempMech, mech)));
 	}
@@ -365,15 +359,15 @@ void PrintReport(dbref player, MECH * mech, MECH * tempMech, float range)
 	MechSpeed(tempMech), MechVFacing(tempMech));
     notify(player, buff);
     if (FlyingT(tempMech))
-	notify(player, tprintf("      Vertical speed: %.1f KPH",
-		MechVerticalSpeed(tempMech)));
+	notify_printf(player, "      Vertical speed: %.1f KPH",
+		MechVerticalSpeed(tempMech));
     sprintf(buff, "      X, Y, Z: %3d, %3d, %3d\tHeat: %.0f deg C.",
 	MechX(tempMech), MechY(tempMech), MechZ(tempMech),
 	10. * MechHeat(tempMech));
     notify(player, buff);
     if (MechLateral(tempMech))
-	notify(player, tprintf("      Mech is moving laterally %s",
-		LateralDesc(tempMech)));
+	notify_printf(player, "      Mech is moving laterally %s",
+		LateralDesc(tempMech));
     ShowTurretFacing(player, 6, tempMech);
 
     switch (MechMove(tempMech)) {
@@ -414,10 +408,10 @@ void PrintReport(dbref player, MECH * mech, MECH * tempMech, float range)
 	notify(player, "      Type: VTOL                Movement: VTOL");
 	break;
     case MOVE_FLY:
-	notify(player,
-	    tprintf("      Type: %-9s             Movement: FLIGHT",
+	notify_printf(player,
+	    "      Type: %-9s             Movement: FLIGHT",
 		MechType(tempMech) ==
-		CLASS_AERO ? "AEROSPACE" : "DROPSHIP"));
+		CLASS_AERO ? "AEROSPACE" : "DROPSHIP");
 	break;
     case MOVE_HULL:
 	notify(player, "      Type: NAVAL               Movement: HULL");
@@ -437,12 +431,12 @@ void PrintReport(dbref player, MECH * mech, MECH * tempMech, float range)
 	notify(player, "      In Turret Arc");
 	weaponarc &= ~TURRETARC;
     }
-    notify(player, tprintf("      In %s Weapons Arc",
-	    GetArcID(mech, weaponarc)));
+    notify_printf(player, "      In %s Weapons Arc",
+	    GetArcID(mech, weaponarc));
     Mech_ShowFlags(player, tempMech, 6, 1);
     if (Jumping(tempMech))
-	notify(player, tprintf("      Mech is Jumping!\tJump Heading: %d",
-		MechJumpHeading(tempMech)));
+	notify_printf(player, "      Mech is Jumping!\tJump Heading: %d",
+		MechJumpHeading(tempMech));
     notify(player, " ");
 }
 
@@ -466,8 +460,8 @@ void PrintEnemyStatus(dbref player, MECH * mymech, MECH * mech,
 	    notify(player, "Torso is 60 degrees left");
 	if (MechCarrying(mech) > 0)
 	    if ((tempMech = getMech(MechCarrying(mech))))
-		notify(player, tprintf("Towing %s.", GetMechToMechID(mech,
-			    tempMech)));
+		notify_printf(player, "Towing %s.", GetMechToMechID(mech,
+			    tempMech));
 	notify(player, " ");
     }
     if (opt & SHOW_WEAPONS) {

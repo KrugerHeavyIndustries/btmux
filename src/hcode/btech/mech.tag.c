@@ -1,12 +1,8 @@
-
 /*
- * $Id: mech.tag.c,v 1.1.1.1 2005/01/11 21:18:24 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *
  *  Copyright (c) 2001 Cord Awtry
  *       All rights reserved
- *
  */
 
 #include "mech.h"
@@ -108,8 +104,8 @@ void mech_tag(dbref player, void *data, char *buffer)
        BTH += 1;
      */
 
-    mech_notify(mech, MECHALL, tprintf("You light up %s with your TAG.",
-	    GetMechToMechID(mech, target)));
+    mech_printf(mech, MECHALL, "You light up %s with your TAG.",
+	    GetMechToMechID(mech, target));
 
     TaggedBy(target) = mech->mynum;
     TAGTarget(mech) = target->mynum;

@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.sensor.c,v 1.3 2005/08/08 07:56:08 murrayma Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Mon Sep  2 14:45:01 1996 fingon
- * Last modified: Thu Jul  9 20:35:16 1998 fingon
- *
  */
 
 #include "mech.h"
@@ -601,13 +594,13 @@ static void sensor_mode(MECH * mech, char *msg, dbref player, int p, int s,
 	buf[strlen(msg)] = 0;
 	notify(player, msg);
 	notify(player, buf);
-	notify(player, tprintf("Primary:   %s", sensor_mode_name(mech, p,
-		    0, verbose)));
-	notify(player, tprintf("Secondary: %s", sensor_mode_name(mech, s,
-		    0, verbose)));
+	notify_printf(player, "Primary:   %s", sensor_mode_name(mech, p,
+		    0, verbose));
+	notify_printf(player, "Secondary: %s", sensor_mode_name(mech, s,
+		    0, verbose));
     } else
-	notify(player, tprintf("%s: %s", msg, sensor_mode_name(mech, p, 1,
-		    verbose)));
+	notify_printf(player, "%s: %s", msg, sensor_mode_name(mech, p, 1,
+		    verbose));
 }
 
 static int tmp_prim;
@@ -691,16 +684,16 @@ int CanChangeTo(MECH * mech, int s)
 	/* original specials struct */
 	if (sensors[s].specials_set == 1) {
 	    if ((i > 0) == ((!(MechSpecials(mech) & abs(i))) != 0)) {
-		mech_notify(mech, MECHALL,
-		    tprintf("You lack the %s sensors!",
-			sensors[s].sensorname));
+		mech_printf(mech, MECHALL,
+		    "You lack the %s sensors!",
+			sensors[s].sensorname);
 		return 0;
 	    }
 	} else {
 	    if ((i > 0) == ((!(MechSpecials2(mech) & abs(i))) != 0)) {
-		mech_notify(mech, MECHALL,
-		    tprintf("You lack the %s sensors!",
-			sensors[s].sensorname));
+		mech_printf(mech, MECHALL,
+		    "You lack the %s sensors!",
+			sensors[s].sensorname);
 		return 0;
 	    }
 	}
@@ -708,16 +701,16 @@ int CanChangeTo(MECH * mech, int s)
 
     if (sensors[s].min_light >= 0 && sensors[s].min_light > map->maplight) {
 	if (!Destroyed(mech) && Started(mech))
-	    mech_notify(mech, MECHALL,
-		tprintf("It's now too dark to use %s!",
-		    sensors[s].sensorname));
+	    mech_printf(mech, MECHALL,
+		"It's now too dark to use %s!",
+		    sensors[s].sensorname);
 	return 0;
     }
     if (sensors[s].max_light >= 0 && sensors[s].max_light < map->maplight) {
 	if (!Destroyed(mech) && Started(mech))
-	    mech_notify(mech, MECHALL,
-		tprintf("The light's kinda too bright now to use %s!",
-		    sensors[s].sensorname));
+	    mech_printf(mech, MECHALL,
+		"The light's kinda too bright now to use %s!",
+		    sensors[s].sensorname);
 	return 0;
     }
 
@@ -727,9 +720,9 @@ int CanChangeTo(MECH * mech, int s)
 	    (MechType(mech) == CLASS_BSUIT) ||
 	    (MechType(mech) == CLASS_VEH_NAVAL) ||
 	    (MechMove(mech) == MOVE_HOVER)) {
-	    mech_notify(mech, MECHALL,
-		tprintf("You lack the %s sensors!",
-		    sensors[s].sensorname));
+	    mech_printf(mech, MECHALL,
+		"You lack the %s sensors!",
+		    sensors[s].sensorname);
 	    return 0;
 	}
 

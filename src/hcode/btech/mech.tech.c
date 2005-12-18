@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.tech.c,v 1.2 2005/01/15 16:57:14 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Fri Aug 30 15:27:33 1996 fingon
- * Last modified: Sat Jun  6 19:33:13 1998 fingon
- *
  */
 
 #include "mech.h"
@@ -45,10 +38,10 @@ int tech_roll(dbref player, MECH * mech, int diff)
     s += diff;
     succ = r >= s;
     if (Wizard(player)) {
-	notify(player, tprintf("Tech - BTH: %d(Base:%d, Mod:%d) Roll: %d",
-		s, s - diff, diff, r));
+	notify_printf(player, "Tech - BTH: %d(Base:%d, Mod:%d) Roll: %d",
+		s, s - diff, diff, r);
     } else {
-	notify(player, tprintf("BTH: %d Roll: %d", s, r));
+	notify_printf(player, "BTH: %d Roll: %d", s, r);
     }
     if (succ && In_Character(mech->mynum))
 	AccumulateTechXP(player, mech, BOUNDED(1, s - 7, MAX(2,
@@ -66,11 +59,11 @@ int tech_weapon_roll(dbref player, MECH * mech, int diff)
     s += diff;
     succ = r >= s;
     if (Wizard(player)) {
-	notify(player,
-	    tprintf("Tech-W - BTH: %d(Base:%d, Mod:%d) Roll: %d", s,
-		s - diff, diff, r));
+	notify_printf(player,
+	    "Tech-W - BTH: %d(Base:%d, Mod:%d) Roll: %d", s,
+		s - diff, diff, r);
     } else {
-	notify(player, tprintf("BTH: %d Roll: %d", s, r));
+	notify_printf(player, "BTH: %d Roll: %d", s, r);
     }
     if (succ && In_Character(mech->mynum))
 	AccumulateTechWeaponsXP(player, mech, BOUNDED(1, s - 7, MAX(2,

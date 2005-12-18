@@ -1,7 +1,4 @@
-
 /*
- * $Id: mechrep.c,v 1.5 2005/07/02 19:02:23 av1-op Exp $
- *
  * Last modified: Thu Aug 13 23:41:12 1998 fingon
  * Copyright (c) 1999-2005 Kevin Stevens
  *   All right reserved
@@ -117,14 +114,14 @@ void mechrep_Rsetradio(dbref player, void *data, char *buffer)
 	return;
     }
     i = BOUNDED(1, atoi(args[0]), 5);
-    notify(player, tprintf("Radio level set to %d.", i));
+    notify_printf(player, "Radio level set to %d.", i);
     MechRadio(mech) = i;
     MechRadioType(mech) = generic_radio_type(MechRadio(mech), 0);
-    notify(player, tprintf("Number of freqs: %d  Extra stuff: %d",
-	    MechRadioType(mech) % 16, (MechRadioType(mech) / 16) * 16));
+    notify_printf(player, "Number of freqs: %d  Extra stuff: %d",
+	    MechRadioType(mech) % 16, (MechRadioType(mech) / 16) * 16);
     MechRadioRange(mech) = MechComputersRadioRange(mech);
-    notify(player, tprintf("Radio range set to %d.",
-	    (int) MechRadioRange(mech)));
+    notify_printf(player, "Radio range set to %d.",
+	    (int) MechRadioRange(mech));
 }
 
 void mechrep_Rsettarget(dbref player, void *data, char *buffer)
@@ -140,7 +137,7 @@ void mechrep_Rsettarget(dbref player, void *data, char *buffer)
 		Hardcode(newmech)),
 	    "That is not a BattleMech or Vehicle!");
 	rep->current_target = newmech;
-	notify(player, tprintf("Mech to repair changed to #%d", newmech));
+	notify_printf(player, "Mech to repair changed to #%d", newmech);
 	break;
     default:
 	notify(player, "Too many arguments!");
@@ -792,7 +789,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
     DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 	"You must specify a template name!");
     DOCHECK(strstr(args[0], "/"), "Invalid file name!");
-    notify(player, tprintf("Saving %s", args[0]));
+    notify_printf(player, "Saving %s", args[0]);
     sprintf(openfile, "%s/", MECH_PATH);
     strcat(openfile, args[0]);
     DOCHECK(!(fp =
@@ -831,7 +828,7 @@ void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
     DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 	"You must specify a template name!");
     DOCHECK(strstr(args[0], "/"), "Invalid file name!");
-    notify(player, tprintf("Saving %s", args[0]));
+    notify_printf(player, "Saving %s", args[0]);
     sprintf(openfile, "%s/", MECH_PATH);
     strcat(openfile, args[0]);
     DOCHECK(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024),
@@ -1276,10 +1273,9 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 	MechSections(mech)[index].criticals[subsect].data--;
 	MechSpecials(mech) |= ARTEMIS_IV_TECH;
 	notify(player, "Artemis IV Fire-Control System added to 'Mech.");
-	notify(player,
-	    tprintf
-	    ("System will control the weapon which starts at slot %d.",
-		newdata));
+	notify_printf(player,
+	    "System will control the weapon which starts at slot %d.",
+		newdata);
 	break;
     case ECM:
 	MechSpecials(mech) |= ECM_TECH;
@@ -1336,9 +1332,9 @@ void mechrep_Rshowtech(dbref player, void *data, char *buffer)
 	if (MechSections(mech)[i].config & CASE_TECH) {
 	    ArmorStringFromIndex(i, location, MechType(mech),
 		MechMove(mech));
-	    notify(player,
-		tprintf("Cellular Ammunition Storage Equipment in %s",
-		    location));
+	    notify_printf(player,
+		"Cellular Ammunition Storage Equipment in %s",
+		    location);
 	}
     if (MechSpecials(mech) & CLAN_TECH) {
 	notify(player, "Mech is set to Clan Tech.  This means:");
@@ -1431,10 +1427,10 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
         notify(player, "\tCase");
 
 	    for (nv = 0; specials[nv]; nv++)
-	        notify(player, tprintf("\t%s", specials[nv]));
+	        notify_printf(player, "\t%s", specials[nv]);
 
 	    for (nv = 0; specials2[nv]; nv++)
-	        notify(player, tprintf("\t%s", specials2[nv]));
+	        notify_printf(player, "\t%s", specials2[nv]);
 
 	    return;
     }
@@ -1521,12 +1517,12 @@ void mechrep_Rdeltech(dbref player, void *data, char *buffer)
         }
 
 	    MechSpecials(mech) &= ~nv;
-    	notify(player, tprintf("%s Technology Removed", buffer));
+    	notify_printf(player, "%s Technology Removed", buffer);
         
     } else {
 
 	    MechSpecials2(mech) &= ~nv2;
-	    notify(player, tprintf("%s Technology Removed", buffer));
+	    notify_printf(player, "%s Technology Removed", buffer);
 
     }
     return;
@@ -1544,10 +1540,10 @@ void mechrep_Raddtech(dbref player, void *data, char *buffer)
 	notify(player, "Invalid tech: Available techs:");
 
 	for (nv = 0; specials[nv]; nv++)
-	    notify(player, tprintf("\t%s", specials[nv]));
+	    notify_printf(player, "\t%s", specials[nv]);
 
 	for (nv = 0; specials2[nv]; nv++)
-	    notify(player, tprintf("\t%s", specials2[nv]));
+	    notify_printf(player, "\t%s", specials2[nv]);
 
 	return;
     }
@@ -1559,10 +1555,10 @@ void mechrep_Raddtech(dbref player, void *data, char *buffer)
 
     if (nv > 0) {
 	MechSpecials(mech) |= nv;
-	notify(player, tprintf("Set: %s", BuildBitString(specials, nv)));
+	notify_printf(player, "Set: %s", BuildBitString(specials, nv));
     } else {
 	MechSpecials2(mech) |= nv2;
-	notify(player, tprintf("Set: %s", BuildBitString(specials2, nv2)));
+	notify_printf(player, "Set: %s", BuildBitString(specials2, nv2));
     }
 
 }
@@ -1586,7 +1582,7 @@ void mechrep_Raddinftech(dbref player, void *data, char *buffer)
 	notify(player, "Invalid infantry tech: Available techs:");
 
 	for (nv = 0; infantry_specials[nv]; nv++)
-	    notify(player, tprintf("\t%s", infantry_specials[nv]));
+	    notify_printf(player, "\t%s", infantry_specials[nv]);
 	return;
     }
 
@@ -1597,8 +1593,8 @@ void mechrep_Raddinftech(dbref player, void *data, char *buffer)
 
     if (nv > 0) {
 	MechInfantrySpecials(mech) |= nv;
-	notify(player, tprintf("Set: %s", BuildBitString(infantry_specials,
-		    nv)));
+	notify_printf(player, "Set: %s", BuildBitString(infantry_specials,
+		    nv));
     }
 
 }
@@ -1622,7 +1618,7 @@ void mechrep_setcargospace(dbref player, void *data, char *buffer)
     max = (BOUNDED(1,max,100));
     CarMaxTon(mech) = (char) max;
 
-    notify(player, tprintf("%3.2f cargospace and %d tons of maxton space set.", (float) ((float) cargo / 100), (int) max));
+    notify_printf(player, "%3.2f cargospace and %d tons of maxton space set.", (float) ((float) cargo / 100), (int) max);
 
 }
 

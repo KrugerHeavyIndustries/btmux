@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.stat.c,v 1.1.1.1 2005/01/11 21:18:23 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
@@ -11,7 +8,6 @@
  *
  * Created: Tue Aug 12 19:06:48 1997 fingon
  * Last modified: Tue Aug 12 20:04:59 1997 fingon
- *
  */
 
 /* Make statistics 'bout what we do.. whatever it is we _do_ */
@@ -47,8 +43,8 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1,
 	}
 	f1 = (float) chances[i] * 100.0 / 36.0;
 	f2 = (float) rollstat.rolls[i] * 100.0 / rollstat.totrolls;
-	notify(player, tprintf("%-3d %6d %8.3f %8.3f %.3f", i + 2,
-		rollstat.rolls[i], f1, f2, 10.0 * f2 - 10.0 * f1));
+	notify_printf(player, "%-3d %6d %8.3f %8.3f %.3f", i + 2,
+		rollstat.rolls[i], f1, f2, 10.0 * f2 - 10.0 * f1);
     }
-    notify(player, tprintf("Total rolls: %d", rollstat.totrolls));
+    notify_printf(player, "Total rolls: %d", rollstat.totrolls);
 }

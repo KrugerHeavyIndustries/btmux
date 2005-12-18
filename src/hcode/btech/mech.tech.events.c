@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.tech.events.c,v 1.4 2005/06/24 04:39:08 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Sun Sep  1 16:06:19 1996 fingon
- * Last modified: Sun Jun 14 16:45:08 1998 fingon
- *
  */
 
 #include "config.h"
@@ -72,7 +65,7 @@ void muxevent_tickmech_removesection(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~DESTROYED;
-	mech_notify(mech, MECHALL, tprintf("%s has been removed.", buf));
+	mech_printf(mech, MECHALL, "%s has been removed.", buf);
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);
@@ -105,9 +98,9 @@ void muxevent_tickmech_removegun(MUXEVENT * e)
 	    if (Destroyed(mech))
 		i = 1;
 	    MechStatus(mech) &= ~DESTROYED;
-	    mech_notify(mech, MECHALL,
-		tprintf("%s from %s has been removed.", pos_part_name(mech,
-			loc, pos), buf));
+	    mech_printf(mech, MECHALL,
+		"%s from %s has been removed.", pos_part_name(mech,
+			loc, pos), buf);
 	    if (i)
 		MechStatus(mech) |= DESTROYED;
 	} while (0);
@@ -118,9 +111,9 @@ void muxevent_tickmech_removegun(MUXEVENT * e)
 	    if (Destroyed(mech))
 		i = 1;
 	    MechStatus(mech) &= ~DESTROYED;
-	    mech_notify(mech, MECHALL,
-		tprintf("%s from %s has been removed and scrapped.",
-		    pos_part_name(mech, loc, pos), buf));
+	    mech_printf(mech, MECHALL,
+		"%s from %s has been removed and scrapped.",
+		    pos_part_name(mech, loc, pos), buf);
 	    if (i)
 		MechStatus(mech) |= DESTROYED;
 	} while (0);
@@ -154,9 +147,9 @@ void muxevent_tickmech_removepart(MUXEVENT * e)
 	    if (Destroyed(mech))
 		i = 1;
 	    MechStatus(mech) &= ~DESTROYED;
-	    mech_notify(mech, MECHALL,
-		tprintf("%s from %s has been removed.", pos_part_name(mech,
-			loc, pos), buf));
+	    mech_printf(mech, MECHALL,
+		"%s from %s has been removed.", pos_part_name(mech,
+			loc, pos), buf);
 	    if (i)
 		MechStatus(mech) |= DESTROYED;
 	} while (0);
@@ -167,9 +160,9 @@ void muxevent_tickmech_removepart(MUXEVENT * e)
 	    if (Destroyed(mech))
 		i = 1;
 	    MechStatus(mech) &= ~DESTROYED;
-	    mech_notify(mech, MECHALL,
-		tprintf("%s from %s has been removed and scrapped.",
-		    pos_part_name(mech, loc, pos), buf));
+	    mech_printf(mech, MECHALL,
+		"%s from %s has been removed and scrapped.",
+		    pos_part_name(mech, loc, pos), buf);
 	    if (i)
 		MechStatus(mech) |= DESTROYED;
 	} while (0);
@@ -204,9 +197,9 @@ void muxevent_tickmech_repairarmor(MUXEVENT * e)
 		if (Destroyed(mech))
 		    i = 1;
 		MechStatus(mech) &= ~DESTROYED;
-		mech_notify(mech, MECHALL,
-		    tprintf("%s's rear armor repairs have been finished.",
-			buf));
+		mech_printf(mech, MECHALL,
+		    "%s's rear armor repairs have been finished.",
+			buf);
 		if (i)
 		    MechStatus(mech) |= DESTROYED;
 	    } while (0);
@@ -217,9 +210,9 @@ void muxevent_tickmech_repairarmor(MUXEVENT * e)
 		if (Destroyed(mech))
 		    i = 1;
 		MechStatus(mech) &= ~DESTROYED;
-		mech_notify(mech, MECHALL,
-		    tprintf("%s's armor repairs have been finished.",
-			buf));
+		mech_printf(mech, MECHALL,
+		    "%s's armor repairs have been finished.",
+			buf);
 		if (i)
 		    MechStatus(mech) |= DESTROYED;
 	    } while (0);
@@ -256,8 +249,8 @@ void muxevent_tickmech_repairinternal(MUXEVENT * e)
 	    if (Destroyed(mech))
 		i = 1;
 	    MechStatus(mech) &= ~DESTROYED;
-	    mech_notify(mech, MECHALL,
-		tprintf("%s's internal repairs have been finished.", buf));
+	    mech_printf(mech, MECHALL,
+		"%s's internal repairs have been finished.", buf);
 	    if (i)
 		MechStatus(mech) |= DESTROYED;
 	} while (0);
@@ -287,8 +280,8 @@ void muxevent_tickmech_reattach(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~DESTROYED;
-	mech_notify(mech, MECHALL, tprintf("%s has been reattached.",
-		buf));
+	mech_printf(mech, MECHALL, "%s has been reattached.",
+		buf);
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);
@@ -304,7 +297,7 @@ void muxevent_tickmech_replacesuit(MUXEVENT * e)
     mech_ReplaceSuit(mech, earg);
     do_magic(mech);
 
-    mech_notify(mech, MECHALL, tprintf("%s has been replaced.", buf));
+    mech_printf(mech, MECHALL, "%s has been replaced.", buf);
 }
 
 /*
@@ -320,7 +313,7 @@ void muxevent_tickmech_reseal(MUXEVENT * e)
 
     mech_ReSeal(mech, earg);
     ArmorStringFromIndex(earg, buf, MechType(mech), MechMove(mech));
-    mech_notify(mech, MECHALL, tprintf("%s has been resealed.", buf));
+    mech_printf(mech, MECHALL, "%s has been resealed.", buf);
 }
 
 void muxevent_tickmech_replacegun(MUXEVENT * e)
@@ -347,8 +340,8 @@ void muxevent_tickmech_replacegun(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~(DESTROYED);
-	mech_notify(mech, MECHALL, tprintf("%s on %s has been replaced.",
-		pos_part_name(mech, loc, pos), buf));
+	mech_printf(mech, MECHALL, "%s on %s has been replaced.",
+		pos_part_name(mech, loc, pos), buf);
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);
@@ -375,8 +368,8 @@ void muxevent_tickmech_repairgun(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~DESTROYED;
-	mech_notify(mech, MECHALL, tprintf("%s on %s has been repaired.",
-		pos_part_name(mech, loc, pos), buf));
+	mech_printf(mech, MECHALL, "%s on %s has been repaired.",
+		pos_part_name(mech, loc, pos), buf);
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);
@@ -392,8 +385,8 @@ void muxevent_tickmech_repairenhcrit(MUXEVENT * e)
 
     UNPACK_LOCPOS(earg, loc, pos);
     ArmorStringFromIndex(loc, buf, MechType(mech), MechMove(mech));
-    mech_notify(mech, MECHALL, tprintf("%s on %s has been repaired.",
-	    pos_part_name(mech, loc, pos), buf));
+    mech_printf(mech, MECHALL, "%s on %s has been repaired.",
+	    pos_part_name(mech, loc, pos), buf);
     UnDamagePart(mech, loc, pos);
 
     /* Get the crit type */
@@ -425,8 +418,8 @@ void muxevent_tickmech_repairpart(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~DESTROYED;
-	mech_notify(mech, MECHALL, tprintf("%s on %s has been repaired.",
-		pos_part_name(mech, loc, pos), buf));
+	mech_printf(mech, MECHALL, "%s on %s has been repaired.",
+		pos_part_name(mech, loc, pos), buf);
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);
@@ -459,8 +452,8 @@ void muxevent_tickmech_reload(MUXEVENT * e)
 	if (Destroyed(mech))
 	    i = 1;
 	MechStatus(mech) &= ~DESTROYED;
-	mech_notify(mech, MECHALL, tprintf("%s on %s has been %sloaded.",
-		pos_part_name(mech, loc, pos), buf, extra ? "un" : "re"));
+	mech_printf(mech, MECHALL, "%s on %s has been %sloaded.",
+		pos_part_name(mech, loc, pos), buf, extra ? "un" : "re");
 	if (i)
 	    MechStatus(mech) |= DESTROYED;
     } while (0);

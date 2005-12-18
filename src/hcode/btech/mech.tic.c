@@ -1,16 +1,10 @@
-
 /*
- * $Id: mech.tic.c,v 1.1.1.1 2005/01/11 21:18:26 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry 
  *       All rights reserved
- *
- * Last modified: Sat Jun  6 22:24:40 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -40,7 +34,7 @@ int cleartic_sub_func(MECH * mech, dbref player, int low, int high)
     for (i = low; i <= high; i++) {
 	for (j = 0; j < TICLONGS; j++)
 	    mech->tic[i][j] = 0;
-	notify(player, tprintf("TIC #%d cleared!", i));
+	notify_printf(player, "TIC #%d cleared!", i);
     }
     return 0;
 }
@@ -68,11 +62,11 @@ int addtic_sub_func(MECH * mech, dbref player, int low, int high)
 	mech->tic[present_tic][j] |= 1 << (i % SINGLE_TICLONG_SIZE);
     }
     if (low != high)
-	notify(player, tprintf("Weapons #%d - #%d added to TIC %d!", low,
-		high, present_tic));
+	notify_printf(player, "Weapons #%d - #%d added to TIC %d!", low,
+		high, present_tic);
     else
-	notify(player, tprintf("Weapon #%d added to TIC %d!", low,
-		present_tic));
+	notify_printf(player, "Weapon #%d added to TIC %d!", low,
+		present_tic);
     return 0;
 }
 
@@ -101,11 +95,11 @@ int deltic_sub_func(MECH * mech, dbref player, int low, int high)
 	mech->tic[present_tic][j] &= ~(1 << (i % SINGLE_TICLONG_SIZE));
     }
     if (low != high)
-	notify(player, tprintf("Weapons #%d - #%d removed from TIC %d!",
-		low, high, present_tic));
+	notify_printf(player, "Weapons #%d - #%d removed from TIC %d!",
+		low, high, present_tic);
     else
-	notify(player, tprintf("Weapon #%d removed from TIC %d!", low,
-		present_tic));
+	notify_printf(player, "Weapon #%d removed from TIC %d!", low,
+		present_tic);
     return 0;
 }
 
@@ -138,7 +132,7 @@ int firetic_sub_func(MECH * mech, dbref player, int low, int high)
     int f = Fallen(mech);
 
     for (i = low; i <= high; i++) {
-	notify(player, tprintf("Firing weapons in tic #%d!", i));
+	notify_printf(player, "Firing weapons in tic #%d!", i);
 	count = 0;
 	for (k = 0; k < TICLONGS; k++)
 	    if (mech->tic[i][k])
@@ -157,8 +151,8 @@ int firetic_sub_func(MECH * mech, dbref player, int low, int high)
 			count++;
 		    }
 	if (!count)
-	    notify(player,
-		tprintf("*Click* (the tic contained no weapons)"));
+	    notify_printf(player,
+		"*Click* (the tic contained no weapons)");
     }
     return 0;
 }

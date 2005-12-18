@@ -1,16 +1,10 @@
-
 /*
- * $Id: mech.restrict.c,v 1.1.1.1 2005/01/11 21:18:22 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Last modified: Sat Jul 18 04:23:44 1998 fingon
- *
  */
 
 #include <stdio.h>
@@ -110,7 +104,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
         MechFZ(mech) = ZSCALE * MechZ(mech);
     }
     clear_mech_from_LOS(mech);
-    notify(player, tprintf("Pos changed to %d,%d,%d", x, y, z));
+    notify_printf(player, "Pos changed to %d,%d,%d", x, y, z);
     SendLoc(tprintf("#%d set #%d's pos to %d,%d,%d.", player, mech->mynum,
 	    x, y, z));
 }
@@ -206,9 +200,9 @@ void mech_Rsetmapindex(dbref player, void *data, char *buffer)
 	notify(player,
 	    "You're current position is out of bounds, Pos changed to 0,0");
     }
-    notify(player, tprintf("MapIndex changed to %d", newindex));
-    notify(player, tprintf("Your ID: %c%c", MechID(mech)[0],
-	    MechID(mech)[1]));
+    notify_printf(player, "MapIndex changed to %d", newindex);
+    notify_printf(player, "Your ID: %c%c", MechID(mech)[0],
+	    MechID(mech)[1]);
     SendLoc(tprintf("#%d set #%d's mapindex to #%d.", player, mech->mynum,
 	    newindex));
     UnZombifyMech(mech);
@@ -236,7 +230,7 @@ void mech_Rsetteam(dbref player, void *data, char *buffer)
     if (team < 0)
 	team = 0;
     MechTeam(mech) = team;
-    notify(player, tprintf("Team set to %d", team));
+    notify_printf(player, "Team set to %d", team);
 }
 
 #define SPECIAL_FREE 0

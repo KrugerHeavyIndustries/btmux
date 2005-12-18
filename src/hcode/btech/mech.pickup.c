@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.pickup.c,v 1.5 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -10,13 +7,9 @@
  *  Copyright (c) 2002 Dr. Martin Brumm
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
  */
 
 #include "config.h"
-
-/* Avenger's contribution to 3030 MUX ('nother one) */
-
 #include <math.h>
 
 #include "mech.h"
@@ -116,11 +109,11 @@ void mech_pickup(dbref player, void *data, char *buffer)
 
     DOCHECK(Moving(target), "You can't pick up a moving target!");
 
-    mech_notify(target, MECHALL,
-            tprintf("%s attaches his tow lines to you.",
-                GetMechToMechID(target, mech)));
-    mech_notify(mech, MECHALL, tprintf("You attach your tow lines to %s.",
-                GetMechToMechID(mech, target)));
+    mech_printf(target, MECHALL,
+            "%s attaches his tow lines to you.",
+                GetMechToMechID(target, mech));
+    mech_printf(mech, MECHALL, "You attach your tow lines to %s.",
+                GetMechToMechID(mech, target));
     if (MechCarrying(target) > 0)
         mech_dropoff(GOD, target, "");
     if ((newmap = getMap(target->mapindex)))
@@ -257,14 +250,14 @@ void mech_attachcables(dbref player, void *data, char *buffer)
     strcpy(towMechName, GetMechID(towMech));
     strcpy(targetName, GetMechID(target));
 
-    mech_notify(target, MECHALL,
-	tprintf("%s attaches tow lines from %s to you.", mechName,
-	    towMechName));
-    mech_notify(towMech, MECHALL,
-	tprintf("%s attaches your tow lines to %s.", mechName,
-	    targetName));
-    mech_notify(mech, MECHALL, tprintf("You attach %s's tow lines to %s.",
-	    towMechName, targetName));
+    mech_printf(target, MECHALL,
+	"%s attaches tow lines from %s to you.", mechName,
+	    towMechName);
+    mech_printf(towMech, MECHALL,
+	"%s attaches your tow lines to %s.", mechName,
+	    targetName);
+    mech_printf(mech, MECHALL, "You attach %s's tow lines to %s.",
+	    towMechName, targetName);
 
     MechLOSBroadcast(mech,
 	tprintf("attaches tow cables from %s to %s!", towMechName,
@@ -334,12 +327,12 @@ void mech_detachcables(dbref player, void *data, char *buffer)
     strcpy(towMechName, GetMechID(towMech));
     strcpy(targetName, GetMechID(target));
 
-    mech_notify(mech, MECHALL,
-	tprintf("You detach %s's tow lines from %s.", towMechName,
-	    targetName));
-    mech_notify(towMech, MECHALL,
-	tprintf("%s detaches your tow lines from %s.", mechName,
-	    targetName));
+    mech_printf(mech, MECHALL,
+	"You detach %s's tow lines from %s.", towMechName,
+	    targetName);
+    mech_printf(towMech, MECHALL,
+	"%s detaches your tow lines from %s.", mechName,
+	    targetName);
     mech_notify(target, MECHALL, "You have been released from towing.");
 
     StopMoving(target);

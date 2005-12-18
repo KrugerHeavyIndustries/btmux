@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.spot.c,v 1.1.1.1 2005/01/11 21:18:23 kstevens Exp $
- *
  * Author: Cord Awtry <kipsta@mediaone.net>
  *  Copyright (c) 2001-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
@@ -84,12 +81,11 @@ static void mech_spot_event(MUXEVENT * e)
 	free((void *) e->data2);
 	return;
     }
-    mech_notify(target, MECHALL, tprintf("Data link established with %s.",
-	    GetMechToMechID(target, mech)));
-    mech_notify(mech, MECHALL,
-	tprintf
-	("Data link established with %s, you now have a forward observer.",
-	    GetMechToMechID(target, mech)));
+    mech_printf(target, MECHALL, "Data link established with %s.",
+	    GetMechToMechID(target, mech));
+    mech_printf(mech, MECHALL,
+	"Data link established with %s, you now have a forward observer.",
+	    GetMechToMechID(target, mech));
     MechSpotter(mech) = target->mynum;
     MECHEVENT(mech, EVENT_SPOT_CHECK, mech_check_range, SPOT_TICK, target);
     free((void *) e->data2);
@@ -188,8 +184,8 @@ void mech_spot(dbref player, void *data, char *buffer)
 	DOCHECK(!LOS, "You do not have LOS to that target!")
 	    MechSpotter(mech) = targetref;
     MechFireAdjustment(mech) = 0;
-    mech_notify(mech, MECHALL, tprintf("%s set as spotter.",
-	    GetMechToMechID(mech, target)));
+    mech_printf(mech, MECHALL, "%s set as spotter.",
+	    GetMechToMechID(mech, target));
 }
 
 int FireSpot(dbref player,

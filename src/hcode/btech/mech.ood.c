@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.ood.c,v 1.1.1.1 2005/01/11 21:18:20 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Thu Feb 27 18:36:49 1997 fingon
- * Last modified: Thu Jul  9 02:08:18 1998 fingon
- *
  */
 
 #include "mech.h"
@@ -26,13 +19,12 @@
 
 void mech_ood_damage(MECH * wounded, MECH * attacker, int damage)
 {
-    mech_notify(attacker, MECHALL,
-	tprintf("%%cgYou hit the cocoon for %d points of damage!%%cn",
-	    damage));
-    mech_notify(wounded, MECHALL,
-	tprintf
-	("%%ch%%cyYour cocoon has been hit for %d points of damage!%%cn",
-	    damage));
+    mech_printf(attacker, MECHALL,
+	"%%cgYou hit the cocoon for %d points of damage!%%cn",
+	    damage);
+    mech_printf(wounded, MECHALL,
+	"%%ch%%cyYour cocoon has been hit for %d points of damage!%%cn",
+	    damage);
     MechCocoon(wounded) = MAX(0, MechCocoon(wounded) - damage);
     if (MechCocoon(wounded))
 	return;

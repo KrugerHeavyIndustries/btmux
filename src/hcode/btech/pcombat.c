@@ -1,17 +1,10 @@
-
 /*
- * $Id: pcombat.c,v 1.1.1.1 2005/01/11 21:18:31 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry 
  *       All rights reserved
- *
- * Created: Sun Mar 23 19:49:16 1997 fingon
- * Last modified: Thu Aug 14 17:39:56 1997 fingon
- *
  */
 
 #include "mech.h"
@@ -124,13 +117,13 @@ int armor_effect(MECH * wounded, int cause, int hitloc, int intDamage,
     if (noblock)
 	block = 0;
     if (abs(intDamage) < block) {
-	mech_notify(wounded, MECHALL,
-	    tprintf("Your armor blocks all of the damage!"));
+	mech_printf(wounded, MECHALL,
+	    "Your armor blocks all of the damage!");
 	return 0;
     }
     if (block) {
-	mech_notify(wounded, MECHALL,
-	    tprintf("Armor blocks %d points of the damage!", block));
+	mech_printf(wounded, MECHALL,
+	    "Armor blocks %d points of the damage!", block);
     }
     return (abs(intDamage) - block) * intDamage / abs(intDamage);
 }

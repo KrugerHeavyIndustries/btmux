@@ -1,7 +1,4 @@
-
 /*
- * $Id: mech.utils.c,v 1.9 2005/08/03 21:40:54 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -9,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Fri Dec 11 00:54:46 1998 fingon
- *
  */
 
 #include "config.h"
@@ -222,8 +216,8 @@ static int Leave_Hangar(MAP * map, MECH * mech)
     }
 
     StopBSuitSwarmers(FindObjectsData(mech->mapindex), mech, 1);
-    mech_notify(mech, MECHALL, tprintf("You have left %s.",
-	    structure_name(mapo)));
+    mech_printf(mech, MECHALL, "You have left %s.",
+	    structure_name(mapo));
     mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", mapo->x, mapo->y));
     ContinueFlying(mech);
     if (car)
@@ -649,9 +643,9 @@ int MadePilotSkillRoll_Advanced(MECH * mech, int mods,
 		      MechPilotSkillBase(mech), roll_needed));
 
     mech_notify(mech, MECHPILOT, "You make a piloting skill roll!");
-    mech_notify(mech, MECHPILOT,
-	tprintf("Modified Pilot Skill: BTH %d\tRoll: %d", roll_needed,
-	    roll));
+    mech_printf(mech, MECHPILOT,
+	"Modified Pilot Skill: BTH %d\tRoll: %d", roll_needed,
+	    roll);
     if (roll >= roll_needed) {
 	if (roll_needed > 2)
 	    AccumulatePilXP(MechPilot(mech), mech, BOUNDED(1,

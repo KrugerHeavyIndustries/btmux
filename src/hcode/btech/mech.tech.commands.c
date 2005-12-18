@@ -1,17 +1,10 @@
-
 /*
- * $Id: mech.tech.commands.c,v 1.1.1.1 2005/01/11 21:18:25 kstevens Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
  *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
- *
- * Created: Sun Sep  1 16:06:40 1996 fingon
- * Last modified: Thu Sep 10 07:37:29 1998 fingon
- *
  */
 
 #include <math.h>
@@ -208,8 +201,8 @@ void tech_checkstatus(dbref player, void *data, char *buffer)
 
     DOCHECK(!i, "The mech's ready to rock!");
     ms = silly_get_uptime_to_string(game_lag_time(i));
-    notify(player, tprintf("The 'mech has approximately %s until done.",
-	    ms));
+    notify_printf(player, "The 'mech has approximately %s until done.",
+	    ms);
 }
 
 TECHCOMMANDH(tech_removegun)
