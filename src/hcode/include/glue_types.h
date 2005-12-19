@@ -19,8 +19,8 @@
 #define GTYPE_DEBUG   1
 #define GTYPE_MECHREP 2
 #define GTYPE_MAP     3
-#define GTYPE_UNUSED1 4 // Placeholder for old chargen object.
-#define GTYPE_AUTO    5
-#define GTYPE_TURRET  6
+#define GTYPE_AUTO    4
+#define GTYPE_TURRET  5
+#define GTYPE_UNUSED1 6 // Placeholder for old chargen object.
 
 #endif				/* GLUE_TYPES_H */
