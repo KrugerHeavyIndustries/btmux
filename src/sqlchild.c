@@ -582,7 +582,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     type_string = sqlchild_sanitize_string(result, dbi_result_get_field_length_idx(result, i));
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     free(type_string);
-                    return;
+                    break;
                 case DBI_TYPE_DATETIME:
                     // HANDLE TIMEZONE
                     type_time = dbi_result_get_datetime_idx(result, i);
