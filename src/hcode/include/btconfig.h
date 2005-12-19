@@ -152,7 +152,7 @@
 #define HEAT_TICK     2
 #define JUMP_TICK     1
 #define MOVE_TICK     1        /* How oft da mecha move ;-) */
-#define MOVE_MOD      1
+#define MOVE_MOD      .5
 #define WEAPON_TICK   2
 
 #define ARTY_SPEED                  5   /* Artillery round flies 5 hexes / second */
