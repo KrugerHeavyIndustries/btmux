@@ -441,6 +441,7 @@ void runqueues(int fd, short event, void *arg) {
     event_add(&queue_ev, &queue_slice);
     get_tod(&current_time);
     last_slice = update_quotas(last_slice, current_time);
+    process_commands();
     if(mudconf.queue_chunk)
         do_top(mudconf.queue_chunk);
 }
@@ -832,6 +833,7 @@ int fatal_bug() {
         return 1;
     return 0;
 }
+void run_commands(DESC *d);
 
 int process_input(DESC *d) {
     static char buf[LBUF_SIZE];
@@ -898,6 +900,8 @@ int process_input(DESC *d) {
     d->input_tot += got;
     d->input_size += in;
     d->input_lost += lost;
+
+    run_commands(d);
     mudstate.debug_cmd = cmdsave;
     return 1;
 }
