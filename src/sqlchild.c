@@ -578,8 +578,9 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
                 case DBI_TYPE_BINARY:
-                    type_string = dbi_result_get_string_idx(result, i);
-                    type_string = sqlchild_sanitize_string(result, dbi_result_get_field_length_idx(result, i));
+                    type_string = sqlchild_sanitize_string(
+                            dbi_result_get_string_idx(result, i), 
+                            dbi_result_get_field_length_idx(result, i));
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     free(type_string);
                     break;
