@@ -503,7 +503,7 @@ static char *sqlchild_sanitize_string(char *input, int length) {
     char *retval = malloc(length+1);
     int i = 0;
     memset(retval, 0, length+1);
-    for(i = 0; i < length; i++) {
+    for(i = 0; i < length && input[i]; i++) {
         if(isprint(input[i])) {
             retval[i] = input[i];
         } else {
@@ -581,6 +581,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%f%s", type_fp, delim);
                     break;
                 case DBI_TYPE_STRING:
+                    
                     type_string = dbi_result_get_string_idx(result, i);
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
