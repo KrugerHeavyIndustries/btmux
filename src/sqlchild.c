@@ -493,9 +493,9 @@ static void sqlchild_make_connection(char db_slot) {
 }
 
 static char *sqlchild_sanitize_string(char *input, int length) {
-    char *retval = malloc(length);
+    char *retval = malloc(length+1);
     int i = 0;
-    memset(retval, 0, length);
+    memset(retval, 0, length+1);
     for(i = 0; i < length; i++) {
         if(isprint(input[i])) {
             retval[i] = input[i];
