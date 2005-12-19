@@ -510,6 +510,7 @@ static char *sqlchild_sanitize_string(char *input, int length) {
             retval[i] = ' ';
         }
     }
+    free(input);
     return retval;
 }
  
@@ -518,6 +519,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     dbi_result result;
     int rows, fields, i, ii, retval;
     char output_buffer[LBUF_SIZE], *ptr, *eptr, *delim;
+    int binary_length;
     char time_buffer[64];
     int length = 0;
 
@@ -586,11 +588,16 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                     break;
                 case DBI_TYPE_BINARY:
-                    type_string = sqlchild_sanitize_string(
-                            dbi_result_get_string_idx(result, i), 
-                            dbi_result_get_field_length_idx(result, i));
-                    ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
-                    free(type_string);
+                    binary_length = dbi_result_get_field_length_idx(result, i);
+                    if(binary_length) {
+                        type_string = sqlchild_sanitize_string(
+                                dbi_result_get_binary_copy_idx(result, i), 
+                                binary_length);
+                        ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
+                        free(type_string);
+                    } else {
+                        ptr += snprintf(ptr, eptr-ptr, "%s", delim);
+                    }
                     break;
                 case DBI_TYPE_DATETIME:
                     // HANDLE TIMEZONE
