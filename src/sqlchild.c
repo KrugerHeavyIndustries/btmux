@@ -217,7 +217,7 @@ void sqlchild_list(dbref thing) {
     struct query_state_t *aqt;
     notify(thing, "/--------------------------- Recent Queries");
     if(recent) {
-        aqt = recent_tail;
+        aqt = recent_head;
         while(aqt) {
             notify_printf(thing, "%08d #%8d %40s", aqt->serial, aqt->thing, aqt->query);
             aqt = aqt->next;
@@ -274,6 +274,10 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
 
     }
 
+    if(resp.n_chars >= LBUF_SIZE) {
+        resp.n_chars = LBUF_SIZE - 1;
+    }
+
     if(resp.n_chars) {
         if(read(aqt->fd, buffer, resp.n_chars) < 0) {
             log_perror("SQL", "FAIL", NULL, "sqlchild_finish_query");
@@ -281,16 +285,6 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
             argv[1] = "";
             argv[3] = "serious braindamage";
             goto fail;
-        }
-    }
-    
-    if(resp.n_chars < LBUF_SIZE) {
-        if(strnlen(buffer, resp.n_chars) >= LBUF_SIZE) {
-            buffer[LBUF_SIZE] = '\0';
-        }
-    } else {
-        if(strnlen(buffer, resp.n_chars) >= LBUF_SIZE) {
-            buffer[LBUF_SIZE] = '\0';
         }
     }
     
@@ -304,7 +298,7 @@ static void sqlchild_finish_query(int fd, short events, void *arg) {
         if(resp.n_chars) {
             argv[3] = buffer;
         } else {
-            argv[3] = "minor braindamage, no error reported.";
+            argv[3] = "minor braindamage, no error and no result reported.";
         }
     }
     
@@ -313,10 +307,10 @@ fail:
     did_it(GOD, aqt->thing, 0, NULL, 0, NULL, aqt->attr, argv, 4);
 
 hardfail:
-    iter = running;
     if(running == aqt) {
         running = aqt->next;
     } else {
+        iter = running;
         while(iter) {
             if(iter->next == aqt) {
                 iter->next = aqt->next;
@@ -325,25 +319,38 @@ hardfail:
             iter = iter->next;
         }
     }
+    
     close(aqt->fd);
+    recent++;
     if(recent_tail == NULL) {
-        aqt->next = recent_head;
-        recent_head = aqt;
-        recent_tail = aqt;
-        recent++;
+        aqt->next = NULL;
+        recent_head = recent_tail = aqt;
     } else {
-        recent_head->next = aqt;
-        recent_head = aqt;
-        recent++;
+        recent_tail->next = aqt;
+        recent_tail = aqt;
     }
+    
     if(recent > 20) {
-        aqt = recent_tail;
-        recent_tail = aqt->next;
-        if(aqt->preserve) free(aqt->preserve);
-        if(aqt->query) free(aqt->query);
-        if(aqt->rdelim) free(aqt->rdelim);
-        if(aqt->cdelim) free(aqt->cdelim);
+        aqt = recent_head;
+        recent_head = aqt->next;
+        if(aqt->preserve) {
+            free(aqt->preserve);
+            aqt->preserve = NULL;
+        }
+        if(aqt->query) {
+            free(aqt->query);
+            aqt->query = NULL;
+        }
+        if(aqt->rdelim) {
+            free(aqt->rdelim);
+            aqt->rdelim = NULL;
+        }
+        if(aqt->cdelim) {
+            free(aqt->cdelim);
+            aqt->cdelim = NULL;
+        }
         free(aqt);
+        aqt = NULL;
         recent--;
     }
     running_queries--;
