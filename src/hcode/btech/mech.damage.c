@@ -424,8 +424,8 @@ void DamageMech(MECH * wounded,
             MECHEVENT(wounded, EVENT_MOVEMODE, mech_movemode_event, TURN, MODE_OFF|MODE_SPRINT);
         }
 
-   if ((damage > 0 || intDamage > 0) && MechStatus2(wounded) & HIDDEN) {
-        MechStatus2(wounded) &= ~HIDDEN;
+   if ((damage > 0 || intDamage > 0) && MechCritStatus(wounded) & HIDDEN) {
+        MechCritStatus(wounded) &= ~HIDDEN;
         MechLOSBroadcast(wounded, "loses it's cover as it takes damage!");
         mech_notify(wounded, MECHALL, "Your cover is ruined you take damage!");
         if (!MoveModeChange(wounded))
