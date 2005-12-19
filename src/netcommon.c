@@ -505,6 +505,7 @@ void save_command(DESC *d, CBLK *command) {
             handle_prog(d, t->cmd);
         else
             do_command(d, t->cmd, 1);
+        free_lbuf(t);
     }
 
 }
