@@ -431,7 +431,7 @@ void SwarmHitTarget(MECH * mech,
                 continue;
             if (j != present_target)
             continue;
-            if (!hitMech ||
+            if (!hitMech &&
             (r = FaMechRange(source, tempMech)) < 1.9)
             if (InLineOfSight_NB(source, tempMech,
                 MechX(source), MechY(source), r)) {
