@@ -792,8 +792,9 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     // Since we can punch with two arms, often back to back, we want to run
     // these generic checks in mech_punch() -BEFORE- PhysicalAttack() is called
     // twice (if we have two working arms).
-    if (!phys_common_checks(mech) && AttackType != PA_PUNCH)
-        return;
+    if (AttackType != PA_PUNCH)
+        if (!phys_common_checks(mech))
+            return;
 
 #define Check(num,okval,mod) \
   if (AttackType == PA_PUNCH) \
