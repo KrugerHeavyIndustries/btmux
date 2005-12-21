@@ -106,10 +106,10 @@ char *phys_form(int at, int flag)
     }
 
     // Add an 's' if flag = 1.
-    if (flag)
+    if (flag) {
         verb = strcat(verb, "s");
         return verb;
-    else
+    } else
 	    return verb;
     
 } // end phys_form
