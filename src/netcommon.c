@@ -1624,7 +1624,6 @@ int do_command(DESC *d, char *command, int first) {
             */
         if (d->flags & DS_CONNECTED) {
             d->command_count++;
-            choke_player(d->player);
             if (d->output_prefix) {
                 queue_string(d, d->output_prefix);
                 queue_write(d, "\r\n", 2);
@@ -1637,7 +1636,6 @@ int do_command(DESC *d, char *command, int first) {
                 queue_string(d, d->output_suffix);
                 queue_write(d, "\r\n", 2);
             }
-            release_player(d->player);
             mudstate.debug_cmd = cmdsave;
             return 1;
         } else {
