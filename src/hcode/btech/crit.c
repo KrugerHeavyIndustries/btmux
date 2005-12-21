@@ -2303,8 +2303,6 @@ void HandleCritical(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	return;
     if (MechType(wounded) != CLASS_MECH && !mudconf.btech_vcrit)
 	return;
-    AccumulateGunXPold(MechPilot(attacker), attacker, wounded, num, 3, -1,
-	7);
     if (MechType(wounded) == CLASS_VEH_GROUND ||
 	MechType(wounded) == CLASS_VEH_NAVAL) {
 	if (mudconf.btech_fasaadvvhlcrit) {

@@ -1454,7 +1454,10 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
      */
     if (char_gainxp(pilot, skname, xp))
 	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
-            "(%d occurences) against %s", Name(pilot), xp, multiplier, 
+            "(%d occurences) against %s", 
+            Name(pilot), 
+            xp, 
+            multiplier, 
             numOccurences, buf));
 }
 
