@@ -859,12 +859,27 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
         mech_notify(mech, MECHALL, "You can't kick from a prone position.");
         
         return ;
-    } else if (Fallen(mech) && swarmingUs == 0) 
+    // If we are fallen AND
+    //   The target is not a BSuit AND We're not punching
+    } else if (Fallen(mech) && 
+        (MechType(target) != CLASS_VEH_GROUND && 
+            MechType(target) != CLASS_BSUIT))
     {
         mech_printf(mech, MECHALL,
             "You can't %s from a prone position.",
                 phys_form(AttackType, 0));
                 
+        return;
+    } else if (Fallen(mech) && MechType(target) == CLASS_BSUIT && !swarmingUs)
+    {
+        mech_notify(mech, MECHALL,
+            "You may only physical suits that are swarming you while prone.");
+        return;
+    } else if (Fallen(mech) && MechType(target) == CLASS_VEH_GROUND &&
+        AttackType != PA_PUNCH)
+    {
+        mech_notify(mech, MECHALL,
+            "You may only punch vehicles while prone.");
         return;
     } // end if() - Physical while fallen.
 	        
@@ -895,8 +910,10 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     /*
      * Attack-Specific checks.
      */
-    DOCHECKMA(AttackType == PA_PUNCH && (MechType(target) == CLASS_VEH_GROUND),
-	    "You can't punch vehicles!");
+    DOCHECKMA(AttackType == PA_PUNCH && 
+        (MechType(target) == CLASS_VEH_GROUND) &&
+        !Fallen(mech),
+	    "You can't punch vehicles unless you are prone!");
 
     // We're attacking a ground/naval unit.    
     if (MechMove(target) != MOVE_VTOL && MechMove(target) != MOVE_FLY) {
@@ -914,6 +931,12 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	            MechType(target) != CLASS_BSUIT &&
 	            !IsDS(target))
 	            isTooLow = 1;
+	        
+	        // If it's a ground vehicle and we're fallen, then we can
+	        // punch as per BMR.
+	        if (AttackType == PA_PUNCH && 
+	            MechType(target) == CLASS_VEH_GROUND && Fallen(mech))
+	            isTooLow = 0;
 	        
 	        // If it's a suit that's not on us, we can't physical it.
 	        if (MechType(target) == CLASS_BSUIT && swarmingUs == 0) { 
