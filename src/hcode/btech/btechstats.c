@@ -1336,24 +1336,26 @@ float getPilotBVMod(MECH * mech, int weapindx)
     return (baseMod - ((0 + myPSkill) * 0.05));
 }
 
+/*
+ * Routines and formula for XP gain.
+ */
 void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
-    int numOccurences, int multiplier, int weapindx, int bth)
+    int damage, int multiplier, int weapindx, int bth)
 {
     int omul, xp, my_BV, th_BV, my_speed, th_speed;
     float myPilotBVMod = 1.0, theirPilotBVMod = 1.0;
-    float missilemod;
+    float weapTypeMod;
     char *skname;
     char buf[MBUF_SIZE];
     int damagemod;
     float vrtmod;
 
-
-
-    missilemod = 1;
+    weapTypeMod = 1;
+    
     if (mudconf.btech_oldxpsystem) {
-	AccumulateGunXPold(pilot, attacker, wounded, numOccurences,
-	    multiplier, weapindx, bth);
-	return;
+	    AccumulateGunXPold(pilot, attacker, wounded, damage,
+	        multiplier, weapindx, bth);
+	    return;
     }
 
     /* Is attacker in character ie: not in simulator */
@@ -1382,7 +1384,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
     if (!In_Character(wounded->mynum))
 	    return;
 
-    /* ? */
+    /* No skill to match the weapon we're shooting with? */
     if (!(skname = FindGunnerySkillName(attacker, weapindx)))
 	    return;
 
@@ -1395,6 +1397,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	    return;
 
     multiplier = multiplier * mudconf.btech_xp_modifier;
+    
     if (mudconf.btech_xp_bthmod) {
 	    if (!(bth >= 3 && bth <= 12))
 	        return;		/* sure hits aren't interesting */
@@ -1402,6 +1405,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
     }
 
     omul = multiplier;
+    
     /* Need to do a BV mod between the mechs */
     my_BV = MechBV(attacker);
     th_BV = MechBV(wounded);
@@ -1423,13 +1427,14 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 
     my_speed = NewMoveValue(attacker) + 1;
     th_speed = NewMoveValue(wounded) + 1;
+    
     if (MechWeapons[weapindx].type == TMISSILE)
-	    missilemod = mudconf.btech_xp_missilemod;
+	    weapTypeMod = mudconf.btech_xp_missilemod;
     else if (MechWeapons[weapindx].type == TAMMO)
-	    missilemod = mudconf.btech_xp_ammomod;
+	    weapTypeMod = mudconf.btech_xp_ammomod;
 
     if (mudconf.btech_defaultweapdam > 1)
-	    damagemod = numOccurences;
+	    damagemod = damage;
     else
 	    damagemod = 1;
 
@@ -1440,26 +1445,25 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	    vrtmod = 1.0;
 
     multiplier =
-	    (vrtmod * missilemod * multiplier * sqrt((double) (th_BV +
+	    (vrtmod * weapTypeMod * multiplier * sqrt((double) (th_BV +
 		1) * th_speed * mudconf.btech_defaultweapbv /
 	    mudconf.btech_defaultweapdam)) / (sqrt((double) (my_BV +
 		1) * my_speed * MechWeapons[weapindx].battlevalue /
 	    damagemod));
 
-    xp = BOUNDED(1, (multiplier * numOccurences / 100), 50);
+    xp = BOUNDED(1, (multiplier * damage / 100), 10);
 
     strcpy(buf, Name(wounded->mynum));
-    /* Switching to Exile method of tracking xp, where we split
-     * Attacking and Piloting xp into two different channels
-     */
+    
+    // Emit XP gain over MechAttackXP
     if (char_gainxp(pilot, skname, xp))
-	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% difficulty "
-            "(%d occurences) against %s", 
+	    SendAttackXP(tprintf("%s gained %d gun XP from feat of %d/100 difficulty "
+            "(%d damage) against %s", 
             Name(pilot), 
             xp, 
             multiplier, 
-            numOccurences, buf));
-}
+            damage, buf));
+} // end AccumulateGunXP()
 
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
     int numOccurences, int multiplier, int weapindx, int bth)
