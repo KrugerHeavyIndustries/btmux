@@ -76,42 +76,65 @@ int all_limbs_recycled(MECH * mech)
 /**
  * Returns the correct verb for each physical attack.
  */
-char *phys_form(int at, int flag)
+char *phys_form(int AttackType, int add_s)
 {
     // Holds our attack verb.
     char *verb;
 
-    switch (at) {
-        case PA_PUNCH:
-            verb = "punch";
-            break;
-        case PA_CLUB:
-	        verb = "club";
-	        break;
-        case PA_MACE:
-	        verb = "club";
-	        break;
-        case PA_SWORD:
-            verb = "chop";
-	        break;
-        case PA_AXE:
-            verb = "axe";
-	        break;
-        case PA_KICK:
-            verb = "kick";
-	        break;
-        // Ohboy, we're using some funky, unknown physical.
-        default:
-            verb = "??bugs??";
-    }
+    // See if we need the verb with an s on the end.
+    if (add_s) {
+        // With the S.
+        switch (AttackType) {
+            case PA_PUNCH:
+                verb = "punchs";
+                break;
+            case PA_CLUB:
+	            verb = "clubs";
+                break;
+            case PA_MACE:
+	            verb = "clubs";
+	            break;
+            case PA_SWORD:
+                verb = "chops";
+	            break;
+            case PA_AXE:
+                verb = "axes";
+	            break;
+            case PA_KICK:
+                verb = "kicks";
+	            break;
+            // Ohboy, we're using some funky, unknown physical.
+            default:
+                verb = "??bugs??";
+        } // end switch()
+    } else { 
+        // Without the S.
+        switch (AttackType) {
+            case PA_PUNCH:
+                verb = "punch";
+                break;
+            case PA_CLUB:
+	            verb = "club";
+                break;
+            case PA_MACE:
+	            verb = "club";
+	            break;
+            case PA_SWORD:
+                verb = "chop";
+	            break;
+            case PA_AXE:
+                verb = "axe";
+	            break;
+            case PA_KICK:
+                verb = "kick";
+	            break;
+            // Ohboy, we're using some funky, unknown physical.
+            default:
+                verb = "??bugs??";
+        } // end switch()
+    } // end if/else()
 
-    // Add an 's' if flag = 1.
-    if (flag) {
-        verb = strcat(verb, "s");
-        return verb;
-    } else
-	    return verb;
-    
+	    return verb;    
 } // end phys_form
 
 #define phys_message(txt) \
@@ -119,12 +142,12 @@ MechLOSBroadcasti(mech,target,txt)
 
 void phys_succeed(MECH * mech, MECH * target, int at)
 {
-    phys_message(tprintf("%s %%s!", phys_form(at, 0)));
+    phys_message(tprintf("%s %%s!", phys_form(at, 1)));
 }
 
 void phys_fail(MECH * mech, MECH * target, int at)
 {
-    phys_message(tprintf("attempts to %s %%s!", phys_form(at, 1)));
+    phys_message(tprintf("attempts to %s %%s!", phys_form(at, 0)));
 }
 
 /*
@@ -762,8 +785,14 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     char location[20];
     int ts = 0, iwa;
 
-    // Common Checks
-    if (!phys_common_checks(mech))
+    /*
+     * Common Checks
+     */
+     
+    // Since we can punch with two arms, often back to back, we want to run
+    // these generic checks in mech_punch() -BEFORE- PhysicalAttack() is called
+    // twice (if we have two working arms).
+    if (!phys_common_checks(mech) && AttackType != PA_PUNCH)
         return;
 
 #define Check(num,okval,mod) \
