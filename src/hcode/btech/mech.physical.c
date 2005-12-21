@@ -107,7 +107,8 @@ char *phys_form(int at, int flag)
 
     // Add an 's' if flag = 1.
     if (flag)
-        return strcat(verb, "s");
+        verb = strcat(verb, "s");
+        return verb;
     else
 	    return verb;
     
