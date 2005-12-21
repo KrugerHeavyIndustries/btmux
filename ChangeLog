@@ -141,6 +141,11 @@ btonline-btechmux 0.6:
 	* CHARGEN, SCEN (and related), CUSTOM XTYPES have been removed. (Greg)
 	* The 'maxcf' XCODE field on maps has been removed in favor of
 	  'cfmax'. (Greg)
+	* Massive rewrite/restructure of mech.physical.c. Much improved logic
+	  and readability. (Greg)
+	* Disallow the direct physical attacking of bsuits as per FASA.
+	  Maxtech has damage absorption rules for attacking the swarmed unit
+	  but hitting the suit, these should be used instead. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
