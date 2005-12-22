@@ -55,17 +55,13 @@ typedef struct CommandsStruct {
 } CommandsStruct;
 
 typedef struct SpecialObjectStruct {
-    char *type;			/* Type of the object */
-    CommandsStruct *commands;	/* Commands array */
-    long datasize;		/* Size of private buffer */
+    char *type;			        // Type of the object
+    CommandsStruct *commands;	// Commands array
+    long datasize;		        // Size of private buffer
     void (*allocfreefunc) ();
-    int updateTime;		/* Amount of time between updates */
-    /* (secs) */
-    void (*updatefunc) ();	/* called for every */
-    /* object at every */
-    /* update */
-    int power_needed;		/* WHat power is needed to do */
-    /* restricted commands */
+    int updateTime;		        // Amount of time between updates (secs)
+    void (*updatefunc) ();	    // called for every object at every update
+    int power_needed;		    // What power is needed to restricted commands
 } SpecialObjectStruct;
 
 #ifdef _GLUE_C
@@ -551,6 +547,7 @@ CommandsStruct mechcommands[] = {
 	mech_sword},
     {1, "CLUB [<TARGET-ID>]", "Clubs a target with a tree", mech_club},
     {1, "KICK [R | L] [<TARGET-ID>]", "Kicks a target", mech_kick},
+    {1, "TRIP [R | L] [<TARGET-ID>]", "Trips a target mech", mech_trip},
     {1, "PUNCH [R | L | B] [<TARGET-ID>]", "Punches a target", mech_punch},
     {1, "GRABCLUB [R | L | -]",
 	"Grabs a tree and carries it around as a club", mech_grabclub},

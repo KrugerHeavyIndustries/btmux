@@ -103,6 +103,9 @@ char *phys_form(int AttackType, int add_s)
             case PA_KICK:
                 verb = "kicks";
 	            break;
+	        case PA_TRIP:
+	            verb = "trips";
+	            break;
             // Ohboy, we're using some funky, unknown physical.
             default:
                 verb = "??bugs??";
@@ -127,6 +130,9 @@ char *phys_form(int AttackType, int add_s)
 	            break;
             case PA_KICK:
                 verb = "kick";
+	            break;
+	        case PA_TRIP:
+	            verb = "trip";
 	            break;
             // Ohboy, we're using some funky, unknown physical.
             default:
@@ -599,9 +605,25 @@ void mech_sword(dbref player, void *data, char *buffer)
 } // end mech_sword()
 
 /**
- * Mech kick routines.
+ * Mech tripping command hook.
+ */
+void mech_trip(dbref player, void *data, char *buffer)
+{
+    mech_kickortrip(player, data, buffer, PA_TRIP);
+} // end mech_trip()
+
+/**
+ * Mech kick command hook.
  */
 void mech_kick(dbref player, void *data, char *buffer)
+{
+    mech_kickortrip(player, data, buffer, PA_KICK);
+} // end mech_trip()
+
+/**
+ * Mech kick/trip routines.
+ */
+void mech_kickortrip(dbref player, void *data, char *buffer, int AttackType)
 {
     MECH *mech = (MECH *) data;
     MAP *mech_map = getMap(mech->mapindex);
@@ -616,10 +638,10 @@ void mech_kick(dbref player, void *data, char *buffer)
     cch(MECH_USUALO);
     // If we're a quad, re-map front legs.
     if (MechIsQuad(mech)) {
-	rl = RARM;
-	ll = LARM;
+	    rl = RARM;
+	    ll = LARM;
     }
-    // See if we have enough usable legs to kick with.
+    // See if we have enough usable legs to kick/trip with.
     GENERIC_CHECK("kick", CountDestroyedLegs(mech));
     
     argc = mech_parseattributes(buffer, args, 5);
@@ -645,13 +667,15 @@ void mech_kick(dbref player, void *data, char *buffer)
 	    return;
     }
     
-	DOCHECKMA((MechCritStatus(mech) & HIP_DAMAGED),
-	    "You can not kick if your have a destroyed hip.");
+	if((MechCritStatus(mech) & HIP_DAMAGED))
+	    mech_printf(mech, MECHALL,
+	        "You can't %s with a destroyed hip.", 
+	            phys_form(AttackType, 0));
 
     PhysicalAttack(mech, 5,
 	    (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 2 : 3),
-	    PA_KICK, argc, args, mech_map, leg);
-} // end mech_kick()
+	    AttackType, argc, args, mech_map, leg);
+} // end mech_kickortrip()
 
 /**
  * Mech/tank charge routines
@@ -853,10 +877,11 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
      */
      
     // If we're attacking something while fallen that isn't swarming us,
-    // no-go it. Kicks are automatically stopped.
-    if (Fallen(mech) && AttackType == PA_KICK) 
+    // no-go it. Kicks/trips are automatically stopped.
+    if (Fallen(mech) && (AttackType == PA_KICK || AttackType == PA_TRIP)) 
     {
-        mech_notify(mech, MECHALL, "You can't kick from a prone position.");
+        mech_printf(mech, MECHALL, "You can't %s from a prone position.",
+            phys_form(AttackType, 0));
         
         return ;
     // If we are fallen AND
@@ -914,11 +939,20 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
         (MechType(target) == CLASS_VEH_GROUND) &&
         !Fallen(mech),
 	    "You can't punch vehicles unless you are prone!");
+	    
+	// As per BMR, can only trip mechs.
+	DOCHECKMA(AttackType == PA_TRIP && MechType(target) != CLASS_MECH,
+	    "You can only trip mechs!");
+	    
+	// Can't trip mechs that are fallen or in the process of standing.
+	DOCHECKMA(AttackType == PA_TRIP && (Fallen(target) || Standing(target)),
+	    "Your target is already down!");
 
     // We're attacking a ground/naval unit.    
     if (MechMove(target) != MOVE_VTOL && MechMove(target) != MOVE_FLY) {
         
-        if((AttackType != PA_KICK) && (MechZ(mech) >= MechZ(target)))
+        if((AttackType != PA_KICK || AttackType != PA_TRIP) 
+            && (MechZ(mech) >= MechZ(target)))
 	    {
 	        int isTooLow = 0; // Track whether we're too low or not.
 	        
@@ -953,7 +987,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 		    } // end if() - Check isTooLow
 		} // end if() - Target is too low checks.
 		
-	    DOCHECKMA(AttackType == PA_KICK &&
+	    DOCHECKMA((AttackType == PA_KICK || AttackType == PA_TRIP) &&
 	        MechZ(mech) < MechZ(target),
 	        "The target is too high in elevation for you to kick at.");
 	    
@@ -962,7 +996,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	        "You can't attack, the elevation difference is too large.");
 
 	    DOCHECKMA(
-	        (AttackType == PA_KICK) &&
+	        (AttackType == PA_KICK || AttackType == PA_TRIP) &&
 	        (MechZ(target) < MechZ(mech) &&
 		    (((MechType(target) == CLASS_MECH) && Fallen(target)) ||
 		         (MechType(target) == CLASS_VEH_GROUND) ||
@@ -979,9 +1013,14 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 		            phys_form(AttackType,0));
 		}
 		    
-	    DOCHECKMA(AttackType == PA_KICK &&
-	        MechZ(mech) != MechZ(target),
-	        "The target is too far away for you to kick.");
+	    if((AttackType == PA_KICK || AttackType == PA_TRIP) &&
+	        MechZ(mech) != MechZ(target))
+	    {
+	        mech_printf(mech, MECHALL,
+	            "The target is too far away for you to %s.",
+	                phys_form(AttackType, 0));
+	        return;
+	    }
 	        
 	    DOCHECKMA(!(MechZ(target) - MechZ(mech) > -1 &&
 		    MechZ(target) - MechZ(mech) < 4),
@@ -998,7 +1037,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
      * respective arcs - Dany
      *
      * So I went and changed it according to FASA rules */
-    if (AttackType == PA_KICK) {
+    if (AttackType == PA_KICK || AttackType == PA_TRIP) {
 
 	    ts = MechStatus(mech) & (TORSO_LEFT | TORSO_RIGHT);
 	    MechStatus(mech) &= ~ts;
@@ -1058,9 +1097,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 #endif
 
     // If we're axing or chopping a bsuit, add +3 to BTH, else (punching) +5.
-    if ((AttackType == PA_PUNCH || 
-	 AttackType == PA_AXE ||
-	 AttackType == PA_SWORD) && 
+    if (AttackType != PA_PUNCH && 
 	 MechType(target) == CLASS_BSUIT &&
 	 MechSwarmTarget(target) > 0)
 	     baseToHit += (AttackType == PA_AXE || AttackType == PA_SWORD) ? 3 : 5;
@@ -1134,8 +1171,12 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	        }
 	    } // End if() - Club shattering
         
-        // Do the deed - Damage the victim.
-	    PhysicalDamage(mech, target, damageweight, AttackType, sect);
+        // Do the deed - Damage the victim. If we're tripping, we don't do
+        // damage but try to make a skill roll.
+        if (AttackType != PA_TRIP)
+	        PhysicalDamage(mech, target, damageweight, AttackType, sect);
+	    else 
+	        PhysicalTrip(mech, target);
 	    
     } else { // We have failed!
         phys_fail(mech, target, AttackType);
@@ -1175,6 +1216,28 @@ extern int global_physical_flag;
 #define MyDamageMech2(a,b,c,d,e,f,g,h,i) \
         global_physical_flag = 2 ; DamageMech(a,b,c,d,e,f,g,h,i,-1,0,-1,0,0); \
         global_physical_flag = 0
+
+/*
+ * Try to trip the victim.
+ */
+void PhysicalTrip(MECH * mech, MECH * target)
+{
+    // If we trip our target (who is a mech), make a roll to see if he falls.
+    if (!MadePilotSkillRoll(target, 0) && !Fallen(target)) {
+    
+        // Emit to Attacker
+        mech_printf(mech, MECHALL,
+        "You trip %s!",
+            GetMechToMechID(mech, target));
+    
+        // Emit to victim and LOS.
+        mech_notify(target, MECHSTARTED,
+	        "You are tripped and fall to the ground!");
+        MechLOSBroadcast(target, "trips and falls down!");
+        
+        MechFalls(target, 1, 0);
+    }
+} // end PhysicalTrip()
 
 /*
  * Damage the victim.

@@ -20,6 +20,7 @@
 #define PA_AXE   4
 #define PA_SWORD 5
 #define PA_MACE  6
+#define PA_TRIP  7
 
 #define P_LEFT  1
 #define P_RIGHT 2

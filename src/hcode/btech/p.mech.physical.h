@@ -21,12 +21,15 @@ int have_mace(MECH * mech, int loc);
 void mech_axe(dbref player, void *data, char *buffer);
 void mech_sword(dbref player, void *data, char *buffer);
 void mech_kick(dbref player, void *data, char *buffer);
+void mech_trip(dbref player, void *data, char *buffer);
+void mech_kickortrip(dbref player, void *data, char *buffer, int AttackType);
 void mech_charge(dbref player, void *data, char *buffer);
-char *phys_form(int at, int flag);
+char *phys_form(int AttackType, int add_s);
 void phys_succeed(MECH * mech, MECH * target, int at);
 void phys_fail(MECH * mech, MECH * target, int at);
 void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     int AttackType, int argc, char **args, MAP * mech_map, int sect);
+void PhysicalTrip(MECH * mech, MECH * target);
 void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
     int AttackType, int sect);
 int DeathFromAbove(MECH * mech, MECH * target);

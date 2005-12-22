@@ -146,6 +146,9 @@ btonline-btechmux 0.6:
 	* Disallow the direct physical attacking of bsuits as per FASA.
 	  Maxtech has damage absorption rules for attacking the swarmed unit
 	  but hitting the suit, these should be used instead. (Greg)
+	* Added the mech 'trip' physical as per Maxtech. Same as kicking as
+	  far as BTH and actuators go except no damage is dealt and a failed
+	  roll by the attacker doesn't cause a fall.
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
