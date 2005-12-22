@@ -1,8 +1,4 @@
-
-
 /*
- * $Id: mech.h,v 1.10 2005/08/10 14:09:34 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1996 Markus Stenberg
@@ -10,9 +6,6 @@
  *  Copyright (c) 2000-2002 Cord Awtry
  *  Copyright (c) 1999-2005 Kevin Stevens
  *       All rights reserved
- *
- * Last modified: Tue Jul 28 10:17:10 1998 fingon
- *
  */
 
 #include "config.h"
@@ -168,61 +161,62 @@
 #define Cargo		I2Cargo
 
 /* To define one of these-> x=SPECIAL_BASE_INDEX+SHOULDER_OR_HIP */
-#define SHOULDER_OR_HIP		0
-#define UPPER_ACTUATOR		1
-#define LOWER_ACTUATOR		2
-#define HAND_OR_FOOT_ACTUATOR	3
-#define LIFE_SUPPORT		4
-#define SENSORS			5
-#define COCKPIT			6
-#define ENGINE			7
-#define GYRO			8
-#define HEAT_SINK		9
-#define JUMP_JET		10
-#define CASE			11
-#define FERRO_FIBROUS		12
-#define ENDO_STEEL		13
-#define TRIPLE_STRENGTH_MYOMER	14
-#define TARGETING_COMPUTER	15
-#define MASC			16
-#define C3_MASTER		17
-#define C3_SLAVE		18
-#define BEAGLE_PROBE		19
-#define ARTEMIS_IV		20
-#define ECM			21
-#define AXE			22
-#define SWORD			23
-#define MACE			24
-#define CLAW			25
-#define DS_AERODOOR		26
-#define DS_MECHDOOR		27
-#define FUELTANK		28
-#define TAG			29
-#define DS_TANKDOOR		30
-#define DS_CARGODOOR		31
-#define LAMEQUIP		32
-#define CASE_II			33
-#define STEALTH_ARMOR		34
-#define NULL_SIGNATURE_SYSTEM	35
-#define C3I			36
-#define ANGELECM		37
-#define HVY_FERRO_FIBROUS	38
-#define LT_FERRO_FIBROUS	39
-#define BLOODHOUND_PROBE	40
-#define PURIFIER_ARMOR		41
-#define KAGE_STEALTH_UNIT	42
-#define ACHILEUS_STEALTH_UNIT	43
-#define INFILTRATOR_STEALTH_UNIT 44
+#define SHOULDER_OR_HIP		       0
+#define UPPER_ACTUATOR		       1
+#define LOWER_ACTUATOR		       2
+#define HAND_OR_FOOT_ACTUATOR	   3
+#define LIFE_SUPPORT	           4
+#define SENSORS			           5
+#define COCKPIT			           6
+#define ENGINE			           7
+#define GYRO			           8
+#define HEAT_SINK		           9
+#define JUMP_JET		           10
+#define CASE			           11
+#define FERRO_FIBROUS		       12
+#define ENDO_STEEL		           13
+#define TRIPLE_STRENGTH_MYOMER	   14
+#define TARGETING_COMPUTER	       15
+#define MASC			           16
+#define C3_MASTER		           17
+#define C3_SLAVE		           18
+#define BEAGLE_PROBE		       19
+#define ARTEMIS_IV		           20
+#define ECM			               21
+#define AXE			               22
+#define SWORD			           23
+#define MACE			           24
+#define CLAW			           25
+#define DS_AERODOOR		           26
+#define DS_MECHDOOR		           27
+#define FUELTANK		           28
+#define TAG			               29
+#define DS_TANKDOOR		           30
+#define DS_CARGODOOR		       31
+#define LAMEQUIP		           32
+#define CASE_II			           33
+#define STEALTH_ARMOR		       34
+#define NULL_SIGNATURE_SYSTEM	   35
+#define C3I			               36
+#define ANGELECM		           37
+#define HVY_FERRO_FIBROUS	       38
+#define LT_FERRO_FIBROUS	       39
+#define BLOODHOUND_PROBE	       40
+#define PURIFIER_ARMOR		       41
+#define KAGE_STEALTH_UNIT	       42
+#define ACHILEUS_STEALTH_UNIT	   43
+#define INFILTRATOR_STEALTH_UNIT   44
 #define INFILTRATORII_STEALTH_UNIT 45
-#define SUPERCHARGER		46
+#define SUPERCHARGER		       46
+#define DUAL_SAW                   47
 
-#define LBX2_AMMO		0
-#define LBX5_AMMO		1
-#define LBX10_AMMO		2
-#define LBX20_AMMO		3
-#define LRM_AMMO		4
-#define SRM_AMMO		5
-#define SSRM_AMMO		6
+#define LBX2_AMMO		    0
+#define LBX5_AMMO		    1
+#define LBX10_AMMO		    2
+#define LBX20_AMMO		    3
+#define LRM_AMMO		    4
+#define SRM_AMMO		    5
+#define SSRM_AMMO		    6
 #define NARC_LRM_AMMO		7
 #define NARC_SRM_AMMO		8
 #define NARC_SSRM_AMMO		9

@@ -1739,98 +1739,101 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
     if (PartIsNonfunctional(wounded, hitloc, critHit)) {
 	if (IsSpecial(critType)) {
 	    switch (Special2I(critType)) {
-	    case LIFE_SUPPORT:
-		strcpy(partBuf, "life support");
-		break;
-	    case COCKPIT:
-		strcpy(partBuf, "cockpit");
-		break;
-	    case SENSORS:
-		strcpy(partBuf, "sensors");
-		break;
-	    case HEAT_SINK:
-		strcpy(partBuf, "heatsink");
-		break;
-	    case JUMP_JET:
-		strcpy(partBuf, "jump jet");
-		break;
-	    case ENGINE:
-		strcpy(partBuf, "engine");
-		break;
-	    case TARGETING_COMPUTER:
-		strcpy(partBuf, "Targeting Computer");
-		break;
-	    case GYRO:
-		strcpy(partBuf, "gyro");
-		break;
-	    case SHOULDER_OR_HIP:
-		if (tLocIsArm)
-		    strcpy(partBuf, "shoulder");
-		else
-		    strcpy(partBuf, "hip");
-		break;
-	    case LOWER_ACTUATOR:
-	    case UPPER_ACTUATOR:
-	    case HAND_OR_FOOT_ACTUATOR:
-		if (tLocIsArm) {
-		    if (Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
-			strcpy(partBuf, "hand actuator");
-		    else
-			strcpy(partBuf, "arm actuator");
-		} else {
-		    if (Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
-			strcpy(partBuf, "foot actuator");
-		    else
-			strcpy(partBuf, "arm actuator");
-		}
-		break;
-	    case C3_MASTER:
-		strcpy(partBuf, "C3 system");
-		break;
-	    case C3_SLAVE:
-		strcpy(partBuf, "C3 system");
-		break;
-	    case C3I:
-		strcpy(partBuf, "C3i system");
-		break;
-	    case TAG:
-		strcpy(partBuf, "TAG system");
-		break;
-	    case ECM:
-		strcpy(partBuf, "ECM system");
-		break;
-	    case ANGELECM:
-		strcpy(partBuf, "Angel ECM system");
-		break;
-	    case BEAGLE_PROBE:
-		strcpy(partBuf, "Beagle Active Probe");
-		break;
-	    case BLOODHOUND_PROBE:
-		strcpy(partBuf, "Bloodhound Active Probe");
-		break;
-	    case ARTEMIS_IV:
-		strcpy(partBuf, "ArtemisIV system");
-		break;
-	    case AXE:
-		strcpy(partBuf, "axe");
-		break;
-	    case SWORD:
-		strcpy(partBuf, "sword");
-		break;
-	    case MACE:
-		strcpy(partBuf, "mace");
-		break;
-	    case DS_AERODOOR:
-		strcpy(partBuf, "aero doors");
-		break;
-	    case DS_MECHDOOR:
-		strcpy(partBuf, "mech doors");
-		break;
-	    case NULL_SIGNATURE_SYSTEM:
-		strcpy(partBuf, "Null Signature System");
-		break;
-	    }
-	}
+	        case LIFE_SUPPORT:
+		        strcpy(partBuf, "life support");
+		        break;
+	        case COCKPIT:
+		        strcpy(partBuf, "cockpit");
+		        break;
+	        case SENSORS:
+		        strcpy(partBuf, "sensors");
+		        break;
+	        case HEAT_SINK:
+		        strcpy(partBuf, "heatsink");
+		        break;
+	        case JUMP_JET:
+		        strcpy(partBuf, "jump jet");
+		        break;
+	        case ENGINE:
+		        strcpy(partBuf, "engine");
+		        break;
+	        case TARGETING_COMPUTER:
+		        strcpy(partBuf, "Targeting Computer");
+		        break;
+	        case GYRO:
+		        strcpy(partBuf, "gyro");
+		        break;
+	        case SHOULDER_OR_HIP:
+		        if (tLocIsArm)
+		            strcpy(partBuf, "shoulder");
+		        else
+		            strcpy(partBuf, "hip");
+		        break;
+	        case LOWER_ACTUATOR:
+	        case UPPER_ACTUATOR:
+	        case HAND_OR_FOOT_ACTUATOR:
+		        if (tLocIsArm) {
+		            if (Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
+			            strcpy(partBuf, "hand actuator");
+		        else
+			        strcpy(partBuf, "arm actuator");
+		        } else {
+		            if (Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
+			            strcpy(partBuf, "foot actuator");
+		            else
+			            strcpy(partBuf, "arm actuator");
+		        }
+		        break;
+	        case C3_MASTER:
+		        strcpy(partBuf, "C3 system");
+		        break;
+	        case C3_SLAVE:
+		        strcpy(partBuf, "C3 system");
+		        break;
+	        case C3I:
+		        strcpy(partBuf, "C3i system");
+		        break;
+	        case TAG:
+		        strcpy(partBuf, "TAG system");
+		        break;
+	        case ECM:
+		        strcpy(partBuf, "ECM system");
+		        break;
+	        case ANGELECM:
+		        strcpy(partBuf, "Angel ECM system");
+		        break;
+	        case BEAGLE_PROBE:
+		        strcpy(partBuf, "Beagle Active Probe");
+		        break;
+	        case BLOODHOUND_PROBE:
+		        strcpy(partBuf, "Bloodhound Active Probe");
+		        break;
+	        case ARTEMIS_IV:
+		        strcpy(partBuf, "ArtemisIV system");
+		        break;
+	        case AXE:
+		        strcpy(partBuf, "axe");
+		        break;
+	        case SWORD:
+		        strcpy(partBuf, "sword");
+		        break;
+	        case MACE:
+		        strcpy(partBuf, "mace");
+		        break;
+		    case DUAL_SAW:
+		        strcpy(partBuf, "dual saw");
+		        break;
+	        case DS_AERODOOR:
+		        strcpy(partBuf, "aero doors");
+		        break;
+	        case DS_MECHDOOR:
+		        strcpy(partBuf, "mech doors");
+		        break;
+	        case NULL_SIGNATURE_SYSTEM:
+		        strcpy(partBuf, "Null Signature System");
+		        break;
+	    } // end switch() - Part Names
+	} // end if()
 
 	mech_printf(wounded, MECHALL,
 	    "Part of your non-working %s has been hit!", partBuf);
@@ -2251,9 +2254,11 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	    mech_notify(wounded, MECHALL, "Your axe has been destroyed!");
 	    break;
 	case SWORD:
-	    mech_notify(wounded, MECHALL,
-		"Your sword has been destroyed!");
+	    mech_notify(wounded, MECHALL, "Your sword has been destroyed!");
 	    break;
+	case DUAL_SAW:
+        mech_notify(wounded, MECHALL, "Your dual saw has been destroyed!");
+        break;
 	case MACE:
 	    mech_notify(wounded, MECHALL, "Your mace has been destroyed!");
 	    break;

@@ -106,6 +106,9 @@ char *phys_form(int AttackType, int add_s)
 	        case PA_TRIP:
 	            verb = "trips";
 	            break;
+	        case PA_SAW:
+	            verb = "saws";
+	            break;
             // Ohboy, we're using some funky, unknown physical.
             default:
                 verb = "??bugs??";
@@ -133,6 +136,9 @@ char *phys_form(int AttackType, int add_s)
 	            break;
 	        case PA_TRIP:
 	            verb = "trip";
+	            break;
+	        case PA_SAW:
+	            verb = "saw";
 	            break;
             // Ohboy, we're using some funky, unknown physical.
             default:
@@ -170,6 +176,14 @@ static int have_punch(MECH * mech, int loc)
 int have_axe(MECH * mech, int loc)
 {
     return FindObj(mech, loc, I2Special(AXE)) >= (MechTons(mech) / 15);
+}
+
+/**
+ * Does our unit have a dual_saw?
+ */
+int have_saw(MECH * mech, int loc)
+{
+    return FindObj(mech, loc, I2Special(DUAL_SAW)) >= 7;
 }
 
 /**
@@ -516,6 +530,80 @@ void mech_axe(dbref player, void *data, char *buffer)
 	"You may lack the axe, but not the will! Try punch/club until you find one.");
 } // end mech_axe()
 
+/**
+ * Check to see if the specified arm can be used to saw with.
+ */
+int saw_checkArm(MECH *mech, int arm)
+{
+    char *arm_used = (arm == RARM ? "right" : "left");
+
+    if (SectIsDestroyed(mech, arm))
+    {
+        mech_printf(mech, MECHALL, "Your %s arm is destroyed, you can't saw with it",
+	    arm_used);
+	return 0;
+    }
+    else if (!OkayCritSectS(arm, 0, SHOULDER_OR_HIP))
+    {
+        mech_printf(mech, MECHALL, 
+	    "Your %s shoulder is destroyed, you can't saw with that arm.",
+	    arm_used);
+	return 0;
+    }
+
+    // Fall through to success.    
+    return 1;
+} // end saw_checkArm()
+
+/**
+ * Mech dual saw routines.
+ */
+void mech_saw(dbref player, void *data, char *buffer)
+{
+    MECH *mech = (MECH *) data;
+    MAP *mech_map = getMap(mech->mapindex);
+    char *argl[5];
+    char **args = argl;
+    int argc, ltohit = 4, rtohit = 4;
+    int using = P_LEFT | P_RIGHT;
+
+    // Make sure we're started, on a map, etc.
+    cch(MECH_USUALO);
+    // Do we have arms?
+    ARM_PHYS_CHECK("saw");
+    // Make sure we're not a quad.
+    QUAD_CHECK("saw");
+    
+    argc = mech_parseattributes(buffer, args, 5);
+    
+    // If btech_phys_use_pskill is on, use the player's piloting skill.
+    // If not, assume a skill level of 4.
+    if (mudconf.btech_phys_use_pskill)
+	    ltohit = rtohit = FindPilotPiloting(mech) - 1;
+
+    ltohit += MechSections(mech)[LARM].basetohit;
+    rtohit += MechSections(mech)[RARM].basetohit;
+
+    // Figure out which arm to use.
+    if (get_arm_args(&using, &argc, &args, mech, have_saw, "a saw")) {
+	    return;
+    }
+
+    if (using & P_LEFT) {
+        if (saw_checkArm(mech, LARM))
+	        PhysicalAttack(mech, 7, ltohit, PA_SAW, argc, args, mech_map,
+	            LARM);
+    }
+    if (using & P_RIGHT) {
+	    if (saw_checkArm(mech, RARM))
+	        PhysicalAttack(mech, 7, rtohit, PA_SAW, argc, args, mech_map,
+	            RARM);
+    }
+
+    // We don't have a saw.
+    DOCHECKMA(!using,
+	    "You don't have a dual saw!");
+} // end mech_saw()
 
 /**
  * Check our arms to see if they can chop.
@@ -1047,7 +1135,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
         DOCHECKMA(!(iwa & FORWARDARC), 
             "Target is not in your 'real' forward arc!");
 
-    } else { // We're punching or clubbing
+    } else { // We're punching, clubbing, or other sharp things.
 
         iwa = InWeaponArc(mech, MechFX(target), MechFY(target));
 
@@ -1096,19 +1184,22 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	baseToHit += 2;
 #endif
 
+    // Saws get a +1 BTH.
+    if (AttackType == PA_SAW)
+        baseToHit += 1;
+
     // If we're axing or chopping a bsuit, add +3 to BTH, else (punching) +5.
     if (AttackType != PA_PUNCH && 
 	 MechType(target) == CLASS_BSUIT &&
 	 MechSwarmTarget(target) > 0)
-	     baseToHit += (AttackType == PA_AXE || AttackType == PA_SWORD) ? 3 : 5;
+	     baseToHit += (AttackType != PA_PUNCH) ? 3 : 5;
     
     // As per BMR, can only physical bsuits with punches, axes, or swords.
-    DOCHECKMA((AttackType != PA_PUNCH && 
-	       AttackType != PA_AXE &&
-               AttackType != PA_SWORD) && 
+    // Added saw since it's the same idea.
+    DOCHECKMA(AttackType == PA_KICK && 
 	       MechType(target) == CLASS_BSUIT &&
 	       MechSwarmTarget(target) > 0,
-	       "You can hit swarming 'suits only with punches, axes, or swords!");
+	       "You can't hit a swarmed suit with that, try a hand-held weapon!");
     
     roll = Roll();
 
@@ -1138,7 +1229,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     /*
      * Attack-specific recycles and flags.
      */
-    if (AttackType == PA_AXE || AttackType == PA_SWORD)
+    if (AttackType == PA_AXE || AttackType == PA_SWORD || AttackType == PA_SAW)
 	    MechSections(mech)[sect].config |= AXED;
 	    
     if (AttackType == PA_PUNCH)
@@ -1149,7 +1240,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	    SetRecycleLimb(mech, LARM, PHYSICAL_RECYCLE_TIME);
 	    
 	// We've successfully hit the target.
-    if (roll >= baseToHit) 
+    if (roll >= baseToHit)
     {
 	    phys_succeed(mech, target, AttackType);
 
@@ -1233,9 +1324,11 @@ void PhysicalTrip(MECH * mech, MECH * target)
         // Emit to victim and LOS.
         mech_notify(target, MECHSTARTED,
 	        "You are tripped and fall to the ground!");
-        MechLOSBroadcast(target, "trips and falls down!");
+        MechLOSBroadcast(target, "trips up and falls down!");
         
         MechFalls(target, 1, 0);
+    } else {
+        MechLOSBroadcast(target, "manages to stay upright!");
     }
 } // end PhysicalTrip()
 
@@ -1251,6 +1344,9 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
     // a typical physical.
     if (AttackType == PA_SWORD)
 	    damage = (MechTons(mech) + 5) / weightdmg + 1;
+	else if (AttackType == PA_SAW)
+	    // Saws do a constant 7 damage due to their mechanical nature.
+	    damage = 7;
     else
 	    damage = (MechTons(mech) + weightdmg / 2) / weightdmg;
 	

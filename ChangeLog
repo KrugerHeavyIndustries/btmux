@@ -149,6 +149,11 @@ btonline-btechmux 0.6:
 	* Added the mech 'trip' physical as per Maxtech. Same as kicking as
 	  far as BTH and actuators go except no damage is dealt and a failed
 	  roll by the attacker doesn't cause a fall.
+	* Addign the 'saw' physical. Takes up 7 tons, 7 crits, does a constant
+	  of 7 damage regardless of actuator damage. Requires the sawing arm
+	  to have a working shoulder, +1 BTH to all saw attacks. Taken from
+	  Solaris 7 Mappack. Additionally, saws take the place of an arm's
+	  hand actuator. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

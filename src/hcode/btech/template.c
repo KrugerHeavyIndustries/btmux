@@ -11,7 +11,7 @@
    Last modified: Fri Sep 18 13:02:31 1998 fingon
  */
 
-/* 01/21/02 Added many commods <GB> */
+/* 01/21/02 Added many commods <KM> */
 
 /* 09/16/96 Some touches by Markus Stenberg <fingon@iki.fi> */
 
@@ -106,6 +106,7 @@ char *internals[] = {
     "InfiltratorStealthUnit",
     "InfiltratorIIStealthUnit",
     "SuperCharger",
+    "Dual_Saw",
     NULL
 };
 
@@ -157,6 +158,7 @@ int internalsweight[] = {
     102,			/* AchileusStealthUnit */
     102,			/* InfiltratorStealthUnit */
     102,			/* InfiltratorIIStealthUnit */
+    1024,           /* Dual_Saw*/
 };
 #endif				/* BT_PART_WEIGHTS */
 
@@ -2637,7 +2639,7 @@ char *techlist_func(MECH * mech)
 {
     static char buffer[MBUF_SIZE];
     char bufa[SBUF_SIZE], bufb[SBUF_SIZE];
-    int i, ii, part = 0, axe = 0, mace = 0, sword = 0, hascase = 0;
+    int i, ii, part = 0, axe = 0, mace = 0, sword = 0, saw = 0, hascase = 0;
 
     snprintf(bufa, SBUF_SIZE, "%s", BuildBitString(specialsabrev, MechSpecials(mech)));
     snprintf(bufb, SBUF_SIZE, "%s", BuildBitString(specialsabrev2, MechSpecials2(mech)));
@@ -2655,6 +2657,10 @@ char *techlist_func(MECH * mech)
             if (part == I2Special(MACE) && !mace) {
                 mace = 1;
                 strcat(buffer, " MACE");
+                }
+            if (part == I2Special(DUAL_SAW) && !saw) {
+                saw = 1;
+                strcat(buffer, " DUAL_SAW");
                 }
             if (part == I2Special(SWORD) && !sword) {
                 sword = 1;

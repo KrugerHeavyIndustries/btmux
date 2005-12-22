@@ -1,15 +1,8 @@
-
 /*
- * $Id: mech.consistency.c,v 1.4 2005/06/24 04:39:07 av1-op Exp $
- *
  * Author: Markus Stenberg <fingon@iki.fi>
  *
  *  Copyright (c) 1997 Markus Stenberg
  *       All rights reserved
- *
- * Created: Tue Mar  4 17:17:12 1997 fingon
- * Last modified: Thu Jul  9 02:33:13 1998 fingon
- *
  */
 
 #include "config.h"
@@ -239,6 +232,8 @@ int crit_weight(MECH * mech, int t)
     case TARGETING_COMPUTER:
     case AXE:
     case MACE:
+    case DUAL_SAW:
+        return 1024;
     case ARTEMIS_IV:
     case MASC:
     case C3_SLAVE:

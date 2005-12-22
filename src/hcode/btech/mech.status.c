@@ -43,8 +43,9 @@ static int doweird = 0;
 static char *weirdbuf;
 
 #define PHY_AXE		1
-#define PHY_SWORD 2
-#define PHY_MACE  3
+#define PHY_SWORD   2
+#define PHY_MACE    3
+#define PHY_SAW     4
 
 void DisplayTarget(dbref player, MECH * mech)
 {
@@ -1353,6 +1354,12 @@ tempbuff[0] = 0;
 
 	if (hasPhysical(mech, RARM, PHY_MACE))
 	    SHOW("Mace[RA]", SHOWPHYSTATUS(RARM, PHY_MACE));
+	    
+	if (hasPhysical(mech, LARM, PHY_SAW))
+	    SHOW("Saw[LA]", SHOWPHYSTATUS(LARM, PHY_SAW));
+
+	if (hasPhysical(mech, RARM, PHY_SAW))
+	    SHOW("Saw[RA]", SHOWPHYSTATUS(RARM, PHY_SAW));
 
 	notify(player, tempbuff);
 
@@ -2204,64 +2211,79 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
     }
 }
 
+/*
+ * Figure out if we have a certain kind of physical weapon.
+ */
 int hasPhysical(MECH * objMech, int wLoc, int wPhysType)
 {
     int wType;
     int wSize;
 
     switch (wPhysType) {
-    case PHY_AXE:
-	wType = AXE;
-	wSize = MechTons(objMech) / 15;
-	break;
+        case PHY_AXE:
+	        wType = AXE;
+	        wSize = MechTons(objMech) / 15;
+	        break;
 
-    case PHY_SWORD:
-	wType = SWORD;
-	wSize = MechTons(objMech) / 15;
-	break;
+        case PHY_SWORD:
+	        wType = SWORD;
+	        wSize = MechTons(objMech) / 15;
+	        break;
 
-    case PHY_MACE:
-	wType = MACE;
-	wSize = MechTons(objMech) / 15;
-	break;
+        case PHY_MACE:
+	        wType = MACE;
+	        wSize = MechTons(objMech) / 15;
+	        break;
+	       
+	    case PHY_SAW:
+	        wType = DUAL_SAW;
+	        wSize = 7;
+	        break;
 
-    default:
-	return 0;
-    }
+        default:
+	        return 0;
+    } // end switch()
 
     return FindObjWithDest(objMech, wLoc, I2Special(wType)) >= wSize;
-}
+} // end hasPhysical()
 
 int canUsePhysical(MECH * objMech, int wLoc, int wPhysType)
 {
     int tRet = 1;
 
     switch (wPhysType) {
-    case PHY_AXE:
-    case PHY_SWORD:
-	if (SectIsDestroyed(objMech, wLoc))
-	    tRet = 0;
-	else if (!OkayCritSectS2(objMech, wLoc, 0, SHOULDER_OR_HIP))
-	    tRet = 0;
-	else if (!OkayCritSectS2(objMech, wLoc, 3, HAND_OR_FOOT_ACTUATOR))
-	    tRet = 0;
-	break;
+        case PHY_AXE:
+        case PHY_SWORD:
+	        if (SectIsDestroyed(objMech, wLoc))
+	            tRet = 0;
+        	else if (!OkayCritSectS2(objMech, wLoc, 0, SHOULDER_OR_HIP))
+	            tRet = 0;
+        	else if (!OkayCritSectS2(objMech, wLoc, 3, HAND_OR_FOOT_ACTUATOR))
+	            tRet = 0;
+        	break;
 
-    case PHY_MACE:
-	if (SectIsDestroyed(objMech, LARM) ||
-	    SectIsDestroyed(objMech, RARM))
-	    tRet = 0;
-	else if ((!OkayCritSectS2(objMech, LARM, 0, SHOULDER_OR_HIP)) ||
-	    (!OkayCritSectS2(objMech, RARM, 0, SHOULDER_OR_HIP)))
-	    tRet = 0;
-	else if ((!OkayCritSectS2(objMech, LARM, 3, HAND_OR_FOOT_ACTUATOR))
-	    || (!OkayCritSectS2(objMech, RARM, 3, HAND_OR_FOOT_ACTUATOR)))
-	    tRet = 0;
-	break;
+        case PHY_MACE:
+        	if (SectIsDestroyed(objMech, LARM) ||
+        	    SectIsDestroyed(objMech, RARM))
+            	    tRet = 0;
+        	else if ((!OkayCritSectS2(objMech, LARM, 0, SHOULDER_OR_HIP)) ||
+        	    (!OkayCritSectS2(objMech, RARM, 0, SHOULDER_OR_HIP)))
+            	    tRet = 0;
+        	else if ((!OkayCritSectS2(objMech, LARM, 3, HAND_OR_FOOT_ACTUATOR))
+        	    || (!OkayCritSectS2(objMech, RARM, 3, HAND_OR_FOOT_ACTUATOR)))
+            	    tRet = 0;
+	        break;
+	        
+	    case PHY_SAW:
+	        if (SectIsDestroyed(objMech, wLoc))
+	            tRet = 0;
+        	else if (!OkayCritSectS2(objMech, wLoc, 0, SHOULDER_OR_HIP))
+	            tRet = 0;	        
+	        break;
 
-    default:
-	tRet = 0;
-    }
+        default:
+        	tRet = 0;
+    } // end switch()
 
     return tRet;
-}
+} // end canUsePhysical()

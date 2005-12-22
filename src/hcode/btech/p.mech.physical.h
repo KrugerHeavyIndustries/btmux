@@ -18,6 +18,8 @@ void mech_club(dbref player, void *data, char *buffer);
 int have_axe(MECH * mech, int loc);
 int have_sword(MECH * mech, int loc);
 int have_mace(MECH * mech, int loc);
+int have_saw(MECH * mech, int loc);
+void mech_saw(dbref player, void *data, char *buffer);
 void mech_axe(dbref player, void *data, char *buffer);
 void mech_sword(dbref player, void *data, char *buffer);
 void mech_kick(dbref player, void *data, char *buffer);
