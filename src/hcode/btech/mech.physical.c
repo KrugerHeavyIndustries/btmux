@@ -951,8 +951,8 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     // We're attacking a ground/naval unit.    
     if (MechMove(target) != MOVE_VTOL && MechMove(target) != MOVE_FLY) {
         
-        if((AttackType != PA_KICK || AttackType != PA_TRIP) 
-            && (MechZ(mech) >= MechZ(target)))
+        if((AttackType != PA_KICK && AttackType != PA_TRIP) && 
+            (MechZ(mech) >= MechZ(target)))
 	    {
 	        int isTooLow = 0; // Track whether we're too low or not.
 	        
@@ -1002,7 +1002,7 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 		         (MechType(target) == CLASS_VEH_GROUND) ||
 		         (MechType(target) == CLASS_BSUIT) ||
 		         (MechType(target) == CLASS_MW))),
-	                 "The target is too low for you to kick at.")
+	                 "The target is too low in elevation for you to kick.")
 	                 
     } else { // We're attacking a VTOL/Aero.
         
