@@ -232,6 +232,7 @@ int crit_weight(MECH * mech, int t)
     case TARGETING_COMPUTER:
     case AXE:
     case MACE:
+        return 1024;
     case DUAL_SAW:
         return 1024;
     case ARTEMIS_IV:

@@ -154,6 +154,9 @@ btonline-btechmux 0.6:
 	  to have a working shoulder, +1 BTH to all saw attacks. Taken from
 	  Solaris 7 Mappack. Additionally, saws take the place of an arm's
 	  hand actuator. (Greg)
+	* Finished implementing the half-done Mace physical as per Solaris.
+	  1 ton and 1 crit per 10 tons unit weight. 1 pt damage for every
+	  4 unit tons. (Greg)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

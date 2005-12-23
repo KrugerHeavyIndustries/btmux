@@ -92,7 +92,7 @@ char *phys_form(int AttackType, int add_s)
 	            verb = "clubs";
                 break;
             case PA_MACE:
-	            verb = "clubs";
+	            verb = "maces";
 	            break;
             case PA_SWORD:
                 verb = "chops";
@@ -123,7 +123,7 @@ char *phys_form(int AttackType, int add_s)
 	            verb = "club";
                 break;
             case PA_MACE:
-	            verb = "club";
+	            verb = "maces";
 	            break;
             case PA_SWORD:
                 verb = "chop";
@@ -200,7 +200,7 @@ int have_sword(MECH * mech, int loc)
  */
 int have_mace(MECH * mech, int loc)
 {
-    return FindObj(mech, loc, I2Special(MACE)) >= (MechTons(mech) / 15);
+    return FindObj(mech, loc, I2Special(MACE)) >= (MechTons(mech) / 10);
 }
 
 /*
@@ -606,27 +606,110 @@ void mech_saw(dbref player, void *data, char *buffer)
 } // end mech_saw()
 
 /**
+ * Check our arms to see if they can mace.
+ */
+int mace_checkArm(MECH *mech, int arm)
+{
+    char *arm_used = (arm == RARM ? "right" : "left");
+
+    if (SectIsDestroyed(mech, arm)) 
+    {
+        mech_printf(mech, MECHALL, 
+            "Your %s arm is destroyed, you can't use a mace with it.",
+	    arm_used);
+	return 0;
+    }
+    else if (!OkayCritSectS(arm, 0, SHOULDER_OR_HIP))
+    {
+        mech_printf(mech, MECHALL,
+	    "Your %s shoulder is destroyed, you can't use a mace with that arm.",
+	    arm_used);
+	return 0;
+    }
+    else if(!OkayCritSectS(arm, 3, HAND_OR_FOOT_ACTUATOR))
+    {
+        mech_printf(mech, MECHALL,
+	    "Your %s hand is destroyed, you can't use a mace with that arm.",
+	    arm_used);
+	return 0;
+    }
+
+    // Fall through to success.
+    return 1;
+} // end mace_checkArm()
+
+/**
+ * Mech mace routines.
+ */
+void mech_mace(dbref player, void *data, char *buffer)
+{
+    MECH *mech = (MECH *) data;
+    MAP *mech_map = getMap(mech->mapindex);
+    char *argl[5];
+    char **args = argl;
+    int argc, ltohit = 4, rtohit = 4;
+    int using = P_LEFT | P_RIGHT;
+
+    // Make sure we're started, on a map, etc.
+    cch(MECH_USUALO);
+    // Do we have arms?
+    ARM_PHYS_CHECK("mace");
+    // Make sure we're not a quad.
+    QUAD_CHECK("mace");
+    
+    argc = mech_parseattributes(buffer, args, 5);
+    
+    // If btech_phys_use_pskill is on, use the player's piloting skill.
+    // If not, assume a skill level of 4.
+    if (mudconf.btech_phys_use_pskill)
+	    ltohit = rtohit = FindPilotPiloting(mech) - 1;
+
+    ltohit += MechSections(mech)[LARM].basetohit;
+    rtohit += MechSections(mech)[RARM].basetohit;
+
+    // Figure out which arm to use.
+    if (get_arm_args(&using, &argc, &args, mech, have_mace, "a mace")) {
+	    return;
+    }
+
+    if (using & P_LEFT) {
+        if (mace_checkArm(mech, LARM))
+	        PhysicalAttack(mech, 4, ltohit, PA_MACE, argc, args, mech_map,
+	            LARM);
+    }
+    if (using & P_RIGHT) {
+	    if (mace_checkArm(mech, RARM))
+	        PhysicalAttack(mech, 4, rtohit, PA_MACE, argc, args, mech_map,
+	            RARM);
+    }
+
+    // We don't have a mace.
+    DOCHECKMA(!using,
+	    "You don't have a mace!");
+} // end mech_mace()
+
+/**
  * Check our arms to see if they can chop.
  */
 int sword_checkArm(MECH *mech, int arm)
 {
     char *arm_used = (arm == RARM ? "right" : "left");
 
-    if (SectIsDestroyed(mech, LARM)) 
+    if (SectIsDestroyed(mech, arm)) 
     {
         mech_printf(mech, MECHALL, 
             "Your %s arm is destroyed, you can't use a sword with it.",
 	    arm_used);
 	return 0;
     }
-    else if (!OkayCritSectS(LARM, 0, SHOULDER_OR_HIP))
+    else if (!OkayCritSectS(arm, 0, SHOULDER_OR_HIP))
     {
         mech_printf(mech, MECHALL,
 	    "Your %s shoulder is destroyed, you can't use a sword with that arm.",
 	    arm_used);
 	return 0;
     }
-    else if(!OkayCritSectS(LARM, 3, HAND_OR_FOOT_ACTUATOR))
+    else if(!OkayCritSectS(arm, 3, HAND_OR_FOOT_ACTUATOR))
     {
         mech_printf(mech, MECHALL,
 	    "Your %s hand is destroyed, you can't use a sword with that arm.",
@@ -1187,6 +1270,10 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     // Saws get a +1 BTH.
     if (AttackType == PA_SAW)
         baseToHit += 1;
+        
+    // Maces get a +2 BTH.
+    if (AttackType == PA_MACE)
+        baseToHit += 2;
 
     // If we're axing or chopping a bsuit, add +3 to BTH, else (punching) +5.
     if (AttackType != PA_PUNCH && 
@@ -1229,7 +1316,8 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
     /*
      * Attack-specific recycles and flags.
      */
-    if (AttackType == PA_AXE || AttackType == PA_SWORD || AttackType == PA_SAW)
+    if (AttackType == PA_AXE || AttackType == PA_SWORD || AttackType == PA_SAW
+        || AttackType == PA_MACE)
 	    MechSections(mech)[sect].config |= AXED;
 	    
     if (AttackType == PA_PUNCH)
@@ -1285,12 +1373,15 @@ void PhysicalAttack(MECH *mech, int damageweight, int baseToHit,
 	           // nail us for damage.
 	    } // end if() - Suit + Swarmed + Physical + Self Damage checks
 
-	    if (AttackType == PA_KICK || AttackType == PA_CLUB) {
+	    if (AttackType == PA_KICK || AttackType == PA_CLUB || 
+	        AttackType == PA_MACE) {
+	        int failRoll = (AttackType == PA_KICK ? 0 : 2);
+	        
 	        mech_notify(mech, MECHALL,
 		        "You miss and try to remain standing!");
 		        
 		    // We fail the piloting skill roll and flop on our face.
-	        if (!MadePilotSkillRoll(mech, 0)) {
+	        if (!MadePilotSkillRoll(mech, failRoll)) {
 		        mech_notify(mech, MECHALL,
 		            "You lose your balance and fall down!");
 		        MechFalls(mech, 1, 1);
@@ -1373,7 +1464,7 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
 	            // Hit locs for fallen units. Currently not even allowed
 	            // but we'll leave it in, someone may want to enable it later.
 	            // EXCEPTION: You may punch vehicles in same hex while proned.
-	            if (Fallen(mech)) 
+	            if (Fallen(mech))
 	            {
 		            if ((MechType(target) != CLASS_MECH) || (Fallen(target) &&
 			            (MechElevation(mech) == MechElevation(target))))
@@ -1402,6 +1493,7 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
             // End punch hitloc code.
         case PA_SWORD:
         case PA_AXE:
+        case PA_MACE:
         case PA_CLUB:
 	        hitgroup = FindAreaHitGroup(mech, target);
 	    

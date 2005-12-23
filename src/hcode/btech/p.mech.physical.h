@@ -22,6 +22,7 @@ int have_saw(MECH * mech, int loc);
 void mech_saw(dbref player, void *data, char *buffer);
 void mech_axe(dbref player, void *data, char *buffer);
 void mech_sword(dbref player, void *data, char *buffer);
+void mech_mace(dbref player, void *data, char *buffer);
 void mech_kick(dbref player, void *data, char *buffer);
 void mech_trip(dbref player, void *data, char *buffer);
 void mech_kickortrip(dbref player, void *data, char *buffer, int AttackType);
