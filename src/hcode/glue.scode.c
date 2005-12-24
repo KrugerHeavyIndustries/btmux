@@ -2084,7 +2084,7 @@ void fun_btmapemit(char *buff, char **bufc, dbref player, dbref cause, char *far
     dbref mapnum;
     float x, y, realX, realY, z, range;
 
-
+    FUNCHECK(nfargs < 2, "#-1 TOO FEW ARGUMENTS");
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
     mapnum = match_thing(player, fargs[0]);
     FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
