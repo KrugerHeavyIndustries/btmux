@@ -1958,13 +1958,16 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause, char *fargs
     if(nfargs == 5) {
         z = atoi(fargs[4]);
         FUNCHECK(z < 0 || z > 10000, "#-1 Z COORD");
-    } else {
-        z = Elevation(map, x, y);
     }
 
     snprintf(buffer, MBUF_SIZE, "%d", mapdb);
     mech_Rsetmapindex(GOD, (void *) mech, buffer);
-    snprintf(buffer, MBUF_SIZE, "%d %d %d", x, y, z);
+    if(nfargs == 5) {
+        snprintf(buffer, MBUF_SIZE, "%d %d %d", x, y, z); 
+    }
+    else {
+        snprintf(buffer, MBUF_SIZE, "%d %d", x, y);
+    }
     mech_Rsetxy(GOD, (void *) mech, buffer);
     safe_tprintf_str(buff, bufc, "1");
 }
