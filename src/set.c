@@ -677,15 +677,15 @@ void set_attr_internal(dbref player, dbref thing, int attrnum, char *attrtext,
 	if ((attr->check != NULL) &&
 	    (!(*attr->check) (0, player, thing, attrnum, attrtext)))
 	    return;
-	could_hear = Hearer(thing);
 	have_xcode = Hardcode(thing);
 	atr_add(thing, attrnum, attrtext, Owner(player), aflags);
-	handle_ears(thing, could_hear, Hearer(thing));
 	if (mudconf.have_specials)
 	    handle_xcode(player, thing, have_xcode, Hardcode(thing));
 	if (!(key & SET_QUIET) && !Quiet(player) && !Quiet(thing))
 	    notify_printf(player, "%s/%s - %s", Name(thing), 
 attr->name, strlen(attrtext) ? "Set." : "Cleared.");
+        could_hear = Hearer(thing);
+        handle_ears(thing, could_hear, Hearer(thing));
     } else {
 	notify_quiet(player, "Permission denied.");
     }
@@ -758,7 +758,6 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
 		aflags &= ~flagvalue;
 	    else
 		aflags |= flagvalue;
-	    could_hear = Hearer(thing);
 	    have_xcode = Hardcode(thing);
 	    atr_set_flags(thing, atr, aflags);
 
@@ -766,7 +765,6 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
 	     * Tell the player about it. 
 	     */
 
-	    handle_ears(thing, could_hear, Hearer(thing));
 	    if (mudconf.have_specials)
 		handle_xcode(player, thing, have_xcode, Hardcode(thing));
 	    if (!(key & SET_QUIET) && !Quiet(player) && !Quiet(thing)) {
@@ -774,6 +772,8 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
                 fp = find_flag(thing, flag);
                 notify_printf(player, "%s/%s - %s %s", Name(thing), attr->name, fp->flagname, clear ? "cleared." : "set."); 
 	    }
+            could_hear = Hearer(thing);
+            handle_ears(thing, could_hear, Hearer(thing));
 	    return;
 	}
     }
