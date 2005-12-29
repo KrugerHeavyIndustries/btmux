@@ -927,39 +927,38 @@ struct repair_data {
 
 /* status element... */
 
-#define LANDED		0x01	/* For VTOL use only */
-#define TORSO_RIGHT	0x02	/* Torso heading -= 60 degrees */
-#define TORSO_LEFT	0x04	/* Torso heading += 60 degrees */
-#define STARTED		0x08	/* Mech is warmed up */
-#define PARTIAL_COVER	0x10
-#define DESTROYED	0x20
-#define JUMPING		0x40	/* Handled in UPDATE */
-#define FALLEN		0x80
-#define DFA_ATTACK	0x100
-
-#define PERFORMING_ACTION 0x200	/* Set if the unit is performing some sort of action. Controlled by SCode */
-#define FLIPPED_ARMS	0x400
-#define AMS_ENABLED	0x800	/* only settable if mech has ANTI-MISSILE_TECH */
-
-/* unused             0x1000 */
-#define UNCONSCIOUS	0x2000	/* Pilot is unconscious */
-#define TOWED		0x4000	/* Someone's towing us */
-#define LOCK_TARGET	0x8000	/* We mean business */
-#define LOCK_BUILDING	0x10000	/* Hit building */
-#define LOCK_HEX	0x20000	/* Hit hex (clear / ignite, d'pend on weapon) */
-#define LOCK_HEX_IGN	0x40000
-#define LOCK_HEX_CLR	0x80000
-#define MASC_ENABLED	0x100000	/* Using MASC */
-#define BLINDED		0x200000	/* Pilot has been blinded momentarily by something */
-#define COMBAT_SAFE	0x400000	/* Can't be hurt */
-#define AUTOCON_WHEN_SHUTDOWN 0x800000	/* Autocon sees it even when shutdown */
-#define FIRED		0x1000000	/* Fired at something */
-#define SCHARGE_ENABLED	0x2000000
-#define HULLDOWN	0x4000000
-#define UNDERSPECIAL	0x8000000
-#define UNDERGRAVITY	0x10000000
-#define UNDERTEMPERATURE 0x20000000
-#define UNDERVACUUM	0x40000000
+#define LANDED                0x00000001  /* (a) For VTOL use only */
+#define TORSO_RIGHT           0x00000002  /* (b) Torso heading -= 60 degrees */
+#define TORSO_LEFT            0x00000004  /* (c) Torso heading += 60 degrees */
+#define STARTED               0x00000008  /* (d) Mech is warmed up */
+#define PARTIAL_COVER         0x00000010  /* (e) */
+#define DESTROYED             0x00000020  /* (f) */
+#define JUMPING               0x00000040  /* (g) Handled in UPDATE */
+#define FALLEN                0x00000080  /* (h) */
+#define DFA_ATTACK            0x00000100  /* (i) */
+#define PERFORMING_ACTION     0x00000200  /* (j) Set if the unit is performing some sort of action. Controlled by SCode */
+#define FLIPPED_ARMS          0x00000400  /* (k) */
+#define AMS_ENABLED           0x00000800  /* (l) only settable if mech has ANTI-MISSILE_TECH */
+/* UNUSED                     0x00001000     (m) */
+#define UNCONSCIOUS           0x00002000  /* (n) Pilot is unconscious */
+#define TOWED                 0x00004000  /* (o) Someone's towing us */
+#define LOCK_TARGET           0x00008000  /* (p) We mean business */
+#define LOCK_BUILDING         0x00010000  /* (q) Hit building */
+#define LOCK_HEX              0x00020000  /* (r) Hit hex (clear / ignite, d'pend on weapon) */
+#define LOCK_HEX_IGN          0x00040000  /* (s) */
+#define LOCK_HEX_CLR          0x00080000  /* (t) */
+#define MASC_ENABLED          0x00100000  /* (u) Using MASC */
+#define BLINDED               0x00200000  /* (v) Pilot has been blinded momentarily by something */
+#define COMBAT_SAFE           0x00400000  /* (w) Can't be hurt */
+#define AUTOCON_WHEN_SHUTDOWN 0x00800000  /* (x) Autocon sees it even when shutdown */
+#define FIRED                 0x01000000  /* (y) Fired at something */
+#define SCHARGE_ENABLED       0x02000000  /* (z) */
+#define HULLDOWN              0x04000000  /* (A) */
+#define UNDERSPECIAL          0x08000000  /* (B) */
+#define UNDERGRAVITY          0x10000000  /* (C) */
+#define UNDERTEMPERATURE      0x20000000  /* (D) */
+#define UNDERVACUUM           0x40000000  /* (E) */
+/* UNUSED                     0x80000000     (F) */
 
 #define CONDITIONS	(UNDERSPECIAL | UNDERGRAVITY | UNDERTEMPERATURE | UNDERVACUUM)
 #define LOCK_MODES	(LOCK_TARGET|LOCK_BUILDING|LOCK_HEX|LOCK_HEX_IGN|LOCK_HEX_CLR)
@@ -967,27 +966,40 @@ struct repair_data {
 /* status2 element */
 
 /* Specials status element */
-#define ECM_ENABLED         0x00000001	/* set if this unit is using ECM */
-#define ECCM_ENABLED        0x00000002	/* set if this unit is using ECCM */
-#define ECM_DISTURBANCE     0x00000004	/* set if this unit is disturbed by ECM */
-#define ECM_PROTECTED       0x00000008	/* set if this unit is protected by ECM */
-#define ECM_COUNTERED       0x00000010	/* set if this units ECM is countered by 
-                                           ECCM. This only happens if an enemy ECCM 
-                                           is within range. */
-#define SLITE_ON            0x00000020	/* See if this person's SLITE is on */
-#define STH_ARMOR_ON        0x00000040	/* see if this unit is using stealth armor */
-#define NULLSIGSYS_ON       0x00000080	/* see if this unit is using a null signature system */
-#define ANGEL_ECM_ENABLED   0x00000100	/* set if this unit is using ECM */
-#define ANGEL_ECCM_ENABLED  0x00000200	/* set if this unit is using ECCM */
-#define ANGEL_ECM_PROTECTED 0x00000400	/* set if this unit is protected by an Angel ECM suite */
-#define ANGEL_ECM_DISTURBED 0x00000800	/* set if this unit is disturbed by an Angel ECM suite */
-#define PER_ECM_ENABLED     0x00001000	/* set if this unit is using Personal ECM */
-#define PER_ECCM_ENABLED    0x00002000	/* set if this unit is using Personal ECCM */
-#define AUTOTURN_TURRET     0x00004000	/* auto-turn the turret to the locked target */
-#define SPRINTING           0x00010000	/* set if this unit is sprinting */
-#define EVADING             0x00020000	/* set if this unit is evading */
-#define DODGING             0x00040000	/* set if this unit is dodging */
-#define ATTACKEMIT_MECH     0x00080000  /* set to be able to watch a unit and what it attacks */
+#define ECM_ENABLED           0x00000001  /* (a) Unit ECM is enabled */
+#define ECCM_ENABLED          0x00000002  /* (b) Unit ECCM is enabled */
+#define ECM_DISTURBANCE       0x00000004  /* (c) Unit affected by ECM */
+#define ECM_PROTECTED         0x00000008  /* (d) Unit protected by ECM */
+#define ECM_COUNTERED         0x00000010  /* (e) ECM countered by ECCM.  
+                                             This only happens if an enemy ECCM
+                                             is within range. */
+#define SLITE_ON              0x00000020  /* (f) Unit SLITE is enabled */
+#define STH_ARMOR_ON          0x00000040  /* (g) Unit has steath armor enabled */
+#define NULLSIGSYS_ON         0x00000080  /* (h) Unit has nullsig enabled */
+#define ANGEL_ECM_ENABLED     0x00000100  /* (i) Unit Angel ECM is enabled */
+#define ANGEL_ECCM_ENABLED    0x00000200  /* (j) Unit Angel ECCM is enabled */
+#define ANGEL_ECM_PROTECTED   0x00000400  /* (k) Unit protected by Angel ECM */
+#define ANGEL_ECM_DISTURBED   0x00000800  /* (l) Unit affected by Angel ECM */
+#define PER_ECM_ENABLED       0x00001000  /* (m) Unit Personal ECM is enabled */
+#define PER_ECCM_ENABLED      0x00002000  /* (n) Unit Personal ECCM is enabled */
+#define AUTOTURN_TURRET       0x00004000  /* (o) Unit Auto-Turret enabled to locked target */
+/* UNUSED                     0x00008000     (p) */
+#define SPRINTING             0x00010000  /* (q) Unit is Sprinting */
+#define EVADING               0x00020000  /* (r) Unit is Evading */
+#define DODGING               0x00040000  /* (s) Unit is Dodging */
+#define ATTACKEMIT_MECH       0x00080000  /* (t) Units attacks sent to MechAttackEmits channel */
+/* UNUSED                     0x00100000     (u) */
+/* UNUSED                     0x00200000     (v) */
+/* UNUSED                     0x00400000     (w) */
+/* UNUSED                     0x00800000     (x) */
+/* UNUSED                     0x01000000     (y) */
+/* UNUSED                     0x02000000     (z) */
+/* UNUSED                     0x04000000     (A) */
+/* UNUSED                     0x08000000     (B) */
+/* UNUSED                     0x10000000     (C) */
+/* UNUSED                     0x20000000     (D) */
+/* UNUSED                     0x40000000     (E) */
+/* UNUSED                     0x80000000     (F) */
 
 /* Grouping masks */
 #define MOVE_MODES      (SPRINTING|EVADING|DODGING)
