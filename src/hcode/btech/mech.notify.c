@@ -1157,6 +1157,21 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
             
             strncpy(buf2, msg, LBUF_SIZE);
 
+            /* Let's just do the OBSERVERIC Stuff here. No sense checking
+             * elsewhere. We'll compose the message and send it now since
+             * it should technically hear everything */
+            
+            if (obs) {
+                if (mech->freqmodes[freq] & FREQ_DIGITAL) {
+                     snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
+                } else {
+                      snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
+                }
+                mech_notify(tempMech, MECHALL, buf);
+            }
+
             /* This is where we check to see if the mech has an AI and
              * then we give the radio commands to the AI */
             if (MechAuto(tempMech) > 0 && tempMech->freq[i]) {
@@ -1209,10 +1224,6 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                 if (!obs)
                 snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
-                else {
-                    		    snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
-		}
 
             } else {
 
@@ -1228,14 +1239,11 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
                 if (!obs)
                 snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
                         (char) ('A' + i), bearing, buf3);
-                else {
-		    snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-		        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
-		}
 
             }
 
-            mech_notify(tempMech, MECHALL, buf);
+            if (!obs)
+                mech_notify(tempMech, MECHALL, buf);
             if (isxp && In_Character(tempMech->mynum))
                 if ((MechCommLast(tempMech) + 60) < muxevent_tick) {
                     AccumulateCommXP(MechPilot(tempMech), tempMech);
