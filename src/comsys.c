@@ -406,6 +406,13 @@ static void do_joinchannel(dbref player, struct channel *ch) {
         return;
     }
 
+    /* Trigger AENTER of any channel objects on the channel */
+    for (i = ch->num_users - 1; i > 0; i-- )
+    {
+        if(Typeof(ch->users[i]->who) == TYPE_THING)
+            did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_AENTER, (char **) NULL, 0);
+    }
+
     notify_printf(player, "You have joined channel %s.",
         ch->name);
 
@@ -417,11 +424,19 @@ static void do_joinchannel(dbref player, struct channel *ch) {
 
 static void do_leavechannel(dbref player, struct channel *ch) {
     struct comuser *user;
+    int i;
 
     user = select_user(ch, player);
 
     if (!user)
         return;
+
+    /* Trigger ALEAVE of any channel objects on the channel */
+    for (i = ch->num_users - 1; i > 0; i-- )
+    {
+        if(Typeof(ch->users[i]->who) == TYPE_THING)
+            did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_ALEAVE, (char **) NULL, 0);
+    }
 
     notify_printf(player, "You have left channel %s.", ch->name);
 
@@ -670,6 +685,14 @@ void do_delcomchannel(dbref player, char *channel) {
     if (!(ch = select_channel(channel))) {
         notify_printf(player, "Unknown channel %s.", channel);
     } else {
+        
+        /* Trigger ALEAVE of any channel objects on the channel */
+        for (i = ch->num_users - 1; i > 0; i-- )
+        {
+            if(Typeof(ch->users[i]->who) == TYPE_THING)
+                did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_ALEAVE, (char **) NULL, 0);
+        }
+
         for (i = 0; i < ch->num_users; i++) {
             user = ch->users[i];
             if (user->who == player) {
@@ -683,6 +706,7 @@ void do_delcomchannel(dbref player, char *channel) {
                                     channel, c));
                 }
                 notify_printf(player, "You have left channel %s.", channel);
+
 
                 if (user->title)
                     free(user->title);
