@@ -630,6 +630,31 @@ time_t mytime(dbref player)
     return tv.tv_sec;
 }
 
+/* Returns secs converted to digits, just like WHO does for connect time */
+
+static void fun_digittime(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    register struct tm *delta;
+    static char buf[64];
+    time_t dt;
+
+    dt = atol(fargs[0]);
+
+    if (dt < 0)
+        dt = 0;
+
+    delta = gmtime(&dt);
+    if (delta->tm_yday > 0) {
+        sprintf(buf, "%dd %02d:%02d", delta->tm_yday, delta->tm_hour,delta->tm_min);
+    } else {
+        sprintf(buf, "%02d:%02d", delta->tm_hour, delta->tm_min);
+    }
+
+
+    safe_tprintf_str(buff, bufc, buf);
+
+}
+
 /**
  * Returns nicely-formatted time.
  */
@@ -5415,6 +5440,7 @@ FUN flist[] = {
 {"DECRYPT",     fun_decrypt,    2,  0,          CA_PUBLIC},
 {"DEFAULT",	fun_default,	2,  FN_NO_EVAL, CA_PUBLIC},
 {"DELETE",	fun_delete,	3,  0,		CA_PUBLIC},
+{"DIGITTIME",   fun_digittime,  1,  0,          CA_PUBLIC},
 {"DIE",		fun_die,	2,  0,		CA_PUBLIC},
 {"DIST2D",	fun_dist2d,	4,  0,		CA_PUBLIC},
 {"DIST3D",	fun_dist3d,	6,  0,		CA_PUBLIC},
