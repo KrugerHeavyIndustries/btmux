@@ -29,7 +29,6 @@
 #include "autopilot.h"
 #include "failures.h"
 #include "mech.sensor.h"
-#include "p.autogun.h"
 #include "p.bsuit.h"
 #include "p.glue.h"
 #include "p.mech.sensor.h"
@@ -38,17 +37,6 @@
 #include "p.mech.combat.h"
 #include "p.mech.advanced.h"
 #include "p.mech.bth.h"
-
-#if 0
-static char *my2string(const char * old)
-{
-    static char new[64];
-
-    strncpy(new, old, 63);
-    new[63] = '\0';
-    return new;
-}
-#endif
 
 /* Function to determine if there are any slites affecting the AI */
 int SearchLightInRange(MECH *mech, MAP *map) {
@@ -202,9 +190,11 @@ void auto_sensor_event(MUXEVENT *muxevent) {
         /* Actually not gonna bother with this */
         /* If the target is running hot and is close switch to IR */
         if (!set && HeatFactor(target) > 35 && (int) trng < 15) {
-            //wanted_s[0] = SENSOR_IR;
-            //wanted_s[1] = ((MechTons(target) >= 60) ? SENSOR_EM : prefvis);
-            //set++;
+            /*
+            wanted_s[0] = SENSOR_IR;
+            wanted_s[1] = ((MechTons(target) >= 60) ? SENSOR_EM : prefvis);
+            set++;
+            */
         }
 
         /* If the target is BIG and close enough, use EM */
@@ -1128,7 +1118,7 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
             }
 
-            /* Else: Don't need to swtich targets */
+            /* Else: Don't need to switch targets */
 
         } else {
 
@@ -1373,7 +1363,7 @@ void auto_gun_event(MUXEVENT *muxevent) {
 
             }
 
-            /* Try and kick but only if we got two legs, one of them
+            /* Try and kick but only if we have two legs, one of them
              * doesn't have a cycling weapon and the target is in the
              * front arc */
             if ((!section_hasbusyweap[2] || !section_hasbusyweap[3]) && 

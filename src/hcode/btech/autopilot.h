@@ -108,10 +108,6 @@
 #define AUTO_ROAM_MAX_ITERATIONS        3       /* Max number of times AI will look
                                                    for a new roam hex */
 
-/*! \todo {Not sure what these are look into it} */
-#define AUTO_GOET               15
-#define AUTO_GOTT               240
-
 /* Various AI Macros */
 #define UpdateAutoSensor(a, flag) \
     AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag)
@@ -159,18 +155,6 @@
     do { AUTO *au; if (MechAuto(mech) > 0 && \
         (au=FindObjectsData(MechAuto(mech)))) UnZombifyAuto(au); } while (0)
 
-/*! \todo {Get rid of these} */
-
-#define GVAL(a,b) \
-    (((a->program_counter + (b)) < a->first_free) ? \
-    a->commands[(a->program_counter+(b))] : -1)
-
-#define CCLEN(a) \
-       (1 + acom[a->commands[a->program_counter]].argcount)
-
-#define PG(a) \
-       a->program_counter
-
 /* Command Macros */
 
 /* Basic checks for the autopilot */
@@ -181,10 +165,6 @@
 /* Shortcut to the auto_com_event function */
 #define AUTO_COM(a,n) \
         AUTOEVENT(a, EVENT_AUTOCOM, auto_com_event, (n), 0);
-
-/*! \todo {Get rid of this once we're done} */
-#define ADVANCE_PG(a) \
-        PG(a) += CCLEN(a); REDO(a,AUTOPILOT_NC_DELAY)
 
 /* Force the unit to start up */
 #define AUTO_PSTART(a,mech) \
@@ -287,16 +267,6 @@ typedef struct {
     short roam_anchor_hex_y;            /* Anchor Hex - Y Coord */
     short roam_anchor_distance;         /* Distance (in hexes) allowed from anchor hex */
 
-    /*! \todo {Figure out if we need to keep these variables} */
-    /* Temporary AI-pathfind data variables */
-    int ahead_ok;
-    int auto_cmode;     /* 0 = Flee ; 1 = Close ; 2 = Maintain distances if possible */
-    int auto_cdist;     /* Distance we're trying to maintain */
-    int auto_goweight;
-    int auto_fweight;
-    int auto_nervous;
-
-    int b_msc, w_msc, b_bsc, w_bsc, b_dan, w_dan, last_upd;
 } AUTO;
 
 /* command_node struct to store AI 
@@ -353,19 +323,16 @@ enum {
     GOAL_FOLLOW,        /* Uses the new Astar system */
     GOAL_GOTO,          /* Uses the new Astar system */ 
     GOAL_LEAVEBASE,
-    GOAL_OLDGOTO,       /* Old implementation of goto */
     GOAL_ROAM,          /* New version using Astar */
     GOAL_WAIT,          /* unimplemented */
 
     COMMAND_ATTACKLEG,  /* unimplemented */
     COMMAND_AUTOGUN,    /* New version that has 3 options 'on', 'off' and 'target dbref' */
     COMMAND_CHASEMODE,  /* unimplemented */
-    COMMAND_CMODE,      /* unimplemented */
     COMMAND_DROPOFF, 
     COMMAND_EMBARK,
     COMMAND_ENTERBAY,   /* unimplemented */
     COMMAND_JUMP,       /* unimplemented */
-    COMMAND_LOAD,       /* unimplemented */
     COMMAND_PICKUP,
     COMMAND_REPORT,     /* unimplemented */
     COMMAND_ROAMMODE,   /* unimplemented */
@@ -376,7 +343,6 @@ enum {
     COMMAND_SWARM,      /* unimplemented */
     COMMAND_SWARMMODE,  /* unimplemented */
     COMMAND_UDISEMBARK,
-    COMMAND_UNLOAD,     /* unimplemented */
     AUTO_NUM_COMMANDS
 };
 
@@ -418,6 +384,7 @@ void auto_command_roam(AUTO *autopilot, MECH *mech);
 void auto_astar_roam_event(MUXEVENT *muxevent);
 
 /* From autopilot_ai.c */
+void ai_set_speed(MECH * mech, AUTO *a, float spd);
 int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end_y);
 void auto_destroy_astar_path(AUTO *autopilot);
 
@@ -490,11 +457,5 @@ void auto_radio_command_sweight(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
 void auto_radio_command_target(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);
-
-#include "p.autopilot.h"
-#include "p.ai.h"
-#include "p.autopilot_command.h"
-#include "p.autopilot_commands.h"
-#include "p.autogun.h"
 
 #endif                  /* AUTOPILOT_H */

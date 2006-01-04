@@ -267,7 +267,6 @@ void auto_load_commands(FILE *file, AUTO *autopilot) {
    listcommands
    engage
    disengage
-   jump
 
  */
 
@@ -276,18 +275,6 @@ void auto_load_commands(FILE *file, AUTO *autopilot) {
  * with some helper commands for modifying the state
  * of the AI
  */
-
-/*! \todo {See if we need this function and remove it if not} */
-int auto_valid_progline(AUTO * a, int p)
-{
-    int i;
-#if 0
-    for (i = 0; i < a->first_free; i += (acom[a->commands[i]].argcount + 1))
-        if (i == p)
-            return 1;
-#endif
-    return 0;
-}
 
 /*
  * Internal function to return a string that
@@ -401,29 +388,6 @@ void auto_delcommand(dbref player, void *data, char *buffer) {
 
     }
 
-}
-
-/*
- * Jump to a specific command location in the AI's
- * command list
- */
-void auto_jump(dbref player, void *data, char *buffer)
-{
-    int p;
-    AUTO *a = (AUTO *) data;
-
-    notify(player, "jump has been temporarly disabled till I can figure out"
-            " how I want to change it - Dany");
-#if 0
-    skipws(buffer);
-    DOCHECK(!*buffer, "Argument expected!");
-    DOCHECK(Readnum(p, buffer), "Invalid argument - single number expected.");
-    /* Find out if it's valid position */
-    DOCHECK(!auto_valid_progline(a, p),
-            "Invalid : Argument out of range, or argument, not command.");
-    PG(a) = p;
-    notify_printf(player, "Program Counter set to #%d.", p);
-#endif
 }
 
 /*
@@ -632,11 +596,6 @@ void auto_init(AUTO *autopilot, MECH *mech) {
 
     autopilot->ofsx = 0;            /* Positional - angle */
     autopilot->ofsy = 0;            /* Positional - distance */
-    autopilot->auto_cmode = 1;      /* CHARGE! */
-    autopilot->auto_cdist = 2;      /* Attempt to avoid kicking distance */
-    autopilot->auto_nervous = 0;
-    autopilot->auto_goweight = 44;  /* We're mainly concentrating on fighting */
-    autopilot->auto_fweight = 55;
     autopilot->speed = 100;         /* Reset to full speed */
     autopilot->flags = 0;
 
@@ -668,8 +627,11 @@ void auto_engage(dbref player, void *data, char *buffer) {
     DOCHECK(auto_pilot_on(autopilot),
         "The autopilot's already online! You have to disengage it first.");
 
+    /* If the unit didn't have an AI before set the AI value 
+     * and init the AI */
     if (MechAuto(mech) <= 0)
         auto_init(autopilot, mech);
+
     MechAuto(mech) = autopilot->mynum;
     
     if (MechAuto(mech) > 0)
@@ -900,6 +862,10 @@ void auto_newautopilot(dbref key, void **data, int selector) {
 
             /* Destroy weaponlist */
             auto_destroy_weaplist(autopilot);
+
+            /* Finally reset the AI value on its unit if
+             * it needs to */
+            /*! \todo {Need to add this} */
 
             break;
 

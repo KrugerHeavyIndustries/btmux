@@ -52,8 +52,6 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* goto a given hex */
     {"leavebase", 1, GOAL_LEAVEBASE, NULL}
     ,                           /* leave a hangar */
-    {"oldgoto", 2, GOAL_OLDGOTO, NULL}
-    ,                           /* Old style goto - will phase out */
     {"roam", 1, GOAL_ROAM, NULL}
     ,                           /* roam around an area - like patroling */
     {"wait", 2, GOAL_WAIT, NULL}
@@ -64,8 +62,6 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* Let the AI decide what to shoot */
     {"chasemode", 1, COMMAND_CHASEMODE, NULL}
     ,                           /* chase after a target or not */
-    {"cmode", 2, COMMAND_CMODE, NULL}
-    ,                           /* ? */
     {"dropoff", 0, COMMAND_DROPOFF, NULL}
     ,                           /* dropoff whatever the AI is towing */
     {"embark", 1, COMMAND_EMBARK, NULL}
@@ -74,8 +70,6 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* enter a DS's bay */
     {"jump", 1, COMMAND_JUMP, NULL}
     ,                           /* jump */
-    {"load", 0, COMMAND_LOAD, NULL}
-    ,                           /* load cargo */
     {"pickup", 1, COMMAND_PICKUP, NULL}
     ,                           /* pickup a given target */
     {"report", 0, COMMAND_REPORT, NULL}
@@ -96,17 +90,8 @@ ACOM acom[AUTO_NUM_COMMANDS + 1] = {
     ,                           /* ? */
     {"udisembark", 0, COMMAND_UDISEMBARK, NULL}
     ,                           /* disembark from a carrier */
-    {"unload", 0, COMMAND_UNLOAD, NULL}
-    ,                           /* unload cargo */
     {NULL, 0, AUTO_NUM_COMMANDS, NULL}
 };
-
-/* backwards compat till I can fix all of these */
-/* \todo {Get rid of these once we're done redoing the AI} */
-#define GSTART      AUTO_GSTART
-#define PSTART      AUTO_PSTART
-#define CCH         AUTO_CHECKS
-#define REDO        AUTO_COM
 
 /*
  * AI Startup - force AI to startup if its not
@@ -134,71 +119,6 @@ void auto_command_shutdown(AUTO *autopilot, MECH *mech) {
     mech_shutdown(autopilot->mynum, mech, "");
 
 }
-
-#if 0
-/*! \todo {Not really sure what this does and don't really care
-    I just know we need to do something about this} */
-void gradually_load(MECH * mech, int loc, int percent)
-{
-    int pile[BRANDCOUNT + 1][NUM_ITEMS];
-    float spd = (float) MMaxSpeed(mech);
-    float nspd = (float) MechCargoMaxSpeed(mech, (float) spd);
-    int cnt = 0;
-    char *t;
-    int i, j;
-    int i1, i2, i3;
-    int lastid = -1, lastbrand = -1;
-
-    /* XXX Fix this - was broken when CargoMaxSpeed interface changed */
-    bzero(pile, sizeof(pile));
-    t = silly_atr_get(loc, A_ECONPARTS);
-    while (*t) {
-	if (*t == '[')
-	    if ((sscanf(t, "[%d,%d,%d]", &i1, &i2, &i3)) == 3) {
-		pile[i2][i1] += i3;
-		cnt++;
-	    }
-	t++;
-    }
-    while (nspd > ((float) spd * percent / 100) && cnt) {
-	for (j = 0; j <= BRANDCOUNT; j++) {
-	    for (i = 0; i < NUM_ITEMS; i++)
-		if (pile[j][i])
-		    break;
-	    if (i != NUM_ITEMS)
-		break;
-	}
-	if (i == NUM_ITEMS)
-	    break;
-	lastid = i;
-	lastbrand = j;
-	econ_change_items(loc, i, j, -1);
-	econ_change_items(mech->mynum, i, j, 1);
-	pile[j][i]--;
-	cnt--;
-	SetCargoWeight(mech);
-	nspd = (float) MechCargoMaxSpeed(mech, (float) spd);
-    }
-    if (lastid >= 0) {
-	i = lastid;
-	j = lastbrand;
-	econ_change_items(loc, i, j, 1);
-	econ_change_items(mech->mynum, i, j, -1);
-    }
-    SetCargoWeight(mech);
-}
-
-void autopilot_load_cargo(dbref player, MECH * mech, int percent)
-{
-    DOCHECK(fabs(MechSpeed(mech)) > MP1, "You're moving too fast!");
-    DOCHECK(Location(mech->mynum) != mech->mapindex ||
-	In_Character(Location(mech->mynum)), "You aren't inside hangar!");
-    if (loading_bay_whine(player, Location(mech->mynum), mech))
-	return;
-    gradually_load(mech, mech->mapindex, percent);
-    SetCargoWeight(mech);
-}
-#endif
 
 /* Recal the AI to the proper map */
 /*! \todo{Possibly move this to autopilot_core.c} */
@@ -318,21 +238,6 @@ void auto_set_chasetarget_mode(AUTO *autopilot, int mode) {
 }
 
 #if 0
-void autopilot_cmode(AUTO * a, MECH * mech, int mode, int range)
-{
-    static char buf[MBUF_SIZE];
-    if (!a || !mech)
-    return;
-    if (mode < 0 || mode > 2)
-        return;
-    if (range < 0 || range > 40)
-        return;
-    a->auto_cdist = range;
-    a->auto_cmode = mode;
-    return;
-
-}
-
 void autopilot_swarm(MECH * mech, char *id)
 {
     if (MechType(mech) == CLASS_BSUIT)
@@ -343,7 +248,6 @@ void autopilot_attackleg(MECH * mech, char *id)
 {
     bsuit_attackleg(GOD, mech, id);
 }
-
 #endif
 
 /*
@@ -651,32 +555,6 @@ void auto_command_udisembark(MECH *mech) {
 
 }
 
-#if 0
-void autopilot_enterbase(MECH * mech, int dir)
-{
-    static char strng[2];
-
-    switch (dir) {
-    case 0:
-        strcpy(strng, "n");
-        break;
-    case 1:
-        strcpy(strng, "e");
-        break;
-    case 2:
-        strcpy(strng, "s");
-        break;
-    case 3:
-        strcpy(strng, "w");
-        break;
-    default:
-        sprintf(strng, "%c", dir);
-        break;
-    }
-    mech_enterbase(GOD, mech, strng);
-}
-#endif
-
 /*
  * Main Autopilot event, checks to see what command we should
  * be running and tries to run it
@@ -750,12 +628,6 @@ void auto_com_event(MUXEVENT *muxevent) {
                     AUTOPILOT_LEAVE_TICK, 1);
             return;
 
-        case GOAL_OLDGOTO:
-            AUTO_GSTART(autopilot, mech);
-            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event, 
-                    AUTOPILOT_GOTO_TICK, 0);
-            return;
-
         case GOAL_ROAM:
             auto_command_roam(autopilot, mech);
             return;
@@ -811,15 +683,6 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_goto_next_command(a);
             return;
 #endif
-#if 0
-        case COMMAND_CMODE:
-            i = GVAL(a,1);
-            j = GVAL(a,2);
-            autopilot_cmode(a, mech, i, j);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
-            return;
-#endif
 
         case COMMAND_DROPOFF:
             auto_command_dropoff(mech);
@@ -849,14 +712,6 @@ void auto_com_event(MUXEVENT *muxevent) {
                 ADVANCE_PG(a);
             }
             return;
-#endif
-#if 0
-        case COMMAND_LOAD:
-/*          mech_loadcargo(GOD, mech, "50"); */
-            autopilot_load_cargo(GOD, mech, 50);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
-            break;
 #endif
         case COMMAND_PICKUP:
             auto_command_pickup(autopilot, mech);
@@ -892,14 +747,6 @@ void auto_com_event(MUXEVENT *muxevent) {
         case COMMAND_STARTUP:
             auto_command_startup(autopilot, mech);
             return;
-#if 0
-        case COMMAND_STOPGUN:
-            if (Gunning(a))
-                DoStopGun(a);
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
-            break;
-#endif
 #if 0 
         case COMMAND_SWARM:
             if (!(tempmech = getMech(GVAL(a, 1)))) {
@@ -935,13 +782,6 @@ void auto_com_event(MUXEVENT *muxevent) {
             auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
             return; 
 
-#if 0
-        case COMMAND_UNLOAD:
-            mech_unloadcargo(GOD, mech, my2string(" * 9999"));
-            //ADVANCE_PG(a);
-            auto_goto_next_command(a);
-            break;
-#endif
     }
 }
 
@@ -950,6 +790,7 @@ void auto_com_event(MUXEVENT *muxevent) {
 /*
  * Function to force the AI to move if its not near its target
  */
+/*! \todo {Move these to autopilot_ai.c} */
 static void speed_up_if_neccessary(AUTO * a, MECH * mech, int tx, int ty,
     int bearing) {
     
@@ -1008,134 +849,6 @@ void figure_out_range_and_bearing(MECH * mech, int tx, int ty,
     *bearing = FindBearing(MechFX(mech), MechFY(mech), x, y);
     *range = FindHexRange(MechFX(mech), MechFY(mech), x, y);
 }
-
-
-/* Basically, all we need to do is course correction now and then.
-   In case we get disabled, we call for help now and then */
-/*
- * Old goto system - will phase it out
- */
-void auto_goto_event(MUXEVENT * e) {
-    
-    AUTO *autopilot = (AUTO *) e->data;
-    int tx, ty;
-    float dx, dy;
-    MECH *mech = autopilot->mymech;
-    float range;
-    int bearing;
-
-    char *argument;
-
-    if (!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
-        return;
-
-    /* Basic Checks */
-    AUTO_CHECKS(autopilot);
-
-    /* Make sure mech is started and standing */
-    AUTO_GSTART(autopilot, mech);
-
-    /* Get the first argument - x coord */
-    argument = auto_get_command_arg(autopilot, 1, 1);
-    if (Readnum(tx, argument)) {
-        /*! \todo {add a thing here incase the argument isn't a number} */
-        free(argument);
-    }
-    free(argument);
-
-    /* Get the second argument - y coord */
-    argument = auto_get_command_arg(autopilot, 1, 2);
-    if (Readnum(ty, argument)) {
-        /*! \todo {add a thing here incase the argument isn't a number} */
-        free(argument);
-    }
-    free(argument);
-    
-    if (MechX(mech) == tx && MechY(mech) == ty &&
-            abs(MechSpeed(mech)) < 0.5) {
-
-        /* We've reached this goal! Time for next one. */
-        ai_set_speed(mech, autopilot, 0);
-
-        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
-        return;
-    }
-
-    MapCoordToRealCoord(tx, ty, &dx, &dy);
-    figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
-    if (!slow_down_if_neccessary(autopilot, mech, range, bearing, tx, ty)) {
-
-        /* Use the AI */
-        if (ai_check_path(mech, autopilot, dx, dy, 0.0, 0.0))
-            AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event,
-                    AUTOPILOT_GOTO_TICK, 0);
-
-    } else {
-        AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_goto_event, 
-                AUTOPILOT_GOTO_TICK, 0);
-    }
-
-}
-
-#if 0
-/* ROAMMODE is a funky beast */
-void auto_roam_event(MUXEVENT * e)
-{
-    AUTO *a = (AUTO *) e->data;
-    int tx, ty;
-    float dx, dy, range;
-    MECH *mech = a->mymech;
-    MAP *map;
-    int bearing, i = 1, t;
-
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
-        return;
-
-    CCH(a);
-    GSTART(a, mech);
-    tx = GVAL(a, 1);
-    ty = GVAL(a, 2);
-
-    if (!mech || !(map = FindObjectsData(mech->mapindex))) {
-        return;
-    }
-
-    if (!(a->flags & AUTOPILOT_ROAMMODE) || MechTarget(mech) > 0) {
-        return;
-    }
-
-    if ((tx == 0 && ty == 0) || e->data2 > 0 || (MechX(mech) == tx 
-            && MechY(mech) == ty && abs(MechSpeed(mech)) < 0.5)) {
-        while (i) {
-            tx = BOUNDED(1, Number(20, map->map_width - 21), map->map_width - 1);
-            ty = BOUNDED(1, Number(20, map->map_height - 21), map->map_height - 1);
-            MapCoordToRealCoord(tx, ty, &dx, &dy);
-            t = GetRTerrain(map, tx, ty);
-            range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), 
-                    dx, dy, ZSCALE * GetElev(map, tx, ty));
-            if ((InLineOfSight(mech, NULL, tx, ty, range) && 
-                    t != WATER && t != HIGHWATER && t != MOUNTAINS ) || i > 5000) {
-                i = 0;  
-            } else {
-                i++;
-            }
-        }
-        a->commands[a->program_counter + 1] = tx;
-        a->commands[a->program_counter + 2] = ty;
-        AUTOEVENT(a, EVENT_AUTOGOTO, auto_roam_event, AUTOPILOT_GOTO_TICK, 0);
-        return;
-    }
-    MapCoordToRealCoord(tx, ty, &dx, &dy);
-    figure_out_range_and_bearing(mech, tx, ty, &range, &bearing);
-    if (!slow_down_if_neccessary(a, mech, range, bearing, tx, ty)) {
-        /* Use the AI */
-        if (ai_check_path(mech, a, dx, dy, 0.0, 0.0))
-            AUTOEVENT(a, EVENT_AUTOGOTO, auto_roam_event, AUTOPILOT_GOTO_TICK, 0);
-    } else {
-        AUTOEVENT(a, EVENT_AUTOGOTO, auto_roam_event, AUTOPILOT_GOTO_TICK, 0);
-    }
-}
-#endif
 
 /*
  * Dumbly[goto] a given a hex
@@ -1864,36 +1577,6 @@ void auto_astar_follow_event(MUXEVENT *muxevent) {
             AUTOPILOT_FOLLOW_TICK, 0);
 
 }
-
-#if 0
-/* Old follow system - will phase out */
-void auto_follow_event(MUXEVENT * e)
-{
-    AUTO *a = (AUTO *) e->data;
-    float fx, fy, newx, newy;
-    int h;
-    MECH *leader;
-    MECH *mech = a->mymech;
-
-    if (!IsMech(mech->mynum) || !IsAuto(a->mynum))
-        return;
-
-    CCH(a);
-    GSTART(a, mech);
-    if (!(leader = getMech(GVAL(a, 1)))) {
-        /* For some reason, leader is missing(?) */
-        ADVANCE_PG(a);
-        return;
-    }
-    h = MechFacing(leader);
-    FindXY(MechFX(leader), MechFY(leader), h + a->ofsx, a->ofsy, &fx, &fy);
-    FindComponents(MechSpeed(leader) * MOVE_MOD, MechFacing(leader), 
-            &newx, &newy);
-    if (ai_check_path(mech, a, fx, fy, newx, newy))
-        AUTOEVENT(a, EVENT_AUTOFOLLOW, auto_follow_event,
-                AUTOPILOT_FOLLOW_TICK, 0);
-}
-#endif
 
 /*
  * Make the AI [dumbly]follow the given target

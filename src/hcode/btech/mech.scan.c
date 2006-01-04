@@ -18,7 +18,6 @@
 #include "p.map.obj.h"
 #include "p.mech.scan.h"
 #include "autopilot.h"
-#include "p.autopilot_command.h"
 #include "p.mine.h"
 #include "p.mech.build.h"
 #include "p.mech.status.h"

@@ -68,9 +68,6 @@ struct {
     "chanm", "chanmode", 2, 0, auto_setchanmode}, {
 #endif
     "chase", "chasetarg", 1, 0, auto_radio_command_chasetarg}, {
-#if 0
-    "cm", "cmode", 2, 0, auto_cmode}, {
-#endif
     "dfo", "dfollow", 1, 0, auto_radio_command_dfollow}, {
     "dgo", "dgoto", 2, 0, auto_radio_command_dgoto}, {
 #if 0
@@ -96,11 +93,6 @@ struct {
     "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet}, {
     "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet}, {
     "le", "leavebase", 1, 0, auto_radio_command_leavebase}, {
-#if 0
-    "nog", "nogun", 0, 0, auto_nogun}, {
-    "not", "notarget", 0, 0, auto_notarget}, {
-#endif
-    "ogo", "ogoto", 2, 0, auto_radio_command_ogoto}, {
     "pick", "pickup", 1, 0, auto_radio_command_pickup}, {
     "pos", "position", 2, 0, auto_radio_command_position}, {
     "pr", "prone", 0, 0, auto_radio_command_prone}, {
@@ -121,7 +113,6 @@ struct {
     "st", "startup", 0, 0, auto_radio_command_startup}, {
     "st", "startup", 1, 0, auto_radio_command_startup}, {
     "st", "stop", 0, 0, auto_radio_command_stop}, {
-    "sw", "sweight", 2, 1, auto_radio_command_sweight}, {
 #if 0
     "swa", "swarm", 1, 0, auto_swarm}, {
     "swarmc", "swarmcharge", 1, 0, auto_swarmcharge }, {
@@ -827,31 +818,6 @@ void auto_radio_command_stop(AUTO *autopilot, MECH *mech,
 }
 
 /*
- * Command for the old goto, will phase it out
- */
-void auto_radio_command_sweight(AUTO *autopilot, MECH *mech,
-        char **args, int argc, char *mesg) {
-
-    int x, y;
-
-    if (Readnum(x, args[1])) {
-        snprintf(mesg, LBUF_SIZE, "!Invalid first int");
-        return;
-    }
-    if (Readnum(y, args[2])) {
-        snprintf(mesg, LBUF_SIZE, "!Invalide second int");
-        return;
-    }
-    x = MAX(1, x);
-    y = MAX(1, y);
-    autopilot->auto_goweight = x;
-    autopilot->auto_fweight = y;
-    snprintf(mesg, LBUF_SIZE, "sweight'ed to %d:%d. (go:fight)", x, y);
-    return;
-
-}
-
-/*
  * Tell the AI to target a specific unit
  */
 void auto_radio_command_target(AUTO *autopilot, MECH *mech,
@@ -937,26 +903,6 @@ ACMD(auto_attackleg)
     auto_addcommand(a->mynum, a, tprintf("attackleg %d", targetref));
     auto_engage(a->mynum, a, "");
     return tprintf("attacklegging %s.", args[0]); 
-}
-#endif
-#if 0
-ACMD(auto_notarget)
-{
-    a->targ = -1;
-    if (Gunning(a)) {
-        DoStopGun(a);
-        DoStartGun(a);
-    }
-    return "shooting at anything that moves";
-}
-#endif
-#if 0
-ACMD(auto_nogun)
-{
-    a->targ = -2;
-    if (Gunning(a))
-        DoStopGun(a);
-    return "powering down weapons";
 }
 #endif
 #if 0
@@ -1098,36 +1044,6 @@ ACMD(auto_enterbay)
             args[0]) : tprintf(""));
     return argc ? tprintf("entering bay (of %s)",
             args[0]) : "entering bay";
-}
-#endif
-#if 0
-ACMD(auto_cmode)
-{
-    int mod, ran;
-    static char buf[MBUF_SIZE];
-
-    if (Readnum(mod, args[0]))
-        return "!Invalid mode [0-2]";
-    if (mod < 0 || mod > 2)
-        return "!Invalid mode [0-2]";
-    if (Readnum(ran, args[1]))
-        return "!Invalid range [0-999]";
-    if (ran < 0 || ran > 999)
-        return "!Invalid range [0-999]";
-    a->auto_cdist = ran;
-    a->auto_cmode = mod;
-    switch (mod) {
-    case 0:
-        sprintf(buf, "fleeing, at least to range %d {from all foes}", ran);
-        break;
-    case 1:
-        sprintf(buf, "trying to maintain range %d {from all foes}", ran);
-        break;
-    case 2:
-        sprintf(buf, "charging to range %d {from all foes}", ran);
-        break;
-    }
-    return buf;
 }
 #endif
 

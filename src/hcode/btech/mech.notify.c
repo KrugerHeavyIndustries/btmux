@@ -22,7 +22,6 @@
 #include "p.mech.utils.h"
 #include "p.mech.build.h"
 #include "p.mech.startup.h"
-#include "p.autopilot_command.h"
 #include "p.btechstats.h"
 #include "p.mech.sensor.h"
 #include "p.map.obj.h"
