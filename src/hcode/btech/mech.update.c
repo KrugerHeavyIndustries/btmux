@@ -1128,7 +1128,9 @@ void ammo_explosion(MECH * attacker, MECH * mech, int ammoloc,
     if (!attacker)
 	return;
     if (GetPartAmmoMode(mech, ammoloc, ammocritnum) & INFERNO_MODE) {
-	Inferno_Hit(mech, mech, damage / 4, 0);
+        Inferno_Hit(mech, mech, damage / 4, 0);
+        if (mudconf.btech_inferno_penalty)
+	    MechWeapHeat(mech) += 30.0;
 	damage = damage / 2;
     }
     if (MechType(mech) == CLASS_BSUIT)
@@ -1150,15 +1152,73 @@ void ammo_explosion(MECH * attacker, MECH * mech, int ammoloc,
 
 void HandleOverheat(MECH * mech)
 {
-    int avoided = 0;
+    int avoided = 0, hasinferno = 0;
     MAP *mech_map;
+    int ammoloc, ammocritnum, damage=0;
 
-    if (MechHeat(mech) < 14.)
+    if (MechHeat(mech) < 10.)
 	return;
     /* Has it been a TURN already ? */
     if ((MechHeatLast(mech) + TURN) > muxevent_tick)
 	return;
     MechHeatLast(mech) = muxevent_tick;
+
+   /* Ammo - done first so infernobooms shut you down */
+   if (MechHeat(mech) >= 10.) {
+     if(mudconf.btech_inferno_penalty)
+         hasinferno=FindInfernoAmmo(mech, &ammoloc, &ammocritnum);
+     if (MechHeat(mech) >= 28.) {
+            /* Ammo explosion (Avoid 8+, infernos 12+) */
+            if (hasinferno) {
+              if (Roll() >= 12)
+                avoided = 1;
+            } else {
+              if (Roll() >= 8)
+                avoided = 1;
+            }
+        } else if (MechHeat(mech) >= 23.) {
+            /* Ammo explosion (Avoid 6+, infernos 10+) */
+            if (hasinferno) {
+              if (Roll() >= 10)
+                avoided = 1;
+              } else {
+                if (Roll() >= 6)
+                  avoided = 1;
+              }
+        } else if (MechHeat(mech) >= 19.) {
+            /* Ammo explosion (Avoid 4+, infernos 8+) */
+            if (hasinferno) {
+              if (Roll() >= 8)
+                avoided = 1;
+              } else {
+                if (Roll() >= 4)
+                  avoided = 1;
+              }
+
+        } else if ( (MechHeat(mech) >= 14.) && (hasinferno) ) {
+            if (Roll() >= 6)
+              avoided = 1;
+        } else if ( (MechHeat(mech) >= 10.) && (hasinferno) ) {
+            if (Roll() >= 4)
+              avoided = 1;
+        } else if ( (MechHeat(mech) < 19.) && (!hasinferno) ) {
+            avoided = 1;
+        }
+
+        if (!(avoided)) {	
+            if (!hasinferno)
+              damage = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
+            else
+              damage = hasinferno;
+            if (damage) {
+                /* BOOM! */
+                /* That's going to hurt... */
+                ammo_explosion(mech, mech, ammoloc, ammocritnum, damage);
+            } else
+               mech_notify(mech, MECHALL, "You have no ammunition, lucky you!");        }
+    }
+
+    avoided = 0;
 #ifdef BT_EXILE_MW3STATS
   if (!isPlayer(MechPilot(mech))) {
 #endif
@@ -1183,15 +1243,24 @@ void HandleOverheat(MECH * mech)
     }
 #ifdef BT_EXILE_MW3STATS
   } else {
-    mech_notify(mech, MECHALL, "You franticly attempt to override the shutdown process!");
-    avoided = char_getskillsuccess(MechPilot(mech), "computer", (MechHeat(mech) >= 30. ? 8 : MechHeat(mech) >= 26. ? 6 : MechHeat(mech) >= 22. ? 4 : MechHeat(mech) >=18. ? 2 : 0), 1);
-    if (avoided)
-        AccumulateComputerXP(MechPilot(mech), mech, 1);
+	  avoided = 1;
+	  if (MechHeat(mech) >= 14.) {
+              mech_notify(mech, MECHALL, "You franticly attempt to override the shutdown process!");
+              avoided = char_getskillsuccess(MechPilot(mech), "computer", (MechHeat(mech) >= 30. ? 8 : MechHeat(mech) >= 26. ? 6 : MechHeat(mech) >= 22. ? 4 : MechHeat(mech) >=18. ? 2 : 0), 1);
+              if (avoided)
+	         AccumulateComputerXP(MechPilot(mech), mech, 1);
+	  }
   }
 #endif
     if (!(avoided) && Started(mech)) {
 	if (MechStatus(mech) & STARTED)
 	    mech_notify(mech, MECHALL, "%ci%crReactor shutting down...%c");
+        if (MechStatus2(mech) & SLITE_ON)
+           {
+             mech_notify(mech, MECHALL, "Your searchlight shuts off.");
+             MechStatus2(mech) &= ~SLITE_ON;
+             MechCritStatus(mech) &= ~SLITE_LIT;
+           }
 	if (Jumping(mech) || OODing(mech) || (is_aero(mech) &&
 		!Landed(mech))) {
 	    mech_notify(mech, MECHALL, "%chYou fall from the sky!!!!!%c");
@@ -1199,40 +1268,15 @@ void HandleOverheat(MECH * mech)
 	    mech_map = getMap(mech->mapindex);
 	    MechFalls(mech, JumpSpeedMP(mech, mech_map), 0);
 	    domino_space(mech, 2);
-	} else
+	} else {
 	    MechLOSBroadcast(mech, "stops in mid-motion!");
+            if ((fabs(MechSpeed(mech) > MP1)) && !Fallen(mech) &&
+                (!MadePilotSkillRoll(mech, 3)))
+              MechFalls(mech, 0, 1);
+        }
 	Shutdown(mech);
 	StopMoving(mech);
 	StopStand(mech);
-    }
-    avoided = 0;
-    /* Ammo */
-    if (MechHeat(mech) >= 19.) {
-	if (MechHeat(mech) >= 28.) {
-	    /* Ammo explosion (Avoid 8+) */
-	    if (Roll() >= 8)
-		avoided = 1;
-	} else if (MechHeat(mech) >= 23.) {
-	    /* Ammo explosion (Avoid 6+) */
-	    if (Roll() >= 6)
-		avoided = 1;
-	} else if (MechHeat(mech) >= 19.) {
-	    /* Ammo explosion (Avoid 4+) */
-	    if (Roll() >= 4)
-		avoided = 1;
-	}
-	if (!(avoided)) {
-	    int ammoloc, ammocritnum, damage;
-
-	    damage = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
-	    if (damage) {
-		/* BOOM! */
-		/* That's going to hurt... */
-		ammo_explosion(mech, mech, ammoloc, ammocritnum, damage);
-	    } else
-		mech_notify(mech, MECHALL,
-		    "You have no ammunition, lucky you!");
-	}
     }
 }
 

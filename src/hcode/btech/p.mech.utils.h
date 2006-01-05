@@ -78,6 +78,7 @@ int FindAmmoForWeapon(MECH * mech, int weapindx, int start, int *section,
 int CountAmmoForWeapon(MECH * mech, int weapindx);
 int FindArtemisForWeapon(MECH * mech, int section, int critical);
 int FindDestructiveAmmo(MECH * mech, int *section, int *critical);
+int FindInfernoAmmo(MECH * mech, int *section, int *critical);
 int FindRoundsForWeapon(MECH * mech, int weapindx);
 const char **ProperSectionStringFromType(int type, int mtype);
 void ArmorStringFromIndex(int index, char *buffer, char type, char mtype);

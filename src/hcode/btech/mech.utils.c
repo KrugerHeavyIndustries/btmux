@@ -1371,6 +1371,47 @@ int FindDestructiveAmmo(MECH * mech, int *section, int *critical)
     return (maxdamage);
 }
 
+int FindInfernoAmmo(MECH * mech, int *section, int *critical)
+{
+    int loop;
+    int critloop;
+    int maxdamage = 0;
+    int damage;
+    int weapindx;
+    int i;
+    int type, data;
+    int mode;
+
+    for (loop = 0; loop < NUM_SECTIONS; loop++)
+        for (critloop = 0; critloop < NUM_CRITICALS; critloop++)
+            if (IsAmmo(GetPartType(mech, loop, critloop)) &&
+                !PartIsDestroyed(mech, loop, critloop)) {
+                data = GetPartData(mech, loop, critloop);
+                type = GetPartType(mech, loop, critloop);
+                mode = GetPartAmmoMode(mech, loop, critloop);
+                if (!(mode & INFERNO_MODE))
+                    continue;
+                weapindx = Ammo2WeaponI(type);
+                damage = data * MechWeapons[weapindx].damage;
+                if (MechWeapons[weapindx].special & GAUSS)
+                    continue;
+                if (IsMissile(weapindx) || IsArtillery(weapindx)) {
+                    for (i = 0; MissileHitTable[i].key != -1; i++)
+                        if (MissileHitTable[i].key == weapindx)
+                            damage *= MissileHitTable[i].num_missiles[10];
+                }
+                if (damage > maxdamage) {
+                    *section = loop;
+                    *critical = critloop;
+                    maxdamage = damage;
+                }
+            }
+    return (maxdamage);
+}
+
+
+
+
 int FindRoundsForWeapon(MECH * mech, int weapindx)
 {
     int loop;

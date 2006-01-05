@@ -158,6 +158,7 @@ btonline-btechmux 0.6:
 	  1 ton and 1 crit per 10 tons unit weight. 1 pt damage for every
 	  4 unit tons. (Greg)
         * Added the graball() function, the 'all' version of grab() (Power_Shaper)
+        * Added FASA Inferno Penalties for heat (Fitz + Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
