@@ -130,6 +130,7 @@ extern void fun_munge();
 extern void fun_visible();
 extern void fun_elements();
 extern void fun_grab();
+extern void fun_graball();
 extern void fun_scramble();
 extern void fun_shuffle();
 extern void fun_sortby();
@@ -5471,6 +5472,7 @@ FUN flist[] = {
 {"GET",		fun_get,	1,  0,		CA_PUBLIC},
 {"GET_EVAL",	fun_get_eval,	1,  0,		CA_PUBLIC},
 {"GRAB",	fun_grab,	0,  FN_VARARGS,	CA_PUBLIC},
+{"GRABALL",	fun_graball,	0,  FN_VARARGS,	CA_PUBLIC},
 {"GREP",	fun_grep,	3,  0,		CA_PUBLIC},
 {"GREPI",	fun_grepi,	3,  0,		CA_PUBLIC},
 {"GT",		fun_gt,		2,  0,		CA_PUBLIC},

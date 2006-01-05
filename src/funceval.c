@@ -1786,6 +1786,26 @@ void fun_grab(char *buff, char **bufc, dbref player, dbref cause, char *fargs[],
     } while (s);
 }
 
+/* Same as grab, but return all matches */
+void fun_graball(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+    char *r, *s, sep, *b;
+
+
+    varargs_preamble("GRABALL",3);
+   
+    b = *bufc;
+    s = trim_space_sep(fargs[0],sep);
+    do {
+        r = split_token(&s, sep);
+	if (quick_wild(fargs[1], r)) {
+	    if(*bufc != b)
+	        safe_str(" ", buff, bufc);
+	    safe_str(r, buff, bufc);
+	}
+    } while (s);
+}
+
 /*
  * ---------------------------------------------------------------------------
  * * fun_scramble:  randomizes the letters in a string.
