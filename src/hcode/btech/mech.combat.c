@@ -773,7 +773,7 @@ void FireWeapon(MECH * mech,
 
 
     DOCHECKMA((wAmmoMode & STINGER_MODE) && ishex, "Stinger missiles cannot shoot hexes!");
-    DOCHECKMA((wAmmoMode & STINGER_MODE) && target && (!FlyingT(target) && !OODing(target) && !Jumping(target) && !Landed(target)),
+    DOCHECKMA((wAmmoMode & STINGER_MODE) && target && (!FlyingT(target) && !OODing(target) && !Jumping(target) && Landed(target)),
     "Stinger missiles can only engage airborne targets!");
 
     /* If its a coolant gun set to heat, set the target
