@@ -614,11 +614,9 @@ void mech_embark(dbref player, void *data, char *buffer) {
         MechLOSBroadcast(target, "becomes visible as it is embarked into.");
     }
 
-    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
-    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
-    loud_teleport(mech->mynum, target->mynum);
-    CargoSpace(target) -= (MechTons(mech) * 100);
-    Shutdown(mech);
+    /* Check if the unit is towing something so the towed unit
+     * is handled first because Shutdown() will cause it to drop
+     * whatever its towing */
     if (towee && MechCarrying(mech) > 0) {
         MarkForLOSUpdate(towee);
         mech_Rsetmapindex(GOD, (void *) towee, tprintf("%d", (int) -1));
@@ -629,6 +627,14 @@ void mech_embark(dbref player, void *data, char *buffer) {
         SetCarrying(mech, -1);
         MechStatus(towee) &= ~TOWED;
     }
+
+    /* Now handle the unit itself */
+    mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) -1));
+    mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", 0, 0));
+    loud_teleport(mech->mynum, target->mynum);
+    CargoSpace(target) -= (MechTons(mech) * 100);
+    Shutdown(mech);
+
     correct_speed(target);
 }
 

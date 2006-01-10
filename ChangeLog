@@ -246,6 +246,8 @@ btonline-btechmux 0.6:
           sensors. (Fitz)
 	* When a unit is in TSM mode it should get correct extra
 	  heat for the speed its currently at.
+	* Fix for embarking a carrier while towing a unit (wasn't pulling
+	  towed unit inside). (Casy)
 
 btonline-btechmux 0.4:
 	- Changes
