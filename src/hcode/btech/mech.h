@@ -161,68 +161,68 @@
 #define Cargo		I2Cargo
 
 /* To define one of these-> x=SPECIAL_BASE_INDEX+SHOULDER_OR_HIP */
-#define SHOULDER_OR_HIP		       0
-#define UPPER_ACTUATOR		       1
-#define LOWER_ACTUATOR		       2
-#define HAND_OR_FOOT_ACTUATOR	   3
-#define LIFE_SUPPORT	           4
-#define SENSORS			           5
-#define COCKPIT			           6
-#define ENGINE			           7
-#define GYRO			           8
-#define HEAT_SINK		           9
-#define JUMP_JET		           10
-#define CASE			           11
-#define FERRO_FIBROUS		       12
-#define ENDO_STEEL		           13
-#define TRIPLE_STRENGTH_MYOMER	   14
-#define TARGETING_COMPUTER	       15
-#define MASC			           16
-#define C3_MASTER		           17
-#define C3_SLAVE		           18
-#define BEAGLE_PROBE		       19
-#define ARTEMIS_IV		           20
-#define ECM			               21
-#define AXE			               22
-#define SWORD			           23
-#define MACE			           24
-#define CLAW			           25
-#define DS_AERODOOR		           26
-#define DS_MECHDOOR		           27
-#define FUELTANK		           28
-#define TAG			               29
-#define DS_TANKDOOR		           30
-#define DS_CARGODOOR		       31
-#define LAMEQUIP		           32
-#define CASE_II			           33
-#define STEALTH_ARMOR		       34
-#define NULL_SIGNATURE_SYSTEM	   35
-#define C3I			               36
-#define ANGELECM		           37
-#define HVY_FERRO_FIBROUS	       38
-#define LT_FERRO_FIBROUS	       39
-#define BLOODHOUND_PROBE	       40
-#define PURIFIER_ARMOR		       41
-#define KAGE_STEALTH_UNIT	       42
-#define ACHILEUS_STEALTH_UNIT	   43
-#define INFILTRATOR_STEALTH_UNIT   44
-#define INFILTRATORII_STEALTH_UNIT 45
-#define SUPERCHARGER		       46
-#define DUAL_SAW                   47
+#define SHOULDER_OR_HIP               0
+#define UPPER_ACTUATOR                1
+#define LOWER_ACTUATOR                2
+#define HAND_OR_FOOT_ACTUATOR         3
+#define LIFE_SUPPORT                  4
+#define SENSORS                       5
+#define COCKPIT                       6
+#define ENGINE                        7
+#define GYRO                          8
+#define HEAT_SINK                     9
+#define JUMP_JET                     10
+#define CASE                         11
+#define FERRO_FIBROUS                12
+#define ENDO_STEEL                   13
+#define TRIPLE_STRENGTH_MYOMER       14
+#define TARGETING_COMPUTER           15
+#define MASC                         16
+#define C3_MASTER                    17
+#define C3_SLAVE                     18
+#define BEAGLE_PROBE                 19
+#define ARTEMIS_IV                   20
+#define ECM                          21
+#define AXE                          22
+#define SWORD                        23
+#define MACE                         24
+#define CLAW                         25
+#define DS_AERODOOR                  26
+#define DS_MECHDOOR                  27
+#define FUELTANK                     28
+#define TAG                          29
+#define DS_TANKDOOR                  30
+#define DS_CARGODOOR                 31
+#define LAMEQUIP                     32
+#define CASE_II                      33
+#define STEALTH_ARMOR                34
+#define NULL_SIGNATURE_SYSTEM        35
+#define C3I                          36
+#define ANGELECM                     37
+#define HVY_FERRO_FIBROUS            38
+#define LT_FERRO_FIBROUS             39
+#define BLOODHOUND_PROBE             40
+#define PURIFIER_ARMOR               41
+#define KAGE_STEALTH_UNIT            42
+#define ACHILEUS_STEALTH_UNIT        43
+#define INFILTRATOR_STEALTH_UNIT     44
+#define INFILTRATORII_STEALTH_UNIT   45
+#define SUPERCHARGER                 46
+#define DUAL_SAW                     47
 
-#define LBX2_AMMO		    0
-#define LBX5_AMMO		    1
-#define LBX10_AMMO		    2
-#define LBX20_AMMO		    3
-#define LRM_AMMO		    4
-#define SRM_AMMO		    5
-#define SSRM_AMMO		    6
+#define LBX2_AMMO               0
+#define LBX5_AMMO               1
+#define LBX10_AMMO              2
+#define LBX20_AMMO              3
+#define LRM_AMMO                4
+#define SRM_AMMO                5
+#define SSRM_AMMO               6
 #define NARC_LRM_AMMO		7
 #define NARC_SRM_AMMO		8
 #define NARC_SSRM_AMMO		9
 #define ARTEMIS_LRM_AMMO	10
 #define ARTEMIS_SRM_AMMO	11
-#define ARTEMIS_SSRM_AMMO	12
+#define ARTEMIS_SSRM_AMMO       12
 
 #define PETROLEUM		13
 #define PHOSPHORUS		14
@@ -586,50 +586,50 @@ struct critical_slot {
 };
 
 /* Fire modes */
-#define DESTROYED_MODE		0x00000001	/* the part is destroyed */
-#define DISABLED_MODE		0x00000002	/* the part is disabled */
-#define BROKEN_MODE		0x00000004	/* the part is part of a destroyed weapon/item */
-#define DAMAGED_MODE		0x00000008	/* the part is damaged from an enhanced critical */
-#define ON_TC			0x00000010	/* Set if the wepons mounted with TC */
-#define REAR_MOUNT		0x00000020	/* set if weapon is rear mounted */
-#define HOTLOAD_MODE		0x00000040	/* Weapon's being hotloaded */
-#define HALFTON_MODE		0x00000080	/* Weapon is in halfton mode */
-#define OS_MODE			0x00000100	/* In weapon itself : Weapon's one-shot */
-#define OS_USED			0x00000200	/* One-shot ammo _has_ been already used */
-#define ULTRA_MODE		0x00000400	/* set if weapon is in Ultra firing mode */
-#define RFAC_MODE		0x00000800	/* the weapon is set as a rapid fire AC */
-#define GATTLING_MODE		0x00001000	/* For Gattling MGs */
-#define RAC_TWOSHOT_MODE	0x00002000	/* RAC in two shot mode */
-#define RAC_FOURSHOT_MODE	0x00004000	/* RAC in four shot mode */
-#define RAC_SIXSHOT_MODE	0x00008000	/* RAC in six shot mode */
-#define HEAT_MODE		0x00010000	/* Toggle a flamer into heat mode */
-#define WILL_JETTISON_MODE	0x00020000	/* Set if the slot will get destroyed during a backpack jettison (BSuits) */
-#define IS_JETTISONED_MODE	0x00040000	/* Set if the slot has been jettisoned (BSuits) */
-#define OMNI_BASE_MODE		0x00080000	/* Set if the slot part of the base config of an omni mech */
-#define ROCKET_FIRED		0x00100000	/* Set if the slot's rocket launcher has been fired */
+#define DESTROYED_MODE          0x00000001  /* the part is destroyed */
+#define DISABLED_MODE           0x00000002  /* the part is disabled */
+#define BROKEN_MODE             0x00000004  /* the part is part of a destroyed weapon/item */
+#define DAMAGED_MODE            0x00000008  /* the part is damaged from an enhanced critical */
+#define ON_TC                   0x00000010  /* (T) Set if the wepons mounted with TC */
+#define REAR_MOUNT              0x00000020  /* (R) set if weapon is rear mounted */
+#define HOTLOAD_MODE            0x00000040  /* (H) Weapon's being hotloaded */
+#define HALFTON_MODE            0x00000080  /* Weapon is in halfton mode */
+#define OS_MODE                 0x00000100  /* (O) In weapon itself : Weapon's one-shot */
+#define OS_USED                 0x00000200  /* One-shot ammo _has_ been already used */
+#define ULTRA_MODE              0x00000400  /* (U) set if weapon is in Ultra firing mode */
+#define RFAC_MODE               0x00000800  /* (F) the weapon is set as a rapid fire AC */
+#define GATTLING_MODE           0x00001000  /* (G) For Gattling MGs */
+#define RAC_TWOSHOT_MODE        0x00002000  /* (2) RAC in two shot mode */
+#define RAC_FOURSHOT_MODE       0x00004000  /* (4) RAC in four shot mode */
+#define RAC_SIXSHOT_MODE        0x00008000  /* (6) RAC in six shot mode */
+#define HEAT_MODE               0x00010000  /* (H) Toggle a flamer into heat mode */
+#define WILL_JETTISON_MODE      0x00020000  /* Set if the slot will get destroyed during a backpack jettison (BSuits) */
+#define IS_JETTISONED_MODE      0x00040000  /* Set if the slot has been jettisoned (BSuits) */
+#define OMNI_BASE_MODE          0x00080000  /* Set if the slot part of the base config of an omni mech */
+#define ROCKET_FIRED            0x00100000  /* Set if the slot's rocket launcher has been fired */
 
 #define RAC_MODES	(RAC_TWOSHOT_MODE|RAC_FOURSHOT_MODE|RAC_SIXSHOT_MODE)
 #define FIRE_MODES	(HOTLOAD_MODE|ULTRA_MODE|RFAC_MODE|GATTLING_MODE|RAC_MODES|HEAT_MODE)
 
 /* Ammo modes */
-#define LBX_MODE		0x00000001	/* set if weapon is firing LBX ammo */
-#define ARTEMIS_MODE		0x00000002	/* artemis compatible missiles/laucher */
-#define NARC_MODE		0x00000004	/* narc compatible missiles/launcher */
-#define CLUSTER_MODE		0x00000008	/* Set if weapon is firing cluster ammo */
-#define MINE_MODE		0x00000010	/* Set if weapon's firing mines */
-#define SMOKE_MODE		0x00000020	/* Set if weapon's firing smoke rounds */
-#define INFERNO_MODE		0x00000040	/* SRM's loaded with Inferno rounds (cause heat) */
-#define SWARM_MODE		0x00000080	/* LRM's loaded with Swarm rounds */
-#define SWARM1_MODE		0x00000100	/* LRM's loaded with Swarm1 rounds (FoF) */
-#define INARC_EXPLO_MODE	0x00000200	/* inarc launcher firing explosive pods */
-#define INARC_HAYWIRE_MODE	0x00000400	/* inarc launcher firing haywire pods */
-#define INARC_ECM_MODE		0x00000800	/* inarc launcher firing ecm pods */
-#define INARC_NEMESIS_MODE	0x00001000	/* inarc launcher firing nemesis pods */
-#define AC_AP_MODE		0x00002000	/* autocannon firing armor piercing rounds */
-#define AC_FLECHETTE_MODE	0x00004000	/* autocannon firing flechette rounds */
-#define AC_INCENDIARY_MODE	0x00008000	/* autocannon firing incendiary rounds */
-#define AC_PRECISION_MODE	0x00010000	/* autocannon firing precision rounds */
-#define STINGER_MODE            0x00020000      /* AntiAir LRM */
+#define LBX_MODE                0x00000001  /* (L) set if weapon is firing LBX ammo */
+#define ARTEMIS_MODE            0x00000002  /* (A) artemis compatible missiles/laucher */
+#define NARC_MODE               0x00000004  /* (N) narc compatible missiles/launcher */
+#define CLUSTER_MODE            0x00000008  /* (C) Set if weapon is firing cluster ammo */
+#define MINE_MODE               0x00000010  /* (M) Set if weapon's firing mines */
+#define SMOKE_MODE              0x00000020  /* (S) Set if weapon's firing smoke rounds */
+#define INFERNO_MODE            0x00000040  /* (I) SRM's loaded with Inferno rounds (cause heat) */
+#define SWARM_MODE              0x00000080  /* (W) LRM's loaded with Swarm rounds */
+#define SWARM1_MODE             0x00000100  /* (1) LRM's loaded with Swarm1 rounds (FoF) */
+#define INARC_EXPLO_MODE        0x00000200  /* (X) inarc launcher firing explosive pods */
+#define INARC_HAYWIRE_MODE      0x00000400  /* (Y) inarc launcher firing haywire pods */
+#define INARC_ECM_MODE          0x00000800  /* (E) inarc launcher firing ecm pods */
+#define INARC_NEMESIS_MODE      0x00001000  /* (Z) inarc launcher firing nemesis pods */
+#define AC_AP_MODE              0x00002000  /* (R) autocannon firing armor piercing rounds */
+#define AC_FLECHETTE_MODE       0x00004000  /* (F) autocannon firing flechette rounds */
+#define AC_INCENDIARY_MODE      0x00008000  /* (D) autocannon firing incendiary rounds */
+#define AC_PRECISION_MODE       0x00010000  /* (P) autocannon firing precision rounds */
+#define STINGER_MODE            0x00020000  /* (T) AntiAir LRM */
 
 #define ARTILLERY_MODES		(CLUSTER_MODE|MINE_MODE|SMOKE_MODE)
 #define INARC_MODES		(INARC_EXPLO_MODE|INARC_HAYWIRE_MODE|INARC_ECM_MODE|INARC_NEMESIS_MODE)
