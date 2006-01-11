@@ -216,7 +216,7 @@ void log_printf(char *format, ...) {
     va_end(ap);
     
     strip_ansi_r(stripped_buffer, buffer, LBUF_SIZE);
-    fprintf(stderr, stripped_buffer);
+    fprintf(stderr, "%s\n", stripped_buffer);
 }
 
 /*
