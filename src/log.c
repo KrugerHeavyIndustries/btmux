@@ -206,6 +206,19 @@ void log_text(char *text)
     fprintf(stderr, "%s", strip_ansi(text));
 }
 
+void log_printf(char *format, ...) {
+    char buffer[LBUF_SIZE];
+    char stripped_buffer[LBUF_SIZE];
+    va_list ap;
+
+    va_start ap;
+    vsnprintf(buffer, LBUF_SIZE, format, ap);
+    va_end(ap);
+    
+    strip_ansi_r(stripped_buffer, buffer, LBUF_SIZE);
+    fprintf(stderr, stripped_buffer);
+}
+
 /*
  * Write a number to log file.
  */
