@@ -1527,7 +1527,10 @@ void LandMech(MECH * mech)
 	if (!dfa)
 	    mech_notify(mech, MECHALL, "You finish your jump.");
 
-	if (Staggering(mech)) {
+        /* Better reset the FZ */
+        MechFZ(mech) = ZSCALE * MechZ(mech);
+	
+        if (Staggering(mech)) {
 	    mech_notify(mech, MECHALL,
 		"The damage you've taken makes the landing a bit harder...");
 
