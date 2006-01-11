@@ -159,6 +159,7 @@ btonline-btechmux 0.6:
 	  4 unit tons. (Greg)
         * Added the graball() function, the 'all' version of grab() (Power_Shaper)
         * Added FASA Inferno Penalties for heat (Fitz + Power_Shaper)
+        * Hotloaded LRMs jam on roll of 2 or 3 (Power_Shaper)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)

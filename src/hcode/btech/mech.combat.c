@@ -1036,6 +1036,16 @@ void FireWeapon(MECH * mech,
     }
     }
 
+    /* Hotload LRM jams on 2 or 3 */
+    if (GetPartFireMode(mech, section, critical) & HOTLOAD_MODE) {
+        if (roll == 2 || roll == 3) {
+            mech_printf(mech, MECHALL,"%%ch%%crThe ammo loading mechanism jams on your %s!%%cn", 
+            &(MechWeapons[weapindx].name[3]));
+            SetPartTempNuke(mech, section, critical, FAIL_AMMOJAMMED);
+            return;
+        }
+    }
+
     /* Check for RFAC explosion/jams */
     if (GetPartFireMode(mech, section, critical) & RFAC_MODE) {
     if (roll == 2) {
