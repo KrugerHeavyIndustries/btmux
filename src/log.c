@@ -211,7 +211,7 @@ void log_printf(char *format, ...) {
     char stripped_buffer[LBUF_SIZE];
     va_list ap;
 
-    va_start ap;
+    va_start(ap, format);
     vsnprintf(buffer, LBUF_SIZE, format, ap);
     va_end(ap);
     
