@@ -545,7 +545,9 @@ int FireWeaponNumber(dbref player,
                                 "That target is not in your direct line of sight, and "
                                 "you cannot fire your IDF weapons underground!");
                     }
-
+                    if (mudconf.btech_idf_requires_spotter && (MechWeapons[weaptype].special & IDF) && (MechSpotter(mech) == -1))
+			    DOCHECK0(!LOS, "That target is not in your direct line of sight"
+					    " and you do not have a spotter set!!");
                 } else {
 
                     /* default target is a hex */
