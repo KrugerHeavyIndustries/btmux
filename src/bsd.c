@@ -344,13 +344,13 @@ void mux_release_socket() {
 #endif
 }
 
-static int eradicate_broken_fd(void)
+int eradicate_broken_fd(int fd)
 {
     struct stat statbuf;
     DESC *d;
 
     DESC_ITER_ALL(d) {
-        if (fstat(d->descriptor, &statbuf) < 0) {
+        if (d->descriptor == fd) {
             /* An invalid player connection... eject, eject, eject. */
             STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
                 log_text("Broken descriptor ");
@@ -458,8 +458,6 @@ void shovechars(int port) {
     dprintk("shovechars starting, ipv6 sock is %d.", mux_bound_socket);
 #endif
     
-    signal(SIGPIPE, SIG_IGN);
-
     if(mux_bound_socket < 0) {
         mux_bound_socket = bind_mux_socket(port);
     }
@@ -849,7 +847,6 @@ int process_input(DESC *d) {
         if(errno == EINTR) return 1;
         else return 0;
     }
-
     buf[got] = 0;
     if (!d->raw_input) {
         d->raw_input = (CBLK *) alloc_lbuf("process_input.raw");
@@ -964,278 +961,3 @@ void emergency_shutdown(void)
 {
     close_sockets(1, (char *) "Going down - Bye.\n");
 }
-
-
-/*
- * ---------------------------------------------------------------------------
- * * Signal handling routines.
- */
-
-#ifndef SIGCHLD
-#define SIGCHLD SIGCLD
-#endif
-
-#ifdef HAVE_STRUCT_SIGCONTEXT
-static RETSIGTYPE sighandler(int, int, struct sigcontext);
-#else
-static RETSIGTYPE sighandler(int);
-#endif
-
-/* *INDENT-OFF* */
-
-NAMETAB sigactions_nametab[] = {
-    {(char *)"exit",	3,	0,	SA_EXIT},
-    {(char *)"default",	1,	0,	SA_DFLT},
-    { NULL,			0,	0,	0}};
-
-/* *INDENT-ON* */
-
-void set_signals(void)
-{
-#if 0
-    signal(SIGALRM, sighandler);
-#endif
-    signal(SIGCHLD, sighandler);
-#if 0
-    signal(SIGHUP, sighandler);
-    signal(SIGINT, sighandler);
-    signal(SIGQUIT, sighandler);
-    signal(SIGTERM, sighandler);
-#endif
-    signal(SIGPIPE, SIG_IGN);
-#if 0
-    signal(SIGUSR1, sighandler);
-    signal(SIGUSR2, sighandler);
-    signal(SIGTRAP, sighandler);
-#ifdef SIGXCPU
-    signal(SIGXCPU, sighandler);
-#endif
-
-    signal(SIGILL, sighandler);
-#ifdef __linux__
-    signal(SIGFPE, SIG_IGN);
-#else
-    signal(SIGFPE, sighandler);
-#endif
-    signal(SIGSEGV, sighandler);
-    signal(SIGABRT, sighandler);
-#ifdef SIGFSZ
-    signal(SIGXFSZ, sighandler);
-#endif
-#ifdef SIGEMT
-    signal(SIGEMT, sighandler);
-#endif
-#ifdef SIGBUS
-    signal(SIGBUS, sighandler);
-#endif
-#ifdef SIGSYS
-    signal(SIGSYS, sighandler);
-#endif
-#endif
-}
-
-static void unset_signals()
-{
-    int i;
-
-    for (i = 0; i < NSIG; i++)
-        signal(i, SIG_DFL);
-    abort();
-}
-
-static void check_panicking(int sig) {
-    int i;
-
-    /*
-     * If we are panicking, turn off signal catching and resignal 
-     */
-
-    if (mudstate.panicking) {
-        for (i = 0; i < NSIG; i++)
-            signal(i, SIG_DFL);
-        kill(getpid(), sig);
-    }
-    mudstate.panicking = 1;
-}
-
-void log_signal(const char *signame) {
-    STARTLOG(LOG_PROBLEMS, "SIG", "CATCH") {
-        log_text((char *) "Caught signal ");
-        log_text((char *) signame);
-        ENDLOG;
-    }
-}
-
-
-void log_commands(int sig)
-{
-}
-
-#ifdef HAVE_STRUCT_SIGCONTEXT
-static RETSIGTYPE sighandler(sig, code, scp)
-    int sig;
-    int code;
-    struct sigcontext *scp;
-
-#else
-static RETSIGTYPE sighandler(sig)
-    int sig;
-
-#endif
-{
-#ifdef SYS_SIGLIST_DECLARED
-#define signames sys_siglist
-#else
-    static const char *signames[] = {
-        "SIGZERO", "SIGHUP", "SIGINT", "SIGQUIT",
-        "SIGILL", "SIGTRAP", "SIGABRT", "SIGEMT",
-        "SIGFPE", "SIGKILL", "SIGBUS", "SIGSEGV",
-        "SIGSYS", "SIGPIPE", "SIGALRM", "SIGTERM",
-        "SIGURG", "SIGSTOP", "SIGTSTP", "SIGCONT",
-        "SIGCHLD", "SIGTTIN", "SIGTTOU", "SIGIO",
-        "SIGXCPU", "SIGXFSZ", "SIGVTALRM", "SIGPROF",
-        "SIGWINCH", "SIGLOST", "SIGUSR1", "SIGUSR2"
-    };
-
-#endif
-
-    char buff[32];
-
-#ifdef HAVE_UNION_WAIT
-    union wait stat = {0};
-
-#else
-    int stat;
-
-#endif
-
-    switch (sig) {
-        case SIGUSR1:
-            do_restart(1, 1, 0);
-            break;
-        case SIGALRM:		/*
-                             * Timer 
-                             */
-            mudstate.alarm_triggered = 1;
-            break;
-        case SIGCHLD:		/*
-                             * Change in child status 
-                             */
-#ifndef SIGNAL_SIGCHLD_BRAINDAMAGE
-            signal(SIGCHLD, sighandler);
-#endif
-#ifdef HAVE_WAIT3
-            while (wait3(&stat, WNOHANG, NULL) > 0);
-#else
-            wait(&stat);
-#endif
-            /* Did the child exit? */
-
-            if (WEXITSTATUS(stat) == 8)
-                exit(0);
-
-            mudstate.dumping = 0;
-            break;
-        case SIGHUP:		/*
-                             * Perform a database dump 
-                             */
-            log_signal(signames[sig]);
-            mudstate.dump_counter = 0;
-            break;
-        case SIGINT:		/*
-                             * Log + ignore 
-                             */
-            log_signal(signames[sig]);
-            break;
-        case SIGQUIT:		/*
-                             * Normal shutdown 
-                             */
-        case SIGTERM:
-#ifdef SIGXCPU
-        case SIGXCPU:
-#endif
-            check_panicking(sig);
-            log_signal(signames[sig]);
-            log_commands(sig);
-            sprintf(buff, "Caught signal %s, exiting.", signames[sig]);
-            raw_broadcast(0, buff);
-            dump_database_internal(DUMP_KILLED);
-            exit(0);
-            break;
-        case SIGILL:		/*
-                             * Panic save + restart 
-                             */
-        case SIGFPE:
-        case SIGSEGV:
-        case SIGTRAP:
-#ifdef SIGXFSZ
-        case SIGXFSZ:
-#endif
-#ifdef SIGEMT
-        case SIGEMT:
-#endif
-#ifdef SIGBUS
-        case SIGBUS:
-#endif
-#ifdef SIGSYS
-        case SIGSYS:
-#endif
-            /*
-             * Try our best to dump a core first 
-             */
-            if (!fork()) {
-                unset_signals();
-                return;
-            }
-            check_panicking(sig);
-            log_signal(signames[sig]);
-            report();
-            if (mudconf.sig_action != SA_EXIT) {
-                char outdb[128];
-                char indb[128];
-
-                log_commands(sig);
-                raw_broadcast(0,
-                        "Game: Fatal signal %s caught, restarting with previous database.",
-                        signames[sig]);
-
-                /* Don't sync first. Using older db. */
-
-                dump_database_internal(DUMP_CRASHED);
-
-                shutdown_services();
-                
-                if (mudconf.compress_db) {
-                    sprintf(outdb, "%s.Z", mudconf.outdb);
-                    sprintf(indb, "%s.Z", mudconf.indb);
-                    rename(outdb, indb);
-                } else {
-                    rename(mudconf.outdb, mudconf.indb);
-                }
-                if (mudconf.have_specials)
-                    ChangeSpecialObjects(0);
-                dump_restart_db();
-                execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
-                break;
-            } else {
-                unset_signals();
-                signal(sig, SIG_DFL);
-                exit(1);
-            }
-        case SIGABRT:		/*
-                             * Coredump. 
-                             */
-            check_panicking(sig);
-            log_signal(signames[sig]);
-            report();
-
-            unset_signals();
-            signal(sig, SIG_DFL);
-            exit(1);
-
-    }
-    signal(sig, sighandler);
-    mudstate.panicking = 0;
-    return;
-}
-

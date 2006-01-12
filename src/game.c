@@ -1393,7 +1393,7 @@ int main(int argc, char *argv[]) {
     /* initialize random.. */
     srandom(getpid());
     /* set singnals.. */
-    set_signals();
+    bind_signals();
 
     /*
      * Do a consistency check and set up the freelist 

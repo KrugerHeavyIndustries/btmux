@@ -74,6 +74,7 @@ extern int get_gender(dbref);
 extern void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int);
 
 /* From game.c */
+extern void do_shutdown(dbref, dbref, int, char *);
 #define	notify(p,m)			notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
 #define notify_html(p,m)                notify_checked(p,p,m, \
@@ -111,6 +112,10 @@ extern int html_escape(const char *src, char *dest, char **destp);
 /* From bsd.c */
 void shutdown_services();
 void flush_sockets();
+int eradicate_broken_fd(int);
+
+/* From signal.c */
+void bind_signals();
 
 /* From help.c */
 extern int helpindex_read(HASHTAB *, char *);
