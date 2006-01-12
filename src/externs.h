@@ -127,6 +127,7 @@ extern char *normal_to_white(const char *);
 extern int start_log(const char *, const char *);
 extern void end_log(void);
 extern void log_perror(const char *, const char *, const char *, const char *);
+extern void log_printf(char *, ...);
 extern void log_text(char *);
 extern void log_number(int);
 extern void log_name(dbref);
