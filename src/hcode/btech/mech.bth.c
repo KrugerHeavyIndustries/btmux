@@ -140,8 +140,7 @@ int FindNormalBTH(MECH * mech,
 	    BTHADD("C3iRange", rbth);
 	} else {
 	    wRangeBracket = FindBTHByRange(mech, target, section,
-		weapindx, range, wFireMode, &rbth);
-
+		weapindx, range, wFireMode, wAmmoMode, &rbth);
 	    BTHADD("Range", rbth);
 	}
     }
@@ -424,7 +423,7 @@ int FindArtilleryBTH(MECH * mech,
 }
 
 int FindBTHByRange(MECH * mech, MECH * target, int section,
-    int weapindx, float frange, int mode, int *wBTH)
+    int weapindx, float frange, int firemode, int ammomode, int *wBTH)
 {
     int range;
     int wTargetStealth = 0;
@@ -489,7 +488,7 @@ int FindBTHByRange(MECH * mech, MECH * target, int section,
     }
 
     /* Beyond range */
-    if (range > EGunRange(weapindx)) {
+    if (range > ( (ammomode & STINGER_MODE) ? ( EGunRange(weapindx) +7 ) : (EGunRange(weapindx)))) {
 	*wBTH = 1000;
 	return RANGE_TOFAR;
     }
@@ -527,7 +526,7 @@ int FindBTHByRange(MECH * mech, MECH * target, int section,
 	    *wBTH = 0;
 	    return RANGE_SHORT;
 	} else {
-	    if (!HotLoading(weapindx, mode)) {
+	    if (!HotLoading(weapindx, firemode)) {
 		*wBTH = MechWeapons[weapindx].min - range;
 	    } else {
 		if (mudconf.btech_hotloadaddshalfbthmod)
@@ -541,7 +540,7 @@ int FindBTHByRange(MECH * mech, MECH * target, int section,
     }
 
 
-    if (HotLoading(weapindx, mode)) {
+    if (HotLoading(weapindx, firemode)) {
 	if (mudconf.btech_hotloadaddshalfbthmod)
 	    *wBTH = ((MechWeapons[weapindx].min - range + 1) / 2);
 	else

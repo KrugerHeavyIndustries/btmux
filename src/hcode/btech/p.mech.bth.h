@@ -10,7 +10,7 @@ int FindNormalBTH(MECH * mech, MAP * mech_map, int section, int critical,
 int FindArtilleryBTH(MECH * mech, int section, int weapindx, int indirect,
     float range);
 int FindBTHByRange(MECH * mech, MECH * target, int section,
-    int weapindx, float frange, int mode, int *wBTH);
+    int weapindx, float frange, int firemode, int ammomode,int *wBTH);
 int FindBTHByC3Range(MECH * mech, MECH * target, int section,
     int weapindx, float realRange, float c3Range, int mode, int *wBTH);
 int AttackMovementMods(MECH * mech);
