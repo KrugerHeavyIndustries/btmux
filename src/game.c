@@ -1084,6 +1084,7 @@ void fork_and_dump(int key)
             child = 0;
         }
         if (child == 0) {
+            unbind_signals();
             dump_database_internal(DUMP_NORMAL);
             if (mudconf.fork_dump)
                 _exit(0);

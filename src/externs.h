@@ -117,6 +117,8 @@ int eradicate_broken_fd(int);
 
 /* From signal.c */
 void bind_signals();
+void unbind_signals();
+
 
 /* From help.c */
 int helpindex_read(HASHTAB *, char *);

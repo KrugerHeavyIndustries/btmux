@@ -2208,8 +2208,8 @@ void load_restart_db() {
         d->input_size = 0;
         d->input_tot = 0;
         d->input_lost = 0;
-        d->raw_input = NULL;
         d->raw_input_at = NULL;
+        memset(d->input, 0, sizeof(d->input));
         d->quota = mudconf.cmd_quota_max;
         d->program_data = NULL;
         d->hashnext = NULL;

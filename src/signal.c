@@ -27,23 +27,19 @@ void signal_BUS(int, siginfo_t *, void *);
 
 
 struct sigaction saTERM = { .sa_handler = NULL, .sa_sigaction = signal_TERM,
-    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART,
-    .sa_restorer = NULL, };
+    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
 
 struct sigaction saPIPE = { .sa_handler = NULL, .sa_sigaction = signal_PIPE,
-    .sa_flags = SA_SIGINFO, .sa_restorer = NULL, };
+    .sa_flags = SA_SIGINFO };
 
 struct sigaction saUSR1 = { .sa_handler = NULL, .sa_sigaction = signal_USR1,
-    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART,
-    .sa_restorer = NULL, };
+    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
 
 struct sigaction saSEGV = { .sa_handler = NULL, .sa_sigaction = signal_SEGV,
-    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART,
-    .sa_restorer = NULL, };
+    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
 
 struct sigaction saBUS = { .sa_handler = NULL, .sa_sigaction = signal_BUS,
-    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART,
-    .sa_restorer = NULL, };
+    .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
 
 void bind_signals() {
     sigaction(SIGTERM, &saTERM, NULL);
@@ -51,6 +47,14 @@ void bind_signals() {
     sigaction(SIGUSR1, &saUSR1, NULL);
     sigaction(SIGSEGV, &saSEGV, NULL);
     sigaction(SIGBUS, &saBUS, NULL);
+}
+
+void unbind_signals() {
+    signal(SIGTERM, SIG_DFL);
+    signal(SIGPIPE, SIG_DFL);
+    signal(SIGUSR1, SIG_DFL);
+    signal(SIGSEGV, SIG_DFL);
+    signal(SIGBUS, SIG_DFL);
 }
 
 void signal_TERM(int signo, siginfo_t *siginfo, void *ucontext) {
@@ -76,6 +80,7 @@ void signal_SEGV(int signo, siginfo_t *siginfo, void *ucontext) {
     if(!(child=fork())) {
         dump_restart_db();
         execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
+        abort();
     } else {
         switch(siginfo->si_code) {
             case SEGV_MAPERR:
@@ -93,6 +98,7 @@ void signal_SEGV(int signo, siginfo_t *siginfo, void *ucontext) {
         }
         dump_database_internal(DUMP_CRASHED);
         report();
+        abort();
     }
 }
 

@@ -382,10 +382,8 @@ void freeqs(DESC *d) {
     d->input_head = NULL;
     d->input_tail = NULL;
 
-    if (d->raw_input)
-        free_lbuf(d->raw_input);
-    d->raw_input = NULL;
-    d->raw_input_at = NULL;
+    d->input[0] = '\0';
+    d->raw_input_at = (char *)d->input;
 }
 
 int desc_cmp(void *vleft, void *vright, void *token) {
@@ -1967,20 +1965,20 @@ void run_commands(DESC *d) {
 }
 #endif
 
-void run_command(DESC *d, CBLK *command) {
+void run_command(DESC *d, char *command) {
     if(!Staff(d->player)) {
         if(d->quota <= 0) {
             queue_string(d, "quota exceed, dropping command.\n");
-            dprintk("aborting execution of %s for #%d.", command->cmd, d->player);
+            dprintk("aborting execution of %s for #%d.", command, d->player);
             return;
         }
         d->quota--;
     }
-    d->input_size -= (strlen(command->cmd) + 1);
+    d->input_size -= (strlen(command) + 1);
     if(d->program_data != NULL) 
-        handle_prog(d, command->cmd);
+        handle_prog(d, command);
     else
-        do_command(d, command->cmd, 1);
+        do_command(d, command, 1);
 }
 #if 0
 void process_commands(void) {

@@ -96,7 +96,7 @@ struct descriptor_data {
     int chokes;
     CBLK *input_head;
     CBLK *input_tail;
-    CBLK *raw_input;
+    char *input[LBUF_SIZE];
     char *raw_input_at;
     time_t connected_at;
     time_t last_time;

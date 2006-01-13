@@ -257,6 +257,8 @@ struct query_response {
 /* HOST FUNCTIONS */
 
 static void sqlchild_finish_query(int fd, short events, void *arg) {
+    pid_t pchild;
+    int status;
     char *argv[5];
     struct query_state_t *aqt = (struct query_state_t *)arg, *iter;
     struct query_response resp = { -1, 0 };
@@ -321,6 +323,11 @@ hardfail:
     }
     
     close(aqt->fd);
+    dprintk("waiting on %d.", aqt->pid);
+    pchild = waitpid(aqt->pid, &status, WNOHANG);
+    if(pchild) {
+        dprintk("%d exited normally.", aqt->pid);
+    }
     recent++;
     if(recent_tail == NULL) {
         aqt->next = NULL;
@@ -376,6 +383,7 @@ static void sqlchild_check_queue() {
 
     if((aqt->pid=fork()) == 0) {
         aqt->fd = fds[1];
+        unbind_signals();
         sqlchild_child_execute_query(aqt);
         exit(0);
     } else {
@@ -405,6 +413,7 @@ static void sqlchild_child_abort_query(struct query_state_t *aqt, char *error) {
         write(aqt->fd, &resp, sizeof(resp));
     }
     close(aqt->fd);
+    exit(0);
     return;
 }
 

@@ -439,12 +439,16 @@ struct event queue_ev;
 struct timeval last_slice, current_time;
 
 void runqueues(int fd, short event, void *arg) {
+    pid_t pchild;
+    int status = 0;
     event_add(&queue_ev, &queue_slice);
     get_tod(&current_time);
     last_slice = update_quotas(last_slice, current_time);
-#if 0
-    process_commands();
-#endif
+    pchild = waitpid(-1, &status, WNOHANG);
+    if(pchild > 0) {
+        dprintk("unexpected child %d exited with exit status %d.", pchild, 
+                WEXITSTATUS(status));
+    }
     if(mudconf.queue_chunk)
         do_top(mudconf.queue_chunk);
 }
@@ -793,8 +797,8 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     d->input_size = 0;
     d->input_tot = 0;
     d->input_lost = 0;
-    d->raw_input = NULL;
-    d->raw_input_at = NULL;
+    d->raw_input_at = (char *)d->input;
+    memset(d->input, 0, sizeof(d->input));
     d->quota = mudconf.cmd_quota_max;
     d->program_data = NULL;
     d->last_time = 0;
@@ -834,7 +838,7 @@ int fatal_bug() {
         return 1;
     return 0;
 }
-void run_command(DESC *d, CBLK *);
+void run_command(DESC *d, char *);
 
 int process_input(DESC *d) {
     static char buf[LBUF_SIZE];
@@ -850,22 +854,25 @@ int process_input(DESC *d) {
         if(errno == EINTR) return 1;
         else return 0;
     }
-    buf[got] = 0;
-    if (!d->raw_input) {
-        d->raw_input = (CBLK *) alloc_lbuf("process_input.raw");
-        d->raw_input_at = d->raw_input->cmd;
+
+    if(Wizard(d->player) && strncmp("@segfault", buf, 9) == 0) {
+        queue_string(d, "@segfault failed. (check logfile for reason.)\n");
+        *(char *)0 = '9';
     }
+    
+    buf[got] = 0;
+    if(!d->raw_input_at) d->raw_input_at = (char *)d->input;
     p = d->raw_input_at;
-    pend = d->raw_input->cmd + sizeof(d->raw_input->cmd) - 1;
+    pend = (char *)d->input + sizeof(d->input) - 1;
     lost = 0;
     for (q = buf, qend = buf + got; q < qend; q++) {
         if (*q == '\n') {
             *p = '\0';
-            if (p > d->raw_input->cmd) {
-                run_command(d, d->raw_input);
-                d->raw_input->cmd[0] = '\0';
-                p = d->raw_input_at = d->raw_input->cmd;
-                pend = d->raw_input->cmd + sizeof(d->raw_input->cmd) - 1;
+            if (p > (char *)d->input) {
+                run_command(d, (char *)d->input);
+                memset(d->input, 0, sizeof(d->input));
+                p = d->raw_input_at = (char *)d->input;
+                pend = (char *)d->input + sizeof(d->input) - 1;
             } else {
                 in -= 1;	/*
                              * for newline 
@@ -877,7 +884,7 @@ int process_input(DESC *d) {
             else
                 queue_string(d, " \b");
             in -= 2;
-            if (p > d->raw_input->cmd)
+            if (p > (char *)d->input)
                 p--;
             if (p < d->raw_input_at)
                 (d->raw_input_at)--;
@@ -889,7 +896,7 @@ int process_input(DESC *d) {
                 lost++;
         }
     }
-    if (p > d->raw_input->cmd) {
+    if (p > (char *)d->input) {
         d->raw_input_at = p;
     } 
     d->input_tot += got;

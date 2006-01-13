@@ -211,7 +211,7 @@ install: $(TARGETS)
 	    exit 1; \
 	fi
 	if [ ! -d game.run ]; then \
-	    cp -a game game.run || exit 1; \
+	    cp -pPR game game.run || exit 1; \
 	    chmod -R u+w game.run || exit 1; \
 	fi
 	if [ ! -d game.run/bin ]; then \

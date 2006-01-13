@@ -30,6 +30,7 @@ extern void logged_out(dbref, dbref, int, char *);
 extern void boot_slave(void);
 #ifdef ARBITRARY_LOGFILES
 extern void logcache_init(void);
+void logcache_list(dbref player);
 #endif
 
 #define CACHING "object"
@@ -2403,13 +2404,14 @@ NAMETAB list_names[] = {
     {(char *)"site_information",	2,	CA_WIZARD,	LIST_SITEINFO},
     {(char *)"switches",		2,	CA_PUBLIC,	LIST_SWITCHES},
     {(char *)"user_attributes",	1,	CA_WIZARD,	LIST_VATTRS},
+#ifdef ARBITRARY_LOGFILES
     {(char *)"logfiles", 4, CA_WIZARD, LIST_LOGFILES},
+#endif
     { NULL,				0,	0,		0}};
 
 extern NAMETAB enable_names[];
 extern NAMETAB logoptions_nametab[];
 extern NAMETAB logdata_nametab[];
-void logcache_list(dbref player);
 
 void do_list(dbref player, dbref cause, int extra, char *arg) {
     int flagvalue;
@@ -2479,9 +2481,11 @@ void do_list(dbref player, dbref cause, int extra, char *arg) {
         case LIST_BADNAMES:
             badname_list(player, "Disallowed names:");
             break;
+#ifdef ARBITRARY_LOGFILES
         case LIST_LOGFILES:
             logcache_list(player);
             break;
+#endif
         default:
             display_nametab(player, list_names,
                     (char *) "Unknown option.  Use one of:", 1);
