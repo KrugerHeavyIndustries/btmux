@@ -56,14 +56,11 @@ extern int shutdown_flag;	/* if non-zero, interface should shut down */
 
 extern NAMETAB logout_cmdtable[];
 
-typedef struct cmd_block_hdr CBLKHDR;
 typedef struct cmd_block CBLK;
 
 struct cmd_block {
-    struct cmd_block_hdr {
 	struct cmd_block *nxt;
-    } hdr;
-    char cmd[LBUF_SIZE - sizeof(CBLKHDR)];
+    char cmd[LBUF_SIZE - sizeof(struct cmd_block *)];
 };
 
 typedef struct prog_data PROG;

@@ -374,7 +374,7 @@ void freeqs(DESC *d) {
 
     cb = d->input_head;
     while (cb) {
-        cnext = (CBLK *) cb->hdr.nxt;
+        cnext = (CBLK *) cb->nxt;
         free_lbuf(cb);
         cb = cnext;
     }
@@ -1940,22 +1940,21 @@ dbref find_connected_name(dbref player, char *name) {
     return found;
 }
 
-
+#if 0
 void save_command(DESC *d, CBLK *command) {
-    command->hdr.nxt = NULL;
+    command->nxt = NULL;
     if (d->input_tail == NULL)
         d->input_head = command;
     else
-        d->input_tail->hdr.nxt = command;
+        d->input_tail->nxt = command;
     d->input_tail = command;
 }
-
 void run_commands(DESC *d) {
     CBLK *t;
     while(d->quota > 0 && (t = d->input_head)) {
         if (d->player <= 0 || !Staff(d->player))
             d->quota--;
-        d->input_head = (CBLK *) t->hdr.nxt;
+        d->input_head = (CBLK *) t->nxt;
         if (!d->input_head)
             d->input_tail = NULL;
         d->input_size -= (strlen(t->cmd) + 1);
@@ -1966,7 +1965,24 @@ void run_commands(DESC *d) {
         free_lbuf(t);
     }
 }
+#endif
 
+void run_command(DESC *d, CBLK *command) {
+    if(!Staff(d->player)) {
+        if(d->quota <= 0) {
+            queue_string(d, "quota exceed, dropping command.\n");
+            dprintk("aborting execution of %s for #%d.", command->cmd, d->player);
+            return;
+        }
+        d->quota--;
+    }
+    d->input_size -= (strlen(command->cmd) + 1);
+    if(d->program_data != NULL) 
+        handle_prog(d, command->cmd);
+    else
+        do_command(d, command->cmd, 1);
+}
+#if 0
 void process_commands(void) {
     int nprocessed;
     DESC *d, *dnext;
@@ -1983,7 +1999,7 @@ void process_commands(void) {
                 if (d->player <= 0 || !Staff(d->player))
                     d->quota--;
                 nprocessed++;
-                d->input_head = (CBLK *) t->hdr.nxt;
+                d->input_head = (CBLK *) t->nxt;
                 if (!d->input_head)
                     d->input_tail = NULL;
                 d->input_size -= (strlen(t->cmd) + 1);
@@ -1997,4 +2013,4 @@ void process_commands(void) {
     } while (nprocessed > 0);
     mudstate.debug_cmd = cmdsave;
 }
-
+#endif 

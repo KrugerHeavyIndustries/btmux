@@ -60,7 +60,11 @@ void signal_TERM(int signo, siginfo_t *siginfo, void *ucontext) {
 
 void signal_PIPE(int signo, siginfo_t *siginfo, void *ucontext) {
     dprintk(".");
+#ifdef HAVE_SIGINFO_T_SI_FD
     eradicate_broken_fd(siginfo->si_fd);
+#else
+    eradicate_broken_fd(-1);
+#endif
 }
 
 void signal_USR1(int signo, siginfo_t *siginfo, void *ucontext) {

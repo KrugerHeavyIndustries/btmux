@@ -350,7 +350,8 @@ int eradicate_broken_fd(int fd)
     DESC *d;
 
     DESC_ITER_ALL(d) {
-        if (d->descriptor == fd) {
+        if ( (fd && d->descriptor == fd) ||
+             (!fd && fstat(d->descriptor, &statbuf) < 0)) {
             /* An invalid player connection... eject, eject, eject. */
             STARTLOG(LOG_PROBLEMS, "ERR", "EBADF") {
                 log_text("Broken descriptor ");
@@ -441,7 +442,9 @@ void runqueues(int fd, short event, void *arg) {
     event_add(&queue_ev, &queue_slice);
     get_tod(&current_time);
     last_slice = update_quotas(last_slice, current_time);
+#if 0
     process_commands();
+#endif
     if(mudconf.queue_chunk)
         do_top(mudconf.queue_chunk);
 }
@@ -831,7 +834,7 @@ int fatal_bug() {
         return 1;
     return 0;
 }
-void run_commands(DESC *d);
+void run_command(DESC *d, CBLK *);
 
 int process_input(DESC *d) {
     static char buf[LBUF_SIZE];
@@ -853,17 +856,16 @@ int process_input(DESC *d) {
         d->raw_input_at = d->raw_input->cmd;
     }
     p = d->raw_input_at;
-    pend = d->raw_input->cmd + LBUF_SIZE - sizeof(CBLKHDR) - 1;
+    pend = d->raw_input->cmd + sizeof(d->raw_input->cmd) - 1;
     lost = 0;
     for (q = buf, qend = buf + got; q < qend; q++) {
         if (*q == '\n') {
             *p = '\0';
             if (p > d->raw_input->cmd) {
-                save_command(d, d->raw_input);
-                d->raw_input = (CBLK *) alloc_lbuf("process_input.raw");
-
+                run_command(d, d->raw_input);
+                d->raw_input->cmd[0] = '\0';
                 p = d->raw_input_at = d->raw_input->cmd;
-                pend = d->raw_input->cmd + LBUF_SIZE - sizeof(CBLKHDR) - 1;
+                pend = d->raw_input->cmd + sizeof(d->raw_input->cmd) - 1;
             } else {
                 in -= 1;	/*
                              * for newline 
@@ -889,16 +891,11 @@ int process_input(DESC *d) {
     }
     if (p > d->raw_input->cmd) {
         d->raw_input_at = p;
-    } else {
-        free_lbuf(d->raw_input);
-        d->raw_input = NULL;
-        d->raw_input_at = NULL;
-    }
+    } 
     d->input_tot += got;
     d->input_size += in;
     d->input_lost += lost;
 
-    run_commands(d);
     mudstate.debug_cmd = cmdsave;
     return 1;
 }

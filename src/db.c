@@ -2082,7 +2082,7 @@ void toast_player(dbref player)
  * ---------------------------------------------------------------------------
  * * dump_restart_db: Writes out socket information.
  */
-void dump_restart_db()
+void dump_restart_db(void)
 {
     FILE *f;
     DESC *d;
