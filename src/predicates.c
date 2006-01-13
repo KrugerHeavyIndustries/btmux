@@ -1031,7 +1031,7 @@ void do_prog(dbref player, dbref cause, int key, char *name, char *command)
  */
 void do_restart(dbref player, dbref cause, int key)
 {
-    if (mudstate.dumping) {
+    if (key && mudstate.dumping) {
         notify(player, "Dumping. Please try again later.");
         return;
     }

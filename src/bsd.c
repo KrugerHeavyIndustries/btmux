@@ -792,8 +792,6 @@ DESC *initializesock(int s, struct sockaddr_in *a) {
     d->output_size = 0;
     d->output_tot = 0;
     d->output_lost = 0;
-    d->input_head = NULL;
-    d->input_tail = NULL;
     d->input_size = 0;
     d->input_tot = 0;
     d->input_lost = 0;

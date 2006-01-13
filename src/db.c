@@ -2199,12 +2199,6 @@ void load_restart_db() {
         d->output_size = 0;
         d->output_tot = 0;
         d->output_lost = 0;
-#if 0
-        d->output_head = NULL;
-        d->output_tail = NULL;
-#endif
-        d->input_head = NULL;
-        d->input_tail = NULL;
         d->input_size = 0;
         d->input_tot = 0;
         d->input_lost = 0;

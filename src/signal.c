@@ -80,7 +80,6 @@ void signal_SEGV(int signo, siginfo_t *siginfo, void *ucontext) {
     if(!(child=fork())) {
         dump_restart_db();
         execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
-        abort();
     } else {
         switch(siginfo->si_code) {
             case SEGV_MAPERR:
@@ -98,7 +97,6 @@ void signal_SEGV(int signo, siginfo_t *siginfo, void *ucontext) {
         }
         dump_database_internal(DUMP_CRASHED);
         report();
-        abort();
     }
 }
 

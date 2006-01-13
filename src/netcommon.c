@@ -372,16 +372,6 @@ void queue_string(DESC *d, const char *s) {
 void freeqs(DESC *d) {
     CBLK *cb, *cnext;
 
-    cb = d->input_head;
-    while (cb) {
-        cnext = (CBLK *) cb->nxt;
-        free_lbuf(cb);
-        cb = cnext;
-    }
-
-    d->input_head = NULL;
-    d->input_tail = NULL;
-
     d->input[0] = '\0';
     d->raw_input_at = (char *)d->input;
 }
@@ -1938,33 +1928,6 @@ dbref find_connected_name(dbref player, char *name) {
     return found;
 }
 
-#if 0
-void save_command(DESC *d, CBLK *command) {
-    command->nxt = NULL;
-    if (d->input_tail == NULL)
-        d->input_head = command;
-    else
-        d->input_tail->nxt = command;
-    d->input_tail = command;
-}
-void run_commands(DESC *d) {
-    CBLK *t;
-    while(d->quota > 0 && (t = d->input_head)) {
-        if (d->player <= 0 || !Staff(d->player))
-            d->quota--;
-        d->input_head = (CBLK *) t->nxt;
-        if (!d->input_head)
-            d->input_tail = NULL;
-        d->input_size -= (strlen(t->cmd) + 1);
-        if (d->program_data != NULL)
-            handle_prog(d, t->cmd);
-        else
-            do_command(d, t->cmd, 1);
-        free_lbuf(t);
-    }
-}
-#endif
-
 void run_command(DESC *d, char *command) {
     if(!Staff(d->player)) {
         if(d->quota <= 0) {
@@ -1980,35 +1943,4 @@ void run_command(DESC *d, char *command) {
     else
         do_command(d, command, 1);
 }
-#if 0
-void process_commands(void) {
-    int nprocessed;
-    DESC *d, *dnext;
-    CBLK *t;
-    char *cmdsave;
 
-    cmdsave = mudstate.debug_cmd;
-    mudstate.debug_cmd = (char *) "process_commands";
-
-    do {
-        nprocessed = 0;
-        DESC_SAFEITER_ALL(d, dnext) {
-            if (d->quota > 0 && (t = d->input_head)) {
-                if (d->player <= 0 || !Staff(d->player))
-                    d->quota--;
-                nprocessed++;
-                d->input_head = (CBLK *) t->nxt;
-                if (!d->input_head)
-                    d->input_tail = NULL;
-                d->input_size -= (strlen(t->cmd) + 1);
-                if (d->program_data != NULL)
-                    handle_prog(d, t->cmd);
-                else
-                    do_command(d, t->cmd, 1);
-                free_lbuf(t);
-            }
-        }
-    } while (nprocessed > 0);
-    mudstate.debug_cmd = cmdsave;
-}
-#endif 

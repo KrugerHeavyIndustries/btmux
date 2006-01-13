@@ -94,8 +94,6 @@ struct descriptor_data {
     int input_tot;
     int input_lost;
     int chokes;
-    CBLK *input_head;
-    CBLK *input_tail;
     char *input[LBUF_SIZE];
     char *raw_input_at;
     time_t connected_at;

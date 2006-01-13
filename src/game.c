@@ -1031,16 +1031,16 @@ void dump_database(void)
     buff = alloc_mbuf("dump_database");
     sprintf(buff, "%s.#%d#", mudconf.outdb, mudstate.epoch);
     STARTLOG(LOG_DBSAVES, "DMP", "DUMP") {
-	log_text((char *) "Dumping: ");
-	log_text(buff);
-	ENDLOG;
+        log_text((char *) "Dumping: ");
+        log_text(buff);
+        ENDLOG;
     } pcache_sync();
 
     dump_database_internal(DUMP_NORMAL);
     STARTLOG(LOG_DBSAVES, "DMP", "DONE") {
-	log_text((char *) "Dump complete: ");
-	log_text(buff);
-	ENDLOG;
+        log_text((char *) "Dump complete: ");
+        log_text(buff);
+        ENDLOG;
     } free_mbuf(buff);
 
     mudstate.dumping = 0;
@@ -1048,7 +1048,6 @@ void dump_database(void)
 
 void fork_and_dump(int key)
 {
-    int child;
     char *buff;
 
     if (*mudconf.dump_msg)
@@ -1074,27 +1073,15 @@ void fork_and_dump(int key)
     if (!key || (key & DUMP_TEXT))
         pcache_sync();
     if (!key || (key & DUMP_STRUCT)) {
-        if (mudconf.fork_dump) {
-            if (mudconf.fork_vfork) {
-                child = vfork();
-            } else {
-                child = fork();
-            }
-        } else {
-            child = 0;
-        }
-        if (child == 0) {
+        if (fork()) {
             unbind_signals();
             dump_database_internal(DUMP_NORMAL);
             if (mudconf.fork_dump)
                 _exit(0);
-        } else if (child < 0) {
-            log_perror("DMP", "FORK", NULL, "fork()");
-        }
+        } 
     }
 
-    if (!mudconf.fork_dump)
-        mudstate.dumping = 0;
+    mudstate.dumping = 0;
 
     if (*mudconf.postdump_msg)
         raw_broadcast(0, "%s", mudconf.postdump_msg);
