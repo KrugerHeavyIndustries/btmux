@@ -843,6 +843,7 @@ int auto_get_command_enum(AUTO *autopilot, int command_number) {
 void auto_newautopilot(dbref key, void **data, int selector) {
     
     AUTO *autopilot = *data;
+    MECH *mech = autopilot->mymech;
     command_node *temp;
     int i;
 
@@ -900,6 +901,17 @@ void auto_newautopilot(dbref key, void **data, int selector) {
 
             /* Destroy weaponlist */
             auto_destroy_weaplist(autopilot);
+
+            /* Finally reset the AI value on its unit if
+             * it needs to */
+            if (mech && IsMech(mech->mynum)) {
+
+                /* Just incase another AI has taken over */
+                if (MechAuto(mech) == autopilot->mynum) {
+                    MechAuto(mech) = -1;
+                }
+
+            }
 
             break;
 
