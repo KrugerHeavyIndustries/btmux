@@ -160,6 +160,7 @@ btonline-btechmux 0.6:
         * Added the graball() function, the 'all' version of grab() (Power_Shaper)
         * Added FASA Inferno Penalties for heat (Fitz + Power_Shaper)
         * Hotloaded LRMs jam on roll of 2 or 3 (Power_Shaper)
+	* BattletechMUX should now compile just fine on Mac OS X. (Dany/Darrenb)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
