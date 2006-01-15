@@ -193,7 +193,7 @@ int *hash_nextentry(RBTAB *htab) {
         return hash_firstentry(htab);
     }
     
-    ent = rb_search(htab->tree, SEARCH_NEXT, htab->last);
+    ent = rb_search(htab->tree, SEARCH_GT, htab->last);
     free(htab->last);
 
     if(ent) {
