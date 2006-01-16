@@ -113,7 +113,10 @@ int list_check(dbref, dbref, char, char *, int);
 int html_escape(const char *src, char *dest, char **destp);
 
 /* From dnschild.c */
-int dnschild_request(DESC *d);
+int dnschild_init();
+void *dnschild_request(DESC *d);
+void dnschild_destruct();
+void dnschild_kill(void *);
 
 /* From bsd.c */
 void shutdown_services();

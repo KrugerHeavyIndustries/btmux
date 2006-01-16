@@ -73,6 +73,7 @@ void set_lastsite(DESC * d, char *lastsite)
 }
 
 void shutdown_services() {
+    dnschild_destruct();
     flush_sockets();
 #ifdef SQL_SUPPORT
     sqlchild_destruct();
@@ -258,7 +259,8 @@ void accept_new_connection(int sock, short event, void *arg) {
     if (newsock < 0)
         return;
 
-    getnameinfo(&addr, addr_len, addrname, 1024, addrport, 32, NI_NUMERICHOST | NI_NUMERICSERV);
+    getnameinfo((struct sockaddr *)&addr, addr_len, 
+            addrname, 1024, addrport, 32, NI_NUMERICHOST | NI_NUMERICSERV);
 
     if (site_check(&addr, addr_len, mudstate.access_list) == H_FORBIDDEN) {
         log_error(LOG_NET | LOG_SECURITY, "NET", "SITE", "Connection refused from %s %s.",
@@ -319,11 +321,13 @@ void shutdownsock(DESC *d, int reason) {
     DESC *dtemp;
 
     if ((reason == R_LOGOUT) &&
-            (site_check(&d->address, d->saddr_len, 
+            (site_check(&d->saddr, d->saddr_len, 
                         mudstate.access_list) == H_FORBIDDEN))
         reason = R_QUIT;
 
     if (d->flags & DS_CONNECTED) {
+        if(d->outstanding_dnschild_query)
+            dnschild_kill(d->outstanding_dnschild_query);
 
         /*
          * Do the disconnect stuff if we aren't doing a LOGOUT * * *
@@ -375,8 +379,8 @@ void shutdownsock(DESC *d, int reason) {
         d->quota = mudconf.cmd_quota_max;
         d->last_time = 0;
         d->host_info =
-            site_check(&d->address, d->saddr_len, mudstate.access_list) | 
-            site_check(&d->address, d->saddr_len, mudstate.suspect_list);
+            site_check(&d->saddr, d->saddr_len, mudstate.access_list) | 
+            site_check(&d->saddr, d->saddr_len, mudstate.suspect_list);
         d->input_tot = d->input_size;
         d->output_tot = 0;
         welcome_user(d);
@@ -483,7 +487,7 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len) {
     d->quota = mudconf.cmd_quota_max;
     d->program_data = NULL;
     d->last_time = 0;
-    memcpy(&d->address, saddr, saddr_len);
+    memcpy(&d->saddr, saddr, saddr_len);
     d->saddr_len = saddr_len;
 
     if (descriptor_list)
@@ -494,7 +498,7 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len) {
     getnameinfo((struct sockaddr *)saddr, saddr_len, d->addr, sizeof(d->addr), NULL, 0, NI_NUMERICHOST);
     descriptor_list = d;
 
-    dnschild_request(d);
+    d->outstanding_dnschild_query = dnschild_request(d);
 
     d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
             bsd_read_callback, bsd_error_callback, NULL);
@@ -615,6 +619,8 @@ void close_sockets(int emergency, char *message) {
                     d->sock_buff->output->totallen,
                     d->sock_buff->output->off);
             fsync(d->descriptor);
+            if(d->outstanding_dnschild_query)
+                dnschild_kill(d->outstanding_dnschild_query);
             event_loop(EVLOOP_ONCE);
             event_del(&d->sock_ev);
             bufferevent_free(d->sock_buff);

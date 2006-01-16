@@ -1411,6 +1411,8 @@ int main(int argc, char *argv[]) {
 
     mudstate.now = time(NULL);
     process_preload();
+    
+    dnschild_init();
 
     load_restart_db();
 
@@ -1418,6 +1420,7 @@ int main(int argc, char *argv[]) {
     sqlchild_init();
 #endif
 
+    
 #ifdef ARBITRARY_LOGFILES
     logcache_init();
 #endif

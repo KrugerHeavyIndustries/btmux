@@ -2187,6 +2187,7 @@ void load_restart_db() {
         }
 
         strcpy(d->addr, getstring_noalloc(f, new_strings));
+        strcpy(d->addr, "pooooooooo");
         strcpy(d->doing, getstring_noalloc(f, new_strings));
         strcpy(d->username, getstring_noalloc(f, new_strings));
 
@@ -2206,7 +2207,12 @@ void load_restart_db() {
         d->quota = mudconf.cmd_quota_max;
         d->program_data = NULL;
         d->hashnext = NULL;
+       
+        d->saddr_len = sizeof(d->saddr);
+        getpeername(d->descriptor, (struct sockaddr *)&d->saddr, (socklen_t *)&d->saddr_len);
+        d->outstanding_dnschild_query = dnschild_request(d);
 
+ 
         if (descriptor_list) {
             for (p = descriptor_list; p->next; p = p->next);
             d->prev = &p->next;
@@ -2217,10 +2223,10 @@ void load_restart_db() {
             d->prev = &descriptor_list;
             descriptor_list = d;
         }
-    d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
-            bsd_read_callback, bsd_error_callback, NULL);
-    bufferevent_disable(d->sock_buff, EV_READ);
-    bufferevent_enable(d->sock_buff, EV_WRITE);
+        d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback, 
+                bsd_read_callback, bsd_error_callback, NULL);
+        bufferevent_disable(d->sock_buff, EV_READ);
+        bufferevent_enable(d->sock_buff, EV_WRITE);
 
         event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
                 accept_client_input, d);

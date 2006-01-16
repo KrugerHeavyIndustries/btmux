@@ -101,8 +101,9 @@ struct descriptor_data {
     int wait_for_input;		/* Used by @prog */
     dbref wait_cause;		/* Used by @prog */
     PROG *program_data;
-    struct sockaddr_storage address;	/* added 3/6/90 SCG */
+    struct sockaddr_storage saddr;	/* added 3/6/90 SCG */
     int saddr_len;
+    void *outstanding_dnschild_query;
     struct descriptor_data *hashnext;
     struct descriptor_data *next;
     struct descriptor_data **prev;

@@ -1808,7 +1808,7 @@ int site_check(struct sockaddr_storage *saddr, int saddr_len, SITE *site_list) {
     SITE *this;
 #ifdef XXX
     for (this = site_list; this; this = this->next) {
-        if ((host.s_addr & this->mask.s_addr) == this->address.s_addr)
+        if ((host.s_addr & this->mask.s_addr) == this->saddr.s_addr)
             return this->flag;
     }
 #endif
