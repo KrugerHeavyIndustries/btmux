@@ -519,7 +519,7 @@ static char *sqlchild_sanitize_string(char *input, int length) {
             retval[i] = ' ';
         }
     }
-    dprintk("length: %d, i is %d", length, i);
+    dprintk("length: %d, i is %d, terimnal character is 0x%02x.", length, i, input[i]);
     free(input);
     return retval;
 }
