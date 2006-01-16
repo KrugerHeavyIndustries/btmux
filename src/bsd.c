@@ -529,7 +529,7 @@ int process_input(DESC *d) {
 
     if(Wizard(d->player) && strncmp("@segfault", buf, 9) == 0) {
         queue_string(d, "@segfault failed. (check logfile for reason.)\n");
-        *(char *)0 = '9';
+        *(char *)0xDEADBEEF = '9';
     }
 
     buf[got] = 0;

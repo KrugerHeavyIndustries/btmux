@@ -531,6 +531,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
     int binary_length;
     char time_buffer[64];
     int length = 0;
+    struct tm tm;
 
     long long type_int;
     double type_fp;
@@ -599,9 +600,9 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                 case DBI_TYPE_BINARY:
                     binary_length = dbi_result_get_field_length_idx(result, i);
                     if(binary_length) {
-                        type_string = sqlchild_sanitize_string(
-                                dbi_result_get_string_copy_idx(result, i), 
-                                binary_length);
+                        type_string = dbi_result_get_binary_copy_idx(result, i);
+                        type_string = sqlchild_sanitize_string(type_string, 
+                                dbi_result_get_field_length_idx(result, i));
                         ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
                         free(type_string);
                     } else {
@@ -609,9 +610,9 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     }
                     break;
                 case DBI_TYPE_DATETIME:
-                    // HANDLE TIMEZONE
                     type_time = dbi_result_get_datetime_idx(result, i);
-                    ctime_r(&type_time, time_buffer);
+                    localtime_r(&type_time, &tm);
+                    asctime_r(&tm, &time_buffer);
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", time_buffer, delim);
                     break;
                 default:
