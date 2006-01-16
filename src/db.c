@@ -2187,7 +2187,6 @@ void load_restart_db() {
         }
 
         strcpy(d->addr, getstring_noalloc(f, new_strings));
-        strcpy(d->addr, "pooooooooo");
         strcpy(d->doing, getstring_noalloc(f, new_strings));
         strcpy(d->username, getstring_noalloc(f, new_strings));
 
