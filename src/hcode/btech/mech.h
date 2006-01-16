@@ -1028,37 +1028,37 @@ struct repair_data {
 #define Uncon(a)	(MechStatus(a) & UNCONSCIOUS)
 
 /* critstatus element */
-#define GYRO_DESTROYED		0x00000001
-#define SENSORS_DAMAGED		0x00000002
-#define TAG_DESTROYED		0x00000004
-#define HIDDEN			0x00000008
-#define GYRO_DAMAGED		0x00000010
-#define HIP_DAMAGED		0x00000020
-#define LIFE_SUPPORT_DESTROYED	0x00000040
-#define ANGEL_ECM_DESTROYED	0x00000080
-#define C3I_DESTROYED		0x00000100
-#define NSS_DESTROYED		0x00000200
-#define SLITE_DEST		0x00000400
-#define SLITE_LIT		0x00000800
-#define LOAD_OK			0x00001000	/* Carried load recalculated */
-#define OWEIGHT_OK		0x00002000	/* Own weight recalculated */
-#define SPEED_OK		0x00004000	/* Total speed recalculated */
-#define HEATCUTOFF		0x00008000
-#define TOWABLE			0x00010000
-#define HIP_DESTROYED		0x00020000
-#define TC_DESTROYED		0x00040000
-#define C3_DESTROYED		0x00080000
-#define ECM_DESTROYED		0x00100000
-#define BEAGLE_DESTROYED	0x00200000
-#define JELLIED			0x00400000	/* Got inferno gel on us */
-#define PC_INITIALIZED		0x00800000	/* PC-initialization done already */
-#define SPINNING		0x01000000
-#define CLAIRVOYANT		0x02000000	/* See everything, regardless of blocked */
-#define INVISIBLE		0x04000000	/* Unable to be seen by anyone */
-#define CHEAD			0x08000000	/* Altered heading */
-#define OBSERVATORIC		0x10000000
-#define BLOODHOUND_DESTROYED	0x20000000
-#define MECH_STUNNED            0x40000000  /* Is the mech stunned (Exile stun code) */
+#define GYRO_DESTROYED		0x00000001  /* (a) */
+#define SENSORS_DAMAGED		0x00000002  /* (b) */
+#define TAG_DESTROYED		0x00000004  /* (c) */
+#define HIDDEN			0x00000008  /* (d) */
+#define GYRO_DAMAGED		0x00000010  /* (e) */
+#define HIP_DAMAGED		0x00000020  /* (f) */
+#define LIFE_SUPPORT_DESTROYED	0x00000040  /* (g) */
+#define ANGEL_ECM_DESTROYED	0x00000080  /* (h) */
+#define C3I_DESTROYED		0x00000100  /* (i) */
+#define NSS_DESTROYED		0x00000200  /* (j) */
+#define SLITE_DEST		0x00000400  /* (k) */
+#define SLITE_LIT		0x00000800  /* (l) */
+#define LOAD_OK			0x00001000  /* (m) Carried load recalculated */
+#define OWEIGHT_OK		0x00002000  /* (n) Own weight recalculated */
+#define SPEED_OK		0x00004000  /* (o) Total speed recalculated */
+#define HEATCUTOFF		0x00008000  /* (p) */
+#define TOWABLE			0x00010000  /* (q) */
+#define HIP_DESTROYED		0x00020000  /* (r) */
+#define TC_DESTROYED		0x00040000  /* (s) */
+#define C3_DESTROYED		0x00080000  /* (t) */
+#define ECM_DESTROYED		0x00100000  /* (u) */
+#define BEAGLE_DESTROYED	0x00200000  /* (v) */
+#define JELLIED			0x00400000  /* (w) Got inferno gel on us */
+#define PC_INITIALIZED		0x00800000  /* (x) PC-initialization done already */
+#define SPINNING		0x01000000  /* (y) */
+#define CLAIRVOYANT		0x02000000  /* (z) See everything, regardless of blocked */
+#define INVISIBLE		0x04000000  /* (A) Unable to be seen by anyone */
+#define CHEAD			0x08000000  /* (B) Altered heading */
+#define OBSERVATORIC		0x10000000  /* (C) */
+#define BLOODHOUND_DESTROYED	0x20000000  /* (D) */
+#define MECH_STUNNED            0x40000000  /* (E) Is the mech stunned (Exile stun code) */
 
 /* tankcritstatus element */
 #define TURRET_LOCKED		0x01
