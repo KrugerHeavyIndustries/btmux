@@ -1164,10 +1164,10 @@ void sendchannelstuff(MECH * mech, int freq, char *msg) {
             if (obs) {
                 if (mech->freqmodes[freq] & FREQ_DIGITAL) {
                      snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
+                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf2);
                 } else {
                       snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s> %s%%c", ccode(tempMech, i, obs, MechTeam(mech)),
-                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf3);
+                        (char) ('A' + i), bearing, silly_atr_get(mech->mynum, A_FACTION), MechIDS(mech,0),buf2);
                 }
                 mech_notify(tempMech, MECHALL, buf);
             }
