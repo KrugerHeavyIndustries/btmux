@@ -512,13 +512,14 @@ static char *sqlchild_sanitize_string(char *input, int length) {
     char *retval = malloc(length+1);
     int i = 0;
     memset(retval, 0, length+1);
-    for(i = 0; i < length; i++) {
+    for(i = 0; input[i] && i < length; i++) {
         if(isprint(input[i])) {
             retval[i] = input[i];
         } else {
             retval[i] = ' ';
         }
     }
+    dprintk("length: %d, i is %d", length, i);
     free(input);
     return retval;
 }
@@ -535,7 +536,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
 
     long long type_int;
     double type_fp;
-    const char *type_string;
+    char *type_string;
     time_t type_time;
     
     ptr = output_buffer;
@@ -594,8 +595,9 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                     break;
                 case DBI_TYPE_STRING:
                     
-                    type_string = dbi_result_get_string_idx(result, i);
+                    type_string = dbi_result_get_string_copy_idx(result, i);
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", type_string, delim);
+                    free(type_string);
                     break;
                 case DBI_TYPE_BINARY:
                     binary_length = dbi_result_get_field_length_idx(result, i);
@@ -612,7 +614,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt) {
                 case DBI_TYPE_DATETIME:
                     type_time = dbi_result_get_datetime_idx(result, i);
                     localtime_r(&type_time, &tm);
-                    asctime_r(&tm, &time_buffer);
+                    asctime_r(&tm, time_buffer);
                     ptr += snprintf(ptr, eptr-ptr, "%s%s", time_buffer, delim);
                     break;
                 default:
