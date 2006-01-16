@@ -20,7 +20,6 @@
 #include "powers.h"
 #include "attrs.h"
 #include "alloc.h"
-#include "slave.h"
 #include "vattr.h"
 #include "commac.h"
 #ifdef SQL_SUPPORT
@@ -52,7 +51,6 @@ extern void init_timer(void);
 extern void raw_notify(dbref, const char *);
 extern void do_second(void);
 extern void do_dbck(dbref, dbref, int);
-extern void boot_slave(void);
 
 #ifdef ARBITRARY_LOGFILES
 void logcache_init();
@@ -72,8 +70,6 @@ static void init_rlimit(void);
 
 int reserved;
 
-extern pid_t slave_pid;
-extern int slave_socket;
 extern int corrupt;
 
 /*
@@ -1418,8 +1414,6 @@ int main(int argc, char *argv[]) {
 
     load_restart_db();
 
-    boot_slave();
-
 #ifdef SQL_SUPPORT
     sqlchild_init();
 #endif
@@ -1447,9 +1441,6 @@ int main(int argc, char *argv[]) {
     close_sockets(0, (char *) "Going down - Bye");
     dump_database();
 
-    if (slave_socket != -1) {
-        kill(slave_pid, SIGKILL);
-    }
 #ifdef ARBITRARY_LOGFILES
     logcache_destruct();
 #endif

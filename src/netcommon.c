@@ -1804,13 +1804,14 @@ void logged_out(dbref player, dbref cause, int key, char *arg) {
  * * site_check: Check for site flags in a site list.
  */
 
-int site_check(struct in_addr host, SITE *site_list) {
+int site_check(struct sockaddr_storage *saddr, int saddr_len, SITE *site_list) {
     SITE *this;
-
+#ifdef XXX
     for (this = site_list; this; this = this->next) {
         if ((host.s_addr & this->mask.s_addr) == this->address.s_addr)
             return this->flag;
     }
+#endif
     return 0;
 }
 

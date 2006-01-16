@@ -28,15 +28,18 @@ static int g_flags;
 
 static int xml_putobjstring(FILE *f, char *name, char *value) {
     fprintf(f, "\t\t<%s>%s</%s>\n", name, value, name);
+    return 1;
 }
 
 static int xml_putobjref(FILE *f, char *name, long value) {
     fprintf(f, "\t\t<%s>%ld</%s>\n", name, value, name);
+    return 1;
 }
 
 static int xml_putattr(FILE *f, char *name, char *value, long owner, long flags) {
     fprintf(f, "\t\t<Attribute name=\"%s\" owner=\"%ld\" flags=\"%ld\">%s</Attribute>\n",
             name, owner, flags, value);
+    return 1;
 }
 
 static int xml_db_write_object(FILE *f, dbref i, int db_format, int flags) {

@@ -43,6 +43,7 @@ MUX_OBJECTS    = src/boolexp.o     \
 				 src/db_xml.o	   \
                  src/db_rw.o       \
                  src/dllist.o      \
+				 src/dnschild.o	   \
                  src/eval.o        \
                  src/file_c.o      \
                  src/flags.o       \
@@ -179,7 +180,7 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
-TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX) src/unsplit$(OBJSUFFIX) src/slave$(OBJSUFFIX)
+TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX) src/unsplit$(OBJSUFFIX)
 
 debug:
 	@DEBUG=1 make all
@@ -234,9 +235,6 @@ cleandep: clean
 
 distclean: clean cleandep
 	make -f Makefile.dist clean
-
-slave$(OBJSUFFIX) src/slave$(OBJSUFFIX): src/slave.c
-	$(CC) $(ALLFLAGS) -o src/slave$(OBJSUFFIX) src/slave.c
 
 mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c

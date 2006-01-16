@@ -58,6 +58,7 @@ int fetch_idle(dbref);
 int fetch_connect(dbref);
 void raw_broadcast(int, char *, ...);
 int desc_cmp(void *, void *, void *);
+void run_command(DESC *d, char *);
 
 /* From cque.c */
 int nfy_que(dbref, int, int, int);
@@ -110,6 +111,10 @@ void report(void);
 int atr_match(dbref, dbref, char, char *, int);
 int list_check(dbref, dbref, char, char *, int);
 int html_escape(const char *src, char *dest, char **destp);
+
+/* From dnschild.c */
+int dnschild_request(DESC *d);
+
 /* From bsd.c */
 void shutdown_services();
 void flush_sockets();
@@ -136,6 +141,7 @@ int start_log(const char *, const char *);
 void end_log(void);
 void log_perror(const char *, const char *, const char *, const char *);
 void log_printf(char *, ...);
+void log_error(int, char *, char *, char *, ...);
 void log_text(char *);
 void log_number(int);
 void log_name(dbref);

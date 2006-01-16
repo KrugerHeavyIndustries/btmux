@@ -27,7 +27,6 @@
 extern void list_cf_access(dbref);
 extern void list_siteinfo(dbref);
 extern void logged_out(dbref, dbref, int, char *);
-extern void boot_slave(void);
 #ifdef ARBITRARY_LOGFILES
 extern void logcache_init(void);
 void logcache_list(dbref player);
@@ -495,7 +494,6 @@ CMDENT command_table[] = {
     {(char *)"@set", set_sw, CA_NO_SLAVE|CA_GBL_BUILD|CA_NO_GUEST, 0, CS_TWO_ARG, do_set},
     {(char *)"@shutdown", NULL, CA_WIZARD, 0, CS_ONE_ARG, do_shutdown},
     {(char *)"@stats", stats_sw, 0, 0, CS_ONE_ARG|CS_INTERP, do_stats},
-    {(char *)"@startslave", NULL, CA_WIZARD, 0, CS_NO_ARGS, boot_slave},
     {(char *)"@sweep", sweep_sw, 0, 0, CS_ONE_ARG, do_sweep},
     {(char *)"@switch", switch_sw, CA_GBL_INTERP, 0, CS_TWO_ARG|CS_ARGV|CS_CMDARG|CS_NOINTERP|CS_STRIP_AROUND, do_switch},
     {(char *)"@teleport", teleport_sw, CA_NO_GUEST, TELEPORT_DEFAULT, CS_TWO_ARG|CS_INTERP, do_teleport},

@@ -53,12 +53,12 @@ dbi_conn conn=NULL;
 #define DBIS_READY 0
 #define DBIS_RESOURCE 1
 
-int dbi_initialized = 0;
-int dbi_state;
-int query_counter = 0;
-int recent = 0;
+static int dbi_initialized = 0;
+static int dbi_state;
+static int query_counter = 0;
+static int recent = 0;
 
-struct query_state_t {
+static struct query_state_t {
     dbref thing;
     int attr;
     char *preserve;
@@ -74,7 +74,7 @@ struct query_state_t {
     int pid;
 } *running = NULL, *pending = NULL, *pending_tail = NULL, *recent_head = NULL, *recent_tail = NULL;
 
-struct timeval query_timeout = { 10, 0 };
+static struct timeval query_timeout = { 10, 0 };
 
 void sqlchild_init();
 void sqlchild_destruct();

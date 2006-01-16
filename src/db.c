@@ -39,7 +39,6 @@ NAME *purenames = NULL;
 
 int corrupt;
 
-extern pid_t slave_pid;
 extern void desc_addhash(DESC *);
 extern void del_commac(dbref);
 extern void do_clear_macro(dbref player, char *s);

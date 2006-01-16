@@ -6,6 +6,8 @@
 #include "config.h"
 
 #include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "db.h"
 #include "mudconf.h"
@@ -65,7 +67,6 @@ char *strip_ansi_r(char *dest, char *raw, size_t n) {
     *q = '\0';
     return dest;
 }
-
 char *strip_ansi(const char *raw) {
     static char buf[LBUF_SIZE];
     char *p = (char *) raw;
@@ -205,6 +206,38 @@ void log_text(char *text)
 {
     fprintf(stderr, "%s", strip_ansi(text));
 }
+
+void log_error(int key, char *primary, char *secondary, char *format, ...) {
+    char buffer[LBUF_SIZE];
+    char stripped_buffer[LBUF_SIZE];
+    va_list ap;
+    if(!(key & mudconf.log_options)) return;
+
+
+    if(mudconf.log_info & LOGOPT_TIMESTAMP) {
+        time_t now;
+        struct tm tm;
+        localtime_r(time(&now), &tm);
+        fprintf(stderr, "%d%02d%02d.%02d%02d%02d ",
+                tm.tm_year+1900, tm.tm_mon + 1, tm.tm_mday, 
+                tm.tm_hour, tm.tm_min, tm.tm_sec);
+    }
+
+    if(secondary && &secondary) {
+        fprintf(stderr, "%s%s %3s/%-5s: ", mudstate.buffer,
+                mudconf.mud_name, primary, secondary);
+    } else {
+        fprintf(stderr, "%s%s %-9s: ", mudstate.buffer, 
+                mudconf.mud_name, primary);
+    }
+    
+    va_start(ap, format);
+    vsnprintf(buffer, LBUF_SIZE, format, ap);
+    va_end(ap);
+    
+    strip_ansi_r(stripped_buffer, buffer, LBUF_SIZE);
+    fprintf(stderr, "%s\n", stripped_buffer);
+}    
 
 void log_printf(char *format, ...) {
     char buffer[LBUF_SIZE];

@@ -12,6 +12,7 @@
 #include "command.h"
 #include "file_c.h"
 #include "alloc.h"
+#include "externs.h"
 
 typedef struct filecache_hdr FCACHE;
 typedef struct filecache_block_hdr FBLKHDR;
@@ -126,13 +127,7 @@ static int fcache_read(FBLOCK **cp, char *filename)
          * Failure: log the event 
          */
 
-        STARTLOG(LOG_PROBLEMS, "FIL", "OPEN") {
-            buff = alloc_mbuf("fcache_read.LOG");
-            sprintf(buff, "Couldn't open file '%s'.", filename);
-            log_text(buff);
-            free_mbuf(buff);
-            ENDLOG;
-        }
+        log_error(LOG_PROBLEMS, "FIL", "OPEN", "Couldn't open file '%s'.", filename);
 
         return -1;
     }

@@ -20,12 +20,6 @@ extern dbref match_thing(dbref, char *);
 extern int do_command(DESC *, char *, int);
 extern void dump_database(void);
 extern void dump_restart_db(void);
-extern int slave_pid;
-extern int slave_socket;
-
-#ifdef ARBITRARY_LOGFILES
-extern int fileslave_pid, fileslave_socket;
-#endif
 
 #ifdef NEED_VSPRINTF_DCL
 extern char *vsprintf(char *, char *, va_list);

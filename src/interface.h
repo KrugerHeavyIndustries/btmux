@@ -9,7 +9,6 @@
 #define __INTERFACE__H
 
 #include "db.h"
-#include "externs.h"
 #include "htab.h"
 #include "alloc.h"
 #include "config.h"
@@ -80,7 +79,7 @@ struct descriptor_data {
     int command_count;
     int timeout;
     int host_info;
-    char addr[51];
+    char addr[256];
     char username[11];
     char doing[DOINGLEN];
     char hudkey[HUDKEYLEN];
@@ -102,7 +101,8 @@ struct descriptor_data {
     int wait_for_input;		/* Used by @prog */
     dbref wait_cause;		/* Used by @prog */
     PROG *program_data;
-    struct sockaddr_in address;	/* added 3/6/90 SCG */
+    struct sockaddr_storage address;	/* added 3/6/90 SCG */
+    int saddr_len;
     struct descriptor_data *hashnext;
     struct descriptor_data *next;
     struct descriptor_data **prev;
@@ -149,7 +149,7 @@ extern int fetch_idle(dbref);
 extern int fetch_connect(dbref);
 extern void check_idle(void);
 extern void process_commands(void);
-extern int site_check(struct in_addr, SITE *);
+extern int site_check(struct sockaddr_storage *, int, SITE *);
 extern void make_ulist(dbref, char *, char **);
 extern dbref find_connected_name(dbref, char *);
 
