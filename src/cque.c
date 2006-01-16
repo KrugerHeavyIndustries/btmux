@@ -76,7 +76,7 @@ static BQUE *cque_deque(dbref player) {
     tmp = cque_find(player);
     if(!tmp) return NULL;
 
-    dassert(tmp, "brain damage");
+    dassert(tmp);
     
     if(!tmp->cque) return NULL;
 
@@ -97,7 +97,7 @@ static void cque_enqueue(dbref player, BQUE *cmd) {
 
     tmp = cque_find(player);
 
-    dassert(tmp, "serious braindamage.");
+    dassert(tmp);
 
     if(!tmp->ctail) {
         tmp->cque = tmp->ctail = cmd;
@@ -808,7 +808,7 @@ int do_top(int ncmds) {
         }
         if(!tmp) continue;
 
-        dassert(tmp, "serious braindamage");
+        dassert(tmp);
         count++;
         if((object >= 0) && !Going(object)) {
             giveto(object, mudconf.waitcost);
