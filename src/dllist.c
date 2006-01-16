@@ -231,7 +231,7 @@ void *dllist_data(dllist_node *node) {
 /* Get the size of the list */
 int dllist_size(dllist *dllist) {
 
-    if (dllist) {
+    if (!(dllist)) {
         return 0;
     }
 
