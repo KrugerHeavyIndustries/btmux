@@ -436,6 +436,7 @@ struct statedata {
     int min_size;		/* Minimum db size (from file header) */
     int db_top;			/* Number of items in the db */
     int db_size;		/* Allocated size of db structure */
+    int db_revision;     /* database revision */
     int mail_freelist;		/* The next free mail number */
     int mail_db_top;		/* Like db_top */
     int mail_db_size;		/* Like db_size */
