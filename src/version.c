@@ -51,53 +51,57 @@
 
 void do_version(dbref player, dbref cause, int extra)
 {
-    char *buff;
+	char *buff;
 
-    notify(player, mudstate.version);
-    buff = alloc_mbuf("do_version");
-    sprintf(buff, "Build date: %s", MUX_BUILD_DATE);
-    notify(player, buff);
-    free_mbuf(buff);
+	notify(player, mudstate.version);
+	buff = alloc_mbuf("do_version");
+	sprintf(buff, "Build date: %s", MUX_BUILD_DATE);
+	notify(player, buff);
+	free_mbuf(buff);
 }
 
-void init_version(void) {
-    char mux_version[MBUF_SIZE] = "";
+void init_version(void)
+{
+	char mux_version[MBUF_SIZE] = "";
 
 #ifdef HUDINFO_SUPPORT
-    strcat(mux_version, "+HUD");
+	strcat(mux_version, "+HUD");
 #endif
 
 #define HAG_WAS_HERE
 #ifdef HAG_WAS_HERE
-    strcat(mux_version, "+HAG");
+	strcat(mux_version, "+HAG");
 #endif
 
 #ifdef SQL_SUPPORT
-    strcat(mux_version, "+SQL");
+	strcat(mux_version, "+SQL");
 #endif
 
 #ifdef ARBITRARY_LOGFILES
-    strcat(mux_version, "+ALG");
+	strcat(mux_version, "+ALG");
 #endif
-    
-    /* Version Identification string for version() and VERSION command */
-    /* BtOnline-BTechMUX x.x build #<x> */
+
+	/* Version Identification string for version() and VERSION command */
+	/* BtOnline-BTechMUX x.x build #<x> */
 #ifdef DEBUG
-    snprintf(mudstate.version, 128, "%s.%s%s '%s'  build #%s DEBUG svn revision %s",
-            PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM, SVN_REVISION);
+	snprintf(mudstate.version, 128,
+			 "%s.%s%s '%s'  build #%s DEBUG svn revision %s", PACKAGE_STRING,
+			 MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM,
+			 SVN_REVISION);
 #else
-    snprintf(mudstate.version, 128, "%s.%s%s '%s' build #%s RELEASE",
-            PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM);
+	snprintf(mudstate.version, 128, "%s.%s%s '%s' build #%s RELEASE",
+			 PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME,
+			 MUX_BUILD_NUM);
 #endif
 
-    STARTLOG(LOG_ALWAYS, "INI", "START") {
-        log_text((char *) "Starting: ");
-        log_text(mudstate.version);
-        ENDLOG;
-    } STARTLOG(LOG_ALWAYS, "INI", "START") {
-        log_text((char *) "Build date: ");
+	STARTLOG(LOG_ALWAYS, "INI", "START") {
+		log_text((char *) "Starting: ");
+		log_text(mudstate.version);
+		ENDLOG;
+	} STARTLOG(LOG_ALWAYS, "INI", "START") {
+		log_text((char *) "Build date: ");
 
-        log_text((char *) MUX_BUILD_DATE);
-        ENDLOG;
-    }
+		log_text((char *) MUX_BUILD_DATE);
+		ENDLOG;
+	}
 }

@@ -9,7 +9,6 @@
  *
  */
 
-
 /*************************************************************
 ****  LOS code  **********************************************
 **************************************************************
@@ -118,7 +117,6 @@ So now we have one time costs:
 *Calculate matrix coefficients:  1 atan(), 1 cos(), 1 sin()
                                  2 fp subtractions, 1 fp divide.
 
-
 *Find effective radius:          1 cos(),
                                 <6 fp subtractions (to get -30<u<30)
 
@@ -128,7 +126,6 @@ And per-hex-travelled costs:
                                  5 fp compares
 
 *Test for closest forward hex:  <5 fp compares
-
 
 This is actually, I would think, not much more than the current LOS
 code, which makes many calls to RealCoordToMapCoord() (a costly
@@ -147,13 +144,12 @@ OK, enough of this.  Let's get on to the code.
 #include "mech.h"
 #include "btmacros.h"
 
-#define DEG60 1.0471976		/* In radians, of course ;) */
+#define DEG60 1.0471976			/* In radians, of course ;) */
 #define DEG30 0.5235988
 #define ROOT3 1.7320508
 #define TRACESCALEMAP 1
 
 typedef enum { N, NE, SE, S, SW, NW } hexdir;
-
 
 #define Store_Hex(store_x,store_y) \
 do { found_coords[found_count].x = store_x; \
@@ -175,165 +171,167 @@ else { Store_Hex((x2),(y2)); }
 do { cx = (float)x * ROOT3 / 2 * TRACESCALEMAP; \
   cy = ((float)y - 0.5*(x%2))*TRACESCALEMAP;} while (0)
 
-
 static void GetAdjHex(int currx, int curry, int nexthex, int *x, int *y)
 {
-    switch(nexthex)
-      {
-      case N:
-	*x=currx;
-	*y=curry-1;
-	break;
-      case NE:
-	*x=currx+1;
-	*y=curry-(currx%2);
-	break;
-      case SE:
-	*x=currx+1;
-	*y=curry-(currx%2)+1;
-	break;
-      case S:
-	*x=currx;
-	*y=curry+1;
-	break;
-      case SW:
-	*x=currx-1;
-	*y=curry-(currx%2)+1;
-	break;
-      case NW:
-	*x=currx-1;
-	*y=curry-(currx%2);
-	break;
-      default: /* Mostly there to satisfy gcc */
-        fprintf(stderr, "XXX ARGH: TraceLos doesn't know where to go!\n");
-        *x = currx+1; /* Just grab some values that aren't x/y */
-        *y = curry+1; /* so we can break out of the loop */
-      }
+	switch (nexthex) {
+	case N:
+		*x = currx;
+		*y = curry - 1;
+		break;
+	case NE:
+		*x = currx + 1;
+		*y = curry - (currx % 2);
+		break;
+	case SE:
+		*x = currx + 1;
+		*y = curry - (currx % 2) + 1;
+		break;
+	case S:
+		*x = currx;
+		*y = curry + 1;
+		break;
+	case SW:
+		*x = currx - 1;
+		*y = curry - (currx % 2) + 1;
+		break;
+	case NW:
+		*x = currx - 1;
+		*y = curry - (currx % 2);
+		break;
+	default:					/* Mostly there to satisfy gcc */
+		fprintf(stderr, "XXX ARGH: TraceLos doesn't know where to go!\n");
+		*x = currx + 1;			/* Just grab some values that aren't x/y */
+		*y = curry + 1;			/* so we can break out of the loop */
+	}
 }
 
 int TraceLOS(MAP * map, int ax, int ay, int bx, int by,
-	     lostrace_info ** result)
+			 lostrace_info ** result)
 {
 
-    int i;			/* Generic counter */
-    float acx, acy, bcx, bcy;	/* endpoints CARTESIAN coords */
-    float currcx, currcy;	/* current hex CARTESIAN coords */
-    int currx, curry;		/* current hex being worked from */
-    int nextx, nexty;		/* x & y coords of next hex */
-    int bestx = 0, besty = 0;	/* best found so far */
-    int lastx, lasty;		/* Holding place for final intervening hex */
-    int xmul, ymul;		/* Used in 30/150/210/330 special case */
-    hexdir nexthex;		/* potential next hex being examined */
-    float nextcx, nextcy;	/* Next hex's CARTESIAN coords */
-    float slope;		/* slope of line */
-    float uangle;		/* angle of line (in STD CARTESIAN FORM!) */
-    float sinu;			/* sin of -uangle */
-    float cosu;			/* cos of same */
-    float liney;		/* TRANSFORMED y coord of the line */
-    float tempangle;		/* temporary uangle used for effrad calc */
-    float effrad;		/* effective radius of hex */
-    float currdist;		/* distance along line of current hex */
-    float nextdist;		/* distance along the line of potential hex */
-    float bestdist;		/* "best" (not furthest) distance tried */
-    float enddist;		/* distance along at end of line */
-    static lostrace_info found_coords[4000];
-    int found_count = 0;
+	int i;						/* Generic counter */
+	float acx, acy, bcx, bcy;	/* endpoints CARTESIAN coords */
+	float currcx, currcy;		/* current hex CARTESIAN coords */
+	int currx, curry;			/* current hex being worked from */
+	int nextx, nexty;			/* x & y coords of next hex */
+	int bestx = 0, besty = 0;	/* best found so far */
+	int lastx, lasty;			/* Holding place for final intervening hex */
+	int xmul, ymul;				/* Used in 30/150/210/330 special case */
+	hexdir nexthex;				/* potential next hex being examined */
+	float nextcx, nextcy;		/* Next hex's CARTESIAN coords */
+	float slope;				/* slope of line */
+	float uangle;				/* angle of line (in STD CARTESIAN FORM!) */
+	float sinu;					/* sin of -uangle */
+	float cosu;					/* cos of same */
+	float liney;				/* TRANSFORMED y coord of the line */
+	float tempangle;			/* temporary uangle used for effrad calc */
+	float effrad;				/* effective radius of hex */
+	float currdist;				/* distance along line of current hex */
+	float nextdist;				/* distance along the line of potential hex */
+	float bestdist;				/* "best" (not furthest) distance tried */
+	float enddist;				/* distance along at end of line */
+	static lostrace_info found_coords[4000];
+	int found_count = 0;
 
-    /* Before doing anything, let's check for special circumstances, this */
-    /* means vertical lines (which work using the current code, but depend */
-    /* on atan returning proper vaules for atan(-Inf) -- which is probably */
-    /* slow and may break on non-ANSI systems; and also lines at 30, 90 */
-    /* etc.. degrees which contain 'ties' between hexes.  FASA rules here */
-    /* say that the 'best' hex for the defender (the one that breaks LOS, */
-    /* or gives a greater BTH penalty) should be used. */
+	/* Before doing anything, let's check for special circumstances, this */
+	/* means vertical lines (which work using the current code, but depend */
+	/* on atan returning proper vaules for atan(-Inf) -- which is probably */
+	/* slow and may break on non-ANSI systems; and also lines at 30, 90 */
+	/* etc.. degrees which contain 'ties' between hexes.  FASA rules here */
+	/* say that the 'best' hex for the defender (the one that breaks LOS, */
+	/* or gives a greater BTH penalty) should be used. */
 
-    /* THE base case */
-    if ((ax == bx) && (ay == by)) {
-	Store_Hex(bx, by);
-	*result = found_coords;
-	return found_count;
-    }
-    /* Is it vertical? */
-    if (ax == bx) {
-	if (ay > by)
-	    for (i = ay - 1; i > by; i--)
-		Store_Hex(ax, i);
-	else
-	    for (i = ay + 1; i < by; i++)
-		Store_Hex(ax, i);
-	Store_Hex(bx, by);
-	*result = found_coords;
-	return found_count;
-    }
-
-    /* Does it lie along a 90 degree 'tie' direction? */
-    /* IF(even-number-of-cols apart AND same-y-coord) */
-    if (!((bx - ax) % 2) && ay == by) {
-	currx = ax;
-	i = bx > ax ? 1 : -1;
-	while (currx != bx) {
-	    /* Do best of (currx+1,by-currx%2)   */
-	    /*         or (currx+1,by-currx%2+1) */
-	    Store_BestOf(currx + 1 * i, by - currx % 2, currx + 1 * i,
-		by - currx % 2 + 1);
-
-	    if (currx != bx)
-		Store_Hex(currx + 2 * i, by);
-
-	    currx += 2 * i;
+	/* THE base case */
+	if((ax == bx) && (ay == by)) {
+		Store_Hex(bx, by);
+		*result = found_coords;
+		return found_count;
 	}
+	/* Is it vertical? */
+	if(ax == bx) {
+		if(ay > by)
+			for(i = ay - 1; i > by; i--)
+				Store_Hex(ax, i);
+		else
+			for(i = ay + 1; i < by; i++)
+				Store_Hex(ax, i);
+		Store_Hex(bx, by);
+		*result = found_coords;
+		return found_count;
+	}
+
+	/* Does it lie along a 90 degree 'tie' direction? */
+	/* IF(even-number-of-cols apart AND same-y-coord) */
+	if(!((bx - ax) % 2) && ay == by) {
+		currx = ax;
+		i = bx > ax ? 1 : -1;
+		while (currx != bx) {
+			/* Do best of (currx+1,by-currx%2)   */
+			/*         or (currx+1,by-currx%2+1) */
+			Store_BestOf(currx + 1 * i, by - currx % 2, currx + 1 * i,
+						 by - currx % 2 + 1);
+
+			if(currx != bx)
+				Store_Hex(currx + 2 * i, by);
+
+			currx += 2 * i;
+		}
 
 /* 	Store_Hex(bx,by); */
-	*result = found_coords;
-	return found_count;
-    }
-
-    /* Does it lie along a 30, 150, 210, 330 degree 'tie' direction? */
-    /* This expression is messy, but it just means that a hex is along */
-    /* 30 degrees if the y distance is (the integer part of) 3/2 */
-    /* times the x distance, plus 1 if the x difference is odd, AND */
-    /* the original hex was in an even column and heads in the +y  */
-    /* direction, or odd and goes -y.  It works, try it :) */
-    if (abs(by - ay) ==
-	(3 * abs(bx - ax) / 2) + abs((bx - ax) % 2) * abs((by <
-		ay) ? (ax % 2) : (1 - ax % 2))) {
-
-	/* First get the x and y 'multipliers' -- either 1 or -1 */
-	/* they determine the direction of the movement */
-	if (bx > ax)
-	    if (by > ay) {
-		xmul = 1;
-		ymul = 1;
-	    } else {
-		xmul = 1;
-		ymul = -1;
-	} else if (by > ay) {
-	    xmul = -1;
-	    ymul = 1;
-	} else {
-	    xmul = -1;
-	    ymul = -1;
+		*result = found_coords;
+		return found_count;
 	}
 
-	currx = ax;
-	curry = ay;
-	while ((currx != bx) && (curry != by)) {
+	/* Does it lie along a 30, 150, 210, 330 degree 'tie' direction? */
+	/* This expression is messy, but it just means that a hex is along */
+	/* 30 degrees if the y distance is (the integer part of) 3/2 */
+	/* times the x distance, plus 1 if the x difference is odd, AND */
+	/* the original hex was in an even column and heads in the +y  */
+	/* direction, or odd and goes -y.  It works, try it :) */
+	if(abs(by - ay) ==
+	   (3 * abs(bx - ax) / 2) + abs((bx - ax) % 2) * abs((by <
+														  ay) ? (ax %
+																 2) : (1 -
+																	   ax %
+																	   2))) {
 
-	    Store_BestOf(currx, curry + ymul, currx + xmul,
-		ymul == 1 ? curry + 1 - currx % 2 : curry - currx % 2);
+		/* First get the x and y 'multipliers' -- either 1 or -1 */
+		/* they determine the direction of the movement */
+		if(bx > ax)
+			if(by > ay) {
+				xmul = 1;
+				ymul = 1;
+			} else {
+				xmul = 1;
+				ymul = -1;
+		} else if(by > ay) {
+			xmul = -1;
+			ymul = 1;
+		} else {
+			xmul = -1;
+			ymul = -1;
+		}
 
-	    curry += (ymul == 1) ? (2 - currx % 2) : (-1 - currx % 2);
-	    currx += xmul;
+		currx = ax;
+		curry = ay;
+		while ((currx != bx) && (curry != by)) {
 
-	    if (currx == bx && curry == by)
-		continue;
+			Store_BestOf(currx, curry + ymul, currx + xmul,
+						 ymul ==
+						 1 ? curry + 1 - currx % 2 : curry - currx % 2);
 
-	    Store_Hex(currx, curry);
+			curry += (ymul == 1) ? (2 - currx % 2) : (-1 - currx % 2);
+			currx += xmul;
+
+			if(currx == bx && curry == by)
+				continue;
+
+			Store_Hex(currx, curry);
+		}
+		Store_Hex(currx, curry);
+		*result = found_coords;
+		return found_count;
 	}
-	Store_Hex(currx, curry);
-	*result = found_coords;
-	return found_count;
-    }
 
 /****************************************************************************/
 
@@ -343,92 +341,91 @@ int TraceLOS(MAP * map, int ax, int ay, int bx, int by,
 
 /* First get the necessary constants set up */
 
-    LOS_MapCoordToRealCoord(ax, ay, acx, acy);
-    LOS_MapCoordToRealCoord(bx, by, bcx, bcy);
+	LOS_MapCoordToRealCoord(ax, ay, acx, acy);
+	LOS_MapCoordToRealCoord(bx, by, bcx, bcy);
 
-    slope = (float) (acy - bcy) / (float) (acx - bcx);
+	slope = (float) (acy - bcy) / (float) (acx - bcx);
 
-    uangle = -atan(slope);
+	uangle = -atan(slope);
 
-    sinu = sin(uangle);
-    cosu = cos(uangle);
+	sinu = sin(uangle);
+	cosu = cos(uangle);
 
-    liney = acx * sinu + acy * cosu;	/* we could just as */
-    /* correctly use bx, by */
+	liney = acx * sinu + acy * cosu;	/* we could just as */
+	/* correctly use bx, by */
 
-    enddist = bcx * cosu - bcy * sinu;
+	enddist = bcx * cosu - bcy * sinu;
 
-    tempangle = fabs(uangle);
-    while (tempangle > DEG60)
-	tempangle -= DEG60;
-    effrad = cos(tempangle - DEG30) * TRACESCALEMAP / ROOT3;
+	tempangle = fabs(uangle);
+	while (tempangle > DEG60)
+		tempangle -= DEG60;
+	effrad = cos(tempangle - DEG30) * TRACESCALEMAP / ROOT3;
 
-    /*****************************************************************/
+	/*****************************************************************/
 
-    /**  OK, setup over, here's the loop:                            */
+	/**  OK, setup over, here's the loop:                            */
 
-    /*****************************************************************/
+	/*****************************************************************/
 
-    currx = ax;
-    curry = ay;
-    LOS_MapCoordToRealCoord(currx, curry, currcx, currcy);
-    currdist = currcx * cosu - currcy * sinu;
-    bestdist = enddist;		/* set this to the endpoint, the worst */
-    /* possible point to go to  */
+	currx = ax;
+	curry = ay;
+	LOS_MapCoordToRealCoord(currx, curry, currcx, currcy);
+	currdist = currcx * cosu - currcy * sinu;
+	bestdist = enddist;			/* set this to the endpoint, the worst */
+	/* possible point to go to  */
 
-    while (!(currx == bx && curry == by)) {
+	while (!(currx == bx && curry == by)) {
 
-	for (nexthex = N; nexthex <= NW; nexthex++) {
+		for(nexthex = N; nexthex <= NW; nexthex++) {
 
-	    GetAdjHex(currx, curry, nexthex, &nextx, &nexty);
-	    LOS_MapCoordToRealCoord(nextx, nexty, nextcx, nextcy);
+			GetAdjHex(currx, curry, nexthex, &nextx, &nexty);
+			LOS_MapCoordToRealCoord(nextx, nexty, nextcx, nextcy);
 
-	    /* Is it on the line? */
-	    if (fabs((nextcx * sinu + nextcy * cosu) - liney) > effrad)
-		continue;
+			/* Is it on the line? */
+			if(fabs((nextcx * sinu + nextcy * cosu) - liney) > effrad)
+				continue;
 
-	    /* Where is it?  Find the transformed x coord */
-	    nextdist = nextcx * cosu - nextcy * sinu;
+			/* Where is it?  Find the transformed x coord */
+			nextdist = nextcx * cosu - nextcy * sinu;
 
-	    /* is it forward of the current hex? */
-	    if (fabs(enddist - nextdist) > fabs(enddist - currdist))
-		continue;
+			/* is it forward of the current hex? */
+			if(fabs(enddist - nextdist) > fabs(enddist - currdist))
+				continue;
 
-	    /* Is it better than what we have? */
-	    if (fabs(enddist - nextdist) >= fabs(enddist - bestdist)) {
-		bestdist = nextdist;
-		bestx = nextx;
-		besty = nexty;
-	    }
+			/* Is it better than what we have? */
+			if(fabs(enddist - nextdist) >= fabs(enddist - bestdist)) {
+				bestdist = nextdist;
+				bestx = nextx;
+				besty = nexty;
+			}
+		}
+
+		if(bestx == bx && besty == by) {	/* If we've found the last hex, record */
+			lastx = currx;		/* the current hex as the last */
+			lasty = curry;		/* intervening hex, save currx/y, */
+			currx = bestx;		/* and jump to the end of the loop */
+			curry = besty;
+			continue;
+		}
+
+		/* ********************************************************* */
+		/* HERE is where you put the test code for intervening hexes */
+		/* ********************************************************* */
+		Store_Hex(bestx, besty);
+		/* ********************************************************* */
+
+		currx = bestx;			/* Reset the curr hex for the next iteration */
+		curry = besty;
+		currdist = bestdist;
+		bestdist = enddist;		/* reset to worst possible value */
+
 	}
 
-	if (bestx == bx && besty == by) {	/* If we've found the last hex, record */
-	    lastx = currx;	/* the current hex as the last */
-	    lasty = curry;	/* intervening hex, save currx/y, */
-	    currx = bestx;	/* and jump to the end of the loop */
-	    curry = besty;
-	    continue;
-	}
-
+	/* **************************************************** */
+	/* HERE is where you put the test code for the LAST hex */
+	/* **************************************************** */
+	Store_Hex(currx, curry);
 	/* ********************************************************* */
-	/* HERE is where you put the test code for intervening hexes */
-	/* ********************************************************* */
-	Store_Hex(bestx, besty);
-	/* ********************************************************* */
-
-	currx = bestx;		/* Reset the curr hex for the next iteration */
-	curry = besty;
-	currdist = bestdist;
-	bestdist = enddist;	/* reset to worst possible value */
-
-    }
-
-
-    /* **************************************************** */
-    /* HERE is where you put the test code for the LAST hex */
-    /* **************************************************** */
-    Store_Hex(currx, curry);
-    /* ********************************************************* */
-    *result = found_coords;
-    return found_count;
+	*result = found_coords;
+	return found_count;
 }

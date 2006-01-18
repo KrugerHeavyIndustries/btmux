@@ -18,165 +18,162 @@
 
 static void tag_recycle_event(MUXEVENT * e)
 {
-    MECH *mech = (MECH *) e->data;
-    int data = (int) e->data2;
-    MECH *target;
+	MECH *mech = (MECH *) e->data;
+	int data = (int) e->data2;
+	MECH *target;
 
-    if (isTAGDestroyed(mech))
-	return;
+	if(isTAGDestroyed(mech))
+		return;
 
-    if (data == 0) {
+	if(data == 0) {
+		mech_notify(mech, MECHALL,
+					"%cgYour TAG system has finished recycling.%cn");
+		return;
+	}
+
+	target = getMech(TAGTarget(mech));
+
+	if(!target)
+		return;
+
+	if(TaggedBy(target) != mech->mynum)
+		return;
+
 	mech_notify(mech, MECHALL,
-	    "%cgYour TAG system has finished recycling.%cn");
-	return;
-    }
-
-    target = getMech(TAGTarget(mech));
-
-    if (!target)
-	return;
-
-    if (TaggedBy(target) != mech->mynum)
-	return;
-
-    mech_notify(mech, MECHALL,
-	"%cgYour TAG system has achieved a stable lock.%cn");
+				"%cgYour TAG system has achieved a stable lock.%cn");
 }
 
 void mech_tag(dbref player, void *data, char *buffer)
 {
-    MECH *mech = (MECH *) data, *target;
-    MAP *objMap;
-    char *args[2];
-    dbref refTarget;
-    int LOS = 1;
-    float range = 0.0;
+	MECH *mech = (MECH *) data, *target;
+	MAP *objMap;
+	char *args[2];
+	dbref refTarget;
+	int LOS = 1;
+	float range = 0.0;
 
-    cch(MECH_USUALO);
+	cch(MECH_USUALO);
 
-    DOCHECK(!HasTAG(mech), "This unit is not equipped with TAG!");
-    DOCHECK(isTAGDestroyed(mech), "Your TAG system is destroyed!");
-    DOCHECK(TagRecycling(mech), "Your TAG system is recycling!");
-    DOCHECK(mech_parseattributes(buffer, args, 2) != 1,
-	"Invalid number of arguments to function!");
+	DOCHECK(!HasTAG(mech), "This unit is not equipped with TAG!");
+	DOCHECK(isTAGDestroyed(mech), "Your TAG system is destroyed!");
+	DOCHECK(TagRecycling(mech), "Your TAG system is recycling!");
+	DOCHECK(mech_parseattributes(buffer, args, 2) != 1,
+			"Invalid number of arguments to function!");
 
-    objMap = getMap(mech->mapindex);
+	objMap = getMap(mech->mapindex);
 
-    /* Clear our TAG */
-    if (!strcmp(args[0], "-")) {
-	refTarget = TAGTarget(mech);
+	/* Clear our TAG */
+	if(!strcmp(args[0], "-")) {
+		refTarget = TAGTarget(mech);
 
-	DOCHECK(refTarget <= 0, "You are not currently tagging anything!");
+		DOCHECK(refTarget <= 0, "You are not currently tagging anything!");
 
-	stopTAG(mech);
+		stopTAG(mech);
 
-	return;
-    }
+		return;
+	}
 
-    /* TAG something... anything :) */
-    refTarget = FindTargetDBREFFromMapNumber(mech, args[0]);
-    target = getMech(refTarget);
+	/* TAG something... anything :) */
+	refTarget = FindTargetDBREFFromMapNumber(mech, args[0]);
+	target = getMech(refTarget);
 
-    if (target) {
-	range = FlMechRange(objMap, mech, target);
+	if(target) {
+		range = FlMechRange(objMap, mech, target);
 
-	LOS =
-	    InLineOfSight_NB(mech, target, MechX(target), MechY(target),
-	    range);
-    } else
-	refTarget = 0;
+		LOS =
+			InLineOfSight_NB(mech, target, MechX(target), MechY(target),
+							 range);
+	} else
+		refTarget = 0;
 
-    DOCHECK(refTarget < 1 ||
-	!LOS, "That is not a valid TAG targetID. Try again.");
-    DOCHECK(MechTeam(mech) == MechTeam(target),
-	"You can't TAG friendly units!");
-    DOCHECK(mech == target, "You can't TAG yourself!");
-    DOCHECK(range > TAG_LONG,
-	tprintf("Out of range! TAG ranges are %d/%d/%d", TAG_SHORT,
-	    TAG_MED, TAG_LONG));
+	DOCHECK(refTarget < 1 ||
+			!LOS, "That is not a valid TAG targetID. Try again.");
+	DOCHECK(MechTeam(mech) == MechTeam(target),
+			"You can't TAG friendly units!");
+	DOCHECK(mech == target, "You can't TAG yourself!");
+	DOCHECK(range > TAG_LONG,
+			tprintf("Out of range! TAG ranges are %d/%d/%d", TAG_SHORT,
+					TAG_MED, TAG_LONG));
 
-    /*
-     * This should actually make a roll...
-     */
+	/*
+	 * This should actually make a roll...
+	 */
 
-    /*
-       if ( checkAllSections(mech,INARC_HAYWIRE_ATTACHED) )
-       BTH += 1;
-     */
+	/*
+	   if ( checkAllSections(mech,INARC_HAYWIRE_ATTACHED) )
+	   BTH += 1;
+	 */
 
-    mech_printf(mech, MECHALL, "You light up %s with your TAG.",
-	    GetMechToMechID(mech, target));
+	mech_printf(mech, MECHALL, "You light up %s with your TAG.",
+				GetMechToMechID(mech, target));
 
-    TaggedBy(target) = mech->mynum;
-    TAGTarget(mech) = target->mynum;
+	TaggedBy(target) = mech->mynum;
+	TAGTarget(mech) = target->mynum;
 
-    MECHEVENT(mech, EVENT_TAG_RECYCLE, tag_recycle_event, TAGRECYCLE_TICK,
-	1);
+	MECHEVENT(mech, EVENT_TAG_RECYCLE, tag_recycle_event, TAGRECYCLE_TICK, 1);
 }
 
 int isTAGDestroyed(MECH * mech)
 {
-    if ((MechSpecials2(mech) & TAG_TECH) &&
-	(MechCritStatus(mech) & TAG_DESTROYED))
-	return 1;
+	if((MechSpecials2(mech) & TAG_TECH) &&
+	   (MechCritStatus(mech) & TAG_DESTROYED))
+		return 1;
 
-    if (HasC3m(mech) && (MechCritStatus(mech) & C3_DESTROYED))
-	return 1;
+	if(HasC3m(mech) && (MechCritStatus(mech) & C3_DESTROYED))
+		return 1;
 
-    return 0;
+	return 0;
 }
 
 void stopTAG(MECH * mech)
 {
-    MECH *target;
+	MECH *target;
 
-    target = getMech(TAGTarget(mech));
+	target = getMech(TAGTarget(mech));
 
-    if (target)
-	if (TaggedBy(target) == mech->mynum)
-	    TaggedBy(target) = 0;
+	if(target)
+		if(TaggedBy(target) == mech->mynum)
+			TaggedBy(target) = 0;
 
-    if (TAGTarget(mech) > 0) {
-	TAGTarget(mech) = 0;
+	if(TAGTarget(mech) > 0) {
+		TAGTarget(mech) = 0;
 
-	mech_notify(mech, MECHALL, "Your TAG connection as been broken.");
+		mech_notify(mech, MECHALL, "Your TAG connection as been broken.");
 
-	MECHEVENT(mech, EVENT_TAG_RECYCLE, tag_recycle_event,
-	    TAGRECYCLE_TICK, 0);
-    }
+		MECHEVENT(mech, EVENT_TAG_RECYCLE, tag_recycle_event,
+				  TAGRECYCLE_TICK, 0);
+	}
 }
 
 void checkTAG(MECH * mech)
 {
-    MECH *target;
-    dbref refTarget;
-    float range;
-    int LOS = 1;
+	MECH *target;
+	dbref refTarget;
+	float range;
+	int LOS = 1;
 
-    refTarget = TAGTarget(mech);
+	refTarget = TAGTarget(mech);
 
-    if (refTarget <= 0)
-	return;
+	if(refTarget <= 0)
+		return;
 
-    target = getMech(refTarget);
+	target = getMech(refTarget);
 
-    if (!target) {
-	stopTAG(mech);
-	return;
-    }
+	if(!target) {
+		stopTAG(mech);
+		return;
+	}
 
-    if (TaggedBy(target) != mech->mynum) {
-	stopTAG(mech);
-	return;
-    }
+	if(TaggedBy(target) != mech->mynum) {
+		stopTAG(mech);
+		return;
+	}
 
-    range = FlMechRange(getMap(mech->mapindex), mech, target);
-    LOS =
-	InLineOfSight_NB(mech, target, MechX(target), MechY(target),
-	range);
+	range = FlMechRange(getMap(mech->mapindex), mech, target);
+	LOS = InLineOfSight_NB(mech, target, MechX(target), MechY(target), range);
 
-    if (!LOS || (range > TAG_LONG)) {
-	stopTAG(mech);
-	return;
-    }
+	if(!LOS || (range > TAG_LONG)) {
+		stopTAG(mech);
+		return;
+	}
 }

@@ -14,7 +14,6 @@
  *
  */
 
-
 /* Simple coding scheme to reduce space used by map hexes to 1 byte/hex */
 
 /* NOTE: if we _ever_ use more than 255 terrain/elevation combinations,
@@ -29,37 +28,37 @@ static int first_free = 0;
 static unsigned char data_to_id[LASTCHAR][ELEVATIONS];
 
 typedef struct hex_struct {
-    char terrain;
-    char elev;
+	char terrain;
+	char elev;
 } HS;
 
 static HS id_to_data[ENTRIES];
 
 void init_map_coding()
 {
-    bzero(id_to_data, sizeof(id_to_data));
-    bzero(data_to_id, sizeof(data_to_id));
+	bzero(id_to_data, sizeof(id_to_data));
+	bzero(data_to_id, sizeof(data_to_id));
 }
 
 int Coding_GetIndex(char terrain, char elevation)
 {
-    int i;
+	int i;
 
-    if ((i = data_to_id[(short) terrain][(short) elevation]))
-	return i - 1;
-    id_to_data[first_free].terrain = terrain;
-    id_to_data[first_free].elev = elevation;
-    first_free++;
-    data_to_id[(short) terrain][(short) elevation] = first_free;
-    return first_free - 1;
+	if((i = data_to_id[(short) terrain][(short) elevation]))
+		return i - 1;
+	id_to_data[first_free].terrain = terrain;
+	id_to_data[first_free].elev = elevation;
+	first_free++;
+	data_to_id[(short) terrain][(short) elevation] = first_free;
+	return first_free - 1;
 }
 
 char Coding_GetElevation(int index)
 {
-    return id_to_data[index].elev;
+	return id_to_data[index].elev;
 }
 
 char Coding_GetTerrain(int index)
 {
-    return id_to_data[index].terrain;
+	return id_to_data[index].terrain;
 }

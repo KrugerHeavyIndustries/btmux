@@ -80,7 +80,7 @@ int FindArtemisForWeapon(MECH * mech, int section, int critical);
 int FindDestructiveAmmo(MECH * mech, int *section, int *critical);
 int FindInfernoAmmo(MECH * mech, int *section, int *critical);
 int FindRoundsForWeapon(MECH * mech, int weapindx);
-const char **ProperSectionStringFromType(int type, int mtype);
+char **ProperSectionStringFromType(int type, int mtype);
 void ArmorStringFromIndex(int index, char *buffer, char type, char mtype);
 int IsInWeaponArc(MECH * mech, float x, float y, int section,
     int critical);

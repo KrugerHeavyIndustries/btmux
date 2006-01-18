@@ -9,23 +9,23 @@
 
 int main(int argc, char **argv)
 {
-    int c, numcr;
+	int c, numcr;
 
-    while ((c = getchar()) != EOF) {
-	if (c == '\\') {
-	    numcr = 0;
-	    do {
-		c = getchar();
-		if (c == '\n')
-		    numcr++;
-	    } while ((c != EOF) && isspace(c));
-	    if (numcr > 1)
-		putchar('\n');
-	    ungetc(c, stdin);
-	} else {
-	    putchar(c);
+	while ((c = getchar()) != EOF) {
+		if(c == '\\') {
+			numcr = 0;
+			do {
+				c = getchar();
+				if(c == '\n')
+					numcr++;
+			} while ((c != EOF) && isspace(c));
+			if(numcr > 1)
+				putchar('\n');
+			ungetc(c, stdin);
+		} else {
+			putchar(c);
+		}
 	}
-    }
-    fflush(stdout);
-    return 0;
+	fflush(stdout);
+	return 0;
 }

@@ -30,59 +30,59 @@ extern char *vsprintf(char *, char *, va_list);
 char *tprintf(const char *format, ...)
 #else
 char *tprintf(va_alist)
-va_dcl
+	 va_dcl
 #endif
 {
-    static char buff[LBUF_SIZE];
-    va_list ap;
+	static char buff[LBUF_SIZE];
+	va_list ap;
 
 #ifdef STDC_HEADERS
-    va_start(ap, format);
+	va_start(ap, format);
 #else
-    const char *format;
+	const char *format;
 
-    va_start(ap);
-    format = va_arg(ap, char *);
+	va_start(ap);
+	format = va_arg(ap, char *);
 
 #endif
-    vsnprintf(buff, LBUF_SIZE, format, ap);
-    va_end(ap);
-    buff[LBUF_SIZE - 1] = '\0';
-    return buff;
+	vsnprintf(buff, LBUF_SIZE, format, ap);
+	va_end(ap);
+	buff[LBUF_SIZE - 1] = '\0';
+	return buff;
 }
 
 #ifdef STDC_HEADERS
 void safe_tprintf_str(char *str, char **bp, const char *format, ...)
 #else
 void safe_tprintf_str(va_alist)
-va_dcl
+	 va_dcl
 #endif
 {
-    static char buff[LBUF_SIZE];
-    va_list ap;
+	static char buff[LBUF_SIZE];
+	va_list ap;
 
 #ifdef STDC_HEADERS
-    va_start(ap, format);
+	va_start(ap, format);
 #else
-    char *str;
-    char **bp;
-    const char *format;
+	char *str;
+	char **bp;
+	const char *format;
 
-    va_start(ap);
-    str = va_arg(ap, char *);
-    bp = va_arg(ap, char **);
-    format = va_arg(ap, char *);
+	va_start(ap);
+	str = va_arg(ap, char *);
+	bp = va_arg(ap, char **);
+	format = va_arg(ap, char *);
 
 #endif
-    /*
-     * Sigh, don't we wish _all_ vsprintf's returned int... 
-     */
+	/*
+	 * Sigh, don't we wish _all_ vsprintf's returned int... 
+	 */
 
-    vsnprintf(buff, LBUF_SIZE, format, ap);
-    va_end(ap);
-    buff[LBUF_SIZE - 1] = '\0';
-    safe_str(buff, str, bp);
-    **bp = '\0';
+	vsnprintf(buff, LBUF_SIZE, format, ap);
+	va_end(ap);
+	buff[LBUF_SIZE - 1] = '\0';
+	safe_str(buff, str, bp);
+	**bp = '\0';
 }
 
 /**
@@ -90,8 +90,8 @@ va_dcl
  */
 dbref insert_first(dbref head, dbref thing)
 {
-    s_Next(thing, head);
-    return thing;
+	s_Next(thing, head);
+	return thing;
 }
 
 /*
@@ -99,18 +99,18 @@ dbref insert_first(dbref head, dbref thing)
  */
 dbref remove_first(dbref head, dbref thing)
 {
-    dbref prev;
+	dbref prev;
 
-    if (head == thing)
-	return (Next(thing));
+	if(head == thing)
+		return (Next(thing));
 
-    DOLIST(prev, head) {
-	if (Next(prev) == thing) {
-	    s_Next(prev, Next(thing));
-	    return head;
+	DOLIST(prev, head) {
+		if(Next(prev) == thing) {
+			s_Next(prev, Next(thing));
+			return head;
+		}
 	}
-    }
-    return head;
+	return head;
 }
 
 /**
@@ -118,16 +118,16 @@ dbref remove_first(dbref head, dbref thing)
  */
 dbref reverse_list(dbref list)
 {
-    dbref newlist, rest;
+	dbref newlist, rest;
 
-    newlist = NOTHING;
-    while (list != NOTHING) {
-	rest = Next(list);
-	s_Next(list, newlist);
-	newlist = list;
-	list = rest;
-    }
-    return newlist;
+	newlist = NOTHING;
+	while (list != NOTHING) {
+		rest = Next(list);
+		s_Next(list, newlist);
+		newlist = list;
+		list = rest;
+	}
+	return newlist;
 }
 
 /**
@@ -135,11 +135,11 @@ dbref reverse_list(dbref list)
  */
 int member(dbref thing, dbref list)
 {
-    DOLIST(list, list) {
-	if (list == thing)
-	    return 1;
-    }
-    return 0;
+	DOLIST(list, list) {
+		if(list == thing)
+			return 1;
+	}
+	return 0;
 }
 
 /**
@@ -147,32 +147,32 @@ int member(dbref thing, dbref list)
  */
 int is_integer(char *str)
 {
-    while (*str && isspace(*str))
-	str++;			/*
-				 * Leading spaces 
-				 */
-    if (*str == '-') {		/*
-				 * Leading minus 
-				 */
-	str++;
-	if (!*str)
-	    return 0;		/*
-				 * but not if just a minus 
-				 */
-    }
-    if (!isdigit(*str))		/*
-				   * Need at least 1 integer 
-				 */
-	return 0;
-    while (*str && isdigit(*str))
-	str++;			/*
-				 * The number (int) 
-				 */
-    while (*str && isspace(*str))
-	str++;			/*
-				 * Trailing spaces 
-				 */
-    return (*str ? 0 : 1);
+	while (*str && isspace(*str))
+		str++;					/*
+								 * Leading spaces 
+								 */
+	if(*str == '-') {			/*
+								 * Leading minus 
+								 */
+		str++;
+		if(!*str)
+			return 0;			/*
+								 * but not if just a minus 
+								 */
+	}
+	if(!isdigit(*str))			/*
+								 * Need at least 1 integer 
+								 */
+		return 0;
+	while (*str && isdigit(*str))
+		str++;					/*
+								 * The number (int) 
+								 */
+	while (*str && isspace(*str))
+		str++;					/*
+								 * Trailing spaces 
+								 */
+	return (*str ? 0 : 1);
 }
 
 /**
@@ -180,202 +180,201 @@ int is_integer(char *str)
  */
 int is_number(char *str)
 {
-    int got_one;
+	int got_one;
 
-    while (*str && isspace(*str))
-	str++;			/*
-				 * Leading spaces 
-				 */
-    if (*str == '-') {		/*
-				 * Leading minus 
-				 */
-	str++;
-	if (!*str)
-	    return 0;		/*
-				 * but not if just a minus 
-				 */
-    }
-    got_one = 0;
-    if (isdigit(*str))
-	got_one = 1;		/*
-				 * Need at least one digit 
-				 */
-    while (*str && isdigit(*str))
-	str++;			/*
-				 * The number (int) 
-				 */
-    if (*str == '.')
-	str++;			/*
-				 * decimal point 
-				 */
-    if (isdigit(*str))
-	got_one = 1;		/*
-				 * Need at least one digit 
-				 */
-    while (*str && isdigit(*str))
-	str++;			/*
-				 * The number (fract) 
-				 */
-    while (*str && isspace(*str))
-	str++;			/*
-				 * Trailing spaces 
-				 */
-    return ((*str || !got_one) ? 0 : 1);
+	while (*str && isspace(*str))
+		str++;					/*
+								 * Leading spaces 
+								 */
+	if(*str == '-') {			/*
+								 * Leading minus 
+								 */
+		str++;
+		if(!*str)
+			return 0;			/*
+								 * but not if just a minus 
+								 */
+	}
+	got_one = 0;
+	if(isdigit(*str))
+		got_one = 1;			/*
+								 * Need at least one digit 
+								 */
+	while (*str && isdigit(*str))
+		str++;					/*
+								 * The number (int) 
+								 */
+	if(*str == '.')
+		str++;					/*
+								 * decimal point 
+								 */
+	if(isdigit(*str))
+		got_one = 1;			/*
+								 * Need at least one digit 
+								 */
+	while (*str && isdigit(*str))
+		str++;					/*
+								 * The number (fract) 
+								 */
+	while (*str && isspace(*str))
+		str++;					/*
+								 * Trailing spaces 
+								 */
+	return ((*str || !got_one) ? 0 : 1);
 }
 
 int could_doit(dbref player, dbref thing, int locknum)
 {
-    char *key;
-    dbref aowner;
-    int aflags, doit;
+	char *key;
+	dbref aowner;
+	int aflags, doit;
 
-    /*
-     * no if nonplayer trys to get key 
-     */
+	/*
+	 * no if nonplayer trys to get key 
+	 */
 
-    if (!isPlayer(player) && Key(thing)) {
-	return 0;
-    }
-    if (Pass_Locks(player))
-	return 1;
+	if(!isPlayer(player) && Key(thing)) {
+		return 0;
+	}
+	if(Pass_Locks(player))
+		return 1;
 
-    key = atr_get(thing, locknum, &aowner, &aflags);
-    doit = eval_boolexp_atr(player, thing, thing, key);
-    free_lbuf(key);
-    return doit;
+	key = atr_get(thing, locknum, &aowner, &aflags);
+	doit = eval_boolexp_atr(player, thing, thing, key);
+	free_lbuf(key);
+	return doit;
 }
 
 int can_see(dbref player, dbref thing, int can_see_loc)
 {
-    /*
-     * Don't show if all the following apply: * Sleeping players should * 
-     * 
-     * *  * * not be seen. * The thing is a disconnected player. * The
-     * player * is  *  * * not a puppet. 
-     */
+	/*
+	 * Don't show if all the following apply: * Sleeping players should * 
+	 * 
+	 * *  * * not be seen. * The thing is a disconnected player. * The
+	 * player * is  *  * * not a puppet. 
+	 */
 
-    if (mudconf.dark_sleepers && isPlayer(thing) && !Connected(thing) &&
-	!Puppet(thing)) {
-	return 0;
-    }
-    /*
-     * You don't see yourself or exits 
-     */
+	if(mudconf.dark_sleepers && isPlayer(thing) && !Connected(thing) &&
+	   !Puppet(thing)) {
+		return 0;
+	}
+	/*
+	 * You don't see yourself or exits 
+	 */
 
-    if ((player == thing) || isExit(thing)) {
-	return 0;
-    }
-    /*
-     * If loc is not dark, you see it if it's not dark or you control it.
-     * * * * * If loc is dark, you see it if you control it.  Seeing your
-     * * own * * * dark objects is controlled by mudconf.see_own_dark. *
-     * In * dark *  * locations, you also see things that are LIGHT and
-     * !DARK. 
-     */
+	if((player == thing) || isExit(thing)) {
+		return 0;
+	}
+	/*
+	 * If loc is not dark, you see it if it's not dark or you control it.
+	 * * * * * If loc is dark, you see it if you control it.  Seeing your
+	 * * own * * * dark objects is controlled by mudconf.see_own_dark. *
+	 * In * dark *  * locations, you also see things that are LIGHT and
+	 * !DARK. 
+	 */
 
-    if (can_see_loc) {
-	return (!Dark(thing) || (mudconf.see_own_dark &&
-		MyopicExam(player, thing)));
-    } else {
-	return ((Light(thing) && !Dark(thing)) || (mudconf.see_own_dark &&
-		MyopicExam(player, thing)));
-    }
+	if(can_see_loc) {
+		return (!Dark(thing) || (mudconf.see_own_dark &&
+								 MyopicExam(player, thing)));
+	} else {
+		return ((Light(thing) && !Dark(thing)) || (mudconf.see_own_dark &&
+												   MyopicExam(player,
+															  thing)));
+	}
 }
 
 static int pay_quota(dbref who, int cost)
 {
-    dbref aowner;
-    int quota, aflags;
-    char buf[20], *quota_str;
+	dbref aowner;
+	int quota, aflags;
+	char buf[20], *quota_str;
 
-    /*
-     * If no cost, succeed 
-     */
+	/*
+	 * If no cost, succeed 
+	 */
 
-    if (cost <= 0)
+	if(cost <= 0)
+		return 1;
+
+	/*
+	 * determine quota 
+	 */
+
+	quota = atoi(quota_str = atr_get(Owner(who), A_RQUOTA, &aowner, &aflags));
+	free_lbuf(quota_str);
+
+	/*
+	 * enough to build?  Wizards always have enough. 
+	 */
+
+	quota -= cost;
+	if((quota < 0) && !Free_Quota(who) && !Free_Quota(Owner(who)))
+		return 0;
+
+	/*
+	 * dock the quota 
+	 */
+	sprintf(buf, "%d", quota);
+	atr_add_raw(Owner(who), A_RQUOTA, buf);
+
 	return 1;
-
-    /*
-     * determine quota 
-     */
-
-    quota = atoi(quota_str =
-	atr_get(Owner(who), A_RQUOTA, &aowner, &aflags));
-    free_lbuf(quota_str);
-
-    /*
-     * enough to build?  Wizards always have enough. 
-     */
-
-    quota -= cost;
-    if ((quota < 0) && !Free_Quota(who) && !Free_Quota(Owner(who)))
-	return 0;
-
-    /*
-     * dock the quota 
-     */
-    sprintf(buf, "%d", quota);
-    atr_add_raw(Owner(who), A_RQUOTA, buf);
-
-    return 1;
 }
 
 int canpayfees(dbref player, dbref who, int pennies, int quota)
 {
-    if (!Wizard(who) && !Wizard(Owner(who)) && !Free_Money(who) &&
-	!Free_Money(Owner(who)) && (Pennies(Owner(who)) < pennies)) {
-	if (player == who) {
-	    notify_printf(player, "Sorry, you don't have enough %s.",
-		    mudconf.many_coins);
-	} else {
-	    notify_printf(player,
-		"Sorry, that player doesn't have enough %s.",
-		    mudconf.many_coins);
+	if(!Wizard(who) && !Wizard(Owner(who)) && !Free_Money(who) &&
+	   !Free_Money(Owner(who)) && (Pennies(Owner(who)) < pennies)) {
+		if(player == who) {
+			notify_printf(player, "Sorry, you don't have enough %s.",
+						  mudconf.many_coins);
+		} else {
+			notify_printf(player,
+						  "Sorry, that player doesn't have enough %s.",
+						  mudconf.many_coins);
+		}
+		return 0;
 	}
-	return 0;
-    }
-    if (mudconf.quotas) {
-	if (!pay_quota(who, quota)) {
-	    if (player == who) {
-		notify(player,
-		    "Sorry, your building contract has run out.");
-	    } else {
-		notify(player,
-		    "Sorry, that player's building contract has run out.");
-	    }
-	    return 0;
+	if(mudconf.quotas) {
+		if(!pay_quota(who, quota)) {
+			if(player == who) {
+				notify(player, "Sorry, your building contract has run out.");
+			} else {
+				notify(player,
+					   "Sorry, that player's building contract has run out.");
+			}
+			return 0;
+		}
 	}
-    }
-    payfor(who, pennies);
-    return 1;
+	payfor(who, pennies);
+	return 1;
 }
 
 int payfor(dbref who, int cost)
 {
-    dbref tmp;
+	dbref tmp;
 
-    if (Wizard(who) || Wizard(Owner(who)) || Free_Money(who) ||
-	Free_Money(Owner(who)) || Immortal(who) || Immortal(Owner(who))) {
-	return 1;
-    }
-    who = Owner(who);
-    if ((tmp = Pennies(who)) >= cost) {
-	s_Pennies(who, tmp - cost);
-	return 1;
-    }
-    return 0;
+	if(Wizard(who) || Wizard(Owner(who)) || Free_Money(who) ||
+	   Free_Money(Owner(who)) || Immortal(who) || Immortal(Owner(who))) {
+		return 1;
+	}
+	who = Owner(who);
+	if((tmp = Pennies(who)) >= cost) {
+		s_Pennies(who, tmp - cost);
+		return 1;
+	}
+	return 0;
 }
 
 void add_quota(dbref who, int payment)
 {
-    dbref aowner;
-    int aflags;
-    char buf[20], *quota;
+	dbref aowner;
+	int aflags;
+	char buf[20], *quota;
 
-    quota = atr_get(who, A_RQUOTA, &aowner, &aflags);
-    sprintf(buf, "%d", atoi(quota) + payment);
-    free_lbuf(quota);
-    atr_add_raw(who, A_RQUOTA, buf);
+	quota = atr_get(who, A_RQUOTA, &aowner, &aflags);
+	sprintf(buf, "%d", atoi(quota) + payment);
+	free_lbuf(quota);
+	atr_add_raw(who, A_RQUOTA, buf);
 }
 
 /**
@@ -383,127 +382,127 @@ void add_quota(dbref who, int payment)
  */
 void giveto(dbref who, int pennies)
 {
-    if (Wizard(who) || Wizard(Owner(who)) || Free_Money(who) ||
-	Free_Money(Owner(who)) || Immortal(who) || Immortal(Owner(who))) {
-	return;
-    }
-    who = Owner(who);
-    s_Pennies(who, Pennies(who) + pennies);
+	if(Wizard(who) || Wizard(Owner(who)) || Free_Money(who) ||
+	   Free_Money(Owner(who)) || Immortal(who) || Immortal(Owner(who))) {
+		return;
+	}
+	who = Owner(who);
+	s_Pennies(who, Pennies(who) + pennies);
 }
 
 int ok_name(const char *name)
 {
-    const char *cp;
+	const char *cp;
 
-    /* Disallow pure ANSI names */
+	/* Disallow pure ANSI names */
 
-    if (strlen(strip_ansi(name)) == 0)
-	return 0;
+	if(strlen(strip_ansi(name)) == 0)
+		return 0;
 
-    /* Disallow leading spaces */
+	/* Disallow leading spaces */
 
-    if (isspace(*name))
-	return 0;
+	if(isspace(*name))
+		return 0;
 
-    /*
-     * Only printable characters 
-     */
+	/*
+	 * Only printable characters 
+	 */
 
-    for (cp = name; cp && *cp; cp++) {
-	if ((!isprint(*cp)) && (*cp != ESC_CHAR))
-	    return 0;
-    }
+	for(cp = name; cp && *cp; cp++) {
+		if((!isprint(*cp)) && (*cp != ESC_CHAR))
+			return 0;
+	}
 
-    /*
-     * Disallow trailing spaces 
-     */
-    cp--;
-    if (isspace(*cp))
-	return 0;
+	/*
+	 * Disallow trailing spaces 
+	 */
+	cp--;
+	if(isspace(*cp))
+		return 0;
 
-    /*
-     * Exclude names that start with or contain certain magic cookies 
-     */
+	/*
+	 * Exclude names that start with or contain certain magic cookies 
+	 */
 
-    return (name && *name && *name != LOOKUP_TOKEN && *name != NUMBER_TOKEN
-	&& *name != NOT_TOKEN && !index(name, ARG_DELIMITER) &&
-	!index(name, AND_TOKEN) && !index(name, OR_TOKEN) &&
-	string_compare(name, "me") && string_compare(name, "home") &&
-	string_compare(name, "here"));
+	return (name && *name && *name != LOOKUP_TOKEN && *name != NUMBER_TOKEN
+			&& *name != NOT_TOKEN && !index(name, ARG_DELIMITER) &&
+			!index(name, AND_TOKEN) && !index(name, OR_TOKEN) &&
+			string_compare(name, "me") && string_compare(name, "home") &&
+			string_compare(name, "here"));
 }
 
 int ok_player_name(const char *name)
 {
-    const char *cp, *good_chars;
+	const char *cp, *good_chars;
 
-    /*
-     * No leading spaces 
-     */
+	/*
+	 * No leading spaces 
+	 */
 
-    if (isspace(*name))
-	return 0;
+	if(isspace(*name))
+		return 0;
 
-    /*
-     * Not too long and a good name for a thing 
-     */
+	/*
+	 * Not too long and a good name for a thing 
+	 */
 
-    if (!ok_name(name) || (strlen(name) >= PLAYER_NAME_LIMIT))
-	return 0;
+	if(!ok_name(name) || (strlen(name) >= PLAYER_NAME_LIMIT))
+		return 0;
 
-    if (mudconf.name_spaces)
-	good_chars = " `$_-.,'";
-    else
-	good_chars = "`$_-.,'";
+	if(mudconf.name_spaces)
+		good_chars = " `$_-.,'";
+	else
+		good_chars = "`$_-.,'";
 
-    /*
-     * Make sure name only contains legal characters 
-     */
+	/*
+	 * Make sure name only contains legal characters 
+	 */
 
-    for (cp = name; cp && *cp; cp++) {
-	if (isalnum(*cp))
-	    continue;
-	if ((!index(good_chars, *cp)) || (*cp == ESC_CHAR))
-	    return 0;
-    }
-    return 1;
+	for(cp = name; cp && *cp; cp++) {
+		if(isalnum(*cp))
+			continue;
+		if((!index(good_chars, *cp)) || (*cp == ESC_CHAR))
+			return 0;
+	}
+	return 1;
 }
 
 int ok_attr_name(const char *attrname)
 {
-    const char *scan;
+	const char *scan;
 
-    if (!isalpha(*attrname))
-	return 0;
-    for (scan = attrname; *scan; scan++) {
-	if (isalnum(*scan))
-	    continue;
-	if (!(index("'?!`/-_.@#$^&~=+<>()%", *scan)))
-	    return 0;
-    }
-    return 1;
+	if(!isalpha(*attrname))
+		return 0;
+	for(scan = attrname; *scan; scan++) {
+		if(isalnum(*scan))
+			continue;
+		if(!(index("'?!`/-_.@#$^&~=+<>()%", *scan)))
+			return 0;
+	}
+	return 1;
 }
 
 int ok_password(const char *password)
 {
-    const char *scan;
+	const char *scan;
 
-    if (*password == '\0')
-	return 0;
+	if(*password == '\0')
+		return 0;
 
-    for (scan = password; *scan; scan++) {
-	if (!(isprint(*scan) && !isspace(*scan))) {
-	    return 0;
+	for(scan = password; *scan; scan++) {
+		if(!(isprint(*scan) && !isspace(*scan))) {
+			return 0;
+		}
 	}
-    }
 
-    /*
-     * Needed.  Change it if you like, but be sure yours is the same. 
-     */
-    if ((strlen(password) == 13) && (password[0] == 'X') &&
-	(password[1] == 'X'))
-	return 0;
+	/*
+	 * Needed.  Change it if you like, but be sure yours is the same. 
+	 */
+	if((strlen(password) == 13) && (password[0] == 'X') &&
+	   (password[1] == 'X'))
+		return 0;
 
-    return 1;
+	return 1;
 }
 
 /**
@@ -511,327 +510,322 @@ int ok_password(const char *password)
  */
 void handle_ears(dbref thing, int could_hear, int can_hear)
 {
-    char *buff, *bp;
-    int gender;
-    static const char *poss[5] = { "", "its", "her", "his", "their" };
+	char *buff, *bp;
+	int gender;
+	static const char *poss[5] = { "", "its", "her", "his", "their" };
 
-    if (!could_hear && can_hear) {
-	buff = alloc_lbuf("handle_ears.grow");
-	StringCopy(buff, Name(thing));
-	if (isExit(thing)) {
-	    for (bp = buff; *bp && (*bp != ';'); bp++);
-	    *bp = '\0';
+	if(!could_hear && can_hear) {
+		buff = alloc_lbuf("handle_ears.grow");
+		StringCopy(buff, Name(thing));
+		if(isExit(thing)) {
+			for(bp = buff; *bp && (*bp != ';'); bp++);
+			*bp = '\0';
+		}
+		gender = get_gender(thing);
+		notify_checked(thing, thing,
+					   tprintf("%s grow%s ears and can now hear.", buff,
+							   (gender == 4) ? "" : "s"),
+					   (MSG_ME | MSG_NBR | MSG_LOC | MSG_INV));
+		free_lbuf(buff);
+	} else if(could_hear && !can_hear) {
+		buff = alloc_lbuf("handle_ears.lose");
+		StringCopy(buff, Name(thing));
+		if(isExit(thing)) {
+			for(bp = buff; *bp && (*bp != ';'); bp++);
+			*bp = '\0';
+		}
+		gender = get_gender(thing);
+		notify_checked(thing, thing,
+					   tprintf("%s lose%s %s ears and become%s deaf.", buff,
+							   (gender == 4) ? "" : "s", poss[gender],
+							   (gender == 4) ? "" : "s"),
+					   (MSG_ME | MSG_NBR | MSG_LOC | MSG_INV));
+		free_lbuf(buff);
 	}
-	gender = get_gender(thing);
-	notify_checked(thing, thing,
-	    tprintf("%s grow%s ears and can now hear.", buff,
-		(gender == 4) ? "" : "s"),
-	    (MSG_ME | MSG_NBR | MSG_LOC | MSG_INV));
-	free_lbuf(buff);
-    } else if (could_hear && !can_hear) {
-	buff = alloc_lbuf("handle_ears.lose");
-	StringCopy(buff, Name(thing));
-	if (isExit(thing)) {
-	    for (bp = buff; *bp && (*bp != ';'); bp++);
-	    *bp = '\0';
-	}
-	gender = get_gender(thing);
-	notify_checked(thing, thing,
-	    tprintf("%s lose%s %s ears and become%s deaf.", buff,
-		(gender == 4) ? "" : "s", poss[gender],
-		(gender == 4) ? "" : "s"),
-	    (MSG_ME | MSG_NBR | MSG_LOC | MSG_INV));
-	free_lbuf(buff);
-    }
 }
 
 /*
  * for lack of better place the @switch code is here 
  */
-void do_switch(dbref player, dbref cause, int key, char *expr, char *args[], 
-    int nargs, char *cargs[], int ncargs)
+void do_switch(dbref player, dbref cause, int key, char *expr, char *args[],
+			   int nargs, char *cargs[], int ncargs)
 {
-    int a, any;
-    char *buff, *bp, *str;
+	int a, any;
+	char *buff, *bp, *str;
 
-    if (!expr || (nargs <= 0))
-	return;
-
-    if (key == SWITCH_DEFAULT) {
-	if (mudconf.switch_df_all)
-	    key = SWITCH_ANY;
-	else
-	    key = SWITCH_ONE;
-    }
-    /*
-     * now try a wild card match of buff with stuff in coms 
-     */
-
-    any = 0;
-    buff = bp = alloc_lbuf("do_switch");
-    for (a = 0; (a < (nargs - 1)) && args[a] && args[a + 1]; a += 2) {
-	bp = buff;
-	str = args[a];
-	exec(buff, &bp, 0, player, cause, EV_FCHECK | EV_EVAL | EV_TOP,
-	    &str, cargs, ncargs);
-	*bp = '\0';
-	if (wild_match(buff, expr)) {
-	    wait_que(player, cause, 0, NOTHING, 0, args[a + 1], cargs,
-		ncargs, mudstate.global_regs);
-	    if (key == SWITCH_ONE) {
-		free_lbuf(buff);
+	if(!expr || (nargs <= 0))
 		return;
-	    }
-	    any = 1;
+
+	if(key == SWITCH_DEFAULT) {
+		if(mudconf.switch_df_all)
+			key = SWITCH_ANY;
+		else
+			key = SWITCH_ONE;
 	}
-    }
-    free_lbuf(buff);
-    if ((a < nargs) && !any && args[a])
-	wait_que(player, cause, 0, NOTHING, 0, args[a], cargs, ncargs,
-	    mudstate.global_regs);
+	/*
+	 * now try a wild card match of buff with stuff in coms 
+	 */
+
+	any = 0;
+	buff = bp = alloc_lbuf("do_switch");
+	for(a = 0; (a < (nargs - 1)) && args[a] && args[a + 1]; a += 2) {
+		bp = buff;
+		str = args[a];
+		exec(buff, &bp, 0, player, cause, EV_FCHECK | EV_EVAL | EV_TOP,
+			 &str, cargs, ncargs);
+		*bp = '\0';
+		if(wild_match(buff, expr)) {
+			wait_que(player, cause, 0, NOTHING, 0, args[a + 1], cargs,
+					 ncargs, mudstate.global_regs);
+			if(key == SWITCH_ONE) {
+				free_lbuf(buff);
+				return;
+			}
+			any = 1;
+		}
+	}
+	free_lbuf(buff);
+	if((a < nargs) && !any && args[a])
+		wait_que(player, cause, 0, NOTHING, 0, args[a], cargs, ncargs,
+				 mudstate.global_regs);
 }
 
-void do_addcommand(dbref player, dbref cause, int key, char *name, 
-    char *command)
+void do_addcommand(dbref player, dbref cause, int key, char *name,
+				   char *command)
 {
-    CMDENT *old, *cmd;
-    ADDENT *add, *nextp;
+	CMDENT *old, *cmd;
+	ADDENT *add, *nextp;
 
-    dbref thing;
-    int atr;
-    char *s;
+	dbref thing;
+	int atr;
+	char *s;
 
-    if (!*name) {
-	notify(player, "Sorry.");
-	return;
-    }
-    if (!parse_attrib(player, command, &thing, &atr) || (atr == NOTHING)) {
-	notify(player, "No such attribute.");
-	return;
-    }
-
-    /* Let's make this case insensitive... */
-
-    for (s = name; *s; s++) {
-	*s = tolower(*s);
-    }
-
-    old = (CMDENT *) hashfind(name, &mudstate.command_htab);
-
-    if (old && (old->callseq & CS_ADDED)) {
-
-	/* If it's already found in the hash table, and it's being
-	   added using the same object and attribute... */
-
-	for (nextp = (ADDENT *) old->handler; nextp != NULL;
-	    nextp = nextp->next) {
-	    if ((nextp->thing == thing) && (nextp->atr == atr)) {
-		notify_printf(player, "%s already added.", name);
+	if(!*name) {
+		notify(player, "Sorry.");
 		return;
-	    }
+	}
+	if(!parse_attrib(player, command, &thing, &atr) || (atr == NOTHING)) {
+		notify(player, "No such attribute.");
+		return;
 	}
 
-	/* else tack it on to the existing entry... */
+	/* Let's make this case insensitive... */
 
-	add = (ADDENT *) malloc(sizeof(ADDENT));
-	add->thing = thing;
-	add->atr = atr;
-	add->name = (char *) strdup(name);
-	add->next = (ADDENT *) old->handler;
-	old->handler = (void *) add;
-    } else {
-	if (old) {
-	    /* Delete the old built-in and rename it __name */
-	    hashdelete(name, &mudstate.command_htab);
+	for(s = name; *s; s++) {
+		*s = tolower(*s);
 	}
 
-	cmd = (CMDENT *) malloc(sizeof(CMDENT));
+	old = (CMDENT *) hashfind(name, &mudstate.command_htab);
 
-	cmd->cmdname = (char *) strdup(name);
-	cmd->switches = NULL;
-	cmd->perms = 0;
-	cmd->extra = 0;
-	if (old && (old->callseq & CS_LEADIN)) {
-	    cmd->callseq = CS_ADDED | CS_ONE_ARG | CS_LEADIN;
+	if(old && (old->callseq & CS_ADDED)) {
+
+		/* If it's already found in the hash table, and it's being
+		   added using the same object and attribute... */
+
+		for(nextp = (ADDENT *) old->handler; nextp != NULL;
+			nextp = nextp->next) {
+			if((nextp->thing == thing) && (nextp->atr == atr)) {
+				notify_printf(player, "%s already added.", name);
+				return;
+			}
+		}
+
+		/* else tack it on to the existing entry... */
+
+		add = (ADDENT *) malloc(sizeof(ADDENT));
+		add->thing = thing;
+		add->atr = atr;
+		add->name = (char *) strdup(name);
+		add->next = (ADDENT *) old->handler;
+		old->handler = (void *) add;
 	} else {
-	    cmd->callseq = CS_ADDED | CS_ONE_ARG;
+		if(old) {
+			/* Delete the old built-in and rename it __name */
+			hashdelete(name, &mudstate.command_htab);
+		}
+
+		cmd = (CMDENT *) malloc(sizeof(CMDENT));
+
+		cmd->cmdname = (char *) strdup(name);
+		cmd->switches = NULL;
+		cmd->perms = 0;
+		cmd->extra = 0;
+		if(old && (old->callseq & CS_LEADIN)) {
+			cmd->callseq = CS_ADDED | CS_ONE_ARG | CS_LEADIN;
+		} else {
+			cmd->callseq = CS_ADDED | CS_ONE_ARG;
+		}
+		add = (ADDENT *) malloc(sizeof(ADDENT));
+		add->thing = thing;
+		add->atr = atr;
+		add->name = (char *) strdup(name);
+		add->next = NULL;
+		cmd->handler = (void *) add;
+
+		hashadd(name, (int *) cmd, &mudstate.command_htab);
+
+		if(old) {
+			/* Fix any aliases of this command. */
+			hashreplall((int *) old, (int *) cmd, &mudstate.command_htab);
+			hashadd(tprintf("__%s", name), (int *) old,
+					&mudstate.command_htab);
+		}
 	}
-	add = (ADDENT *) malloc(sizeof(ADDENT));
-	add->thing = thing;
-	add->atr = atr;
-	add->name = (char *) strdup(name);
-	add->next = NULL;
-	cmd->handler = (void *) add;
 
-	hashadd(name, (int *) cmd, &mudstate.command_htab);
+	/* We reset the one letter commands here so you can overload them */
 
-	if (old) {
-	    /* Fix any aliases of this command. */
-	    hashreplall((int *) old, (int *) cmd, &mudstate.command_htab);
-	    hashadd(tprintf("__%s", name), (int *) old,
-		&mudstate.command_htab);
-	}
-    }
-
-    /* We reset the one letter commands here so you can overload them */
-
-    set_prefix_cmds();
-    notify_printf(player, "%s added.", name);
+	set_prefix_cmds();
+	notify_printf(player, "%s added.", name);
 }
 
 void do_listcommands(dbref player, dbref cause, int key, char *name)
 {
-    CMDENT *old;
-    ADDENT *nextp;
-    int didit = 0;
+	CMDENT *old;
+	ADDENT *nextp;
+	int didit = 0;
 
-    char *s, *keyname;
+	char *s, *keyname;
 
-    /* Let's make this case insensitive... */
+	/* Let's make this case insensitive... */
 
-    for (s = name; *s; s++) {
-	*s = tolower(*s);
-    }
+	for(s = name; *s; s++) {
+		*s = tolower(*s);
+	}
 
-    if (*name) {
+	if(*name) {
+		old = (CMDENT *) hashfind(name, &mudstate.command_htab);
+
+		if(old && (old->callseq & CS_ADDED)) {
+
+			/* If it's already found in the hash table, and it's being
+			   added using the same object and attribute... */
+
+			for(nextp = (ADDENT *) old->handler; nextp != NULL;
+				nextp = nextp->next) {
+				notify_printf(player, "%s: #%d/%s", nextp->name,
+							  nextp->thing,
+							  ((ATTR *) atr_num(nextp->atr))->name);
+			}
+		} else {
+			notify_printf(player, "%s not found in command table.", name);
+		}
+		return;
+	} else {
+		for(keyname = hash_firstkey(&mudstate.command_htab);
+			keyname != NULL; keyname = hash_nextkey(&mudstate.command_htab)) {
+
+			old = (CMDENT *) hashfind(keyname, &mudstate.command_htab);
+
+			if(old && (old->callseq & CS_ADDED)) {
+
+				for(nextp = (ADDENT *) old->handler; nextp != NULL;
+					nextp = nextp->next) {
+					if(strcmp(keyname, nextp->name))
+						continue;
+					notify_printf(player, "%s: #%d/%s", nextp->name,
+								  nextp->thing,
+								  ((ATTR *) atr_num(nextp->atr))->name);
+					didit = 1;
+				}
+			}
+		}
+	}
+	if(!didit)
+		notify(player, "No added commands found in command table.");
+}
+
+void do_delcommand(dbref player, dbref cause, int key, char *name,
+				   char *command)
+{
+	CMDENT *old, *cmd;
+	ADDENT *prev = NULL, *nextp;
+
+	dbref thing;
+	int atr;
+	char *s;
+
+	if(!*name) {
+		notify(player, "Sorry.");
+		return;
+	}
+
+	if(*command) {
+		if(!parse_attrib(player, command, &thing, &atr) || (atr == NOTHING)) {
+			notify(player, "No such attribute.");
+			return;
+		}
+	}
+
+	/* Let's make this case insensitive... */
+
+	for(s = name; *s; s++) {
+		*s = tolower(*s);
+	}
+
 	old = (CMDENT *) hashfind(name, &mudstate.command_htab);
 
-	if (old && (old->callseq & CS_ADDED)) {
-
-	    /* If it's already found in the hash table, and it's being
-	       added using the same object and attribute... */
-
-	    for (nextp = (ADDENT *) old->handler; nextp != NULL;
-		nextp = nextp->next) {
-		notify_printf(player, "%s: #%d/%s", nextp->name,
-			nextp->thing,
-			((ATTR *) atr_num(nextp->atr))->name);
-	    }
-	} else {
-	    notify_printf(player, "%s not found in command table.",
-		    name);
-	}
-	return;
-    } else {
-	for (keyname = hash_firstkey(&mudstate.command_htab);
-	    keyname != NULL;
-	    keyname = hash_nextkey(&mudstate.command_htab)) {
-
-	    old = (CMDENT *) hashfind(keyname, &mudstate.command_htab);
-
-	    if (old && (old->callseq & CS_ADDED)) {
-
-		for (nextp = (ADDENT *) old->handler; nextp != NULL;
-		    nextp = nextp->next) {
-		    if (strcmp(keyname, nextp->name))
-			continue;
-		    notify_printf(player, "%s: #%d/%s", nextp->name,
-			    nextp->thing,
-			    ((ATTR *) atr_num(nextp->atr))->name);
-		    didit = 1;
-		}
-	    }
-	}
-    }
-    if (!didit)
-	notify(player, "No added commands found in command table.");
-}
-
-void do_delcommand(dbref player, dbref cause, int key, char *name, 
-    char *command)
-{
-    CMDENT *old, *cmd;
-    ADDENT *prev = NULL, *nextp;
-
-    dbref thing;
-    int atr;
-    char *s;
-
-    if (!*name) {
-	notify(player, "Sorry.");
-	return;
-    }
-
-    if (*command) {
-	if (!parse_attrib(player, command, &thing, &atr) ||
-	    (atr == NOTHING)) {
-	    notify(player, "No such attribute.");
-	    return;
-	}
-    }
-
-    /* Let's make this case insensitive... */
-
-    for (s = name; *s; s++) {
-	*s = tolower(*s);
-    }
-
-    old = (CMDENT *) hashfind(name, &mudstate.command_htab);
-
-    if (old && (old->callseq & CS_ADDED)) {
-	if (!*command) {
-	    for (prev = (ADDENT *) old->handler; prev != NULL;
-		prev = nextp) {
-		nextp = prev->next;
-		/* Delete it! */
-		free(prev->name);
-		free(prev);
-	    }
-	    hashdelete(name, &mudstate.command_htab);
-	    if ((cmd =
-		    (CMDENT *) hashfind(tprintf("__%s", name),
-			&mudstate.command_htab)) != NULL) {
-		hashdelete(tprintf("__%s", name), &mudstate.command_htab);
-		hashadd(name, (int *) cmd, &mudstate.command_htab);
-		hashreplall((int *) old, (int *) cmd,
-		    &mudstate.command_htab);
-	    }
-	    free(old);
-	    set_prefix_cmds();
-	    notify(player, "Done.");
-	    return;
-	} else {
-	    for (nextp = (ADDENT *) old->handler; nextp != NULL;
-		nextp = nextp->next) {
-		if ((nextp->thing == thing) && (nextp->atr == atr)) {
-		    /* Delete it! */
-		    free(nextp->name);
-		    if (!prev) {
-			if (!nextp->next) {
-			    hashdelete(name, &mudstate.command_htab);
-			    if ((cmd =
-				    (CMDENT *) hashfind(tprintf("__%s",
-					    name),
-					&mudstate.command_htab)) != NULL) {
-				hashdelete(tprintf("__%s", name),
-				    &mudstate.command_htab);
-				hashadd(name, (int *) cmd,
-				    &mudstate.command_htab);
-				hashreplall((int *) old, (int *) cmd,
-				    &mudstate.command_htab);
-			    }
-			    free(old);
-			} else {
-			    old->handler = (void *) nextp->next;
-			    free(nextp);
+	if(old && (old->callseq & CS_ADDED)) {
+		if(!*command) {
+			for(prev = (ADDENT *) old->handler; prev != NULL; prev = nextp) {
+				nextp = prev->next;
+				/* Delete it! */
+				free(prev->name);
+				free(prev);
 			}
-		    } else {
-			prev->next = nextp->next;
-			free(nextp);
-		    }
-		    set_prefix_cmds();
-		    notify(player, "Done.");
-		    return;
+			hashdelete(name, &mudstate.command_htab);
+			if((cmd =
+				(CMDENT *) hashfind(tprintf("__%s", name),
+									&mudstate.command_htab)) != NULL) {
+				hashdelete(tprintf("__%s", name), &mudstate.command_htab);
+				hashadd(name, (int *) cmd, &mudstate.command_htab);
+				hashreplall((int *) old, (int *) cmd, &mudstate.command_htab);
+			}
+			free(old);
+			set_prefix_cmds();
+			notify(player, "Done.");
+			return;
+		} else {
+			for(nextp = (ADDENT *) old->handler; nextp != NULL;
+				nextp = nextp->next) {
+				if((nextp->thing == thing) && (nextp->atr == atr)) {
+					/* Delete it! */
+					free(nextp->name);
+					if(!prev) {
+						if(!nextp->next) {
+							hashdelete(name, &mudstate.command_htab);
+							if((cmd =
+								(CMDENT *) hashfind(tprintf("__%s",
+															name),
+													&mudstate.
+													command_htab)) != NULL) {
+								hashdelete(tprintf("__%s", name),
+										   &mudstate.command_htab);
+								hashadd(name, (int *) cmd,
+										&mudstate.command_htab);
+								hashreplall((int *) old, (int *) cmd,
+											&mudstate.command_htab);
+							}
+							free(old);
+						} else {
+							old->handler = (void *) nextp->next;
+							free(nextp);
+						}
+					} else {
+						prev->next = nextp->next;
+						free(nextp);
+					}
+					set_prefix_cmds();
+					notify(player, "Done.");
+					return;
+				}
+				prev = nextp;
+			}
+			notify(player, "Command not found in command table.");
 		}
-		prev = nextp;
-	    }
-	    notify(player, "Command not found in command table.");
+	} else {
+		notify(player, "Command not found in command table.");
 	}
-    } else {
-	notify(player, "Command not found in command table.");
-    }
 }
-
 
 /**
  * @prog 'glues' a user's input to a command. Once executed, the first string
@@ -839,184 +833,181 @@ void do_delcommand(dbref player, dbref cause, int key, char *name,
  * A_PROGMSG, which can be substituted in <command> with %0. Commands already
  * queued by the doer will be processed normally.
  */
-void handle_prog(DESC *d, char *message)
+void handle_prog(DESC * d, char *message)
 {
-    DESC *all;
-    char *cmd;
-    dbref aowner;
-    int aflags, i;
+	DESC *all;
+	char *cmd;
+	dbref aowner;
+	int aflags, i;
 
-    /*
-     * Allow the player to pipe a command while in interactive mode. 
-     */
+	/*
+	 * Allow the player to pipe a command while in interactive mode. 
+	 */
 
-    if (*message == '|') {
-	do_command(d, message + 1, 1);
-	/* Use telnet protocol's GOAHEAD command to show prompt */
-	if (d->program_data != NULL)
-	    queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE,
-		    ANSI_NORMAL));
-	return;
-    }
-    cmd = atr_get(d->player, A_PROGCMD, &aowner, &aflags);
-    wait_que(d->program_data->wait_cause, d->player, 0, NOTHING, 0, cmd,
-	(char **) &message, 1, (char **) d->program_data->wait_regs);
+	if(*message == '|') {
+		do_command(d, message + 1, 1);
+		/* Use telnet protocol's GOAHEAD command to show prompt */
+		if(d->program_data != NULL)
+			queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE,
+									ANSI_NORMAL));
+		return;
+	}
+	cmd = atr_get(d->player, A_PROGCMD, &aowner, &aflags);
+	wait_que(d->program_data->wait_cause, d->player, 0, NOTHING, 0, cmd,
+			 (char **) &message, 1, (char **) d->program_data->wait_regs);
 
-    /* First, set 'all' to a descriptor we find for this player */
+	/* First, set 'all' to a descriptor we find for this player */
 
+	//all = (DESC *) nhashfind(d->player, &mudstate.desc_htab);
+	all = (DESC *) rb_find(mudstate.desctree, &d->player);
 
-    //all = (DESC *) nhashfind(d->player, &mudstate.desc_htab);
-    all = (DESC *) rb_find(mudstate.desctree, &d->player);
+	for(i = 0; i < MAX_GLOBAL_REGS; i++) {
+		free_lbuf(all->program_data->wait_regs[i]);
+	}
+	free(all->program_data);
 
-    for (i = 0; i < MAX_GLOBAL_REGS; i++) {
-	free_lbuf(all->program_data->wait_regs[i]);
-    }
-    free(all->program_data);
+	/* Set info for all player descriptors to NULL */
 
-    /* Set info for all player descriptors to NULL */
+	DESC_ITER_PLAYER(d->player, all)
+		all->program_data = NULL;
 
-    DESC_ITER_PLAYER(d->player, all)
-	all->program_data = NULL;
-
-    atr_clr(d->player, A_PROGCMD);
-    free_lbuf(cmd);
+	atr_clr(d->player, A_PROGCMD);
+	free_lbuf(cmd);
 }
 
 void do_quitprog(dbref player, dbref cause, int key, char *name)
 {
-    DESC *d;
-    dbref doer;
-    int i, isprog = 0;
+	DESC *d;
+	dbref doer;
+	int i, isprog = 0;
 
-    if (*name) {
-	doer = match_thing(player, name);
-    } else {
-	doer = player;
-    }
-
-    if (!(Prog(player) || Prog(Owner(player))) && (player != doer)) {
-	notify(player, "Permission denied.");
-	return;
-    }
-    if (!isPlayer(doer) || !Good_obj(doer)) {
-	notify(player, "That is not a player.");
-	return;
-    }
-    if (!Connected(doer)) {
-	notify(player, "That player is not connected.");
-	return;
-    }
-    DESC_ITER_PLAYER(doer, d) {
-	if (d->program_data != NULL) {
-	    isprog = 1;
+	if(*name) {
+		doer = match_thing(player, name);
+	} else {
+		doer = player;
 	}
-    }
 
-    if (!isprog) {
-	notify(player, "Player is not in an @program.");
-	return;
-    }
+	if(!(Prog(player) || Prog(Owner(player))) && (player != doer)) {
+		notify(player, "Permission denied.");
+		return;
+	}
+	if(!isPlayer(doer) || !Good_obj(doer)) {
+		notify(player, "That is not a player.");
+		return;
+	}
+	if(!Connected(doer)) {
+		notify(player, "That player is not connected.");
+		return;
+	}
+	DESC_ITER_PLAYER(doer, d) {
+		if(d->program_data != NULL) {
+			isprog = 1;
+		}
+	}
 
+	if(!isprog) {
+		notify(player, "Player is not in an @program.");
+		return;
+	}
 //    d = (DESC *) nhashfind(doer, &mudstate.desc_htab);
-    d = (DESC *) rb_find(mudstate.desctree, &doer);
+	d = (DESC *) rb_find(mudstate.desctree, &doer);
 
-    for (i = 0; i < MAX_GLOBAL_REGS; i++) {
-	free_lbuf(d->program_data->wait_regs[i]);
-    }
-    free(d->program_data);
+	for(i = 0; i < MAX_GLOBAL_REGS; i++) {
+		free_lbuf(d->program_data->wait_regs[i]);
+	}
+	free(d->program_data);
 
-    /* Set info for all player descriptors to NULL */
+	/* Set info for all player descriptors to NULL */
 
-    DESC_ITER_PLAYER(doer, d)
-	d->program_data = NULL;
+	DESC_ITER_PLAYER(doer, d)
+		d->program_data = NULL;
 
-    atr_clr(doer, A_PROGCMD);
-    notify(player, "@program cleared.");
-    notify(doer, "Your @program has been terminated.");
+	atr_clr(doer, A_PROGCMD);
+	notify(player, "@program cleared.");
+	notify(doer, "Your @program has been terminated.");
 }
 
 void do_prog(dbref player, dbref cause, int key, char *name, char *command)
 {
-    DESC *d;
-    PROG *program;
-    int i, atr, aflags;
-    dbref doer, thing, aowner;
-    ATTR *ap;
-    char *attrib, *msg;
+	DESC *d;
+	PROG *program;
+	int i, atr, aflags;
+	dbref doer, thing, aowner;
+	ATTR *ap;
+	char *attrib, *msg;
 
-    if (!name || !*name) {
-	notify(player, "No players specified.");
-	return;
-    }
-    doer = match_thing(player, name);
-
-    if (!(Prog(player) || Prog(Owner(player))) && (player != doer)) {
-	notify(player, "Permission denied.");
-	return;
-    }
-    if (!isPlayer(doer) || !Good_obj(doer)) {
-	notify(player, "That is not a player.");
-	return;
-    }
-    if (!Connected(doer)) {
-	notify(player, "That player is not connected.");
-	return;
-    }
-    msg = command;
-    attrib = parse_to(&msg, ':', 1);
-
-    if (msg && *msg) {
-	notify(doer, msg);
-    }
-    parse_attrib(player, attrib, &thing, &atr);
-    if (atr != NOTHING) {
-	if (!atr_get_info(thing, atr, &aowner, &aflags)) {
-	    notify(player, "Attribute not present on object.");
-	    return;
+	if(!name || !*name) {
+		notify(player, "No players specified.");
+		return;
 	}
-	ap = atr_num(atr);
-	if (God(player) || (!God(thing) &&
-		See_attr(player, thing, ap, aowner, aflags) &&
-		(Wizard(player) || (aowner == Owner(player))))) {
-	    atr_add_raw(doer, A_PROGCMD, atr_get_raw(thing, atr));
+	doer = match_thing(player, name);
+
+	if(!(Prog(player) || Prog(Owner(player))) && (player != doer)) {
+		notify(player, "Permission denied.");
+		return;
+	}
+	if(!isPlayer(doer) || !Good_obj(doer)) {
+		notify(player, "That is not a player.");
+		return;
+	}
+	if(!Connected(doer)) {
+		notify(player, "That player is not connected.");
+		return;
+	}
+	msg = command;
+	attrib = parse_to(&msg, ':', 1);
+
+	if(msg && *msg) {
+		notify(doer, msg);
+	}
+	parse_attrib(player, attrib, &thing, &atr);
+	if(atr != NOTHING) {
+		if(!atr_get_info(thing, atr, &aowner, &aflags)) {
+			notify(player, "Attribute not present on object.");
+			return;
+		}
+		ap = atr_num(atr);
+		if(God(player) || (!God(thing) &&
+						   See_attr(player, thing, ap, aowner, aflags) &&
+						   (Wizard(player) || (aowner == Owner(player))))) {
+			atr_add_raw(doer, A_PROGCMD, atr_get_raw(thing, atr));
+		} else {
+			notify(player, "Permission denied.");
+			return;
+		}
 	} else {
-	    notify(player, "Permission denied.");
-	    return;
+		notify(player, "No such attribute.");
+		return;
 	}
-    } else {
-	notify(player, "No such attribute.");
-	return;
-    }
-
-    /*
-     * Check to see if the cause already has an @prog input pending 
-     */
-    DESC_ITER_PLAYER(doer, d) {
-	if (d->program_data != NULL) {
-	    notify(player, "Input already pending.");
-	    return;
-	}
-    }
-
-    program = (PROG *) malloc(sizeof(PROG));
-    program->wait_cause = player;
-    for (i = 0; i < MAX_GLOBAL_REGS; i++) {
-	program->wait_regs[i] = alloc_lbuf("prog_regs");
-	StringCopy(program->wait_regs[i], mudstate.global_regs[i]);
-    }
-
-    /*
-     * Now, start waiting. 
-     */
-    DESC_ITER_PLAYER(doer, d) {
-	d->program_data = program;
 
 	/*
-	 * Use telnet protocol's GOAHEAD command to show prompt 
+	 * Check to see if the cause already has an @prog input pending 
 	 */
-	queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE,
-		ANSI_NORMAL));
-    }
+	DESC_ITER_PLAYER(doer, d) {
+		if(d->program_data != NULL) {
+			notify(player, "Input already pending.");
+			return;
+		}
+	}
+
+	program = (PROG *) malloc(sizeof(PROG));
+	program->wait_cause = player;
+	for(i = 0; i < MAX_GLOBAL_REGS; i++) {
+		program->wait_regs[i] = alloc_lbuf("prog_regs");
+		StringCopy(program->wait_regs[i], mudstate.global_regs[i]);
+	}
+
+	/*
+	 * Now, start waiting. 
+	 */
+	DESC_ITER_PLAYER(doer, d) {
+		d->program_data = program;
+
+		/*
+		 * Use telnet protocol's GOAHEAD command to show prompt 
+		 */
+		queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE, ANSI_NORMAL));
+	}
 
 }
 
@@ -1025,24 +1016,25 @@ void do_prog(dbref player, dbref cause, int key, char *name, char *command)
  */
 void do_restart(dbref player, dbref cause, int key)
 {
-    if (key && mudstate.dumping) {
-        notify(player, "Dumping. Please try again later.");
-        return;
-    }
+	if(key && mudstate.dumping) {
+		notify(player, "Dumping. Please try again later.");
+		return;
+	}
 
-    ResetSpecialObjects();
-    raw_broadcast(0, "Game: Restart by %s, please wait.",
-            Name(Owner(player)));
-    shutdown_services();
+	ResetSpecialObjects();
+	raw_broadcast(0, "Game: Restart by %s, please wait.",
+				  Name(Owner(player)));
+	shutdown_services();
 
-    STARTLOG(LOG_ALWAYS, "WIZ", "RSTRT") {
-        log_text((char *) "Restart by ");
-        log_name(player);
-        ENDLOG;
-    } dump_database_internal(DUMP_RESTART);
+	STARTLOG(LOG_ALWAYS, "WIZ", "RSTRT") {
+		log_text((char *) "Restart by ");
+		log_name(player);
+		ENDLOG;
+	} dump_database_internal(DUMP_RESTART);
 
-    dump_restart_db();
-    execl(mudstate.executable_path, mudstate.executable_path, mudconf.config_file, NULL);
+	dump_restart_db();
+	execl(mudstate.executable_path, mudstate.executable_path,
+		  mudconf.config_file, NULL);
 }
 
 /**
@@ -1054,262 +1046,265 @@ void do_comment(dbref player, dbref cause, int key)
 
 static dbref promote_dflt(dbref old, dbref new)
 {
-    switch (new) {
-    case NOPERM:
-	return NOPERM;
-    case AMBIGUOUS:
-	if (old == NOPERM)
-	    return old;
-	else
-	    return new;
-    }
+	switch (new) {
+	case NOPERM:
+		return NOPERM;
+	case AMBIGUOUS:
+		if(old == NOPERM)
+			return old;
+		else
+			return new;
+	}
 
-    if ((old == NOPERM) || (old == AMBIGUOUS))
-	return old;
+	if((old == NOPERM) || (old == AMBIGUOUS))
+		return old;
 
-    return NOTHING;
+	return NOTHING;
 }
 
-dbref match_possessed(dbref player, dbref thing, char *target, dbref dflt, int check_enter) {
-    dbref result, result1;
-    int control;
-    char *buff, *start, *place, *s1, *d1, *temp;
+dbref match_possessed(dbref player, dbref thing, char *target, dbref dflt,
+					  int check_enter)
+{
+	dbref result, result1;
+	int control;
+	char *buff, *start, *place, *s1, *d1, *temp;
 
-    /*
-     * First, check normally 
-     */
+	/*
+	 * First, check normally 
+	 */
 
-    if (Good_obj(dflt))
-        return dflt;
+	if(Good_obj(dflt))
+		return dflt;
 
-    /*
-     * Didn't find it directly.  Recursively do a contents check 
-     */
+	/*
+	 * Didn't find it directly.  Recursively do a contents check 
+	 */
 
-    start = target;
-    while (*target) {
+	start = target;
+	while (*target) {
 
-        /*
-         * Fail if no ' characters 
-         */
+		/*
+		 * Fail if no ' characters 
+		 */
 
-        place = target;
-        target = (char *) index(place, '\'');
-        if ((target == NULL) || !*target)
-            return dflt;
+		place = target;
+		target = (char *) index(place, '\'');
+		if((target == NULL) || !*target)
+			return dflt;
 
-        /*
-         * If string started with a ', skip past it 
-         */
+		/*
+		 * If string started with a ', skip past it 
+		 */
 
-        if (place == target) {
-            target++;
-            continue;
-        }
-        /*
-         * If next character is not an s or a space, skip past 
-         */
+		if(place == target) {
+			target++;
+			continue;
+		}
+		/*
+		 * If next character is not an s or a space, skip past 
+		 */
 
-        temp = target++;
-        if (!*target)
-            return dflt;
-        if ((*target != 's') && (*target != 'S') && (*target != ' '))
-            continue;
+		temp = target++;
+		if(!*target)
+			return dflt;
+		if((*target != 's') && (*target != 'S') && (*target != ' '))
+			continue;
 
-        /*
-         * If character was not a space make sure the following * * * 
-         * 
-         * * character is a space. 
-         */
+		/*
+		 * If character was not a space make sure the following * * * 
+		 * 
+		 * * character is a space. 
+		 */
 
-        if (*target != ' ') {
-            target++;
-            if (!*target)
-                return dflt;
-            if (*target != ' ')
-                continue;
-        }
-        /*
-         * Copy the container name to a new buffer so we can * * * *
-         * terminate it. 
-         */
+		if(*target != ' ') {
+			target++;
+			if(!*target)
+				return dflt;
+			if(*target != ' ')
+				continue;
+		}
+		/*
+		 * Copy the container name to a new buffer so we can * * * *
+		 * terminate it. 
+		 */
 
-        buff = alloc_lbuf("is_posess");
-        for (s1 = start, d1 = buff; *s1 && (s1 < temp); *d1++ = (*s1++));
-        *d1 = '\0';
+		buff = alloc_lbuf("is_posess");
+		for(s1 = start, d1 = buff; *s1 && (s1 < temp); *d1++ = (*s1++));
+		*d1 = '\0';
 
-        /*
-         * Look for the container here and in our inventory.  Skip *
-         * * * * past if we can't find it. 
-         */
+		/*
+		 * Look for the container here and in our inventory.  Skip *
+		 * * * * past if we can't find it. 
+		 */
 
-        init_match(thing, buff, NOTYPE);
-        if (player == thing) {
-            match_neighbor();
-            match_possession();
-        } else {
-            match_possession();
-        }
-        result1 = match_result();
+		init_match(thing, buff, NOTYPE);
+		if(player == thing) {
+			match_neighbor();
+			match_possession();
+		} else {
+			match_possession();
+		}
+		result1 = match_result();
 
-        free_lbuf(buff);
-        if (!Good_obj(result1)) {
-            dflt = promote_dflt(dflt, result1);
-            continue;
-        }
-        /*
-         * If we don't control it and it is either dark or opaque, *
-         * * * * skip past. 
-         */
+		free_lbuf(buff);
+		if(!Good_obj(result1)) {
+			dflt = promote_dflt(dflt, result1);
+			continue;
+		}
+		/*
+		 * If we don't control it and it is either dark or opaque, *
+		 * * * * skip past. 
+		 */
 
-        control = Controls(player, result1);
-        if ((Dark(result1) || Opaque(result1)) && !control) {
-            dflt = promote_dflt(dflt, NOTHING);
-            continue;
-        }
-        /*
-         * Validate object has the ENTER bit set, if requested 
-         */
+		control = Controls(player, result1);
+		if((Dark(result1) || Opaque(result1)) && !control) {
+			dflt = promote_dflt(dflt, NOTHING);
+			continue;
+		}
+		/*
+		 * Validate object has the ENTER bit set, if requested 
+		 */
 
-        if ((check_enter) && !Enter_ok(result1) && !control) {
-            dflt = promote_dflt(dflt, NOPERM);
-            continue;
-        }
-        /*
-         * Look for the object in the container 
-         */
+		if((check_enter) && !Enter_ok(result1) && !control) {
+			dflt = promote_dflt(dflt, NOPERM);
+			continue;
+		}
+		/*
+		 * Look for the object in the container 
+		 */
 
-        init_match(result1, target, NOTYPE);
-        match_possession();
-        result = match_result();
-        result =
-            match_possessed(player, result1, target, result, check_enter);
-        if (Good_obj(result))
-            return result;
-        dflt = promote_dflt(dflt, result);
-    }
-    return dflt;
+		init_match(result1, target, NOTYPE);
+		match_possession();
+		result = match_result();
+		result =
+			match_possessed(player, result1, target, result, check_enter);
+		if(Good_obj(result))
+			return result;
+		dflt = promote_dflt(dflt, result);
+	}
+	return dflt;
 }
 
 /**
  * break up <what>,<low>,<high> syntax
  */
-void parse_range(char **name, dbref *low_bound, dbref *high_bound)
+void parse_range(char **name, dbref * low_bound, dbref * high_bound)
 {
-    char *buff1, *buff2;
+	char *buff1, *buff2;
 
-    buff1 = *name;
-    if (buff1 && *buff1)
-	*name = parse_to(&buff1, ',', EV_STRIP_TS);
-    if (buff1 && *buff1) {
-	buff2 = parse_to(&buff1, ',', EV_STRIP_TS);
-	if (buff1 && *buff1) {
-	    while (*buff1 && isspace(*buff1))
-		buff1++;
-	    if (*buff1 == NUMBER_TOKEN)
-		buff1++;
-	    *high_bound = atoi(buff1);
-	    if (*high_bound >= mudstate.db_top)
-		*high_bound = mudstate.db_top - 1;
+	buff1 = *name;
+	if(buff1 && *buff1)
+		*name = parse_to(&buff1, ',', EV_STRIP_TS);
+	if(buff1 && *buff1) {
+		buff2 = parse_to(&buff1, ',', EV_STRIP_TS);
+		if(buff1 && *buff1) {
+			while (*buff1 && isspace(*buff1))
+				buff1++;
+			if(*buff1 == NUMBER_TOKEN)
+				buff1++;
+			*high_bound = atoi(buff1);
+			if(*high_bound >= mudstate.db_top)
+				*high_bound = mudstate.db_top - 1;
+		} else {
+			*high_bound = mudstate.db_top - 1;
+		}
+		while (*buff2 && isspace(*buff2))
+			buff2++;
+		if(*buff2 == NUMBER_TOKEN)
+			buff2++;
+		*low_bound = atoi(buff2);
+		if(*low_bound < 0)
+			*low_bound = 0;
 	} else {
-	    *high_bound = mudstate.db_top - 1;
+		*low_bound = 0;
+		*high_bound = mudstate.db_top - 1;
 	}
-	while (*buff2 && isspace(*buff2))
-	    buff2++;
-	if (*buff2 == NUMBER_TOKEN)
-	    buff2++;
-	*low_bound = atoi(buff2);
-	if (*low_bound < 0)
-	    *low_bound = 0;
-    } else {
-	*low_bound = 0;
-	*high_bound = mudstate.db_top - 1;
-    }
 }
 
-int parse_thing_slash(dbref player, char *thing, char **after, dbref *it) {
-    char *str;
+int parse_thing_slash(dbref player, char *thing, char **after, dbref * it)
+{
+	char *str;
 
-    /*
-     * get name up to / 
-     */
-    for (str = thing; *str && (*str != '/'); str++);
+	/*
+	 * get name up to / 
+	 */
+	for(str = thing; *str && (*str != '/'); str++);
 
-    /*
-     * If no / in string, return failure 
-     */
+	/*
+	 * If no / in string, return failure 
+	 */
 
-    if (!*str) {
-        *after = NULL;
-        *it = NOTHING;
-        return 0;
-    }
-    *str++ = '\0';
-    *after = str;
+	if(!*str) {
+		*after = NULL;
+		*it = NOTHING;
+		return 0;
+	}
+	*str++ = '\0';
+	*after = str;
 
-    /*
-     * Look for the object 
-     */
+	/*
+	 * Look for the object 
+	 */
 
-    init_match(player, thing, NOTYPE);
-    match_everything(MAT_EXIT_PARENTS);
-    *it = match_result();
+	init_match(player, thing, NOTYPE);
+	match_everything(MAT_EXIT_PARENTS);
+	*it = match_result();
 
-    /*
-     * Return status of search 
-     */
+	/*
+	 * Return status of search 
+	 */
 
-    return (Good_obj(*it));
+	return (Good_obj(*it));
 }
 
 extern NAMETAB lock_sw[];
 
-int get_obj_and_lock(dbref player, char *what, dbref *it, ATTR **attr, 
-    char *errmsg, char **bufc)
+int get_obj_and_lock(dbref player, char *what, dbref * it, ATTR ** attr,
+					 char *errmsg, char **bufc)
 {
-    char *str, *tbuf;
-    int anum;
+	char *str, *tbuf;
+	int anum;
 
-    tbuf = alloc_lbuf("get_obj_and_lock");
-    StringCopy(tbuf, what);
-    if (parse_thing_slash(player, tbuf, &str, it)) {
+	tbuf = alloc_lbuf("get_obj_and_lock");
+	StringCopy(tbuf, what);
+	if(parse_thing_slash(player, tbuf, &str, it)) {
+
+		/*
+		 * <obj>/<lock> syntax, use the named lock 
+		 */
+
+		anum = search_nametab(player, lock_sw, str);
+		if(anum < 0) {
+			free_lbuf(tbuf);
+			safe_str("#-1 LOCK NOT FOUND", errmsg, bufc);
+			return 0;
+		}
+	} else {
+
+		/*
+		 * Not <obj>/<lock>, do a normal get of the default lock 
+		 */
+
+		*it = match_thing(player, what);
+		if(!Good_obj(*it)) {
+			free_lbuf(tbuf);
+			safe_str("#-1 NOT FOUND", errmsg, bufc);
+			return 0;
+		}
+		anum = A_LOCK;
+	}
 
 	/*
-	 * <obj>/<lock> syntax, use the named lock 
+	 * Get the attribute definition, fail if not found 
 	 */
 
-	anum = search_nametab(player, lock_sw, str);
-	if (anum < 0) {
-	    free_lbuf(tbuf);
-	    safe_str("#-1 LOCK NOT FOUND", errmsg, bufc);
-	    return 0;
+	free_lbuf(tbuf);
+	*attr = atr_num(anum);
+	if(!(*attr)) {
+		safe_str("#-1 LOCK NOT FOUND", errmsg, bufc);
+		return 0;
 	}
-    } else {
-
-	/*
-	 * Not <obj>/<lock>, do a normal get of the default lock 
-	 */
-
-	*it = match_thing(player, what);
-	if (!Good_obj(*it)) {
-	    free_lbuf(tbuf);
-	    safe_str("#-1 NOT FOUND", errmsg, bufc);
-	    return 0;
-	}
-	anum = A_LOCK;
-    }
-
-    /*
-     * Get the attribute definition, fail if not found 
-     */
-
-    free_lbuf(tbuf);
-    *attr = atr_num(anum);
-    if (!(*attr)) {
-	safe_str("#-1 LOCK NOT FOUND", errmsg, bufc);
-	return 0;
-    }
-    return 1;
+	return 1;
 }
 
 /**
@@ -1318,24 +1313,24 @@ int get_obj_and_lock(dbref player, char *what, dbref *it, ATTR **attr,
  */
 dbref where_is(dbref what)
 {
-    dbref loc;
+	dbref loc;
 
-    if (!Good_obj(what))
-	return NOTHING;
+	if(!Good_obj(what))
+		return NOTHING;
 
-    switch (Typeof(what)) {
-    case TYPE_PLAYER:
-    case TYPE_THING:
-	loc = Location(what);
-	break;
-    case TYPE_EXIT:
-	loc = Exits(what);
-	break;
-    default:
-	loc = NOTHING;
-	break;
-    }
-    return loc;
+	switch (Typeof(what)) {
+	case TYPE_PLAYER:
+	case TYPE_THING:
+		loc = Location(what);
+		break;
+	case TYPE_EXIT:
+		loc = Exits(what);
+		break;
+	default:
+		loc = NOTHING;
+		break;
+	}
+	return loc;
 }
 
 /**
@@ -1344,67 +1339,68 @@ dbref where_is(dbref what)
  */
 dbref where_room(dbref what)
 {
-    int count;
+	int count;
 
-    for (count = mudconf.ntfy_nest_lim; count > 0; count--) {
-	if (!Good_obj(what))
-	    break;
-	if (isRoom(what))
-	    return what;
-	if (!Has_location(what))
-	    break;
-	what = Location(what);
-    }
-    return NOTHING;
+	for(count = mudconf.ntfy_nest_lim; count > 0; count--) {
+		if(!Good_obj(what))
+			break;
+		if(isRoom(what))
+			return what;
+		if(!Has_location(what))
+			break;
+		what = Location(what);
+	}
+	return NOTHING;
 }
 
 int locatable(dbref player, dbref it, dbref cause)
 {
-    dbref loc_it, room_it;
-    int findable_room;
+	dbref loc_it, room_it;
+	int findable_room;
 
-    /*
-     * No sense if trying to locate a bad object 
-     */
+	/*
+	 * No sense if trying to locate a bad object 
+	 */
 
-    if (!Good_obj(it))
+	if(!Good_obj(it))
+		return 0;
+
+	loc_it = where_is(it);
+
+	/*
+	 * Succeed if we can examine the target, if we are the target, * if * 
+	 * 
+	 * *  * * we can examine the location, if a wizard caused the lookup, 
+	 * * or  * *  * if the target caused the lookup. 
+	 */
+
+	if(Examinable(player, it) || Find_Unfindable(player) ||
+	   (loc_it == player) || ((loc_it != NOTHING) &&
+							  (Examinable(player, loc_it)
+							   || loc_it == where_is(player)))
+	   || Wizard(cause) || (it == cause))
+		return 1;
+
+	room_it = where_room(it);
+	if(Good_obj(room_it))
+		findable_room = !Hideout(room_it);
+	else
+		findable_room = 1;
+
+	/*
+	 * Succeed if we control the containing room or if the target is * *
+	 * * * findable and the containing room is not unfindable. 
+	 */
+
+	if(((room_it != NOTHING) && Examinable(player, room_it)) ||
+	   Find_Unfindable(player) || (Findable(it) && findable_room))
+		return 1;
+
+	/*
+	 * We can't do it. 
+	 */
+
 	return 0;
-
-    loc_it = where_is(it);
-
-    /*
-     * Succeed if we can examine the target, if we are the target, * if * 
-     * 
-     * *  * * we can examine the location, if a wizard caused the lookup, 
-     * * or  * *  * if the target caused the lookup. 
-     */
-
-    if (Examinable(player, it) || Find_Unfindable(player) ||
-	(loc_it == player) || ((loc_it != NOTHING) &&
-	    (Examinable(player, loc_it) || loc_it == where_is(player))) ||
-	Wizard(cause) || (it == cause))
-	return 1;
-
-    room_it = where_room(it);
-    if (Good_obj(room_it))
-	findable_room = !Hideout(room_it);
-    else
-	findable_room = 1;
-
-    /*
-     * Succeed if we control the containing room or if the target is * *
-     * * * findable and the containing room is not unfindable. 
-     */
-
-    if (((room_it != NOTHING) && Examinable(player, room_it)) ||
-	Find_Unfindable(player) || (Findable(it) && findable_room))
-	return 1;
-
-    /*
-     * We can't do it. 
-     */
-
-    return 0;
 }
 
 /**
@@ -1413,17 +1409,17 @@ int locatable(dbref player, dbref it, dbref cause)
  */
 int nearby(dbref player, dbref thing)
 {
-    int thing_loc, player_loc;
+	int thing_loc, player_loc;
 
-    if (!Good_obj(player) || !Good_obj(thing))
+	if(!Good_obj(player) || !Good_obj(thing))
+		return 0;
+	thing_loc = where_is(thing);
+	if(thing_loc == player)
+		return 1;
+	player_loc = where_is(player);
+	if((thing_loc == player_loc) || (thing == player_loc))
+		return 1;
 	return 0;
-    thing_loc = where_is(thing);
-    if (thing_loc == player)
-	return 1;
-    player_loc = where_is(player);
-    if ((thing_loc == player_loc) || (thing == player_loc))
-	return 1;
-    return 0;
 }
 
 /**
@@ -1431,31 +1427,31 @@ int nearby(dbref player, dbref thing)
  */
 int exit_visible(dbref exit, dbref player, int key)
 {
-    if (key & VE_LOC_XAM)         // Exam exit's loc
-	return 1;		
-    if (Examinable(player, exit)) // Exam exit 
-	return 1;		
-    if (Light(exit))              // Exit is light
-	return 1;		
-    if (key & (VE_LOC_DARK | VE_BASE_DARK))
-	return 0;	          // Dark loc or base	
-    if (Dark(exit))               // Dark exit
-	return 0;		
-    return 1;			  // Default
+	if(key & VE_LOC_XAM)		// Exam exit's loc
+		return 1;
+	if(Examinable(player, exit))	// Exam exit 
+		return 1;
+	if(Light(exit))				// Exit is light
+		return 1;
+	if(key & (VE_LOC_DARK | VE_BASE_DARK))
+		return 0;				// Dark loc or base   
+	if(Dark(exit))				// Dark exit
+		return 0;
+	return 1;					// Default
 }
 
 /**
  * Checks to see if the exit is visible to look.
  */
-int exit_displayable(dbref exit, dbref player, int key)	
+int exit_displayable(dbref exit, dbref player, int key)
 {
-    if (Dark(exit))              // Dark exit
-	return 0;		
-    if (Light(exit))             // Light exit
-	return 1;		
-    if (key & (VE_LOC_DARK | VE_BASE_DARK))
-	return 0;	         // Dark loc or base	
-    return 1;		         // Default	
+	if(Dark(exit))				// Dark exit
+		return 0;
+	if(Light(exit))				// Light exit
+		return 1;
+	if(key & (VE_LOC_DARK | VE_BASE_DARK))
+		return 0;				// Dark loc or base    
+	return 1;					// Default 
 }
 
 /**
@@ -1463,268 +1459,273 @@ int exit_displayable(dbref exit, dbref player, int key)
  */
 dbref next_exit(dbref player, dbref this, int exam_here)
 {
-    if (isRoom(this))
-	return NOTHING;
-    if (isExit(this) && exam_here)
+	if(isRoom(this))
+		return NOTHING;
+	if(isExit(this) && exam_here)
+		return this;
+
+	while ((this != NOTHING) && Dark(this) && !Light(this) &&
+		   !Examinable(player, this))
+		this = Next(this);
+
 	return this;
-
-    while ((this != NOTHING) && Dark(this) && !Light(this) &&
-	!Examinable(player, this))
-	this = Next(this);
-
-    return this;
 }
 
 /**
  * Have player do something to/with thing
  */
-void did_it(dbref player, dbref thing, int what, const char *def, int owhat, 
-        const char *odef, int awhat, char *args[], int nargs) {
-    char *d, *buff, *act, *charges, *bp, *str;
-    dbref loc, aowner;
-    int num, aflags;
+void did_it(dbref player, dbref thing, int what, const char *def, int owhat,
+			const char *odef, int awhat, char *args[], int nargs)
+{
+	char *d, *buff, *act, *charges, *bp, *str;
+	dbref loc, aowner;
+	int num, aflags;
 
-    /*
-     * message to player 
-     */
+	/*
+	 * message to player 
+	 */
 
-    if (what > 0) {
-        d = atr_pget(thing, what, &aowner, &aflags);
-        if (*d) {
-            buff = bp = alloc_lbuf("did_it.1");
-            str = d;
-            exec(buff, &bp, 0, thing, player,
-                    EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
-            *bp = '\0';
-            if (what == A_HTDESC) {
-                safe_str("\r\n", buff, &bp);
-                *bp = '\0';
-                notify_html(player, buff);
-            } else
-                notify(player, buff);
-            free_lbuf(buff);
-        } else if (def) {
-            notify(player, def);
-        }
-        free_lbuf(d);
-    } else if ((what < 0) && def) {
-        notify(player, def);
-    }
-    /*
-     * message to neighbors 
-     */
+	if(what > 0) {
+		d = atr_pget(thing, what, &aowner, &aflags);
+		if(*d) {
+			buff = bp = alloc_lbuf("did_it.1");
+			str = d;
+			exec(buff, &bp, 0, thing, player,
+				 EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
+			*bp = '\0';
+			if(what == A_HTDESC) {
+				safe_str("\r\n", buff, &bp);
+				*bp = '\0';
+				notify_html(player, buff);
+			} else
+				notify(player, buff);
+			free_lbuf(buff);
+		} else if(def) {
+			notify(player, def);
+		}
+		free_lbuf(d);
+	} else if((what < 0) && def) {
+		notify(player, def);
+	}
+	/*
+	 * message to neighbors 
+	 */
 
-    if ((owhat > 0) && Has_location(player) &&
-            Good_obj(loc = Location(player))) {
-        d = atr_pget(thing, owhat, &aowner, &aflags);
-        if (*d) {
-            buff = bp = alloc_lbuf("did_it.2");
-            str = d;
-            exec(buff, &bp, 0, thing, player,
-                    EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
-            *bp = '\0';
-            if (*buff)
-                notify_except2(loc, player, player, thing, tprintf("%s %s",
-                            Name(player), buff));
-            free_lbuf(buff);
-        } else if (odef) {
-            notify_except2(loc, player, player, thing, tprintf("%s %s",
-                        Name(player), odef));
-        }
-        free_lbuf(d);
-    } else if ((owhat < 0) && odef && Has_location(player) &&
-            Good_obj(loc = Location(player))) {
-        notify_except2(loc, player, player, thing, tprintf("%s %s",
-                    Name(player), odef));
-    }
-    /*
-     * do the action attribute 
-     */
+	if((owhat > 0) && Has_location(player) &&
+	   Good_obj(loc = Location(player))) {
+		d = atr_pget(thing, owhat, &aowner, &aflags);
+		if(*d) {
+			buff = bp = alloc_lbuf("did_it.2");
+			str = d;
+			exec(buff, &bp, 0, thing, player,
+				 EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
+			*bp = '\0';
+			if(*buff)
+				notify_except2(loc, player, player, thing, tprintf("%s %s",
+																   Name
+																   (player),
+																   buff));
+			free_lbuf(buff);
+		} else if(odef) {
+			notify_except2(loc, player, player, thing, tprintf("%s %s",
+															   Name(player),
+															   odef));
+		}
+		free_lbuf(d);
+	} else if((owhat < 0) && odef && Has_location(player) &&
+			  Good_obj(loc = Location(player))) {
+		notify_except2(loc, player, player, thing, tprintf("%s %s",
+														   Name(player),
+														   odef));
+	}
+	/*
+	 * do the action attribute 
+	 */
 
-    if (awhat > 0) {
-        if (*(act = atr_pget(thing, awhat, &aowner, &aflags))) {
-            charges = atr_pget(thing, A_CHARGES, &aowner, &aflags);
-            if (*charges) {
-                num = atoi(charges);
-                if (num > 0) {
-                    buff = alloc_sbuf("did_it.charges");
-                    sprintf(buff, "%d", num - 1);
-                    atr_add_raw(thing, A_CHARGES, buff);
-                    free_sbuf(buff);
-                } else if (*(buff =
-                            atr_pget(thing, A_RUNOUT, &aowner, &aflags))) {
-                    free_lbuf(act);
-                    act = buff;
-                } else {
-                    free_lbuf(act);
-                    free_lbuf(buff);
-                    free_lbuf(charges);
-                    return;
-                }
-            }
-            free_lbuf(charges);
-            wait_que(thing, player, 0, NOTHING, 0, act, args, nargs,
-                    mudstate.global_regs);
-        }
-        free_lbuf(act);
-    }
+	if(awhat > 0) {
+		if(*(act = atr_pget(thing, awhat, &aowner, &aflags))) {
+			charges = atr_pget(thing, A_CHARGES, &aowner, &aflags);
+			if(*charges) {
+				num = atoi(charges);
+				if(num > 0) {
+					buff = alloc_sbuf("did_it.charges");
+					sprintf(buff, "%d", num - 1);
+					atr_add_raw(thing, A_CHARGES, buff);
+					free_sbuf(buff);
+				} else if(*(buff =
+							atr_pget(thing, A_RUNOUT, &aowner, &aflags))) {
+					free_lbuf(act);
+					act = buff;
+				} else {
+					free_lbuf(act);
+					free_lbuf(buff);
+					free_lbuf(charges);
+					return;
+				}
+			}
+			free_lbuf(charges);
+			wait_que(thing, player, 0, NOTHING, 0, act, args, nargs,
+					 mudstate.global_regs);
+		}
+		free_lbuf(act);
+	}
 }
 
 /**
  * Command interface to did_it.
  */
-void do_verb(dbref player, dbref cause, int key, char *victim_str, 
-    char *args[], int nargs)
+void do_verb(dbref player, dbref cause, int key, char *victim_str,
+			 char *args[], int nargs)
 {
-    dbref actor, victim, aowner;
-    int what, owhat, awhat, nxargs, restriction, aflags, i;
-    ATTR *ap;
-    const char *whatd, *owhatd;
-    char *xargs[10];
+	dbref actor, victim, aowner;
+	int what, owhat, awhat, nxargs, restriction, aflags, i;
+	ATTR *ap;
+	const char *whatd, *owhatd;
+	char *xargs[10];
 
-    /*
-     * Look for the victim 
-     */
+	/*
+	 * Look for the victim 
+	 */
 
-    if (!victim_str || !*victim_str) {
-	notify(player, "Nothing to do.");
-	return;
-    }
-    /*
-     * Get the victim 
-     */
+	if(!victim_str || !*victim_str) {
+		notify(player, "Nothing to do.");
+		return;
+	}
+	/*
+	 * Get the victim 
+	 */
 
-    init_match(player, victim_str, NOTYPE);
-    match_everything(MAT_EXIT_PARENTS);
-    victim = noisy_match_result();
-    if (!Good_obj(victim))
-	return;
-
-    /*
-     * Get the actor.  Default is my cause 
-     */
-
-    if ((nargs >= 1) && args[0] && *args[0]) {
-	init_match(player, args[0], NOTYPE);
+	init_match(player, victim_str, NOTYPE);
 	match_everything(MAT_EXIT_PARENTS);
-	actor = noisy_match_result();
-	if (!Good_obj(actor))
-	    return;
-    } else {
-	actor = cause;
-    }
+	victim = noisy_match_result();
+	if(!Good_obj(victim))
+		return;
 
-    /*
-     * Check permissions. There are two possibilities 
-     *   1: Player controls both victim and actor. In this case, victim
-     *      runs his action list. 
-     *   2: Player controls actor. In this case, victim does not run his
-     *      action list and any attributes that player cannot read from
-     *      victim are defaulted.
-     */
+	/*
+	 * Get the actor.  Default is my cause 
+	 */
 
-    if (!controls(player, actor)) {
-	notify_quiet(player, "Permission denied,");
-	return;
-    }
-    restriction = !controls(player, victim);
-
-    what = -1;
-    owhat = -1;
-    awhat = -1;
-    whatd = NULL;
-    owhatd = NULL;
-    nxargs = 0;
-
-    /*
-     * Get invoker message attribute 
-     */
-
-    if (nargs >= 2) {
-	ap = atr_str(args[1]);
-	if (ap && (ap->number > 0))
-	    what = ap->number;
-    }
-    /*
-     * Get invoker message default 
-     */
-
-    if ((nargs >= 3) && args[2] && *args[2]) {
-	whatd = args[2];
-    }
-    /*
-     * Get others message attribute 
-     */
-
-    if (nargs >= 4) {
-	ap = atr_str(args[3]);
-	if (ap && (ap->number > 0))
-	    owhat = ap->number;
-    }
-    /*
-     * Get others message default 
-     */
-
-    if ((nargs >= 5) && args[4] && *args[4]) {
-	owhatd = args[4];
-    }
-    /*
-     * Get action attribute 
-     */
-
-    if (nargs >= 6) {
-	ap = atr_str(args[5]);
-	if (ap)
-	    awhat = ap->number;
-    }
-    /*
-     * Get arguments 
-     */
-
-    if (nargs >= 7) {
-	parse_arglist(victim, actor, args[6], '\0',
-	    EV_STRIP_LS | EV_STRIP_TS, xargs, 10, (char **) NULL, 0);
-	for (nxargs = 0; (nxargs < 10) && xargs[nxargs]; nxargs++);
-    }
-    /*
-     * If player doesn't control both, enforce visibility restrictions 
-     */
-
-    if (restriction) {
-	ap = NULL;
-	if (what != -1) {
-	    atr_get_info(victim, what, &aowner, &aflags);
-	    ap = atr_num(what);
+	if((nargs >= 1) && args[0] && *args[0]) {
+		init_match(player, args[0], NOTYPE);
+		match_everything(MAT_EXIT_PARENTS);
+		actor = noisy_match_result();
+		if(!Good_obj(actor))
+			return;
+	} else {
+		actor = cause;
 	}
-	if (!ap || !Read_attr(player, victim, ap, aowner, aflags) ||
-	    ((ap->number == A_DESC) && !mudconf.read_rem_desc &&
-		!Examinable(player, victim) && !nearby(player, victim)))
-	    what = -1;
 
-	ap = NULL;
-	if (owhat != -1) {
-	    atr_get_info(victim, owhat, &aowner, &aflags);
-	    ap = atr_num(owhat);
+	/*
+	 * Check permissions. There are two possibilities 
+	 *   1: Player controls both victim and actor. In this case, victim
+	 *      runs his action list. 
+	 *   2: Player controls actor. In this case, victim does not run his
+	 *      action list and any attributes that player cannot read from
+	 *      victim are defaulted.
+	 */
+
+	if(!controls(player, actor)) {
+		notify_quiet(player, "Permission denied,");
+		return;
 	}
-	if (!ap || !Read_attr(player, victim, ap, aowner, aflags) ||
-	    ((ap->number == A_DESC) && !mudconf.read_rem_desc &&
-		!Examinable(player, victim) && !nearby(player, victim)))
-	    owhat = -1;
+	restriction = !controls(player, victim);
 
-	awhat = 0;
-    }
-    /*
-     * Go do it 
-     */
+	what = -1;
+	owhat = -1;
+	awhat = -1;
+	whatd = NULL;
+	owhatd = NULL;
+	nxargs = 0;
 
-    did_it(actor, victim, what, whatd, owhat, owhatd, awhat, xargs,
-	nxargs);
+	/*
+	 * Get invoker message attribute 
+	 */
 
-    /*
-     * Free user args 
-     */
+	if(nargs >= 2) {
+		ap = atr_str(args[1]);
+		if(ap && (ap->number > 0))
+			what = ap->number;
+	}
+	/*
+	 * Get invoker message default 
+	 */
 
-    for (i = 0; i < nxargs; i++)
-	free_lbuf(xargs[i]);
+	if((nargs >= 3) && args[2] && *args[2]) {
+		whatd = args[2];
+	}
+	/*
+	 * Get others message attribute 
+	 */
+
+	if(nargs >= 4) {
+		ap = atr_str(args[3]);
+		if(ap && (ap->number > 0))
+			owhat = ap->number;
+	}
+	/*
+	 * Get others message default 
+	 */
+
+	if((nargs >= 5) && args[4] && *args[4]) {
+		owhatd = args[4];
+	}
+	/*
+	 * Get action attribute 
+	 */
+
+	if(nargs >= 6) {
+		ap = atr_str(args[5]);
+		if(ap)
+			awhat = ap->number;
+	}
+	/*
+	 * Get arguments 
+	 */
+
+	if(nargs >= 7) {
+		parse_arglist(victim, actor, args[6], '\0',
+					  EV_STRIP_LS | EV_STRIP_TS, xargs, 10, (char **) NULL,
+					  0);
+		for(nxargs = 0; (nxargs < 10) && xargs[nxargs]; nxargs++);
+	}
+	/*
+	 * If player doesn't control both, enforce visibility restrictions 
+	 */
+
+	if(restriction) {
+		ap = NULL;
+		if(what != -1) {
+			atr_get_info(victim, what, &aowner, &aflags);
+			ap = atr_num(what);
+		}
+		if(!ap || !Read_attr(player, victim, ap, aowner, aflags) ||
+		   ((ap->number == A_DESC) && !mudconf.read_rem_desc &&
+			!Examinable(player, victim) && !nearby(player, victim)))
+			what = -1;
+
+		ap = NULL;
+		if(owhat != -1) {
+			atr_get_info(victim, owhat, &aowner, &aflags);
+			ap = atr_num(owhat);
+		}
+		if(!ap || !Read_attr(player, victim, ap, aowner, aflags) ||
+		   ((ap->number == A_DESC) && !mudconf.read_rem_desc &&
+			!Examinable(player, victim) && !nearby(player, victim)))
+			owhat = -1;
+
+		awhat = 0;
+	}
+	/*
+	 * Go do it 
+	 */
+
+	did_it(actor, victim, what, whatd, owhat, owhatd, awhat, xargs, nxargs);
+
+	/*
+	 * Free user args 
+	 */
+
+	for(i = 0; i < nxargs; i++)
+		free_lbuf(xargs[i]);
 
 }
