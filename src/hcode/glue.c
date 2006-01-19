@@ -737,6 +737,7 @@ void SaveSpecialObjects(int i)
 
     char xdr_hcode_file[LBUF_SIZE];
     struct mmdb_t *hcode_xdr;
+    struct timeval tv;
 
     /* Adding this to temporarly generate the new hcode.xdr.db file
      * eventually this will replace the current hcode.db file */
@@ -744,6 +745,14 @@ void SaveSpecialObjects(int i)
 
     /* Open the hcode.xdr file for writing */
     hcode_xdr = mmdb_open_write(xdr_hcode_file);
+
+    /* Write Version and Timestamp */
+    gettimeofday(&tv, NULL);
+
+    mmdb_write_uint(hcode_xdr, XCDB_MAGIC);
+    mmdb_write_uint(hcode_xdr, XCDB_VERSION);
+    mmdb_write_uint(hcode_xdr, tv.tv_sec);
+    mmdb_write_uint(hcode_xdr, tv.tv_usec);
 
     switch (i) {
         case DUMP_KILLED:
