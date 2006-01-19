@@ -413,6 +413,7 @@ static void sqlchild_check_queue()
 
 	if((aqt->pid = fork()) == 0) {
 		aqt->fd = fds[1];
+        close(fds[0]);
 		unbind_signals();
 		sqlchild_child_execute_query(aqt);
 		exit(0);

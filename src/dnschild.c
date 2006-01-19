@@ -72,6 +72,7 @@ void *dnschild_request(DESC * d)
 
 	dqst->pid = fork();
 	if(dqst->pid == 0) {
+        close(fds[0]);
 		/* begin child section */
 		unbind_signals();
 		if(getnameinfo((struct sockaddr *) &d->saddr, d->saddr_len,
@@ -89,6 +90,7 @@ void *dnschild_request(DESC * d)
 		/* end child section */
 	}
 	dqst->fd = fds[0];
+    close(fds[1]);
 	dqst->next = running;
 	running = dqst;
 	running_queries++;
@@ -105,7 +107,6 @@ void dnschild_destruct()
 		dprintk("dnschild query for %s aborting early.", dqst->desc->addr);
 		if(event_pending(&dqst->ev, EV_READ, NULL))
 			event_del(&dqst->ev);
-		kill(running->pid, SIGKILL);
 		close(dqst->fd);
 		dqst->desc->outstanding_dnschild_query = NULL;
 		running = running->next;
@@ -135,7 +136,6 @@ void dnschild_kill(void *arg)
 	if(event_pending(&dqst->ev, EV_READ, NULL))
 		event_del(&dqst->ev);
 	dqst->desc->outstanding_dnschild_query = NULL;
-	kill(dqst->pid, SIGKILL);
 	close(dqst->fd);
 	free(dqst);
 }

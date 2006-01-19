@@ -34,24 +34,36 @@ struct sigaction saPIPE = {.sa_handler = NULL,.sa_sigaction = signal_PIPE,
 };
 
 struct sigaction saUSR1 = {.sa_handler = NULL,.sa_sigaction = signal_USR1,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
+	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART 
 };
 
 struct sigaction saSEGV = {.sa_handler = NULL,.sa_sigaction = signal_SEGV,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
+	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART | SA_ONSTACK
 };
 
 struct sigaction saBUS = {.sa_handler = NULL,.sa_sigaction = signal_BUS,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
+	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART | SA_ONSTACK
 };
+
+stack_t sighandler_stack;  
+stack_t regular_stack;
 
 void bind_signals()
 {
-	sigaction(SIGTERM, &saTERM, NULL);
+	sighandler_stack.ss_sp = malloc(262144);
+    sighandler_stack.ss_size = 262144;
+    sighandler_stack.ss_flags = 0;
+    sigaltstack(&sighandler_stack, &regular_stack);
+    dprintk("Current stack at %p with length 0x%08x and flags 0x%08x\n", 
+            regular_stack.ss_sp, regular_stack.ss_size, regular_stack.ss_flags);
+    dprintk("Signal stack at %p with length 0x%08x and flags 0x%08x\n", 
+            sighandler_stack.ss_sp, sighandler_stack.ss_size, sighandler_stack.ss_flags);
+    sigaction(SIGTERM, &saTERM, NULL);
 	sigaction(SIGPIPE, &saPIPE, NULL);
 	sigaction(SIGUSR1, &saUSR1, NULL);
 	sigaction(SIGSEGV, &saSEGV, NULL);
 	sigaction(SIGBUS, &saBUS, NULL);
+    signal(SIGCHLD, SIG_IGN);
 }
 
 void unbind_signals()
@@ -61,6 +73,7 @@ void unbind_signals()
 	signal(SIGUSR1, SIG_DFL);
 	signal(SIGSEGV, SIG_DFL);
 	signal(SIGBUS, SIG_DFL);
+    signal(SIGCHLD, SIG_DFL);
 }
 
 void signal_TERM(int signo, siginfo_t * siginfo, void *ucontext)

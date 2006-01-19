@@ -93,7 +93,7 @@ struct descriptor_data {
     int input_tot;
     int input_lost;
     int chokes;
-    char *input[LBUF_SIZE];
+    char input[LBUF_SIZE];
     char *raw_input_at;
     time_t connected_at;
     time_t last_time;
