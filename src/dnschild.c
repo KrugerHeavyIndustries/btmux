@@ -135,7 +135,7 @@ void dnschild_kill(void *arg)
 	if(event_pending(&dqst->ev, EV_READ, NULL))
 		event_del(&dqst->ev);
 	dqst->desc->outstanding_dnschild_query = NULL;
-	kill(running->pid, SIGKILL);
+	kill(dqst->pid, SIGKILL);
 	close(dqst->fd);
 	free(dqst);
 }
