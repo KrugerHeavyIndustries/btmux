@@ -3,6 +3,7 @@
  */
 #include "copyright.h"
 #include "config.h"
+#include "db_xdr.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,14 +29,6 @@
 #include "powers.h"
 #include "debug.h"
 
-struct mmdb_t {
-	void *base;
-	void *ppos;
-	void *end;
-	int length;
-	int fd;
-};
-
 struct mmdb_t *mmdb_open_read(char *filename)
 {
 	struct stat statbuf;
@@ -49,7 +42,7 @@ struct mmdb_t *mmdb_open_read(char *filename)
 	mmdb->fd = fd;
 	mmdb->length = (statbuf.st_size + 0x3FF) & ~(0x3FF);
 	mmdb->base =
-		mmap(NULL, mmdb->length, PROT_READ, MAP_SHARED | MAP_POPULATE,
+		mmap(NULL, mmdb->length, PROT_READ, MAP_SHARED,
 			 mmdb->fd, 0);
 	dperror(mmdb->base == NULL);
 	mmdb->end = mmdb->base + mmdb->length;
@@ -189,11 +182,6 @@ void mmdb_write_object(struct mmdb_t *mmdb, dbref object)
 
 #define DB_MAGIC 0x4841475A
 #define DB_VERSION 3
-
-struct string_dict_entry {
-	char *key;
-	char *data;
-};
 
 static int mmdb_write_vattr(void *key, void *data, int depth, void *arg)
 {

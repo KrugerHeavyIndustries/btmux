@@ -29,6 +29,7 @@
 #define _GLUE_C
 
 /*** #include all the prototype here! ****/
+#include "db_xdr.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "debug.h"
@@ -729,56 +730,77 @@ static void save_econdb(char *target, int i)
 
 void SaveSpecialObjects(int i)
 {
-	FILE *f;
-	int filemode, count;
-	byte xcode_version = XCODE_VERSION;
-	char target[LBUF_SIZE];
+    FILE *f;
+    int filemode, count;
+    byte xcode_version = XCODE_VERSION;
+    char target[LBUF_SIZE];
 
-	switch (i) {
-	case DUMP_KILLED:
-		sprintf(target, "%s.KILLED", mudconf.hcode_db);
-		break;
-	case DUMP_CRASHED:
-		sprintf(target, "%s.CRASHED", mudconf.hcode_db);
-		break;
-	default:					/* RESTART / normal */
-		sprintf(target, "%s.tmp", mudconf.hcode_db);
-		break;
-	}
-	f = my_open_file(target, "w", &filemode);
-	if(!f) {
-		log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
-		SendDB("ERROR occured during opening of new hcode-savefile.");
-		return;
-	}
-	fwrite(&xcode_version, 1, 1, f);
-	count = SaveTree(f, xcode_tree);
-	global_file_kludge = f;
-	/* Then, check each xcode thing for stuff */
-	GoThruTree(xcode_tree, save_maps_func);
+    char xdr_hcode_file[LBUF_SIZE];
+    struct mmdb_t *hcode_xdr;
 
-	/* Save autopilot data */
-	GoThruTree(xcode_tree, save_autopilot_data);
+    /* Adding this to temporarly generate the new hcode.xdr.db file
+     * eventually this will replace the current hcode.db file */
+    strcpy(xdr_hcode_file, "hcode.xdr.db");
 
-	saverepairs(f);
-	my_close_file(f, &filemode);
-	if(i == DUMP_RESTART || i == DUMP_NORMAL) {
-		if(rename(mudconf.hcode_db, tprintf("%s.prev", mudconf.hcode_db))
-		   < 0) {
-			log_perror("SAV", "FAIL", "Renaming old hcode-save file ",
-					   target);
-			SendDB("ERROR occured during renaming of old hcode save-file.");
-		}
-		if(rename(target, mudconf.hcode_db) < 0) {
-			log_perror("SAV", "FAIL", "Renaming new hcode-save file ",
-					   target);
-			SendDB("ERROR occured during renaming of new hcode save-file.");
-		}
-	}
-	if(count)
-		SendDB(tprintf("Hcode saved. %d xcode entries dumped.", count));
+    /* Open the hcode.xdr file for writing */
+    hcode_xdr = mmdb_open_write(xdr_hcode_file);
+
+    switch (i) {
+        case DUMP_KILLED:
+            sprintf(target, "%s.KILLED", mudconf.hcode_db);
+            break;
+        case DUMP_CRASHED:
+            sprintf(target, "%s.CRASHED", mudconf.hcode_db);
+            break;
+        default:                    /* RESTART / normal */
+            sprintf(target, "%s.tmp", mudconf.hcode_db);
+            break;
+    }
+
+    f = my_open_file(target, "w", &filemode);
+
+    if(!f) {
+        log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
+        SendDB("ERROR occured during opening of new hcode-savefile.");
+        return;
+    }
+
+    fwrite(&xcode_version, 1, 1, f);
+    count = SaveTree(f, xcode_tree);
+    global_file_kludge = f;
+
+    /* Then, check each xcode thing for stuff */
+    GoThruTree(xcode_tree, save_maps_func);
+
+    /* Save autopilot data */
+    GoThruTree(xcode_tree, save_autopilot_data);
+
+    saverepairs(f);
+
+    my_close_file(f, &filemode);
+
+    /* Close the xdr hcode file */
+    mmdb_close(hcode_xdr);
+
+    if(i == DUMP_RESTART || i == DUMP_NORMAL) {
+        if(rename(mudconf.hcode_db, tprintf("%s.prev", mudconf.hcode_db))
+                < 0) {
+            log_perror("SAV", "FAIL", "Renaming old hcode-save file ",
+                    target);
+            SendDB("ERROR occured during renaming of old hcode save-file.");
+        }
+        if(rename(target, mudconf.hcode_db) < 0) {
+            log_perror("SAV", "FAIL", "Renaming new hcode-save file ",
+                    target);
+            SendDB("ERROR occured during renaming of new hcode save-file.");
+        }
+    }
+
+    if(count)
+        SendDB(tprintf("Hcode saved. %d xcode entries dumped.", count));
+
 #ifdef BT_ADVANCED_ECON
-	save_econdb(target, i);
+    save_econdb(target, i);
 #endif
 }
 

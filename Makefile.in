@@ -40,10 +40,11 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/cque.o        \
                  src/create.o      \
                  src/db.o          \
-				 src/db_xml.o	   \
+                 src/db_xml.o      \
+                 src/db_xdr.o      \
                  src/db_rw.o       \
                  src/dllist.o      \
-				 src/dnschild.o	   \
+                 src/dnschild.o    \
                  src/eval.o        \
                  src/file_c.o      \
                  src/flags.o       \
