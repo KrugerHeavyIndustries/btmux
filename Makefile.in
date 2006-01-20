@@ -180,7 +180,7 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
-TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX) src/unsplit$(OBJSUFFIX)
+TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX)
 
 debug:
 	@DEBUG=1 make all
@@ -238,9 +238,6 @@ distclean: clean cleandep
 
 mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
-
-unsplit$(OBJSUFFIX) src/unsplit$(OBJSUFFIX): src/unsplit.c
-	$(CC) $(ALLFLAGS) -o src/unsplit$(OBJSUFFIX) src/unsplit.c
 
 dbconvert src/dbconvert:
 	echo "dbconvert is no longer supported." && exit 1;
