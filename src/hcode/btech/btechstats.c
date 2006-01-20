@@ -1978,12 +1978,8 @@ void debug_setxplevel(dbref player, void *data, char *buffer)
 			 char_getvaluecode(args[0])) < 0, "That isn't any charvalue!");
 	DOCHECK(char_values[code].type != CHAR_SKILL, "That isn't any skill!");
 	char_values[code].xpthreshold = xpt;
-	STARTLOG(LOG_ALWAYS, "WIZ", "CHANGE") {
-		log_text(tprintf("Exp threshold for %s changed to %d by ",
-						 char_values[code].name, xpt));
-		log_name(player);
-		ENDLOG;
-	}
+    log_error(LOG_WIZARD, "WIZ", "CHANGE", "Exp threshold for %s changed to %d by #%d", 
+						 char_values[code].name, xpt, player);
 }
 
 int btthreshold_func(char *skillname)

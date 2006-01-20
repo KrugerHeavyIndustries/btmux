@@ -50,7 +50,6 @@ static OBJQE *cque_find(dbref player)
 	tmp = rb_find(obq, (void *) player);
 
 	if(!tmp && Good_obj(player)) {
-		dprintk("allocating new queue for %d", player);
 		tmp = malloc(sizeof(OBJQE));
 		tmp->obj = player;
 		tmp->cque = NULL;
