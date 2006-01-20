@@ -186,5 +186,7 @@ size_t strnlen(const char *s, size_t maxlen);
 #ifndef HAVE_STRNDUP
 char *strndup(const char *s, size_t n);
 #endif
-
+#ifndef HAVE_POSIX_MEMALIGN
+int posix_memalign(void **memptr, size_t alignment, size_t size);
+#endif
 #endif				/* CONFIG_H */

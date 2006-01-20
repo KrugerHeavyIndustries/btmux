@@ -50,6 +50,7 @@ stack_t regular_stack;
 
 #define ALT_STACK_SIZE (0x40000)
 #define ALT_STACK_ALIGN (0x1000)
+
 void bind_signals()
 {
     int error_code;
@@ -59,6 +60,7 @@ void bind_signals()
     if(error_code == 0) {
         sighandler_stack.ss_size = ALT_STACK_SIZE;
         sighandler_stack.ss_flags = 0;
+        memset(sighandler_stack.ss_sp, 0, ALT_STACK_SIZE);
         dperror(sigaltstack(&sighandler_stack, &regular_stack) <0);
         dprintk("Current stack at 0x%x with length 0x%x and flags 0x%x", 
                 (unsigned int)regular_stack.ss_sp, regular_stack.ss_size, regular_stack.ss_flags);

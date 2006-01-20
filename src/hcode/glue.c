@@ -49,6 +49,7 @@
 #include "p.mechfile.h"
 #include "p.mech.stat.h"
 #include "p.mech.partnames.h"
+#include "debug.h"
 
 /* Prototypes */
 
@@ -487,7 +488,6 @@ static void load_xcode()
 	byte xcode_version;
 	int filemode;
 
-	RCache_Flush();
 	initialize_colorize();
 	fprintf(stderr, "LOADING: %s\n", mudconf.hcode_db);
 	f = my_open_file(mudconf.hcode_db, "r", &filemode);
