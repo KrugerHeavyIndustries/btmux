@@ -853,20 +853,18 @@ void UpdateSpecialObjects(void)
 
 void *NewSpecialObject(int id, int type)
 {
-	void *foo;
-	int i;
-	dbref *t;
+    void *foo;
+    int i;
+    dbref *t;
 
-	if(SpecialObjects[type].datasize) {
-		Create(foo, char, (i = SpecialObjects[type].datasize));
+    if(SpecialObjects[type].datasize) {
+        Create(foo, char, (i = SpecialObjects[type].datasize));
 
-		t = (dbref *) foo;
-		*t = id;
-		if(SpecialObjects[type].allocfreefunc)
-			SpecialObjects[type].allocfreefunc(id, &(foo), SPECIAL_ALLOC);
-		AddEntry(&xcode_tree, id, type, i, foo);
-	}
-	return foo;
+        if(SpecialObjects[type].allocfreefunc)
+            SpecialObjects[type].allocfreefunc(id, &(foo), SPECIAL_ALLOC);
+        AddEntry(&xcode_tree, id, type, i, foo);
+    }
+    return foo;
 }
 
 void CreateNewSpecialObject(dbref player, dbref key)

@@ -60,13 +60,14 @@ if (!CheckData(player, mech)) return; }
 
 void newfreemechrep(dbref key, void **data, int selector)
 {
-	struct mechrep_data *new = *data;
+    struct mechrep_data *new = *data;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
-		new->current_target = -1;
-		break;
-	}
+    switch (selector) {
+        case SPECIAL_ALLOC:
+            new->mynum = key;
+            new->current_target = -1;
+            break;
+    }
 }
 
 /* With cap R means restricted command */
