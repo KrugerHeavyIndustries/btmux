@@ -851,20 +851,38 @@ void UpdateSpecialObjects(void)
 	mudstate.debug_cmd = cmdsave;
 }
 
+/*
+ * Generate the XCODE obj, run it through its
+ * setup function, then add it to the xcode_tree
+ */
 void *NewSpecialObject(int id, int type)
 {
-    void *foo;
-    int i;
-    dbref *t;
+    void *xcode_obj;
+    int xcode_data_size;
 
-    if(SpecialObjects[type].datasize) {
-        Create(foo, char, (i = SpecialObjects[type].datasize));
+    /* Only need to do this if there is an xcode struct
+     * associated with the xcode obj, see DEBUG for obj
+     * that lacks a struct */
+    if (SpecialObjects[type].datasize) {
 
-        if(SpecialObjects[type].allocfreefunc)
-            SpecialObjects[type].allocfreefunc(id, &(foo), SPECIAL_ALLOC);
-        AddEntry(&xcode_tree, id, type, i, foo);
+        xcode_data_size = SpecialObjects[type].datasize;
+
+        if (!(xcode_obj = malloc(xcode_data_size))) {
+            fprintf(stderr, "Unable to malloc XCODE obj of Type: %d\n",
+                    type);
+            exit(1);
+        }
+        
+        memset(xcode_obj, 0, xcode_data_size);
+
+        /* Run the special setup function for the obj */
+        if (SpecialObjects[type].allocfreefunc)
+            SpecialObjects[type].allocfreefunc(id, &(xcode_obj), SPECIAL_ALLOC);
+
+        /* Add to tree */
+        AddEntry(&xcode_tree, id, type, xcode_data_size, xcode_obj);
     }
-    return foo;
+    return xcode_obj; 
 }
 
 void CreateNewSpecialObject(dbref player, dbref key)
