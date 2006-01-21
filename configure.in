@@ -54,7 +54,7 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_FUNC_WAIT3
-AC_CHECK_FUNCS([alarm bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strnlen strrchr strstr strtol timelocal tzset sigaction])
+AC_CHECK_FUNCS([alarm bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strnlen strrchr strstr strtol timelocal tzset sigaction posix_memalign])
 
 dnl Check for siginfo_t members
 AC_CHECK_MEMBERS([siginfo_t.si_fd],,,[#include <signal.h>])
