@@ -215,7 +215,8 @@ void log_error(int key, char *primary, char *secondary, char *format, ...)
 	char buffer[LBUF_SIZE];
 	char stripped_buffer[LBUF_SIZE];
 	va_list ap;
-	if(!(key & mudconf.log_options))
+
+    if(!(key & mudconf.log_options))
 		return;
 
 	if(mudconf.log_info & LOGOPT_TIMESTAMP) {

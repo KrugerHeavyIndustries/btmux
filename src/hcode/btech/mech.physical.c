@@ -15,6 +15,7 @@
 #include <sys/file.h>
 
 #include "mech.h"
+#include "map.h"
 #include "mech.events.h"
 #include "mech.physical.h"
 #include "p.mech.physical.h"
@@ -1042,8 +1043,13 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	DOCHECKMA(Jumping(target),
 			  "You can't perform physical attacks on airborne mechs!");
 
-	DOCHECKMA(MechTeam(target) == MechTeam(mech) && MechNoFriendlyFire(mech),
-			  "You can't attack a teammate with FFSafeties on!");
+    DOCHECKMA(MechTeam(target) == MechTeam(mech) && 
+            MechNoFriendlyFire(mech),
+            "You can't attack a teammate with FFSafeties on!");
+
+    DOCHECKMA(MechTeam(target) == MechTeam(mech) && 
+            MapNoFriendlyFire(mech_map),
+            "Friendly Fire? I don't think so...");
 
 	DOCHECKMA(MechType(target) == CLASS_MW && !MechPKiller(mech),
 			  "That's a living, breathing person! Switch off the safety first, "

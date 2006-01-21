@@ -88,4 +88,5 @@ int nhashrepl(int val, void *hashdata, RBTAB * htab)
 	struct int_dict_entry *ent;
 
 	rb_insert(htab->tree, (void *) val, hashdata);
+    return 1;
 }

@@ -1055,32 +1055,24 @@ void fork_and_dump(int key)
 
 	if(*mudconf.dump_msg)
 		raw_broadcast(0, "%s", mudconf.dump_msg);
+
 	check_mail_expiration();
 	mudstate.epoch++;
 	mudstate.dumping = 1;
 	buff = alloc_mbuf("fork_and_dump");
 	sprintf(buff, "%s.#%d#", mudconf.outdb, mudstate.epoch);
-	STARTLOG(LOG_DBSAVES, "DMP", "CHKPT") {
-		if(!key || (key & DUMP_TEXT)) {
-			log_text((char *) "SYNCing");
-			if(!key || (key & DUMP_STRUCT))
-				log_text((char *) " and ");
-		}
-		if(!key || (key & DUMP_STRUCT)) {
-			log_text((char *) "Checkpointing: ");
-			log_text(buff);
-		}
-		ENDLOG;
-	} free_mbuf(buff);
-
-	if(!key || (key & DUMP_TEXT))
-		pcache_sync();
+   
+    log_error(LOG_DBSAVES, "DMP", "CHKPT", "Saving database: %s", buff);
+    
+    pcache_sync();
+    
 	if(!key || (key & DUMP_STRUCT)) {
-		if(fork()) {
+		if(!fork()) {
+            dprintk("child database write process starting.");
 			unbind_signals();
 			dump_database_internal(DUMP_NORMAL);
-			if(mudconf.fork_dump)
-				_exit(0);
+            dprintk("child database write process finished.");
+            exit(0);
 		}
 	}
 

@@ -10,18 +10,14 @@
 
 #define dassert(x) do { if(!(x)) { \
     struct timeval tv; struct tm tm; time_t now; \
-    time(&now); \
-    localtime_r(&now, &tm); \
-    gettimeofday(&tv, NULL); \
+    time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
     fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d] failed assertion '%s'\n", \
             tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
             __FILE__, __LINE__, #x); abort(); } } while(0)
 
 #define dperror(x) do { if(x) { \
     struct timeval tv; struct tm tm; time_t now; \
-    time(&now); \
-    localtime_r(&now, &tm); \
-    gettimeofday(&tv, NULL); \
+    time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
     fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d] '%s' failed with '%s'\n", \
             tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
             __FILE__, __LINE__, #x, strerror(errno)); abort(); } } while(0)
@@ -43,24 +39,22 @@
 	 * prints arguments */
 	#define dprintk(args...)	\
 	do {	\
-        struct timeval my__tv = { 0, 0 }; \
-        gettimeofday(&my__tv, NULL); \
-        fprintf(stderr, "%02d%02d%02d.%08d:%05d %s (%s:%d)] ",  \
-                (((int)my__tv.tv_sec) % 86400)/3600, ((int)my__tv.tv_sec % 3600)/60, ((int)my__tv.tv_sec % 60), \
-                (int)my__tv.tv_usec, getpid(), __FUNCTION__, __FILE__, __LINE__);	\
+        struct timeval tv; struct tm tm; time_t now; \
+        time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
+        fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d)] ", \
+            tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
+            __FILE__, __LINE__); \
         fprintf(stderr, args);	\
         fprintf(stderr, "\n");	\
 	} while(0)
 
-    #define hexdump(buffer, size) \
+    #define bhexdump(buffer, size) \
         do { \
-            int my__count; \
-            unsigned char *my__buffer = (unsigned char *)buffer; \
-            struct timeval my__tv = { 0, 0 }; \
-            gettimeofday(&my__tv, NULL); \
-            fprintf(stderr, "%02d%02d%02d.%08d:%05d %s (%s:%d)] buffer %s len %d\n\t",  \
-                (((int)my__tv.tv_sec) % 86400)/3600, ((int)my__tv.tv_sec % 3600)/60, ((int)my__tv.tv_sec % 60), \
-                (int)my__tv.tv_usec, getpid(), __FUNCTION__, __FILE__, __LINE__, #buffer, size);	\
+            int my__count; unsigned char *my__buffer = (unsigned char *)buffer; \
+            time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
+            fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d)] buffer %s at %p len %d", \
+                tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
+                __FILE__, __LINE__, #buffer, buffer, size); \
             for(my__count = 0; my__count < size; my__count++) { \
                 fprintf(stderr, "%02x ", my__buffer[my__count]); \
                 if(my__count && my__count % 16 == 15) fprintf(stderr, "\n\t"); \
@@ -74,11 +68,16 @@
 #endif /* DEBUG */
 
 #define printk(args...)	\
-do {	\
-    fprintf(stderr, "%s (%s:%d)] ", __FILE__, __FUNCTION__, __LINE__);	\
-    fprintf(stderr, args);	\
-    fprintf(stderr, "\n");	\
-} while(0)
+	do {	\
+        struct timeval tv; struct tm tm; time_t now; \
+        time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
+        fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d)] ", \
+            tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
+            __FILE__, __LINE__); \
+        fprintf(stderr, args);	\
+        fprintf(stderr, "\n");	\
+	} while(0)
+
 
 #define IF_FAIL_ERRNO(condition, args...)	\
 	do {	\

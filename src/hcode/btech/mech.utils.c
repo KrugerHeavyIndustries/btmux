@@ -2009,8 +2009,6 @@ void MarkForLOSUpdate(MECH * mech)
 		return;
 	mech_map->moves++;
 	mech_map->mechflags[mech->mapnumber] = 1;
-	/* We need to remove this baby from the calculated ranges list.. *sniff* */
-	RCache_Remove(mech);
 }
 
 void multi_weap_sel(MECH * mech, dbref player, char *buffer, int bitbybit,

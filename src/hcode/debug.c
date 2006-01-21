@@ -190,9 +190,6 @@ void debug_setvrt(dbref player, void *data, char *buffer)
 	MechWeapons[Weapon2I(id)].vrt = vrt;
 	notify_printf(player, "VRT for %s set to %d.",
 				  MechWeapons[Weapon2I(id)].name, vrt);
-	STARTLOG(LOG_ALWAYS, "WIZ", "CHANGE") {
-		log_text(tprintf("VRT for %s set to %d by ",
-						 MechWeapons[Weapon2I(id)].name, vrt));
-		log_name(player);
-		ENDLOG;
-}}
+    log_error(LOG_WIZARD, "WIZ", "CHANGE", "VRT for %s set to %d by #%d", 
+						 MechWeapons[Weapon2I(id)].name, vrt, player);
+}

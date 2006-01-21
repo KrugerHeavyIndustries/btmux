@@ -624,12 +624,14 @@ void flush_sockets()
 #endif
 			d->chokes = 0;
 		}
-		if(EVBUFFER_LENGTH(d->sock_buff->output)) {
-			dprintk
-				("%d output evbuffer misalign: %d, totallen: %d, off: %d. FORCING WRITE.",
-				 (int) d->descriptor, (int) d->sock_buff->output->misalign,
+		if(d->sock_buff && EVBUFFER_LENGTH(d->sock_buff->output)) {
+			dprintk("sock %d for user #%d output evbuffer misalign: %d, totallen: %d, off: %d, pending %d.",
+				 (int) d->descriptor, 
+                 (int) d->player,
+                 (int) d->sock_buff->output->misalign,
 				 (int) d->sock_buff->output->totallen,
-				 (int) d->sock_buff->output->off);
+				 (int) d->sock_buff->output->off, 
+                 EVBUFFER_LENGTH(d->sock_buff->output));
 			evbuffer_write(d->sock_buff->output, d->descriptor);
 		}
 		fsync(d->descriptor);
