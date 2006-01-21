@@ -231,15 +231,3 @@ char *strndup(const char *s, size_t n)
 	return buf;
 }
 #endif
-
-#ifndef HAVE_POSIX_MEMALIGN
-int posix_memalign(void **memptr, size_t alignment, size_t size) {
-    void *temp;
-    temp = memalign(alignment, size);
-    if(temp != NULL) {
-        *memptr = temp;
-        return 0;
-    } 
-    return ENOMEM;
-}
-#endif   
