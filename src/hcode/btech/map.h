@@ -59,14 +59,19 @@
 
 #define UNKNOWN_TERRAIN '$'
 
-#define MAPFLAG_MAPO     1	/* We got mapobjs */
-#define MAPFLAG_SPEC     2	/* We're using special rules - gravity/temp */
-#define MAPFLAG_VACUUM   4	/* We're in vacuum */
-#define MAPFLAG_FIRES    8	/* We have eternal fires */
-#define MAPFLAG_UNDERGROUND 16	/* We're underground. No ejecting, jumping, VTOL taking off */
-#define MAPFLAG_DARK    32	/* We can't see map beyond sensor range */
-#define MAPFLAG_BRIDGESCS 64	/* We can't destroy bridges on this map */
-#define MAPFLAG_NOBRIDGIFY 128  /* We shouldn't convert roads into bridges */
+/*
+ * Various Map flags, for use for setting different affects on the map
+ */
+#define MAPFLAG_MAPO            1       /* (a) We got mapobjs */
+#define MAPFLAG_SPEC            2       /* (b) We're using special rules - gravity/temp */
+#define MAPFLAG_VACUUM          4       /* (c) We're in vacuum */
+#define MAPFLAG_FIRES           8       /* (d) We have eternal fires */
+#define MAPFLAG_UNDERGROUND     16      /* (e) We're underground. No ejecting, jumping, 
+                                           VTOL taking off */
+#define MAPFLAG_DARK            32      /* (f) We can't see map beyond sensor range */
+#define MAPFLAG_BRIDGESCS       64      /* (g) We can't destroy bridges on this map */
+#define MAPFLAG_NOBRIDGIFY      128     /* (h) We shouldn't convert roads into bridges */
+#define MAPFLAG_NOFRIENDLYFIRE  256     /* (i) We can't shoot friendlies AT ALL on this map */
 
 #define TYPE_FIRE  0		/* Fire - datas = counter until next spread, datac = stuff to burn */
 #define TYPE_SMOKE 1		/* Smoke - datas = time until it gets lost */
@@ -94,16 +99,17 @@
 #define BuildIsSafe(map)   (map->buildflag & BUILDFLAG_NOB)
 #define BuildIsInvis(map)  (map->buildflag & BUILDFLAG_HID)
 
-#define MapUnderSpecialRules(map) ((map)->flags & MAPFLAG_SPEC)
-#define MapGravityMod(map)        (map)->grav
-#define MapGravity                MapGravityMod
-#define MapIsVacuum(map)          ((map)->flags & MAPFLAG_VACUUM)
-#define MapTemperature(map)       (map)->temp
-#define MapCloudbase(map)	  (map)->cloudbase
-#define MapIsUnderground(map)	  ((map)->flags & MAPFLAG_UNDERGROUND)
-#define MapIsDark(map)		  ((map)->flags & MAPFLAG_DARK)
-#define MapBridgesCS(map)	  ((map)->flags & MAPFLAG_BRIDGESCS)
-#define MapNoBridgify(map)	  ((map)->flags & MAPFLAG_NOBRIDGIFY)
+#define MapUnderSpecialRules(map)   ((map)->flags & MAPFLAG_SPEC)
+#define MapGravityMod(map)          (map)->grav
+#define MapGravity                  MapGravityMod
+#define MapIsVacuum(map)            ((map)->flags & MAPFLAG_VACUUM)
+#define MapTemperature(map)         (map)->temp
+#define MapCloudbase(map)           (map)->cloudbase
+#define MapIsUnderground(map)       ((map)->flags & MAPFLAG_UNDERGROUND)
+#define MapIsDark(map)              ((map)->flags & MAPFLAG_DARK)
+#define MapBridgesCS(map)           ((map)->flags & MAPFLAG_BRIDGESCS)
+#define MapNoBridgify(map)          ((map)->flags & MAPFLAG_NOBRIDGIFY)
+#define MapNoFriendlyFire(map)      ((map)->flags & MAPFLAG_NOFRIENDLYFIRE)
 
 typedef struct mapobj_struct {
     short x, y;
@@ -144,42 +150,39 @@ typedef struct mapobj_struct {
 					   (elevation propably) */
 
 typedef struct {
-    dbref mynum;		/* My dbref */
-    unsigned char **map;	/* The map */
+    dbref mynum;                        /* My dbref */
+    unsigned char **map;                /* The map */
     char mapname[MAP_NAME_SIZE + 1];
 
-    short map_width;		/* Width of map <MAPX  */
-    short map_height;		/* Height of map */
+    short map_width;                    /* Width of map <MAPX  */
+    short map_height;                   /* Height of map */
 
-    char temp;			/* Temperature, in
-				   celsius degrees */
-    unsigned char grav;		/* Gravity, if any ;
-				   in 1/100 G's */
+    char temp;                          /* Temperature, in celsius degrees */
+    unsigned char grav;                 /* Gravity, if any ; in 1/100 G's */
     short cloudbase;
     char unused_char;
-    char mapvis;		/* Visibility on the map,
-				   used as base for most sensor
-				   types */
-    short maxvis;		/* maximum visibility
-				   (usually mapvis * n) */
+    char mapvis;                        /* Visibility on the map, used as base 
+                                           for most sensor types */
+    short maxvis;                       /* maximum visibility (usually mapvis * n) */
     char maplight;
     short winddir, windspeed;
+
     /* Now, da wicked stuff */
-    byte flags;
+    int flags;
 
     mapobj *mapobj[NUM_MAPOBJTYPES];
     short cf, cfmax;
     dbref onmap;
     char buildflag;
 
-    unsigned char first_free;	/* First free on da map */
-    dbref *mechsOnMap;		/* Mechs on the map */
-    unsigned short **LOSinfo;	/* Line of sight info */
+    unsigned char first_free;           /* First free on da map */
+    dbref *mechsOnMap;                  /* Mechs on the map */
+    unsigned short **LOSinfo;           /* Line of sight info */
 
     /* 1 = mech has moved recently
        2 = mech has possible-LOS event ongoing */
     char *mechflags;
-    short moves;		/* Cheat to prevent idle CPU hoggage */
+    short moves;                        /* Cheat to prevent idle CPU hoggage */
     short movemod;
     int sensorflags;
 } MAP;

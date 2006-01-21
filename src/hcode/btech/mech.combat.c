@@ -14,6 +14,7 @@
 #include <sys/file.h>
 
 #include "mech.h"
+#include "map.h"
 #include "btmacros.h"
 #include "mech.events.h"
 #include "create.h"
@@ -687,22 +688,25 @@ int FireWeaponNumber(dbref player,
 			DOCHECK0(!LOS, "That hex target is not in your line of sight!");
 	}
 
-	if(tempMech) {
-		DOCHECK0(IsArtillery(weaptype),
-				 "You can only target hexes with this kind of artillery.");
-		DOCHECK0(MechSwarmTarget(tempMech) == mech->mynum,
-				 "You are unable to use your weapons against a 'swarmer!");
-		DOCHECK0(StealthArmorActive(tempMech) &&
-				 ((MechTarget(mech) != tempMech->mynum) || Locking(mech)),
-				 "You need a stable lock to fire on that target!");
-		DOCHECK0(!IsCoolant(weaptype) && MechTeam(tempMech) == MechTeam(mech)
-				 && MechNoFriendlyFire(mech),
-				 "You can't fire on a teammate with FFSafeties on!");
-		DOCHECK0(MechType(tempMech) == CLASS_MW && MechType(mech) != CLASS_MW
-				 && !MechPKiller(mech),
-				 "That's a living, breathing person! Switch off the safety first, "
-				 "if you really want to assassinate the target.");
-	}
+    if(tempMech) {
+        DOCHECK0(IsArtillery(weaptype),
+                "You can only target hexes with this kind of artillery.");
+        DOCHECK0(MechSwarmTarget(tempMech) == mech->mynum,
+                "You are unable to use your weapons against a 'swarmer!");
+        DOCHECK0(StealthArmorActive(tempMech) &&
+                ((MechTarget(mech) != tempMech->mynum) || Locking(mech)),
+                "You need a stable lock to fire on that target!");
+        DOCHECK0(!IsCoolant(weaptype) && MechTeam(tempMech) == MechTeam(mech)
+                && MechNoFriendlyFire(mech),
+                "You can't fire on a teammate with FFSafeties on!");
+        DOCHECK0(!IsCoolant(weaptype) && MechTeam(tempMech) == MechTeam(mech)
+                && MapNoFriendlyFire(mech_map),
+                "Friendly Fire? I don't think so...");
+        DOCHECK0(MechType(tempMech) == CLASS_MW && MechType(mech) != CLASS_MW
+                && !MechPKiller(mech),
+                "That's a living, breathing person! Switch off the safety first, "
+                "if you really want to assassinate the target.");
+    }
 
 	FireWeapon(mech, mech_map, tempMech, LOS, weaptype, weapnum, section,
 			   critical, enemyX, enemyY, mapx, mapy, range, 1000, sight,
