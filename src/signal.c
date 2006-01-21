@@ -55,8 +55,13 @@ void bind_signals()
 {
     int error_code;
     dprintk("creating alternate signal stack.");
+#ifdef HAVE_POSIX_MEMALIGN
     error_code = posix_memalign(&sighandler_stack.ss_sp, ALT_STACK_ALIGN,
             ALT_STACK_SIZE);
+#else 
+    sighandler_stack.ss_sp = malloc(ALT_STACK_SIZE);
+    if(sighandler_stack.ss_sp != 0) error_code = 0;
+#endif
     if(error_code == 0) {
         sighandler_stack.ss_size = ALT_STACK_SIZE;
         sighandler_stack.ss_flags = 0;
