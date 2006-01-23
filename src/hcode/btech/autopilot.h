@@ -242,6 +242,7 @@ typedef struct profile_node_t {
  */
 typedef struct {
     dbref mynum;                    /* The AI's dbref number */
+    unsigned char type;             /* Xcode Type - GTYPE_AUTO */
     MECH *mymech;                   /* The AI's unit */
     int mapindex;                   /* The map the AI is currently on */
     dbref mymechnum;                /* the dbref of the AI's mech */

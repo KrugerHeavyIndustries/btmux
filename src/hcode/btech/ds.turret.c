@@ -228,16 +228,17 @@ void turret_weaponspecs(dbref player, void *data, char *buffer)
 /* Alloc/free routine */
 void newturret(dbref key, void **data, int selector)
 {
-	TURRET_T *new = *data;
+    TURRET_T *new = *data;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
-		new->target = -1;
-		new->targx = -1;
-		new->targy = -1;
-		new->mynum = key;
-		break;
-	}
+    switch (selector) {
+        case SPECIAL_ALLOC:
+            new->mynum = key;
+            new->type = GTYPE_TURRET;
+            new->target = -1;
+            new->targx = -1;
+            new->targy = -1;
+            break;
+    }
 }
 
 void turret_initialize(dbref player, void *data, char *buffer)

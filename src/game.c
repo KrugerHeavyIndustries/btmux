@@ -930,7 +930,12 @@ void dump_database_internal(int dump_type)
 			}
 		if(mudconf.have_comsys || mudconf.have_macros)
 			save_comsys_and_macros(mudconf.commac_db);
-		SaveSpecialObjects(DUMP_CRASHED);
+
+        /*
+	    if(mudconf.have_specials)
+		    SaveSpecialObjects(DUMP_CRASHED);
+        */
+
 		return;
 	}
 
@@ -950,8 +955,11 @@ void dump_database_internal(int dump_type)
 			}
 		if(mudconf.have_comsys || mudconf.have_macros)
 			save_comsys_and_macros(mudconf.commac_db);
+
+        /*
 		if(mudconf.have_specials)
 			SaveSpecialObjects(DUMP_RESTART);
+        */
 		return;
 	}
 	if(dump_type == DUMP_KILLED) {
@@ -971,8 +979,11 @@ void dump_database_internal(int dump_type)
 			}
 		if(mudconf.have_comsys || mudconf.have_macros)
 			save_comsys_and_macros(mudconf.commac_db);
+
+        /*
 		if(mudconf.have_specials)
 			SaveSpecialObjects(DUMP_KILLED);
+        */
 		return;
 	}
 
@@ -1021,8 +1032,11 @@ void dump_database_internal(int dump_type)
 		}
 	if(mudconf.have_comsys || mudconf.have_macros)
 		save_comsys_and_macros(mudconf.commac_db);
+
+    /*
 	if(mudconf.have_specials)
 		SaveSpecialObjects(DUMP_NORMAL);
+    */
 }
 
 void dump_database(void)
@@ -1136,8 +1150,10 @@ static int load_game(void)
 		load_comsys_and_macros(mudconf.commac_db);
 
 	/* Load the mecha stuff.. */
+    /*
 	if(mudconf.have_specials)
 		LoadSpecialObjects();
+    */
 
 	if(mudconf.have_mailer)
 		if((f = fopen(mudconf.mail_db, "r"))) {

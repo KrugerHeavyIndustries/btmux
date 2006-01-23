@@ -882,83 +882,82 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 void auto_newautopilot(dbref key, void **data, int selector)
 {
 
-	AUTO *autopilot = *data;
-	MECH *mech;
-	command_node *temp;
-	int i;
+    AUTO *autopilot = *data;
+    MECH *mech;
+    command_node *temp;
+    int i;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
+    switch (selector) {
+        case SPECIAL_ALLOC:
 
-        /* Define its db# */
-        autopilot->mynum = key;
+            autopilot->mynum = key;
+            autopilot->type = GTYPE_AUTO;
 
-		/* Allocate the command list */
-		autopilot->commands = dllist_create_list();
+            /* Allocate the command list */
+            autopilot->commands = dllist_create_list();
 
-		/* Make sure certain things are set NULL */
-		autopilot->astar_path = NULL;
-		autopilot->weaplist = NULL;
+            /* Make sure certain things are set NULL */
+            autopilot->astar_path = NULL;
+            autopilot->weaplist = NULL;
 
-		for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-			autopilot->profile[i] = NULL;
-		}
+            for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                autopilot->profile[i] = NULL;
+            }
 
-		/* And some things not set null */
-		autopilot->speed = 100;
+            /* And some things not set null */
+            autopilot->speed = 100;
 
-		break;
+            break;
 
-	case SPECIAL_FREE:
+        case SPECIAL_FREE:
 
-		/* Make sure the AI is stopped */
-		auto_stop_pilot(autopilot);
+            /* Make sure the AI is stopped */
+            auto_stop_pilot(autopilot);
 
-		/* Go through the list and remove any leftover nodes */
-		while (dllist_size(autopilot->commands)) {
+            /* Go through the list and remove any leftover nodes */
+            while (dllist_size(autopilot->commands)) {
 
-			/* Remove the first node on the list and get the data
-			 * from it */
-			temp = (command_node *) dllist_remove(autopilot->commands,
-												  dllist_head(autopilot->
-															  commands));
+                /* Remove the first node on the list and get the data
+                 * from it */
+                temp = (command_node *) dllist_remove(autopilot->commands,
+                        dllist_head(autopilot->commands));
 
-			/* Destroy the command node */
-			auto_destroy_command_node(temp);
+                /* Destroy the command node */
+                auto_destroy_command_node(temp);
 
-		}
+            }
 
-		/* Destroy the list */
-		dllist_destroy_list(autopilot->commands);
-		autopilot->commands = NULL;
+            /* Destroy the list */
+            dllist_destroy_list(autopilot->commands);
+            autopilot->commands = NULL;
 
-		/* Destroy any astar path list thats on the AI */
-		auto_destroy_astar_path(autopilot);
+            /* Destroy any astar path list thats on the AI */
+            auto_destroy_astar_path(autopilot);
 
-		/* Destroy profile array */
-		for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-			if(autopilot->profile[i]) {
-				rb_destroy(autopilot->profile[i]);
-			}
-			autopilot->profile[i] = NULL;
-		}
+            /* Destroy profile array */
+            for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                if(autopilot->profile[i]) {
+                    rb_destroy(autopilot->profile[i]);
+                }
+                autopilot->profile[i] = NULL;
+            }
 
-		/* Destroy weaponlist */
-		auto_destroy_weaplist(autopilot);
+            /* Destroy weaponlist */
+            auto_destroy_weaplist(autopilot);
 
-		/* Finally reset the AI value on its unit if
-		 * it needs to */
-		if((mech = getMech(autopilot->mymechnum))) {
+            /* Finally reset the AI value on its unit if
+             * it needs to */
+            if((mech = getMech(autopilot->mymechnum))) {
 
-			/* Just incase another AI has taken over */
-			if(MechAuto(mech) == autopilot->mynum) {
-				MechAuto(mech) = -1;
-			}
+                /* Just incase another AI has taken over */
+                if(MechAuto(mech) == autopilot->mynum) {
+                    MechAuto(mech) = -1;
+                }
 
-		}
+            }
 
-		break;
+            break;
 
-	}
+    }
 
 }

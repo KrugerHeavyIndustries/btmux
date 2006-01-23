@@ -64,8 +64,7 @@ void CreateNewSpecialObject(dbref player, dbref key);
 void DisposeSpecialObject(dbref player, dbref key);
 void list_hashstat(dbref player, const char *tab_name, HASHTAB * htab);
 void raw_notify(dbref player, const char *msg);
-void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size,
-			  void *data);
+void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size, void *data);
 void DeleteEntry(Tree * tree, muxkey_t key);
 int SaveTree(FILE * f, Tree tree);
 void UpdateTree(FILE * f, Tree * tree, int (*sizefunc) (int));
@@ -79,24 +78,24 @@ static void DoSpecialObjectHelp(dbref player, char *type, int id, int loc,
 								int powerneeded, int objid, char *arg);
 void initialize_colorize();
 
-#ifndef FAST_WHICHSPECIAL
-
-#define WhichSpecialS WhichSpecial
-#define WhichType(node) WhichSpecial(NodeKey(node))
-int WhichSpecial(dbref key);
-
-#else
-
 #define WhichType(node) NodeType(node)
 int WhichSpecial(dbref key);
-static int WhichSpecialS(dbref key);
-
-#endif
+static int WhichSpecialFromAttr(dbref key);
 
 /*********************************************/
 
 HASHTAB SpecialCommandHash[NUM_SPECIAL_OBJECTS];
 Tree xcode_tree = NULL;
+rbtree xcode_rbtree = NULL;
+
+/*
+ * For use with the xcode_rbtree - compare function
+ */
+static int xcode_compare(int left, int right, void *arg)
+{
+    return (right - left);
+}
+
 extern int map_sizefun();
 
 static int Can_Use_Command(MECH * mech, int cmdflag)
@@ -136,16 +135,16 @@ int HandledCommand_sub(dbref player, dbref location, char *command)
 					!(n = FindNode(xcode_tree, location)))) {
 		if(type >= 0 || !Hardcode(location) || Zombie(location))
 			return 0;
-		if((type = WhichSpecialS(location)) >= 0) {
+		if((type = WhichSpecialFromAttr(location)) >= 0) {
 			if(SpecialObjects[type].datasize > 0)
 				return 0;
 		} else
 			return 0;
 	}
-#ifdef FAST_WHICHSPECIAL
+
 	if(type > NUM_SPECIAL_OBJECTS)
 		return 0;
-#endif
+
 	typeOfObject = &SpecialObjects[type];
 	damnedhash = &SpecialCommandHash[type];
 	tmpc = strstr(command, " ");
@@ -548,45 +547,65 @@ void zap_unneccessary_hcode()
 	}
 }
 
+/*
+ * Load the hcode.db as well as initialize various
+ * tables and trees and counters
+ */
 void LoadSpecialObjects(void)
 {
-	dbref i;
-	int id, brand;
-	int type;
-	void *tmpdat;
+    dbref i;
+    int id, brand;
+    int type;
+    void *tmpdat;
 
-	muxevent_initialize();
-	muxevent_count_initialize();
-	init_stat();
-	initialize_partname_tables();
-	for(i = 0; MissileHitTable[i].key != -1; i++) {
-		if(find_matching_vlong_part(MissileHitTable[i].name, NULL, &id,
-									&brand))
-			MissileHitTable[i].key = Weapon2I(id);
-		else
-			MissileHitTable[i].key = -2;
-	}
-	/* Loop through the entire database, and if it has the special */
-	/* object flag, add it to our linked list. */
-	for(i = 0; i < mudstate.db_top; i++)
-		if(Hardcode(i) && !Going(i) && !Halted(i)) {
-			type = WhichSpecialS(i);
-			if(type >= 0) {
-				if(SpecialObjects[type].datasize > 0)
-					tmpdat = NewSpecialObject(i, type);
-				else
-					tmpdat = NULL;
-			} else
-				c_Hardcode(i);	/* Reset the flag */
-		}
-	for(i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
-		InitSpecialHash(i);
-		if(!SpecialObjects[i].updatefunc)
-			SpecialObjects[i].updateTime = 0;
-	}
-	init_btechstats();
-	load_xcode();
-	zap_unneccessary_hcode();
+    muxevent_initialize();
+    muxevent_count_initialize();
+
+    /* Don't need this so why is it still here? */
+    init_stat();
+
+    /* Initialize the parts list */
+    initialize_partname_tables();
+
+    for(i = 0; MissileHitTable[i].key != -1; i++) {
+        if(find_matching_vlong_part(MissileHitTable[i].name, NULL, &id, &brand))
+            MissileHitTable[i].key = Weapon2I(id);
+        else
+            MissileHitTable[i].key = -2;
+    }
+
+    /* Initialize the xcode rbtree */
+    xcode_rbtree = rb_init((void *) xcode_compare, NULL);
+
+    /* Loop through the entire database, and if it has the special */
+    /* object flag, add it to our linked list. Later on we will load
+     * data from the hcode.db (if it exists) */
+    for(i = 0; i < mudstate.db_top; i++)
+        if(Hardcode(i) && !Going(i) && !Halted(i)) {
+            type = WhichSpecialFromAttr(i);
+            if(type >= 0) {
+                if(SpecialObjects[type].datasize > 0)
+                    tmpdat = NewSpecialObject(i, type);
+                else
+                    tmpdat = NULL;
+            } else
+                c_Hardcode(i);  /* Reset the flag */
+        }
+
+    /* Setup the Special Objs table and command hash */
+    for(i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
+        InitSpecialHash(i);
+        if(!SpecialObjects[i].updatefunc)
+            SpecialObjects[i].updateTime = 0;
+    }
+
+    /* Initialize the player stats tables (skills/advs/etc) */
+    init_btechstats();
+
+    load_xcode();
+
+    /* This is a hack and needs to go */
+    zap_unneccessary_hcode();
 }
 
 static FILE *global_file_kludge;
@@ -857,8 +876,14 @@ void UpdateSpecialObjects(void)
  */
 void *NewSpecialObject(int id, int type)
 {
-    void *xcode_obj;
+    void *xcode_obj = NULL;
     int xcode_data_size;
+
+    MECH *mech;
+    MECHREP *mechrep;
+    MAP *map;
+    AUTO *autopilot;
+    TURRET_T *turret;
 
     /* Only need to do this if there is an xcode struct
      * associated with the xcode obj, see DEBUG for obj
@@ -868,8 +893,7 @@ void *NewSpecialObject(int id, int type)
         xcode_data_size = SpecialObjects[type].datasize;
 
         if (!(xcode_obj = malloc(xcode_data_size))) {
-            fprintf(stderr, "Unable to malloc XCODE obj of Type: %d\n",
-                    type);
+            fprintf(stderr, "Unable to malloc XCODE obj of Type: %d\n", type);
             exit(1);
         }
         
@@ -881,45 +905,72 @@ void *NewSpecialObject(int id, int type)
 
         /* Add to tree */
         AddEntry(&xcode_tree, id, type, xcode_data_size, xcode_obj);
+
+        /* New rbtree code for the xcode tree */
+        switch (type) {
+            case GTYPE_MECH:
+                mech = (MECH *) xcode_obj;
+                rb_insert(xcode_rbtree, (void *) mech->mynum, mech);
+            case GTYPE_MECHREP:
+                mechrep = (MECHREP *) xcode_obj;
+                rb_insert(xcode_rbtree, (void *) mechrep->mynum, mechrep);
+            case GTYPE_MAP:
+                map = (MAP *) xcode_obj;
+                rb_insert(xcode_rbtree, (void *) map->mynum, map);
+            case GTYPE_AUTO:
+                autopilot = (AUTO *) xcode_obj;
+                rb_insert(xcode_rbtree, (void *) autopilot->mynum, autopilot);
+            case GTYPE_TURRET:
+                turret = (TURRET_T *) xcode_obj;
+                rb_insert(xcode_rbtree, (void *) turret->mynum, turret);
+        }
+
     }
     return xcode_obj; 
 }
 
+/*
+ * Called when a person @sets the XCODE flag on an object
+ */
 void CreateNewSpecialObject(dbref player, dbref key)
 {
-	void *new;
-	struct SpecialObjectStruct *typeOfObject;
-	int type;
-	char *str;
+    void *new;
+    struct SpecialObjectStruct *typeOfObject;
+    int type;
+    char *str;
 
-	str = silly_atr_get(key, A_XTYPE);
-	if(!(str && *str)) {
-		notify(player,
-			   "You must first set the XTYPE using @xtype <object>=<type>");
-		notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
-			   "AUTOPILOT, TURRET.");
-		notify(player, "Resetting hardcode flag.");
-		c_Hardcode(key);		/* Reset the flag */
-		return;
-	}
+    str = silly_atr_get(key, A_XTYPE);
 
-	/* Find the special objects */
-	type = WhichSpecialS(key);
-	if(type > -1) {
-		/* We found the proper special object */
-		typeOfObject = &SpecialObjects[type];
-		if(typeOfObject->datasize) {
-			new = NewSpecialObject(key, type);
-			if(!new)
-				notify(player, "Memory allocation failure!");
-		}
-	} else {
-		notify(player, "That is not a valid XTYPE!");
-		notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
-			   "AUTOPILOT, TURRET.");
-		notify(player, "Resetting HARDCODE flag.");
-		c_Hardcode(key);
-	}
+    if(!(str && *str)) {
+        notify(player,
+                "You must first set the XTYPE using @xtype <object>=<type>");
+        notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
+                "AUTOPILOT, TURRET.");
+        notify(player, "Resetting hardcode flag.");
+        c_Hardcode(key);    /* Reset the flag */
+        return;
+    }
+
+    /* Find the special objects */
+    type = WhichSpecialFromAttr(key);
+
+    if(type > -1) {
+
+        /* We found the proper special object */
+        typeOfObject = &SpecialObjects[type];
+        if(typeOfObject->datasize) {
+            new = NewSpecialObject(key, type);
+            if(!new)
+                notify(player, "Memory allocation failure!");
+        }
+
+    } else {
+        notify(player, "That is not a valid XTYPE!");
+        notify(player, "Valid XTYPEs include: MECH, MECHREP, MAP, DEBUG, "
+                "AUTOPILOT, TURRET.");
+        notify(player, "Resetting HARDCODE flag.");
+        c_Hardcode(key);
+    }
 }
 
 void DisposeSpecialObject(dbref player, dbref key)
@@ -930,7 +981,7 @@ void DisposeSpecialObject(dbref player, dbref key)
 
 	tmp = FindNode(xcode_tree, key);
 
-	i = WhichSpecialS(key);
+	i = WhichSpecialFromAttr(key);
 	if(i < 0) {
 		notify(player,
 			   "CRITICAL: Unable to free data, inconsistency somewhere. Please");
@@ -1034,11 +1085,10 @@ int WhichSpecial(dbref key)
 
 #endif
 
-#ifdef FAST_WHICHSPECIAL
-static int WhichSpecialS(dbref key)
-#else
-int WhichSpecial(dbref key)
-#endif
+/*
+ * Get what special type from the XTYPE attribute from the object
+ */
+static int WhichSpecialFromAttr(dbref key)
 {
 	int i;
 	int returnValue = -1;
@@ -1046,7 +1096,9 @@ int WhichSpecial(dbref key)
 
 	if(!Hardcode(key))
 		return -1;
+
 	str = silly_atr_get(key, A_XTYPE);
+
 	if(str && *str) {
 		for(i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
 			if(!strcmp(SpecialObjects[i].type, str)) {

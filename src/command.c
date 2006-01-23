@@ -1369,9 +1369,11 @@ void process_command(dbref player, dbref cause, int interactive,
 			goto exit;
 
 	/* Handle mecha stuff.. */
+    /*
 	if(mudconf.have_specials && !Slave(player))
 		if(HandledCommand(player, Location(player), command))
 			goto exit;
+    */
 	/*
 	 * Check for the HOME command 
 	 */

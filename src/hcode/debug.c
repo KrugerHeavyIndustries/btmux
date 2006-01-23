@@ -39,14 +39,18 @@ void debug_list(dbref player, void *data, char *buffer)
 void debug_savedb(dbref player, void *data, char *buffer)
 {
 	notify(player, "--- Saving ---");
+    /*
 	SaveSpecialObjects(DUMP_NORMAL);
+    */
 	notify(player, "---  Done  ---");
 }
 
 void debug_loaddb(dbref player, void *data, char *buffer)
 {
 	notify(player, "--- Loading ---");
+    /*
 	LoadSpecialObjects();
+    */
 	notify(player, "---  Done   ---");
 }
 

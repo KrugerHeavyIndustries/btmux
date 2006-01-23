@@ -890,10 +890,11 @@ typedef struct {
 } mech_sd;
 
 typedef struct {
+    dbref mynum;                            /* My dbref */
+    unsigned char type;                     /* Type of XCODE obj - GTYPE_MECH */
     char ID[2];                             /* Only for internal use */
     char brief;                             /* toggle brievity */
     char chantitle[FREQS][CHTITLELEN + 1];  /* Channel titles */
-    dbref mynum;                            /* My dbref */
     int mapnumber;                          /* My number on the map */
     dbref mapindex;                         /* 0..MAX_MAPS (dbref of map object) */
     unsigned long tic[NUM_TICS][TICLONGS];  /* tics.. */

@@ -557,7 +557,9 @@ void initialize_map_empty(MAP * new, dbref key)
 {
 	int i, j;
 
-	new->mynum = key;
+    new->mynum = key;
+    new->type = GTYPE_MAP;
+
 	new->map_width = DEFAULT_MAP_WIDTH;
 	new->map_height = DEFAULT_MAP_HEIGHT;
 	Create(new->map, unsigned char *, new->map_height);
@@ -573,27 +575,32 @@ void initialize_map_empty(MAP * new, dbref key)
 /* Mem alloc/free routines */
 void newfreemap(dbref key, void **data, int selector)
 {
-	MAP *new = *data;
-	int i;
+    MAP *new = *data;
+    int i;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
-		initialize_map_empty(new, key);
-		/* allocate default map space */
-		for(i = 0; i < NUM_MAPOBJTYPES; i++)
-			new->mapobj[i] = NULL;
-		sprintf(new->mapname, "%s", "Default Map");
-		break;
-	case SPECIAL_FREE:
-		del_mapobjs(new);
-		if(new->map) {
-			for(i = new->map_height - 1; i >= 0; i--)
-				if(new->map[i])
-					free((char *) (new->map[i]));
-			free((char *) (new->map));
-		}
-		break;
-	}
+    switch (selector) {
+        case SPECIAL_ALLOC:
+
+            initialize_map_empty(new, key);
+
+            /* allocate default map space */
+            for(i = 0; i < NUM_MAPOBJTYPES; i++)
+                new->mapobj[i] = NULL;
+            sprintf(new->mapname, "%s", "Default Map");
+            break;
+
+        case SPECIAL_FREE:
+            del_mapobjs(new);
+            if(new->map) {
+
+                for(i = new->map_height - 1; i >= 0; i--)
+                    if(new->map[i])
+                        free((char *) (new->map[i]));
+
+                free((char *) (new->map));
+            }
+            break;
+    }
 }
 
 int map_sizefun(void *data, int flag)

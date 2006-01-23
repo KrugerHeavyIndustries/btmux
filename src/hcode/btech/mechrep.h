@@ -19,10 +19,11 @@
 #define _MECHREP_H
 
 /* This is the silly structure that I use for the repair stuff */
-struct mechrep_data {
+typedef struct mechrep_data {
     dbref mynum;
+    unsigned char type;             /* Xcode Type - GTYPE_MECHREP */
     dbref current_target;
-};
+} MECHREP;
 
 /* Mech repair/type commands */
 ECMD(mechrep_Raddspecial);

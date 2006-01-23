@@ -237,23 +237,25 @@ void mech_Rsetteam(dbref player, void *data, char *buffer)
 /* Alloc/free routine */
 void newfreemech(dbref key, void **data, int selector)
 {
-	MECH *new = *data;
-	MAP *map;
-	int i;
+    MECH *new = *data;
+    MAP *map;
+    int i;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
-		new->mynum = key;
-		new->mapnumber = 1;
-		new->mapindex = -1;
-		MechID(new)[0] = ' ';
-		MechID(new)[1] = ' ';
-		clear_mech(new, 1);
-		for(i = 0; i < NUM_SECTIONS; i++)
-			FillDefaultCriticals(new, i);
-		break;
-	case SPECIAL_FREE:
-		if(new->mapindex != -1 && (map = getMap(new->mapindex)))
-			remove_mech_from_map(map, new);
-	}
+    switch (selector) {
+        case SPECIAL_ALLOC:
+            new->mynum = key;
+            new->type = GTYPE_MECH;
+            new->mapnumber = 1;
+            new->mapindex = -1;
+            MechID(new)[0] = ' ';
+            MechID(new)[1] = ' ';
+            clear_mech(new, 1);
+            for(i = 0; i < NUM_SECTIONS; i++)
+                FillDefaultCriticals(new, i);
+            break;
+
+        case SPECIAL_FREE:
+            if(new->mapindex != -1 && (map = getMap(new->mapindex)))
+                remove_mech_from_map(map, new);
+    }
 }
