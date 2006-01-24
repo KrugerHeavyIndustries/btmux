@@ -891,7 +891,6 @@ void auto_newautopilot(dbref key, void **data, int selector)
         case SPECIAL_ALLOC:
 
             autopilot->mynum = key;
-            autopilot->type = GTYPE_AUTO;
 
             /* Allocate the command list */
             autopilot->commands = dllist_create_list();

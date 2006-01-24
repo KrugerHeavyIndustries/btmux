@@ -891,7 +891,6 @@ typedef struct {
 
 typedef struct {
     dbref mynum;                            /* My dbref */
-    unsigned char type;                     /* Type of XCODE obj - GTYPE_MECH */
     char ID[2];                             /* Only for internal use */
     char brief;                             /* toggle brievity */
     char chantitle[FREQS][CHTITLELEN + 1];  /* Channel titles */

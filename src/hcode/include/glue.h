@@ -71,6 +71,13 @@ typedef struct SpecialObjectStruct {
     int power_needed;		    // What power is needed to restricted commands
 } SpecialObjectStruct;
 
+/* For use with the xcode rbtree */
+typedef struct XcodeObjectStruct {
+    int key;                    // rbtree key value
+    unsigned char type;         // GTYPE (or XCODE type) for the object
+    void *data;                 // The actual object data
+} XcodeObject;
+
 #ifdef _GLUE_C
 
 #include "p.mech.move.h"

@@ -233,7 +233,6 @@ void newturret(dbref key, void **data, int selector)
     switch (selector) {
         case SPECIAL_ALLOC:
             new->mynum = key;
-            new->type = GTYPE_TURRET;
             new->target = -1;
             new->targx = -1;
             new->targy = -1;

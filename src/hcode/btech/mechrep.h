@@ -21,7 +21,6 @@
 /* This is the silly structure that I use for the repair stuff */
 typedef struct mechrep_data {
     dbref mynum;
-    unsigned char type;             /* Xcode Type - GTYPE_MECHREP */
     dbref current_target;
 } MECHREP;
 

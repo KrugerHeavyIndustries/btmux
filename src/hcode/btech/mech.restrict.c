@@ -244,7 +244,6 @@ void newfreemech(dbref key, void **data, int selector)
     switch (selector) {
         case SPECIAL_ALLOC:
             new->mynum = key;
-            new->type = GTYPE_MECH;
             new->mapnumber = 1;
             new->mapindex = -1;
             MechID(new)[0] = ' ';

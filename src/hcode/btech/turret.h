@@ -21,7 +21,6 @@
 
 typedef struct {
     dbref mynum;
-    unsigned char type; /* Xcode Type - GTYPE_TURRET */
 
     int arcs;			/* arc_override */
     unsigned long tic[NUM_TICS];	/* tics.. */

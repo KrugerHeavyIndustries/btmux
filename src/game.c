@@ -1150,10 +1150,8 @@ static int load_game(void)
 		load_comsys_and_macros(mudconf.commac_db);
 
 	/* Load the mecha stuff.. */
-    /*
 	if(mudconf.have_specials)
 		LoadSpecialObjects();
-    */
 
 	if(mudconf.have_mailer)
 		if((f = fopen(mudconf.mail_db, "r"))) {

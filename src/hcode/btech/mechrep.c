@@ -65,7 +65,6 @@ void newfreemechrep(dbref key, void **data, int selector)
     switch (selector) {
         case SPECIAL_ALLOC:
             new->mynum = key;
-            new->type = GTYPE_MECHREP;
             new->current_target = -1;
             break;
     }

@@ -876,14 +876,9 @@ void UpdateSpecialObjects(void)
  */
 void *NewSpecialObject(int id, int type)
 {
-    void *xcode_obj = NULL;
-    int xcode_data_size;
-
-    MECH *mech;
-    MECHREP *mechrep;
-    MAP *map;
-    AUTO *autopilot;
-    TURRET_T *turret;
+    void *xcode_data = NULL;
+    XcodeObject *xcode_object = NULL;
+    int xcode_data_size = 0;
 
     /* Only need to do this if there is an xcode struct
      * associated with the xcode obj, see DEBUG for obj
@@ -892,41 +887,42 @@ void *NewSpecialObject(int id, int type)
 
         xcode_data_size = SpecialObjects[type].datasize;
 
-        if (!(xcode_obj = malloc(xcode_data_size))) {
+        if (!(xcode_data = malloc(xcode_data_size))) {
             fprintf(stderr, "Unable to malloc XCODE obj of Type: %d\n", type);
             exit(1);
         }
         
-        memset(xcode_obj, 0, xcode_data_size);
+        memset(xcode_data, 0, xcode_data_size);
 
         /* Run the special setup function for the obj */
         if (SpecialObjects[type].allocfreefunc)
-            SpecialObjects[type].allocfreefunc(id, &(xcode_obj), SPECIAL_ALLOC);
+            SpecialObjects[type].allocfreefunc(id, &(xcode_data), SPECIAL_ALLOC);
 
         /* Add to tree */
-        AddEntry(&xcode_tree, id, type, xcode_data_size, xcode_obj);
+        AddEntry(&xcode_tree, id, type, xcode_data_size, xcode_data);
 
         /* New rbtree code for the xcode tree */
-        switch (type) {
-            case GTYPE_MECH:
-                mech = (MECH *) xcode_obj;
-                rb_insert(xcode_rbtree, (void *) mech->mynum, mech);
-            case GTYPE_MECHREP:
-                mechrep = (MECHREP *) xcode_obj;
-                rb_insert(xcode_rbtree, (void *) mechrep->mynum, mechrep);
-            case GTYPE_MAP:
-                map = (MAP *) xcode_obj;
-                rb_insert(xcode_rbtree, (void *) map->mynum, map);
-            case GTYPE_AUTO:
-                autopilot = (AUTO *) xcode_obj;
-                rb_insert(xcode_rbtree, (void *) autopilot->mynum, autopilot);
-            case GTYPE_TURRET:
-                turret = (TURRET_T *) xcode_obj;
-                rb_insert(xcode_rbtree, (void *) turret->mynum, turret);
+        /* Might break this up into seperate functions but its not an issue now */
+
+        /* First create xcode_object wrapper */
+        if (!(xcode_object = malloc(sizeof(XcodeObject)))) {
+            fprintf(stderr, "Unable to malloc Xcode Object Wrapper for Object %d\n",
+                    id);
+            exit(1);
         }
 
+        memset(xcode_object, 0, sizeof(XcodeObject));
+
+        /* Set values on the object */
+        xcode_object->key = id;
+        xcode_object->type = type;
+        xcode_object->data = xcode_data;
+
+        /* Add to tree */
+        rb_insert(xcode_rbtree, (void *) xcode_object->key, xcode_object);
+
     }
-    return xcode_obj; 
+    return xcode_data; 
 }
 
 /*

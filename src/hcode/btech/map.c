@@ -558,7 +558,6 @@ void initialize_map_empty(MAP * new, dbref key)
 	int i, j;
 
     new->mynum = key;
-    new->type = GTYPE_MAP;
 
 	new->map_width = DEFAULT_MAP_WIDTH;
 	new->map_height = DEFAULT_MAP_HEIGHT;

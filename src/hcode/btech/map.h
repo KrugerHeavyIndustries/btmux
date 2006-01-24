@@ -151,7 +151,6 @@ typedef struct mapobj_struct {
 
 typedef struct {
     dbref mynum;                        /* My dbref */
-    unsigned char type;                 /* Xcode Type - GTYPE_MAP */
     unsigned char **map;                /* The map */
     char mapname[MAP_NAME_SIZE + 1];
 
