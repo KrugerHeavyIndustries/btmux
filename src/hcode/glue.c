@@ -22,8 +22,6 @@
 #include <string.h>
 #include <math.h>
 
-#define FAST_WHICHSPECIAL
-
 #include "create.h"
 
 #define _GLUE_C
@@ -898,15 +896,13 @@ void *NewSpecialObject(int id, int type)
         if (SpecialObjects[type].allocfreefunc)
             SpecialObjects[type].allocfreefunc(id, &(xcode_data), SPECIAL_ALLOC);
 
-        /* Add to tree */
-        AddEntry(&xcode_tree, id, type, xcode_data_size, xcode_data);
-
         /* New rbtree code for the xcode tree */
         /* Might break this up into seperate functions but its not an issue now */
 
         /* First create xcode_object wrapper */
         if (!(xcode_object = malloc(sizeof(XcodeObject)))) {
-            fprintf(stderr, "Unable to malloc Xcode Object Wrapper for Object %d\n",
+            fprintf(stderr, 
+                    "Unable to malloc Xcode Object Wrapper for Object %d\n",
                     id);
             exit(1);
         }
@@ -969,41 +965,59 @@ void CreateNewSpecialObject(dbref player, dbref key)
     }
 }
 
+/*
+ * Called when an object is @set !XCODE or the object is destroyed
+ */
 void DisposeSpecialObject(dbref player, dbref key)
 {
-	Node *tmp;
-	int i;
-	struct SpecialObjectStruct *typeOfObject;
+    int type;
+    struct SpecialObjectStruct *typeOfObject;
+    XcodeObject *xcode_object;
+    void *xcode_data;
 
-	tmp = FindNode(xcode_tree, key);
+    /* Get the Xcode Object from the tree and check it against the
+     * real object */
+    xcode_object = (XcodeObject *) rb_find(xcode_rbtree, (void *) key);
 
-	i = WhichSpecialFromAttr(key);
-	if(i < 0) {
-		notify(player,
-			   "CRITICAL: Unable to free data, inconsistency somewhere. Please");
-		notify(player, "contact a wizard about this _NOW_!");
-		return;
-	}
-	typeOfObject = &SpecialObjects[i];
+    type = WhichSpecialFromAttr(key);
+    if (type < 0) {
+        notify(player,
+                "CRITICAL: Unable to free data, inconsistency somewhere.\n"
+                "Please contact a wizard about this _NOW_!");
+        return;
+    }
 
-	if(typeOfObject->datasize > 0 && WhichSpecial(key) != i) {
-		notify(player,
-			   "Semi-critical error has occured. For some reason the object's data differs\nfrom the data on the object. Please contact a wizard about this.");
-		i = WhichSpecial(key);
-	}
-	if(tmp) {
-		void *t = NodeData(tmp);
+    typeOfObject = &SpecialObjects[type];
 
-		if(typeOfObject->allocfreefunc)
-			typeOfObject->allocfreefunc(key, &NodeData(tmp), SPECIAL_FREE);
-		NodeData(tmp) = NULL;
-		DeleteEntry(&xcode_tree, key);
-		muxevent_remove_data(t);
-		free(t);
-	} else if(typeOfObject->datasize > 0) {
-		notify(player, "This object is not in the special object DBASE.");
-		notify(player, "Please contact a wizard about this bug. ");
-	}
+    if (typeOfObject->datasize > 0 && WhichSpecial(key) != type) {
+        notify(player,
+                "Semi-critical error has occured. For some reason "
+                "the object's data differs\nfrom the data on the "
+                "object. Please contact a wizard about this.");
+        type = WhichSpecial(key);
+    }
+
+    if (xcode_object) {
+
+        /* Cleanup the object's xcode data */
+        xcode_data = xcode_object->data;
+
+        if (typeOfObject->allocfreefunc)
+            typeOfObject->allocfreefunc(key, &(xcode_data), SPECIAL_FREE);
+
+        muxevent_remove_data(xcode_data);
+        free(xcode_data);
+
+        /* rbtree cleanup */
+        xcode_object->data = NULL;
+        rb_delete(xcode_rbtree, (void *) key);
+        free(xcode_object);
+
+    } else if (typeOfObject->datasize > 0) {
+        notify(player, "This object is not in the special object DBASE.\n"
+                "Please contact a wizard about this bug.");
+    }
+
 }
 
 void Dump_Mech(dbref player, int type, char *typestr)
@@ -1067,58 +1081,60 @@ void DumpMaps(dbref player)
 }
 
 /***************** INTERNAL ROUTINES *************/
-#ifdef FAST_WHICHSPECIAL
 int WhichSpecial(dbref key)
 {
-	Node *n;
+    XcodeObject *xcode_object;
 
-	if(!Hardcode(key))
-		return -1;
-	if(!(n = FindObjectsNode(key)))
-		return -1;
-	return NodeType(n);
+    if (!Good_obj(key))
+        return -1;
+    if (!Hardcode(key))
+        return -1;
+    if (!(xcode_object = rb_find(xcode_rbtree, (void *) key)))
+        return -1;
+
+    return xcode_object->type;
 }
-
-#endif
 
 /*
  * Get what special type from the XTYPE attribute from the object
  */
 static int WhichSpecialFromAttr(dbref key)
 {
-	int i;
-	int returnValue = -1;
-	char *str;
+    int i;
+    int returnValue = -1;
+    char *str;
 
-	if(!Hardcode(key))
-		return -1;
+    if (!Good_obj(key))
+        return -1;
+    if (!Hardcode(key))
+        return -1;
 
-	str = silly_atr_get(key, A_XTYPE);
+    str = silly_atr_get(key, A_XTYPE);
 
-	if(str && *str) {
-		for(i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
-			if(!strcmp(SpecialObjects[i].type, str)) {
-				returnValue = i;
-				break;
-			}
-		}
-	}
-	return (returnValue);
+    if (str && *str) {
+        for (i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
+            if (!strcmp(SpecialObjects[i].type, str)) {
+                returnValue = i;
+                break;
+            }
+        }
+    }
+    return (returnValue);
 }
 
 int IsMech(dbref num)
 {
-	return WhichSpecial(num) == GTYPE_MECH;
+    return WhichSpecial(num) == GTYPE_MECH;
 }
 
 int IsAuto(dbref num)
 {
-	return WhichSpecial(num) == GTYPE_AUTO;
+    return WhichSpecial(num) == GTYPE_AUTO;
 }
 
 int IsMap(dbref num)
 {
-	return WhichSpecial(num) == GTYPE_MAP;
+    return WhichSpecial(num) == GTYPE_MAP;
 }
 
 /*** Support routines ***/
@@ -1133,11 +1149,16 @@ static Node *FindObjectsNode(dbref key)
 
 void *FindObjectsData(dbref key)
 {
-	Node *tmp;
+    XcodeObject *xcode_object;
 
-	if((tmp = FindObjectsNode(key)))
-		return NodeData(tmp);
-	return NULL;
+    if (!Good_obj(key))
+        return NULL;
+    if (!Hardcode(key))
+        return NULL;
+    if(!(xcode_object = rb_find(xcode_rbtree, (void *) key)))
+        return NULL;
+
+    return xcode_object->data;
 }
 
 char *center_string(char *c, int len)
@@ -1400,35 +1421,38 @@ static void DoSpecialObjectHelp(dbref player, char *type, int id, int loc,
 
 void InitSpecialHash(int which)
 {
-	char *tmp, *tmpc;
-	int i;
-	char buf[MBUF_SIZE];
+    char *tmp, *tmpc;
+    int i;
+    char buf[MBUF_SIZE];
 
-	hashinit(&SpecialCommandHash[which], 20 * HASH_FACTOR);
-	for(i = 0; (tmp = SpecialObjects[which].commands[i].name); i++) {
-		if(!SpecialObjects[which].commands[i].func)
-			continue;
-		tmpc = buf;
-		for(; *tmp && *tmp != ' '; tmp++)
-			*(tmpc++) = ToLower(*tmp);
-		*tmpc = 0;
-		if((tmpc = strstr(buf, " ")))
-			*tmpc = 0;
-		hashadd(buf, (int *) &SpecialObjects[which].commands[i],
-				&SpecialCommandHash[which]);
-	}
+    hashinit(&SpecialCommandHash[which], 20 * HASH_FACTOR);
+    for(i = 0; (tmp = SpecialObjects[which].commands[i].name); i++) {
+        if(!SpecialObjects[which].commands[i].func)
+            continue;
+        tmpc = buf;
+        for(; *tmp && *tmp != ' '; tmp++)
+            *(tmpc++) = ToLower(*tmp);
+        *tmpc = 0;
+        if((tmpc = strstr(buf, " ")))
+            *tmpc = 0;
+        hashadd(buf, (int *) &SpecialObjects[which].commands[i],
+                &SpecialCommandHash[which]);
+    }
 }
 
+/*
+ * The direct link to @set and @destroy and a few other spots...
+ */
 void handle_xcode(dbref player, dbref obj, int from, int to)
 {
-	if(from == to)
-		return;
-	if(!to) {
-		s_Hardcode(obj);
-		DisposeSpecialObject(player, obj);
-		c_Hardcode(obj);
-	} else
-		CreateNewSpecialObject(player, obj);
+    if (from == to)
+        return;
+    if (!to) {
+        s_Hardcode(obj);
+        DisposeSpecialObject(player, obj);
+        c_Hardcode(obj);
+    } else
+        CreateNewSpecialObject(player, obj);
 }
 
 #define DEFAULT 0				/* Normal */
@@ -1597,24 +1621,32 @@ void ResetSpecialObjects()
 
 MAP *getMap(dbref d)
 {
-	Node *tmp;
+    XcodeObject *xcode_object;
 
-	if(!(tmp = FindObjectsNode(d)))
-		return NULL;
-	if(NodeType(tmp) != GTYPE_MAP)
-		return NULL;
-	return (MAP *) NodeData(tmp);
+    if (!Good_obj(d))
+        return NULL;
+    if (!Hardcode(d))
+        return NULL;
+    if (!(xcode_object = rb_find(xcode_rbtree, (void *) d)))
+        return NULL;
+    if (xcode_object->type != GTYPE_MAP)
+        return NULL;
+
+    return (MAP *) xcode_object->data;
 }
 
 MECH *getMech(dbref d)
 {
-	Node *tmp;
+    XcodeObject *xcode_object;
 
-	if(d < 0)
-		return NULL;
-	if(!(tmp = FindObjectsNode(d)))
-		return NULL;
-	if(NodeType(tmp) != GTYPE_MECH)
-		return NULL;
-	return (MECH *) NodeData(tmp);
+    if (!Good_obj(d))
+        return NULL;
+    if (!Hardcode(d))
+        return NULL;
+    if (!(xcode_object = rb_find(xcode_rbtree, (void *) d)))
+        return NULL;
+    if (xcode_object->type != GTYPE_MECH)
+        return NULL;
+
+    return (MECH *) xcode_object->data;
 }
