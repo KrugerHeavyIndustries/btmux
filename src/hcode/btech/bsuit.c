@@ -245,6 +245,7 @@ int doBSuitCommonChecks(MECH * mech, dbref player)
 		DOCHECK1(!SectIsDestroyed(mech, i) &&
 				 MechSections(mech)[i].recycle,
 				 tprintf("Suit %d is still recovering from attack.", i + 1));
+		DOCHECK1(SectHasBusyWeap(mech,i),"You have weapons recycling!");
 	}
 
 	return 0;
