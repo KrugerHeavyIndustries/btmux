@@ -16,6 +16,7 @@
 #include "p.mech.damage.h"
 #include "p.template.h"
 #include "p.btechstats.h"
+#include "p.mech.combat.misc.h"
 
 void mech_ood_damage(MECH * wounded, MECH * attacker, int damage)
 {
@@ -148,7 +149,25 @@ void mech_ood_event(MUXEVENT * e)
 		domino_space(mech, 2);
 	if(WaterBeast(mech) && NotInWater(mech))
 		MechDesiredSpeed(mech) = 0.0;
-	MaybeMove(mech);
+
+	MaybeMove(mech);
+	
+	/* Lets handle dropping right into the water. Anything but a mech/hover goes glub */
+	if(InWater(mech) && (MechType(mech) == CLASS_VEH_GROUND ||
+				MechType(mech) == CLASS_VTOL ||
+				MechType(mech) == CLASS_BSUIT ||
+				MechType(mech) == CLASS_AERO ||
+				MechType(mech) == CLASS_DS) &&
+			!(MechSpecials2(mech) & WATERPROOF_TECH)) {
+
+		mech_notify(mech, MECHALL,
+				"Water floods your engine and your unit "
+				"becomes unoperable.");
+		MechLOSBroadcast(mech,
+				"emits some bubbles as its engines are flooded.");
+		DestroyMech(mech, mech, 0);
+	}
+
 }
 
 void initiate_ood(dbref player, MECH * mech, char *buffer)
