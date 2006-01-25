@@ -471,6 +471,7 @@ static void make_freelist(void)
 		if(IS_CLEAN(i)) {
 			s_Link(i, mudstate.freelist);
 			mudstate.freelist = i;
+			return;
 		}
 	}
 }
