@@ -1446,6 +1446,18 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 		}
 		free(argument);
 
+        /* Boundaries */
+        if (tx < 0 || ty < 0 || tx >= map->map_width || ty >= map->map_width) {
+
+            /* Bad location to go to */
+            snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
+                    " generate an astar path for AI #%d to bad hex"
+                    " (%d, %d)", autopilot->mynum, tx, ty);
+            SendAI(error_buf);
+            auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+            return;
+        }
+
 		/* Look for a path */
 		if(!(auto_astar_generate_path(autopilot, mech, tx, ty))) {
 
