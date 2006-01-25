@@ -10,8 +10,6 @@
 typedef struct bque BQUE;
 struct bque {
     BQUE *next;
-    BQUE *next_wait;
-    BQUE *next_blocking;
     
     dbref player;       /* player who will do command */
     dbref cause;        /* player causing command (for %N) */
