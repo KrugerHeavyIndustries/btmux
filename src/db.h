@@ -231,6 +231,9 @@ extern void dump_database_internal(int);
 #define	DO_WHOLE_DB(thing) \
 	for ((thing)=0; (thing)<mudstate.db_top; (thing)++)
 
+#define DO_WHOLE_DB_REV(thing) \
+	for ((thing)=mudstate.db_top; (thing)>0; (thing)--)
+
 #define	Dropper(thing)	(Connected(Owner(thing)) && Hearer(thing))
 
 #define DUMP_NORMAL  0
