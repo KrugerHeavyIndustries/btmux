@@ -209,51 +209,68 @@ void initialize_partname_tables();
 static MECH *global_kludge_mech;
 int global_specials = NUM_SPECIAL_OBJECTS;
 
-static int remove_from_all_maps_func(Node * tmp)
+static int remove_from_all_maps_func(void *key, void *data, int depth, void *arg)
 {
-	if(WhichType(tmp) == GTYPE_MAP) {
-		MAP *map;
-		int i;
 
-		if(!(map = getMap(NodeKey(tmp))))
-			return 1;
-		for(i = 0; i < map->first_free; i++)
-			if(map->mechsOnMap[i] == global_kludge_mech->mynum)
-				map->mechsOnMap[i] = -1;
-	}
-	return 1;
+    XcodeObject *xcode_object = (XcodeObject *) data;
+    MECH *mech = (MECH *) arg;
+    MAP *map;
+    int i;
+
+    if (xcode_object->type == GTYPE_MAP) {
+
+        if(!(map = getMap((int) key)))
+            return 1;
+
+        for(i = 0; i < map->first_free; i++)
+            if(map->mechsOnMap[i] == mech->mynum)
+                map->mechsOnMap[i] = -1;
+    }
+
+    return 1;
 }
 
-void mech_remove_from_all_maps(MECH * mech)
+void mech_remove_from_all_maps(MECH *mech)
 {
-	global_kludge_mech = mech;
-	GoThruTree(xcode_tree, remove_from_all_maps_func);
+    rb_walk(xcode_rbtree, WALK_INORDER, remove_from_all_maps_func, mech);
 }
 
-static dbref except_map = -1;
+struct maps_except_struct {
+    MECH *mech;
+    int num;
+};
 
-static int remove_from_all_maps_except_func(Node * tmp)
+static int remove_from_all_maps_except_func(void *key, void *data, int depth, void *arg)
 {
-	if(WhichType(tmp) == GTYPE_MAP) {
-		int i;
-		MAP *map;
 
-		if(NodeKey(tmp) == except_map)
-			return 1;
-		if(!(map = getMap(NodeKey(tmp))))
-			return 1;
-		for(i = 0; i < map->first_free; i++)
-			if(map->mechsOnMap[i] == global_kludge_mech->mynum)
-				map->mechsOnMap[i] = -1;
-	}
-	return 1;
+    XcodeObject *xcode_object = (XcodeObject *) data;
+    struct maps_except_struct *tmp = (struct maps_except_struct *) arg;
+    MECH *mech = tmp->mech;
+    MAP *map;
+    int except_map = tmp->num;
+    int i;
+
+    if (xcode_object->type == GTYPE_MAP) {
+
+        if (xcode_object->key == except_map)
+            return 1;
+
+        if (!(map = (MAP *) xcode_object->data))
+            return 1;
+
+        for (i = 0; i < map->first_free; i++)
+            if (map->mechsOnMap[i] == mech->mynum)
+                map->mechsOnMap[i] = -1;
+    }
+
+    return 1;
 }
-void mech_remove_from_all_maps_except(MECH * mech, int num)
+
+void mech_remove_from_all_maps_except(MECH *mech, int num)
 {
-	global_kludge_mech = mech;
-	except_map = num;
-	GoThruTree(xcode_tree, remove_from_all_maps_except_func);
-	except_map = -1;
+    struct maps_except_struct arg = { mech, num };
+
+    rb_walk(xcode_rbtree, WALK_INORDER, remove_from_all_maps_except_func, (void *) &arg);
 }
 
 static int load_update2(Node * tmp)
@@ -830,17 +847,29 @@ void SaveSpecialObjects(int i)
 #endif
 }
 
-static int UpdateSpecialObject_func(Node * tmp)
+/*
+ * Called once a second via UpdateSpecialObject (as it goes thru the rbtree)
+ */
+static int UpdateSpecialObject_func(void *key, void *data, int depth, void *arg)
 {
-	int i;
+    int type;
+    XcodeObject *xcode_object;
 
-	i = WhichType(tmp);
-	if(!SpecialObjects[i].updateTime)
-		return 1;
-	if((mudstate.now % SpecialObjects[i].updateTime))
-		return 1;
-	SpecialObjects[i].updatefunc(NodeKey(tmp), NodeData(tmp));
-	return 1;
+    xcode_object = (XcodeObject *) data;
+    type = xcode_object->type;
+
+    /* Not an object that needs to be updated */
+    if (!SpecialObjects[type].updateTime)
+        return 1;
+
+    /* Shouldn't be updated now */
+    if ((mudstate.now % SpecialObjects[type].updateTime))
+        return 1;
+
+    /* Update the object */
+    SpecialObjects[type].updatefunc(xcode_object->key, xcode_object->data);
+
+    return 1;
 }
 
 /* This is called once a second for each special object */
@@ -851,21 +880,22 @@ static int UpdateSpecialObject_func(Node * tmp)
 static time_t lastrun = 0;
 void UpdateSpecialObjects(void)
 {
-	char *cmdsave;
-	int i;
-	int times = lastrun ? (mudstate.now - lastrun) : 1;
+    char *cmdsave;
+    int i;
+    int times = lastrun ? (mudstate.now - lastrun) : 1;
 
-	if(times > 20)
-		times = 20;				/* Machine's hopelessly lagged,
-								   we don't want to make it [much] worse */
-	cmdsave = mudstate.debug_cmd;
-	for(i = 0; i < times; i++) {
-		muxevent_run();
-		mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
-		GoThruTree(xcode_tree, UpdateSpecialObject_func);
-	}
-	lastrun = mudstate.now;
-	mudstate.debug_cmd = cmdsave;
+    if(times > 20)
+        times = 20;     /* Machine's hopelessly lagged, 
+                           we don't want to make it [much] worse */
+
+    cmdsave = mudstate.debug_cmd;
+    for(i = 0; i < times; i++) {
+        muxevent_run();
+        mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
+        rb_walk(xcode_rbtree, WALK_INORDER, UpdateSpecialObject_func, NULL); 
+    }
+    lastrun = mudstate.now;
+    mudstate.debug_cmd = cmdsave;
 }
 
 /*

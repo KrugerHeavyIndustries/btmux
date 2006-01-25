@@ -948,11 +948,7 @@ SpecialObjectStruct SpecialObjects[] = {
     LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
 };
 
-#define NUM_SPECIAL_OBJECTS \
-   ((sizeof(SpecialObjects))/(sizeof(struct SpecialObjectStruct)))
-
 #undef HEADER
-
 
 #endif
 

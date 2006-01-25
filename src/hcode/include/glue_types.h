@@ -23,4 +23,6 @@
 #define GTYPE_TURRET  5
 #define GTYPE_UNUSED1 6 // Placeholder for old chargen object.
 
+#define NUM_SPECIAL_OBJECTS 6   // Total number of 'used' special objects (GTYPES)
+
 #endif				/* GLUE_TYPES_H */
