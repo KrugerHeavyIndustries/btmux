@@ -31,11 +31,13 @@
 #define XCODE_VERSION 2
 
 /* For the xdr hcode db */
-#define XCDB_MAGIC 0x58434442
-#define XCDB_VERSION 1
-#define XCDB_MECH_MAGIC 0x4d454348
-#define XCDB_AUTO_MAGIC 0x4155544f
-#define XCDB_MAP_MAGIC 0x004d4150
+#define XCDB_MAGIC          0x58434442      /* XCDB */
+#define XCDB_VERSION        1
+#define XCDB_MECH_MAGIC     0x4d454348      /* MECH */
+#define XCDB_MECHREP_MAGIC  0x4d524550      /* MREP */
+#define XCDB_MAP_MAGIC      0x004d4150      /* <blank>MAP */
+#define XCDB_AUTO_MAGIC     0x4155544f      /* AUTO */
+#define XCDB_TURRET_MAGIC   0x54555252      /* TURR */
 
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1

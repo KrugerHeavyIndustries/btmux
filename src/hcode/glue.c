@@ -781,16 +781,147 @@ static void save_econdb(char *target, int i)
 }
 #endif
 
+struct hcode_xdr_struct {
+    struct mmdb_t *hcode_xdr;
+    int count[NUM_SPECIAL_OBJECTS];
+    int total_count;
+};
+
+/* Save MECH */
+static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
+
+    mmdb_write_uint(hcode_xdr, XCDB_MECH_MAGIC);
+
+    return 1;
+}
+
+/* Save MECHREP */
+static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr) {
+
+    mmdb_write_uint(hcode_xdr, XCDB_MECHREP_MAGIC);
+
+    return 1;
+}
+
+/* Save MAP */
+static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr) {
+
+    mmdb_write_uint(hcode_xdr, XCDB_MAP_MAGIC);
+
+    return 1;
+}
+
+/* Save AUTOPILOT */
+static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xdr) {
+
+    mmdb_write_uint(hcode_xdr, XCDB_AUTO_MAGIC);
+
+    return 1;
+}
+
+/* Save TURRET */
+static int SaveTurretObject(int key, TURRET_T *turret, struct mmdb_t *hcode_xdr) {
+
+    mmdb_write_uint(hcode_xdr, XCDB_TURRET_MAGIC);
+
+    return 1;
+}
+
+static int SaveSpecialObjects_func(void *key, void *data, int depth, void *arg) {
+
+    XcodeObject *xcode_object = (XcodeObject *) data;
+    struct hcode_xdr_struct *info = (struct hcode_xdr_struct *) arg;
+
+    /* Based on the given type we call a special save object function */
+    switch (xcode_object->type) {
+
+        case GTYPE_MECH:
+            if (SaveMechObject((int) key, (MECH *) xcode_object->data,
+                        info->hcode_xdr)) {
+
+                info->count[GTYPE_MECH]++;
+                info->total_count++;
+
+            } else {
+
+                /* Produce Error */
+            }
+            break;
+
+        case GTYPE_DEBUG:
+
+            /* Never save anything for a debug object but just incase
+             * that changes heres the spot for it */
+            break;
+
+        case GTYPE_MECHREP:
+            if (SaveMechrepObject((int) key, (MECHREP *) xcode_object->data,
+                        info->hcode_xdr)) {
+
+                info->count[GTYPE_MECHREP]++;
+                info->total_count++;
+
+            } else {
+
+                /* Produce Error */
+            }
+            break;
+
+        case GTYPE_MAP:
+            if (SaveMapObject((int) key, (MAP *) xcode_object->data,
+                        info->hcode_xdr)) {
+
+                info->count[GTYPE_MAP]++;
+                info->total_count++;
+
+            } else {
+
+                /* Produce Error */
+            }
+            break;
+
+        case GTYPE_AUTO:
+            if (SaveAutopilotObject((int) key, (AUTO *) xcode_object->data,
+                        info->hcode_xdr)) {
+
+                info->count[GTYPE_AUTO]++;
+                info->total_count++;
+
+            } else {
+
+                /* Produce Error */
+            }
+            break;
+
+        case GTYPE_TURRET:
+            if (SaveTurretObject((int) key, (TURRET_T *) xcode_object->data,
+                        info->hcode_xdr)) {
+
+                info->count[GTYPE_TURRET]++;
+                info->total_count++;
+
+            } else {
+
+                /* Produce Error */
+            }
+            break;
+
+        default:
+            break;
+
+    }
+
+    return 1;
+}
+
 void SaveSpecialObjects(int i)
 {
-    FILE *f;
-    int filemode, count;
-    byte xcode_version = XCODE_VERSION;
-    char target[LBUF_SIZE];
-
     char xdr_hcode_file[LBUF_SIZE];
     struct mmdb_t *hcode_xdr;
     struct timeval tv;
+    struct hcode_xdr_struct arg;
+
+    int count;
 
     /* Adding this to temporarly generate the new hcode.xdr.db file
      * eventually this will replace the current hcode.db file */
@@ -807,62 +938,20 @@ void SaveSpecialObjects(int i)
     mmdb_write_uint(hcode_xdr, tv.tv_sec);
     mmdb_write_uint(hcode_xdr, tv.tv_usec);
 
-    switch (i) {
-        case DUMP_KILLED:
-            sprintf(target, "%s.KILLED", mudconf.hcode_db);
-            break;
-        case DUMP_CRASHED:
-            sprintf(target, "%s.CRASHED", mudconf.hcode_db);
-            break;
-        default:                    /* RESTART / normal */
-            sprintf(target, "%s.tmp", mudconf.hcode_db);
-            break;
-    }
+    memset(&arg, 0, sizeof(arg));
+    arg.hcode_xdr = hcode_xdr;
 
-    f = my_open_file(target, "w", &filemode);
-
-    if(!f) {
-        log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
-        SendDB("ERROR occured during opening of new hcode-savefile.");
-        return;
-    }
-
-    fwrite(&xcode_version, 1, 1, f);
-    count = SaveTree(f, xcode_tree);
-    global_file_kludge = f;
-
-    /* Then, check each xcode thing for stuff */
-    GoThruTree(xcode_tree, save_maps_func);
-
-    /* Save autopilot data */
-    GoThruTree(xcode_tree, save_autopilot_data);
-
-    saverepairs(f);
-
-    my_close_file(f, &filemode);
+    /* Walk through the tree and write objects to the file */
+    rb_walk(xcode_rbtree, WALK_INORDER, SaveSpecialObjects_func, &arg);
 
     /* Close the xdr hcode file */
     mmdb_close(hcode_xdr);
 
-    if(i == DUMP_RESTART || i == DUMP_NORMAL) {
-        if(rename(mudconf.hcode_db, tprintf("%s.prev", mudconf.hcode_db))
-                < 0) {
-            log_perror("SAV", "FAIL", "Renaming old hcode-save file ",
-                    target);
-            SendDB("ERROR occured during renaming of old hcode save-file.");
-        }
-        if(rename(target, mudconf.hcode_db) < 0) {
-            log_perror("SAV", "FAIL", "Renaming new hcode-save file ",
-                    target);
-            SendDB("ERROR occured during renaming of new hcode save-file.");
-        }
-    }
-
-    if(count)
-        SendDB(tprintf("Hcode saved. %d xcode entries dumped.", count));
+    if (count)
+        SendDB("Hcode saved. %d xcode entries dumped.", count);
 
 #ifdef BT_ADVANCED_ECON
-    save_econdb(target, i);
+    //save_econdb(target, i);
 #endif
 }
 
