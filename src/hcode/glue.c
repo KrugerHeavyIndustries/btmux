@@ -120,59 +120,78 @@ static int Can_Use_Command(MECH * mech, int cmdflag)
 
 int HandledCommand_sub(dbref player, dbref location, char *command)
 {
-	struct SpecialObjectStruct *typeOfObject;
-	Node *n = NULL;
-	int type;
-	CommandsStruct *cmd;
-	HASHTAB *damnedhash;
-	char *tmpc, *tmpchar;
-	int ishelp;
+    struct SpecialObjectStruct *typeOfObject;
+    XcodeObject *xcode_object = NULL;
+    int type;
+    CommandsStruct *cmd;
+    HASHTAB *damnedhash;
+    char *tmpc, *tmpchar;
+    int ishelp;
 
-	type = WhichSpecial(location);
-	if(type < 0 || (SpecialObjects[type].datasize > 0 &&
-					!(n = FindNode(xcode_tree, location)))) {
-		if(type >= 0 || !Hardcode(location) || Zombie(location))
-			return 0;
-		if((type = WhichSpecialFromAttr(location)) >= 0) {
-			if(SpecialObjects[type].datasize > 0)
-				return 0;
-		} else
-			return 0;
-	}
+    type = WhichSpecial(location);
 
-	if(type > NUM_SPECIAL_OBJECTS)
-		return 0;
+    if (type < 0 || (SpecialObjects[type].datasize > 0 &&
+                !(xcode_object = (XcodeObject *) rb_find(xcode_rbtree, 
+                        (void *) location)))) {
 
-	typeOfObject = &SpecialObjects[type];
-	damnedhash = &SpecialCommandHash[type];
-	tmpc = strstr(command, " ");
-	if(tmpc)
-		*tmpc = 0;
-	ishelp = !strcmp(command, "HELP");
-	for(tmpchar = command; *tmpchar; tmpchar++)
-		*tmpchar = ToLower(*tmpchar);
-	cmd = (CommandsStruct *) hashfind(command, &SpecialCommandHash[type]);
-	if(tmpc)
-		*tmpc = ' ';
-	if(cmd && (type != GTYPE_MECH || (type == GTYPE_MECH &&
-									  Can_Use_Command(((MECH *)
-													   (NodeData(n))),
-													  cmd->flag)))) {
+        if (type >= 0 || !Hardcode(location) || Zombie(location))
+            return 0;
+
+        if ((type = WhichSpecialFromAttr(location)) >= 0) {
+            if (SpecialObjects[type].datasize > 0)
+                return 0;
+        } else {
+            return 0;
+        }
+
+    }
+
+    if (type >= NUM_SPECIAL_OBJECTS)
+        return 0;
+
+    typeOfObject = &SpecialObjects[type];
+    damnedhash = &SpecialCommandHash[type];
+    tmpc = strstr(command, " ");
+
+    if (tmpc)
+        *tmpc = 0;
+
+    ishelp = !strcmp(command, "HELP");
+
+    for (tmpchar = command; *tmpchar; tmpchar++)
+        *tmpchar = ToLower(*tmpchar);
+
+    cmd = (CommandsStruct *) hashfind(command, &SpecialCommandHash[type]);
+
+    if (tmpc)
+        *tmpc = ' ';
+
+    if (cmd && (type != GTYPE_MECH || 
+                (type == GTYPE_MECH && 
+                 Can_Use_Command(((MECH *) (xcode_object->data)), cmd->flag)))) {
+
 #define SKIPSTUFF(a) while (*a && *a != ' ') a++;while (*a == ' ') a++
-		if(cmd->helpmsg[0] != '@' ||
-		   Have_MechPower(Owner(player), typeOfObject->power_needed)) {
-			SKIPSTUFF(command);
-			cmd->func(player, !n ? NULL : NodeData(n), command);
-		} else
-			notify(player, "Sorry, that command is restricted!");
-		return 1;
-	} else if(ishelp) {
-		SKIPSTUFF(command);
-		DoSpecialObjectHelp(player, typeOfObject->type, type, location,
-							typeOfObject->power_needed, location, command);
-		return 1;
-	}
-	return 0;
+
+        if (cmd->helpmsg[0] != '@' ||
+                Have_MechPower(Owner(player), typeOfObject->power_needed)) {
+
+            SKIPSTUFF(command);
+            cmd->func(player, !xcode_object ? NULL : xcode_object->data, command);
+
+        } else {
+            notify(player, "Sorry, that command is restricted!");
+        }
+
+        return 1;
+
+    } else if (ishelp) {
+
+        SKIPSTUFF(command);
+        DoSpecialObjectHelp(player, typeOfObject->type, type, location,
+                typeOfObject->power_needed, location, command);
+        return 1;
+    }
+    return 0;
 }
 
 #define OkayHcode(a) (a >= 0 && Hardcode(a) && !Zombie(a))
@@ -180,34 +199,34 @@ int HandledCommand_sub(dbref player, dbref location, char *command)
 /* Main entry point */
 int HandledCommand(dbref player, dbref loc, char *command)
 {
-	dbref curr, temp;
+    dbref curr, temp;
 
-	if(Slave(player))
-		return 0;
-	if(strlen(command) > (LBUF_SIZE - MBUF_SIZE))
-		return 0;
-	if(OkayHcode(player) && HandledCommand_sub(player, player, command))
-		return 1;
-	if(OkayHcode(loc) && HandledCommand_sub(player, loc, command))
-		return 1;
-	SAFE_DOLIST(curr, temp, Contents(player)) {
-		if(OkayHcode(curr))
-			if(HandledCommand_sub(player, curr, command))
-				return 1;
+    if(Slave(player))
+        return 0;
+    if(strlen(command) > (LBUF_SIZE - MBUF_SIZE))
+        return 0;
+    if(OkayHcode(player) && HandledCommand_sub(player, player, command))
+        return 1;
+    if(OkayHcode(loc) && HandledCommand_sub(player, loc, command))
+        return 1;
+
+    SAFE_DOLIST(curr, temp, Contents(player)) {
+        if(OkayHcode(curr))
+            if(HandledCommand_sub(player, curr, command))
+                return 1;
+
 #if 0							/* Recursion is evil ; let's not do that, this time */
-		if(Has_contents(curr))
-			if(HandledCommand_contents(player, curr, command))
-				return 1;
+        if(Has_contents(curr))
+            if(HandledCommand_contents(player, curr, command))
+                return 1;
 #endif
-	}
-	return 0;
+
+    }
+    return 0;
 }
 
 void InitSpecialHash(int which);
 void initialize_partname_tables();
-
-static MECH *global_kludge_mech;
-int global_specials = NUM_SPECIAL_OBJECTS;
 
 static int remove_from_all_maps_func(void *key, void *data, int depth, void *arg)
 {
