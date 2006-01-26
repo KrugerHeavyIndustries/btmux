@@ -390,6 +390,7 @@ void auto_radio_command_goto(AUTO * autopilot, MECH * mech,
 
 	int x, y;
 	char buffer[SBUF_SIZE];
+    MAP *map;
 
 	if(Readnum(x, args[1])) {
 		snprintf(mesg, LBUF_SIZE, "!First number not integer");
@@ -404,6 +405,13 @@ void auto_radio_command_goto(AUTO * autopilot, MECH * mech,
 		snprintf(mesg, LBUF_SIZE, "!Already in that hex");
 		return;
 	}
+
+    map = getMap(mech->mapindex);
+
+    if (x < 0 || y < 0 || x >= map->map_width || y >= map->map_height) {
+        snprintf(mesg, LBUF_SIZE, "!Bad hex to travel to");
+        return;
+    }
 
 	Clear(autopilot);
 

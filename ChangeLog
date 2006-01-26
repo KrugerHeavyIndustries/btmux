@@ -183,6 +183,8 @@ btonline-btechmux 0.6:
           idf Spotting requirements. (Power_Shaper)
 	* Ported Exile style orbital dropping. (Greg)
 	* Ported Exile's heatcutoff code. (Dany)
+        * Non Mech/Hover/Sub units drown when OOD'ing into water now. (Power_Shaper)
+	* Suits must recycle weaponary before special attacks. (Power_Shaper)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)

@@ -146,6 +146,23 @@ dbref clone_home(dbref player, dbref thing)
 }
 
 /**
+ * Build a freelist
+ */
+static void make_freelist(void)
+{
+	dbref i;
+
+	mudstate.freelist = NOTHING;
+	DO_WHOLE_DB_REV(i) {
+		if(IS_CLEAN(i)) {
+			s_Link(i, mudstate.freelist);
+			mudstate.freelist = i;
+
+		}
+	}
+}
+
+/**
  * Create an object of the indicated type IF the player can
  * afford it.
  */
@@ -338,8 +355,10 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 		free_sbuf(buff);
 		s_Zone(obj, NOTHING);
 	}
+	make_freelist();
 	return obj;
 }
+
 
 /**
  * Destroy an object. Assumes it has already been removed from
@@ -456,23 +475,8 @@ void destroy_obj(dbref player, dbref obj)
 	if(mudconf.have_comsys)
 		toast_player(obj);
 
+	make_freelist();
 	return;
-}
-
-/**
- * Build a freelist
- */
-static void make_freelist(void)
-{
-	dbref i;
-
-	mudstate.freelist = NOTHING;
-	DO_WHOLE_DB(i) {
-		if(IS_CLEAN(i)) {
-			s_Link(i, mudstate.freelist);
-			mudstate.freelist = i;
-		}
-	}
 }
 
 /**
