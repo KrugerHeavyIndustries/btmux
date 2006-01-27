@@ -70,6 +70,7 @@ int FindWeaponFromIndex(MECH * mech, int weapindx, int *section,
 int FindWeaponIndex(MECH * mech, int number);
 int findAmmoInSection(MECH * mech, int section, int type, int nogof,
     int gof);
+int FullAmmo(MECH * mech, int loc, int pos);
 int FindAmmoForWeapon_sub(MECH * mech, int weapSection, int weapCritical,
     int weapindx, int start, int *section, int *critical, int nogof,
     int gof);

@@ -1197,6 +1197,25 @@ int FindWeaponIndex(MECH * mech, int number)
 	return -1;
 }
 
+
+int FullAmmo(MECH * mech, int loc, int pos)
+{
+	int baseammo;
+
+	baseammo = MechWeapons[Ammo2I(GetPartType(mech,loc,pos))].ammoperton;
+	if((GetPartAmmoMode(mech, loc, pos) & AC_AP_MODE) 
+			|| (GetPartAmmoMode(mech, loc, pos) & AC_PRECISION_MODE)
+			|| (GetPartFireMode(mech, loc, pos) & HALFTON_MODE)) {
+		return baseammo >> 1;
+	}
+	
+	if((GetPartAmmoMode(mech, loc, pos) & AC_CASELESS_MODE)) {
+		return baseammo << 1;
+	}
+	
+	return baseammo;
+}
+
 int findAmmoInSection(MECH * mech, int section, int type, int nogof, int gof)
 {
 	int wIter;
