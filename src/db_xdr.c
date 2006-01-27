@@ -125,11 +125,7 @@ void mmdb_write(struct mmdb_t *mmdb, void *data, int length)
 	mmdb->ppos += length;
 }
 
-void mmdb_write_uint16(struct mmdb_t *mmdb, uint16_t data)
-{
-	data = htonl(data);
-	mmdb_write(mmdb, &data, sizeof(uint16_t));
-}
+
 
 unsigned int mmdb_read_uint(struct mmdb) {
     dprintk("This function is deprecated, please use mmdb_read_uint32 instead.\n");
@@ -142,11 +138,30 @@ void mmdb_write_uint(struct mmdb, unsigned int val) {
     return;
 }
 
+void mmdb_write_uint8(struct mmdb_t *mmdb, uint8_t data)
+{
+    uint32_t tmpval = (uint32_t)data;
+    mmdb_write_uint32(mmdb, tmpval);
+    return;
+}
+
+uint8_t mmdb_read_uint8(struct mmdb_t *mmdb)
+{
+    uint32_t tmpval = mmdb_read_uint32(mmdb);
+    return (uint8_t)tmpval;
+}
+
+void mmdb_write_uint16(struct mmdb_t *mmdb, uint16_t data)
+{
+    uint32_t tmpval = (uint32_t)data;
+    mmdb_write_uint32(mmdb, tmpval);
+    return;
+}
+
 uint16_t mmdb_read_uint16(struct mmdb_t *mmdb)
 {
-	uint16_t data = *((uint16_t *) (mmdb->ppos));
-	mmdb->ppos += sizeof(uint16_t);
-	return ntohl(data);
+    uint32_t tmpval = mmdb_read_uint32(mmdb);
+    return (uint16_t)tmpval;
 }
 
 void mmdb_write_uint32(struct mmdb_t *mmdb, uint32_t data)
@@ -164,12 +179,14 @@ uint32_t mmdb_read_uint32(struct mmdb_t *mmdb)
 
 void mmdb_write_uint64(struct mmdb_t *mmdb, uint64_t data)
 {
+    dprintk("technically, this is not 64 bit safe yet.");
 	data = htonl(data);
 	mmdb_write(mmdb, &data, sizeof(uint64_t));
 }
 
 uint64_t mmdb_read_uint64(struct mmdb_t *mmdb)
 {
+    dprintk("technically, this is not 64 bit safe yet.");
 	uint64_t data = *((uint64_t *) (mmdb->ppos));
 	mmdb->ppos += sizeof(uint64_t);
 	return ntohl(data);

@@ -24,10 +24,12 @@ void mmdb_write_opaque(struct mmdb_t *, void *data, int length);
 void mmdb_write_uint(struct mmdb_t *, unsigned int); /* Deprecated */
 unsigned int mmdb_read_uint(struct mmdb_t *); /* Deprecated */
 
-void mmdb_write_uint32(struct mmdb_t *, uint32_t);
-uint32_t mmdb_read_uint32(struct mmdb_t *);
+void mmdb_write_uint8(struct mmdb_t *, uint8_t);
+uint8_t mmdb_read_uint8(struct mmdb_t *);
 void mmdb_write_uint16(struct mmdb_t *, uint16_t);
 uint16_t mmdb_read_uint16(struct mmdb_t *);
+void mmdb_write_uint32(struct mmdb_t *, uint32_t);
+uint32_t mmdb_read_uint32(struct mmdb_t *);
 void mmdb_write_uint64(struct mmdb_t *, uint64_t);
 uint64_t mmdb_read_uint64(struct mmdb_t *);
 
