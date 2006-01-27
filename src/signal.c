@@ -131,6 +131,7 @@ void signal_PIPE(int signo, siginfo_t * siginfo, void *ucontext)
 
 void signal_USR1(int signo, siginfo_t * siginfo, void *ucontext)
 {
+    mux_release_socket();
     dprintk("caught SIGUSR1");
 	do_restart(1, 1, 0);
 }
@@ -139,6 +140,7 @@ void signal_SEGV(int signo, siginfo_t * siginfo, void *ucontext)
 {
     dprintk("caught SIGSEGV");
 	int child;
+    mux_release_socket();
 	if(!(child = fork())) {
 		dump_restart_db();
 		execl(mudstate.executable_path, mudstate.executable_path,
@@ -170,6 +172,7 @@ void signal_BUS(int signo, siginfo_t * siginfo, void *ucontext)
 {
     dprintk("caught SIGBUS");
 	int child;
+    mux_release_socket();
 	if(mudconf.sig_action != SA_EXIT && !(child = fork())) {
 		dump_restart_db();
 		execl(mudstate.executable_path, mudstate.executable_path,
