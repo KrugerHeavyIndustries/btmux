@@ -175,6 +175,33 @@ uint64_t mmdb_read_uint64(struct mmdb_t *mmdb)
 	return ntohl(data);
 }
 
+void mmdb_write_single(struct mmdb_t *mmdb, float data)
+{
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(float));
+}
+
+float mmdb_read_single(struct mmdb_t *mmdb)
+{
+	float data = *((float *) (mmdb->ppos));
+	mmdb->ppos += sizeof(float);
+	return ntohl(data);
+}
+
+void mmdb_write_double(struct mmdb_t *mmdb, double data)
+{
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(double));
+}
+
+double mmdb_read_double(struct mmdb_t *mmdb)
+{
+	double data = *((double *) (mmdb->ppos));
+	mmdb->ppos += sizeof(double);
+	return ntohl(data);
+}
+
+
 void *mmdb_read(struct mmdb_t *mmdb, void *dest, int length)
 {
 	if((mmdb->end - mmdb->ppos) < length)

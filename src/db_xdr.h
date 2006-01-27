@@ -31,4 +31,10 @@ uint16_t mmdb_read_uint16(struct mmdb_t *);
 void mmdb_write_uint64(struct mmdb_t *, uint64_t);
 uint64_t mmdb_read_uint64(struct mmdb_t *);
 
+void mmdb_write_single(struct mmdb_t *, float);
+float mmdb_read_single(struct mmdb_t *);
+void mmdb_write_double(struct mmdb_t *, double);
+double mmdb_read_double(struct mmdb_t *);
+
+
 #endif
