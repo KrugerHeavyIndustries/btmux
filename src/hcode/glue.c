@@ -382,7 +382,8 @@ static int load_autopilot_data(Node * tmp)
 		autopilot = (AUTO *) NodeData(tmp);
 
 		/* Save the AI Command List */
-		auto_load_commands(global_file_kludge, autopilot);
+		/* auto_load_commands(global_file_kludge, autopilot); */
+        autopilot->commands = dllist_create_list();
 
 		/* Reset the Astar Path */
 		autopilot->astar_path = NULL;
@@ -396,7 +397,8 @@ static int load_autopilot_data(Node * tmp)
 		}
 
 		/* Check to see if the AI is in a mech */
-		/* Need to make this better, check if its got a target whatnot */
+	    /* Need to make this better, check if its got a target whatnot */
+
 		if(!autopilot->mymechnum ||
 		   !(autopilot->mymech = getMech(autopilot->mymechnum))) {
 			DoStopGun(autopilot);
@@ -758,7 +760,7 @@ void SaveSpecialObjects(int i)
 	GoThruTree(xcode_tree, save_maps_func);
 
 	/* Save autopilot data */
-	GoThruTree(xcode_tree, save_autopilot_data);
+	/* GoThruTree(xcode_tree, save_autopilot_data); */
 
 	saverepairs(f);
 	my_close_file(f, &filemode);
