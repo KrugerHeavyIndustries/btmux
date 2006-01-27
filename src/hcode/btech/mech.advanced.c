@@ -465,6 +465,16 @@ void mech_armorpiercing(dbref player, void *data, char *buffer)
 						 "That weapon cannot fire AP rounds!");
 }
 
+void mech_caseless(dbref player, void *data, char *buffer)
+{
+	MECH *mech = (MECH *) data;
+	cch(MECH_USUALMO);
+	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC, AC_CASELESS_MODE, 0,
+			"Weapon %d has been set to fire CASELESS rounds",
+			"Weapon %d has been set to fire normal rounds",
+			"That weapon cannot fire CASELESS rounds!");
+}
+
 void mech_flechette(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;

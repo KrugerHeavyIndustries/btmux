@@ -683,11 +683,11 @@ if (FlyingT(mech)) { \
   ((!IsAmmo(GetPartType(mech,loc,pos)) || \
     GetPartFireMode(mech,loc,pos) & HALFTON_MODE || \
 		GetPartAmmoMode(mech,loc,pos) & AC_AP_MODE || \
-		GetPartAmmoMode(mech,loc,pos) & AC_PRECISION_MODE) ? 1 : 2)
+		GetPartAmmoMode(mech,loc,pos) & AC_PRECISION_MODE) ? .5 : ( GetPartAmmoMode(mech,loc,pos) & AC_CASELESS_MODE ? 2 : 1 ) )
 
 #define FullAmmo(mech,loc,pos) \
   ( \
-     MechWeapons[Ammo2I(GetPartType(mech,loc,pos))].ammoperton / (3 - AmmoMod(mech, loc, pos)))
+     MechWeapons[Ammo2I(GetPartType(mech,loc,pos))].ammoperton * AmmoMod(mech, loc, pos))
 
 #define JumpSpeed(mech,map) \
   ((InGravity(mech) && map) ? (MechJumpSpeed(mech) * 100 / ((MAX(50, MapGravity(map))))) : MechJumpSpeed(mech))

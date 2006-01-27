@@ -69,6 +69,8 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 		return " Precision";
 	if(mode & STINGER_MODE)
 		return " Stinger";
+	if(mode & AC_CASELESS_MODE)
+		return " Caseless";
 	return "";
 }
 
@@ -112,6 +114,8 @@ char GetWeaponAmmoModeLetter_Model_Mode(int model, int mode)
 		return 'P';
 	if(mode & STINGER_MODE)
 		return 'T';
+	if(mode & AC_CASELESS_MODE)
+		return 'U';
 	return ' ';
 }
 

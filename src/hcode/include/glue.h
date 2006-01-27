@@ -146,7 +146,18 @@ ECMD(f_emote);
 ECMD(f_say);
 ECMD(f_whisper);
 
-/* Flag: 0 = all, 1=mech, 2=groundveh, 4=aero, 8=ds, 16=vtol */
+
+/* Flag:
+ * 0 = ALL
+ * 1 = MECH
+ * 2 = GROUNDVEH
+ * 4 = AERO
+ * 8 = DS
+ * 16 = VTOL
+ * 32 = NAVAL
+ * 64 = BSUIT
+ * 128 = MW
+ */
 
 /* Categories:
    - Movement
@@ -262,6 +273,8 @@ CommandsStruct mechcommands[] = {
 	mech_armorpiercing},
     {0, "ARTEMIS <weapnum>", "Sets Weapon to and from ARTEMIS Mode.",
 	mech_artemis},
+    {0, "CASELESS <weaponum>", "Sets Weapons to and from CASELESS Mode.",
+	    mech_caseless},
     {0, "EXPLOSIVE <weapnum>", "Toggles between explosive/normal rounds",
 	mech_explosive},
     {0, "FIRECLUSTER <weapnum>",

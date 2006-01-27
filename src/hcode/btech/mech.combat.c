@@ -1079,6 +1079,37 @@ void FireWeapon(MECH * mech,
 		}
 	}
 
+	/* Caseless jams on a 2. Next internal roll of 8+ explodes */
+	if(GetPartAmmoMode(mech, section, critical) & AC_CASELESS_MODE) {
+		if(roll == 2 || roll == 3) {
+			mech_printf(mech, MECHALL,
+					"%%ch%%crThe ammo loading mechanism jams on your %s!%%cn",
+					&(MechWeapons[weapindx].name[3]));
+			SetPartTempNuke(mech, section, critical, FAIL_AMMOJAMMED);
+			/* do 8+ explosion check. Per tac handbook, the launcher explodes on failure*/
+			if(Roll() > 7 ) {
+				/* Rut roh shaggy. Time to cause some damage! */
+				mech_printf(mech, MECHALL,
+						"%%ch%%crPropellant from your %s ignites and destroys it!%%cn",
+						&(MechWeapons[weapindx].name[3]));
+				firstCrit = FindFirstWeaponCrit(mech, section, -1, 0, I2Weapon(weapindx), GetWeaponCrits(mech,weapindx));
+				DestroyWeapon(mech, section, I2Weapon(weapindx), firstCrit,
+						GetWeaponCrits(mech, weapindx), GetWeaponCrits(mech,weapindx));
+				MechLOSBroadcast(mech, "shudders from an internal explosion!");
+				/* Apply damage equal to one shot, follow crits as well */
+
+				DamageMech(mech, mech, 0, -1, section, 0, 1, 0,
+						MechWeapons[weapindx].damage, -1, 0, -1, 0,1);
+				decrement_ammunition(mech, weapindx, section, critical, ammoLoc, ammoCrit,
+						ammoLoc1, ammoCrit1, wGattlingShots);
+				
+
+			}
+			
+			return;
+		}
+	}
+	
 	/* Check for RFAC explosion/jams */
 	if(GetPartFireMode(mech, section, critical) & RFAC_MODE) {
 		if(roll == 2) {
