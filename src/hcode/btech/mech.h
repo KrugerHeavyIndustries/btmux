@@ -736,14 +736,11 @@ typedef struct {
     char computer;              /* Partially replaces tac/lrs/scan/radiorange */
     char radio;                 /* Radio type */
     unsigned char radioinfo;
+    short radio_range;          /* Can read/write comfortably at that distance */
+    char targcomp;              /* Targeting comp mode. */
 
     char si;                    /* Structural integrity of a craft */
     char si_orig;               /* maximum struct. int */
-
-    short radio_range;          /* Can read/write comfortably at that distance */
-
-    struct section_struct sections[NUM_SECTIONS];   /* armor/ints/crits/etc */
-
     int fuel;                   /* Fuel left */
     int fuel_orig;              /* Fuel tank capacity */
 
@@ -753,10 +750,13 @@ typedef struct {
     float maxspeed;             /* Maxspeed (running) in KPH */
 
     int mechbv;                 /* Fasa BattleValue of this unit */
-    int cargospace;             /* Assigned cargo space * 100 for half and quarter tons */
     int mechbv_last;            /* BV caclulation cacher */
-    char targcomp;              /* Targeting comp mode. */
+
+    int cargospace;             /* Assigned cargo space * 100 for half and quarter tons */
     char carmaxton;             /* Max Tonnage variable for carrier sizing */
+
+    struct section_struct sections[NUM_SECTIONS];   /* armor/ints/crits/etc */
+
 } mech_ud;
 
 typedef struct {
@@ -893,12 +893,12 @@ typedef struct {
     dbref mynum;                            /* My dbref */
     char ID[2];                             /* Only for internal use */
     char brief;                             /* toggle brievity */
+    int freq[FREQS];                        /* channel frequencies */
+    int freqmodes[FREQS];                   /* flags for the freq */
     char chantitle[FREQS][CHTITLELEN + 1];  /* Channel titles */
     int mapnumber;                          /* My number on the map */
     dbref mapindex;                         /* 0..MAX_MAPS (dbref of map object) */
     unsigned long tic[NUM_TICS][TICLONGS];  /* tics.. */
-    int freq[FREQS];                        /* channel frequencies */
-    int freqmodes[FREQS];                   /* flags for the freq */
     mech_ud ud;                             /* UnitData (mostly not bzero'able) */
     mech_pd pd;                             /* PositionData(mostly not bzero'able) */
     mech_rd rd;                             /* RSdata (mostly bzero'able) */

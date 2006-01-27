@@ -791,6 +791,78 @@ struct hcode_xdr_struct {
 static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
 
     mmdb_write_uint(hcode_xdr, XCDB_MECH_MAGIC);
+    int i, j;
+
+    /* Main MECH Struct */
+    mmdb_write_uint(hcode_xdr, mech->mynum);
+    mmdb_write_uint(hcode_xdr, mech->ID[0]);
+    mmdb_write_uint(hcode_xdr, mech->ID[1]);
+    mmdb_write_uint(hcode_xdr, mech->brief);
+
+    mmdb_write_uint(hcode_xdr, FREQS);
+    for (i = 0; i < FREQS; i++) {
+
+        mmdb_write_uint(hcode_xdr, mech->freq[i]);
+        mmdb_write_uint(hcode_xdr, mech->freqmodes[i]);
+
+        if (mech->chantitle[i] && *(mech->chantitle[i])) {
+            mmdb_write_opaque(hcode_xdr, mech->chantitle[i], strlen(mech->chantitle[i]) + 1);
+        } else {
+            mmdb_write_uint(hcode_xdr, 0);
+        }
+    }
+
+    mmdb_write_uint(hcode_xdr, mech->mapnumber);
+    mmdb_write_uint(hcode_xdr, mech->mapindex);
+
+    /* Mech -> ud struct */
+    mmdb_write_opaque(hcode_xdr, mech->ud.mech_name, strlen(mech->ud.mech_name) + 1);
+    mmdb_write_opaque(hcode_xdr, mech->ud.mech_type, strlen(mech->ud.mech_type) + 1);
+    mmdb_write_uint(hcode_xdr, mech->ud.type);
+    mmdb_write_uint(hcode_xdr, mech->ud.move);
+    mmdb_write_uint(hcode_xdr, mech->ud.tac_range);
+    mmdb_write_uint(hcode_xdr, mech->ud.lrs_range);
+    mmdb_write_uint(hcode_xdr, mech->ud.scan_range);
+    mmdb_write_uint(hcode_xdr, mech->ud.numsinks);
+    mmdb_write_uint(hcode_xdr, mech->ud.computer);
+    mmdb_write_uint(hcode_xdr, mech->ud.radio);
+    mmdb_write_uint(hcode_xdr, mech->ud.radioinfo);
+    mmdb_write_uint(hcode_xdr, mech->ud.radio_range);
+
+    mmdb_write_uint(hcode_xdr, mech->ud.si);
+    mmdb_write_uint(hcode_xdr, mech->ud.si_orig);
+    mmdb_write_uint(hcode_xdr, mech->ud.fuel);
+    mmdb_write_uint(hcode_xdr, mech->ud.fuel_orig);
+
+    mmdb_write_uint(hcode_xdr, mech->ud.tons);
+    mmdb_write_uint(hcode_xdr, mech->ud.walkspeed);
+    mmdb_write_uint(hcode_xdr, mech->ud.runspeed);
+
+    /* Float? */
+    mmdb_write_uint(hcode_xdr, mech->ud.maxspeed);
+
+    mmdb_write_uint(hcode_xdr, mech->ud.mechbv);
+    mmdb_write_uint(hcode_xdr, mech->ud.mechbv_last);
+
+    mmdb_write_uint(hcode_xdr, mech->ud.cargospace);
+    mmdb_write_uint(hcode_xdr, mech->ud.carmaxton);
+
+    /* Mech -> ud -> sections */
+    mmdb_write_uint(hcode_xdr, NUM_SECTIONS);
+    for (i = 0; i < NUM_SECTIONS; i++) {
+
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].armor);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].internal);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].rear);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].armor_orig);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].internal_orig);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].rear_orig);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].basetohit);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].config);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].recycle);
+        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].specials);
+
+    }
 
     return 1;
 }
@@ -916,6 +988,7 @@ static int SaveSpecialObjects_func(void *key, void *data, int depth, void *arg) 
 
 void SaveSpecialObjects(int i)
 {
+
     char xdr_hcode_file[LBUF_SIZE];
     struct mmdb_t *hcode_xdr;
     struct timeval tv;
@@ -947,9 +1020,10 @@ void SaveSpecialObjects(int i)
     /* Close the xdr hcode file */
     mmdb_close(hcode_xdr);
 
+    /*
     if (count)
         SendDB("Hcode saved. %d xcode entries dumped.", count);
-
+    */
 #ifdef BT_ADVANCED_ECON
     //save_econdb(target, i);
 #endif
