@@ -3,6 +3,7 @@
  */
 #include "copyright.h"
 #include "config.h"
+
 #include "db_xdr.h"
 
 #include <stdio.h>
@@ -18,6 +19,7 @@
 #include <event.h>
 #include <string.h>
 #include <sys/file.h>
+#include <stdint.h>
 
 #include "mudconf.h"
 #include "config.h"
@@ -117,18 +119,99 @@ void mmdb_write(struct mmdb_t *mmdb, void *data, int length)
 	mmdb->ppos += length;
 }
 
-void mmdb_write_uint(struct mmdb_t *mmdb, unsigned int data)
-{
-	data = htonl(data);
-	mmdb_write(mmdb, &data, sizeof(unsigned int));
+
+
+unsigned int mmdb_read_uint(struct mmdb_t *mmdb) {
+    dprintk("This function is deprecated, please use mmdb_read_uint32 instead.\n");
+    return (unsigned int)mmdb_read_uint32(mmdb);
 }
 
-unsigned int mmdb_read_uint(struct mmdb_t *mmdb)
+void mmdb_write_uint(struct mmdb_t *mmdb, unsigned int val) {
+    dprintk("This function is deprecated, please use mmdb_write_uint32 instead.\n");
+    mmdb_write_uint32(mmdb, (uint32_t)val);
+    return;
+}
+
+void mmdb_write_uint8(struct mmdb_t *mmdb, uint8_t data)
 {
-	unsigned int data = *((unsigned int *) (mmdb->ppos));
-	mmdb->ppos += sizeof(unsigned int);
+    uint32_t tmpval = (uint32_t)data;
+    mmdb_write_uint32(mmdb, tmpval);
+    return;
+}
+
+uint8_t mmdb_read_uint8(struct mmdb_t *mmdb)
+{
+    uint32_t tmpval = mmdb_read_uint32(mmdb);
+    return (uint8_t)tmpval;
+}
+
+void mmdb_write_uint16(struct mmdb_t *mmdb, uint16_t data)
+{
+    uint32_t tmpval = (uint32_t)data;
+    mmdb_write_uint32(mmdb, tmpval);
+    return;
+}
+
+uint16_t mmdb_read_uint16(struct mmdb_t *mmdb)
+{
+    uint32_t tmpval = mmdb_read_uint32(mmdb);
+    return (uint16_t)tmpval;
+}
+
+void mmdb_write_uint32(struct mmdb_t *mmdb, uint32_t data)
+{
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(uint32_t));
+}
+
+uint32_t mmdb_read_uint32(struct mmdb_t *mmdb)
+{
+	uint32_t data = *((uint32_t *) (mmdb->ppos));
+	mmdb->ppos += sizeof(uint32_t);
 	return ntohl(data);
 }
+
+void mmdb_write_uint64(struct mmdb_t *mmdb, uint64_t data)
+{
+    dprintk("technically, this is not 64 bit safe yet.");
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(uint64_t));
+}
+
+uint64_t mmdb_read_uint64(struct mmdb_t *mmdb)
+{
+    dprintk("technically, this is not 64 bit safe yet.");
+	uint64_t data = *((uint64_t *) (mmdb->ppos));
+	mmdb->ppos += sizeof(uint64_t);
+	return ntohl(data);
+}
+
+void mmdb_write_single(struct mmdb_t *mmdb, float data)
+{
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(float));
+}
+
+float mmdb_read_single(struct mmdb_t *mmdb)
+{
+	float data = *((float *) (mmdb->ppos));
+	mmdb->ppos += sizeof(float);
+	return ntohl(data);
+}
+
+void mmdb_write_double(struct mmdb_t *mmdb, double data)
+{
+	data = htonl(data);
+	mmdb_write(mmdb, &data, sizeof(double));
+}
+
+double mmdb_read_double(struct mmdb_t *mmdb)
+{
+	double data = *((double *) (mmdb->ppos));
+	mmdb->ppos += sizeof(double);
+	return ntohl(data);
+}
+
 
 void *mmdb_read(struct mmdb_t *mmdb, void *dest, int length)
 {
@@ -183,6 +266,11 @@ void mmdb_write_object(struct mmdb_t *mmdb, dbref object)
 #define DB_MAGIC 0x4841475A
 #define DB_VERSION 3
 
+struct string_dict_entry {
+	char *key;
+	char *data;
+};
+
 static int mmdb_write_vattr(void *key, void *data, int depth, void *arg)
 {
 	struct mmdb_t *mmdb = (struct mmdb_t *) arg;
@@ -198,7 +286,7 @@ static int mmdb_write_vattr(void *key, void *data, int depth, void *arg)
 void mmdb_db_write(char *filename)
 {
 	struct mmdb_t *mmdb;
-	unsigned int xid[5], i;
+	uint32_t xid[5], i;
 	struct timeval tv;
 	rbtree vattr_htab = mudstate.vattr_name_htab.tree;
 
@@ -229,74 +317,74 @@ void mmdb_db_write(char *filename)
 int mmdb_db_read(char *filename)
 {
 	struct mmdb_t *mmdb;
-	unsigned int xid[5], i;
-	unsigned int magic, version, revision;
-	unsigned int object;
-	unsigned int vattr_count, object_count;
-	unsigned int vattr_len, vattr_number, vattr_flags;
+	uint32_t xid[5], i;
+	uint32_t magic, version, revision;
+	uint32_t object;
+	uint32_t vattr_count, object_count;
+	uint32_t vattr_len, vattr_number, vattr_flags;
 	struct timeval tv;
 	rbtree vattr_htab = mudstate.vattr_name_htab.tree;
 	char buffer[4096];
 
 	mmdb = mmdb_open_read(filename);
-	magic = mmdb_read_uint(mmdb);
+	magic = mmdb_read_uint32(mmdb);
 	dassert(magic == DB_MAGIC);
-	version = mmdb_read_uint(mmdb);
+	version = mmdb_read_uint32(mmdb);
 	dassert(version == DB_VERSION);
 
-	tv.tv_sec = mmdb_read_uint(mmdb);
-	tv.tv_usec = mmdb_read_uint(mmdb);
+	tv.tv_sec = mmdb_read_uint32(mmdb);
+	tv.tv_usec = mmdb_read_uint32(mmdb);
 
-	mudstate.db_revision = revision = mmdb_read_uint(mmdb);
+	mudstate.db_revision = revision = mmdb_read_uint32(mmdb);
 
 	dprintk("Loading database revision %d, created at %s.", revision,
 			asctime(localtime(&tv.tv_sec)));
 	for(i = 0; i < 5; i++) {
-		xid[i] = mmdb_read_uint(mmdb);
+		xid[i] = mmdb_read_uint32(mmdb);
 	}
 
 	dprintk("database XID: %08x%08x%08x%08x%08x", xid[0],
 			xid[1], xid[2], xid[3], xid[4]);
 	db_free();
-	vattr_count = mmdb_read_uint(mmdb);
+	vattr_count = mmdb_read_uint32(mmdb);
 	anum_extend(vattr_count);
 	dprintk("reading in %d vattrs", vattr_count);
 	for(int i = 0; i < vattr_count; i++) {
-		vattr_len = mmdb_read_uint(mmdb);
+		vattr_len = mmdb_read_uint32(mmdb);
 		mmdb_read(mmdb, buffer, vattr_len);
-		vattr_number = mmdb_read_uint(mmdb);
-		vattr_flags = mmdb_read_uint(mmdb);
+		vattr_number = mmdb_read_uint32(mmdb);
+		vattr_flags = mmdb_read_uint32(mmdb);
 		vattr_define(buffer, vattr_number, vattr_flags);
 	}
 	dprintk("... done.");
 
-	object_count = mmdb_read_uint(mmdb);
+	object_count = mmdb_read_uint32(mmdb);
 	db_grow(object_count);
 	dprintk("reading in %d objects", object_count);
 	for(int i = 0; i < object_count; i++) {
-		object = mmdb_read_uint(mmdb);
-		vattr_len = mmdb_read_uint(mmdb);
+		object = mmdb_read_uint32(mmdb);
+		vattr_len = mmdb_read_uint32(mmdb);
 		mmdb_read(mmdb, buffer, vattr_len);
 		s_Name(object, buffer);
-		s_Location(object, mmdb_read_uint(mmdb));
-		s_Zone(object, mmdb_read_uint(mmdb));
-		s_Contents(object, mmdb_read_uint(mmdb));
-		s_Exits(object, mmdb_read_uint(mmdb));
-		s_Link(object, mmdb_read_uint(mmdb));
-		s_Next(object, mmdb_read_uint(mmdb));
-		s_Owner(object, mmdb_read_uint(mmdb));
-		s_Parent(object, mmdb_read_uint(mmdb));
-		s_Pennies(object, mmdb_read_uint(mmdb));
-		s_Flags(object, mmdb_read_uint(mmdb));
-		s_Flags2(object, mmdb_read_uint(mmdb));
-		s_Flags3(object, mmdb_read_uint(mmdb));
-		s_Powers(object, mmdb_read_uint(mmdb));
-		s_Powers2(object, mmdb_read_uint(mmdb));
-		vattr_count = mmdb_read_uint(mmdb);
+		s_Location(object, mmdb_read_uint32(mmdb));
+		s_Zone(object, mmdb_read_uint32(mmdb));
+		s_Contents(object, mmdb_read_uint32(mmdb));
+		s_Exits(object, mmdb_read_uint32(mmdb));
+		s_Link(object, mmdb_read_uint32(mmdb));
+		s_Next(object, mmdb_read_uint32(mmdb));
+		s_Owner(object, mmdb_read_uint32(mmdb));
+		s_Parent(object, mmdb_read_uint32(mmdb));
+		s_Pennies(object, mmdb_read_uint32(mmdb));
+		s_Flags(object, mmdb_read_uint32(mmdb));
+		s_Flags2(object, mmdb_read_uint32(mmdb));
+		s_Flags3(object, mmdb_read_uint32(mmdb));
+		s_Powers(object, mmdb_read_uint32(mmdb));
+		s_Powers2(object, mmdb_read_uint32(mmdb));
+		vattr_count = mmdb_read_uint32(mmdb);
 		for(int j = 0; j < vattr_count; j++) {
-			vattr_len = mmdb_read_uint(mmdb);
+			vattr_len = mmdb_read_uint32(mmdb);
 			mmdb_read(mmdb, buffer, vattr_len);
-			vattr_number = mmdb_read_uint(mmdb);
+			vattr_number = mmdb_read_uint32(mmdb);
 			atr_add_raw(object, vattr_number, buffer);
 		}
 	}

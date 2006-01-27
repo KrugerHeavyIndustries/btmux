@@ -111,10 +111,10 @@ void mech_map_consistency_check(MECH * mech)
 		return;
 	}
 	if(map->mechsOnMap[mech->mapnumber] != mech->mynum) {
+		fprintf(stderr, "#%d on invalid map - removing .. (#2) -- mapindex: %d mapnumber: %d mechsOnMap: %d\n",
+				mech->mynum, mech->mapindex, mech->mapnumber, map->mechsOnMap[mech->mapnumber]);
 		mech->mapindex = -1;
 		mech_remove_from_all_maps(mech);
-		fprintf(stderr, "#%d on invalid map - removing.. (#2)\n",
-				mech->mynum);
 		return;
 	}
 	mech_remove_from_all_maps_except(mech, map->mynum);
