@@ -112,11 +112,11 @@
 #define MapNoFriendlyFire(map)      ((map)->flags & MAPFLAG_NOFRIENDLYFIRE)
 
 typedef struct mapobj_struct {
-    short x, y;
+    int x, y;
     dbref obj;
-    char type;
-    char datac;
-    short datas;
+    int type;
+    int datac;
+    int datas;
     int datai;
     struct mapobj_struct *next;
 } mapobj;
@@ -154,36 +154,36 @@ typedef struct {
     unsigned char **map;                /* The map */
     char mapname[MAP_NAME_SIZE + 1];
 
-    short map_width;                    /* Width of map <MAPX  */
-    short map_height;                   /* Height of map */
+    int map_width;                      /* Width of map <MAPX  */
+    int map_height;                     /* Height of map */
 
-    char temp;                          /* Temperature, in celsius degrees */
-    unsigned char grav;                 /* Gravity, if any ; in 1/100 G's */
-    short cloudbase;
-    char unused_char;
-    char mapvis;                        /* Visibility on the map, used as base 
+    int temp;                           /* Temperature, in celsius degrees */
+    unsigned int grav;                  /* Gravity, if any ; in 1/100 G's */
+    int cloudbase;
+    int unused_char;
+    int mapvis;                         /* Visibility on the map, used as base 
                                            for most sensor types */
-    short maxvis;                       /* maximum visibility (usually mapvis * n) */
-    char maplight;
-    short winddir, windspeed;
+    int maxvis;                         /* maximum visibility (usually mapvis * n) */
+    int maplight;
+    int winddir, windspeed;
 
     /* Now, da wicked stuff */
     int flags;
 
     mapobj *mapobj[NUM_MAPOBJTYPES];
-    short cf, cfmax;
+    int cf, cfmax;
     dbref onmap;
-    char buildflag;
+    int buildflag;
 
-    unsigned char first_free;           /* First free on da map */
+    unsigned int first_free;            /* First free on da map */
     dbref *mechsOnMap;                  /* Mechs on the map */
-    unsigned short **LOSinfo;           /* Line of sight info */
+    unsigned int **LOSinfo;             /* Line of sight info */
 
     /* 1 = mech has moved recently
        2 = mech has possible-LOS event ongoing */
     char *mechflags;
-    short moves;                        /* Cheat to prevent idle CPU hoggage */
-    short movemod;
+    int moves;                          /* Cheat to prevent idle CPU hoggage */
+    int movemod;
     int sensorflags;
 } MAP;
 

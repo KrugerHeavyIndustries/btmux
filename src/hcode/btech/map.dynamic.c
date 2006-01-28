@@ -52,10 +52,10 @@ void load_mapdynamic(FILE * f, MAP * map)
 		Create(map->mechflags, char, count);
 
 		CHELO(map->mechflags, sizeof(map->mechflags[0]), count, f);
-		Create(map->LOSinfo, unsigned short *, count);
+		Create(map->LOSinfo, unsigned int *, count);
 
 		for(i = 0; i < count; i++) {
-			Create(map->LOSinfo[i], unsigned short, count);
+			Create(map->LOSinfo[i], unsigned int, count);
 
 			CHELO(map->LOSinfo[i], sizeof(map->LOSinfo[i][0]), count, f);
 		}
@@ -142,7 +142,7 @@ void eliminate_empties(MAP * map)
 		return;
 	for(j = count; j < oldcount; j++)
 		free((void *) map->LOSinfo[j]);
-	ReCreate(map->LOSinfo, unsigned short *, count);
+	ReCreate(map->LOSinfo, unsigned int *, count);
 
 	ReCreate(map->mechsOnMap, dbref, count);
 	ReCreate(map->mechflags, char, count);
@@ -225,11 +225,11 @@ void add_mech_to_map(MAP * newmap, MECH * mech)
 		count = newmap->first_free;
 		ReCreate(newmap->mechsOnMap, dbref, count);
 		ReCreate(newmap->mechflags, char, count);
-		ReCreate(newmap->LOSinfo, unsigned short *, count);
+		ReCreate(newmap->LOSinfo, unsigned int *, count);
 
 		newmap->LOSinfo[count - 1] = NULL;
 		for(i = 0; i < count; i++) {
-			ReCreate(newmap->LOSinfo[i], unsigned short, count);
+			ReCreate(newmap->LOSinfo[i], unsigned int, count);
 
 			newmap->LOSinfo[i][loop] = 0;
 		}

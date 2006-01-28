@@ -27,7 +27,7 @@
 #define _GLUE_C
 
 /*** #include all the prototype here! ****/
-#include "db_xdr.h"
+#include "mmdb.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "debug.h"

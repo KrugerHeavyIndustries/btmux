@@ -36,6 +36,7 @@ void mech_armorpiercing(dbref player, void *data, char *buffer);
 void mech_flechette(dbref player, void *data, char *buffer);
 void mech_incendiary(dbref player, void *data, char *buffer);
 void mech_precision(dbref player, void *data, char *buffer);
+void mech_caseless(dbref plyaer, void *data, char *buffer);
 void mech_artemis(dbref player, void *data, char *buffer);
 void mech_narc(dbref player, void *data, char *buffer);
 void mech_swarm(dbref player, void *data, char *buffer);

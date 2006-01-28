@@ -90,6 +90,7 @@ static struct {
 	'D', "incendiary", AC_INCENDIARY_MODE, TAMMO, -1, RFAC, 0}, {
 	'P', "precision", AC_PRECISION_MODE, TAMMO, -1, RFAC, 0}, {
 	'T', "stinger", STINGER_MODE, TMISSILE, -1, IDF, DAR}, {
+	'U', "caseless", AC_CASELESS_MODE, TAMMO, -1, RFAC, 0}, {
 	0, NULL, 0, 0, 0, 0, 0}
 };
 
@@ -234,6 +235,20 @@ int FindAmmoType(MECH * mech, int loc, int part)
 				base = LAC5_PRECISION_AMMO;
 		}
 
+		if(m & AC_CASELESS_MODE) {
+			if(strstr(MechWeapons[t].name, "AC/2"))
+				base = AC2_CASELESS_AMMO;
+			if(strstr(MechWeapons[t].name, "AC/5"))
+				base = AC5_CASELESS_AMMO;
+			if(strstr(MechWeapons[t].name, "AC/10"))
+				base = AC10_CASELESS_AMMO;
+			if(strstr(MechWeapons[t].name, "AC/20"))
+				base = AC20_CASELESS_AMMO;
+			if(strstr(MechWeapons[t].name, "LightAC/2"))
+				base = LAC2_CASELESS_AMMO;
+			if(strstr(MechWeapons[t].name, "LightAC/5"))
+				base = LAC5_CASELESS_AMMO;
+		}
 		if(base < 0)
 			return I2Ammo(t);
 		return Cargo(base);

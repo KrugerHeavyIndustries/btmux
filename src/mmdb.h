@@ -1,7 +1,7 @@
 /*
  * db_rw.h
  */
-#ifndef __DB_XDR_H__
+#ifndef __MMDB_H__
 
 #include "copyright.h"
 
@@ -19,7 +19,9 @@ void mmdb_resize(struct mmdb_t *, int length);
 void mmdb_close(struct mmdb_t *);
 void *mmdb_read(struct mmdb_t *, void *dest, int length);
 void mmdb_write(struct mmdb_t *, void *data, int length);
+
 void mmdb_write_opaque(struct mmdb_t *, void *data, int length);
+void mmdb_write_string(struct mmdb_t *, char *data);
 
 void mmdb_write_uint(struct mmdb_t *, unsigned int); /* Deprecated */
 unsigned int mmdb_read_uint(struct mmdb_t *); /* Deprecated */

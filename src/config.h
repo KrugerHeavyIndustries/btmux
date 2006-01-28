@@ -189,4 +189,11 @@ char *strndup(const char *s, size_t n);
 #ifndef HAVE_POSIX_MEMALIGN
 int posix_memalign(void **memptr, size_t alignment, size_t size);
 #endif
+#ifndef HAVE_STRLCAT
+size_t strlcat(char *, const char *, size_t);
+#endif
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *, const char *, size_t);
+#endif
+
 #endif				/* CONFIG_H */

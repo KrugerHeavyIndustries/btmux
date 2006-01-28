@@ -325,7 +325,7 @@ static int valid_to_notice(MECH * mech, MECH * targ, int los)
 	}
 }
 
-void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
+void Sensor_DoWeSeeNow(MECH * mech, unsigned int *fl, float range, int x,
 					   int y, MECH * target, int mapvis, int maplight,
 					   int cloudbase, int seeanew, int wlf)
 {
