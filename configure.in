@@ -25,7 +25,7 @@ AC_CHECK_LIB(event, event_init, [],
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([arpa/inet.h errno.h fcntl.h limits.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h time.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h errno.h fcntl.h limits.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h time.h unistd.h stdint.h])
 AC_CHECK_HEADER(event.h, [],
     AC_MSG_ERROR([Was unable to locate event.h])
 )
@@ -53,8 +53,7 @@ AC_FUNC_SELECT_ARGTYPES
 AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
-AC_FUNC_WAIT3
-AC_CHECK_FUNCS([alarm bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strnlen strrchr strstr strtol timelocal tzset sigaction posix_memalign])
+AC_CHECK_FUNCS([bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strnlen strrchr strlcpy strlcat strstr strtol timelocal tzset sigaction posix_memalign])
 
 dnl Check for siginfo_t members
 AC_CHECK_MEMBERS([siginfo_t.si_fd],,,[#include <signal.h>])

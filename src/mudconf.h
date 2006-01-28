@@ -384,7 +384,7 @@ struct statedata {
     int events_lasthour;	/* Last hour we ran hourly maintenance */
 
     int shutdown_flag;		/* Should interface be shut down? */
-    char version[128];		/* MUX version string */
+    char version[256];		/* MUX version string */
     time_t start_time;		/* When was MUX started */
     time_t restart_time;	/* When was MUX (re-)started */
     char buffer[256];		/* A buffer for holding temp stuff */

@@ -231,3 +231,41 @@ char *strndup(const char *s, size_t n)
 	return buf;
 }
 #endif
+
+#ifndef HAVE_STRLCPY
+size_t strlcpy(char *dst, const char *src, size_t len) {
+    int iter = len - 1;
+
+    if(len == 0) return strlen(src);
+
+    while(iter--) {
+        if((*dst++ = *src++) == 0)
+            break;
+    }
+    if(iter < 1) *dst = 0;
+    return (len - iter);
+}
+#endif
+#ifndef HAVE_STRLCAT
+size_t strlcat(char *dst, const char *src, size_t len) {
+    int iter = len - 1;
+
+    if(len == 0) return strlen(src);
+
+    while(iter && *dst) {
+        iter--; dst++;
+    }
+
+    if(!iter)
+        return len+strlen(src);
+
+    while(iter--) {
+        if((*dst++ = *src++) == 0)
+            break;
+    }
+    if(iter < 1) *dst = 0;
+
+    return (len - iter);
+}
+#endif
+

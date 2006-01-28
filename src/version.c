@@ -51,48 +51,37 @@
 
 void do_version(dbref player, dbref cause, int extra)
 {
-	char *buff;
-
 	notify(player, mudstate.version);
-	buff = alloc_mbuf("do_version");
-	sprintf(buff, "Build date: %s", MUX_BUILD_DATE);
-	notify(player, buff);
-	free_mbuf(buff);
 }
+
+char mux_version[] = PACKAGE_STRING "." MINOR_REVNUM
+#ifdef HUDINFO_SUPPORT
+    "+HUD"
+#endif
+#ifdef HAG_WAS_HERE
+    "+HAG"
+#endif
+#ifdef SQL_SUPPORT
+    "+SQL"
+#endif
+#ifdef ARBITRARY_LOGFILES
+    "+ALG"
+#endif
+#ifdef DEBUG
+    " DEBUG svn revision " SVN_REVISION
+#else
+    " RELEASE"
+#endif
+    " '" RELEASE_NAME "' build #" MUX_BUILD_NUM " on " MUX_BUILD_DATE
+#ifdef DEBUG
+    " by " MUX_BUILD_USER "@" MUX_BUILD_HOST
+#endif
+    ;
+
 
 void init_version(void)
 {
-	char mux_version[MBUF_SIZE] = "";
-
-#ifdef HUDINFO_SUPPORT
-	strcat(mux_version, "+HUD");
-#endif
-
-#define HAG_WAS_HERE
-#ifdef HAG_WAS_HERE
-	strcat(mux_version, "+HAG");
-#endif
-
-#ifdef SQL_SUPPORT
-	strcat(mux_version, "+SQL");
-#endif
-
-#ifdef ARBITRARY_LOGFILES
-	strcat(mux_version, "+ALG");
-#endif
-
-	/* Version Identification string for version() and VERSION command */
-	/* BtOnline-BTechMUX x.x build #<x> */
-#ifdef DEBUG
-	snprintf(mudstate.version, 128,
-			 "%s.%s%s '%s'  build #%s DEBUG svn revision %s", PACKAGE_STRING,
-			 MINOR_REVNUM, mux_version, RELEASE_NAME, MUX_BUILD_NUM,
-			 SVN_REVISION);
-#else
-	snprintf(mudstate.version, 128, "%s.%s%s '%s' build #%s RELEASE",
-			 PACKAGE_STRING, MINOR_REVNUM, mux_version, RELEASE_NAME,
-			 MUX_BUILD_NUM);
-#endif
+    strlcpy(mudstate.version, mux_version, sizeof(mudstate.version));
 
 	STARTLOG(LOG_ALWAYS, "INI", "START") {
 		log_text((char *) "Starting: ");

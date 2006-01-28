@@ -122,6 +122,7 @@ void dnschild_kill(void *);
 void shutdown_services();
 void flush_sockets();
 int eradicate_broken_fd(int);
+void mux_release_socket();
 
 /* From signal.c */
 void bind_signals();

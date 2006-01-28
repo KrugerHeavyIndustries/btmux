@@ -50,9 +50,10 @@
 
     #define bhexdump(buffer, size) \
         do { \
+            struct timeval tv; struct tm tm; time_t now; \
             int my__count; unsigned char *my__buffer = (unsigned char *)buffer; \
             time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
-            fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d)] buffer %s at %p len %d", \
+            fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d)] buffer %s at %p len %d ", \
                 tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
                 __FILE__, __LINE__, #buffer, buffer, size); \
             for(my__count = 0; my__count < size; my__count++) { \
@@ -65,6 +66,7 @@
 #else
 	#define dtest(args...)
 	#define dprintk(args...)
+    #define dhexdump(args...)
 #endif /* DEBUG */
 
 #define printk(args...)	\
