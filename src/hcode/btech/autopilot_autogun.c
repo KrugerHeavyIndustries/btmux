@@ -926,7 +926,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 	float maxspeed;				/* So we know how fast our guy is going */
 
 	/* For use with chase targ */
-	short x, y;
+	int x, y;
 	float fx, fy;
 	char do_chasetarget;		/* Flag should we do chasetarget
 								   based on certain conditions */

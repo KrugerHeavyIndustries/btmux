@@ -104,7 +104,7 @@ void bomb_list(MECH * mech, int player)
 	KillCoolMenu(c);
 }
 
-float calc_dest(MECH * mech, short *x, short *y)
+float calc_dest(MECH * mech, int *x, int *y)
 {
 	/* Present location */
 	float fx = MechFX(mech);
@@ -125,7 +125,7 @@ void bomb_aim(MECH * mech, dbref player)
 {
 	float t;					/* The time of impact */
 	char toi[LBUF_SIZE];
-	short x, y;
+	int x, y;
 
 	t = calc_dest(mech, &x, &y);
 	sprintf(toi, "%.1f second%s", t, (t >= 2.0 || t < 1.0) ? "" : "s");
@@ -189,7 +189,7 @@ static void bomb_hit_event(MUXEVENT * e)
 	free((void *) s);
 }
 
-void simulate_flight(MECH * mech, MAP * map, short *x, short *y, float t)
+void simulate_flight(MECH * mech, MAP * map, int *x, int *y, float t)
 {
 	float fx = MechFX(mech);
 	float fy = MechFY(mech);
@@ -199,7 +199,7 @@ void simulate_flight(MECH * mech, MAP * map, short *x, short *y, float t)
 	float delx, dely;
 	float dx, dy;
 	int i;
-	short tx, ty;
+	int tx, ty;
 
 	if(t < 1.0)
 		return;
@@ -226,7 +226,7 @@ void bomb_drop(MECH * mech, int player, int bn)
 	int i, j, k;
 	int lloc = 0, lpos = 0;
 	float t;
-	short x, y;
+	int x, y;
 	int ob;
 	int di;
 	float dir;

@@ -132,32 +132,6 @@ void mmdb_write_uint(struct mmdb_t *mmdb, unsigned int val) {
     return;
 }
 
-void mmdb_write_uint8(struct mmdb_t *mmdb, uint8_t data)
-{
-    uint32_t tmpval = (uint32_t)data;
-    mmdb_write_uint32(mmdb, tmpval);
-    return;
-}
-
-uint8_t mmdb_read_uint8(struct mmdb_t *mmdb)
-{
-    uint32_t tmpval = mmdb_read_uint32(mmdb);
-    return (uint8_t)tmpval;
-}
-
-void mmdb_write_uint16(struct mmdb_t *mmdb, uint16_t data)
-{
-    uint32_t tmpval = (uint32_t)data;
-    mmdb_write_uint32(mmdb, tmpval);
-    return;
-}
-
-uint16_t mmdb_read_uint16(struct mmdb_t *mmdb)
-{
-    uint32_t tmpval = mmdb_read_uint32(mmdb);
-    return (uint16_t)tmpval;
-}
-
 void mmdb_write_uint32(struct mmdb_t *mmdb, uint32_t data)
 {
 	data = htonl(data);

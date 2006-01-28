@@ -1107,7 +1107,7 @@ void mech_jump(dbref player, void *data, char *buffer)
 	int argc;
 	int target;
 	char targetID[2];
-	short mapx, mapy;
+	int mapx, mapy;
 	int bearing;
 	float range = 0.0;
 	float realx, realy;

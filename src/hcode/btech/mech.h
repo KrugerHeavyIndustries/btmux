@@ -575,14 +575,14 @@ if (MechType(mech) == CLASS_SPHEROID_DS) \
 
 /* structure for each critical hit section */
 struct critical_slot {
-    unsigned char brand;	/* Hold brand number, and damage (upper 4 bits) */
-    unsigned char data;		/* Holds information like ammo remaining, etc */
-    unsigned short type;	/* Type of item that this is a critical for */
-    unsigned int firemode;	/* Holds info like rear mount, ultra mode... */
-    unsigned int ammomode;	/* Holds info for the special ammo type in use */
-    unsigned int weapDamageFlags;	/* Holds the enhanced critical damage flags */
-    short desiredAmmoLoc;	/* Location of the desired ammo bin */
-//    unsigned int recycle;   /* time when it will finish recycling */
+    unsigned int brand;             /* Hold brand number, and damage (upper 4 bits) */
+    unsigned int data;              /* Holds information like ammo remaining, etc */
+    unsigned int type;              /* Type of item that this is a critical for */
+    unsigned int firemode;          /* Holds info like rear mount, ultra mode... */
+    unsigned int ammomode;          /* Holds info for the special ammo type in use */
+    unsigned int weapDamageFlags;   /* Holds the enhanced critical damage flags */
+    int desiredAmmoLoc;             /* Location of the desired ammo bin */
+//    unsigned int recycle;     /* time when it will finish recycling */
 };
 
 /* Fire modes */
@@ -648,17 +648,17 @@ struct critical_slot {
 
 /* Structure for each of the 8 sections */
 struct section_struct {
-    unsigned char armor;	/* External armor value */
-    unsigned char internal;	/* Internal armor value */
-    unsigned char rear;		/* Rear armor value */
-    unsigned char armor_orig;
-    unsigned char internal_orig;
-    unsigned char rear_orig;
-    char basetohit;		/* Holds to hit modifiers for weapons in section */
-    char config;		/* flags for CASE, etc. */
-    char recycle;		/* after physical attack, set counter */
-    unsigned short specials;	/* specials for this section, like attached NARC pods, etc... */
-    struct critical_slot criticals[NUM_CRITICALS];	/* Criticals */
+    unsigned int armor;             /* External armor value */
+    unsigned int internal;          /* Internal armor value */
+    unsigned int rear;              /* Rear armor value */
+    unsigned int armor_orig;
+    unsigned int internal_orig;
+    unsigned int rear_orig;
+    int basetohit;                  /* Holds to hit modifiers for weapons in section */
+    int config;                     /* flags for CASE, etc. */
+    int recycle;                    /* after physical attack, set counter */
+    unsigned int specials;          /* specials for this section, like attached NARC pods, etc... */
+    struct critical_slot criticals[NUM_CRITICALS];  /* Criticals */
 };
 
 /* Section configurations */
@@ -727,20 +727,20 @@ struct section_struct {
 typedef struct {
     char mech_name[31];         /* Holds the 30 char ID for the mech */
     char mech_type[15];         /* Holds the mechref for the mech */
-    char type;                  /* The type of this unit */
-    char move;                  /* The movement type of this unit */
-    char tac_range;             /* Tactical range for sensors */
-    char lrs_range;             /* Long range for sensors */
-    char scan_range;            /* Range for scanners */
-    char numsinks;              /* number of heatsinks (also engine */
-    char computer;              /* Partially replaces tac/lrs/scan/radiorange */
-    char radio;                 /* Radio type */
-    unsigned char radioinfo;
-    short radio_range;          /* Can read/write comfortably at that distance */
-    char targcomp;              /* Targeting comp mode. */
+    int type;                   /* The type of this unit */
+    int move;                   /* The movement type of this unit */
+    int tac_range;              /* Tactical range for sensors */
+    int lrs_range;              /* Long range for sensors */
+    int scan_range;             /* Range for scanners */
+    int numsinks;               /* number of heatsinks (also engine */
+    int computer;               /* Partially replaces tac/lrs/scan/radiorange */
+    int radio;                  /* Radio type */
+    unsigned int radioinfo;
+    int radio_range;            /* Can read/write comfortably at that distance */
+    int targcomp;               /* Targeting comp mode. */
 
-    char si;                    /* Structural integrity of a craft */
-    char si_orig;               /* maximum struct. int */
+    int si;                     /* Structural integrity of a craft */
+    int si_orig;                /* maximum struct. int */
     int fuel;                   /* Fuel left */
     int fuel_orig;              /* Fuel tank capacity */
 
@@ -753,43 +753,46 @@ typedef struct {
     int mechbv_last;            /* BV caclulation cacher */
 
     int cargospace;             /* Assigned cargo space * 100 for half and quarter tons */
-    char carmaxton;             /* Max Tonnage variable for carrier sizing */
+    int carmaxton;              /* Max Tonnage variable for carrier sizing */
 
     struct section_struct sections[NUM_SECTIONS];   /* armor/ints/crits/etc */
 
 } mech_ud;
 
 typedef struct {
-    char jumptop;               /* How many MPs we've left for vertical stuff? */
-    char aim;                   /* section of target aimed at */
-    char basetohit;             /* total to hit modifiers from critical hits */
-    char pilotskillbase;        /* holds constant skills mods */
-    char engineheat;            /* +5 per critical hit there */
-    char masc_value;            /* MASC roll .. updated up/down as needed */
-    char aim_type;              /* Type we aim at */
+    int jumptop;                /* How many MPs we've left for vertical stuff? */
+    int aim;                    /* section of target aimed at */
+    int basetohit;              /* total to hit modifiers from critical hits */
+    int pilotskillbase;         /* holds constant skills mods */
+    int engineheat;             /* +5 per critical hit there */
+    int masc_value;             /* MASC roll .. updated up/down as needed */
+    int scharge_value;          /* Supercharger roll .. updated up/down as needed */
+    int aim_type;               /* Type we aim at */
 
     char sensor[2];             /* Primary mode, secondary mode */
-    byte fire_adjustment;       /* For artillery mostly */
-    char vis_mod;               /* Should be in range of 0 to 100 ; basically, this
+    int fire_adjustment;        /* For artillery mostly */
+    int vis_mod;                /* Should be in range of 0 to 100 ; basically, this
                                    is used as _base_ of random element in each sensor type, 
                                    altered once every heat update (and when mech's sensor 
                                    mode changes) */
-    char chargetimer;           /* # of movement ticks since 'charge' command */
+    int chargetimer;            /* # of movement ticks since 'charge' command */
     float chargedist;           /* # of hexes moved since 'charge' command */
-    char staggerstamp;          /* When in last turn this 'mech staggered */
+    int staggerstamp;           /* When in last turn this 'mech staggered */
+    int staggerDamage;          /* Damage for Stagger MkII */
+    int lastStaggerNotify;      /* The level that we were last notified of a stagger */
 
-    short mech_prefs;           /* Mech preferences */
-    short jumplength;           /* in real coords (for jump and goto) */
-    short goingx, goingy;       /* in map coords (for jump and goto) */
-    short desiredfacing;        /* You are turning if this != facing */
-    short angle;                /* For DS / Aeros */
-    short jumpheading;          /* Jumping head */
-    short targx, targy, targz;  /* in map coords, target squares */
-    short turretfacing;         /* Direction turret is pointing relative to unit */
-    short turndamage;           /* holds damge taken in 5 sec interval */
-    short lateral;              /* Quad lateral move mode */
-    short num_seen;             /* Number of enemies seen */
-    short lx, ly;
+    int mech_prefs;             /* Mech preferences */
+    int jumplength;             /* in real coords (for jump and goto) */
+    int goingx, goingy;         /* in map coords (for jump and goto) */
+    int desiredfacing;          /* You are turning if this != facing */
+    int angle;                  /* For DS / Aeros */
+    int jumpheading;            /* Jumping head */
+    int targx, targy, targz;    /* in map coords, target squares */
+    int turretfacing;           /* Direction turret is pointing relative to unit */
+    int turndamage;             /* holds damge taken in 5 sec interval */
+    int lateral;                /* Quad lateral move mode */
+    int num_seen;               /* Number of enemies seen */
+    int lx, ly;
 
     dbref chgtarget;            /* My CHARGE target */
     dbref dfatarget;            /* My DFA target */
@@ -797,6 +800,7 @@ typedef struct {
     dbref swarming;             /* Swarm target */
     dbref carrying;             /* Who are we lugging about? */
     dbref spotter;              /* Who's spotting for us? */
+    dbref autopilot_num;        /* dbref of AI (if there is one) */
 
     float heat;                 /* Heat index */
     float weapheat;             /* Weapon heat factor-> see manifesto */
@@ -811,6 +815,7 @@ typedef struct {
     float jumpspeed;            /* Jumping distance or current height in km */
 
     int critstatus;             /* see key below */
+    int critstatus2;            /* Starting to fill up. More CritStatus */
     int status;                 /* see key below */
     int status2;                /* see key below */
     int specials;               /* see key below */
@@ -818,12 +823,12 @@ typedef struct {
     int specialsstatus;         /* status element specials, like ECM, etc... */
     int tankcritstatus;         /* status element for crits that are specific to 
                                    vehicles. see key below */
+    int infantry_specials;      /* Infantry related specials */
 
     time_t last_weapon_recycle; /* This updated only on 'as needed' basis ; 
                                    basically, all weapon recycling events compare 
                                    the current time to the last_weapon_recycle, 
                                    and send recycled-messages for all recycled weapons. */
-    int cargo_weight;           /* How much stuff do we have? */
 
     /* BTHRandomization stuff (rok) ;) */
     int lastrndu;
@@ -837,35 +842,32 @@ typedef struct {
     int cocoon;                 /* OOD cocoon */
     int commconv;               /* Evil magic related to commconv, p1 */
     int commconv_last;          /* Evil magic related to commconv, p2 */
+
     int onumsinks;              /* Original HS (?) */
     int disabled_hs;            /* Disabled (on purpose, not destroyed) HS */
-    int autopilot_num;          /* dbref of AI (if there is one) */
     int heatboom_last;
+
     int sspin;                  /* Start of aero spin */
     int can_see;
     int row;                    /* _Own_ weight */
     int rcw;                    /* _Carried_ weight */
+    int cargo_weight;           /* How much stuff do we have? */
     float rspd;
     int erat;
     int per;
     int wxf;
-    int last_startup;           /* timestamp of last 'startup' */
     int maxsuits;               /* Maximum number of bsuits in this unit */
-    int infantry_specials;      /* Infantry related specials */
-    char scharge_value;         /* Supercharger roll .. updated up/down as needed */
-    int staggerDamage;          /* Damage for Stagger MkII */
-    int lastStaggerNotify;      /* The level that we were last notified of a stagger */
-    int critstatus2;            /* Starting to fill up. More CritStatus */
+    int last_startup;           /* timestamp of last 'startup' */
 } mech_rd;
 
 typedef struct {
-    char pilotstatus;           /* damage pilot has taken */
-    char terrain;               /* Terrain I am in */
-    char elev;                  /* Elevation I am at */
-    short hexes_walked;         /* Hexes walked counter */
-    short facing;               /* 0-359.. */
-    short x, y, z;              /* hex quantized x,y,z on the map in MP (hexes) */
-    short last_x, last_y;       /* last hex entered */
+    int pilotstatus;            /* damage pilot has taken */
+    int terrain;                /* Terrain I am in */
+    int elev;                   /* Elevation I am at */
+    int hexes_walked;           /* Hexes walked counter */
+    int facing;                 /* 0-359.. */
+    int x, y, z;                /* hex quantized x,y,z on the map in MP (hexes) */
+    int last_x, last_y;         /* last hex entered */
     float fx, fy, fz;           /* exact x, y and z on the map */
     int team;                   /* Only for internal use */
     int unusable_arcs;          /* Horrid kludge for disallowing use of some arcs' guns */
@@ -879,12 +881,14 @@ typedef struct {
     char C3ChanTitle[CHTITLELEN + 1];       /* applies to C3 and C3i */
     dbref C3iNetwork[C3I_NETWORK_SIZE];     /* other mechs in the C3i network */
     int wC3iNetworkSize;                    /* Current size of our network */
+
     dbref C3Network[C3_NETWORK_SIZE];       /* The whole network. We're sacrificing memory 
                                                for speed. */
     int wC3NetworkSize;                     /* Current size of the C3Network */
     int wTotalC3Masters;                    /* How many masters are on this mech? */
     int wWorkingC3Masters;                  /* How many working masters are on this mech? */
     int C3FreqMode;                         /* applies to C3 and C3i */
+
     dbref tagTarget;                        /* dbref of the target we're tagging */
     dbref taggedBy;                         /* dbref of the person tagging us */
 } mech_sd;
@@ -892,18 +896,17 @@ typedef struct {
 typedef struct {
     dbref mynum;                            /* My dbref */
     char ID[2];                             /* Only for internal use */
-    char brief;                             /* toggle brievity */
+    int brief;                              /* toggle brievity */
     int freq[FREQS];                        /* channel frequencies */
     int freqmodes[FREQS];                   /* flags for the freq */
     char chantitle[FREQS][CHTITLELEN + 1];  /* Channel titles */
     int mapnumber;                          /* My number on the map */
     dbref mapindex;                         /* 0..MAX_MAPS (dbref of map object) */
-    unsigned long tic[NUM_TICS][TICLONGS];  /* tics.. */
+    unsigned int tic[NUM_TICS][TICLONGS];   /* tics.. */
     mech_ud ud;                             /* UnitData (mostly not bzero'able) */
     mech_pd pd;                             /* PositionData(mostly not bzero'able) */
     mech_rd rd;                             /* RSdata (mostly bzero'able) */
     mech_sd sd;                             /* SpecialsData (mostly not bzero'able) */
-
 } MECH;
 
 struct spot_data {

@@ -743,7 +743,7 @@ float FindHexRange(float x0, float y0, float x1, float y1)
 #define FULL_Y (1 * SCALEMAP)
 #define HALF_Y (0.5 * FULL_Y)
 
-void RealCoordToMapCoord(short *hex_x, short *hex_y, float cart_x,
+void RealCoordToMapCoord(int *hex_x, int *hex_y, float cart_x,
 						 float cart_y)
 {
 	float x, y;

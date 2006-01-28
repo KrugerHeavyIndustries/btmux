@@ -47,7 +47,7 @@ void mech_findcenter(dbref player, void *data, char *buffer)
 }
 
 static int parse_tacargs(dbref player, MECH * mech, char **args, int argc,
-						 int maxrange, short *x, short *y)
+						 int maxrange, int *x, int *y)
 {
 	int bearing;
 	float range, fx, fy;
@@ -204,7 +204,7 @@ void mech_navigate(dbref player, void *data, char *buffer)
 	MAP *mech_map;
 	char **maptext, *args[3];
 	int i, dolos, argc;
-	short x, y;
+	int x, y;
 
 	cch(MECH_USUAL);
 
@@ -632,7 +632,7 @@ void mech_lrsmap(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 	MAP *map;
 	int argc, mode = 0;
-	short x, y;
+	int x, y;
 	char *args[5], *str;
 	int displayHeight = LRS_DISPLAY_HEIGHT;
 
@@ -1509,7 +1509,7 @@ void mech_tacmap(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
 	int argc, i;
-	short x, y;
+	int x, y;
 	int mapx, mapy;
 	char *args_vec[4];
 	char **args = args_vec;

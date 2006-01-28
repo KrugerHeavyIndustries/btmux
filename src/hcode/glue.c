@@ -792,79 +792,239 @@ struct hcode_xdr_struct {
 /* Save MECH */
 static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
 
-    mmdb_write_uint(hcode_xdr, XCDB_MECH_MAGIC);
     int i, j;
 
-    /* Main MECH Struct */
-    mmdb_write_uint(hcode_xdr, mech->mynum);
-    mmdb_write_uint(hcode_xdr, mech->ID[0]);
-    mmdb_write_uint(hcode_xdr, mech->ID[1]);
-    mmdb_write_uint(hcode_xdr, mech->brief);
+    /* Mark that is a mech */
+    mmdb_write_uint32(hcode_xdr, XCDB_MECH_MAGIC);
 
-    mmdb_write_uint(hcode_xdr, FREQS);
+    /* Main MECH Struct */
+    mmdb_write_uint32(hcode_xdr, mech->mynum);
+    mmdb_write_opaque(hcode_xdr, mech->ID, 2);
+    mmdb_write_uint32(hcode_xdr, mech->brief);
+
+    mmdb_write_uint32(hcode_xdr, FREQS);
     for (i = 0; i < FREQS; i++) {
 
-        mmdb_write_uint(hcode_xdr, mech->freq[i]);
-        mmdb_write_uint(hcode_xdr, mech->freqmodes[i]);
+        mmdb_write_uint32(hcode_xdr, mech->freq[i]);
+        mmdb_write_uint32(hcode_xdr, mech->freqmodes[i]);
+        mmdb_write_opaque(hcode_xdr, mech->chantitle[i], CHTITLELEN + 1);
 
-        if (mech->chantitle[i] && *(mech->chantitle[i])) {
-            mmdb_write_opaque(hcode_xdr, mech->chantitle[i], strlen(mech->chantitle[i]) + 1);
-        } else {
-            mmdb_write_uint(hcode_xdr, 0);
-        }
     }
 
-    mmdb_write_uint(hcode_xdr, mech->mapnumber);
-    mmdb_write_uint(hcode_xdr, mech->mapindex);
+    mmdb_write_uint32(hcode_xdr, mech->mapnumber);
+    mmdb_write_uint32(hcode_xdr, mech->mapindex);
+
 
     /* Mech -> ud struct */
-    mmdb_write_opaque(hcode_xdr, mech->ud.mech_name, strlen(mech->ud.mech_name) + 1);
-    mmdb_write_opaque(hcode_xdr, mech->ud.mech_type, strlen(mech->ud.mech_type) + 1);
-    mmdb_write_uint(hcode_xdr, mech->ud.type);
-    mmdb_write_uint(hcode_xdr, mech->ud.move);
-    mmdb_write_uint(hcode_xdr, mech->ud.tac_range);
-    mmdb_write_uint(hcode_xdr, mech->ud.lrs_range);
-    mmdb_write_uint(hcode_xdr, mech->ud.scan_range);
-    mmdb_write_uint(hcode_xdr, mech->ud.numsinks);
-    mmdb_write_uint(hcode_xdr, mech->ud.computer);
-    mmdb_write_uint(hcode_xdr, mech->ud.radio);
-    mmdb_write_uint(hcode_xdr, mech->ud.radioinfo);
-    mmdb_write_uint(hcode_xdr, mech->ud.radio_range);
+    mmdb_write_opaque(hcode_xdr, mech->ud.mech_name, 31);
+    mmdb_write_opaque(hcode_xdr, mech->ud.mech_type, 15);
 
-    mmdb_write_uint(hcode_xdr, mech->ud.si);
-    mmdb_write_uint(hcode_xdr, mech->ud.si_orig);
-    mmdb_write_uint(hcode_xdr, mech->ud.fuel);
-    mmdb_write_uint(hcode_xdr, mech->ud.fuel_orig);
+    mmdb_write_uint32(hcode_xdr, mech->ud.type);
+    mmdb_write_uint32(hcode_xdr, mech->ud.move);
+    mmdb_write_uint32(hcode_xdr, mech->ud.tac_range);
+    mmdb_write_uint32(hcode_xdr, mech->ud.lrs_range);
+    mmdb_write_uint32(hcode_xdr, mech->ud.scan_range);
+    mmdb_write_uint32(hcode_xdr, mech->ud.numsinks);
+    mmdb_write_uint32(hcode_xdr, mech->ud.computer);
+    mmdb_write_uint32(hcode_xdr, mech->ud.radio);
+    mmdb_write_uint32(hcode_xdr, mech->ud.radioinfo);
+    mmdb_write_uint32(hcode_xdr, mech->ud.radio_range);
+    mmdb_write_uint32(hcode_xdr, mech->ud.targcomp);
 
-    mmdb_write_uint(hcode_xdr, mech->ud.tons);
-    mmdb_write_uint(hcode_xdr, mech->ud.walkspeed);
-    mmdb_write_uint(hcode_xdr, mech->ud.runspeed);
+    mmdb_write_uint32(hcode_xdr, mech->ud.si);
+    mmdb_write_uint32(hcode_xdr, mech->ud.si_orig);
+    mmdb_write_uint32(hcode_xdr, mech->ud.fuel);
+    mmdb_write_uint32(hcode_xdr, mech->ud.fuel_orig);
 
-    /* Float? */
-    mmdb_write_uint(hcode_xdr, mech->ud.maxspeed);
+    mmdb_write_uint32(hcode_xdr, mech->ud.tons);
+    mmdb_write_uint32(hcode_xdr, mech->ud.walkspeed);
+    mmdb_write_uint32(hcode_xdr, mech->ud.runspeed);
 
-    mmdb_write_uint(hcode_xdr, mech->ud.mechbv);
-    mmdb_write_uint(hcode_xdr, mech->ud.mechbv_last);
+    mmdb_write_single(hcode_xdr, mech->ud.maxspeed);
 
-    mmdb_write_uint(hcode_xdr, mech->ud.cargospace);
-    mmdb_write_uint(hcode_xdr, mech->ud.carmaxton);
+    mmdb_write_uint32(hcode_xdr, mech->ud.mechbv);
+    mmdb_write_uint32(hcode_xdr, mech->ud.mechbv_last);
+
+    mmdb_write_uint32(hcode_xdr, mech->ud.cargospace);
+    mmdb_write_uint32(hcode_xdr, mech->ud.carmaxton);
 
     /* Mech -> ud -> sections */
-    mmdb_write_uint(hcode_xdr, NUM_SECTIONS);
+    mmdb_write_uint32(hcode_xdr, NUM_SECTIONS);
     for (i = 0; i < NUM_SECTIONS; i++) {
 
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].armor);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].internal);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].rear);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].armor_orig);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].internal_orig);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].rear_orig);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].basetohit);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].config);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].recycle);
-        mmdb_write_uint(hcode_xdr, mech->ud.sections[i].specials);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].armor);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].internal);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].rear);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].armor_orig);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].internal_orig);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].rear_orig);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].basetohit);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].config);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].recycle);
+        mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].specials);
+
+        /* Write out criticals */
+        mmdb_write_uint32(hcode_xdr, NUM_CRITICALS);
+        for (j = 0; j < NUM_CRITICALS; j++) {
+
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].brand);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].data);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].type);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].firemode);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].ammomode);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].weapDamageFlags);
+            mmdb_write_uint32(hcode_xdr, mech->ud.sections[i].criticals[j].desiredAmmoLoc);
+
+        }
 
     }
+
+    /* Mech -> rd struct */
+    mmdb_write_uint32(hcode_xdr, mech->rd.jumptop);
+    mmdb_write_uint32(hcode_xdr, mech->rd.aim);
+    mmdb_write_uint32(hcode_xdr, mech->rd.basetohit);
+    mmdb_write_uint32(hcode_xdr, mech->rd.pilotskillbase);
+    mmdb_write_uint32(hcode_xdr, mech->rd.engineheat);
+    mmdb_write_uint32(hcode_xdr, mech->rd.masc_value);
+    mmdb_write_uint32(hcode_xdr, mech->rd.scharge_value);
+    mmdb_write_uint32(hcode_xdr, mech->rd.aim_type);
+    mmdb_write_opaque(hcode_xdr, mech->rd.sensor, 2);
+    mmdb_write_uint32(hcode_xdr, mech->rd.fire_adjustment);
+    mmdb_write_uint32(hcode_xdr, mech->rd.vis_mod);
+    mmdb_write_uint32(hcode_xdr, mech->rd.chargetimer);
+    mmdb_write_single(hcode_xdr, mech->rd.chargedist);
+    mmdb_write_uint32(hcode_xdr, mech->rd.staggerstamp);
+    mmdb_write_uint32(hcode_xdr, mech->rd.staggerDamage);
+    mmdb_write_uint32(hcode_xdr, mech->rd.lastStaggerNotify);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.mech_prefs);
+    mmdb_write_uint32(hcode_xdr, mech->rd.jumplength);
+    mmdb_write_uint32(hcode_xdr, mech->rd.goingx);
+    mmdb_write_uint32(hcode_xdr, mech->rd.goingy);
+    mmdb_write_uint32(hcode_xdr, mech->rd.desiredfacing);
+    mmdb_write_uint32(hcode_xdr, mech->rd.angle);
+    mmdb_write_uint32(hcode_xdr, mech->rd.jumpheading);
+    mmdb_write_uint32(hcode_xdr, mech->rd.targx);
+    mmdb_write_uint32(hcode_xdr, mech->rd.targy);
+    mmdb_write_uint32(hcode_xdr, mech->rd.targz);
+    mmdb_write_uint32(hcode_xdr, mech->rd.turretfacing);
+    mmdb_write_uint32(hcode_xdr, mech->rd.turndamage);
+    mmdb_write_uint32(hcode_xdr, mech->rd.lateral);
+    mmdb_write_uint32(hcode_xdr, mech->rd.num_seen);
+    mmdb_write_uint32(hcode_xdr, mech->rd.lx);
+    mmdb_write_uint32(hcode_xdr, mech->rd.ly);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.chgtarget);
+    mmdb_write_uint32(hcode_xdr, mech->rd.dfatarget);
+    mmdb_write_uint32(hcode_xdr, mech->rd.target);
+    mmdb_write_uint32(hcode_xdr, mech->rd.swarming);
+    mmdb_write_uint32(hcode_xdr, mech->rd.carrying);
+    mmdb_write_uint32(hcode_xdr, mech->rd.spotter);
+    mmdb_write_uint32(hcode_xdr, mech->rd.autopilot_num);
+
+    mmdb_write_single(hcode_xdr, mech->rd.heat);
+    mmdb_write_single(hcode_xdr, mech->rd.weapheat);
+    mmdb_write_single(hcode_xdr, mech->rd.plus_heat);
+    mmdb_write_single(hcode_xdr, mech->rd.minus_heat);
+
+    mmdb_write_single(hcode_xdr, mech->rd.startfx);
+    mmdb_write_single(hcode_xdr, mech->rd.startfy);
+    mmdb_write_single(hcode_xdr, mech->rd.startfz);
+    mmdb_write_single(hcode_xdr, mech->rd.endfz);
+    mmdb_write_single(hcode_xdr, mech->rd.verticalspeed);
+    mmdb_write_single(hcode_xdr, mech->rd.speed);
+    mmdb_write_single(hcode_xdr, mech->rd.desired_speed);
+    mmdb_write_single(hcode_xdr, mech->rd.jumpspeed);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.critstatus);
+    mmdb_write_uint32(hcode_xdr, mech->rd.critstatus2);
+    mmdb_write_uint32(hcode_xdr, mech->rd.status);
+    mmdb_write_uint32(hcode_xdr, mech->rd.status2);
+    mmdb_write_uint32(hcode_xdr, mech->rd.specials);
+    mmdb_write_uint32(hcode_xdr, mech->rd.specials2);
+    mmdb_write_uint32(hcode_xdr, mech->rd.specialsstatus);
+    mmdb_write_uint32(hcode_xdr, mech->rd.tankcritstatus);
+    mmdb_write_uint32(hcode_xdr, mech->rd.infantry_specials);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.last_weapon_recycle);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.lastrndu);
+    mmdb_write_uint32(hcode_xdr, mech->rd.rnd);
+    mmdb_write_uint32(hcode_xdr, mech->rd.last_ds_msg);
+    mmdb_write_uint32(hcode_xdr, mech->rd.boom_start);
+    mmdb_write_uint32(hcode_xdr, mech->rd.maxfuel);
+    mmdb_write_uint32(hcode_xdr, mech->rd.lastused);
+    mmdb_write_uint32(hcode_xdr, mech->rd.cocoon);
+    mmdb_write_uint32(hcode_xdr, mech->rd.commconv);
+    mmdb_write_uint32(hcode_xdr, mech->rd.commconv_last);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.onumsinks);
+    mmdb_write_uint32(hcode_xdr, mech->rd.disabled_hs);
+    mmdb_write_uint32(hcode_xdr, mech->rd.heatboom_last);
+
+    mmdb_write_uint32(hcode_xdr, mech->rd.sspin);
+    mmdb_write_uint32(hcode_xdr, mech->rd.can_see);
+    mmdb_write_uint32(hcode_xdr, mech->rd.row);
+    mmdb_write_uint32(hcode_xdr, mech->rd.rcw);
+    mmdb_write_uint32(hcode_xdr, mech->rd.cargo_weight);
+    mmdb_write_single(hcode_xdr, mech->rd.rspd);
+    mmdb_write_uint32(hcode_xdr, mech->rd.erat);
+    mmdb_write_uint32(hcode_xdr, mech->rd.per);
+    mmdb_write_uint32(hcode_xdr, mech->rd.wxf);
+    mmdb_write_uint32(hcode_xdr, mech->rd.maxsuits);
+    mmdb_write_uint32(hcode_xdr, mech->rd.last_startup);
+
+    /* Mech -> pd struct */
+    mmdb_write_uint32(hcode_xdr, mech->pd.pilotstatus);
+    mmdb_write_uint32(hcode_xdr, mech->pd.terrain);
+    mmdb_write_uint32(hcode_xdr, mech->pd.elev);
+    mmdb_write_uint32(hcode_xdr, mech->pd.hexes_walked);
+    mmdb_write_uint32(hcode_xdr, mech->pd.facing);
+    mmdb_write_uint32(hcode_xdr, mech->pd.x);
+    mmdb_write_uint32(hcode_xdr, mech->pd.y);
+    mmdb_write_uint32(hcode_xdr, mech->pd.z);
+    mmdb_write_uint32(hcode_xdr, mech->pd.last_x);
+    mmdb_write_uint32(hcode_xdr, mech->pd.last_y);
+
+    mmdb_write_single(hcode_xdr, mech->pd.fx);
+    mmdb_write_single(hcode_xdr, mech->pd.fy);
+    mmdb_write_single(hcode_xdr, mech->pd.fz);
+
+    mmdb_write_uint32(hcode_xdr, mech->pd.team);
+    mmdb_write_uint32(hcode_xdr, mech->pd.unusable_arcs);
+    mmdb_write_uint32(hcode_xdr, mech->pd.stall);
+
+    mmdb_write_uint32(hcode_xdr, mech->pd.pilot);
+
+    mmdb_write_uint32(hcode_xdr, NUM_BAYS);
+    for (i = 0; i < NUM_BAYS; i++) {
+        mmdb_write_uint32(hcode_xdr, mech->pd.bay[i]);
+    }
+
+    mmdb_write_uint32(hcode_xdr, NUM_TURRETS);
+    for (i = 0; i < NUM_TURRETS; i++) {
+        mmdb_write_uint32(hcode_xdr, mech->pd.turret[i]);
+    }
+
+    /* Mech -> sd struct */
+    mmdb_write_opaque(hcode_xdr, mech->sd.C3ChanTitle, CHTITLELEN + 1);
+    mmdb_write_uint32(hcode_xdr, C3I_NETWORK_SIZE);
+    for (i = 0; i < C3I_NETWORK_SIZE; i++) {
+        mmdb_write_uint32(hcode_xdr, mech->sd.C3iNetwork[i]);
+    }
+    mmdb_write_uint32(hcode_xdr, mech->sd.wC3iNetworkSize);
+
+    mmdb_write_uint32(hcode_xdr, C3_NETWORK_SIZE);
+    for (i = 0; i < C3_NETWORK_SIZE; i++) {
+        mmdb_write_uint32(hcode_xdr, mech->sd.C3Network[i]);
+    }
+    mmdb_write_uint32(hcode_xdr, mech->sd.wC3NetworkSize);
+    mmdb_write_uint32(hcode_xdr, mech->sd.wTotalC3Masters);
+    mmdb_write_uint32(hcode_xdr, mech->sd.wWorkingC3Masters);
+    mmdb_write_uint32(hcode_xdr, mech->sd.C3FreqMode);
+
+    mmdb_write_uint32(hcode_xdr, mech->sd.tagTarget);
+    mmdb_write_uint32(hcode_xdr, mech->sd.taggedBy);
 
     return 1;
 }
@@ -872,7 +1032,10 @@ static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
 /* Save MECHREP */
 static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr) {
 
-    mmdb_write_uint(hcode_xdr, XCDB_MECHREP_MAGIC);
+    mmdb_write_uint32(hcode_xdr, XCDB_MECHREP_MAGIC);
+
+    mmdb_write_uint32(hcode_xdr, mechrep->mynum);
+    mmdb_write_uint32(hcode_xdr, mechrep->current_target);
 
     return 1;
 }
@@ -880,7 +1043,9 @@ static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr
 /* Save MAP */
 static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr) {
 
-    mmdb_write_uint(hcode_xdr, XCDB_MAP_MAGIC);
+    mmdb_write_uint32(hcode_xdr, XCDB_MAP_MAGIC);
+
+    mmdb_write_uint32(hcode_xdr, map->mynum);
 
     return 1;
 }
@@ -888,7 +1053,7 @@ static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr) {
 /* Save AUTOPILOT */
 static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xdr) {
 
-    mmdb_write_uint(hcode_xdr, XCDB_AUTO_MAGIC);
+    mmdb_write_uint32(hcode_xdr, XCDB_AUTO_MAGIC);
 
     return 1;
 }
@@ -896,7 +1061,7 @@ static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xd
 /* Save TURRET */
 static int SaveTurretObject(int key, TURRET_T *turret, struct mmdb_t *hcode_xdr) {
 
-    mmdb_write_uint(hcode_xdr, XCDB_TURRET_MAGIC);
+    mmdb_write_uint32(hcode_xdr, XCDB_TURRET_MAGIC);
 
     return 1;
 }
@@ -1008,10 +1173,10 @@ void SaveSpecialObjects(int i)
     /* Write Version and Timestamp */
     gettimeofday(&tv, NULL);
 
-    mmdb_write_uint(hcode_xdr, XCDB_MAGIC);
-    mmdb_write_uint(hcode_xdr, XCDB_VERSION);
-    mmdb_write_uint(hcode_xdr, tv.tv_sec);
-    mmdb_write_uint(hcode_xdr, tv.tv_usec);
+    mmdb_write_uint32(hcode_xdr, XCDB_MAGIC);
+    mmdb_write_uint32(hcode_xdr, XCDB_VERSION);
+    mmdb_write_uint32(hcode_xdr, tv.tv_sec);
+    mmdb_write_uint32(hcode_xdr, tv.tv_usec);
 
     memset(&arg, 0, sizeof(arg));
     arg.hcode_xdr = hcode_xdr;

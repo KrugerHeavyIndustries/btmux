@@ -153,7 +153,7 @@ void blast_hit_hexf(MAP * map, int dam, int singlehitsize, int heatdam,
 	int isrear = 0, iscritical = 0, hitloc;
 	int damleft, arc, ndam;
 	int ground_zero;
-	short tx, ty;
+	int tx, ty;
 
 	/* Not on a map so just return */
 	if(!map)
@@ -240,7 +240,7 @@ void blast_hit_hexesf(MAP * map, int dam, int singlehitsize, int heatdam,
 {
 	int x1, y1, x2, y2;
 	int dm;
-	short tx, ty;
+	int tx, ty;
 	float hx, hy;
 	float t = FindXYRange(fx, fy, ftx, fty);
 

@@ -1572,7 +1572,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 	float range;
 	float fx, fy;
-	short x, y;
+	int x, y;
 	int bearing;
 	int destroy_path = (int) muxevent->data2;
 
@@ -2573,10 +2573,10 @@ void auto_roam_generate_target_hex(AUTO * autopilot, MECH * mech, MAP * map,
 								   int attempt)
 {
 
-	short start_hex_x = 0;
-	short start_hex_y = 0;
-	short target_hex_x = 0;
-	short target_hex_y = 0;
+	int start_hex_x = 0;
+	int start_hex_y = 0;
+	int target_hex_x = 0;
+	int target_hex_y = 0;
 	float x1, y1, x2, y2;
 	float range;
 	int bearing;

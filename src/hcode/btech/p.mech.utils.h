@@ -48,7 +48,7 @@ float FindRange(float x0, float y0, float z0, float x1, float y1,
     float z1);
 float FindXYRange(float x0, float y0, float x1, float y1);
 float FindHexRange(float x0, float y0, float x1, float y1);
-void RealCoordToMapCoord(short *hex_x, short *hex_y, float cart_x,
+void RealCoordToMapCoord(int *hex_x, int *hex_y, float cart_x,
     float cart_y);
 void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x,
     float *cart_y);

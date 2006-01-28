@@ -1097,7 +1097,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 	char mapid[21], mapname[MBUF_SIZE];
 	int argc;
 	int height = 24;
-	short cx = MechX(mech), cy = MechY(mech);
+	int cx = MechX(mech), cy = MechY(mech);
 	int sx, sy, ex, ey, x, y, losflag, lostactical = 0;
 	hexlosmap_info *losmap = NULL;
 

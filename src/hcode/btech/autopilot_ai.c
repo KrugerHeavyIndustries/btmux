@@ -39,7 +39,7 @@ typedef struct {
 	int e, t;
 	float s, ds;
 	float fx, fy;
-	short x, y, lx, ly;
+	int x, y, lx, ly;
 	int h;
 	int dh;
 } LOC;
@@ -1002,7 +1002,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 	unsigned char open_list_bitfield[(MAPX * MAPY) / 8];
 
 	float x1, y1, x2, y2;		/* Floating point vars for real cords */
-	short map_x1, map_y1, map_x2, map_y2;	/* The actual map 'hexes' */
+	int map_x1, map_y1, map_x2, map_y2;	/* The actual map 'hexes' */
 	int i;
 	int child_g_score, child_h_score;	/* the score values for the child hexes */
 	int hexoffset;				/* temp int to pass around as the hexoffset */
