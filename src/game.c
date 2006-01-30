@@ -1412,7 +1412,9 @@ int main(int argc, char *argv[])
 
 	dnschild_init();
 
-	load_restart_db();
+    if(!load_restart_db_xdr()) {
+        load_restart_db();
+    }
 
 #ifdef SQL_SUPPORT
 	sqlchild_init();

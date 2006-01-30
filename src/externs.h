@@ -13,6 +13,7 @@
 #include "mudconf.h"
 #include "regexp.h"
 #include "interface.h"
+#include "mmdb.h"
 
 #ifndef _DB_C
 #define INLINE
@@ -67,6 +68,9 @@ void wait_que(dbref, dbref, int, dbref, int, char *, char *[], int, char *[]);
 int que_next(void);
 int do_top(int ncmds);
 void recover_queue_deposits(void);
+void cque_dump_restart(struct mmdb_t *);
+void cque_load_restart(struct mmdb_t *);
+
 
 /* From eval.c */
 void tcache_init(void);

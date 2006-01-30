@@ -1,5 +1,5 @@
 /*
- * db_rw.c 
+ i ib_rw.c 
  */
 #include "copyright.h"
 #include "config.h"
@@ -35,20 +35,33 @@ struct mmdb_t *mmdb_open_read(char *filename)
 	struct mmdb_t *mmdb;
 	int fd, length;
 
-	dperror(stat(filename, &statbuf) < 0);
+	if(stat(filename, &statbuf) < 0) {
+        return NULL;
+    }
 	mmdb = malloc(sizeof(struct mmdb_t));
+    if(!mmdb) return NULL;
 
 	fd = open(filename, O_RDONLY);
+    if(!fd)  {
+        free(mmdb);
+        return NULL;
+    }
+    
 	mmdb->fd = fd;
 	mmdb->length = (statbuf.st_size + 0x3FF) & ~(0x3FF);
 	mmdb->base =
 		mmap(NULL, mmdb->length, PROT_READ, MAP_SHARED | MAP_POPULATE,
 			 mmdb->fd, 0);
-	dperror(mmdb->base == NULL);
-	mmdb->end = mmdb->base + mmdb->length;
+	if(!mmdb->base) {
+        close(mmdb->fd);
+        free(mmdb);
+        return NULL;
+    }
+    mmdb->end = mmdb->base + mmdb->length;
 
 	mmdb->ppos = mmdb->base;
 	return mmdb;
+
 }
 
 struct mmdb_t *mmdb_open_write(char *filename)
@@ -197,7 +210,7 @@ void *mmdb_read(struct mmdb_t *mmdb, void *dest, int length)
 void mmdb_write_opaque(struct mmdb_t *mmdb, void *data, int length)
 {
 	unsigned char *pad = (unsigned char *)"\x00\x00\x00\x00";
-	mmdb_write_uint(mmdb, length);
+	mmdb_write_uint32(mmdb, length);
 	mmdb_write(mmdb, data, length);
 	if((length & 3) > 0)
 		mmdb_write(mmdb, pad, 4 - (length & 3));
@@ -209,4 +222,30 @@ void mmdb_write_string(struct mmdb_t *mmdb, void *data) {
     } else {
         mmdb_write_opaque(mmdb, data, strlen(data)+1);
     }
+}
+
+char *mmdb_read_string(struct mmdb_t *mmdb) {
+    char *tmp;
+    int length;
+    length = mmdb_read_uint32(mmdb);
+    if(length == 0) return NULL;
+    tmp = malloc(length);
+    mmdb_read(mmdb, tmp, length);
+    return tmp;
+}
+
+char mmdb_read_opaque(struct mmdb_t *mmdb, void *dest, int maxlength) {
+    int length = mmdb_read_uint32(mmdb);
+    
+	if((mmdb->end - mmdb->ppos) < length)
+		return NULL;
+    if(length > maxlength) {
+        memcpy(dest, mmdb->ppos, maxlength);
+    } else {
+        memcpy(dest, mmdb->ppos, length);
+    }
+	mmdb->ppos += length;
+	if(length & 3)
+		mmdb->ppos += 4 - (length & 3);
+	return dest;
 }
