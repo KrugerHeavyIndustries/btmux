@@ -305,7 +305,9 @@ void cque_dump_restart(FILE *f) {
             fprintf(f, "1\n");
             fprintf(f, "%d\n%d\n%d\n", bqe->player, bqe->cause, bqe->sem);
             fprintf(f, "%d\n%d\n", bqe->waittime - mudstate.now, bqe->attr);
-            fprintf(f, "
+            fprintf(f, "");
+	}
+    }
 #endif
     
 /*
