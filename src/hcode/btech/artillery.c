@@ -160,7 +160,7 @@ void blast_hit_hexf(MAP * map, int dam, int singlehitsize, int heatdam,
 		return;
 
 	RealCoordToMapCoord(&tx, &ty, fx, fy);
-	if(tx < 0 || ty < 0 || tx >= map->map_width || ty >= map->map_height)
+	if(tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
 		return;
 	if(!tomsg || !otmsg)
 		return;
@@ -258,8 +258,8 @@ void blast_hit_hexesf(MAP * map, int dam, int singlehitsize, int heatdam,
 				continue;
 			if((tx == x1) && (ty == y1))
 				continue;
-			x2 = BOUNDED(0, x1, map->map_width - 1);
-			y2 = BOUNDED(0, y1, map->map_height - 1);
+			x2 = BOUNDED(0, x1, map->width - 1);
+			y2 = BOUNDED(0, y1, map->height - 1);
 			if(x1 != x2 || y1 != y2)
 				continue;
 			spot = (x1 == tx && y1 == ty);
@@ -313,7 +313,7 @@ static void artillery_hit_hex(MAP * map, artillery_shot * s, int type,
 	char buf2[LBUF_SIZE];
 
 	/* Safety check -- shouldn't happen */
-	if(tx < 0 || tx >= map->map_width || ty < 0 || ty >= map->map_height)
+	if(tx < 0 || tx >= map->width || ty < 0 || ty >= map->height)
 		return;
 
 	if((mode & SMOKE_MODE)) {
@@ -388,7 +388,7 @@ static void artillery_cluster_hit(MAP * map, artillery_shot * s, int type,
 			x = tx + xd;
 			y = ty + yd;
 		}
-		while (x < 0 || x >= map->map_width || y < 0 || y >= map->map_height);
+		while (x < 0 || x >= map->width || y < 0 || y >= map->height);
 		/* Whee.. it's time to drop a bomb to the hex */
 		targets[xd + 2][yd + 2]++;
 	}
@@ -462,8 +462,8 @@ static void artillery_hit(artillery_shot * s)
 		original_y = s->to_y;
 		s->to_x = s->to_x + dist * cos(dir);
 		s->to_y = s->to_y + dist * sin(dir);
-		s->to_x = BOUNDED(0, s->to_x, map->map_width - 1);
-		s->to_y = BOUNDED(0, s->to_y, map->map_height - 1);
+		s->to_x = BOUNDED(0, s->to_x, map->width - 1);
+		s->to_y = BOUNDED(0, s->to_y, map->height - 1);
 		/* Time to calculate if any friendlies have LOS to hex,
 		   and if so, adjust fire adjustment unless you lack information /
 		   have changed target */

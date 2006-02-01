@@ -445,7 +445,7 @@ static void FindMyCoord(MAP * map, int tx, int ty, int i, int wdir, int *x,
 		dx = tx + FindXEven(wdir, i);
 		dy = ty + FindYEven(wdir, i);
 	}
-	if(dx < 0 || dy < 0 || dx >= map->map_width || dy >= map->map_height) {
+	if(dx < 0 || dy < 0 || dx >= map->width || dy >= map->height) {
 		*x = -1;
 		*y = -1;
 		return;
@@ -816,12 +816,12 @@ int parse_coord(MAP * map, int dir, char *data, int *x, int *y)
 		return 0;
 	tox = dirtable[dir].x;
 	toy = dirtable[dir].y;
-	tx = (map->map_width * tox) / 2;
-	if(tx >= map->map_width)
-		tx = map->map_width - 1;
-	ty = (map->map_height * toy) / 2;
-	if(ty >= map->map_height)
-		ty = map->map_height - 1;
+	tx = (map->width * tox) / 2;
+	if(tx >= map->width)
+		tx = map->width - 1;
+	ty = (map->height * toy) / 2;
+	if(ty >= map->height)
+		ty = map->height - 1;
 	if(tox == 1)
 		ty += (toy > 1) ? (0 - doh) : (doh);
 	if(toy == 1)
@@ -830,10 +830,10 @@ int parse_coord(MAP * map, int dir, char *data, int *x, int *y)
 		tx = 0;
 	if(ty < 0)
 		ty = 0;
-	if(tx >= map->map_width)
-		tx = (map->map_width - 1);
-	if(ty >= map->map_height)
-		ty = (map->map_height - 1);
+	if(tx >= map->width)
+		tx = (map->width - 1);
+	if(ty >= map->height)
+		ty = (map->height - 1);
 	*x = tx;
 	*y = ty;
 	return 1;
@@ -888,7 +888,7 @@ void add_links(dbref loc, MAP * map, char *data)
 				continue;
 			if(sscanf(tmps, "%d,%d", &x, &y) != 2)
 				continue;
-			if(x < 0 || x >= map->map_width || y < 0 || y >= map->map_height)
+			if(x < 0 || x >= map->width || y < 0 || y >= map->height)
 				continue;
 			set_hex_enterable(map, x, y);
 			foo.x = x;

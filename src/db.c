@@ -20,6 +20,7 @@
 #include "interface.h"
 #include "flags.h"
 #include "p.comsys.h"
+#include "mmdb.h"
 
 #ifndef O_ACCMODE
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
@@ -2083,10 +2084,13 @@ void toast_player(dbref player)
  * ---------------------------------------------------------------------------
  * * dump_restart_db: Writes out socket information.
  */
+
+
 void dump_restart_db(void)
 {
 	FILE *f;
 	DESC *d;
+    OBJQE *obq;
 	int version = 0;
 
 	/* We maintain a version number for the restart database,
@@ -2119,8 +2123,51 @@ void dump_restart_db(void)
 		putstring(f, d->hudkey);
 	}
 	putref(f, 0);
-
 	fclose(f);
+}
+
+#define RESTART_MAGIC 0x0001D1ED
+void dump_restart_db_xdr(void)
+{
+	struct mmdb_t *mmdb;
+    DESC *d;
+	int version = 0;
+
+	/* We maintain a version number for the restart database,
+	   so we can restart even if the format of the restart db
+	   has been changed in the new executable. */
+
+	version |= RS_RECORD_PLAYERS;
+	version |= RS_NEW_STRINGS;
+	version |= RS_HUDKEY;
+
+   
+    mmdb = mmdb_open_write("restart.xdr");
+    mmdb_write_uint32(mmdb, RESTART_MAGIC);
+    mmdb_write_uint32(mmdb, 1);
+    mmdb_write_uint32(mmdb, version);
+    mmdb_write_uint32(mmdb, mudstate.start_time);
+    mmdb_write_string(mmdb, mudstate.doing_hdr);
+	mmdb_write_uint32(mmdb, mudstate.record_players);
+	DESC_ITER_ALL(d) {
+		mmdb_write_uint32(mmdb, d->descriptor);
+		mmdb_write_uint32(mmdb, d->flags);
+		mmdb_write_uint32(mmdb, d->connected_at);
+		mmdb_write_uint32(mmdb, d->command_count);
+		mmdb_write_uint32(mmdb, d->timeout);
+		mmdb_write_uint32(mmdb, d->host_info);
+		mmdb_write_uint32(mmdb, d->player);
+		mmdb_write_uint32(mmdb, d->last_time);
+		mmdb_write_string(mmdb, d->output_prefix);
+		mmdb_write_string(mmdb, d->output_suffix);
+		mmdb_write_string(mmdb, d->addr);
+		mmdb_write_string(mmdb, d->doing);
+		mmdb_write_string(mmdb, d->username);
+		mmdb_write_string(mmdb, d->hudkey);
+	}
+    mmdb_write_uint32(mmdb, 0);
+    cque_dump_restart(mmdb); 
+    mmdb_close(mmdb);
 }
 
 void accept_client_input(int fd, short event, void *arg);
@@ -2249,4 +2296,101 @@ void load_restart_db()
 	fclose(f);
 	remove("restart.db");
 	raw_broadcast(0, "Game: Restart finished.");
+}
+
+int load_restart_db_xdr()
+{
+	struct mmdb_t *mmdb;
+    DESC *d;
+	DESC *p;
+
+	int val, version, new_strings = 0;
+	char *temp, buf[8];
+
+	mmdb = mmdb_open_read("restart.xdr");
+    if(!mmdb) return 0;
+
+    mmdb_read_uint32(mmdb); // RESTART_MAGIC
+    mmdb_read_uint32(mmdb); // VERSION
+    mmdb_read_uint32(mmdb); // VERSION
+    mudstate.start_time = mmdb_read_uint32(mmdb);
+    mmdb_read_opaque(mmdb, mudstate.doing_hdr, sizeof(mudstate.doing_hdr));
+    mudstate.record_players = mmdb_read_uint32(mmdb);
+
+	mudstate.restarting = 1;
+
+    while( (val = mmdb_read_uint32(mmdb)) != 0) {
+        dprintk("loading descriptor %d\n", val);
+		d = malloc(sizeof(DESC));
+		memset(d, 0, sizeof(DESC));
+		d->descriptor = val;
+		d->flags = mmdb_read_uint32(mmdb);
+		d->connected_at = mmdb_read_uint32(mmdb);
+		d->command_count = mmdb_read_uint32(mmdb);
+		d->timeout = mmdb_read_uint32(mmdb);
+		d->host_info = mmdb_read_uint32(mmdb);
+		d->player = mmdb_read_uint32(mmdb);
+		d->last_time = mmdb_read_uint32(mmdb);
+	
+        d->output_prefix = mmdb_read_string(mmdb);
+        d->output_suffix = mmdb_read_string(mmdb);
+        mmdb_read_opaque(mmdb, d->addr, sizeof(d->addr));
+        mmdb_read_opaque(mmdb, d->doing, sizeof(d->doing));
+        mmdb_read_opaque(mmdb, d->username, sizeof(d->username));
+        mmdb_read_opaque(mmdb, d->hudkey, sizeof(d->hudkey));
+
+		d->output_size = 0;
+		d->output_tot = 0;
+		d->output_lost = 0;
+		d->input_size = 0;
+		d->input_tot = 0;
+		d->input_lost = 0;
+		d->raw_input_at = NULL;
+		memset(d->input, 0, sizeof(d->input));
+		d->quota = mudconf.cmd_quota_max;
+		d->program_data = NULL;
+		d->hashnext = NULL;
+
+		d->saddr_len = sizeof(d->saddr);
+		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,
+					(socklen_t *) & d->saddr_len);
+		d->outstanding_dnschild_query = dnschild_request(d);
+
+		if(descriptor_list) {
+			for(p = descriptor_list; p->next; p = p->next);
+			d->prev = &p->next;
+			p->next = d;
+			d->next = NULL;
+		} else {
+			d->next = descriptor_list;
+			d->prev = &descriptor_list;
+			descriptor_list = d;
+		}
+		d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
+									   bsd_read_callback, bsd_error_callback,
+									   NULL);
+		bufferevent_disable(d->sock_buff, EV_READ);
+		bufferevent_enable(d->sock_buff, EV_WRITE);
+
+		event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST,
+				  accept_client_input, d);
+		event_add(&d->sock_ev, NULL);
+
+		desc_addhash(d);
+		if(isPlayer(d->player))
+			s_Flags2(d->player, Flags2(d->player) | CONNECTED);
+	}
+
+	DESC_ITER_CONN(d) {
+		if(!isPlayer(d->player)) {
+			shutdownsock(d, R_QUIT);
+		}
+
+	}
+    cque_load_restart(mmdb);
+    mmdb_close(mmdb);
+    remove("restart.xdr");
+    remove("restart.db");
+	raw_broadcast(0, "Game: Restart finished.");
+    return 1;
 }

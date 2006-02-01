@@ -79,7 +79,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 	DOCHECK(argc != 2 && argc != 3, "Invalid number of arguments to SETXY!");
 	x = atoi(args[0]);
 	y = atoi(args[1]);
-	DOCHECK(x >= mech_map->map_width || y >= mech_map->map_height || x < 0
+	DOCHECK(x >= mech_map->width || y >= mech_map->height || x < 0
 			|| y < 0, "Invalid coordinates!");
 	MechX(mech) = x;
 	MechLastX(mech) = x;
@@ -186,8 +186,8 @@ void mech_Rsetmapindex(dbref player, void *data, char *buffer)
 	add_mech_to_map(newmap, mech);
 	MechID(mech)[0] = targ[0];
 	MechID(mech)[1] = targ[1];
-	if(MechX(mech) > (newmap->map_width - 1) ||
-	   MechY(mech) > (newmap->map_height - 1)) {
+	if(MechX(mech) > (newmap->width - 1) ||
+	   MechY(mech) > (newmap->height - 1)) {
 		MechX(mech) = 0;
 		MechLastX(mech) = 0;
 		MechY(mech) = 0;

@@ -35,7 +35,7 @@ create_if_neccessary(arr,map,y);arr[y][realnum(x)] |= boffsbit(x,n)
 
 static void create_if_neccessary(unsigned char **foo, MAP * map, int y)
 {
-	int xs = map->map_width;
+	int xs = map->width;
 
 	if(!foo[y])
 		Create(foo[y], unsigned char, realnum(xs));
@@ -44,8 +44,8 @@ static void create_if_neccessary(unsigned char **foo, MAP * map, int y)
 /* All the nasty bits on the map ;) */
 void map_load_bits(FILE * f, MAP * map)
 {
-	int xs = map->map_width;
-	int ys = map->map_height;
+	int xs = map->width;
+	int ys = map->height;
 	unsigned char **foo;
 	int tmp, i;
 
@@ -64,8 +64,8 @@ void map_save_bits(FILE * f, MAP * map, mapobj * obj)
 	int tmp;
 	int i, j, c, tc = 0;
 	unsigned char **foo;
-	int xs = map->map_width;
-	int ys = map->map_height;
+	int xs = map->width;
+	int ys = map->height;
 	unsigned char tmpb;
 
 #define outbyte(a) tmpb=(a);fwrite(&tmpb, 1, 1, f);
@@ -108,7 +108,7 @@ static unsigned char **grab_us_an_array(MAP * map)
 {
 	unsigned char **foo;
 	mapobj foob;
-	int ys = map->map_height;
+	int ys = map->height;
 
 	if(!map->mapobj[TYPE_BITS]) {
 		Create(foo, unsigned char *, ys);
@@ -182,8 +182,8 @@ int is_hangar_hex(MAP * map, int x, int y)
 
 void clear_hex_bits(MAP * map, int bits)
 {
-	int xs = map->map_width;
-	int ys = map->map_height;
+	int xs = map->width;
+	int ys = map->height;
 	int i, j;
 	unsigned char **foo;
 
@@ -211,8 +211,8 @@ void clear_hex_bits(MAP * map, int bits)
 
 int bit_size(MAP * map)
 {
-	int xs = map->map_width;
-	int ys = map->map_height;
+	int xs = map->width;
+	int ys = map->height;
 	int i, s = 0;
 	unsigned char **foo;
 

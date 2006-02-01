@@ -15,6 +15,8 @@
 #ifndef _MAP_H
 #define _MAP_H
 
+#include "rbtree.h"
+
 /*
    map.h
    Structure definitions and what not for the maps for the mechs.
@@ -111,16 +113,6 @@
 #define MapNoBridgify(map)          ((map)->flags & MAPFLAG_NOBRIDGIFY)
 #define MapNoFriendlyFire(map)      ((map)->flags & MAPFLAG_NOFRIENDLYFIRE)
 
-typedef struct mapobj_struct {
-    int x, y;
-    dbref obj;
-    int type;
-    int datac;
-    int datas;
-    int datai;
-    struct mapobj_struct *next;
-} mapobj;
-
 #define MECHMAPFLAG_MOVED  1	/* mech has moved since last LOS update */
 
 #define MECHLOSFLAG_SEEN   0x0001	/* x <mech> has seen <target> (before) */
@@ -149,18 +141,36 @@ typedef struct mapobj_struct {
 #define MECHLOSFLAG_BLOCK   0x8000	/* Something blocks vision 
 					   (elevation propably) */
 
+typedef struct hex_t {
+    int terrain;
+    int elevation;
+    int flags;
+} hex;
+
+typedef struct mapobj_struct {
+    int x, y;
+    dbref obj;
+    int type;
+    int datac;
+    int datas;
+    int datai;
+    struct mapobj_struct *next;
+} mapobj;
+
 typedef struct {
     dbref mynum;                        /* My dbref */
+
     unsigned char **map;                /* The map */
+    hex *hexes;
+
     char mapname[MAP_NAME_SIZE + 1];
 
-    int map_width;                      /* Width of map <MAPX  */
-    int map_height;                     /* Height of map */
+    int width;                          /* Width of map <MAPX  */
+    int height;                         /* Height of map */
 
     int temp;                           /* Temperature, in celsius degrees */
     unsigned int grav;                  /* Gravity, if any ; in 1/100 G's */
     int cloudbase;
-    int unused_char;
     int mapvis;                         /* Visibility on the map, used as base 
                                            for most sensor types */
     int maxvis;                         /* maximum visibility (usually mapvis * n) */
@@ -170,13 +180,13 @@ typedef struct {
     /* Now, da wicked stuff */
     int flags;
 
-    mapobj *mapobj[NUM_MAPOBJTYPES];
-    int cf, cfmax;
     dbref onmap;
+    int cf, cfmax;
     int buildflag;
 
     unsigned int first_free;            /* First free on da map */
     dbref *mechsOnMap;                  /* Mechs on the map */
+    rbtree *mechs;
     unsigned int **LOSinfo;             /* Line of sight info */
 
     /* 1 = mech has moved recently
@@ -185,6 +195,10 @@ typedef struct {
     int moves;                          /* Cheat to prevent idle CPU hoggage */
     int movemod;
     int sensorflags;
+
+    /* Map objects like mines, links etc */
+    mapobj *mapobj[NUM_MAPOBJTYPES];
+    rbtree *mapobjs[NUM_MAPOBJTYPES];
 } MAP;
 
 /* Used by navigate_sketch_map */

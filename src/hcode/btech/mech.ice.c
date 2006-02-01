@@ -153,15 +153,15 @@ void ice_growth(dbref player, MAP * map, int num)
 	int x, y;
 	int count = 0;
 
-	for(x = 0; x < map->map_width; x++)
-		for(y = 0; y < map->map_height; y++)
+	for(x = 0; x < map->width; x++)
+		for(y = 0; y < map->height; y++)
 			if(GetRTerrain(map, x, y) == WATER)
 				if(Number(1, 100) <= num && growable(map, x, y)) {
 					SetTerrain(map, x, y, TMP_TERR);
 					count++;
 				}
-	for(x = 0; x < map->map_width; x++)
-		for(y = 0; y < map->map_height; y++)
+	for(x = 0; x < map->width; x++)
+		for(y = 0; y < map->height; y++)
 			if(GetRTerrain(map, x, y) == TMP_TERR)
 				SetTerrain(map, x, y, ICE);
 	if(count)
@@ -175,8 +175,8 @@ void ice_melt(dbref player, MAP * map, int num)
 	int x, y;
 	int count = 0;
 
-	for(x = 0; x < map->map_width; x++)
-		for(y = 0; y < map->map_height; y++)
+	for(x = 0; x < map->width; x++)
+		for(y = 0; y < map->height; y++)
 			if(GetRTerrain(map, x, y) == ICE)
 				if(Number(1, 100) <= num && meltable(map, x, y)) {
 					break_sub(map, NULL, x, y,
@@ -184,8 +184,8 @@ void ice_melt(dbref player, MAP * map, int num)
 					SetTerrain(map, x, y, TMP_TERR);
 					count++;
 				}
-	for(x = 0; x < map->map_width; x++)
-		for(y = 0; y < map->map_height; y++)
+	for(x = 0; x < map->width; x++)
+		for(y = 0; y < map->height; y++)
 			if(GetRTerrain(map, x, y) == TMP_TERR)
 				SetTerrain(map, x, y, WATER);
 	if(count)

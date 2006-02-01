@@ -236,9 +236,9 @@ static int ai_crash(MAP * map, MECH * m, LOC * l)
 	l->ly = l->y;
 	RealCoordToMapCoord(&l->x, &l->y, l->fx, l->fy);
 	/* Ensure we don't run off map */
-	if(BOUNDED(0, l->x, map->map_width - 1) != l->x)
+	if(BOUNDED(0, l->x, map->width - 1) != l->x)
 		return 1;
-	if(BOUNDED(0, l->y, map->map_height - 1) != l->y)
+	if(BOUNDED(0, l->y, map->height - 1) != l->y)
 		return 1;
 	if(l->lx != l->x || l->ly != l->y) {
 		int oz = l->e;
@@ -1157,7 +1157,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 
 			/* Make sure the hex is sane */
 			if(map_x2 < 0 || map_y2 < 0 ||
-			   map_x2 >= map->map_width || map_y2 >= map->map_height)
+			   map_x2 >= map->width || map_y2 >= map->height)
 				continue;
 
 			/* Generate hexoffset for the child node */

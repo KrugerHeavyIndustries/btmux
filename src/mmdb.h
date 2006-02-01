@@ -2,7 +2,7 @@
  * db_rw.h
  */
 #ifndef __MMDB_H__
-
+#define __MMDB_H__
 #include "copyright.h"
 
 struct mmdb_t {
@@ -21,7 +21,9 @@ void *mmdb_read(struct mmdb_t *, void *dest, int length);
 void mmdb_write(struct mmdb_t *, void *data, int length);
 
 void mmdb_write_opaque(struct mmdb_t *, void *data, int length);
+void mmdb_read_opaque(struct mmdb_t *, void *dest, int max);
 void mmdb_write_string(struct mmdb_t *, char *data);
+char *mmdb_read_string(struct mmdb_t *);
 
 void mmdb_write_uint(struct mmdb_t *, unsigned int); /* Deprecated */
 unsigned int mmdb_read_uint(struct mmdb_t *); /* Deprecated */

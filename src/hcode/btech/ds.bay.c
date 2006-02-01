@@ -303,8 +303,8 @@ static void DS_Place(MECH * ds, MECH * mech, int frombay)
 	i = Find_DS_Bay_Dir(ds, i);
 	nx = dirs[(DSBearMod(ds) + i) % 6][0] + MechX(ds);
 	ny = dirs[(DSBearMod(ds) + i) % 6][1] + MechY(ds) + KLUDGE(MechX(ds), nx);
-	nx = BOUNDED(0, nx, mech_map->map_width - 1);
-	ny = BOUNDED(0, ny, mech_map->map_height - 1);
+	nx = BOUNDED(0, nx, mech_map->width - 1);
+	ny = BOUNDED(0, ny, mech_map->height - 1);
 
 	/* snippage from mech_Rsetxy */
 	MechX(mech) = nx;

@@ -107,8 +107,8 @@ void map_view(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 2);
 	switch (argc) {
 	case 2:
-		x = BOUNDED(0, atoi(args[0]), mech_map->map_width - 1);
-		y = BOUNDED(0, atoi(args[1]), mech_map->map_height - 1);
+		x = BOUNDED(0, atoi(args[0]), mech_map->width - 1);
+		y = BOUNDED(0, atoi(args[1]), mech_map->height - 1);
 		break;
 	default:
 		notify(player, "Invalid number of parameters!");
@@ -136,10 +136,10 @@ void map_view(dbref player, void *data, char *buffer)
 	}
 
 	/* Everything worked but lets check the map size */
-	displayHeight = (displayHeight <= mech_map->map_height)
-		? displayHeight : mech_map->map_height;
-	displayWidth = (displayWidth <= mech_map->map_width)
-		? displayWidth : mech_map->map_width;
+	displayHeight = (displayHeight <= mech_map->height)
+		? displayHeight : mech_map->height;
+	displayWidth = (displayWidth <= mech_map->width)
+		? displayWidth : mech_map->width;
 
 	/* Get the map data */
 	maptext = MakeMapText(player, NULL, mech_map, x, y, displayWidth,
@@ -164,8 +164,8 @@ void map_addhex(dbref player, void *data, char *buffer)
 	x = atoi(args[0]);
 	y = atoi(args[1]);
 	elev = abs(atoi(args[3]));
-	DOCHECK(!((x >= 0) && (x < map->map_width) && (y >= 0) &&
-			  (y < map->map_height)), "X,Y out of range!");
+	DOCHECK(!((x >= 0) && (x < map->width) && (y >= 0) &&
+			  (y < map->height)), "X,Y out of range!");
 	if(args[2][0] == '.')
 		SetTerrain(map, x, y, ' ');
 	else
@@ -202,8 +202,8 @@ int water_distance(MAP * map, int x, int y, int dir, int max)
 		y = y + dirs[dir][1];
 		if(!x && dirs[dir][0])
 			y--;
-		x2 = BOUNDED(0, x, map->map_width - 1);
-		y2 = BOUNDED(0, y, map->map_height - 1);
+		x2 = BOUNDED(0, x, map->width - 1);
+		y2 = BOUNDED(0, y, map->height - 1);
 		if(x != x2 || y != y2)
 			return max;
 		if(GetTerrain(map, x, y) == WATER || GetTerrain(map, x, y) == ICE)
@@ -234,8 +234,8 @@ static void make_bridges(MAP * map)
 {
 	int x, y;
 
-	for(x = 0; x < map->map_width; x++)
-		for(y = 0; y < map->map_height; y++)
+	for(x = 0; x < map->width; x++)
+		for(y = 0; y < map->height; y++)
 			if(GetTerrain(map, x, y) == ROAD)
 				if(eligible_bridge_hex(map, x, y))
 					SetTerrainBase(map, x, y, BRIDGE);
@@ -243,87 +243,107 @@ static void make_bridges(MAP * map)
 
 int map_load(MAP * map, char *mapname)
 {
-	char openfile[50];
-	char terr, elev;
-	int i1, i2, i3;
-	FILE *fp;
-	char row[MAPX * 2 + 3];
-	int i, j = 0, height, width, filemode;
+    char openfile[50];
+    char terr, elev;
+    int i1, i2, i3;
+    FILE *fp;
+    char row[MAPX * 2 + 3];
+    int i, j = 0, height, width, filemode;
 
-	if(strlen(mapname) >= MAP_NAME_SIZE)
-		mapname[MAP_NAME_SIZE] = 0;
-	sprintf(openfile, "%s/%s", MAP_PATH, mapname);
-	fp = my_open_file(openfile, "r", &filemode);
-	if(!fp) {
-		return -1;
-	}
-	del_mapobjs(map);			/* Just in case */
-	if(map->map) {
-		for(i = 0; i < map->map_height; i++)
-			free((char *) (map->map[i]));
-		free((char *) (map->map));
-	}
-	if(fscanf(fp, "%d %d\n", &height, &width) != 2 || height < 1 ||
-	   height > MAPY || width < 1 || width > MAPX) {
-		SendError(tprintf("Map #%d: Invalid height and/or width",
-						  map->mynum));
-		width = DEFAULT_MAP_WIDTH;
-		height = DEFAULT_MAP_HEIGHT;
-	}
-	Create(map->map, unsigned char *, height);
+    if (strlen(mapname) >= MAP_NAME_SIZE)
+        mapname[MAP_NAME_SIZE] = 0;
 
-	for(i = 0; i < height; i++)
-		Create(map->map[i], unsigned char, width);
+    sprintf(openfile, "%s/%s", MAP_PATH, mapname);
+    fp = my_open_file(openfile, "r", &filemode);
 
-	for(i = 0; i < height; i++) {
-		if(feof(fp)
-		   || fgets(row, 2 * MAPX + 2, fp) == NULL ||
-		   strlen(row) < (2 * width)) {
-			break;
-		}
-		for(j = 0; j < width; j++) {
-			terr = row[2 * j];
-			elev = row[2 * j + 1] - '0';
-			switch (terr) {
-			case FIRE:
-				map->flags |= MAPFLAG_FIRES;
-				break;
-			case TFIRE:
-			case SMOKE:
-			case '.':
-				terr = GRASSLAND;
-				break;
-			case '\'':
-				terr = LIGHT_FOREST;
-				break;
-			}
-			if(!strcmp(GetTerrainName_base(terr), "Unknown")) {
-				SendError(tprintf
-						  ("Map #%d: Invalid terrain at %d,%d: '%c'",
-						   map->mynum, j, i, terr));
-				terr = GRASSLAND;
-			}
-			SetMap(map, j, i, terr, elev);
-		}
-	}
-	if(i != height) {
-		SendError(tprintf("Error: EOF reached prematurely. "
-						  "(x%d != %d || y%d != %d)", j, width, i, height));
-		my_close_file(fp, &filemode);
-		return -2;
-	}
-	map->grav = 100;
+    if (!fp) {
+        return -1;
+    }
+
+    del_mapobjs(map);			/* Just in case */
+
+    if (map->map) {
+        for (i = 0; i < map->height; i++)
+            free((char *) (map->map[i]));
+        free((char *) (map->map));
+    }
+
+    /* Uses the map's new hex struct */
+    if (map->hexes) {
+        free(map->hexes);
+    }
+
+    if (fscanf(fp, "%d %d\n", &height, &width) != 2 || height < 1 ||
+            height > MAPY || width < 1 || width > MAPX) {
+        SendError(tprintf("Map #%d: Invalid height and/or width",
+                    map->mynum));
+        width = DEFAULT_MAP_WIDTH;
+        height = DEFAULT_MAP_HEIGHT;
+    }
+    Create(map->map, unsigned char *, height);
+
+    /* New map system that uses a single array to do what used to be
+     * done with a 2-D array */
+    map->hexes = (hex *) malloc(sizeof(hex) * height * width);
+
+    for (i = 0; i < height; i++) {
+        Create(map->map[i], unsigned char, width);
+    }
+
+    for (i = 0; i < height; i++) {
+        if (feof(fp)
+                || fgets(row, 2 * MAPX + 2, fp) == NULL ||
+                strlen(row) < (2 * width)) {
+            break;
+        }
+        for (j = 0; j < width; j++) {
+            terr = row[2 * j];
+            elev = row[2 * j + 1] - '0';
+            switch (terr) {
+                case FIRE:
+                    map->flags |= MAPFLAG_FIRES;
+                    break;
+                case TFIRE:
+                case SMOKE:
+                case '.':
+                    terr = GRASSLAND;
+                    break;
+                case '\'':
+                    terr = LIGHT_FOREST;
+                    break;
+            }
+            if (!strcmp(GetTerrainName_base(terr), "Unknown")) {
+                SendError(tprintf
+                        ("Map #%d: Invalid terrain at %d,%d: '%c'",
+                         map->mynum, j, i, terr));
+                terr = GRASSLAND;
+            }
+            SetMap(map, j, i, terr, elev);
+
+            map->hexes[j + i * map->width].terrain = terr;
+            map->hexes[j + i * map->width].elevation = elev;
+            map->hexes[j + i * map->width].flags = 0;
+
+        }
+    }
+    if (i != height) {
+        SendError(tprintf("Error: EOF reached prematurely. "
+                    "(x%d != %d || y%d != %d)", j, width, i, height));
+        my_close_file(fp, &filemode);
+        return -2;
+    }
+    map->grav = 100;
 	map->temp = 20;
-	if(!feof(fp)) {
-		if(fscanf(fp, "%d: %d %d\n", &i1, &i2, &i3) == 3) {
+	if (!feof(fp)) {
+		if (fscanf(fp, "%d: %d %d\n", &i1, &i2, &i3) == 3) {
 			map->flags = i1;
 			map->grav = i2;
 			map->temp = i3;
 		}
 	}
-	map->map_height = height;
-	map->map_width = width;
-	if(!MapNoBridgify(map))
+	map->height = height;
+	map->width = width;
+	if (!MapNoBridgify(map))
 		make_bridges(map);
 	sprintf(map->mapname, mapname);
 	my_close_file(fp, &filemode);
@@ -392,12 +412,12 @@ void map_savemap(dbref player, void *data, char *buffer)
 	DOCHECK(!(fp =
 			  my_open_file(openfile, "w", &filemode)),
 			"Unable to open the map file!");
-	fprintf(fp, "%d %d\n", map->map_height, map->map_width);
-	for(i = 0; i < map->map_height; i++) {
+	fprintf(fp, "%d %d\n", map->height, map->width);
+	for(i = 0; i < map->height; i++) {
 		mapobj *mo;
 
 		row[0] = 0;
-		for(j = 0; j < map->map_width; j++) {
+		for(j = 0; j < map->width; j++) {
 			terrain = GetTerrain(map, j, i);
 			switch (terrain) {
 			case ' ':
@@ -442,51 +462,83 @@ void map_savemap(dbref player, void *data, char *buffer)
 
 void map_setmapsize(dbref player, void *data, char *buffer)
 {
-	MAP *oldmap;
-	unsigned char **map;
-	int x, y, i, j, failed = 0, argc, x1, y1;
-	char *args[4];
+    MAP *oldmap;
+    unsigned char **map;
+    hex *hexes;
+    int i, j, argc;
+    int new_height, new_width;
+    int height, width;
+    char *args[4];
 
-	oldmap = (MAP *) data;
-	if(!CheckData(player, oldmap))
-		return;
-	DOCHECK(oldmap->mapobj[TYPE_BITS], "Invalid map for size change, sorry.");
-	DOCHECK((argc =
-			 mech_parseattributes(buffer, args, 4)) != 2,
-			"Invalid number of arguments (X/Y expected)");
-	x = atoi(args[0]);
-	y = atoi(args[1]);
-	DOCHECK(!((x >= 0) && (x <= MAPX) && (y >= 0) &&
-			  (y <= MAPY)), "X,Y out of range!");
-	/* allocate new map space */
-	Create(map, unsigned char *, y);
-	for(i = 0; i < y; i++)
-		Create(map[i], unsigned char, x);
+    oldmap = (MAP *) data;
 
-	if(failed)
-		SendError("Memory allocation failed in setmapsize!");
-	else {
-		/* Initialize the hexes in the new map to blank */
-		for(i = 0; i < y; i++)
-			for(j = 0; j < x; j++)
-				SetMapB(map, j, i, ' ', 0);
-		/* Copy old map into new map */
-		x1 = (oldmap->map_width < x) ? oldmap->map_width : x;
-		y1 = (oldmap->map_height < y) ? oldmap->map_height : y;
-		for(i = 0; i < y1; i++)
-			for(j = 0; j < x1; j++)
-				SetMapB(map, j, i, GetTerrain(oldmap, j, i),
-						GetElevation(oldmap, j, i));
-		/* Now free the old map */
-		for(i = oldmap->map_height - 1; i >= 0; i--)
-			free((char *) (oldmap->map[i]));
-		del_mapobjs(oldmap);
-		/* set new map size and pointer to new map space */
-		oldmap->map_height = y;
-		oldmap->map_width = x;
-		oldmap->map = map;
-		notify(player, "Size set.");
-	}
+    if (!CheckData(player, oldmap))
+        return;
+
+    DOCHECK(oldmap->mapobj[TYPE_BITS], "Invalid map for size change, sorry.");
+
+    DOCHECK((argc =
+                mech_parseattributes(buffer, args, 4)) != 2,
+            "Invalid number of arguments (X/Y expected)");
+
+    new_width = atoi(args[0]);
+    new_height = atoi(args[1]);
+
+    DOCHECK(!((new_width >= 0) && (new_width <= MAPX) && (new_height >= 0) &&
+                (new_height <= MAPY)), "X,Y out of range!");
+
+    /* allocate new map space */
+    Create(map, unsigned char *, new_height);
+
+    for (i = 0; i < new_height; i++)
+        Create(map[i], unsigned char, new_width);
+
+    /* New map system */
+    hexes = (hex *) malloc(sizeof(hex) * new_height * new_width);
+
+    /* Initialize the hexes in the new map to blank */
+    for (i = 0; i < new_height; i++) {
+        for (j = 0; j < new_width; j++) {
+            SetMapB(map, j, i, ' ', 0);
+            hexes[j + i * new_height].terrain = GRASSLAND;
+            hexes[j + i * new_height].elevation = 0;
+            hexes[j + i * new_height].flags = 0;
+        }
+    }
+
+    /* Copy old map into new map */
+    width = (oldmap->width < new_width) ? oldmap->width : new_width;
+    height = (oldmap->height < new_height) ? oldmap->height : new_height;
+
+    for (i = 0; i < height; i++) {
+        for (j = 0; j < width; j++) {
+            SetMapB(map, j, i, GetTerrain(oldmap, j, i),
+                    GetElevation(oldmap, j, i));
+            hexes[j + i * new_height].terrain = 
+                oldmap->hexes[j + i * oldmap->height].terrain;
+            hexes[j + i * new_height].elevation = 
+                oldmap->hexes[j + i * oldmap->height].elevation;
+            hexes[j + i * new_height].flags = 
+                oldmap->hexes[j + i * oldmap->height].flags;
+        }
+    }
+
+    /* Now free the old map */
+    for (i = oldmap->height - 1; i >= 0; i--)
+        free((char *) (oldmap->map[i]));
+
+    free(oldmap->hexes);
+
+    del_mapobjs(oldmap);
+
+    /* set new map size and pointer to new map space */
+    oldmap->height = new_height;
+    oldmap->width = new_width;
+    oldmap->map = map;
+    oldmap->hexes = hexes;
+
+    notify(player, "Size set.");
+
 }
 
 void map_clearmechs(dbref player, void *data, char *buffer)
@@ -559,16 +611,27 @@ void initialize_map_empty(MAP * new, dbref key)
 
     new->mynum = key;
 
-	new->map_width = DEFAULT_MAP_WIDTH;
-	new->map_height = DEFAULT_MAP_HEIGHT;
-	Create(new->map, unsigned char *, new->map_height);
+	new->width = DEFAULT_MAP_WIDTH;
+	new->height = DEFAULT_MAP_HEIGHT;
 
-	for(i = 0; i < new->map_height; i++)
-		Create(new->map[i], unsigned char, new->map_width);
+	Create(new->map, unsigned char *, new->height);
 
-	for(i = 0; i < new->map_height; i++)
-		for(j = 0; j < new->map_width; j++)
+	for(i = 0; i < new->height; i++) {
+		Create(new->map[i], unsigned char, new->width);
+    }
+
+    /* New map system that uses a single array to do what used to be done
+     * with a 2-D array */
+    new->hexes = (hex *) malloc(sizeof(hex) * new->height * new->width);
+
+	for(i = 0; i < new->height; i++) {
+		for(j = 0; j < new->width; j++) {
 			SetMap(new, j, i, ' ', 0);
+            new->hexes[j + i * new->height].terrain = GRASSLAND;
+            new->hexes[j + i * new->height].elevation = 0;
+            new->hexes[j + i * new->height].flags = 0;
+        }
+    }
 }
 
 /* Mem alloc/free routines */
@@ -592,12 +655,17 @@ void newfreemap(dbref key, void **data, int selector)
             del_mapobjs(new);
             if(new->map) {
 
-                for(i = new->map_height - 1; i >= 0; i--)
+                for(i = new->height - 1; i >= 0; i--)
                     if(new->map[i])
                         free((char *) (new->map[i]));
 
                 free((char *) (new->map));
             }
+
+            if (new->hexes) {
+                free(new->hexes);
+            }
+
             break;
     }
 }

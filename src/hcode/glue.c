@@ -525,6 +525,8 @@ static void load_xcode()
 	int filemode;
 
 	initialize_colorize();
+
+#if 0
 	fprintf(stderr, "LOADING: %s\n", mudconf.hcode_db);
 	f = my_open_file(mudconf.hcode_db, "r", &filemode);
 	if(!f) {
@@ -553,6 +555,7 @@ static void load_xcode()
 
 	my_close_file(f, &filemode);
 	fprintf(stderr, "LOADING: %s (done)\n", mudconf.hcode_db);
+#endif
 #ifdef BT_ADVANCED_ECON
 	load_econdb();
 #endif
@@ -603,8 +606,8 @@ void LoadSpecialObjects(void)
     /* Initialize the parts list */
     initialize_partname_tables();
 
-    for(i = 0; MissileHitTable[i].key != -1; i++) {
-        if(find_matching_vlong_part(MissileHitTable[i].name, NULL, &id, &brand))
+    for (i = 0; MissileHitTable[i].key != -1; i++) {
+        if (find_matching_vlong_part(MissileHitTable[i].name, NULL, &id, &brand))
             MissileHitTable[i].key = Weapon2I(id);
         else
             MissileHitTable[i].key = -2;
@@ -616,11 +619,11 @@ void LoadSpecialObjects(void)
     /* Loop through the entire database, and if it has the special */
     /* object flag, add it to our linked list. Later on we will load
      * data from the hcode.db (if it exists) */
-    for(i = 0; i < mudstate.db_top; i++)
-        if(Hardcode(i) && !Going(i) && !Halted(i)) {
+    for (i = 0; i < mudstate.db_top; i++)
+        if (Hardcode(i) && !Going(i) && !Halted(i)) {
             type = WhichSpecialFromAttr(i);
             if(type >= 0) {
-                if(SpecialObjects[type].datasize > 0)
+                if (SpecialObjects[type].datasize > 0)
                     tmpdat = NewSpecialObject(i, type);
                 else
                     tmpdat = NULL;
@@ -629,9 +632,9 @@ void LoadSpecialObjects(void)
         }
 
     /* Setup the Special Objs table and command hash */
-    for(i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
+    for (i = 0; i < NUM_SPECIAL_OBJECTS; i++) {
         InitSpecialHash(i);
-        if(!SpecialObjects[i].updatefunc)
+        if (!SpecialObjects[i].updatefunc)
             SpecialObjects[i].updateTime = 0;
     }
 
@@ -641,7 +644,7 @@ void LoadSpecialObjects(void)
     load_xcode();
 
     /* This is a hack and needs to go */
-    zap_unneccessary_hcode();
+    //zap_unneccessary_hcode();
 }
 
 static FILE *global_file_kludge;
@@ -790,7 +793,8 @@ struct hcode_xdr_struct {
 };
 
 /* Save MECH */
-static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
+static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr)
+{
 
     int i, j;
 
@@ -1030,7 +1034,8 @@ static int SaveMechObject(int key, MECH *mech, struct mmdb_t *hcode_xdr) {
 }
 
 /* Save MECHREP */
-static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr) {
+static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr)
+{
 
     mmdb_write_uint32(hcode_xdr, XCDB_MECHREP_MAGIC);
 
@@ -1041,17 +1046,59 @@ static int SaveMechrepObject(int key, MECHREP *mechrep, struct mmdb_t *hcode_xdr
 }
 
 /* Save MAP */
-static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr) {
+static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr)
+{
+
+    int i, j;
 
     mmdb_write_uint32(hcode_xdr, XCDB_MAP_MAGIC);
 
     mmdb_write_uint32(hcode_xdr, map->mynum);
 
+    mmdb_write_uint32(hcode_xdr, map->height);
+    for (i = 0; i < map->height; i++) {
+        mmdb_write_uint32(hcode_xdr, map->width);
+        for (j = 0; j < map->width; j++) {
+            mmdb_write_uint8(hcode_xdr, map->map[i][j]);
+        }
+    }
+
+    mmdb_write_opaque(hcode_xdr, map->mapname, MAP_NAME_SIZE + 1);
+
+    mmdb_write_uint32(hcode_xdr, map->width);
+    mmdb_write_uint32(hcode_xdr, map->height);
+
+    mmdb_write_uint32(hcode_xdr, map->temp);
+    mmdb_write_uint32(hcode_xdr, map->grav);
+    mmdb_write_uint32(hcode_xdr, map->cloudbase);
+    mmdb_write_uint32(hcode_xdr, map->mapvis);
+    mmdb_write_uint32(hcode_xdr, map->maxvis);
+    mmdb_write_uint32(hcode_xdr, map->maplight);
+    mmdb_write_uint32(hcode_xdr, map->winddir);
+    mmdb_write_uint32(hcode_xdr, map->windspeed);
+
+    mmdb_write_uint32(hcode_xdr, map->flags);
+
+    mmdb_write_uint32(hcode_xdr, map->cf);
+    mmdb_write_uint32(hcode_xdr, map->cfmax);
+    mmdb_write_uint32(hcode_xdr, map->onmap);
+    mmdb_write_uint32(hcode_xdr, map->buildflag);
+
+    mmdb_write_uint32(hcode_xdr, map->first_free);
+
+    mmdb_write_uint32(hcode_xdr, map->moves);
+    mmdb_write_uint32(hcode_xdr, map->movemod);
+    mmdb_write_uint32(hcode_xdr, map->sensorflags);
+
+    /* Mapobjs */
+    mmdb_write_uint32(hcode_xdr, NUM_MAPOBJTYPES);
+
     return 1;
 }
 
 /* Save AUTOPILOT */
-static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xdr) {
+static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xdr)
+{
 
     mmdb_write_uint32(hcode_xdr, XCDB_AUTO_MAGIC);
 
@@ -1059,14 +1106,16 @@ static int SaveAutopilotObject(int key, AUTO *autopilot, struct mmdb_t *hcode_xd
 }
 
 /* Save TURRET */
-static int SaveTurretObject(int key, TURRET_T *turret, struct mmdb_t *hcode_xdr) {
+static int SaveTurretObject(int key, TURRET_T *turret, struct mmdb_t *hcode_xdr)
+{
 
     mmdb_write_uint32(hcode_xdr, XCDB_TURRET_MAGIC);
 
     return 1;
 }
 
-static int SaveSpecialObjects_func(void *key, void *data, int depth, void *arg) {
+static int SaveSpecialObjects_func(void *key, void *data, int depth, void *arg)
+{
 
     XcodeObject *xcode_object = (XcodeObject *) data;
     struct hcode_xdr_struct *info = (struct hcode_xdr_struct *) arg;
@@ -1452,7 +1501,7 @@ void DumpMaps(dbref player)
 				if(map->mechsOnMap[j] != -1)
 					count++;
 			sprintf(buff, "#%5d    %-17.17s %3d x%3d       %d", map->mynum,
-					map->mapname, map->map_width, map->map_height, count);
+					map->mapname, map->width, map->height, count);
 			notify(player, buff);
 		}
 	notify(player, "Done listing");

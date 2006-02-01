@@ -1124,10 +1124,10 @@ void auto_roam_event(MUXEVENT * e)
 												&& abs(MechSpeed(mech)) <
 												0.5)) {
 		while (i) {
-			tx = BOUNDED(1, Number(20, map->map_width - 21),
-						 map->map_width - 1);
-			ty = BOUNDED(1, Number(20, map->map_height - 21),
-						 map->map_height - 1);
+			tx = BOUNDED(1, Number(20, map->width - 21),
+						 map->width - 1);
+			ty = BOUNDED(1, Number(20, map->height - 21),
+						 map->height - 1);
 			MapCoordToRealCoord(tx, ty, &dx, &dy);
 			t = GetRTerrain(map, tx, ty);
 			range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech),
@@ -1447,7 +1447,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 		free(argument);
 
         /* Boundaries */
-        if (tx < 0 || ty < 0 || tx >= map->map_width || ty >= map->map_width) {
+        if (tx < 0 || ty < 0 || tx >= map->width || ty >= map->width) {
 
             /* Bad location to go to */
             snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
@@ -1706,7 +1706,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 	/* Make sure the hex is sane - if not set the target hex to the target's
 	 * hex */
-	if(x < 0 || y < 0 || x >= map->map_width || y >= map->map_height) {
+	if(x < 0 || y < 0 || x >= map->width || y >= map->height) {
 
 		/* Reset the hex to the Target's current hex */
 		x = MechX(target);
@@ -2504,8 +2504,8 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 			/* Check to make sure the hexes are inside the map and the distance
 			 * is not beyond our limit */
 			if(anchor_hex_x < 0 || anchor_hex_y < 0 ||
-			   anchor_hex_x >= map->map_width ||
-			   anchor_hex_y >= map->map_height ||
+			   anchor_hex_x >= map->width ||
+			   anchor_hex_y >= map->height ||
 			   anchor_distance > AUTO_ROAM_MAX_RADIUS) {
 
 				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
@@ -2633,7 +2633,7 @@ void auto_roam_generate_target_hex(AUTO * autopilot, MECH * mech, MAP * map,
 
 		/* Make sure the hex is sane */
 		if(target_hex_x < 0 || target_hex_y < 0 ||
-		   target_hex_x >= map->map_width || target_hex_y >= map->map_height)
+		   target_hex_x >= map->width || target_hex_y >= map->height)
 			continue;
 
 		switch (GetTerrain(map, target_hex_x, target_hex_y)) {

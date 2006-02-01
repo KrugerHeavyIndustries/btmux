@@ -654,8 +654,8 @@ int FireWeaponNumber(dbref player,
 		mapx = atoi(args[1]);
 		mapy = atoi(args[2]);
 		ishex = 1;
-		DOCHECK0(mapx < 0 || mapx >= mech_map->map_width || mapy < 0 ||
-				 mapy >= mech_map->map_height,
+		DOCHECK0(mapx < 0 || mapx >= mech_map->width || mapy < 0 ||
+				 mapy >= mech_map->height,
 				 "Map coordinates out of range!");
 
 		if(!sight && !IsArtillery(weaptype))

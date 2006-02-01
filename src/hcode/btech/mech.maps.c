@@ -213,7 +213,7 @@ void mech_navigate(dbref player, void *data, char *buffer)
 	dolos = MapIsDark(mech_map) || (MechType(mech) == CLASS_MW &&
 									mudconf.btech_mw_losmap);
 
-	DOCHECK(mech_map->map_width <= 0 || mech_map->map_height <= 0,
+	DOCHECK(mech_map->width <= 0 || mech_map->height <= 0,
 			"Nothing to see on this map, move along.");
 
 	argc = mech_parseattributes(buffer, args, 3);
@@ -522,8 +522,8 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 	b_width = x - LRS_DISPLAY_WIDTH / 2;
 	b_width = MAX(b_width, 0);
 	e_width = b_width + LRS_DISPLAY_WIDTH;
-	if(e_width >= map->map_width) {
-		e_width = map->map_width - 1;
+	if(e_width >= map->width) {
+		e_width = map->width - 1;
 		b_width = e_width - LRS_DISPLAY_WIDTH;
 		b_width = MAX(b_width, 0);
 	}
@@ -534,8 +534,8 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 	b_height = y - displayHeight / 2;
 	b_height = MAX(b_height, 0);
 	e_height = b_height + displayHeight;
-	if(e_height > map->map_height) {
-		e_height = map->map_height;
+	if(e_height > map->height) {
+		e_height = map->height;
 		b_height = e_height - displayHeight;
 		b_height = MAX(b_height, 0);
 	}
@@ -697,7 +697,7 @@ void mech_lrsmap(dbref player, void *data, char *buffer)
 	}
 
 	displayHeight = MIN(displayHeight, 2 * MechLRSRange(mech));
-	displayHeight = MIN(displayHeight, map->map_height);
+	displayHeight = MIN(displayHeight, map->height);
 
 	if(!(displayHeight % 2))
 		displayHeight++;
@@ -787,8 +787,8 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 	 * Now draw the terrain and elevation. 
 	 */
 	pos = buf + top_offset * dispcols + left_offset;
-	wx = MIN(wx, map->map_width - sx);
-	wy = MIN(wy, map->map_height - sy);
+	wx = MIN(wx, map->width - sx);
+	wy = MIN(wy, map->height - sy);
 
 	if(dohexlos)
 		losmap = CalculateLOSMap(map, mech, MAX(0, sx), MAX(0, sy), wx, wy);
@@ -1036,8 +1036,8 @@ static void sketch_tac_cliffs(char *buf, MAP * map, int sx, int sy, int wx,
 	int y, x;
 	int oddcol1 = is_oddcol(sx);
 
-	wx = MIN(wx, map->map_width - sx);
-	wy = MIN(wy, map->map_height - sy);
+	wx = MIN(wx, map->width - sx);
+	wy = MIN(wy, map->height - sy);
 	for(y = MAX(0, -sy); y < wy; y++) {
 		int ty = sy + y;
 
@@ -1099,8 +1099,8 @@ static void sketch_tac_dslz(char *buf, MAP * map, MECH * mech, int sx,
 	int y, x;
 	int oddcol1 = is_oddcol(sx);
 
-	wx = MIN(wx, map->map_width - sx);
-	wy = MIN(wy, map->map_height - sy);
+	wx = MIN(wx, map->width - sx);
+	wy = MIN(wy, map->height - sy);
 	for(y = MAX(0, -sy); y < wy; y++) {
 		int ty = sy + y;
 
@@ -1341,10 +1341,10 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 		/*
 		 * Only allow navigate maps to include off map hexes.
 		 */
-		sx = MAX(0, MIN(sx, map->map_width - wx));
-		sy = MAX(0, MIN(sy, map->map_height - wy));
-		wx = MIN(wx, map->map_width);
-		wy = MIN(wy, map->map_height);
+		sx = MAX(0, MIN(sx, map->width - wx));
+		sy = MAX(0, MIN(sy, map->height - wy));
+		wx = MIN(wx, map->width);
+		wy = MIN(wy, map->height);
 	}
 
 	mapcols = tac_dispcols(wx);
@@ -1598,10 +1598,10 @@ void mech_tacmap(dbref player, void *data, char *buffer)
 	displayWidth = (displayWidth <= 2 * MechTacRange(mech)
 					? displayWidth : 2 * MechTacRange(mech));
 
-	displayHeight = (displayHeight <= mech_map->map_height)
-		? displayHeight : mech_map->map_height;
-	displayWidth = (displayWidth <= mech_map->map_width)
-		? displayWidth : mech_map->map_width;
+	displayHeight = (displayHeight <= mech_map->height)
+		? displayHeight : mech_map->height;
+	displayWidth = (displayWidth <= mech_map->width)
+		? displayWidth : mech_map->width;
 
 	set_colorscheme(player);
 

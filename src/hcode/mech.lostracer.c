@@ -157,11 +157,11 @@ do { found_coords[found_count].x = store_x; \
 while (0)
 
 #define Store_BestOf(x1,y1,x2,y2) \
-if ( ((x1) < 0) || ((x1) >= map->map_width) || \
-     ((y1) < 0) || ((y1) >= map->map_height) ) \
+if ( ((x1) < 0) || ((x1) >= map->width) || \
+     ((y1) < 0) || ((y1) >= map->height) ) \
     { Store_Hex((x2), (y2)); } \
-else if ( ((x2) < 0) || ((x2) >= map->map_width) || \
-          ((y2) < 0) || ((y2) >= map->map_height) ) \
+else if ( ((x2) < 0) || ((x2) >= map->width) || \
+          ((y2) < 0) || ((y2) >= map->height) ) \
        { Store_Hex((x1), (y1)); }\
 else if ((Elevation(map,(x1),(y1))) > (Elevation(map, (x2), (y2)))) \
     { Store_Hex((x1),(y1)); } \

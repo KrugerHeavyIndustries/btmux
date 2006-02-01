@@ -77,8 +77,8 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 #endif
 
 	/* A Hex target off the map? Don't bother */
-	if(!target && ((x < 0 || y < 0 || x >= map->map_width ||
-					y >= map->map_height)))
+	if(!target && ((x < 0 || y < 0 || x >= map->width ||
+					y >= map->height)))
 		return new_flag + MECHLOSFLAG_BLOCK;
 
 	/* Outside max sensor range in the worst case? Don't bother. */
@@ -162,8 +162,8 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 #ifndef BT_PARTIAL
 			partial_z += p_z_inc;
 #endif
-			if(coords[i].x < 0 || coords[i].x >= map->map_width ||
-			   coords[i].y < 0 || coords[i].y >= map->map_height)
+			if(coords[i].x < 0 || coords[i].x >= map->width ||
+			   coords[i].y < 0 || coords[i].y >= map->height)
 				continue;
 			/* Should be possible to see into water.. perhaps. But not
 			   on vislight */
@@ -325,7 +325,7 @@ int InLineOfSight(MECH * mech, MECH * target, int x, int y, float hexRange)
 		mech->mapindex = -1;
 		return 0;
 	}
-	if(x < 0 || y < 0 || y >= map->map_height || x >= map->map_width) {
+	if(x < 0 || y < 0 || y >= map->height || x >= map->width) {
 		SendError(tprintf("x:%d y:%d out of bounds for #%d (LOS check)", x,
 						  y, mech ? mech->mynum : -1));
 	}

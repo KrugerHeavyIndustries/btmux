@@ -408,7 +408,7 @@ void auto_radio_command_goto(AUTO * autopilot, MECH * mech,
 
     map = getMap(mech->mapindex);
 
-    if (x < 0 || y < 0 || x >= map->map_width || y >= map->map_height) {
+    if (x < 0 || y < 0 || x >= map->width || y >= map->height) {
         snprintf(mesg, LBUF_SIZE, "!Bad hex to travel to");
         return;
     }

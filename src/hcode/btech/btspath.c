@@ -16,8 +16,8 @@
 
 extern MAP *spath_map;
 
-#define XSIZE spath_map->map_width
-#define YSIZE spath_map->map_height
+#define XSIZE spath_map->width
+#define YSIZE spath_map->height
 
 extern int (*TileCost) (int fx, int fy, int tx, int ty);
 

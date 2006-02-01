@@ -211,7 +211,7 @@ void simulate_flight(MECH * mech, MAP * map, int *x, int *y, float t)
 		fy = fx + dely;
 		fz = (float) fz - GMOD;
 		RealCoordToMapCoord(&tx, &ty, fx, fy);
-		if(tx < 0 || ty < 0 || tx >= map->map_width || ty >= map->map_height)
+		if(tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
 			continue;
 		if(Elevation(map, tx, ty) > (fz / ZSCALE)) {
 			*x = tx;
@@ -269,7 +269,7 @@ void bomb_drop(MECH * mech, int player, int bn)
 		y = y + ob * sin(dir);
 	}
 	simulate_flight(mech, map, &x, &y, t);
-	if(x < 0 || y < 0 || x >= map->map_width || y >= map->map_height)
+	if(x < 0 || y < 0 || x >= map->width || y >= map->height)
 		return;
 	SetPartType(mech, lloc, lpos, 0);
 	Create(s, bomb_shot, 1);

@@ -15,6 +15,7 @@ struct bque {
     dbref cause;        /* player causing command (for %N) */
     dbref sem;          /* blocking semaphore */
     int waittime;       /* time to run command */
+    int queuetime;
     int attr;           /* blocking attribute */
     char *text;         /* buffer for comm, env, and scr text */
     char *comm;         /* command */

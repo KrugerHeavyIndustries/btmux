@@ -508,8 +508,8 @@ void mech_bearing(dbref player, void *data, char *buffer)
 			/* Bearing to X, Y */
 			ix1 = atoi(args[0]);
 			iy1 = atoi(args[1]);
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 iy1 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 iy1 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
@@ -522,10 +522,10 @@ void mech_bearing(dbref player, void *data, char *buffer)
 			ix1 = atoi(args[2]);
 			iy1 = atoi(args[3]);
 
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 y1 < mech_map->map_height && ix0 >= 0 &&
-				 ix0 <= mech_map->map_width && iy0 >= 0 &&
-				 iy0 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 y1 < mech_map->height && ix0 >= 0 &&
+				 ix0 <= mech_map->width && iy0 >= 0 &&
+				 iy0 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
@@ -597,8 +597,8 @@ void mech_range(dbref player, void *data, char *buffer)
 			/* Range to X, Y */
 			ix1 = atoi(args[0]);
 			iy1 = atoi(args[1]);
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 iy1 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 iy1 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
@@ -616,10 +616,10 @@ void mech_range(dbref player, void *data, char *buffer)
 			ix1 = atoi(args[2]);
 			iy1 = atoi(args[3]);
 
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 iy1 < mech_map->map_height && ix0 >= 0 &&
-				 ix0 <= mech_map->map_width && iy0 >= 0 &&
-				 iy0 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 iy1 < mech_map->height && ix0 >= 0 &&
+				 ix0 <= mech_map->width && iy0 >= 0 &&
+				 iy0 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
@@ -701,8 +701,8 @@ void mech_vector(dbref player, void *data, char *buffer)
 			/* Range to X, Y */
 			ix1 = atoi(args[0]);
 			iy1 = atoi(args[1]);
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 iy1 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 iy1 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
@@ -715,8 +715,8 @@ void mech_vector(dbref player, void *data, char *buffer)
 			ix1 = atoi(args[0]);
 			iy1 = atoi(args[1]);
 			iz1 = atoi(args[2]);
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 iy1 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 iy1 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
@@ -731,10 +731,10 @@ void mech_vector(dbref player, void *data, char *buffer)
 			ix1 = atoi(args[2]);
 			iy1 = atoi(args[3]);
 
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 y1 < mech_map->map_height && ix0 >= 0 &&
-				 ix0 <= mech_map->map_width && iy0 >= 0 &&
-				 iy0 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 y1 < mech_map->height && ix0 >= 0 &&
+				 ix0 <= mech_map->width && iy0 >= 0 &&
+				 iy0 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
@@ -753,10 +753,10 @@ void mech_vector(dbref player, void *data, char *buffer)
 			iy1 = atoi(args[4]);
 			iz1 = atoi(args[5]);
 
-			if(!(ix1 >= 0 && ix1 < mech_map->map_width && iy1 >= 0 &&
-				 y1 < mech_map->map_height && ix0 >= 0 &&
-				 ix0 <= mech_map->map_width && iy0 >= 0 &&
-				 iy0 < mech_map->map_height)) {
+			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
+				 y1 < mech_map->height && ix0 >= 0 &&
+				 ix0 <= mech_map->width && iy0 >= 0 &&
+				 iy0 < mech_map->height)) {
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {

@@ -263,35 +263,35 @@ void CheckEdgeOfMap(MECH * mech)
 	/* Eventually this could wrap and all that.. */
 	if(MechX(mech) < 0) {
 		if(linked) {
-			MechX(mech) += map->map_width;
+			MechX(mech) += map->width;
 			pinned = -1;
 		} else {
 			MechX(mech) = 0;
 			pinned = 4;
 		}
-	} else if(MechX(mech) >= map->map_width) {
+	} else if(MechX(mech) >= map->width) {
 		if(linked) {
-			MechX(mech) -= map->map_width;
+			MechX(mech) -= map->width;
 			pinned = -1;
 		} else {
-			MechX(mech) = map->map_width - 1;
+			MechX(mech) = map->width - 1;
 			pinned = 2;
 		}
 	}
 	if(MechY(mech) < 0) {
 		if(linked) {
 			pinned = -1;
-			MechY(mech) += map->map_height;
+			MechY(mech) += map->height;
 		} else {
 			MechY(mech) = 0;
 			pinned = 1;
 		}
-	} else if(MechY(mech) >= map->map_height) {
+	} else if(MechY(mech) >= map->height) {
 		if(linked) {
 			pinned = -1;
-			MechY(mech) -= map->map_height;
+			MechY(mech) -= map->height;
 		} else {
-			MechY(mech) = map->map_height - 1;
+			MechY(mech) = map->height - 1;
 			pinned = 3;
 		}
 	}
@@ -2516,7 +2516,7 @@ void visit_neighbor_hexes(MAP * map, int tx, int ty,
 		y1 = ty + dirs[i][1];
 		if(tx % 2 && !(x1 % 2))
 			y1--;
-		if(x1 < 0 || x1 >= map->map_width || y1 < 0 || y1 >= map->map_height)
+		if(x1 < 0 || x1 >= map->width || y1 < 0 || y1 >= map->height)
 			continue;
 		callback(map, x1, y1);
 	}

@@ -224,8 +224,8 @@ void DS_BlastNearbyMechsAndTrees(MECH * mech, char *hitmsg, char *hitmsg1,
 
 	for(x1 = x - rng; x1 <= (x + rng); x1++)
 		for(y1 = y - rng; y1 <= (y + rng); y1++) {
-			x2 = BOUNDED(0, x1, map->map_width - 1);
-			y2 = BOUNDED(0, y1, map->map_height - 1);
+			x2 = BOUNDED(0, x1, map->width - 1);
+			y2 = BOUNDED(0, y1, map->height - 1);
 			if(x1 != x2 || y1 != y2)
 				continue;
 			if((d = MyHexDist(x, y, x1, y1, 0)) > rng)

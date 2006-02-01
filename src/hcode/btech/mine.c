@@ -312,8 +312,8 @@ static void add_mine_on_map(MAP * map, int x, int y, char type, int data)
 			for(x1 = x - mdis; x1 <= (x + mdis); x1++)
 				for(y1 = y - mdis; y1 <= (y + mdis); y1++)
 					if((abs(x1 - x) + abs(y1 - y)) <= t)
-						if(!(x1 < 0 || y1 < 0 || x1 >= map->map_width ||
-							 y1 >= map->map_height))
+						if(!(x1 < 0 || y1 < 0 || x1 >= map->width ||
+							 y1 >= map->height))
 							set_hex_mine(map, x1, y1);
 		} else {
 			set_hex_mine(map, x, y);
@@ -358,8 +358,8 @@ void map_add_mine(dbref player, void *data, char *buffer)
 
 	DOCHECK((type = compare_array(mine_type_names, args[2])) < 0,
 			"Invalid mine type!");
-	DOCHECK(!((x >= 0) && (x < map->map_width) && (y >= 0) &&
-			  (y < map->map_height)), "X,Y out of range!");
+	DOCHECK(!((x >= 0) && (x < map->width) && (y >= 0) &&
+			  (y < map->height)), "X,Y out of range!");
 
 	bzero(&foo, sizeof(foo));
 	foo.x = x;

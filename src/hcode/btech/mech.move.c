@@ -1212,7 +1212,7 @@ void mech_jump(dbref player, void *data, char *buffer)
 		RealCoordToMapCoord(&mapx, &mapy, realx, realy);
 		break;
 	}
-	DOCHECK(mapx >= mech_map->map_width || mapy >= mech_map->map_height ||
+	DOCHECK(mapx >= mech_map->width || mapy >= mech_map->height ||
 			mapx < 0 || mapy < 0, "That would take you off the map!");
 	DOCHECK(MechX(mech) == mapx &&
 			MechY(mech) == mapy, "You're already in the target hex.");

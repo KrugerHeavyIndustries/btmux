@@ -1033,6 +1033,7 @@ void do_restart(dbref player, dbref cause, int key)
 	} dump_database_internal(DUMP_RESTART);
 
 	dump_restart_db();
+    dump_restart_db_xdr();
 	execl(mudstate.executable_path, mudstate.executable_path,
 		  mudconf.config_file, NULL);
 }

@@ -200,10 +200,10 @@ void move_mech(MECH * mech)
 	}
 
 	/* Is the unit on a valid spot on the map */
-	if(MechX(mech) < 0 || MechX(mech) >= mech_map->map_width ||
-	   MechLastX(mech) < 0 || MechLastX(mech) >= mech_map->map_width ||
-	   MechY(mech) < 0 || MechY(mech) >= mech_map->map_height ||
-	   MechLastY(mech) < 0 || MechLastY(mech) >= mech_map->map_height) {
+	if(MechX(mech) < 0 || MechX(mech) >= mech_map->width ||
+	   MechLastX(mech) < 0 || MechLastX(mech) >= mech_map->width ||
+	   MechY(mech) < 0 || MechY(mech) >= mech_map->height ||
+	   MechLastY(mech) < 0 || MechLastY(mech) >= mech_map->height) {
 
 		mech_notify(mech, MECHALL,
 					"You are at an invalid map location! Map index reset!");

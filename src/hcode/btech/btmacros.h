@@ -539,15 +539,37 @@ MechStatus(a) &= ~LOCK_MODES
           MechZ(a) = MechElev(a); \
       MechFZ(a) = ZSCALE * MechZ(a); } while (0)
 
+#if 0
 #define GetTerrain(mapn,x,y)     Coding_GetTerrain(mapn->map[y][x])
+#endif
+#if 1
+#define GetTerrain(map, x, y)       map->hexes[x + y * map->width].terrain
+#endif
+
 #define GetRTerrain(map,x,y)      ((GetTerrain(map,x,y)==FIRE || GetTerrain(map,x,y)==SMOKE) ? map_underlying_terrain(map,x,y) : GetTerrain(map,x,y))
+
+#if 0
 #define GetElevation(mapn,x,y)   Coding_GetElevation(mapn->map[y][x])
+#endif
+#if 1
+#define GetElevation(map, x, y)     map->hexes[x + y * map->width].elevation
+#endif
+
 #define GetElev(mapn,x,y)        GetElevation(mapn,x,y)
 #define SetMap(mapn,x,y,t,e)     mapn->map[y][x] = Coding_GetIndex(t,e)
 #define SetMapB(mapn,x,y,t,e)    mapn[y][x] = Coding_GetIndex(t,e)
+
+#if 0
 #define SetTerrain(mapn,x,y,t)   do {SetMap(mapn,x,y,t,GetElevation(mapn,x,y));UpdateMechsTerrain(mapn,x,y,t); } while (0)
 #define SetTerrainBase(mapn,x,y,t) SetMap(mapn,x,y,t,GetElevation(mapn,x,y))
 #define SetElevation(mapn,x,y,e) SetMap(mapn,x,y,GetTerrain(mapn,x,y),e)
+#endif
+#if 1
+#define SetTerrain(map, x, y, t)    do {map->hexes[x + y * map->width].terrain = t; \
+                                        UpdateMechsTerrain(map, x, y, t); } while (0)
+#define SetTerrainBase(map, x, y, t)    map->hexes[x + y * map->width].terrain = t;
+#define SetElevation(map, x, y, e)      map->hexes[x + y * map->width].elevation = e;
+#endif
 
 /* For now I don't care about allocations */
 #define ScenError(msg...)        send_channel("ScenErrors",msg)
@@ -634,8 +656,8 @@ do {	 MechFX(to) = MechFX(from); \
 
 
 #define ValidCoordA(mech_map,newx,newy,msg) \
-DOCHECK(newx < 0 || newx >= mech_map->map_width || \
-	newy < 0 || newy >= mech_map->map_height, \
+DOCHECK(newx < 0 || newx >= mech_map->width || \
+	newy < 0 || newy >= mech_map->height, \
 	msg)
 #define ValidCoord(mech_map,newx,newy) \
         ValidCoordA(mech_map,newx, newy, "Illegal coordinates!")

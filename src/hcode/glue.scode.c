@@ -486,11 +486,11 @@ static GMV xcode_data[] = {
 	MaEntry("cfmax", cfmax, TYPE_SHORT),
 	MaEntry("gravity", grav, TYPE_CHAR),
 	MaEntry("firstfree", first_free, TYPE_CHAR_RO),
-	MaEntry("mapheight", map_height, TYPE_SHORT_RO),
+	MaEntry("mapheight", height, TYPE_SHORT_RO),
 	MaEntry("maplight", maplight, TYPE_CHAR),
 	MaEntryS("mapname", mapname, TYPE_STRING, 30),
 	MaEntry("mapvis", mapvis, TYPE_CHAR),
-	MaEntry("mapwidth", map_width, TYPE_SHORT_RO),
+	MaEntry("mapwidth", width, TYPE_SHORT_RO),
 	MaEntry("maxvis", maxvis, TYPE_SHORT),
 	MaEntry("temperature", temp, TYPE_CHAR),
 	MaEntry("winddir", winddir, TYPE_SHORT),
@@ -860,8 +860,8 @@ void fun_btmapterr(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!(map = FindObjectsData(it)), "#-1");
 	FUNCHECK(Readnum(x, fargs[1]), "#-2");
 	FUNCHECK(Readnum(y, fargs[2]), "#-2");
-	FUNCHECK(x < 0 || y < 0 || x >= map->map_width ||
-			 y >= map->map_height, "?");
+	FUNCHECK(x < 0 || y < 0 || x >= map->width ||
+			 y >= map->height, "?");
 	terr = GetTerrain(map, x, y);
 	if(terr == GRASSLAND)
 		terr = '.';
@@ -889,8 +889,8 @@ void fun_btmapelev(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!(map = FindObjectsData(it)), "#-1");
 	FUNCHECK(Readnum(x, fargs[1]), "#-2");
 	FUNCHECK(Readnum(y, fargs[2]), "#-2");
-	FUNCHECK(x < 0 || y < 0 || x >= map->map_width
-			 || y >= map->map_height, "?");
+	FUNCHECK(x < 0 || y < 0 || x >= map->width
+			 || y >= map->height, "?");
 	i = Elevation(map, x, y);
 	if(i < 0)
 		safe_tprintf_str(buff, bufc, "-%c", '0' + -i);
@@ -1165,7 +1165,7 @@ void fun_bthexemit(char *buff, char **bufc, dbref player, dbref cause,
 
 	x = atoi(fargs[1]);
 	y = atoi(fargs[2]);
-	FUNCHECK(x < 0 || x > map->map_width || y < 0 || y > map->map_height,
+	FUNCHECK(x < 0 || x > map->width || y < 0 || y > map->height,
 			 "#-1 INVALID COORDINATES");
 	HexLOSBroadcast(map, x, y, msg);
 	safe_tprintf_str(buff, bufc, "1");
@@ -1262,7 +1262,7 @@ void fun_bthexlos(char *buff, char **bufc, dbref player, dbref cause,
 
 	x = atoi(fargs[1]);
 	y = atoi(fargs[2]);
-	FUNCHECK(x < 0 || x > map->map_width || y < 0 || y > map->map_height,
+	FUNCHECK(x < 0 || x > map->width || y < 0 || y > map->height,
 			 "#-1 INVALID COORDINATES");
 	MapCoordToRealCoord(x, y, &fx, &fy);
 	if(InLineOfSight_NB(mech, NULL, x, y,
@@ -1609,8 +1609,8 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 		FUNCHECK(!IsMech(mechAdb), "#-1 INVALID MECH");
 		FUNCHECK(!(mechA = getMech(mechAdb)), "#-1 INVALID MECH");
 		FUNCHECK(mechA->mapindex != mapdb, "#-1 MECH NOT ON MAP");
-		FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-				 || yA > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xA < 0 || yA < 0 || xA > map->width
+				 || yA > map->height, "#-1 INVALID COORDS");
 		MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 		safe_tprintf_str(buff, bufc, "%f",
 						 FindRange(MechFX(mechA), MechFY(mechA),
@@ -1645,8 +1645,8 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 			FUNCHECK(!IsMech(mechAdb), "#-1 INVALID MECH");
 			FUNCHECK(!(mechA = getMech(mechAdb)), "#-1 INVALID MECH");
 			FUNCHECK(mechA->mapindex != mapdb, "#-1 MECH NOT ON MAP");
-			FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-					 || yA > map->map_height, "#-1 INVALID COORDS");
+			FUNCHECK(xA < 0 || yA < 0 || xA > map->width
+					 || yA > map->height, "#-1 INVALID COORDS");
 			MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 			safe_tprintf_str(buff, bufc, "%f",
 							 FindRange(MechFX(mechA), MechFY(mechA),
@@ -1658,14 +1658,14 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 		xA = atoi(fargs[1]);
 		FUNCHECK(strspn(fargs[2], NUMBERS) < 1, "#-1 INVALID COORDS");
 		yA = atoi(fargs[2]);
-		FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-				 || yA > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xA < 0 || yA < 0 || xA > map->width
+				 || yA > map->height, "#-1 INVALID COORDS");
 		FUNCHECK(strspn(fargs[3], NUMBERS) < 1, "#-1 INVALID COORDS");
 		xB = atoi(fargs[3]);
 		FUNCHECK(strspn(fargs[4], NUMBERS) < 1, "#-1 INVALID COORDS");
 		yB = atoi(fargs[4]);
-		FUNCHECK(xB < 0 || yB < 0 || xB > map->map_width
-				 || yB > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xB < 0 || yB < 0 || xB > map->width
+				 || yB > map->height, "#-1 INVALID COORDS");
 		MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 		MapCoordToRealCoord(xB, yB, &fxB, &fyB);
 		safe_tprintf_str(buff, bufc, "%f",
@@ -2027,8 +2027,8 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
 
 	x = atoi(fargs[2]);
 	y = atoi(fargs[3]);
-	FUNCHECK(x < 0 || x > map->map_width, "#-1 X COORD");
-	FUNCHECK(y < 0 || y > map->map_height, "#-1 Y COORD");
+	FUNCHECK(x < 0 || x > map->width, "#-1 X COORD");
+	FUNCHECK(y < 0 || y > map->height, "#-1 Y COORD");
 
 	if(nfargs == 5) {
 		z = atoi(fargs[4]);
@@ -2095,8 +2095,8 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
 		x = atof(fargs[1]);
 		y = atof(fargs[2]);
 		range = atof(fargs[3]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
+		FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
+		FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
 		FUNCHECK(range < 0, "#-1 INVALID RANGE");
 		MapCoordToRealCoord(x, y, &realX, &realY);
 		for(loop = 0; loop < map->first_free; loop++) {
@@ -2114,8 +2114,8 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
 		y = atof(fargs[2]);
 		z = atof(fargs[3]);
 		range = atof(fargs[4]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
+		FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
+		FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
 		FUNCHECK(range < 0, "#-1 INVALID RANGE");
 		MapCoordToRealCoord(x, y, &realX, &realY);
 		for(loop = 0; loop < map->first_free; loop++) {
@@ -2188,8 +2188,8 @@ void fun_btmapemit(char *buff, char **bufc, dbref player, dbref cause,
 		x = atof(fargs[1]);
 		y = atof(fargs[2]);
 		range = atof(fargs[3]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 ILLEGAL X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 ILLEGAL Y COORD");
+		FUNCHECK(x < 0 || x > map->width, "#-1 ILLEGAL X COORD");
+		FUNCHECK(y < 0 || y > map->height, "#-1 ILLEGAL Y COORD");
 		FUNCHECK(range < 0, "#-1 ILLEGAL RANGE");
 		FUNCHECK(!fargs[4] || !*fargs[4], "#-1 INVALID MESSAGE");
 		MapCoordToRealCoord(x, y, &realX, &realY);
@@ -2202,8 +2202,8 @@ void fun_btmapemit(char *buff, char **bufc, dbref player, dbref cause,
 		y = atof(fargs[2]);
 		z = atof(fargs[3]);
 		range = atof(fargs[4]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 ILLEGAL X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 ILLEGAL Y COORD");
+		FUNCHECK(x < 0 || x > map->width, "#-1 ILLEGAL X COORD");
+		FUNCHECK(y < 0 || y > map->height, "#-1 ILLEGAL Y COORD");
 		FUNCHECK(z < 0 || z > 100000, "#-1 ILLEGAL Z COORD");	// XXX: Is this accurate?
 		FUNCHECK(range < 0, "#-1 ILLEGAL RANGE");
 		FUNCHECK(!fargs[5] || !*fargs[5], "#-1 INVALID MESSAGE");
@@ -2376,8 +2376,8 @@ void fun_bthexinblz(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!(map = getMap(mapdb)), "#-1 INVALID MAP");
 	x = atoi(fargs[1]);
 	y = atoi(fargs[2]);
-	FUNCHECK(x < 0 || y < 0 || x > map->map_width
-			 || y > map->map_height, "#-1 INVALID COORDS");
+	FUNCHECK(x < 0 || y < 0 || x > map->width
+			 || y > map->height, "#-1 INVALID COORDS");
 	MapCoordToRealCoord(x, y, &fx, &fy);
 
 	for(o = first_mapobj(map, TYPE_B_LZ); o; o = next_mapobj(o)) {

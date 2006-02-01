@@ -2209,8 +2209,8 @@ void auto_gun_event(MUXEVENT * muxevent)
 					RealCoordToMapCoord(&x, &y, fx, fy);
 
 					/* Make sure the hex is sane */
-					if(x < 0 || y < 0 || x >= map->map_width
-					   || y >= map->map_height) {
+					if(x < 0 || y < 0 || x >= map->width
+					   || y >= map->height) {
 
 						/* Bad Target Hex */
 

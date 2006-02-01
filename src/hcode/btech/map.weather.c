@@ -249,8 +249,8 @@ void growSnow(MAP * map, int lowDepth, int highDepth)
 	if((lowDepth < 0) || (highDepth < 0))
 		sign = -1;
 
-	for(i = 0; i < map->map_width; i++) {
-		for(j = 0; j < map->map_height; j++) {
+	for(i = 0; i < map->width; i++) {
+		for(j = 0; j < map->height; j++) {
 			terrain = GetHexTerrain(map, i, j);
 
 			switch (terrain) {

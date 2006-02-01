@@ -1151,13 +1151,13 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 	}
 
 	height = MIN(height, 2 * MechLRSRange(mech));
-	height = MIN(height, map->map_height);
+	height = MIN(height, map->height);
 
 	sy = MAX(0, cy - height / 2);
-	ey = MIN(map->map_height, cy + height / 2);
+	ey = MIN(map->height, cy + height / 2);
 
 	sx = MAX(0, cx - LRS_DISPLAY_WIDTH / 2);
-	ex = MIN(map->map_width, cx + LRS_DISPLAY_WIDTH / 2);
+	ex = MIN(map->width, cx + LRS_DISPLAY_WIDTH / 2);
 
 	if(lostactical || MapIsDark(map) || (MechType(mech) == CLASS_MW &&
 										 mudconf.btech_mw_losmap))
@@ -1173,7 +1173,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 	};
 
 	sprintf(result, "%d,%d,%d,%d,%s,%s,-1,%d,%d", sx, sy, ex - 1, ey - 1,
-			mapid, mapname, map->map_width, map->map_height);
+			mapid, mapname, map->width, map->height);
 	hudinfo_notify(d, msgclass, "S", result);
 
 	for(y = sy; y < ey; y++) {
