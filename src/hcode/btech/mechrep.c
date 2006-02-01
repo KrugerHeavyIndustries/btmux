@@ -1057,6 +1057,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 
 		if(argc > 3)
 			switch (toupper(args[3][0])) {
+			case '+':
+				MechSections(mech)[index].criticals[subsect].firemode |=
+					HALFTON_MODE;
+				break;
 			case 'W':
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					SWARM_MODE;
