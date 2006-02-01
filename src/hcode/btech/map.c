@@ -285,10 +285,13 @@ int map_load(MAP * map, char *mapname)
     /* New map system that uses a single array to do what used to be
      * done with a 2-D array */
     map->hexes = (hex *) malloc(sizeof(hex) * height * width);
+    memset(map->hexes, 0, sizeof(hex) * height * width);
 
     for (i = 0; i < height; i++) {
         Create(map->map[i], unsigned char, width);
     }
+
+    dprintk("Loading map: %s\n", mapname);
 
     for (i = 0; i < height; i++) {
         if (feof(fp)
@@ -320,10 +323,15 @@ int map_load(MAP * map, char *mapname)
             }
             SetMap(map, j, i, terr, elev);
 
-            map->hexes[j + i * map->width].terrain = terr;
-            map->hexes[j + i * map->width].elevation = elev;
-            map->hexes[j + i * map->width].flags = 0;
+            map->hexes[j + i * width].terrain = (int) terr;
+            map->hexes[j + i * width].elevation = elev;
+            map->hexes[j + i * width].flags = 0;
 
+            dprintk("Hex: %d, %d\tTerr: %c (%d)\tElev: %d\n",
+                    j, i,
+                    (char) map->hexes[j + i * width].terrain,
+                    map->hexes[j + i * width].terrain,
+                    map->hexes[j + i * width].elevation);
         }
     }
     if (i != height) {
@@ -495,14 +503,15 @@ void map_setmapsize(dbref player, void *data, char *buffer)
 
     /* New map system */
     hexes = (hex *) malloc(sizeof(hex) * new_height * new_width);
+    memset(hexes, 0, sizeof(hex) * new_height * new_width);
 
     /* Initialize the hexes in the new map to blank */
     for (i = 0; i < new_height; i++) {
         for (j = 0; j < new_width; j++) {
             SetMapB(map, j, i, ' ', 0);
-            hexes[j + i * new_height].terrain = GRASSLAND;
-            hexes[j + i * new_height].elevation = 0;
-            hexes[j + i * new_height].flags = 0;
+            hexes[j + i * new_width].terrain = (int) GRASSLAND;
+            hexes[j + i * new_width].elevation = 0;
+            hexes[j + i * new_width].flags = 0;
         }
     }
 
@@ -514,12 +523,12 @@ void map_setmapsize(dbref player, void *data, char *buffer)
         for (j = 0; j < width; j++) {
             SetMapB(map, j, i, GetTerrain(oldmap, j, i),
                     GetElevation(oldmap, j, i));
-            hexes[j + i * new_height].terrain = 
-                oldmap->hexes[j + i * oldmap->height].terrain;
-            hexes[j + i * new_height].elevation = 
-                oldmap->hexes[j + i * oldmap->height].elevation;
-            hexes[j + i * new_height].flags = 
-                oldmap->hexes[j + i * oldmap->height].flags;
+            hexes[j + i * new_width].terrain = 
+                oldmap->hexes[j + i * oldmap->width].terrain;
+            hexes[j + i * new_width].elevation = 
+                oldmap->hexes[j + i * oldmap->width].elevation;
+            hexes[j + i * new_width].flags = 
+                oldmap->hexes[j + i * oldmap->width].flags;
         }
     }
 
@@ -623,13 +632,14 @@ void initialize_map_empty(MAP * new, dbref key)
     /* New map system that uses a single array to do what used to be done
      * with a 2-D array */
     new->hexes = (hex *) malloc(sizeof(hex) * new->height * new->width);
+    memset(new->hexes, 0, sizeof(hex) * new->height * new->width);
 
 	for(i = 0; i < new->height; i++) {
 		for(j = 0; j < new->width; j++) {
 			SetMap(new, j, i, ' ', 0);
-            new->hexes[j + i * new->height].terrain = GRASSLAND;
-            new->hexes[j + i * new->height].elevation = 0;
-            new->hexes[j + i * new->height].flags = 0;
+            new->hexes[j + i * new->width].terrain = (int) GRASSLAND;
+            new->hexes[j + i * new->width].elevation = 0;
+            new->hexes[j + i * new->width].flags = 0;
         }
     }
 }
