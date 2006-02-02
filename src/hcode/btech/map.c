@@ -291,8 +291,6 @@ int map_load(MAP * map, char *mapname)
         Create(map->map[i], unsigned char, width);
     }
 
-    dprintk("Loading map: %s\n", mapname);
-
     for (i = 0; i < height; i++) {
         if (feof(fp)
                 || fgets(row, 2 * MAPX + 2, fp) == NULL ||
@@ -327,11 +325,6 @@ int map_load(MAP * map, char *mapname)
             map->hexes[j + i * width].elevation = elev;
             map->hexes[j + i * width].flags = 0;
 
-            dprintk("Hex: %d, %d\tTerr: %c (%d)\tElev: %d\n",
-                    j, i,
-                    (char) map->hexes[j + i * width].terrain,
-                    map->hexes[j + i * width].terrain,
-                    map->hexes[j + i * width].elevation);
         }
     }
     if (i != height) {

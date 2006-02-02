@@ -543,7 +543,7 @@ MechStatus(a) &= ~LOCK_MODES
 #define GetTerrain(mapn,x,y)     Coding_GetTerrain(mapn->map[y][x])
 #endif
 #if 1
-#define GetTerrain(map, x, y)       map->hexes[x + y * map->width].terrain
+#define GetTerrain(map, x, y)       map->hexes[(x) + (y) * map->width].terrain
 #endif
 
 #define GetRTerrain(map,x,y)      ((GetTerrain(map,x,y)==FIRE || GetTerrain(map,x,y)==SMOKE) ? map_underlying_terrain(map,x,y) : GetTerrain(map,x,y))
@@ -552,7 +552,7 @@ MechStatus(a) &= ~LOCK_MODES
 #define GetElevation(mapn,x,y)   Coding_GetElevation(mapn->map[y][x])
 #endif
 #if 1
-#define GetElevation(map, x, y)     map->hexes[x + y * map->width].elevation
+#define GetElevation(map, x, y)     map->hexes[(x) + (y) * map->width].elevation
 #endif
 
 #define GetElev(mapn,x,y)        GetElevation(mapn,x,y)
@@ -565,10 +565,10 @@ MechStatus(a) &= ~LOCK_MODES
 #define SetElevation(mapn,x,y,e) SetMap(mapn,x,y,GetTerrain(mapn,x,y),e)
 #endif
 #if 1
-#define SetTerrain(map, x, y, t)    do {map->hexes[x + y * map->width].terrain = t; \
+#define SetTerrain(map, x, y, t)    do {map->hexes[(x) + (y) * map->width].terrain = t; \
                                         UpdateMechsTerrain(map, x, y, t); } while (0)
-#define SetTerrainBase(map, x, y, t)    map->hexes[x + y * map->width].terrain = t;
-#define SetElevation(map, x, y, e)      map->hexes[x + y * map->width].elevation = e;
+#define SetTerrainBase(map, x, y, t)    map->hexes[(x) + (y) * map->width].terrain = t;
+#define SetElevation(map, x, y, e)      map->hexes[(x) + (y) * map->width].elevation = e;
 #endif
 
 /* For now I don't care about allocations */
