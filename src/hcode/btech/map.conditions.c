@@ -287,10 +287,10 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 			tDoAutoFall = 1;
 			StopStand(wounded);
 		}
-		if(tNormalizeAllCrits)
+
 			NormalizeAllActuatorCrits(wounded);
-		else if(tNormalizeLocCrits)
-			NormalizeLocActuatorCrits(wounded, hitloc);
+
+
 		if(tIsLeg && !Fallen(wounded) && !Jumping(wounded) &&
 		   !OODing(wounded) && attacker) {
 			if(tDoAutoFall) {

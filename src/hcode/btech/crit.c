@@ -135,7 +135,7 @@ void NormalizeLocActuatorCrits(MECH * objMech, int wLoc)
 
 	if(!MechIsQuad(objMech) && ((wLoc == LARM) || (wLoc == RARM)))
 		tIsArm = 1;
-
+	
 	/* reset the BTHs for this section */
 	MechSections(objMech)[wLoc].basetohit = 0;
 
@@ -207,7 +207,7 @@ void NormalizeAllActuatorCrits(MECH * objMech)
 
 	/* reset us back to zero */
 	MechPilotSkillBase(objMech) = 0;
-
+        
 	/*
 	   Get our max template speed. We'll get this by mutiplying the engine size by the tonnage.
 	   Pretty damn lame that we don't store the mech's max speed in the mech struct. We'll reset
@@ -2018,7 +2018,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			if(tLocIsArm) {
 				mech_notify(wounded, MECHALL,
 							"Your shoulder joint takes a hit and is frozen!");
-				NormalizeLocActuatorCrits(wounded, hitloc);
+				NormalizeAllActuatorCrits(wounded);
 			} else if(tLocIsLeg) {
 				if(!Destroyed(wounded) && Started(wounded)) {
 					sprintf(msgbuf, "'s hip locks into place!");
@@ -2068,7 +2068,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				   (MechSections(mech)[hitloc].specials & CARRYING_CLUB))
 					DropClub(mech);
 
-				NormalizeLocActuatorCrits(wounded, hitloc);
+				NormalizeAllActuatorCrits(wounded);
 			} else if(tLocIsLeg) {
 				mech_notify(wounded, MECHALL,
 							"One of your leg actuators is destroyed!!");
