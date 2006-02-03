@@ -1,5 +1,5 @@
 /*
- * sqlchild.c
+ * dnschild.c
  *
  * Copyright (c) 2004,2005 Martin Murray <mmurray@monkey.org>
  * All rights reserved.

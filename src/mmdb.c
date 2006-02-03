@@ -50,7 +50,7 @@ struct mmdb_t *mmdb_open_read(char *filename)
 	mmdb->fd = fd;
 	mmdb->length = (statbuf.st_size + 0x3FF) & ~(0x3FF);
 	mmdb->base =
-		mmap(NULL, mmdb->length, PROT_READ, MAP_SHARED | MAP_POPULATE,
+		mmap(NULL, mmdb->length, PROT_READ, MAP_SHARED,
 			 mmdb->fd, 0);
 	if(!mmdb->base) {
         close(mmdb->fd);

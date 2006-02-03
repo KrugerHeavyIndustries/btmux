@@ -11,7 +11,6 @@
 
 #include "db.h"
 #include "mudconf.h"
-#include "regexp.h"
 #include "interface.h"
 #include "mmdb.h"
 
@@ -28,13 +27,6 @@
 #define ToUpper(C)	(((C) >= 'a' && (C) <= 'z')? (C) - 'a' + 'A': (C))
 #define ToLower(C)	(((C) >= 'A' && (C) <= 'Z')? (C) - 'A' + 'a': (C))
 #define safe_atoi(s)	((s == NULL) ? 0 : atoi(s))
-
-/* From regexp.c (extract from Henry Spencer's package) */
-
-regexp *regcomp(char *);
-int regexec(register regexp *, register char *);
-void regerror(char *);
-extern char *regexp_errbuf[];
 
 /* From conf.c */
 int cf_modify_bits(int *, char *, long, dbref, char *);

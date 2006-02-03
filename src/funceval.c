@@ -7,6 +7,7 @@
 
 #include <limits.h>
 #include <math.h>
+#include <regex.h>
 
 #include "mudconf.h"
 #include "config.h"
@@ -22,6 +23,8 @@
 #include "alloc.h"
 #include "ansi.h"
 #include "comsys.h"
+
+#define NSUBEXP 10
 
 /*
  * Note: Many functions in this file have been taken, whole or in part, from
@@ -3315,25 +3318,35 @@ void fun_regmatch(char *buff, char **bufc, dbref player, dbref cause,
 {
 	int i, nqregs, curq, len;
 	char *qregs[10];
-	int matchnum;
-	regexp *re;
+	regex_t re;
+	int errcode;
+	static char errbuf[LINE_MAX];
+	int got_match;
+	regmatch_t pmatch[NSUBEXP];
 
 	if(!fn_range_check("REGMATCH", nfargs, 2, 3, buff, bufc))
 		return;
 
-	if((re = regcomp(fargs[1])) == NULL) {
+	if((errcode = regcomp(&re, fargs[1], REG_EXTENDED)) != 0) {
 		/* Matching error. */
-		notify_quiet(player, (const char *) regexp_errbuf);
+		regerror(errcode, &re, errbuf, LINE_MAX);
+		notify_quiet(player, errbuf);
 		safe_chr('0', buff, bufc);
 		return;
 	}
 
-	matchnum = regexec(re, fargs[0]);
-	safe_tprintf_str(buff, bufc, "%d", matchnum);
+	got_match = (regexec(&re, fargs[0], NSUBEXP, pmatch, 0) == 0);
+	if(got_match) {
+		if(re.re_nsub > 0)
+			safe_tprintf_str(buff, bufc, "%d", re.re_nsub);
+		else
+			safe_tprintf_str(buff, bufc, "1");
+	} else
+		safe_tprintf_str(buff, bufc, "0");
 
 	/* If we don't have a third argument, we're done. */
 	if(nfargs != 3) {
-		free(re);
+		regfree(&re);
 		return;
 	}
 
@@ -3352,20 +3365,19 @@ void fun_regmatch(char *buff, char **bufc, dbref player, dbref cause,
 		if(!mudstate.global_regs[curq])
 			mudstate.global_regs[curq] = alloc_lbuf("fun_regmatch");
 
-		if(!matchnum || !re->startp[i] || !re->endp[i]) {
+		if(!got_match || pmatch[i].rm_so == -1 || pmatch[i].rm_eo == -1) {
 			mudstate.global_regs[curq][0] = '\0';
 			continue;
 		}
-		len = re->endp[i] - re->startp[i];
+		len = pmatch[i].rm_eo - pmatch[i].rm_so;
 		if(len < 0)
 			len = 0;
 		if(len >= LBUF_SIZE)
 			len = LBUF_SIZE - 1;
-		strncpy(mudstate.global_regs[curq], re->startp[i], len);
+		strncpy(mudstate.global_regs[curq], fargs[0] + pmatch[i].rm_so, len);
 		mudstate.global_regs[curq][len] = '\0';	/* must null-terminate */
 	}
-
-	free(re);
+	regfree(&re);
 }
 
 /* ---------------------------------------------------------------------------

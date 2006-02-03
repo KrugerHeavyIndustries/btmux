@@ -70,7 +70,6 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/powers.o      \
                  src/predicates.o  \
                  src/python.o      \
-                 src/regexp.o      \
 				 src/rbtree.o	   \
                  src/rbtab.o	   \
 				 src/rob.o         \
