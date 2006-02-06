@@ -1195,7 +1195,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 				*p++ = '?';
 
 			if(losflag & MAPLOSHEX_SEEELEV)
-				*p++ = GetElev(map, x, y) + '0';
+				*p++ = GetElevation(map, x, y) + '0';
 			else
 				*p++ = '?';
 		}

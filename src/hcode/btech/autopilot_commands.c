@@ -1131,7 +1131,7 @@ void auto_roam_event(MUXEVENT * e)
 			MapCoordToRealCoord(tx, ty, &dx, &dy);
 			t = GetRTerrain(map, tx, ty);
 			range = FindRange(MechFX(mech), MechFY(mech), MechFZ(mech),
-							  dx, dy, ZSCALE * GetElev(map, tx, ty));
+							  dx, dy, ZSCALE * GetElevation(map, tx, ty));
 			if((InLineOfSight(mech, NULL, tx, ty, range) &&
 				t != WATER && t != HIGHWATER && t != MOUNTAINS) || i > 5000) {
 				i = 0;

@@ -33,6 +33,12 @@
 #include "p.spath.h"
 #include "p.debug.h"
 
+/* Compare function used for rbtree(s) in map */
+int map_rbtree_compare(int left, int right, void *arg)
+{
+    return (right - left);
+}
+
 void debug_fixmap(dbref player, void *data, char *buffer)
 {
 	MAP *m = (MAP *) data;
@@ -262,12 +268,6 @@ int map_load(MAP * map, char *mapname)
 
     del_mapobjs(map);			/* Just in case */
 
-    if (map->map) {
-        for (i = 0; i < map->height; i++)
-            free((char *) (map->map[i]));
-        free((char *) (map->map));
-    }
-
     /* Uses the map's new hex struct */
     if (map->hexes) {
         free(map->hexes);
@@ -280,16 +280,11 @@ int map_load(MAP * map, char *mapname)
         width = DEFAULT_MAP_WIDTH;
         height = DEFAULT_MAP_HEIGHT;
     }
-    Create(map->map, unsigned char *, height);
 
     /* New map system that uses a single array to do what used to be
      * done with a 2-D array */
     map->hexes = (hex *) malloc(sizeof(hex) * height * width);
     memset(map->hexes, 0, sizeof(hex) * height * width);
-
-    for (i = 0; i < height; i++) {
-        Create(map->map[i], unsigned char, width);
-    }
 
     for (i = 0; i < height; i++) {
         if (feof(fp)
@@ -319,8 +314,6 @@ int map_load(MAP * map, char *mapname)
                          map->mynum, j, i, terr));
                 terr = GRASSLAND;
             }
-            SetMap(map, j, i, terr, elev);
-
             map->hexes[j + i * width].terrain = (int) terr;
             map->hexes[j + i * width].elevation = elev;
             map->hexes[j + i * width].flags = 0;
@@ -488,12 +481,6 @@ void map_setmapsize(dbref player, void *data, char *buffer)
     DOCHECK(!((new_width >= 0) && (new_width <= MAPX) && (new_height >= 0) &&
                 (new_height <= MAPY)), "X,Y out of range!");
 
-    /* allocate new map space */
-    Create(map, unsigned char *, new_height);
-
-    for (i = 0; i < new_height; i++)
-        Create(map[i], unsigned char, new_width);
-
     /* New map system */
     hexes = (hex *) malloc(sizeof(hex) * new_height * new_width);
     memset(hexes, 0, sizeof(hex) * new_height * new_width);
@@ -501,7 +488,6 @@ void map_setmapsize(dbref player, void *data, char *buffer)
     /* Initialize the hexes in the new map to blank */
     for (i = 0; i < new_height; i++) {
         for (j = 0; j < new_width; j++) {
-            SetMapB(map, j, i, ' ', 0);
             hexes[j + i * new_width].terrain = (int) GRASSLAND;
             hexes[j + i * new_width].elevation = 0;
             hexes[j + i * new_width].flags = 0;
@@ -514,8 +500,6 @@ void map_setmapsize(dbref player, void *data, char *buffer)
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            SetMapB(map, j, i, GetTerrain(oldmap, j, i),
-                    GetElevation(oldmap, j, i));
             hexes[j + i * new_width].terrain = 
                 oldmap->hexes[j + i * oldmap->width].terrain;
             hexes[j + i * new_width].elevation = 
@@ -525,10 +509,7 @@ void map_setmapsize(dbref player, void *data, char *buffer)
         }
     }
 
-    /* Now free the old map */
-    for (i = oldmap->height - 1; i >= 0; i--)
-        free((char *) (oldmap->map[i]));
-
+    /* Free the old map */
     free(oldmap->hexes);
 
     del_mapobjs(oldmap);
@@ -536,7 +517,6 @@ void map_setmapsize(dbref player, void *data, char *buffer)
     /* set new map size and pointer to new map space */
     oldmap->height = new_height;
     oldmap->width = new_width;
-    oldmap->map = map;
     oldmap->hexes = hexes;
 
     notify(player, "Size set.");
@@ -616,12 +596,6 @@ void initialize_map_empty(MAP * new, dbref key)
 	new->width = DEFAULT_MAP_WIDTH;
 	new->height = DEFAULT_MAP_HEIGHT;
 
-	Create(new->map, unsigned char *, new->height);
-
-	for(i = 0; i < new->height; i++) {
-		Create(new->map[i], unsigned char, new->width);
-    }
-
     /* New map system that uses a single array to do what used to be done
      * with a 2-D array */
     new->hexes = (hex *) malloc(sizeof(hex) * new->height * new->width);
@@ -629,7 +603,6 @@ void initialize_map_empty(MAP * new, dbref key)
 
 	for(i = 0; i < new->height; i++) {
 		for(j = 0; j < new->width; j++) {
-			SetMap(new, j, i, ' ', 0);
             new->hexes[j + i * new->width].terrain = (int) GRASSLAND;
             new->hexes[j + i * new->width].elevation = 0;
             new->hexes[j + i * new->width].flags = 0;
@@ -656,14 +629,6 @@ void newfreemap(dbref key, void **data, int selector)
 
         case SPECIAL_FREE:
             del_mapobjs(new);
-            if(new->map) {
-
-                for(i = new->height - 1; i >= 0; i--)
-                    if(new->map[i])
-                        free((char *) (new->map[i]));
-
-                free((char *) (new->map));
-            }
 
             if (new->hexes) {
                 free(new->hexes);
@@ -671,19 +636,6 @@ void newfreemap(dbref key, void **data, int selector)
 
             break;
     }
-}
-
-int map_sizefun(void *data, int flag)
-{
-	MAP *map = (MAP *) data;
-	int size = 0;
-
-	if(!map)
-		return 0;
-	size = sizeof(*map);
-	if(map->map)
-		size += sizeof(*map->map);
-	return size;
 }
 
 void map_listmechs(dbref player, void *data, char *buffer)

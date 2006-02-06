@@ -26,7 +26,6 @@ void map_clearmechs(dbref player, void *data, char *buffer);
 void map_update(dbref obj, void *data);
 void initialize_map_empty(MAP * new, dbref key);
 void newfreemap(dbref key, void **data, int selector);
-int map_sizefun(void *data, int flag);
 void map_listmechs(dbref player, void *data, char *buffer);
 void clear_hex(MECH * mech, int x, int y, int meant);
 void map_pathfind(dbref player, void *data, char *buffer);

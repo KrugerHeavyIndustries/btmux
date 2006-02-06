@@ -423,7 +423,7 @@ static char *LRSTerrain(MAP * map, int x, int y, int docolor, char *prevc)
 		buf[1] = '\0';
 		return buf;
 	} else
-		newc = TerrainColorChar(c, GetElev(map, x, y));
+		newc = TerrainColorChar(c, GetElevation(map, x, y));
 
 	return add_color(newc, prevc, c);
 }
@@ -432,7 +432,7 @@ static char *LRSElevation(MAP * map, int x, int y, int docolor, char *prevc)
 {
 	static char buf[2];			/* Won't be filled with more than 1 character */
 
-	int e = GetElev(map, x, y);
+	int e = GetElevation(map, x, y);
 	char c = (e || docolor) ? '0' + e : ' ';
 	char newc;
 
@@ -813,7 +813,7 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 					terr = UNKNOWN_TERRAIN;
 
 				if(losflag & MAPLOSHEX_SEEELEV)
-					elev = GetElev(map, sx + x, sy + y);
+					elev = GetElevation(map, sx + x, sy + y);
 				else
 					elev = 15;	/* Ugly hack: '0' + 15 == '?' */
 			}

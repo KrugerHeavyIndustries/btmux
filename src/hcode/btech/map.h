@@ -160,7 +160,8 @@ typedef struct mapobj_struct {
 typedef struct {
     dbref mynum;                        /* My dbref */
 
-    unsigned char **map;                /* The map */
+    //unsigned char **map;                /* The map */
+    /* The map using a single array that used to take a 2-D array */
     hex *hexes;
 
     char mapname[MAP_NAME_SIZE + 1];
@@ -188,6 +189,7 @@ typedef struct {
     dbref *mechsOnMap;                  /* Mechs on the map */
     rbtree *mechs;
     unsigned int **LOSinfo;             /* Line of sight info */
+    rbtree *LOSinfotree;
 
     /* 1 = mech has moved recently
        2 = mech has possible-LOS event ongoing */

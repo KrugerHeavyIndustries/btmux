@@ -632,7 +632,7 @@ void move_mech(MECH * mech)
 		x = MechX(mech);
 		y = MechY(mech);
 		MechTerrain(mech) = GetTerrain(mech_map, x, y);
-		MechElev(mech) = GetElev(mech_map, x, y);
+		MechElev(mech) = GetElevation(mech_map, x, y);
 
 		/* Update our Z values */
 		if(upd_z) {

@@ -76,8 +76,8 @@ static int debug_check_stuff(void *key, void *data, int depth, void *arg)
     switch (type) {
         case GTYPE_MAP:
             map = (MAP *) xcode_object->data;
-            if(map->map) {
-                size += sizeof(map->map[0][0]) * map->width * map->height;
+            if(map->hexes) {
+                size += sizeof(hex) * map->width * map->height;
                 size += bit_size(map);
                 size += obj_size(map);
                 size += mech_size(map);

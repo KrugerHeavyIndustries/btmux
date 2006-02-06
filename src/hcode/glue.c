@@ -94,8 +94,6 @@ static int xcode_compare(int left, int right, void *arg)
     return (right - left);
 }
 
-extern int map_sizefun();
-
 static int Can_Use_Command(MECH * mech, int cmdflag)
 {
 #define TYPE2FLAG(a) \
@@ -353,12 +351,12 @@ static int load_update1(Node * tmp)
 	case GTYPE_MAP:
 		map = (MAP *) NodeData(tmp);
 		bzero(map->mapobj, sizeof(map->mapobj));
-		map->map = NULL;
+		map->hexes = NULL;
 		strcpy(mapbuffer, map->mapname);
 		doh = (map->flags & MAPFLAG_MAPO);
 		if(strcmp(map->mapname, "Default Map"))
 			map_loadmap(1, map, mapbuffer);
-		if(!strcmp(map->mapname, "Default Map") || !map->map)
+		if(!strcmp(map->mapname, "Default Map") || !map->hexes)
 			initialize_map_empty(map, NodeKey(tmp));
 		if(!feof(global_file_kludge)) {
 			load_mapdynamic(global_file_kludge, map);
@@ -1055,13 +1053,7 @@ static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr)
 
     mmdb_write_uint32(hcode_xdr, map->mynum);
 
-    mmdb_write_uint32(hcode_xdr, map->height);
-    for (i = 0; i < map->height; i++) {
-        mmdb_write_uint32(hcode_xdr, map->width);
-        for (j = 0; j < map->width; j++) {
-            mmdb_write_uint8(hcode_xdr, map->map[i][j]);
-        }
-    }
+    /* Add code to write map (hexes) out */
 
     mmdb_write_opaque(hcode_xdr, map->mapname, MAP_NAME_SIZE + 1);
 

@@ -117,7 +117,6 @@ BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/failures.o                 \
                  src/hcode/btech/hudinfo.o                  \
                  src/hcode/btech/map.bits.o                 \
-                 src/hcode/btech/map.coding.o               \
                  src/hcode/btech/map.conditions.o           \
                  src/hcode/btech/map.dynamic.o              \
                  src/hcode/btech/map.los.o                  \

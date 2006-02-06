@@ -1300,7 +1300,6 @@ extern void *FindObjectsData(dbref key);
 #include "btmacros.h"
 #include "p.glue.hcode.h"
 #include "map.h"
-#include "map.coding.h"
 #include "glue.h"
 #include "p.glue.h"
 #include "mech.notify.h"

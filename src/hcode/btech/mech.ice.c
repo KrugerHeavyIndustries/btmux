@@ -234,7 +234,7 @@ void possibly_blow_bridge(MECH * mech, int weapindx, int x, int y)
 		return;
 	if(MapBridgesCS(map))
 		return;
-	if(Number(1, 10 * (1 + GetElev(map, x,
+	if(Number(1, 10 * (1 + GetElevation(map, x,
 								   y))) > MechWeapons[weapindx].damage) {
 		HexLOSBroadcast(map, x, y,
 						"The bridge at $H shudders from direct hit!");

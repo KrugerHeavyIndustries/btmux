@@ -90,7 +90,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 	MechTerrain(mech) = GetTerrain(mech_map, MechX(mech), MechY(mech));
 	MarkForLOSUpdate(mech);
 	if(argc == 2) {
-		MechElev(mech) = GetElev(mech_map, MechX(mech), MechY(mech));
+		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
 		MechZ(mech) = MechElev(mech) - 1;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
 		DropSetElevation(mech, 0);
@@ -195,7 +195,7 @@ void mech_Rsetmapindex(dbref player, void *data, char *buffer)
 		MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
 							&MechFY(mech));
 		MechTerrain(mech) = GetTerrain(newmap, MechX(mech), MechY(mech));
-		MechElev(mech) = GetElev(newmap, MechX(mech), MechY(mech));
+		MechElev(mech) = GetElevation(newmap, MechX(mech), MechY(mech));
 		notify(player,
 			   "You're current position is out of bounds, Pos changed to 0,0");
 	}
