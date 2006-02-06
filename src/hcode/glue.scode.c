@@ -2009,6 +2009,7 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
 	dbref mechdb, mapdb;
 	int x, y, z;
 	MECH *mech;
+    MECH *towee = NULL;
 	MAP *map;
 	char buffer[MBUF_SIZE];
 
@@ -2035,14 +2036,25 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
 		FUNCHECK(z < 0 || z > 10000, "#-1 Z COORD");
 	}
 
+    if (MechCarrying(mech) > 0)
+        towee = getMech(MechCarrying(mech));
+
 	snprintf(buffer, MBUF_SIZE, "%d", mapdb);
 	mech_Rsetmapindex(GOD, (void *) mech, buffer);
+
+    if (towee)
+        mech_Rsetmapindex(GOD, (void *) towee, buffer);
+
 	if(nfargs == 5) {
 		snprintf(buffer, MBUF_SIZE, "%d %d %d", x, y, z);
 	} else {
 		snprintf(buffer, MBUF_SIZE, "%d %d", x, y);
 	}
 	mech_Rsetxy(GOD, (void *) mech, buffer);
+
+    if (towee)
+        mech_Rsetxy(GOD, (void *) towee, buffer);
+
 	safe_tprintf_str(buff, bufc, "1");
 }
 

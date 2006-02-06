@@ -796,9 +796,12 @@ void mech_kickortrip(dbref player, void *data, char *buffer, int AttackType)
 	}
 
 	if((MechCritStatus(mech) & HIP_DAMAGED))
+	{
 		mech_printf(mech, MECHALL,
 					"You can't %s with a destroyed hip.",
 					phys_form(AttackType, 0));
+		return;
+	}
 
 	PhysicalAttack(mech, 5,
 				   (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) -

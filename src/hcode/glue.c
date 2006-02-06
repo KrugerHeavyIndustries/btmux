@@ -319,9 +319,7 @@ static int load_update4(Node * tmp)
 		StartSeeing(mech);
 		MaybeRecycle(mech, 1);
 		MaybeMove(mech);
-		if(!FlyingT(mech) && Started(mech) && Jumping(mech))
-			mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(mech),
-													MechY(mech)));
+
 	}
 	return 1;
 }
@@ -346,6 +344,7 @@ static int load_update1(Node * tmp)
 	char mapbuffer[MBUF_SIZE];
 	MECH *mech;
 	int i;
+	int ctemp;
 
 	switch ((i = WhichType(tmp))) {
 	case GTYPE_MAP:
@@ -379,7 +378,16 @@ static int load_update1(Node * tmp)
 			MechSpeed(mech) = 0;
 			MechVerticalSpeed(mech) = 0;
 		}
-		MechCocoon(mech) = 0;
+		ctemp = MechCocoon(mech);
+		if(MechCocoon(mech)) {
+			MechCocoon(mech) = 0;
+			initiate_ood((dbref) GOD, mech, tprintf("%d %d %d", MechX(mech), MechY(mech), MechZ(mech)));
+			MechCocoon(mech) = ctemp;
+		}
+
+		if(!FlyingT(mech) && Started(mech) && Jumping(mech))
+			mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(mech),MechY(mech)));
+	
 		MechStatus(mech) &= ~(BLINDED | UNCONSCIOUS | JUMPING | TOWED);
 		MechSpecials2(mech) &=
 			~(ECM_ENABLED | ECM_DISTURBANCE | ECM_PROTECTED |

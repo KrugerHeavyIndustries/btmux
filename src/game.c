@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <event.h>
+#include <regex.h>
 
 #include "mudconf.h"
 #include "config.h"
@@ -35,6 +36,8 @@
 #ifdef HAVE_SYS_UCONTEXT_H
 #include <sys/ucontext.h>
 #endif
+
+#define NSUBEXP 10
 
 extern void init_attrtab(void);
 extern void init_cmdtab(void);
@@ -127,8 +130,9 @@ void report(void)
  */
 int regexp_match(char *pattern, char *str, char *args[], int nargs)
 {
-	regexp *re;
+	regex_t re;
 	int got_match;
+	regmatch_t pmatch[NSUBEXP];
 	int i, len;
 
 	/*
@@ -137,7 +141,7 @@ int regexp_match(char *pattern, char *str, char *args[], int nargs)
 	 * under it.
 	 */
 
-	if((re = regcomp(pattern)) == NULL) {
+	if(regcomp(&re, pattern, REG_EXTENDED) != 0) {
 		/*
 		 * This is a matching error. We have an error message in
 		 * regexp_errbuf that we can ignore, since we're doing
@@ -150,9 +154,9 @@ int regexp_match(char *pattern, char *str, char *args[], int nargs)
 	 * Now we try to match the pattern. The relevant fields will
 	 * automatically be filled in by this.
 	 */
-	got_match = regexec(re, str);
+	got_match = (regexec(&re, str, NSUBEXP, pmatch, 0) == 0);
 	if(!got_match) {
-		free(re);
+		regfree(&re);
 		return 0;
 	}
 
@@ -172,14 +176,14 @@ int regexp_match(char *pattern, char *str, char *args[], int nargs)
 	 * so we can copy without fear.
 	 */
 
-	for(i = 0; (i < NSUBEXP) && (re->startp[i]) && (re->endp[i]); i++) {
-		len = re->endp[i] - re->startp[i];
+	for(i = 0; (i < NSUBEXP) && (pmatch[i].rm_so != -1) && (pmatch[i].rm_eo != -1); i++) {
+		len = pmatch[i].rm_eo - pmatch[i].rm_so;
 		args[i] = alloc_lbuf("regexp_match");
-		strncpy(args[i], re->startp[i], len);
+		strncpy(args[i], str + pmatch[i].rm_so, len);
 		args[i][len] = '\0';	/* strncpy() does not null-terminate */
 	}
 
-	free(re);
+	regfree(&re);
 	return 1;
 }
 
