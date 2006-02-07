@@ -211,8 +211,15 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 					tNormalizeLocCrits = 1;
 					break;
 				case SHOULDER_OR_HIP:
-					if(tIsLeg)
-						tNormalizeAllCrits = 1;
+					if(tIsLeg) {
+						 if(!(MechCritStatus(wounded) & HIP_DAMAGED)) {
+							 MechCritStatus(wounded) |= HIP_DAMAGED;
+							 } else {
+								 if(!MechIsQuad(wounded))
+									 MechCritStatus(wounded) |= HIP_DESTROYED;
+							 }
+					tNormalizeAllCrits = 1;
+					}
 					else
 						tNormalizeLocCrits = 1;
 					break;
@@ -287,10 +294,10 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 			tDoAutoFall = 1;
 			StopStand(wounded);
 		}
-		if(tNormalizeAllCrits)
+/*		if(tNormalizeAllCrits) */
 			NormalizeAllActuatorCrits(wounded);
-		else if(tNormalizeLocCrits)
-			NormalizeLocActuatorCrits(wounded, hitloc);
+/*		else if(tNormalizeLocCrits)
+			NormalizeLocActuatorCrits(wounded, hitloc); */
 		if(tIsLeg && !Fallen(wounded) && !Jumping(wounded) &&
 		   !OODing(wounded) && attacker) {
 			if(tDoAutoFall) {
