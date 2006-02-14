@@ -150,6 +150,7 @@
 #define MechEngineSizeV(a) 	(a)->rd.erat
 #define MechEngineSize(a)	(MechEngineSizeV(a) > 0 ? MechEngineSizeV(a) : MechEngineSizeC(a))
 #define MechMaxSpeed(a)	 	(a)->ud.maxspeed
+#define TemplateMaxSpeed(a)     (a)->ud.template_maxspeed
 #define SetMaxSpeed(a,b) 	do {MechMaxSpeed(a) = b;MechCritStatus(a) &= ~SPEED_OK;correct_speed(a);} while (0)
 #define LowerMaxSpeed(a,b) 	SetMaxSpeed(a,MechMaxSpeed(a)-b)
 #define DivideMaxSpeed(a,b) 	SetMaxSpeed(a,MechMaxSpeed(a)/b)

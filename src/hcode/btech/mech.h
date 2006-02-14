@@ -756,6 +756,7 @@ typedef struct {
     int walkspeed;		/* Future expansion to do speed correctly */
     int runspeed;
     float maxspeed;		/* Maxspeed (running) in KPH */
+    float template_maxspeed;    /* we should read this in */
 
     int mechbv;			/* Fasa BattleValue of this unit */
     int cargospace;		/* Assigned cargo space * 100 for half and quarter tons */

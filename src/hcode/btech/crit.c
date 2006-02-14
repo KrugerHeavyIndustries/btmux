@@ -208,15 +208,7 @@ void NormalizeAllActuatorCrits(MECH * objMech)
 	/* reset us back to zero */
 	MechPilotSkillBase(objMech) = 0;
 
-	/*
-	   Get our max template speed. We'll get this by mutiplying the engine size by the tonnage.
-	   Pretty damn lame that we don't store the mech's max speed in the mech struct. We'll reset
-	   our max back to full and then alter it from crits. Pretty lame, I guess, but lame things
-	   need to be done in lame times.
-	 */
-	wMaxTemplateSpeed =
-		((MechEngineSize(objMech) / MechTons(objMech)) * 1.5) * KPH_PER_MP;
-	SetMaxSpeed(objMech, wMaxTemplateSpeed);
+	SetMaxSpeed(objMech, TemplateMaxSpeed(objMech));
 
 	/*
 	   The problem here is all the calcs are based on running speed... ie, max speed. This is lame 'cause
