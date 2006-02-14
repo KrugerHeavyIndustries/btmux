@@ -36,7 +36,24 @@
 #define WALK_INORDER    0x101
 #define WALK_POSTORDER  0x102
 
+#ifndef DEBUG
 typedef void *rbtree;
+#else
+typedef struct rbtree_node_t {
+    struct rbtree_node_t *left, *right, *parent;
+    void *key;
+    void *data;
+    int color;
+    int count;
+} rbtree_node;
+
+typedef struct rbtree_head_t {
+    struct rbtree_node_t *head;
+    int (*compare_function) (void *, void *, void *);
+    void *token;
+    unsigned int size;
+} *rbtree;
+#endif
 
 rbtree rb_init(int (*)(void *, void *, void *), void *);
 void rb_destroy(rbtree);
