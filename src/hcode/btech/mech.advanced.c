@@ -459,7 +459,7 @@ void mech_armorpiercing(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC|ULTRA|LBX, AC_AP_MODE, 0,
+	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC, AC_AP_MODE, 0,
 						 "Weapon %d has been set to fire AP rounds",
 						 "Weapon %d has been set to fire normal rounds",
 						 "That weapon cannot fire AP rounds!");
@@ -469,7 +469,7 @@ void mech_caseless(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC|ULTRA|LBX, AC_CASELESS_MODE, 0,
+	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC, AC_CASELESS_MODE, 0,
 			"Weapon %d has been set to fire CASELESS rounds",
 			"Weapon %d has been set to fire normal rounds",
 			"That weapon cannot fire CASELESS rounds!");
@@ -503,7 +503,7 @@ void mech_precision(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC|ULTRA|LBX, AC_PRECISION_MODE,
+	mech_toggle_mode_sub(player, mech, buffer, 1, RFAC, AC_PRECISION_MODE,
 						 0, "Weapon %d has been set to fire Precision rounds",
 						 "Weapon %d has been set to fire normal rounds",
 						 "That weapon cannot fire Precision rounds!");
