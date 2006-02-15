@@ -28,41 +28,69 @@
 
 void clear_mech_from_LOS(MECH * mech)
 {
-	MAP *map;
-	int i;
-	MECH *mek;
+    MAP *map;
+    int i;
+    MECH *mek;
+    dllist_node *node;
 
-	/* if (mech->mapindex < 0) 
-	   return;
-	 */
-	if(!(map = FindObjectsData(mech->mapindex)))
-		return;
+    /* if (mech->mapindex < 0) 
+       return;
+       */
+
+    if (!(map = getMap(mech->mapindex)))
+        return;
+
 #ifdef SENSOR_DEBUG
-	SendSensor(tprintf("LOS info for #%d cleared.", mech->mynum));
+    SendSensor("LOS info for #%d cleared.", mech->mynum);
 #endif
-	for(i = 0; i < map->first_free; i++) {
-		map->LOSinfo[mech->mapnumber][i] = 0;
-		map->LOSinfo[i][mech->mapnumber] = 0;
 
-		if(map->mechsOnMap[i] >= 0 && i != mech->mapnumber) {
-			if(!(mek = getMech(map->mechsOnMap[i])))
-				continue;
-			if((MechStatus(mek) & LOCK_TARGET) &&
-			   MechTarget(mek) == mech->mynum) {
-				mech_notify(mek, MECHALL,
-							"Weapon system reports the lock has been lost.");
-				LoseLock(mek);
-			}
-			if((map->LOSinfo[i][mech->mapnumber] & MECHLOSFLAG_SEEN) &&
-			   MechTeam(mek) != MechTeam(mech))
-				MechNumSeen(mek) = MAX(0, MechNumSeen(mek) - 1);
-		}
-	}
-	if(MechStatus(mech) & LOCK_MODES) {
-		mech_notify(mech, MECHALL,
-					"Weapon system reports the lock has been lost.");
-		LoseLock(mech);
-	}
+    for (i = 0; i < map->first_free; i++) {
+        map->LOSinfo[mech->mapnumber][i] = 0;
+        map->LOSinfo[i][mech->mapnumber] = 0;
+
+        if (map->mechsOnMap[i] >= 0 && i != mech->mapnumber) {
+            if (!(mek = getMech(map->mechsOnMap[i])))
+                continue;
+            if ((MechStatus(mek) & LOCK_TARGET) &&
+                    MechTarget(mek) == mech->mynum) {
+                mech_notify(mek, MECHALL,
+                        "Weapon system reports the lock has been lost.");
+                LoseLock(mek);
+            }
+            if ((map->LOSinfo[i][mech->mapnumber] & MECHLOSFLAG_SEEN) &&
+                    MechTeam(mek) != MechTeam(mech))
+                MechNumSeen(mek) = MAX(0, MechNumSeen(mek) - 1);
+        }
+    }
+
+    /* Clear the LOS rbtree of the removed unit and remove the unit from
+     * the LOS tree of the units still on the map */
+    rb_release(mech->UnitsInLOS, (void *) mech_rbtree_release, NULL);
+    mech->UnitsInLOS = rb_init((void *) mech_rbtree_compare, NULL);
+
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        mek = getMech((int) dllist_data(node));
+
+        if (!mek) {
+
+        }
+
+        if ((MechStatus(mek) & LOCK_TARGET) &&
+                MechTarget(mek) == mech->mynum) {
+            mech_notify(mek, MECHALL,
+                    "Weapon system reports the lock has been lost.");
+            LoseLock(mek);
+        }
+
+        /* Remove the unit from the los rbtree */
+        rb_delete(mek->UnitsInLOS, (void *) mech->mynum);
+    }
+
+    if (MechStatus(mech) & LOCK_MODES) {
+        mech_notify(mech, MECHALL,
+                "Weapon system reports the lock has been lost.");
+        LoseLock(mech);
+    }
 }
 
 void mech_Rsetxy(dbref player, void *data, char *buffer)
@@ -256,5 +284,8 @@ void newfreemech(dbref key, void **data, int selector)
         case SPECIAL_FREE:
             if(new->mapindex != -1 && (map = getMap(new->mapindex)))
                 remove_mech_from_map(map, new);
+
+            /* Clean up rbtree(s) */
+            rb_release(new->UnitsInLOS, (void *) mech_rbtree_release, NULL);
     }
 }

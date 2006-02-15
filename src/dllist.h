@@ -2,6 +2,12 @@
  * Doubly Linked List
  */
 
+#ifndef __DL_LIST__
+#define __DL_LIST__
+
+#define DLLIST_WALK_FORWARD     0x1
+#define DLLIST_WALK_BACKWARD    0x2
+
 /* Doubly Linked List Node */
 typedef struct dllist_node_t {
     struct dllist_node_t *next, *prev;
@@ -44,3 +50,7 @@ dllist_node *dllist_prev(dllist_node *node);
 void *dllist_data(dllist_node *node);
 int dllist_size(dllist *dllist);
 void *dllist_get_node(dllist *dllist, int pos);
+int dllist_index(dllist *dllist, void *data);
+void dllist_walk(dllist *dllist, int, int (*) (void *, void *), void *arg);
+
+#endif

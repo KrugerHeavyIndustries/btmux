@@ -1342,6 +1342,9 @@ void *NewSpecialObject(int id, int type)
         xcode_object->type = type;
         xcode_object->data = xcode_data;
 
+        /*! \todo {Possibly add check to make sure the object isn't already
+         * on the tree} */
+
         /* Add to tree */
         rb_insert(xcode_rbtree, (void *) xcode_object->key, xcode_object);
 
@@ -2078,3 +2081,20 @@ MECH *getMech(dbref d)
 
     return (MECH *) xcode_object->data;
 }
+
+AUTO *getAutopilot(dbref d)
+{
+    XcodeObject *xcode_object;
+
+    if (!Good_obj(d))
+        return NULL;
+    if (!Hardcode(d))
+        return NULL;
+    if (!(xcode_object = rb_find(xcode_rbtree, (void *) d)))
+        return NULL;
+    if (xcode_object->type != GTYPE_AUTO)
+        return NULL;
+
+    return (AUTO *) xcode_object->data;
+}
+

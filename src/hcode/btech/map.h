@@ -16,6 +16,7 @@
 #define _MAP_H
 
 #include "rbtree.h"
+#include "dllist.h"
 
 /*
    map.h
@@ -187,9 +188,8 @@ typedef struct {
 
     unsigned int first_free;            /* First free on da map */
     dbref *mechsOnMap;                  /* Mechs on the map */
-    rbtree *mechs;
+    dllist *mechs;
     unsigned int **LOSinfo;             /* Line of sight info */
-    rbtree *LOSinfotree;
 
     /* 1 = mech has moved recently
        2 = mech has possible-LOS event ongoing */

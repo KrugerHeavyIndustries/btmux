@@ -45,5 +45,6 @@ void list_chashstats(dbref player);
 void ResetSpecialObjects(void);
 MAP *getMap(dbref d);
 MECH *getMech(dbref d);
+AUTO *getAutopilot(dbref d);
 
 #endif				/* _P_GLUE_H */

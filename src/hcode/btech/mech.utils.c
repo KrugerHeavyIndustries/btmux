@@ -2022,12 +2022,17 @@ int AcceptableDegree(int d)
 
 void MarkForLOSUpdate(MECH * mech)
 {
-	MAP *mech_map;
+    MAP *mech_map;
 
-	if(!(mech_map = getMap(mech->mapindex)))
-		return;
-	mech_map->moves++;
-	mech_map->mechflags[mech->mapnumber] = 1;
+    if(!(mech_map = getMap(mech->mapindex)))
+        return;
+
+    mech_map->moves++;
+    mech_map->mechflags[mech->mapnumber] = 1;
+
+    /* New LOS info system */
+    MechStatus(mech) |= UPDATE_LOS;
+
 }
 
 void multi_weap_sel(MECH * mech, dbref player, char *buffer, int bitbybit,

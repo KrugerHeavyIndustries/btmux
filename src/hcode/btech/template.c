@@ -2316,6 +2316,7 @@ int load_template(dbref player, MECH * mech, char *filename)
 			break;
 		case 9:				/* Max Speed */
 			SetMaxSpeed(mech, atof(read_desc(fp, ptr)));
+			TemplateMaxSpeed(mech) = MechMaxSpeed(mech);
 			break;
 		case 10:				/* Specials */
 			tmpc = read_desc(fp, ptr);

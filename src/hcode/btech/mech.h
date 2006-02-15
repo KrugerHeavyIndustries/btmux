@@ -20,6 +20,7 @@
 #include "mech.stat.h"
 #include "muxevent.h"
 #include "p.event.h"
+#include "rbtree.h"
 
 #include "btconfig.h"
 #include "mymath.h"
@@ -754,6 +755,7 @@ typedef struct {
     int walkspeed;              /* Future expansion to do speed correctly */
     int runspeed;
     float maxspeed;             /* Maxspeed (running) in KPH */
+    float template_maxspeed;    /* we should read this in */
 
     int mechbv;                 /* Fasa BattleValue of this unit */
     int mechbv_last;            /* BV caclulation cacher */
@@ -909,6 +911,7 @@ typedef struct {
     int mapnumber;                          /* My number on the map */
     dbref mapindex;                         /* 0..MAX_MAPS (dbref of map object) */
     unsigned int tic[NUM_TICS][TICLONGS];   /* tics.. */
+    rbtree UnitsInLOS;                      /* Rbtree of units this unit sees */
     mech_ud ud;                             /* UnitData (mostly not bzero'able) */
     mech_pd pd;                             /* PositionData(mostly not bzero'able) */
     mech_rd rd;                             /* RSdata (mostly bzero'able) */
@@ -944,7 +947,7 @@ struct repair_data {
 #define PERFORMING_ACTION     0x00000200  /* (j) Set if the unit is performing some sort of action. Controlled by SCode */
 #define FLIPPED_ARMS          0x00000400  /* (k) */
 #define AMS_ENABLED           0x00000800  /* (l) only settable if mech has ANTI-MISSILE_TECH */
-/* UNUSED                     0x00001000     (m) */
+#define UPDATE_LOS            0x00001000  /* (m) do we need to update the LOS info? */
 #define UNCONSCIOUS           0x00002000  /* (n) Pilot is unconscious */
 #define TOWED                 0x00004000  /* (o) Someone's towing us */
 #define LOCK_TARGET           0x00008000  /* (p) We mean business */
@@ -1300,6 +1303,7 @@ extern void *FindObjectsData(dbref key);
 #include "btmacros.h"
 #include "p.glue.hcode.h"
 #include "map.h"
+#include "autopilot.h"
 #include "glue.h"
 #include "p.glue.h"
 #include "mech.notify.h"
@@ -1310,4 +1314,6 @@ typedef struct {
     int y;
 } lostrace_info;
 
+int mech_rbtree_compare(int a, int b, void *arg);
+void mech_rbtree_release(void *key, void *data);
 #endif				/* MECH_H */

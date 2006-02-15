@@ -54,6 +54,18 @@ if (!CheckData(player, mech)) return; }
 
 /*--------------------------------------------------------------------------*/
 
+/* Functions for use with the rbtrees on the mechs */
+int mech_rbtree_compare(int a, int b, void *arg)
+{
+    return (a - b);
+}
+
+void mech_rbtree_release(void *key, void *data)
+{
+    /* Don't need to do anything yet */
+    return;
+}
+
 /* Alloc free function */
 
 /* Alloc/free routine */
@@ -537,6 +549,13 @@ void clear_mech(MECH * mech, int flag)
 			mech->chantitle[i][0] = 0;
 		}
 	}
+
+    /* Clear LOS info */
+    if (mech->UnitsInLOS) {
+        rb_release(mech->UnitsInLOS, (void *) mech_rbtree_release, NULL);
+    }
+    mech->UnitsInLOS = rb_init((void *) mech_rbtree_compare, NULL);
+
 }
 
 char *mechref_path(char *id)

@@ -145,7 +145,9 @@ void ShutDownMap(dbref player, dbref mapnumber)
 
     xcode_object = (XcodeObject *) rb_find(xcode_rbtree, (void *) mapnumber);
     if (xcode_object) {
+        
         map = (MAP *) xcode_object->data;
+
         for (j = 0; j < map->first_free; j++)
             if (map->mechsOnMap[j] != -1) {
                 mech = getMech(map->mechsOnMap[j]);
@@ -161,8 +163,11 @@ void ShutDownMap(dbref player, dbref mapnumber)
                     remove_mech_from_map(map, mech);
                 }
             }
+
         map->first_free = 0;
+
         notify(player, "Map Cleared");
+
         return;
     }
 }

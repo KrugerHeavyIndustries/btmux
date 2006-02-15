@@ -266,7 +266,7 @@ int map_load(MAP * map, char *mapname)
         return -1;
     }
 
-    del_mapobjs(map);			/* Just in case */
+    del_mapobjs(map);   /* Just in case */
 
     /* Uses the map's new hex struct */
     if (map->hexes) {
@@ -327,55 +327,54 @@ int map_load(MAP * map, char *mapname)
         return -2;
     }
     map->grav = 100;
-	map->temp = 20;
-	if (!feof(fp)) {
-		if (fscanf(fp, "%d: %d %d\n", &i1, &i2, &i3) == 3) {
-			map->flags = i1;
-			map->grav = i2;
-			map->temp = i3;
-		}
-	}
-	map->height = height;
-	map->width = width;
-	if (!MapNoBridgify(map))
-		make_bridges(map);
-	sprintf(map->mapname, mapname);
-	my_close_file(fp, &filemode);
-	return 0;
+    map->temp = 20;
+    if (!feof(fp)) {
+        if (fscanf(fp, "%d: %d %d\n", &i1, &i2, &i3) == 3) {
+            map->flags = i1;
+            map->grav = i2;
+            map->temp = i3;
+        }
+    }
+    map->height = height;
+    map->width = width;
+    if (!MapNoBridgify(map))
+        make_bridges(map);
+    sprintf(map->mapname, mapname);
+    my_close_file(fp, &filemode);
+    return 0;
 }
 
 void map_loadmap(dbref player, void *data, char *buffer)
 {
-	MAP *map;
-	char *args[1];
+    MAP *map;
+    char *args[1];
 
-	map = (MAP *) data;
+    map = (MAP *) data;
 
-	if(!CheckData(player, map))
-		return;
+    if (!CheckData(player, map))
+        return;
 
-	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
-			"Invalid number of arguments!");
-	notify_printf(player, "Loading %s", args[0]);
-	switch (map_load(map, args[0])) {
-	case -1:
-		notify(player, "Map not found.");
-		return;
-	case -2:
-		notify(player, "Map invalid.");
-		return;
-	case 0:
-		notify(player, "Map loaded.");
-		break;
-	default:
-		notify(player, "Unknown error while loading map!");
-		return;
-	}
+    DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
+            "Invalid number of arguments!");
+    notify_printf(player, "Loading %s", args[0]);
+    switch (map_load(map, args[0])) {
+        case -1:
+            notify(player, "Map not found.");
+            return;
+        case -2:
+            notify(player, "Map invalid.");
+            return;
+        case 0:
+            notify(player, "Map loaded.");
+            break;
+        default:
+            notify(player, "Unknown error while loading map!");
+            return;
+    }
 
-	if(player != 1) {
-		notify(player, "Clearing Mechs off Newly Loaded Map");
-		map_clearmechs(player, data, "");
-	}
+    notify(player, "Clearing Mechs off Newly Loaded Map");
+    map_clearmechs(player, data, "");
+
 }
 
 mapobj *find_mapobj(MAP * map, int x, int y, int type);
@@ -525,11 +524,12 @@ void map_setmapsize(dbref player, void *data, char *buffer)
 
 void map_clearmechs(dbref player, void *data, char *buffer)
 {
-	MAP *map;
+    MAP *map;
 
-	map = (MAP *) data;
-	if(CheckData(player, map))
-		ShutDownMap(player, map->mynum);
+    map = (MAP *) data;
+
+    if (CheckData(player, map))
+        ShutDownMap(player, map->mynum);
 }
 
 extern void update_LOSinfo(dbref, MAP *);
@@ -608,6 +608,10 @@ void initialize_map_empty(MAP * new, dbref key)
             new->hexes[j + i * new->width].flags = 0;
         }
     }
+
+    /* Setup the lists and rbtrees */
+    new->mechs = dllist_create_list();
+
 }
 
 /* Mem alloc/free routines */
@@ -619,17 +623,25 @@ void newfreemap(dbref key, void **data, int selector)
     switch (selector) {
         case SPECIAL_ALLOC:
 
+            /* Setup an empty map */
             initialize_map_empty(new, key);
 
             /* allocate default map space */
             for(i = 0; i < NUM_MAPOBJTYPES; i++)
                 new->mapobj[i] = NULL;
+
             sprintf(new->mapname, "%s", "Default Map");
+
             break;
 
         case SPECIAL_FREE:
+
+            /* Clear mechs off the map */
+
+            /* Clear map objects */
             del_mapobjs(new);
 
+            /* Clear the map itself */
             if (new->hexes) {
                 free(new->hexes);
             }

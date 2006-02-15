@@ -892,7 +892,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 	MAP *map;					/* The current Map */
 	MECH *target;				/* Our current target */
 	MECH *physical_target;		/* Our physical target */
-	rbtree *targets;			/* all the targets we're looking at */
+	rbtree targets;			    /* all the targets we're looking at */
 	target_node *temp_target_node;	/* temp target node struct */
 	weapon_node *temp_weapon_node;	/* temp weapon node struct */
 

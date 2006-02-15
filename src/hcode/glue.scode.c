@@ -405,6 +405,7 @@ static GMV xcode_data[] = {
 	{GTYPE_MECH, "id", mechIDfunc, TYPE_STRFUNC},
 	MeEntryS("mechname", MechType_Name, TYPE_STRING, 31),
 	MeEntry("maxspeed", MechMaxSpeed, TYPE_FLOAT),
+	MeEntry("templatesp",TemplateMaxSpeed,TYPE_FLOAT),
 	MeEntry("pilotnum", MechPilot, TYPE_DBREF),
 	MeEntry("pilotdam", MechPilotStatus, TYPE_CHAR),
 	MeEntry("si", AeroSI, TYPE_CHAR),

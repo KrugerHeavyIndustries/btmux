@@ -269,6 +269,8 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	//global_kill_cheat = 1;
 	if(mech && target)
 		ChannelEmitKill(target, mech);
+	else
+		ChannelEmitKill(target, target);
 	if(mech) {
 		if(bc) {
 			if(mech != target) {

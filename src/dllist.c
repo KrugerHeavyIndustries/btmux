@@ -369,3 +369,78 @@ void *dllist_get_node(dllist * dllist, int pos)
     return dllist_data(temp);
 
 }
+
+/* Look in the list to see if data exists already */
+/* Returns -1 if bad list or bad data, 0 if not in 
+ * the list and finally returns the position in the
+ * list starting with 1.  Only returns the first instance
+ * of the data in the list */
+int dllist_index(dllist *dllist, void *data) {
+
+    dllist_node *temp;
+    int counter = 1;
+
+    if (!dllist)
+        return -1;
+
+    /* This assumes no one tries to store NULL data in the list... */
+    if (!data)
+        return -1;
+
+    temp = dllist_head(dllist);
+
+    while (temp) {
+
+        if (dllist_data(temp) == data) {
+            return counter;
+        }
+
+        counter++;
+        temp = dllist_next(temp);
+    }
+
+    return 0;
+
+}
+
+/* Walk through the dllist and perform an action on each node */
+void dllist_walk(dllist *dllist, int direction, 
+        int (*function) (void *, void *), void *arg)
+{
+
+    dllist_node *node;
+
+    if (!dllist)
+        return;
+
+    /* Based on the direction start from the given end and
+     * head towards the other */
+    if (direction == DLLIST_WALK_FORWARD) {
+
+        node = dllist_head(dllist);
+
+        while (node) {
+
+            if (!(*function) (node, arg))
+                return;
+
+            node = dllist_next(node);
+        }
+
+    } else if (direction == DLLIST_WALK_BACKWARD) {
+
+        node = dllist_tail(dllist);
+
+        while (node) {
+
+            if (!(*function) (node, arg))
+                return;
+
+            node = dllist_prev(node);
+        }
+
+    }
+
+    return;
+
+}

@@ -997,7 +997,7 @@ void mech_thrash(dbref player, void *data, char *buffer)
 
 	terrain = GetRTerrain(map, MechX(mech), MechY(mech));
 
-	DOCHECK(((terrain == GRASSLAND) || (terrain == ROAD) ||
+	DOCHECK(!((terrain == GRASSLAND) || (terrain == ROAD) ||
 			 (terrain == BRIDGE)),
 			"Thrashing only works in clear terrain or on roads or bridges.");
 
