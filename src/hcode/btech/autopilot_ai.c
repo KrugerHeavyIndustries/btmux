@@ -1010,9 +1010,9 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 	/* Our lists using Hag's rbtree */
 	/* Using two rbtree's to store the open_list so we can sort two
 	 * different ways */
-	rbtree *open_list_by_score;	/* open list sorted by score */
-	rbtree *open_list_by_xy;	/* open list sorted by hexoffset */
-	rbtree *closed_list;		/* closed list sorted by hexoffset */
+	rbtree open_list_by_score;	/* open list sorted by score */
+	rbtree open_list_by_xy;	/* open list sorted by hexoffset */
+	rbtree closed_list;		/* closed list sorted by hexoffset */
 
 	/* Helper node for the final path */
 	dllist_node *astar_path_node;

@@ -234,7 +234,7 @@
 typedef struct profile_node_t {
     int damage;
     int heat;
-    rbtree *weaplist;
+    rbtree weaplist;
 } profile_node;
 
 /*
@@ -273,7 +273,7 @@ typedef struct {
     dllist *weaplist;
 
     /* Range Profile Array - for use with autogun */
-    rbtree *profile[AUTO_PROFILE_MAX_SIZE];
+    rbtree profile[AUTO_PROFILE_MAX_SIZE];
 
     /* Max Range of AI's mech's weapons */
     int mech_max_range;
