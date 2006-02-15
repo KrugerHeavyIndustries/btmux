@@ -395,7 +395,7 @@ void do_chown_macro(dbref player, char *cmd)
 	free_lbuf(unparse);
 }
 
-static void clear_macro_set(int set)
+extern void clear_macro_set(int set)
 {
 	struct macros *m;
 	struct commac *c;
