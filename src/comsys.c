@@ -414,7 +414,7 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 	}
 
 	/* Trigger AENTER of any channel objects on the channel */
-	for(i = ch->num_users; i > 0; i--) {
+	for(i = 0 ; i < ch->num_users ; i++) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_AENTER,
 				   (char **) NULL, 0);
@@ -439,7 +439,7 @@ static void do_leavechannel(dbref player, struct channel *ch)
 		return;
 
 	/* Trigger ALEAVE of any channel objects on the channel */
-	for(i = ch->num_users; i > 0; i--) {
+	for(i = 0; i < ch->num_users; i++) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_ALEAVE,
 				   (char **) NULL, 0);
