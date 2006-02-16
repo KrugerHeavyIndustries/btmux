@@ -89,7 +89,6 @@ struct confdata {
     char fixed_tel_msg[128];	/* Message displayed when teleporting and FIXED */
     char public_channel[32];	/* Name of public channel */
     char guests_channel[32];	/* Name of guests channel */
-    char pueblo_msg[1024];	/* Message displayed to Pueblo clients */
     int allow_unloggedwho;	/* Wether or not to allow unlogged-in clients to use WHO, DOING and SESSION */
     int btech_explode_reactor;	/* Allow or disallow explode reactor */
     int btech_explode_ammo;	/* Allow or disallow explode ammo */

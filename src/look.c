@@ -96,17 +96,9 @@ static void look_exits(dbref player, dbref loc, const char *exit_name)
 						safe_chr(*s, buff1, &e1);
 					*e1 = 0;
 					/* Copy the exit name into 'buff' */
-					if(Html(player)) {
-						/* XXX The exit name needs to be HTML escaped. */
-						safe_str((char *) "<a xch_cmd=\"", buff, &e);
-						safe_str(buff1, buff, &e);
-						safe_str((char *) "\"> ", buff, &e);
-						html_escape(buff1, buff, &e);
-						safe_str((char *) " </a>", buff, &e);
-					} else {
-						/* Append this exit to the list */
-						safe_str(buff1, buff, &e);
-					}
+					/* Append this exit to the list */
+					safe_str(buff1, buff, &e);
+
 				}
 			}
 		}
@@ -115,7 +107,7 @@ static void look_exits(dbref player, dbref loc, const char *exit_name)
 	if(!(Transparent(loc))) {
 		safe_str((char *) "\r\n", buff, &e);
 		*e = 0;
-		notify_html(player, buff);
+		notify(player, buff);
 	}
 	free_lbuf(buff);
 	free_lbuf(buff1);
@@ -131,10 +123,7 @@ static void look_contents(dbref player, dbref loc, const char *contents_name,
 	dbref thing;
 	dbref can_see_loc;
 	char *buff;
-	char *html_buff, *html_cp;
 	char remote_num[32];
-
-	html_buff = html_cp = alloc_lbuf("look_contents");
 
 	/*
 	 * check to see if he can see the location 
@@ -158,34 +147,7 @@ static void look_contents(dbref player, dbref loc, const char *contents_name,
 			DOLIST(thing, Contents(loc)) {
 				if(can_see(player, thing, can_see_loc)) {
 					buff = unparse_object(player, thing, 1);
-					html_cp = html_buff;
-					if(Html(player)) {
-						safe_str("<a xch_cmd=\"look ", html_buff, &html_cp);
-						switch (style) {
-						case CONTENTS_LOCAL:
-							safe_str(Name(thing), html_buff, &html_cp);
-							break;
-						case CONTENTS_NESTED:
-							safe_str(Name(Location(thing)), html_buff,
-									 &html_cp);
-							safe_str("'s ", html_buff, &html_cp);
-							safe_str(Name(thing), html_buff, &html_cp);
-							break;
-						case CONTENTS_REMOTE:
-							sprintf(remote_num, "#%d", thing);
-							safe_str(remote_num, html_buff, &html_cp);
-							break;
-						default:
-							break;
-						}
-						safe_str("\">", html_buff, &html_cp);
-						html_escape(buff, html_buff, &html_cp);
-						safe_str("</a>\r\n", html_buff, &html_cp);
-						*html_cp = 0;
-						notify_html(player, html_buff);
-					} else {
-						notify(player, buff);
-					}
+					notify(player, buff);
 					free_lbuf(buff);
 
 				}
@@ -195,7 +157,6 @@ static void look_contents(dbref player, dbref loc, const char *contents_name,
 								 */
 		}
 	}
-	free_lbuf(html_buff);
 }
 
 static void view_atr(dbref player, dbref thing, ATTR * ap, char *text,
@@ -363,28 +324,13 @@ static void show_a_desc(dbref player, dbref loc)
 
 	indent = (isRoom(loc) && mudconf.indent_desc && atr_get_raw(loc, A_DESC));
 
-	if(Html(player)) {
-		got2 = atr_pget(loc, A_HTDESC, &aowner, &aflags);
-		if(*got2)
-			did_it(player, loc, A_HTDESC, NULL, A_ODESC, NULL, A_ADESC,
-				   (char **) NULL, 0);
-		else {
-			if(indent)
-				raw_notify_newline(player);
-			did_it(player, loc, A_DESC, NULL, A_ODESC, NULL, A_ADESC,
-				   (char **) NULL, 0);
-			if(indent)
-				raw_notify_newline(player);
-		}
-		free_lbuf(got2);
-	} else {
-		if(indent)
-			raw_notify_newline(player);
-		did_it(player, loc, A_DESC, NULL, A_ODESC, NULL, A_ADESC,
-			   (char **) NULL, 0);
-		if(indent)
-			raw_notify_newline(player);
-	}
+	if(indent)
+		raw_notify_newline(player);
+	did_it(player, loc, A_DESC, NULL, A_ODESC, NULL, A_ADESC,
+		   (char **) NULL, 0);
+	if(indent)
+		raw_notify_newline(player);
+	
 }
 
 static void show_desc(dbref player, dbref loc, int key)
@@ -421,10 +367,6 @@ void look_in(dbref player, dbref loc, int key)
 
 	if(!Hearer(player))
 		return;
-
-	/* If he needs the VMRL URL, send it: */
-	if(key & LK_SHOWVRML)
-		show_vrml_url(player, loc);
 
 	/*
 	 * tell him the name, and the number if he can link to it 
@@ -1528,31 +1470,3 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 	free_lbuf(thingname);
 }
 
-/* show_vrml_url
- */
-void show_vrml_url(dbref thing, dbref loc)
-{
-	char *vrml_url;
-	dbref aowner;
-	int aflags;
-
-	/* If they don't care about HTML, just return. */
-	if(!Html(thing))
-		return;
-
-	vrml_url = atr_pget(loc, A_VRML_URL, &aowner, &aflags);
-	if(*vrml_url) {
-		char *vrml_message, *vrml_cp;
-
-		vrml_message = vrml_cp = alloc_lbuf("show_vrml_url");
-		safe_str("<img xch_graph=load href=\"", vrml_message, &vrml_cp);
-		safe_str(vrml_url, vrml_message, &vrml_cp);
-		safe_str("\">", vrml_message, &vrml_cp);
-		*vrml_cp = 0;
-		notify_html(thing, vrml_message);
-		free_lbuf(vrml_message);
-	} else {
-		notify_html(thing, "<img xch_graph=hide>");
-	}
-	free_lbuf(vrml_url);
-}

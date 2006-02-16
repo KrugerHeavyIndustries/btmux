@@ -395,50 +395,6 @@ static char *dflt_from_msg(dbref sender, dbref sendloc)
 	return tbuff;
 }
 
-/* Do HTML escaping, converting < to &lt;, etc.  'dest' needs to be
- * allocated & freed by the caller.
- *
- * If you're using this to append to a string, you can pass in the
- * safe_{str|chr} (char **) so we can just do the append directly,
- * saving you an alloc_lbuf()...free_lbuf().  If you want us to append
- * from the start of 'dest', just pass in a 0 for 'destp'.
- *
- * Returns 0 if the copy succeeded, 1 if it failed.
- */
-int html_escape(const char *src, char *dest, char **destp)
-{
-	const char *msg_orig;
-	char *temp;
-	int ret = 0;
-
-	if(destp == 0) {
-		temp = dest;
-		destp = &temp;
-	}
-
-	for(msg_orig = src; msg_orig && *msg_orig && !ret; msg_orig++) {
-		switch (*msg_orig) {
-		case '<':
-			ret = safe_str("&lt;", dest, destp);
-			break;
-		case '>':
-			ret = safe_str("&gt;", dest, destp);
-			break;
-		case '&':
-			ret = safe_str("&amp;", dest, destp);
-			break;
-		case '\"':
-			ret = safe_str("&quot;", dest, destp);
-			break;
-		default:
-			ret = safe_chr(*msg_orig, dest, destp);
-			break;
-		}
-	}
-	**destp = 0;
-	return ret;
-}
-
 char *colorize(dbref player, char *from);
 
 void notify_checked(dbref target, dbref sender, const char *msg, int key)
@@ -516,22 +472,11 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 	switch (Typeof(target)) {
 	case TYPE_PLAYER:
 		if(key & MSG_ME) {
-			if(key & MSG_HTML) {
-				raw_notify_html(target, msg_ns);
-			} else {
-				if(Html(target)) {
-					char *msg_ns_escaped;
+			if(key & MSG_COLORIZE)
+				colbuf = colorize(target, msg_ns);
+			raw_notify(target, colbuf ? colbuf : msg_ns);
 
-					msg_ns_escaped = alloc_lbuf("notify_checked_escape");
-					html_escape(msg_ns, msg_ns_escaped, 0);
-					raw_notify(target, msg_ns_escaped);
-					free_lbuf(msg_ns_escaped);
-				} else {
-					if(key & MSG_COLORIZE)
-						colbuf = colorize(target, msg_ns);
-					raw_notify(target, colbuf ? colbuf : msg_ns);
-				}
-			}
+
 		}
 
 		if(colbuf)
@@ -739,9 +684,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 					continue;
 				if(obj != target) {
 					notify_checked(obj, sender, buff,
-								   MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE | (key
-																		  &
-																		  MSG_HTML));
+								   MSG_ME | MSG_F_DOWN | MSG_S_OUTSIDE );
 				}
 			}
 			if(key & MSG_S_OUTSIDE)

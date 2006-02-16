@@ -192,7 +192,6 @@ void cf_init(void)
 	StringCopy(mudconf.fixed_tel_msg, "");
 	StringCopy(mudconf.public_channel, "Public");
 	StringCopy(mudconf.guests_channel, "Guests");
-	StringCopy(mudconf.pueblo_msg, "</xch_mudtext><img xch_mode=html>");
 	mudconf.indent_desc = 0;
 	mudconf.name_spaces = 1;
 	mudconf.fork_dump = 1;
@@ -1249,8 +1248,6 @@ CONF conftable[] = {
 	 cf_string, CA_GOD, (void *) mudconf.dump_msg, 128},
 	{(char *) "postdump_message",
 	 cf_string, CA_GOD, (void *) mudconf.postdump_msg, 128},
-	{(char *) "pueblo_message",
-	 cf_string, CA_GOD, (int *) mudconf.pueblo_msg, 1024},
 	{(char *) "dump_offset",
 	 cf_int, CA_GOD, &mudconf.dump_offset, 0},
 	{(char *) "earn_limit",

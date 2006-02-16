@@ -114,7 +114,6 @@ struct descriptor_data {
 /* flags in the flag field */
 #define	DS_CONNECTED	0x0001	/* player is connected */
 #define	DS_AUTODARK	0x0002	/* Wizard was auto set dark. */
-#define DS_PUEBLOCLIENT 0x0004	/* Client is Pueblo-enhanced. */
 #define DS_IDENTIFIED   0x0008
 
 extern DESC *descriptor_list;

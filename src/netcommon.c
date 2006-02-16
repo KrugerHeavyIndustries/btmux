@@ -132,25 +132,6 @@ struct timeval update_quotas(struct timeval last, struct timeval current)
 	return msec_add(last, nslices * mudconf.timeslice);
 }
 
-/* raw_notify_html() -- raw_notify() without the newline */
-void raw_notify_html(dbref player, const char *msg)
-{
-	DESC *d;
-
-	if(!msg || !*msg)
-		return;
-	if(mudstate.inpipe && (player == mudstate.poutobj)) {
-		safe_str((char *) msg, mudstate.poutnew, &mudstate.poutbufc);
-		return;
-	}
-	if(!Connected(player))
-		return;
-
-	DESC_ITER_PLAYER(player, d) {
-		queue_string(d, msg);
-	}
-}
-
 #ifdef TCP_CORK					// Linux 2.4, 2.6
 /* choke_player: cork the player's sockets, must have a matching release_socket */
 void choke_player(dbref player)
@@ -635,9 +616,6 @@ static void announce_connect(dbref player, DESC * d)
 	loc = Location(player);
 	s_Connected(player);
 
-	if(d->flags & DS_PUEBLOCLIENT) {
-		s_Html(player);
-	}
 
 	raw_notify(player, tprintf("\n%sMOTD:%s %s\n", ANSI_HILITE,
 							   ANSI_NORMAL, mudconf.motd_msg));
@@ -751,7 +729,7 @@ static void announce_connect(dbref player, DESC * d)
 	time_str[strlen(time_str) - 1] = '\0';
 	record_login(player, 1, time_str, d->addr, d->username);
 	look_in(player, Location(player),
-			(LK_SHOWEXIT | LK_OBEYTERSE | LK_SHOWVRML));
+			(LK_SHOWEXIT | LK_OBEYTERSE));
 	mudstate.curr_enactor = temp;
 	release_player(player);
 }
@@ -1087,9 +1065,8 @@ static void dump_users(DESC * e, char *match, int key)
 	if(!match || !*match)
 		match = NULL;
 
-	if(e->flags & DS_PUEBLOCLIENT)
-		queue_string(e, "<pre>");
-
+	
+	
 	buf = alloc_mbuf("dump_users");
 	if(key == CMD_SESSION) {
 		queue_string(e, "                               ");
@@ -1221,8 +1198,6 @@ static void dump_users(DESC * e, char *match, int key)
 														 max_players));
 	queue_string(e, buf);
 
-	if(e->flags & DS_PUEBLOCLIENT)
-		queue_string(e, "</pre>");
 
 	free_mbuf(buf);
 }
@@ -1738,16 +1713,6 @@ int do_command(DESC * d, char *command, int first)
 		case CMD_SUFFIX:
 			set_userstring(&d->output_suffix, arg);
 			break;
-		case CMD_PUEBLOCLIENT:
-			/* Set the descriptor's flag */
-			d->flags |= DS_PUEBLOCLIENT;
-			/* If we're already connected, set the player's flag */
-			if(d->player) {
-				s_Html(d->player);
-			}
-			queue_string(d, mudconf.pueblo_msg);
-			queue_string(d, "\r\n");
-			break;
 		default:
 			STARTLOG(LOG_BUGS, "BUG", "PARSE") {
 				arg = alloc_lbuf("do_command.LOG");
@@ -1835,16 +1800,6 @@ void logged_out(dbref player, dbref cause, int key, char *arg)
 				set_userstring(&d->output_suffix, arg);
 				return;
 			}
-			break;
-		case CMD_PUEBLOCLIENT:
-			/* Set the descriptor's flag */
-			d->flags |= DS_PUEBLOCLIENT;
-			/* If we're already connected, set the player's flag */
-			if(d->player) {
-				s_Html(d->player);
-			}
-			queue_string(d, mudconf.pueblo_msg);
-			queue_string(d, "\r\n");
 			break;
 		}
 	}

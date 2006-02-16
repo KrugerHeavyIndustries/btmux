@@ -308,7 +308,7 @@ FLAGENT gen_flags[] = {
 	{"HEAD", HEAD_FLAG, '?',
 	 FLAG_WORD2, 0, fh_wiz}
 	,
-	{"HTML", HTML, '(',
+	{"BLIND", BLIND, '(',
 	 FLAG_WORD2, 0, fh_any}
 	,
 	{"IMMORTAL", IMMORTAL, 'i',

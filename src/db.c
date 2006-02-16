@@ -279,8 +279,6 @@ ATTR attr[] = {
 	{"VX", A_VA + 23, AF_ODARK, NULL},
 	{"VY", A_VA + 24, AF_ODARK, NULL},
 	{"VZ", A_VA + 25, AF_ODARK, NULL},
-	{"VRML_URL", A_VRML_URL, AF_ODARK, NULL},
-	{"HTDesc", A_HTDESC, AF_NOPROG, NULL},
 	{"Xtype", A_XTYPE, AF_MDARK | AF_WIZARD, NULL},
 	{"*Password", A_PASS, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
 	 NULL},
