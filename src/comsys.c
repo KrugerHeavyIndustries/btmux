@@ -377,7 +377,7 @@ static void do_comsend(struct channel *ch, char *mess)
 #endif
 }
 
-static void do_joinchannel(dbref player, struct channel *ch)
+extern void do_joinchannel(dbref player, struct channel *ch)
 {
 	struct comuser *user;
 	int i;
@@ -414,7 +414,7 @@ static void do_joinchannel(dbref player, struct channel *ch)
 	}
 
 	/* Trigger AENTER of any channel objects on the channel */
-	for(i = ch->num_users - 1; i > 0; i--) {
+	for(i = ch->num_users; i > 0; i--) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_AENTER,
 				   (char **) NULL, 0);
@@ -439,7 +439,7 @@ static void do_leavechannel(dbref player, struct channel *ch)
 		return;
 
 	/* Trigger ALEAVE of any channel objects on the channel */
-	for(i = ch->num_users - 1; i > 0; i--) {
+	for(i = ch->num_users; i > 0; i--) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_ALEAVE,
 				   (char **) NULL, 0);
@@ -966,7 +966,7 @@ void do_allcom(dbref player, dbref cause, int key, char *arg1)
 
 }
 
-static void sort_users(struct channel *ch)
+extern void sort_users(struct channel *ch)
 {
 	int i;
 	int nu;
