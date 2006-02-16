@@ -1602,6 +1602,17 @@ void LandMech(MECH * mech)
 					done = 1;
 					MechFalls(mech, 1, 0);
 				}
+			} else if((MechCritStatus(mech) & GYRO_DAMAGED) || (MechCritStatus(mech) & GYRO_DESTROYED)) {
+				mech_notify(mech, MECHPILOT, "Your damaged gyro makes it harder to land");
+				if(!MadePilotSkillRoll(mech, 0)) {
+					mech_notify(mech, MECHALL,
+							"Your damaged gyro has caused you to fall upon landing!");
+					MechLOSBroadcast(mech,
+							"lands, twists awkwardly, and falls down!");
+					dfa = 1;
+					done = 1;
+					MechFalls(mech,1,0);
+				}
 			}
 		}
 	}
