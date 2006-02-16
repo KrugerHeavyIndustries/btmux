@@ -481,8 +481,6 @@ void list_chashstats(dbref);
 #define MALIAS_RENAME	6	/* Renames a mail alias */
 #define MALIAS_LIST	8	/* Lists mail aliases */
 #define MALIAS_STATUS	9	/* Status of mail aliases */
-#define	MARK_SET	0	/* Set mark bits */
-#define	MARK_CLEAR	1	/* Clear mark bits */
 #define	MOTD_ALL	0	/* login message for all */
 #define	MOTD_WIZ	1	/* login message for wizards */
 #define	MOTD_DOWN	2	/* login message when logins disabled */

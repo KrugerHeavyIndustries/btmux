@@ -296,18 +296,6 @@ NAMETAB malias_sw[] = {
 	{(char *) "status", 1, CA_PUBLIC, MALIAS_STATUS}
 };
 
-NAMETAB mark_sw[] = {
-	{(char *) "set", 1, CA_PUBLIC, MARK_SET},
-	{(char *) "clear", 1, CA_PUBLIC, MARK_CLEAR},
-	{NULL, 0, 0, 0}
-};
-
-NAMETAB markall_sw[] = {
-	{(char *) "set", 1, CA_PUBLIC, MARK_SET},
-	{(char *) "clear", 1, CA_PUBLIC, MARK_CLEAR},
-	{NULL, 0, 0, 0}
-};
-
 NAMETAB motd_sw[] = {
 	{(char *) "brief", 1, CA_WIZARD, MOTD_BRIEF | SW_MULTIPLE},
 	{(char *) "connect", 1, CA_WIZARD, MOTD_ALL},
@@ -440,9 +428,6 @@ CMDENT command_table[] = {
 	{(char *) "@admin", NULL, CA_WIZARD, 0, CS_TWO_ARG | CS_INTERP, do_admin},
 	{(char *) "@alias", NULL, CA_NO_GUEST | CA_NO_SLAVE, 0, CS_TWO_ARG,
 	 do_alias},
-	{(char *) "@apply_marked", NULL, CA_WIZARD | CA_GBL_INTERP,
-	 0, CS_ONE_ARG | CS_CMDARG | CS_NOINTERP | CS_STRIP_AROUND,
-	 do_apply_marked},
 	{(char *) "@attribute", attrib_sw, CA_GOD, 0, CS_TWO_ARG | CS_INTERP,
 	 do_attribute},
 	{(char *) "@boot", boot_sw, CA_NO_GUEST | CA_NO_SLAVE, 0,
@@ -546,10 +531,6 @@ CMDENT command_table[] = {
 	 CS_TWO_ARG | CS_INTERP, do_mail},
 	{(char *) "@malias", malias_sw, CA_NO_SLAVE | CA_NO_GUEST, 0,
 	 CS_TWO_ARG | CS_INTERP, do_malias},
-	{(char *) "@mark", mark_sw, CA_WIZARD, SRCH_MARK,
-	 CS_ONE_ARG | CS_NOINTERP, do_search},
-	{(char *) "@mark_all", markall_sw, CA_WIZARD, MARK_SET, CS_NO_ARGS,
-	 do_markall},
 	{(char *) "@motd", motd_sw, CA_WIZARD, 0, CS_ONE_ARG, do_motd},
 	{(char *) "@mvattr", NULL, CA_NO_SLAVE | CA_NO_GUEST | CA_GBL_BUILD,
 	 0, CS_TWO_ARG | CS_ARGV, do_mvattr},

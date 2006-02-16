@@ -57,7 +57,6 @@ CMD_TWO_ARG(do_malias);		/* mail alias command */
 CMD_ONE_ARG(do_prepend);
 CMD_ONE_ARG(do_postpend);
 
-CMD_ONE_ARG_CMDARG(do_apply_marked);	/* Apply command to marked objects */
 CMD_TWO_ARG(do_admin);		/* Change config parameters */
 CMD_TWO_ARG(do_alias);		/* Change the alias of something */
 CMD_TWO_ARG(do_attribute);	/* Manage user-named attributes */
@@ -105,7 +104,6 @@ CMD_ONE_ARG(do_list);		/* List contents of internal tables */
 CMD_ONE_ARG(do_list_file);	/* List contents of message files */
 CMD_TWO_ARG(do_lock);		/* Set a lock on an object */
 CMD_ONE_ARG(do_look);		/* Look here or at something */
-CMD_NO_ARG(do_markall);		/* Mark or unmark all objects */
 CMD_ONE_ARG(do_motd);		/* Set/list MOTD messages */
 CMD_ONE_ARG(do_move);		/* Move about using exits */
 CMD_TWO_ARG_ARGV(do_mvattr);	/* Move attributes on object */
