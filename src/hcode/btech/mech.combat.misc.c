@@ -216,6 +216,7 @@ void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS)
 					"%ch%crYou are sprayed with burning jelly!%cn");
 	}
 	heat_effect(mech, hitMech, hmod * 30, 1);	/* 3min for _each_ missile */
+	water_extinguish_inferno(hitMech); /* They could be in -2 standing or -1 prone.. Shooter just wastes his missiles! */
 }
 
 //extern int global_kill_cheat;
