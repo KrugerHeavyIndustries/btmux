@@ -1098,6 +1098,8 @@ void mech_explode(dbref player, void *data, char *buffer)
 		 */
 		DOCHECK(!mudconf.btech_explode_ammo,
 				"You can't bring yourself to do it!");
+		DOCHECK(MechStatus(mech) & EXPLODE_SAFE,
+			"That's not a possibility here.");
 		i = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
 		DOCHECK(!i, "There is no 'damaging' ammo on your 'mech!");
 		/* Engage the boom-event */

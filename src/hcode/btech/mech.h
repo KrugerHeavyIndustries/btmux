@@ -946,7 +946,7 @@ struct repair_data {
 #define PERFORMING_ACTION     0x00000200  /* (j) Set if the unit is performing some sort of action. Controlled by SCode */
 #define FLIPPED_ARMS          0x00000400  /* (k) */
 #define AMS_ENABLED           0x00000800  /* (l) only settable if mech has ANTI-MISSILE_TECH */
-/* UNUSED                     0x00001000     (m) */
+#define EXPLODE_SAFE          0x00001000  /* (m) Used to prevent a unit from doing EXPLODE AMMO */
 #define UNCONSCIOUS           0x00002000  /* (n) Pilot is unconscious */
 #define TOWED                 0x00004000  /* (o) Someone's towing us */
 #define LOCK_TARGET           0x00008000  /* (p) We mean business */
