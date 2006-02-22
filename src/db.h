@@ -232,7 +232,7 @@ extern void dump_database_internal(int);
 	for ((thing)=0; (thing)<mudstate.db_top; (thing)++)
 
 #define DO_WHOLE_DB_REV(thing) \
-	for ((thing)=mudstate.db_top; (thing)>0; (thing)--)
+	for ((thing)=mudstate.db_top-1; (thing)>0; (thing)--)
 
 #define HAG_WUZ_HERE
 #define	Dropper(thing)	(Connected(Owner(thing)) && Hearer(thing))
