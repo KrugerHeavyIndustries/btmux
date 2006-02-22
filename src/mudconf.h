@@ -148,7 +148,7 @@ struct confdata {
     int btech_ooc_comsys;	/* Enable bypassing of CA_NO_IC command checks for IC location blocking */
     int btech_idf_requires_spotter; /* Requires spotter for IDF firing */
     int btech_vtol_ice_causes_fire; /* VTOL ICE engines cause fire on crash/explosion */
-    int btech_use_glancing_blows;   /* BTH-1 rolls do half the damage */
+    int btech_glancing_blows; /* 0=Don't, 1=maxtech (BTH) , 2= Exile (BTH-1) */
     int btech_inferno_penalty;    /* FASA Inferno Ammo penalty (+30 heat, ammo explode) */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
