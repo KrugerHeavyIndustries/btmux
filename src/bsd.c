@@ -550,6 +550,8 @@ int process_input(DESC * d)
 	if(got <= 0) {
 		if(errno == EINTR)
 			return 1;
+        else if(errno == EAGAIN)
+            return 1;
 		else
 			return 0;
 	}

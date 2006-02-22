@@ -403,7 +403,7 @@ struct statedata {
     HASHTAB attr_name_htab;	/* Attribute names hashtable */
     HASHTAB vattr_name_htab;	/* User attribute names hashtable */
     HASHTAB player_htab;	/* Player name->number hashtable */
-    rbtree *desctree;
+    rbtree desctree;
     NHSHTAB fwdlist_htab;	/* Room forwardlists */
     NHSHTAB parent_htab;	/* Parent $-command exclusion */
 #ifdef PARSE_TREES
