@@ -2309,7 +2309,12 @@ int load_restart_db_xdr()
 	mmdb = mmdb_open_read("restart.xdr");
     if(!mmdb) return 0;
 
-    mmdb_read_uint32(mmdb); // RESTART_MAGIC
+    val = mmdb_read_uint32(mmdb); // RESTART_MAGIC
+    if(val != RESTART_MAGIC) {
+        printk("restart database had invalid magic.");
+        printk("read %08x expected %08x.", val, RESTART_MAGIC);
+        return 0;
+    }
     mmdb_read_uint32(mmdb); // VERSION
     mmdb_read_uint32(mmdb); // VERSION
     mudstate.start_time = mmdb_read_uint32(mmdb);
