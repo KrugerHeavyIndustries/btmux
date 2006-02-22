@@ -938,6 +938,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	int targetnum, roll, swarmingUs;
 	char location[20];
 	int ts = 0, iwa;
+	int RbaseToHit, glance = 0;
+	
 
 	/*
 	 * Common Checks
@@ -1274,10 +1276,17 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	if(AttackType == PA_CLUB)
 		SetRecycleLimb(mech, LARM, PHYSICAL_RECYCLE_TIME);
 
+	RbaseToHit = baseToHit;
+	if(mudconf.btech_glancing_blows == 2)
+		RbaseToHit = baseToHit - 1;
 	// We've successfully hit the target.
-	if(roll >= baseToHit) {
+	if(roll >= RbaseToHit) {
 		phys_succeed(mech, target, AttackType);
-
+		if (mudconf.btech_glancing_blows && (roll == RbaseToHit)) {
+			MechLOSBroadcast(target,"is nicked by a glancing blow!");
+			mech_notify(target, MECHALL, "You are nicked by a glancing blow!");
+			glance = 1 ;
+		}
 		if(AttackType == PA_CLUB) {
 			int clubLoc = -1;
 
@@ -1298,7 +1307,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 		// Do the deed - Damage the victim. If we're tripping, we don't do
 		// damage but try to make a skill roll.
 		if(AttackType != PA_TRIP)
-			PhysicalDamage(mech, target, damageweight, AttackType, sect);
+			PhysicalDamage(mech, target, damageweight, AttackType, sect, glance);
 		else
 			PhysicalTrip(mech, target);
 
@@ -1313,7 +1322,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 							"Uh oh. You miss the little buggers, but hit yourself!");
 				MechLOSBroadcast(mech, "misses, and hits itself!");
 
-				PhysicalDamage(mech, mech, damageweight, AttackType, sect);
+				PhysicalDamage(mech, mech, damageweight, AttackType, sect, glance);
 			}					// If we really screw up against suits swarmed on ourselves,
 			// nail us for damage.
 		}						// end if() - Suit + Swarmed + Physical + Self Damage checks
@@ -1371,7 +1380,7 @@ void PhysicalTrip(MECH * mech, MECH * target)
  * Damage the victim.
  */
 void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
-					int AttackType, int sect)
+					int AttackType, int sect, int glance)
 {
 	int hitloc = 0, damage, hitgroup = 0, isrear, iscritical, i;
 
@@ -1487,6 +1496,8 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
 		// End kick hitloc code.
 	}							// end switch() - hitloc selection.
 
+	if(glance)
+		damage = (damage + 1) / 2;
 	// Damage the target.
 	MyDamageMech(target, mech, 1, MechPilot(mech), hitloc,
 				 (hitgroup == BACK) ? 1 : 0, 0, damage, 0);
