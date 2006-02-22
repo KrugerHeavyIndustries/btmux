@@ -179,6 +179,7 @@ int regexp_match(char *pattern, char *str, char *args[], int nargs)
 	for(i = 0; (i < NSUBEXP) && (pmatch[i].rm_so != -1) && (pmatch[i].rm_eo != -1); i++) {
 		len = pmatch[i].rm_eo - pmatch[i].rm_so;
 		args[i] = alloc_lbuf("regexp_match");
+        memset(args[i], 0, LBUF_SIZE);
 		strncpy(args[i], str + pmatch[i].rm_so, len);
 		args[i][len] = '\0';	/* strncpy() does not null-terminate */
 	}
@@ -199,6 +200,8 @@ static int atr_match1(dbref thing, dbref parent, dbref player, char type,
 	char *args[10];
 	ATTR *ap;
 
+    memset(args, 0, sizeof(args));
+    
 	/*
 	 * See if we can do it.  Silently fail if we can't. 
 	 */
@@ -1259,9 +1262,11 @@ int main(int argc, char *argv[])
 
 	mindb = 0;					/* Are we creating a new db? */
 	corrupt = 0;				/* Database isn't corrupted. */
+    memset(&mudstate, 0, sizeof(mudstate));
 	time(&mudstate.start_time);
 	time(&mudstate.restart_time);
 	mudstate.executable_path = strdup(argv[0]);
+    mudstate.db_top = -1;
 	tcache_init();
 	pcache_init();
 	cf_init();
@@ -1352,6 +1357,7 @@ int main(int argc, char *argv[])
 
 	for(mindb = 0; mindb < MAX_GLOBAL_REGS; mindb++) {
 		mudstate.global_regs[mindb] = alloc_lbuf("main.global_reg");
+        memset(mudstate.global_regs[mindb], 0, LBUF_SIZE);
 	}
 
 	mudstate.now = time(NULL);
