@@ -1595,6 +1595,7 @@ void initialize_objects(dbref first, dbref last)
 	dbref thing;
 
 	for(thing = first; thing < last; thing++) {
+        memset(&db[thing], 0, sizeof(db[0]));
 		s_Owner(thing, GOD);
 		s_Flags(thing, (TYPE_GARBAGE | GOING));
 		s_Flags2(thing, 0);
