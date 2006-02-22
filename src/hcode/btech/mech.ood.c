@@ -164,7 +164,7 @@ void mech_ood_event(MUXEVENT * e)
 				"Water floods your engine and your unit "
 				"becomes unoperable.");
 		if(MechType(mech) == CLASS_BSUIT)
-			MechLosBroadcast(mech,"emits some bubbles and flails their arms around as they sink to the bottom!");
+			MechLOSBroadcast(mech,"emits some bubbles and flails their arms around as they sink to the bottom!");
 		else
 			MechLOSBroadcast(mech,"emits some bubbles as its engines are flooded.");
 		DestroyMech(mech, mech, 0);
