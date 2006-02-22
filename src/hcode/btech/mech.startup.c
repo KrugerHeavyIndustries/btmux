@@ -164,8 +164,10 @@ static void mech_startup_event(MUXEVENT * e)
 			mech_notify(mech, MECHALL,
 						"Water floods your engine and your unit "
 						"becomes inoperable.");
-			MechLOSBroadcast(mech,
-							 "emits some bubbles as its engines are flooded.");
+			if(MechType(mech) == CLASS_BSUIT)
+				MechLOSBroadcast(mech,"emits some bubbles and flails their arms around as they sink to the bottom.");
+			else
+				MechLOSBroadcast(mech,"emits some bubbles as its engines are flooded.");
 			DestroyMech(mech, mech, 0);
 			return;
 
