@@ -26,11 +26,11 @@ static void do_save_com(chmsg *);
 static void do_show_com(chmsg *);
 static void do_comlast(dbref, struct channel *);
 static void do_comsend(struct channel *, char *);
-static void do_joinchannel(dbref, struct channel *);
+extern void do_joinchannel(dbref, struct channel *);
 static void do_leavechannel(dbref, struct channel *);
 static void do_comwho(dbref, struct channel *);
 static void do_setnewtitle(dbref, struct channel *, char *);
-static void sort_users(struct channel *);
+extern void sort_users(struct channel *);
 static int do_test_access(dbref, long, struct channel *);
 
 /*
@@ -414,7 +414,7 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 	}
 
 	/* Trigger AENTER of any channel objects on the channel */
-	for(i = 0 ; i < ch->num_users ; i++) {
+	for(i = ch->num_users - 1; i > 0; i--) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_AENTER,
 				   (char **) NULL, 0);
@@ -439,7 +439,7 @@ static void do_leavechannel(dbref player, struct channel *ch)
 		return;
 
 	/* Trigger ALEAVE of any channel objects on the channel */
-	for(i = 0; i < ch->num_users; i++) {
+	for(i = ch->num_users - 1; i > 0; i--) {
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_ALEAVE,
 				   (char **) NULL, 0);
