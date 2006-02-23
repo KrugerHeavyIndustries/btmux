@@ -1421,7 +1421,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 			notify(player, tempbuff);
 	}
 
-	ammoweapcount = FindAmmunition(mech, ammoweap, ammo, ammomax, modearray);
+	ammoweapcount = FindAmmunition(mech, ammoweap, ammo, ammomax, modearray, 0);
 	if(!doweird) {
 		notify(player,
 			   "==================WEAPON SYSTEMS===========================AMMUNITION========");
