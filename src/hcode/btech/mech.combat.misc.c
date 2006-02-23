@@ -265,8 +265,14 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	MAP *mech_map;
 	MECH *ttarget;
 
-	if(Destroyed(target))
+	if(Destroyed(target)) {
+		/* This should be the last the amechdest stuff. pretty much a catchall */
+		if (mech)
+			ChannelEmitKill(target, mech);
+		else
+			ChannelEmitKill(target, target);
 		return;
+	}
 	//global_kill_cheat = 1;
 	if(mech && target)
 		ChannelEmitKill(target, mech);
