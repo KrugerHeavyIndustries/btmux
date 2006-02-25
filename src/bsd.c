@@ -62,12 +62,16 @@ void accept_new_connection(int, short, void *);
 
 int bind_descriptor(DESC *d) {
     d->refcount++;
+#if 0
     dprintk("%p bound, count %d", d, d->refcount);
+#endif
 }
 
 int release_descriptor(DESC *d) {
     d->refcount--;
+#if 0
     dprintk("%p released, count %d", d, d->refcount);
+#endif
     if(d->refcount == 0) {
         dprintk("%p destructing", d);
         freeqs(d);
