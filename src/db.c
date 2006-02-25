@@ -2254,6 +2254,7 @@ void load_restart_db()
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
+        d->refcount = 1;
 
 		d->saddr_len = sizeof(d->saddr);
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,
@@ -2354,6 +2355,7 @@ int load_restart_db_xdr()
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
+        d->refcount = 1;
 
 		d->saddr_len = sizeof(d->saddr);
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,

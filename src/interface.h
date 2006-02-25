@@ -98,6 +98,7 @@ struct descriptor_data {
     time_t connected_at;
     time_t last_time;
     int quota;
+    int refcount;
     int wait_for_input;		/* Used by @prog */
     dbref wait_cause;		/* Used by @prog */
     PROG *program_data;
@@ -115,6 +116,7 @@ struct descriptor_data {
 #define	DS_CONNECTED	0x0001	/* player is connected */
 #define	DS_AUTODARK	0x0002	/* Wizard was auto set dark. */
 #define DS_IDENTIFIED   0x0008
+#define DS_DEAD     0x10000000 /* Socket has disconnected, ignore. */
 
 extern DESC *descriptor_list;
 

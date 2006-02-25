@@ -400,6 +400,7 @@ void desc_addhash(DESC * d)
 	dbref player;
 	DESC *hdesc;
 
+    bind_descriptor(d);
 	player = d->player;
 
 	hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
@@ -445,10 +446,12 @@ static void desc_delhash(DESC * d)
 	if(hdesc == d && hdesc->hashnext) {
 		dprintk("updating %d to use hashroot %p", d->player, hdesc->hashnext);
 		rb_insert(mudstate.desctree, (void *) d->player, hdesc->hashnext);
+        release_descriptor(d);
 		return;
 	} else if(hdesc == d) {
 		dprintk("removing %d table", d->player);
 		rb_delete(mudstate.desctree, (void *) d->player);
+        release_descriptor(d);
 		return;
 	}
 
@@ -466,7 +469,8 @@ static void desc_delhash(DESC * d)
 		log_text(buffer);
 	}
 	d->hashnext = NULL;
-	return;
+    release_descriptor(d);
+    return;
 }
 
 extern int fcache_conn_c;
