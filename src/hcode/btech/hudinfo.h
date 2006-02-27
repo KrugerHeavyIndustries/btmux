@@ -58,6 +58,7 @@ struct hudinfo_command_struct {
     { "wsc", "WSC", HUDCMD_ACTIVE | HUDCMD_HASARG, hud_weapscan },
     { "t", "T", HUDCMD_ACTIVE | HUDCMD_HASARG, hud_tactical },
     { "con", "CON", HUDCMD_ACTIVE, hud_conditions },
+    { "co", "CO", HUDCMD_ACTIVE, hud_conditions },
     { NULL, NULL, 0, NULL },
 };
 
