@@ -797,6 +797,10 @@ void do_mail_purge(dbref player)
 			 */
 			nextp = mp->next;
 
+			/* Clear it. its the last message in the list */
+			if(mp->prev == NULL && mp->next == NULL) 
+				nhashdelete((int) player, &mudstate.mail_htab);
+				
 			/*
 			 * then wipe 
 			 */
