@@ -18,37 +18,45 @@
 #define TMP_TERR '1'
 
 static void swim_except(MAP * map, MECH * mech, int x, int y, char *msg,
-						int isbridge)
+        int isbridge)
 {
-	int i, j;
-	MECH *t;
+    MECH *target;
+    dllist_node *node;
 
-	if(!(Elevation(map, x, y)))
-		return;
-	for(i = 0; i < map->first_free; i++) {
-		j = map->mechsOnMap[i];
-		if(j < 0)
-			continue;
-		t = getMech(j);
-		if(!t || t == mech)
-			continue;
-		if(MechX(t) != x || MechY(t) != y)
-			continue;
-		MechTerrain(t) = WATER;
-		if((!isbridge && (MechZ(t) == 0) && (MechMove(t) != MOVE_HOVER)) ||
-		   (isbridge && MechZ(t) == MechElev(t))) {
-			MechLOSBroadcast(t, msg);
-			MechFalls(t, MechElev(t) + isbridge, 0);
-			if(MechType(t) == CLASS_VEH_GROUND && !Destroyed(t)) {
-				mech_notify(t, MECHALL,
-							"Water renders your vehicle inoperable.");
-				MechLOSBroadcast(t,
-								 "fizzles and pops as water renders it inoperable.");
-				Destroy(t);
-				ChannelEmitKill(t, t);
-			}
-		}
-	}
+    if (!(Elevation(map, x, y)))
+        return;
+
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        /* Already handled this for the unit that broke the ice, so
+         * we can ignore it */
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechX(target) != x || MechY(target) != y)
+            continue;
+
+        MechTerrain(target) = WATER;
+
+        if ((!isbridge && (MechZ(target) == 0) && (MechMove(target) != MOVE_HOVER)) ||
+                (isbridge && MechZ(target) == MechElev(target))) {
+
+            MechLOSBroadcast(target, msg);
+            MechFalls(target, MechElev(target) + isbridge, 0);
+
+            if (MechType(target) == CLASS_VEH_GROUND && !Destroyed(target)) {
+                mech_notify(target, MECHALL,
+                        "Water renders your vehicle inoperable.");
+                MechLOSBroadcast(target,
+                        "fizzles and pops as water renders it inoperable.");
+                Destroy(target);
+                ChannelEmitKill(target, target);
+            }
+        }
+    }
 }
 
 static void break_sub(MAP * map, MECH * mech, int x, int y, char *msg)

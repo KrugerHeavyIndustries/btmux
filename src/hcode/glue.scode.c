@@ -486,7 +486,6 @@ static GMV xcode_data[] = {
 	MaEntry("cf", cf, TYPE_SHORT),
 	MaEntry("cfmax", cfmax, TYPE_SHORT),
 	MaEntry("gravity", grav, TYPE_CHAR),
-	MaEntry("firstfree", first_free, TYPE_CHAR_RO),
 	MaEntry("mapheight", height, TYPE_SHORT_RO),
 	MaEntry("maplight", maplight, TYPE_CHAR),
 	MaEntryS("mapname", mapname, TYPE_STRING, 30),
@@ -2060,94 +2059,91 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
-					char *fargs[], int nfargs, char *cargs[], int ncargs)
+        char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
-	/*
-	 * fargs[0] = mapref
-	 *
-	 * OR
-	 *
-	 * fargs[0] = mapref
-	 * fargs[1] = x
-	 * fargs[2] = y
-	 * fargs[3] = range
-	 *
-	 * OR
-	 *
-	 * fargs[0] = mapref
-	 * fargs[1] = x
-	 * fargs[2] = y
-	 * fargs[3] = z
-	 * fargs[4] = range
-	 */
+    /*
+     * fargs[0] = mapref
+     *
+     * OR
+     *
+     * fargs[0] = mapref
+     * fargs[1] = x
+     * fargs[2] = y
+     * fargs[3] = range
+     *
+     * OR
+     *
+     * fargs[0] = mapref
+     * fargs[1] = x
+     * fargs[2] = y
+     * fargs[3] = z
+     * fargs[4] = range
+     */
 
-	MAP *map;
-	float x, y, z, range, realX, realY;
-	MECH *mech;
-	int loop;
-	dbref mapnum;
+    MAP *map;
+    float x, y, z, range, realX, realY;
+    MECH *mech;
+    dbref mapnum;
+    dllist_node *node;
 
-	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-	mapnum = match_thing(player, fargs[0]);
-	FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
-	map = getMap(mapnum);
-	FUNCHECK(!map, "#-1 INVALID MAP");
+    FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+    mapnum = match_thing(player, fargs[0]);
+    FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+    map = getMap(mapnum);
+    FUNCHECK(!map, "#-1 INVALID MAP");
 
-	switch (nfargs) {
-	case 1:
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
+    switch (nfargs) {
+        case 1:
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(mech)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	case 4:
-		x = atof(fargs[1]);
-		y = atof(fargs[2]);
-		range = atof(fargs[3]);
-		FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
-		FUNCHECK(range < 0, "#-1 INVALID RANGE");
-		MapCoordToRealCoord(x, y, &realX, &realY);
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
-			if(mech
-			   && FindXYRange(realX, realY, MechFX(mech),
-							  MechFY(mech)) <= range)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	case 5:
-		x = atof(fargs[1]);
-		y = atof(fargs[2]);
-		z = atof(fargs[3]);
-		range = atof(fargs[4]);
-		FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
-		FUNCHECK(range < 0, "#-1 INVALID RANGE");
-		MapCoordToRealCoord(x, y, &realX, &realY);
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
+                if (!(mech = getMech((int) dllist_data(node))))
+                    continue;
 
-			if(mech
-			   && FindRange(realX, realY, z * ZSCALE, MechFX(mech),
-							MechFY(mech), MechFZ(mech)) <= range)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	default:
-		safe_tprintf_str(buff, bufc, "#-1 INVALID ARGUMENTS");
-		break;
-	}
+                safe_tprintf_str(buff, bufc, "#%d ", mech->mynum);
+            }
+            break;
+        case 4:
+            x = atof(fargs[1]);
+            y = atof(fargs[2]);
+            range = atof(fargs[3]);
+            FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
+            FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
+            FUNCHECK(range < 0, "#-1 INVALID RANGE");
+            MapCoordToRealCoord(x, y, &realX, &realY);
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-	return;
+                if (!(mech = getMech((int) dllist_data(node))))
+                    continue;
+
+                if (FindXYRange(realX, realY, MechFX(mech), MechFY(mech)) <= range)
+                    safe_tprintf_str(buff, bufc, "#%d ", mech->mynum);
+            }
+            break;
+        case 5:
+            x = atof(fargs[1]);
+            y = atof(fargs[2]);
+            z = atof(fargs[3]);
+            range = atof(fargs[4]);
+            FUNCHECK(x < 0 || x > map->width, "#-1 INVALID X COORD");
+            FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
+            FUNCHECK(range < 0, "#-1 INVALID RANGE");
+            MapCoordToRealCoord(x, y, &realX, &realY);
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+                if (!(mech = getMech((int) dllist_data(node))))
+                    continue;
+
+                if (FindRange(realX, realY, z * ZSCALE,
+                            MechFX(mech), MechFY(mech), MechFZ(mech)) <= range)
+                    safe_tprintf_str(buff, bufc, "#%d ", mech->mynum);
+            }
+            break;
+        default:
+            safe_tprintf_str(buff, bufc, "#-1 INVALID ARGUMENTS");
+            break;
+    }
+
+    return;
 }
 
 int MapLimitedBroadcast3d(MAP * map, float x, float y, float z, float range,

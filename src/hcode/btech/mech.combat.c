@@ -1018,27 +1018,24 @@ void FireWeapon(MECH * mech,
 		 */
 		{
 			MECH *tmpmech;
-			int foo;
+            dllist_node *node;
 
-			for(foo = 0; foo < mech_map->first_free; foo++) {
+            for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
 
-				if(mech_map->mechsOnMap[foo] >= 0) {
+                if (mech->mynum == (int) dllist_data(node))
+                    continue;
 
-					if(!(tmpmech = getMech(mech_map->mechsOnMap[foo])))
-						continue;
-					if(mech->mynum == tmpmech->mynum)
-						continue;
-					if(MechX(tmpmech) != mapx && MechY(tmpmech) != mapy)
-						continue;
-					if(MechStatus2(tmpmech) & ATTACKEMIT_MECH)
-						SendAttackEmits(tprintf
-										("#%i attacks %d,%d (%s) (weapon)"
-										 " (%i/%i)", mech->mynum, mapx, mapy,
-										 short_hextarget(mech), baseToHit,
-										 roll));
-				}
+                if (!(tmpmech = getMech((int) dllist_data(node))))
+                    continue;
+                
+                if (MechX(tmpmech) != mapx && MechY(tmpmech) != mapy)
+                    continue;
 
-			}
+                if (MechStatus2(tmpmech) & ATTACKEMIT_MECH)
+                    SendAttackEmits("#%i attacks %d,%d (%s) (weapon) (%i/%i)",
+                            mech->mynum, mapx, mapy,
+                            short_hextarget(mech), baseToHit, roll);
+            }
 
 		}
 

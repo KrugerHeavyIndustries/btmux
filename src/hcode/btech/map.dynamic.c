@@ -41,6 +41,7 @@ static int ugly_kludge = 0;		/* Nonfatal for _first_ */
 
 void load_mapdynamic(FILE * f, MAP * map)
 {
+#if 0
 	int count = map->first_free;
 	int i, tmp;
 	unsigned char tmpb;
@@ -71,12 +72,14 @@ void load_mapdynamic(FILE * f, MAP * map)
 		fflush(stderr);
 		exit(1);
 	}
+#endif
 }
 
 #define outbyte(a) tmpb=(a);CHESA(&tmpb, 1, 1, f);
 
 void save_mapdynamic(FILE * f, MAP * map)
 {
+#if 0
 	int count = map->first_free;
 	int i, tmp;
 	unsigned char tmpb;
@@ -88,76 +91,19 @@ void save_mapdynamic(FILE * f, MAP * map)
 			CHESA(map->LOSinfo[i], sizeof(map->LOSinfo[i][0]), count, f);
 	}
 	outbyte(DYNAMIC_MAGIC);
-}
-
-void mech_map_consistency_check(MECH * mech)
-{
-	MAP *map = getMap(mech->mapindex);
-
-	if(!map) {
-		if(mech->mapindex > 0) {
-			mech->mapindex = -1;
-			fprintf(stderr, "#%d on nonexistent map - removing..\n",
-					mech->mynum);
-		}
-		return;
-	}
-	if(map->first_free <= mech->mapnumber) {
-		/* Invalid: possible corruption of data, therefore un-hosing it */
-		mech->mapindex = -1;
-		mech_remove_from_all_maps(mech);
-		fprintf(stderr, "#%d on invalid map - removing.. (#1)\n",
-				mech->mynum);
-		return;
-	}
-	if(map->mechsOnMap[mech->mapnumber] != mech->mynum) {
-		fprintf(stderr, "#%d on invalid map - removing .. (#2) -- mapindex: %d mapnumber: %d mechsOnMap: %d\n",
-				mech->mynum, mech->mapindex, mech->mapnumber, map->mechsOnMap[mech->mapnumber]);
-		mech->mapindex = -1;
-		mech_remove_from_all_maps(mech);
-		return;
-	}
-	mech_remove_from_all_maps_except(mech, map->mynum);
-}
-
-void eliminate_empties(MAP * map)
-{
-	int i;
-	int j;
-	int count, oldcount;
-	char tempbuf[SBUF_SIZE];
-
-	if(!map)
-		return;
-	for(i = map->first_free - 1; i >= 0; i--)
-		if(map->mechsOnMap[i] > 0)
-			break;
-	count = i + 1;
-	if(count == (oldcount = map->first_free))
-		return;
-	fprintf(stderr,
-			"Map #%d contains empty entries ; removing %d (%d->%d)\n",
-			map->mynum, oldcount - count, oldcount, count);
-	if(i < 0)
-		return;
-	for(j = count; j < oldcount; j++)
-		free((void *) map->LOSinfo[j]);
-	ReCreate(map->LOSinfo, unsigned int *, count);
-
-	ReCreate(map->mechsOnMap, dbref, count);
-	ReCreate(map->mechflags, char, count);
-
-	map->first_free = count;
-	sprintf(tempbuf, "%d", map->mynum);
-	mech_Rfixstuff(GOD, NULL, tempbuf);
+#endif
 }
 
 void remove_mech_from_map(MAP * map, MECH * mech)
 {
     int loop = map->first_free;
+    MECH *target;
 
     clear_mech_from_LOS(mech);
     mech->mapindex = -1;
+
+    /* Removing the unit from the map */
+    dllist_remove_node_matching_data(map->mechs, (void *) mech->mynum);
 
     if(map->first_free <= mech->mapnumber ||
             map->mechsOnMap[mech->mapnumber] != mech->mynum) {
@@ -188,24 +134,44 @@ void remove_mech_from_map(MAP * map, MECH * mech)
             map->first_free--;	/* Who cares about some lost memory? In realloc
                                    we'll gain it back anyway */
     }
-    if(Towed(mech)) {
-        /* Check that the towing guy isn't left on the map */
-        int i;
-        MECH *t;
 
-        for(i = 0; i < map->first_free; i++)
-            /* Release from towing if tow-guy ain't on same map already */
-            if((t = FindObjectsData(map->mechsOnMap[i])))
-                if(MechCarrying(t) == mech->mynum) {
-                    SetCarrying(t, -1);
-                    MechStatus(mech) &= ~TOWED;	/* Reset the Towed flag */
-                    break;
-                }
-    }
+    if (Towed(mech)) {
+
+        /* Check that the towing guy isn't left on the map */
+
+        if (!(target = getMech(MechTowedBy(mech)))) {
+
+            SendDebug("Mech #%d being towed by #%d but #%d doesn't exist anymore",
+                    mech->mynum, MechTowedBy(mech), MechTowedBy(mech));
+            MechStatus(mech) &= ~TOWED;
+            MechTowedBy(mech) = -1;
+
+        } else if (MechCarrying(target) != mech->mynum) {
+
+            SendDebug("Mech #%d being towed by #%d but it's towing something else (#%d)",
+                    mech->mynum, target->mynum, MechCarrying(target));
+            MechStatus(mech) &= ~TOWED;
+            MechTowedBy(mech) = -1;
+
+        } else {
+
+            if (mech->mapindex != target->mapindex) {
+
+                SendDebug("Mech #%d being towed by #%d but was moved to a new map",
+                        mech->mynum, target->mynum);
+                SetCarrying(target, -1);
+                MechStatus(mech) &= ~TOWED;
+                MechTowedBy(mech) = -1;
+            }
+
+        }
+
+    } 
+
     MechNumSeen(mech) = 0;
-    if(IsDS(mech))
-        SendDSInfo("DS #%d has left map #%d", mech->mynum,
-                map->mynum);
+
+    if (IsDS(mech))
+        SendDSInfo("DS #%d has left map #%d", mech->mynum, map->mynum);
 
 }
 
@@ -214,6 +180,8 @@ void add_mech_to_map(MAP * newmap, MECH * mech)
     int loop, count, i;
     dllist_node *node;
     MECH *tempMech;
+    MECH *target;
+    AUTO *autopilot;
 
     for(loop = 0; loop < newmap->first_free; loop++)
         if(newmap->mechsOnMap[loop] == mech->mynum)
@@ -290,24 +258,41 @@ void add_mech_to_map(MAP * newmap, MECH * mech)
     /* Is there an autopilot */
     if (MechAuto(mech) > 0) {
 
-        AUTO *a = getAutopilot(MechAuto(mech));
+        autopilot = getAutopilot(MechAuto(mech));
 
         /* Reset the AI's comtitle */
-        if (a)
-            auto_set_comtitle(a, mech);
+        if (autopilot)
+            auto_set_comtitle(autopilot, mech);
     }
 
     if (Towed(mech)) {
-        int i;
-        MECH *t;
 
-        for (i = 0; i < newmap->first_free; i++)
-            /* Release from towing if tow-guy ain't on same map already */
-            if ((t = FindObjectsData(newmap->mechsOnMap[i])))
-                if (MechCarrying(t) == mech->mynum)
-                    break;
-        if (i == newmap->first_free)
-            MechStatus(mech) &= ~TOWED;	/* Reset the Towed flag */
+        if (!(target = getMech(MechTowedBy(mech)))) {
+
+            SendDebug("Mech #%d being towed by #%d but #%d doesn't exist anymore",
+                    mech->mynum, MechTowedBy(mech), MechTowedBy(mech));
+            MechStatus(mech) &= ~TOWED;
+            MechTowedBy(mech) = -1;
+
+        } else if (MechCarrying(target) != mech->mynum) {
+
+            SendDebug("Mech #%d being towed by #%d but it's towing something else (#%d)",
+                    mech->mynum, target->mynum, MechCarrying(target));
+            MechStatus(mech) &= ~TOWED;
+            MechTowedBy(mech) = -1;
+
+        } else {
+
+            if (mech->mapindex != target->mapindex) {
+                SendDebug("Mech #%d being towed by #%d but was moved to a new map",
+                        mech->mynum, target->mynum);
+                SetCarrying(target, -1);
+                MechStatus(mech) &= ~TOWED;
+                MechTowedBy(mech) = -1;
+            }
+
+        }
+
     }
 
     MarkForLOSUpdate(mech);
@@ -321,7 +306,5 @@ void add_mech_to_map(MAP * newmap, MECH * mech)
 
 int mech_size(MAP * map)
 {
-	return map->first_free * (sizeof(dbref) + sizeof(char) +
-							  sizeof(unsigned short *) +
-							  map->first_free * sizeof(unsigned short));
+    return (dllist_size(map->mechs) * (sizeof(dllist_node)) + sizeof(dllist));
 }

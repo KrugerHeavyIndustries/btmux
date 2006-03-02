@@ -14,6 +14,7 @@
 #include "p.map.obj.h"
 #include "p.mech.startup.h"
 #include "p.mech.partnames.h"
+#include "p.mech.restrict.h"
 
 void debug_list(dbref player, void *data, char *buffer)
 {
@@ -136,39 +137,89 @@ void debug_memory(dbref player, void *data, char *buffer)
     notify_printf(player, "Grand total: %d bytes.", gtotal);
 }
 
+struct map_mechs_release_struct {
+    MAP *map;
+    dbref player;
+};
+
+void map_mechs_release(void *data, void *arg)
+{
+
+    struct map_mechs_release_struct *tmp = (struct map_mechs_release_struct *) arg;
+    dbref mech_dbref = (int) data;
+    dbref player = tmp->player;
+    MECH *mech = getMech(mech_dbref);
+    MECH *target;
+    MAP *map = tmp->map;
+    dllist_node *node;
+
+    if (mech) {
+
+        notify_printf(player,
+                "Shutting down Mech #%d and restting map index to -1....",
+                mech->mynum);
+        mech_shutdown(GOD, (void *) mech, "");
+        MechLastX(mech) = 0;
+        MechLastY(mech) = 0;
+        MechX(mech) = 0;
+        MechY(mech) = 0;
+
+        clear_mech_from_LOS(mech);
+        mech->mapindex = -1;
+
+        if (Towed(mech)) {
+
+            if (!(target = getMech(MechTowedBy(mech)))) {
+
+                SendDebug("Mech #%d being towed by #%d but #%d doesn't exist anymore",
+                        mech->mynum, MechTowedBy(mech), MechTowedBy(mech));
+                MechStatus(mech) &= ~TOWED;
+                MechTowedBy(mech) = -1;
+
+            } else if (MechCarrying(target) != mech->mynum) {
+
+                SendDebug("Mech #%d being towed by #%d but it's towing something else (#%d)",
+                        mech->mynum, target->mynum, MechCarrying(target));
+                MechStatus(mech) &= ~TOWED;
+                MechTowedBy(mech) = -1;
+
+            } else {
+
+                if (mech->mapindex != target->mapindex) {
+
+                    SendDebug("Mech #%d being towed by #%d but was moved to a new map",
+                            mech->mynum, target->mynum);
+                    SetCarrying(target, -1);
+                    MechStatus(mech) &= ~TOWED;
+                    MechTowedBy(mech) = -1;
+                }
+
+            }
+        }
+
+        MechNumSeen(mech) = 0;
+
+    } else {
+        SendError("Tried to remove unit #%d from map #%d but it was not",
+                " a valid unit, but I removed the node anyways", 
+                mech_dbref, map->mynum);
+    }
+
+}
+
 void ShutDownMap(dbref player, dbref mapnumber)
 {
-    MAP *map;
-    MECH *mech;
-    int j;
-    XcodeObject *xcode_object;
+    MAP *map = getMap(mapnumber);
+    struct map_mechs_release_struct arg = { map, player };
 
-    xcode_object = (XcodeObject *) rb_find(xcode_rbtree, (void *) mapnumber);
-    if (xcode_object) {
-        
-        map = (MAP *) xcode_object->data;
+    if (map) {
 
-        for (j = 0; j < map->first_free; j++)
-            if (map->mechsOnMap[j] != -1) {
-                mech = getMech(map->mechsOnMap[j]);
-                if (mech) {
-                    notify_printf(player,
-                            "Shutting down Mech #%d and restting map index to -1....",
-                            map->mechsOnMap[j]);
-                    mech_shutdown(GOD, (void *) mech, "");
-                    MechLastX(mech) = 0;
-                    MechLastY(mech) = 0;
-                    MechX(mech) = 0;
-                    MechY(mech) = 0;
-                    remove_mech_from_map(map, mech);
-                }
-            }
-
+        dllist_release(map->mechs, map_mechs_release, (void *) &arg); 
         map->first_free = 0;
 
         notify(player, "Map Cleared");
 
-        return;
+        map->mechs = dllist_create_list();
     }
 }
 

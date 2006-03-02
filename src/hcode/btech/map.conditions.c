@@ -29,17 +29,19 @@
 
 void alter_conditions(MAP * map)
 {
-	int i;
-	MECH *mech;
+    MECH *mech;
+    dllist_node *node;
 
-	for(i = 0; i < map->first_free; i++)
-		if((mech = FindObjectsData(map->mechsOnMap[i]))) {
-			UpdateConditions(mech, map);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if ((mech = getMech((int) dllist_data(node)))) {
+            UpdateConditions(mech, map);
 #if 0
-			mech_notify(mech, MECHALL,
-						"You notice a great disturbance in the Force..");
+            mech_notify(mech, MECHALL,
+                    "You notice a great disturbance in the Force..");
 #endif
-		}
+        }
+    }
 }
 
 void map_setconditions(dbref player, MAP * map, char *buffer)

@@ -89,18 +89,20 @@ static void mech_spot_event(MUXEVENT * e)
 
 void ClearFireAdjustments(MAP * map, dbref mech)
 {
-	int i;
-	MECH *m;
+    MECH *m;
+    dllist_node *node;
 
-	for(i = 0; i < map->first_free; i++)
-		if(map->mechsOnMap[i] >= 0) {
-			if(!(m = getMech(map->mechsOnMap[i])))
-				continue;
-			if(m->mynum == mech)
-				continue;
-			if(MechSpotter(m) == mech)
-				MechFireAdjustment(m) = 0;
-		}
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (!(m = getMech((int) dllist_data(node))))
+            continue;
+
+        if (m->mynum == mech)
+            continue;
+
+        if (MechSpotter(m) == mech)
+            MechFireAdjustment(m) = 0;
+    }
 }
 
 void mech_spot(dbref player, void *data, char *buffer)

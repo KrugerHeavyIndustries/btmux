@@ -294,8 +294,6 @@ static int load_update2(Node * tmp)
 {
 	int i = WhichType(tmp);;
 
-	if(i == GTYPE_MECH)
-		mech_map_consistency_check(NodeData(tmp));
 	return 1;
 }
 
@@ -329,7 +327,6 @@ static int load_update3(Node * tmp)
 	int i = WhichType(tmp);
 
 	if(i == GTYPE_MAP) {
-		eliminate_empties((MAP *) NodeData(tmp));
 		recalculate_minefields((MAP *) NodeData(tmp));
 	}
 	return 1;
@@ -369,7 +366,6 @@ static int load_update1(Node * tmp)
 			map->mechsOnMap = NULL;
 			map->LOSinfo = NULL;
 		}
-		debug_fixmap(GOD, map, NULL);
 		break;
 	case GTYPE_MECH:
 		mech = (MECH *) NodeData(tmp);
@@ -1083,8 +1079,6 @@ static int SaveMapObject(int key, MAP *map, struct mmdb_t *hcode_xdr)
     mmdb_write_uint32(hcode_xdr, map->cfmax);
     mmdb_write_uint32(hcode_xdr, map->onmap);
     mmdb_write_uint32(hcode_xdr, map->buildflag);
-
-    mmdb_write_uint32(hcode_xdr, map->first_free);
 
     mmdb_write_uint32(hcode_xdr, map->moves);
     mmdb_write_uint32(hcode_xdr, map->movemod);

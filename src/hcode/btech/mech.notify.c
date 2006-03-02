@@ -524,56 +524,56 @@ const char *GetMechID(MECH * mech)
 
 void mech_set_channelfreq(dbref player, void *data, char *buffer)
 {
-	int chn = -1;
-	int freq;
-	MECH *mech = (MECH *) data;
-	MECH *t;
-	MAP *map = getMap(mech->mapindex);
-	int i, j;
+    int chn = -1;
+    int freq;
+    MECH *mech = (MECH *) data;
+    MECH *target;
+    MAP *map = getMap(mech->mapindex);
+    dllist_node *node;
+    int i;
 
-	/* UH, this is code that _pretends_ it works :-) */
-	cch(MECH_MAP);
-	skipws(buffer);
-	DOCHECK(!*buffer, "Invalid input!");
-	chn = toupper(*buffer) - 'A';
-	DOCHECK(chn < 0 || chn >= MFreqs(mech), "Invalid channel-letter!");
-	buffer++;
-	skipws(buffer);
-	DOCHECK(!*buffer, "Invalid input!");
-	DOCHECK(*buffer != '=', "Missing =!");
-	buffer++;
-	skipws(buffer);
-	DOCHECK(!*buffer, "Invalid input!");
-	freq = atoi(buffer);
-	DOCHECK(!freq && strcmp(buffer, "0"), "Invalid frequency!");
-	DOCHECK(freq < 0, "Are you trying to kid me?");
-	DOCHECK(freq > 999999, "Invalid frequency - range is from 0 to 999999.");
-	notify_printf(player, "Channel %c set to %d.", 'A' + chn, freq);
-	mech->freq[chn] = freq;
+    /* UH, this is code that _pretends_ it works :-) */
+    cch(MECH_MAP);
+    skipws(buffer);
+    DOCHECK(!*buffer, "Invalid input!");
+    chn = toupper(*buffer) - 'A';
+    DOCHECK(chn < 0 || chn >= MFreqs(mech), "Invalid channel-letter!");
+    buffer++;
+    skipws(buffer);
+    DOCHECK(!*buffer, "Invalid input!");
+    DOCHECK(*buffer != '=', "Missing =!");
+    buffer++;
+    skipws(buffer);
+    DOCHECK(!*buffer, "Invalid input!");
+    freq = atoi(buffer);
+    DOCHECK(!freq && strcmp(buffer, "0"), "Invalid frequency!");
+    DOCHECK(freq < 0, "Are you trying to kid me?");
+    DOCHECK(freq > 999999, "Invalid frequency - range is from 0 to 999999.");
+    notify_printf(player, "Channel %c set to %d.", 'A' + chn, freq);
+    mech->freq[chn] = freq;
 
-	/* Code added from Exile to check for possible cheat freq acquring.
-	 * When a player sets a freq, it loops through all the mechs on the
-	 * map that do not belong to the same team and checks their freqs
-	 * against the one set. If it matches it emits message
-	 */
-	if(freq > 0) {
-		for(i = 0; i < map->first_free; i++) {
-			if(!(t = FindObjectsData(map->mechsOnMap[i])))
-				continue;
-			if(t == mech)
-				continue;
-			if(MechTeam(t) == MechTeam(mech))
-				continue;
-			for(j = 0; j < MFreqs(t); j++) {
-				if(t->freq[j] == freq && !(t->freqmodes[j] & FREQ_SCAN))
-					SendFreqs(tprintf("ALERT: Possible abuse by #%d (Team %d)"
-									  " setting freq %d matching #%d (Team %d)!",
-									  mech->mynum, MechTeam(mech), freq,
-									  t->mynum, MechTeam(t)));
-			}
-		}
-	}
-
+    /* Code added from Exile to check for possible cheat freq acquring.
+     * When a player sets a freq, it loops through all the mechs on the
+     * map that do not belong to the same team and checks their freqs
+     * against the one set. If it matches it emits message
+     */
+    if (freq > 0) {
+        for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+            if (!(target = getMech((int) dllist_data(node))))
+                continue;
+            if (target == mech)
+                continue;
+            if (MechTeam(target) == MechTeam(mech))
+                continue;
+            for (i = 0; i < MFreqs(target); i++) {
+                if (target->freq[i] == freq && !(target->freqmodes[i] & FREQ_SCAN))
+                    SendFreqs("ALERT: Possible abuse by #%d (Team %d)"
+                            " setting freq %d matching #%d (Team %d)!",
+                            mech->mynum, MechTeam(mech), freq,
+                            target->mynum, MechTeam(target));
+            }
+        }
+    }
 }
 
 void mech_set_channeltitle(dbref player, void *data, char *buffer)
@@ -1036,260 +1036,250 @@ void nonrecursive_commlink(int i)
 
 int findCommLink(MAP * map, MECH * from, MECH * to, int freq)
 {
-	int i, j;
-	MECH *t;
+    int i, j;
+    MECH *target;
+    dllist_node *node;
 
-	comm_num_to_conn = 0;
-	comm_mech[comm_num_to_conn++] = from;
-	for(i = 0; i < map->first_free; i++) {
-		if(!(t = FindObjectsData(map->mechsOnMap[i])))
-			continue;
-		if(t == from || t == to)
-			continue;
-		if(MechTeam(from) != MechTeam(t))
-			continue;
-		if((MechMove(t) != MOVE_NONE && !Started(t)) ||
-		   (MechMove(t) == MOVE_NONE && Destroyed(t)))
-			continue;
-		if(!(MechRadioInfo(t) & RADIO_RELAY))
-			continue;
-		for(j = 0; j < MFreqs(t); j++)
-			if(t->freq[j] == freq)
-				if(t->freqmodes[j] & FREQ_RELAY) {
-					comm_mech[comm_num_to_conn++] = t;
-					continue;
-				}
-	}
-	comm_mech[comm_num_to_conn++] = to;
-	if(comm_num_to_conn == 2)
-		return 0;				/* Quickie kludge for the 'standard' case */
-	for(i = 0; i < comm_num_to_conn; i++) {
-		comm_done[i] = 0;
-		comm_is[i][i] = 0;
-		for(j = i + 1; j < comm_num_to_conn; j++) {
-			float range = FlMechRange(map, comm_mech[i], comm_mech[j]);
+    comm_num_to_conn = 0;
+    comm_mech[comm_num_to_conn++] = from;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+        if (target == from || target == to)
+            continue;
+        if (MechTeam(from) != MechTeam(target))
+            continue;
+        if ((MechMove(target) != MOVE_NONE && !Started(target)) ||
+                (MechMove(target) == MOVE_NONE && Destroyed(target)))
+            continue;
+        if (!(MechRadioInfo(target) & RADIO_RELAY))
+            continue;
+        for (j = 0; j < MFreqs(target); j++)
+            if (target->freq[j] == freq)
+                if (target->freqmodes[j] & FREQ_RELAY) {
+                    comm_mech[comm_num_to_conn++] = target;
+                    continue;
+                }
+    }
+    comm_mech[comm_num_to_conn++] = to;
+    if (comm_num_to_conn == 2)
+        return 0;				/* Quickie kludge for the 'standard' case */
+    for (i = 0; i < comm_num_to_conn; i++) {
+        comm_done[i] = 0;
+        comm_is[i][i] = 0;
+        for (j = i + 1; j < comm_num_to_conn; j++) {
+            float range = FlMechRange(map, comm_mech[i], comm_mech[j]);
 
-			comm_is[i][j] = (range <= MechRadioRange(comm_mech[i]));
-			comm_is[j][i] = (range <= MechRadioRange(comm_mech[j]));
-		}
-	}
-	comm_best = 9999;
-	/*  recursive_commlink(0, 0);  */
-	nonrecursive_commlink(0);	/* better _pray_ this works */
-	return comm_best != 9999;
+            comm_is[i][j] = (range <= MechRadioRange(comm_mech[i]));
+            comm_is[j][i] = (range <= MechRadioRange(comm_mech[j]));
+        }
+    }
+    comm_best = 9999;
+    /*  recursive_commlink(0, 0);  */
+    nonrecursive_commlink(0);	/* better _pray_ this works */
+    return comm_best != 9999;
 }
 
 /* The code that does the actual sending of radio messages whenever
  * someone speaks on a given frequency */
 void sendchannelstuff(MECH * mech, int freq, char *msg)
 {
-	/* The _smart_ code :-) */
-	int loop, range, bearing, i, isxp;
-	MECH *tempMech;
-	MAP *mech_map = getMap(mech->mapindex);
-	char buf[LBUF_SIZE];
-	char buf2[LBUF_SIZE];
-	char buf3[LBUF_SIZE];
-	int sfail_type, sfail_mod;
-	int rfail_type, rfail_mod;
-	int obs = 0;
+    /* The _smart_ code :-) */
+    int range, bearing, i, isxp;
+    MECH *tempMech;
+    MAP *mech_map = getMap(mech->mapindex);
+    dllist_node *node;
+    char buf[LBUF_SIZE];
+    char buf2[LBUF_SIZE];
+    char buf3[LBUF_SIZE];
+    int sfail_type, sfail_mod;
+    int rfail_type, rfail_mod;
+    int obs = 0;
 
-	char ai_buf[LBUF_SIZE];
+    char ai_buf[LBUF_SIZE];
 
-	/* Removed the Radio Failing stuff cause it annoys me - Dany
-	   CheckGenericFail(mech, -2, &sfail_type, &sfail_mod);
-	 */
-	if(!MechRadioRange(mech))
-		return;
+    /* Removed the Radio Failing stuff cause it annoys me - Dany
+       CheckGenericFail(mech, -2, &sfail_type, &sfail_mod);
+       */
+    if (!MechRadioRange(mech))
+        return;
 
-	/* Loop through all the units on the map */
-	for(loop = 0; loop < mech_map->first_free; loop++) {
-		if(mech_map->mechsOnMap[loop] != 2) {
-			// XXX: The test below is indicative of very bad bookkeeping. Suggesting
-			// that a dbref may be indicated as "on the map" without being on the map.
-			// I believe this to be a serious problem.
-			if(!
-			   (tempMech =
-				(MECH *) FindObjectsData(mech_map->mechsOnMap[loop])))
-				continue;
-			if(Destroyed(tempMech))
-				continue;
-			obs = (MechCritStatus(tempMech) & OBSERVATORIC);
-			range = FaMechRange(mech, tempMech);
-			bearing = FindBearing(MechFX(tempMech), MechFY(tempMech),
-								  MechFX(mech), MechFY(mech));
-			for(i = 0; i < MFreqs(tempMech); i++) {
-				if(tempMech->freq[i] == mech->freq[freq] || obs) {
-					if((tempMech->freqmodes[i] & FREQ_MUTE) ||
-					   ((mech->freqmodes[freq] & FREQ_DIGITAL) &&
-						(MechRadioInfo(tempMech) & RADIO_NODIGITAL)))
-						continue;
-					break;
-				}
-			}
-			if(i >= MFreqs(tempMech)) {
-				/* Possible scanner check */
-				if(!(mech->freqmodes[freq] & FREQ_DIGITAL))
-					if((MechRadioInfo(tempMech) & RADIO_SCAN) &&
-					   mech->freq[freq]) {
-						int tnc = 0;
+    /* Loop through all the units on the map */
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
 
-						for(i = 0; i < MFreqs(tempMech); i++)
-							if(tempMech->freqmodes[i] & FREQ_SCAN) {
-								int l = strlen(msg), t;
-								int mod, diff;
-								int pr;
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+        if (Destroyed(tempMech))
+            continue;
 
-								/* Possible skill check here? Nah. */
+        obs = (MechCritStatus(tempMech) & OBSERVATORIC);
+        range = FaMechRange(mech, tempMech);
+        bearing = FindBearing(MechFX(tempMech), MechFY(tempMech),
+                MechFX(mech), MechFY(mech));
 
-								/* Chance of detection: 1 in MIN(80,l) out of 100 */
-								if(Number(1, 100) > MIN(80, l))
-									continue;
+        for (i = 0; i < MFreqs(tempMech); i++) {
+            if (tempMech->freq[i] == mech->freq[freq] || obs) {
+                if ((tempMech->freqmodes[i] & FREQ_MUTE) ||
+                        ((mech->freqmodes[freq] & FREQ_DIGITAL) &&
+                         (MechRadioInfo(tempMech) & RADIO_NODIGITAL)))
+                    continue;
+                break;
+            }
+        }
 
-								if(!tnc++)
-									mech_notify(tempMech, MECHALL,
-												"You notice a "
-												"unknown transmission your scanner.. ");
-								if(tempMech->freq[i] < mech->freq[freq]) {
-									diff =
-										mech->freq[freq] - tempMech->freq[i];
-									mod = 1;
-								} else {
-									diff =
-										tempMech->freq[i] - mech->freq[freq];
-									mod = -1;
-								}
+        if (i >= MFreqs(tempMech)) {
+            /* Possible scanner check */
+            if (!(mech->freqmodes[freq] & FREQ_DIGITAL))
+                if ((MechRadioInfo(tempMech) & RADIO_SCAN) &&
+                        mech->freq[freq]) {
+                    int tnc = 0;
 
-								t = MAX(1,
-										Number(1, MIN(99, l)) * diff / 100);
-								pr = t * 100 / diff;
-								mech_printf(tempMech, MECHALL, "Your systems "
-											"manage to zero on it %s on channel %c.",
-											pr < 30 ? "somewhat" : pr < 60 ?
-											"fairly well" : pr < 95 ?
-											"precisely" : "exactly", i + 'A');
-								tempMech->freq[i] += mod * t;
-							}
+                    for (i = 0; i < MFreqs(tempMech); i++)
+                        if (tempMech->freqmodes[i] & FREQ_SCAN) {
+                            int l = strlen(msg), t;
+                            int mod, diff;
+                            int pr;
 
-					}
+                            /* Possible skill check here? Nah. */
 
-				continue;
+                            /* Chance of detection: 1 in MIN(80,l) out of 100 */
+                            if (Number(1, 100) > MIN(80, l))
+                                continue;
 
-			}
+                            if (!tnc++)
+                                mech_notify(tempMech, MECHALL,
+                                        "You notice a "
+                                        "unknown transmission your scanner.. ");
+                            if (tempMech->freq[i] < mech->freq[freq]) {
+                                diff = mech->freq[freq] - tempMech->freq[i];
+                                mod = 1;
+                            } else {
+                                diff = tempMech->freq[i] - mech->freq[freq];
+                                mod = -1;
+                            }
 
-			strncpy(buf2, msg, LBUF_SIZE);
+                            t = MAX(1, Number(1, MIN(99, l)) * diff / 100);
+                            pr = t * 100 / diff;
+                            mech_printf(tempMech, MECHALL, "Your systems "
+                                    "manage to zero on it %s on channel %c.",
+                                    pr < 30 ? "somewhat" : pr < 60 ?
+                                    "fairly well" : pr < 95 ?
+                                    "precisely" : "exactly", i + 'A');
+                            tempMech->freq[i] += mod * t;
+                        }
 
-			/* Let's just do the OBSERVERIC Stuff here. No sense checking
-			 * elsewhere. We'll compose the message and send it now since
-			 * it should technically hear everything */
+                }
 
-			if(obs) {
-				if(mech->freqmodes[freq] & FREQ_DIGITAL) {
-					snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s:%d> <%s> %s%%c",
-							 ccode(tempMech, i, obs, MechTeam(mech)),
-							 (char) ('A' + i), bearing,
-							 silly_atr_get(mech->mynum, A_FACTION),
-							 MechIDS(mech, 0), mech->freq[freq], mech->chantitle[freq],buf2);
-				} else {
-					snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s:%d> <%s> %s%%c",
-							 ccode(tempMech, i, obs, MechTeam(mech)),
-							 (char) ('A' + i), bearing,
-							 silly_atr_get(mech->mynum, A_FACTION),
-							 MechIDS(mech, 0), mech->freq[freq], mech->chantitle[freq],buf2);
-				}
-				mech_notify(tempMech, MECHALL, buf);
-			}
+            continue;
+        }
 
-			/* This is where we check to see if the mech has an AI and
-			 * then we give the radio commands to the AI */
-			if(MechAuto(tempMech) > 0 && tempMech->freq[i]) {
-				AUTO *a = (AUTO *) FindObjectsData(MechAuto(tempMech));
+        strncpy(buf2, msg, LBUF_SIZE);
 
-				/* First check to make sure the AI is still there */
-				if(!a) {
-					/* No AI there so reset the AI value on the mech */
-					MechAuto(tempMech) = -1;
-				} else if(a && Location(a->mynum) != tempMech->mynum) {
-					/* Check to see if the AI is still in the same mech */
-					snprintf(ai_buf, LBUF_SIZE,
-							 "Autopilot #%d (Location: #%d) "
-							 "reported on Mech #%d but not in the proper location",
-							 a->mynum, Location(a->mynum), tempMech->mynum);
-					SendAI(ai_buf);
-				} else if(a && !ECMDisturbed(tempMech)) {
-					/* Ok send the command to the AI provided its not ECM'd */
-					strncpy(buf3, msg, LBUF_SIZE);
-					auto_parse_command(a, tempMech, i, buf3);
-				}
-			}
-			/* Removed the Radio fail stuff because it annoys me - Dany
-			   CheckGenericFail(tempMech, -2, &rfail_type, &rfail_mod);
-			 */
-			if(!MechRadioRange(tempMech))
-				continue;
-			if(mech->freqmodes[freq] & FREQ_DIGITAL) {
-				if(range > MechRadioRange(mech)) {
-					if(!findCommLink
-					   (mech_map, mech, tempMech, mech->freq[freq]))
-						continue;
-				} else
-					comm_best = 1;
+        /* Let's just do the OBSERVERIC Stuff here. No sense checking
+         * elsewhere. We'll compose the message and send it now since
+         * it should technically hear everything */
 
-				if(tempMech != mech) {
-					if(AnyECMDisturbed(mech))
-						continue;
-					else if(AnyECMDisturbed(tempMech))
-						continue;
-				}
+        if (obs) {
+            if (mech->freqmodes[freq] & FREQ_DIGITAL) {
+                snprintf(buf, LBUF_SIZE, "%s[%c:%d] <%s:%s:%d> <%s> %s%%c",
+                        ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing,
+                        silly_atr_get(mech->mynum, A_FACTION),
+                        MechIDS(mech, 0), mech->freq[freq], mech->chantitle[freq],buf2);
+            } else {
+                snprintf(buf, LBUF_SIZE, "%s(%c:%d) <%s:%s:%d> <%s> %s%%c",
+                        ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing,
+                        silly_atr_get(mech->mynum, A_FACTION),
+                        MechIDS(mech, 0), mech->freq[freq], mech->chantitle[freq],buf2);
+            }
+            mech_notify(tempMech, MECHALL, buf);
+        }
 
-				ScrambleMessage(buf3, range, MechRadioRange(mech),
-								MechRadioRange(mech), mech->chantitle[freq],
-								buf2, MechComm(tempMech), &isxp, 0,
-								(tempMech->freqmodes[i] & FREQ_INFO) ? 2 : 1);
+        /* This is where we check to see if the mech has an AI and
+         * then we give the radio commands to the AI */
+        if (MechAuto(tempMech) > 0 && tempMech->freq[i]) {
+            AUTO *autopilot = getAutopilot(MechAuto(tempMech));
 
-				if(comm_best >= 2)
-					bearing = FindBearing(MechFX(tempMech), MechFY(tempMech),
-										  MechFX(comm_mech
-												 [comm_best_path
-												  [comm_best - 1]]),
-										  MechFY(comm_mech
-												 [comm_best_path
-												  [comm_best - 1]]));
-				if(!obs)
-					snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c",
-							 ccode(tempMech, i, obs, MechTeam(mech)),
-							 (char) ('A' + i), bearing, buf3);
+            /* First check to make sure the AI is still there */
+            if (!autopilot) {
+                /* No AI there so reset the AI value on the mech */
+                MechAuto(tempMech) = -1;
+            } else if (autopilot && Location(autopilot->mynum) != tempMech->mynum) {
+                /* Check to see if the AI is still in the same mech */
+                snprintf(ai_buf, LBUF_SIZE,
+                        "Autopilot #%d (Location: #%d) "
+                        "reported on Mech #%d but not in the proper location",
+                        autopilot->mynum, Location(autopilot->mynum), tempMech->mynum);
+                SendAI(ai_buf);
+            } else if (autopilot && !ECMDisturbed(tempMech)) {
+                /* Ok send the command to the AI provided its not ECM'd */
+                strncpy(buf3, msg, LBUF_SIZE);
+                auto_parse_command(autopilot, tempMech, i, buf3);
+            }
+        }
 
-			} else {
+        /* Removed the Radio fail stuff because it annoys me - Dany
+           CheckGenericFail(tempMech, -2, &rfail_type, &rfail_mod);
+           */
+        if (!MechRadioRange(tempMech))
+            continue;
+        if (mech->freqmodes[freq] & FREQ_DIGITAL) {
+            if (range > MechRadioRange(mech)) {
+                if (!findCommLink(mech_map, mech, tempMech, mech->freq[freq]))
+                    continue;
+            } else
+                comm_best = 1;
 
-				ScrambleMessage(buf3, range, MechRadioRange(mech),
-								MechRadioRange(tempMech),
-								mech->chantitle[freq], buf2,
-								MechComm(tempMech), &isxp,
-								(AnyECMDisturbed(mech)
-								 || AnyECMDisturbed(tempMech)
-								 /*
-								    || sfail_type == FAIL_STATIC ||
-								    rfail_type == FAIL_STATIC
-								  */
-								) && mech != tempMech, 0);
-				if(!obs)
-					snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c",
-							 ccode(tempMech, i, obs, MechTeam(mech)),
-							 (char) ('A' + i), bearing, buf3);
+            if (tempMech != mech) {
+                if (AnyECMDisturbed(mech))
+                    continue;
+                else if (AnyECMDisturbed(tempMech))
+                    continue;
+            }
 
-			}
+            ScrambleMessage(buf3, range, MechRadioRange(mech),
+                    MechRadioRange(mech), mech->chantitle[freq],
+                    buf2, MechComm(tempMech), &isxp, 0,
+                    (tempMech->freqmodes[i] & FREQ_INFO) ? 2 : 1);
 
-			if(!obs)
-				mech_notify(tempMech, MECHALL, buf);
-			if(isxp && In_Character(tempMech->mynum))
-				if((MechCommLast(tempMech) + 60) < muxevent_tick) {
-					AccumulateCommXP(MechPilot(tempMech), tempMech);
-					MechCommLast(tempMech) = muxevent_tick;
-				}
+            if (comm_best >= 2)
+                bearing = FindBearing(MechFX(tempMech), MechFY(tempMech),
+                        MechFX(comm_mech[comm_best_path[comm_best - 1]]),
+                        MechFY(comm_mech[comm_best_path[comm_best - 1]]));
+            if (!obs)
+                snprintf(buf, LBUF_SIZE, "%s[%c:%.3d] %s%%c",
+                        ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing, buf3);
 
-		}
-	}							/* End of looping through all the units on the map */
+        } else {
+
+            ScrambleMessage(buf3, range, MechRadioRange(mech),
+                    MechRadioRange(tempMech),
+                    mech->chantitle[freq], buf2,
+                    MechComm(tempMech), &isxp,
+                    (AnyECMDisturbed(mech)
+                     || AnyECMDisturbed(tempMech)
+                     /*
+                        || sfail_type == FAIL_STATIC ||
+                        rfail_type == FAIL_STATIC
+                        */
+                    ) && mech != tempMech, 0);
+            if (!obs)
+                snprintf(buf, LBUF_SIZE, "%s(%c:%.3d) %s%%c",
+                        ccode(tempMech, i, obs, MechTeam(mech)),
+                        (char) ('A' + i), bearing, buf3);
+
+        }
+
+        if (!obs)
+            mech_notify(tempMech, MECHALL, buf);
+        if (isxp && In_Character(tempMech->mynum))
+            if ((MechCommLast(tempMech) + 60) < muxevent_tick) {
+                AccumulateCommXP(MechPilot(tempMech), tempMech);
+                MechCommLast(tempMech) = muxevent_tick;
+            }
+    }							/* End of looping through all the units on the map */
 }
 
 void mech_radio(dbref player, void *data, char *buffer)
@@ -1339,94 +1329,103 @@ void mech_radio(dbref player, void *data, char *buffer)
 }
 
 int MapLimitedBroadcast2d(MAP * map, float x, float y, float range,
-						  char *message)
+        char *message)
 {
-	int loop, count = 0;
-	MECH *mech;
+    int count = 0;
+    MECH *mech;
+    dllist_node *node;
 
-	for(loop = 0; loop < map->first_free; loop++) {
-		if(map->mechsOnMap[loop] < 0)
-			continue;
-		mech = getMech(map->mechsOnMap[loop]);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        mech = getMech((int) dllist_data(node));
 
-		if(mech && FindXYRange(x, y, MechFX(mech), MechFY(mech)) <= range) {
-			mech_notify(mech, MECHSTARTED, message);
-			count++;
-		}
-	}
-	return count;
+        if (mech && FindXYRange(x, y, MechFX(mech), MechFY(mech)) <= range) {
+            mech_notify(mech, MECHSTARTED, message);
+            count++;
+        }
+    }
+    return count;
 }
 
 int MapLimitedBroadcast3d(MAP * map, float x, float y, float z, float range,
-						  char *message)
+        char *message)
 {
-	int loop, count = 0;
-	MECH *mech;
+    int count = 0;
+    MECH *mech;
+    dllist_node *node;
 
-	for(loop = 0; loop < map->first_free; loop++) {
-		if(map->mechsOnMap[loop] == -1)
-			continue;
-		mech = getMech(map->mechsOnMap[loop]);
-		if(mech
-		   && FindRange(x, y, z, MechFX(mech), MechFY(mech),
-						MechFZ(mech)) <= range) {
-			count++;
-			mech_notify(mech, MECHSTARTED, message);
-		}
-	}
-	return count;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        mech = getMech((int) dllist_data(node));
+        if (mech && FindRange(x, y, z, MechFX(mech), MechFY(mech), 
+                    MechFZ(mech)) <= range) {
+            count++;
+            mech_notify(mech, MECHSTARTED, message);
+        }
+    }
+    return count;
 }
 
 void MechBroadcast(MECH * mech, MECH * target, MAP * mech_map, char *buffer)
 {
-	int loop;
-	MECH *tempMech;
+    MECH *tempMech;
+    dllist_node *node;
 
-	if(target) {
-		for(loop = 0; loop < mech_map->first_free; loop++) {
-			if(mech_map->mechsOnMap[loop] != mech->mynum &&
-			   mech_map->mechsOnMap[loop] != -1 &&
-			   mech_map->mechsOnMap[loop] != target->mynum) {
-				tempMech = (MECH *)
-					FindObjectsData(mech_map->mechsOnMap[loop]);
-				if(tempMech)
-					mech_notify(tempMech, MECHSTARTED, buffer);
-			}
-		}
-	} else {
-		for(loop = 0; loop < mech_map->first_free; loop++) {
-			if(mech_map->mechsOnMap[loop] != mech->mynum &&
-			   mech_map->mechsOnMap[loop] != -1) {
-				tempMech = (MECH *)
-					FindObjectsData(mech_map->mechsOnMap[loop]);
-				if(tempMech)
-					mech_notify(tempMech, MECHSTARTED, buffer);
-			}
-		}
-	}
+    if (target) {
+
+        for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+            if ((mech->mynum != (int) dllist_data(node)) &&
+                    (target->mynum != (int) dllist_data(node))) {
+
+                tempMech = getMech((int) dllist_data(node));
+                if (tempMech)
+                    mech_notify(tempMech, MECHSTARTED, buffer);
+
+            }
+        }
+
+    } else {
+
+        for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+            if (mech->mynum != (int) dllist_data(node)) {
+
+                tempMech = getMech((int) dllist_data(node));
+                if (tempMech)
+                    mech_notify(tempMech, MECHSTARTED, buffer);
+
+            }
+        }
+    }
 }
 
 void MechLOSBroadcast(MECH * mech, char *message)
 {
-	/* Sends msg to everyone except the mech */
-	int i;
-	MECH *tempMech;
-	MAP *mech_map = getMap(mech->mapindex);
-	char buf[LBUF_SIZE];
+    /* Sends msg to everyone except the mech */
+    MECH *tempMech;
+    MAP *mech_map = getMap(mech->mapindex);
+    dllist_node *node;
+    char buf[LBUF_SIZE];
 
-	possibly_see_mech(mech);
-	if(!mech_map)
-		return;
-	for(i = 0; i < mech_map->first_free; i++)
-		if(mech_map->mechsOnMap[i] != -1 &&
-		   mech_map->mechsOnMap[i] != mech->mynum)
-			if((tempMech = getMech(mech_map->mechsOnMap[i])))
-				if(InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
-								 FlMechRange(mech_map, tempMech, mech))) {
-					sprintf(buf, "%s%s%s", GetMechToMechID(tempMech, mech),
-							*message != '\'' ? " " : "", message);
-					mech_notify(tempMech, MECHSTARTED, buf);
-				}
+    possibly_see_mech(mech);
+    if (!mech_map)
+        return;
+
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
+                    FlMechRange(mech_map, tempMech, mech))) {
+
+            sprintf(buf, "%s%s%s", GetMechToMechID(tempMech, mech),
+                    *message != '\'' ? " " : "", message);
+            mech_notify(tempMech, MECHSTARTED, buf);
+        }
+    }
 }
 
 int MechSeesHexF(MECH * mech, MAP * map, float x, float y, int ix, int iy)
@@ -1449,218 +1448,224 @@ int MechSeesHex(MECH * mech, MAP * map, int x, int y)
 
 void HexLOSBroadcast(MAP * mech_map, int x, int y, char *message)
 {
-	int i;
-	MECH *tempMech;
-	float fx, fy;
+    MECH *tempMech;
+    dllist_node *node;
+    float fx, fy;
 
-	/* substitution:
-	   $h = !alarming ('your hex', '%d,%d')
-	   $H = alarming ('YOUR HEX', '%d,%d (%.2f away)')
-	 */
-	if(!mech_map)
-		return;
-	MapCoordToRealCoord(x, y, &fx, &fy);
-	for(i = 0; i < mech_map->first_free; i++)
-		if(mech_map->mechsOnMap[i] != -1)
-			if((tempMech = getMech(mech_map->mechsOnMap[i])))
-				if(MechSeesHexF(tempMech, mech_map, fx, fy, x, y)) {
-					char tbuf[LBUF_SIZE];
-					char *c, *d = tbuf;
-					int done;
+    /* substitution:
+       $h = !alarming ('your hex', '%d,%d')
+       $H = alarming ('YOUR HEX', '%d,%d (%.2f away)')
+       */
+    if (!mech_map)
+        return;
 
-					for(c = message; *c; c++) {
-						done = 0;
-						if(*c == '$') {
-							if(*(c + 1) == 'h' || *(c + 1) == 'H') {
-								c++;
-								if(*c == 'h') {
-									if(x == MechX(tempMech) &&
-									   y == MechY(tempMech))
-										strcpy(d, "your hex");
-									else
-										sprintf(d, "%d,%d", x, y);
-									while (*d)
-										d++;
-								} else {
-									/* Dangerous */
-									if(x == MechX(tempMech) &&
-									   y == MechY(tempMech))
-										strcpy(d, "%ch%crYOUR HEX%cn");
-									else
-										sprintf(d, "%%ch%%cy%d,%d%%cn", x, y);
-									while (*d)
-										d++;
-								}
-								done = 1;
-							}
-						}
-						if(!done)
-							*(d++) = *c;
-					}
-					/* Apparently, it's necessary to remove trailing $'s ?? */
-					if(*(d - 1) == '$')
-						d--;
-					*d = '\0';
-					mech_notify(tempMech, MECHSTARTED, tbuf);
-				}
+    MapCoordToRealCoord(x, y, &fx, &fy);
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechSeesHexF(tempMech, mech_map, fx, fy, x, y)) {
+            char tbuf[LBUF_SIZE];
+            char *c, *d = tbuf;
+            int done;
+
+            for (c = message; *c; c++) {
+                done = 0;
+                if (*c == '$') {
+                    if (*(c + 1) == 'h' || *(c + 1) == 'H') {
+                        c++;
+                        if (*c == 'h') {
+                            if (x == MechX(tempMech) &&
+                                    y == MechY(tempMech))
+                                strcpy(d, "your hex");
+                            else
+                                sprintf(d, "%d,%d", x, y);
+                            while (*d)
+                                d++;
+                        } else {
+                            /* Dangerous */
+                            if (x == MechX(tempMech) &&
+                                    y == MechY(tempMech))
+                                strcpy(d, "%ch%crYOUR HEX%cn");
+                            else
+                                sprintf(d, "%%ch%%cy%d,%d%%cn", x, y);
+                            while (*d)
+                                d++;
+                        }
+                        done = 1;
+                    }
+                }
+                if (!done)
+                    *(d++) = *c;
+            }
+
+            /* Apparently, it's necessary to remove trailing $'s ?? */
+            if (*(d - 1) == '$')
+                d--;
+            *d = '\0';
+            mech_notify(tempMech, MECHSTARTED, tbuf);
+        }
+    }
 }
 
 void MechLOSBroadcasti(MECH * mech, MECH * target, char *message)
 {
-	/* Sends msg to everyone except the mech */
-	int i, a, b;
-	char oddbuff[LBUF_SIZE];
-	char oddbuff2[LBUF_SIZE];
-	MECH *tempMech;
-	MAP *mech_map = getMap(mech->mapindex);
+    /* Sends msg to everyone except the mech */
+    int a, b;
+    char oddbuff[LBUF_SIZE];
+    char oddbuff2[LBUF_SIZE];
+    MECH *tempMech;
+    MAP *mech_map = getMap(mech->mapindex);
+    dllist_node *node;
 
-	if(!mech_map)
-		return;
-	possibly_see_mech(mech);
-	possibly_see_mech(target);
-	for(i = 0; i < mech_map->first_free; i++)
-		if(mech_map->mechsOnMap[i] != -1 &&
-		   mech_map->mechsOnMap[i] != mech->mynum &&
-		   mech_map->mechsOnMap[i] != target->mynum)
-			if((tempMech = getMech(mech_map->mechsOnMap[i]))) {
-				a = InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
-								  FlMechRange(mech_map, tempMech, mech));
-				b = InLineOfSight(tempMech, target, MechX(target),
-								  MechY(target), FlMechRange(mech_map,
-															 tempMech,
-															 target));
-				if(a || b) {
-					sprintf(oddbuff, message, b ? GetMechToMechID(tempMech,
-																  target) :
-							"someone");
-					sprintf(oddbuff2, "%s%s%s",
-							a ? GetMechToMechID(tempMech, mech) : "Someone",
-							*oddbuff != '\'' ? " " : "", oddbuff);
-					mech_notify(tempMech, MECHSTARTED, oddbuff2);
-				}
-			}
+    if (!mech_map)
+        return;
+
+    possibly_see_mech(mech);
+    possibly_see_mech(target);
+
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if ((mech->mynum != (int) dllist_data(node)) &&
+                (target->mynum != (int) dllist_data(node))) {
+
+            if ((tempMech = getMech((int) dllist_data(node)))) {
+
+                a = InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
+                        FlMechRange(mech_map, tempMech, mech));
+                b = InLineOfSight(tempMech, target, MechX(target), MechY(target), 
+                        FlMechRange(mech_map, tempMech, target));
+
+                if (a || b) {
+                    sprintf(oddbuff, message, b ? GetMechToMechID(tempMech, target) :
+                            "someone");
+                    sprintf(oddbuff2, "%s%s%s",
+                            a ? GetMechToMechID(tempMech, mech) : "Someone",
+                            *oddbuff != '\'' ? " " : "", oddbuff);
+                    mech_notify(tempMech, MECHSTARTED, oddbuff2);
+                }
+            }
+        }
+    }
 }
 
 void MapBroadcast(MAP * map, char *message)
 {
-	/* Sends msg to everyone except the mech */
-	int i;
-	MECH *tempMech;
+    /* Sends msg to everyone except the mech */
+    MECH *tempMech;
+    dllist_node *node;
 
-	for(i = 0; i < map->first_free; i++)
-		if(map->mechsOnMap[i] != -1)
-			if((tempMech = getMech(map->mechsOnMap[i])))
-				mech_notify(tempMech, MECHSTARTED, message);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node))
+        if((tempMech = getMech((int) dllist_data(node))))
+            mech_notify(tempMech, MECHSTARTED, message);
 }
 
 void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
-					   MAP * mech_map, char *weapname, int IsHit)
+        MAP * mech_map, char *weapname, int IsHit)
 {
-	int loop, attacker, defender;
-	float fx, fy, fz;
-	int mapx, mapy;
-	MECH *tempMech;
-	char buff[50];
+    int attacker, defender;
+    float fx, fy, fz;
+    int mapx, mapy;
+    MECH *tempMech;
+    dllist_node *node;
+    char buff[50];
 
-	possibly_see_mech(mech);
-	if(target) {
-		possibly_see_mech(target);
-		mapx = MechX(target);
-		mapy = MechY(target);
-		fx = MechFX(target);
-		fy = MechFY(target);
-		fz = MechFZ(target);
-		for(loop = 0; loop < mech_map->first_free; loop++)
-			if(mech_map->mechsOnMap[loop] != mech->mynum &&
-			   mech_map->mechsOnMap[loop] != -1 &&
-			   mech_map->mechsOnMap[loop] != target->mynum) {
-				attacker = 0;
-				defender = 0;
-				tempMech = (MECH *)
-					FindObjectsData(mech_map->mechsOnMap[loop]);
-				if(!tempMech)
-					continue;
-				if(InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
-								 FlMechRange(mech_map, tempMech, mech)))
-					attacker = 1;
-				if(target) {
-					if(InLineOfSight(tempMech, target, mapx, mapy,
-									 FlMechRange(mech_map, tempMech, target)))
-						defender = 1;
-				} else if(InLineOfSight(tempMech, target, mapx, mapy,
-										FindRange(MechFX(tempMech),
-												  MechFY(tempMech),
-												  MechFZ(tempMech), fx, fy,
-												  fz)))
-					defender = 1;
+    possibly_see_mech(mech);
+    if (target) {
+        possibly_see_mech(target);
+        mapx = MechX(target);
+        mapy = MechY(target);
+        fx = MechFX(target);
+        fy = MechFY(target);
+        fz = MechFZ(target);
+        for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node))
+            if ((mech->mynum != (int) dllist_data(node)) &&
+                    (target->mynum != (int) dllist_data(node))) {
+                attacker = 0;
+                defender = 0;
+                tempMech = getMech((int) dllist_data(node));
+                if (!tempMech)
+                    continue;
+                if (InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
+                            FlMechRange(mech_map, tempMech, mech)))
+                    attacker = 1;
+                if (target) {
+                    if (InLineOfSight(tempMech, target, mapx, mapy,
+                                FlMechRange(mech_map, tempMech, target)))
+                        defender = 1;
+                } else if (InLineOfSight(tempMech, target, mapx, mapy,
+                            FindRange(MechFX(tempMech),
+                                MechFY(tempMech),
+                                MechFZ(tempMech), fx, fy,
+                                fz)))
+                    defender = 1;
 
-				if(!attacker && !defender)
-					continue;
-				if(defender)
-					sprintf(buff, "%s", GetMechToMechID(tempMech, target));
-				if(attacker) {
-					if(defender)
-						mech_printf(tempMech, MECHSTARTED,
-									"%s %s %s with a %s",
-									GetMechToMechID(tempMech, mech),
-									IsHit ? "hits" : "misses", buff,
-									weapname);
-					else
-						mech_printf(tempMech, MECHSTARTED,
-									"%s fires a %s at something!",
-									GetMechToMechID(tempMech, mech),
-									weapname);
-				} else
-					mech_printf(tempMech, MECHSTARTED,
-								"Something %s %s with a %s",
-								IsHit ? "hits" : "misses", buff, weapname);
-			}
-	} else {
-		mapx = x;
-		mapy = y;
-		MapCoordToRealCoord(x, y, &fx, &fy);
-		fz = ZSCALE * Elevation(mech_map, x, y);
-		sprintf(buff, "hex %d %d!", mapx, mapy);
-		for(loop = 0; loop < mech_map->first_free; loop++)
-			if(mech_map->mechsOnMap[loop] != mech->mynum &&
-			   mech_map->mechsOnMap[loop] != -1) {
-				attacker = 0;
-				defender = 0;
-				tempMech = (MECH *)
-					FindObjectsData(mech_map->mechsOnMap[loop]);
-				if(!tempMech)
-					continue;
-				if(InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
-								 FlMechRange(mech_map, tempMech, mech)))
-					attacker = 1;
-				if(target) {
-					if(InLineOfSight(tempMech, target, mapx, mapy,
-									 FlMechRange(mech_map, tempMech, target)))
-						defender = 1;
-				} else if(InLineOfSight(tempMech, target, mapx, mapy,
-										FindRange(MechFX(tempMech),
-												  MechFY(tempMech),
-												  MechFZ(tempMech), fx, fy,
-												  fz)))
-					defender = 1;
-				if(!attacker && !defender)
-					continue;
-				if(attacker) {
-					if(defender)	/* att + def */
-						mech_printf(tempMech, MECHSTARTED,
-									"%s fires a %s at %s",
-									GetMechToMechID(tempMech, mech), weapname,
-									buff);
-					else		/* att */
-						mech_printf(tempMech, MECHSTARTED,
-									"%s fires a %s at something!",
-									GetMechToMechID(tempMech, mech),
-									weapname);
-				} else			/* def */
-					mech_printf(tempMech, MECHSTARTED,
-								"Something fires a %s at %s", weapname, buff);
-			}
-	}
+                if (!attacker && !defender)
+                    continue;
+                if (defender)
+                    sprintf(buff, "%s", GetMechToMechID(tempMech, target));
+                if (attacker) {
+                    if (defender)
+                        mech_printf(tempMech, MECHSTARTED,
+                                "%s %s %s with a %s",
+                                GetMechToMechID(tempMech, mech),
+                                IsHit ? "hits" : "misses", buff,
+                                weapname);
+                    else
+                        mech_printf(tempMech, MECHSTARTED,
+                                "%s fires a %s at something!",
+                                GetMechToMechID(tempMech, mech),
+                                weapname);
+                } else
+                    mech_printf(tempMech, MECHSTARTED,
+                            "Something %s %s with a %s",
+                            IsHit ? "hits" : "misses", buff, weapname);
+            }
+    } else {
+        mapx = x;
+        mapy = y;
+        MapCoordToRealCoord(x, y, &fx, &fy);
+        fz = ZSCALE * Elevation(mech_map, x, y);
+        sprintf(buff, "hex %d %d!", mapx, mapy);
+        for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node))
+            if (mech->mynum != (int) dllist_data(node)) {
+                attacker = 0;
+                defender = 0;
+                tempMech = getMech((int) dllist_data(node));
+                if (!tempMech)
+                    continue;
+                if (InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
+                            FlMechRange(mech_map, tempMech, mech)))
+                    attacker = 1;
+                if (target) {
+                    if (InLineOfSight(tempMech, target, mapx, mapy,
+                                FlMechRange(mech_map, tempMech, target)))
+                        defender = 1;
+                } else if (InLineOfSight(tempMech, target, mapx, mapy,
+                            FindRange(MechFX(tempMech),
+                                MechFY(tempMech),
+                                MechFZ(tempMech), fx, fy,
+                                fz)))
+                    defender = 1;
+                if (!attacker && !defender)
+                    continue;
+                if (attacker) {
+                    if (defender)	/* att + def */
+                        mech_printf(tempMech, MECHSTARTED,
+                                "%s fires a %s at %s",
+                                GetMechToMechID(tempMech, mech), weapname,
+                                buff);
+                    else		/* att */
+                        mech_printf(tempMech, MECHSTARTED,
+                                "%s fires a %s at something!",
+                                GetMechToMechID(tempMech, mech),
+                                weapname);
+                } else			/* def */
+                    mech_printf(tempMech, MECHSTARTED,
+                            "Something fires a %s at %s", weapname, buff);
+            }
+    }
 }
 
 extern int arc_override;

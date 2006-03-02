@@ -873,46 +873,54 @@ static void mech_unblind_event(MUXEVENT * e)
 }
 
 void ScrambleInfraAndLiteAmp(MECH * mech, int time, int chance,
-							 char *inframsg, char *liteampmsg)
+        char *inframsg, char *liteampmsg)
 {
-	MAP *mech_map = getMap(mech->mapindex);
-	int i;
-	MECH *tempMech;
+    MAP *mech_map = getMap(mech->mapindex);
+    MECH *tempMech;
+    dllist_node *node;
 
-	possibly_see_mech(mech);
-	for(i = 0; i < mech_map->first_free; i++)
-		if(mech_map->mechsOnMap[i] != -1 &&
-		   mech_map->mechsOnMap[i] != mech->mynum)
-			if((tempMech = getMech(mech_map->mechsOnMap[i])))
-				if(InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
-								 FaMechRange(tempMech, mech))) {
-					if(Blinded(tempMech) || Uncon(tempMech))
-						continue;
-					if(sensors[(int)
-							   MechSensor(tempMech)[0]].matchletter[0] == 'I'
-					   || sensors[(int)
-								  MechSensor(tempMech)
-								  [0]].matchletter[1] == 'I') {
-						if(chance)
-							if(Number(1, 100) > chance)
-								continue;
-						/* Infra effect */
-						mech_notify(tempMech, MECHALL, inframsg);
-					} else if(sensors[(int)
-									  MechSensor(tempMech)[0]].matchletter[0]
-							  == 'L' || sensors[(int)
-												MechSensor(tempMech)
-												[0]].matchletter[1]
-							  == 'L') {
-						if(chance)
-							if(Number(1, 100) > chance)
-								continue;
-						/* Liteamp effect */
-						mech_notify(tempMech, MECHALL, liteampmsg);
-					} else
-						continue;
-					MechStatus(tempMech) |= BLINDED;
-					MECHEVENT(tempMech, EVENT_BLINDREC, mech_unblind_event,
-							  time, 0);
-				}
+    possibly_see_mech(mech);
+
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
+                    FaMechRange(tempMech, mech))) {
+
+            if (Blinded(tempMech) || Uncon(tempMech))
+                continue;
+
+            if (sensors[(int)MechSensor(tempMech)[0]].matchletter[0] == 'I'
+                    || sensors[(int)MechSensor(tempMech)[0]].matchletter[1] == 'I') {
+
+                if (chance)
+                    if (Number(1, 100) > chance)
+                        continue;
+
+                /* Infra effect */
+                mech_notify(tempMech, MECHALL, inframsg);
+
+            } else if (sensors[(int)MechSensor(tempMech)[0]].matchletter[0] == 'L' 
+                    || sensors[(int)MechSensor(tempMech)[0]].matchletter[1] == 'L') {
+
+                if (chance)
+                    if (Number(1, 100) > chance)
+                        continue;
+
+                /* Liteamp effect */
+                mech_notify(tempMech, MECHALL, liteampmsg);
+
+            } else {
+                continue;
+            }
+
+            MechStatus(tempMech) |= BLINDED;
+            MECHEVENT(tempMech, EVENT_BLINDREC, mech_unblind_event, time, 0);
+        }
+    }
 }

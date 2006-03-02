@@ -107,30 +107,35 @@ int Find_DS_Bay_In_MechHex(MECH * seer, MECH * ds, int *bayn)
 
 static int Find_Single_DS_In_MechHex(MECH * mech, int *ref, int *bayn)
 {
-	MAP *map = FindObjectsData(mech->mapindex);
-	int loop;
-	MECH *tempMech;
-	int count = 0;
+    MAP *map = FindObjectsData(mech->mapindex);
+    MECH *tempMech;
+    dllist_node *node;
+    int count = 0;
 
-	*ref = 0;
-	if(!map)
-		return 0;
-	for(loop = 0; loop < map->first_free; loop++)
-		if(map->mechsOnMap[loop] >= 0) {
-			if(!(tempMech = getMech(map->mechsOnMap[loop])))
-				continue;
-			if(!IsDS(tempMech))
-				continue;
-			if(!Landed(tempMech))
-				continue;		/* This might break midflight-aero-DS-docking. But aeros are broken anyway. */
-			if(Find_DS_Bay_In_MechHex(mech, tempMech, bayn)) {
-				if(count++)
-					*ref = -1;
-				else
-					*ref = tempMech->mynum;
-			}
-		}
-	return count;
+    *ref = 0;
+    if (!map)
+        return 0;
+
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (!IsDS(tempMech))
+            continue;
+
+        if (!Landed(tempMech))
+            continue;		/* This might break midflight-aero-DS-docking. 
+                               But aeros are broken anyway. */
+
+        if (Find_DS_Bay_In_MechHex(mech, tempMech, bayn)) {
+            if (count++)
+                *ref = -1;
+            else
+                *ref = tempMech->mynum;
+        }
+    }
+    return count;
 }
 
 static void mech_enterbay_event(MUXEVENT * e)

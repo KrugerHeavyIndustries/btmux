@@ -98,6 +98,7 @@
 #define SetWCheck(a)		MechCritStatus(a) &= ~OWEIGHT_OK
 #define SetCarriedCargo(a,b) 	do { MechCarriedCargo(a) = (b) ; SetCWCheck(a); } while (0)
 #define MechCarrying(a)	 	(a)->rd.carrying
+#define MechTowedBy(a)      (a)->rd.towed_by
 #define SetCarrying(a,b)	do { MechCarrying(a) = (b) ; SetCWCheck(a) ; } while (0)
 #define MechChargeTarget(a)	(a)->rd.chgtarget
 #define MechChargeTimer(a)	(a)->rd.chargetimer
@@ -555,7 +556,7 @@ MechStatus(a) &= ~LOCK_MODES
 #define ScenStatus(msg...)       send_channel("ScenStatus",msg)
 #define SendAI(msg...)           send_channel("MechAI",msg)
 #define SendAlloc(msg)
-#define SendLoc(msg)
+#define SendLoc(msg...)
 #define SendCustom(msg...)          send_channel("MechCustom",msg)
 #define SendDB(msg...)              send_channel("DBInfo",msg)
 #define SendDebug(msg...)           send_channel("MechDebugInfo",msg)

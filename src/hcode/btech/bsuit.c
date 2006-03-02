@@ -107,127 +107,160 @@ void StopSwarming(MECH * mech, int intentional)
 
 int IsMechSwarmed(MECH * mech)
 {
-	MAP *map = FindObjectsData(mech->mapindex);
-	int count = 0, i, j;
-	MECH *t;
+    MAP *map = getMap(mech->mapindex);
+    MECH *target;
+    dllist_node *node;
+    int count = 0;
 
-	if(!map)
-		return 0;
+    if (!map)
+        return 0;
 
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(MechSwarmTarget(t) != mech->mynum)
-				continue;
+        /* Same unit ? */
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
 
-			if(MechTeam(mech) == MechTeam(t))
-				continue;
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
 
-			count++;
-			break;
-		}
-	return count > 0;
+        if (MechSwarmTarget(target) != mech->mynum)
+            continue;
+
+        if (MechTeam(mech) == MechTeam(target))
+            continue;
+
+        count++;
+        break;
+    }
+    return count > 0;
 }
 
 int IsMechMounted(MECH * mech)
 {
-	MAP *map = FindObjectsData(mech->mapindex);
-	int count = 0, i, j;
-	MECH *t;
+    MAP *map = getMap(mech->mapindex);
+    MECH *target;
+    dllist_node *node;
+    int count = 0;
 
-	if(!map)
-		return 0;
+    if (!map)
+        return 0;
 
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(MechSwarmTarget(t) != mech->mynum)
-				continue;
+        /* Same unit ? */
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
 
-			if(MechTeam(mech) != MechTeam(t))
-				continue;
+        /* Valid unit ? */
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
 
-			count++;
-			break;
-		}
-	return count > 0;
+        if (MechSwarmTarget(target) != mech->mynum)
+            continue;
+
+        if (MechTeam(mech) != MechTeam(target))
+            continue;
+
+        count++;
+        break;
+    }
+    return count > 0;
 }
 
 int CountSwarmers(MECH * mech)
 {
-	MAP *map = FindObjectsData(mech->mapindex);
-	int count = 0, i, j;
-	MECH *t;
+    MAP *map = getMap(mech->mapindex);
+    MECH *target;
+    dllist_node *node;
+    int count = 0;
 
-	if(!map)
-		return 0;
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
-			if(MechSwarmTarget(t) != mech->mynum)
-				continue;
-			count++;
-		}
-	return count;
+    if (!map)
+        return 0;
+
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        /* Same unit ? */
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        /* Valid Unit ? */
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechSwarmTarget(target) != mech->mynum)
+            continue;
+
+        count++;
+    }
+    return count;
 }
 
 MECH *findSwarmers(MECH * mech)
 {
-	MAP *map = FindObjectsData(mech->mapindex);
-	int i, j;
-	MECH *t;
+    MAP *map = getMap(mech->mapindex);
+    MECH *target;
+    dllist_node *node;
 
-	if(!map)
-		return 0;
+    if (!map)
+        return 0;
 
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(MechSwarmTarget(t) == mech->mynum) {
-				return t;
-			}
-		}
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
 
-	return NULL;
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechSwarmTarget(target) == mech->mynum) {
+            return target;
+        }
+    }
+    return NULL;
 }
 
 void StopBSuitSwarmers(MAP * map, MECH * mech, int intentional)
 {
-	int i, j;
-	MECH *t;
+    MECH *target;
+    dllist_node *node;
 
-	if(!map || !mech)
-		return;
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
-			if(MechSwarmTarget(t) != mech->mynum)
-				continue;
-			StopSwarming(t, intentional);
-		}
+    if (!map || !mech)
+        return;
+
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechSwarmTarget(target) != mech->mynum)
+            continue;
+
+        StopSwarming(target, intentional);
+    }
 }
 
 void BSuitMirrorSwarmedTarget(MAP * map, MECH * mech)
 {
-	int i, j;
-	MECH *t;
+    MECH *target;
+    dllist_node *node;
 
-	for(i = 0; i < map->first_free; i++)
-		if((j = map->mechsOnMap[i]) > 0 && i != mech->mapnumber) {
-			if(!(t = FindObjectsData(j)))
-				continue;
-			if(MechSwarmTarget(t) != mech->mynum)
-				continue;
-			MirrorPosition(mech, t, 1);
-		}
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechSwarmTarget(target) != mech->mynum)
+            continue;
+
+        MirrorPosition(mech, target, 1);
+    }
 }
 
 int doBSuitCommonChecks(MECH * mech, dbref player)
@@ -619,48 +652,53 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
 
 static void mech_hide_event(MUXEVENT * e)
 {
-	MECH *mech = (MECH *) e->data;
-	MECH *t;
-	MAP *map = getMap(mech->mapindex);
-	int fail = 0, i;
-	int tic = (int) e->data2;
+    MECH *mech = (MECH *) e->data;
+    MECH *target;
+    MAP *map = getMap(mech->mapindex);
+    dllist_node *node;
+    int fail = 0;
+    int tic = (int) e->data2;
 
-	if(!map)
-		return;
+    if (!map)
+        return;
 
-	for(i = 0; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] <= 0)
-			continue;
-		if(!(t = getMech(map->mechsOnMap[i])))
-			continue;
-		if(MechCritStatus(t) & (CLAIRVOYANT | OBSERVATORIC | INVISIBLE))
-			continue;
-		if(MechTeam(t) == MechTeam(mech))
-			continue;
-		if(!Started(t))
-			continue;
-		if(Destroyed(t))
-			continue;
-		if(InLineOfSight(t, mech, MechX(mech), MechY(mech),
-						 FaMechRange(t, mech)))
-			fail = 1;
-	}
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-	if(MechsElevation(mech))
-		fail = 1;
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
 
-	if(fail) {
-		mech_notify(mech, MECHALL,
-					"Your spidey sense tingles, telling you this isn't going to work......");
-		return;
-	} else if(tic < (MyHiddenTurns(mech) * HIDE_TICK)) {
-		tic++;
-		MECHEVENT(mech, EVENT_HIDE, mech_hide_event, 1, tic);
-	} else if(!fail) {
-		mech_notify(mech, MECHALL, "You are now hidden!");
-		MechCritStatus(mech) |= HIDDEN;
-	}
-	return;
+        if (MechCritStatus(target) & (CLAIRVOYANT | OBSERVATORIC | INVISIBLE))
+            continue;
+
+        if (MechTeam(target) == MechTeam(mech))
+            continue;
+
+        if (!Started(target))
+            continue;
+
+        if (Destroyed(target))
+            continue;
+
+        if (InLineOfSight(target, mech, MechX(mech), MechY(mech),
+                    FaMechRange(target, mech)))
+            fail = 1;
+    }
+
+    if (MechsElevation(mech))
+        fail = 1;
+
+    if (fail) {
+        mech_notify(mech, MECHALL,
+                "Your spidey sense tingles, telling you this isn't going to work......");
+        return;
+    } else if (tic < (MyHiddenTurns(mech) * HIDE_TICK)) {
+        tic++;
+        MECHEVENT(mech, EVENT_HIDE, mech_hide_event, 1, tic);
+    } else if (!fail) {
+        mech_notify(mech, MECHALL, "You are now hidden!");
+        MechCritStatus(mech) |= HIDDEN;
+    }
+    return;
 }
 
 void bsuit_hide(dbref player, void *data, char *buffer)

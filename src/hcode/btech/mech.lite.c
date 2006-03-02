@@ -52,23 +52,23 @@ void cause_lite(MECH * mech, MECH * tempMech)
 
 void end_lite_check(MECH * mech)
 {
-	MAP *map = getMap(mech->mapindex);
-	MECH *t;
-	int i;
+    MAP *map = getMap(mech->mapindex);
+    MECH *target;
+    dllist_node *node;
 
-	if(!MechLit(mech))
-		return;
-	if(!map)
-		return;
-	for(i = 0; i < map->first_free; i++) {
-		if(i == mech->mapnumber)
-			continue;
-		if(!(t = FindObjectsData(map->mechsOnMap[i])))
-			continue;
-		if(mech_lites_target(t, mech))
-			return;
-	}
-	MechCritStatus(mech) &= ~SLITE_LIT;
-	if(MechSLWarn(mech))
-		mech_notify(mech, MECHALL, "You are no longer being illuminated.");
+    if (!MechLit(mech))
+        return;
+    if (!map)
+        return;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+        if (mech_lites_target(target, mech))
+            return;
+    }
+    MechCritStatus(mech) &= ~SLITE_LIT;
+    if (MechSLWarn(mech))
+        mech_notify(mech, MECHALL, "You are no longer being illuminated.");
 }

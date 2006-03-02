@@ -540,10 +540,15 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 		break;
 	}
 	DisplayTarget(player, mech);
-	if(MechCarrying(mech) > 0)
-		if((tempMech = getMech(MechCarrying(mech))))
-			notify_printf(player, "Towing %s.", GetMechToMechID(mech,
-																tempMech));
+
+    if (MechCarrying(mech) > 0)
+        if ((tempMech = getMech(MechCarrying(mech))))
+            notify_printf(player, "Towing %s.", GetMechToMechID(mech, tempMech));
+
+    if (MechTowedBy(mech) > -1)
+        if ((tempMech = getMech(MechTowedBy(mech))))
+            notify_printf(player, "Being Towed by %s.", GetMechToMechID(mech, tempMech));
+
 }
 
 /* Status commands! */

@@ -200,156 +200,152 @@ void sendNetworkMessage(dbref player, MECH * mech, char *msg, int tIsC3)
 
 void showNetworkTargets(dbref player, MECH * mech, int tIsC3)
 {
-	MAP *objMap = getMap(mech->mapindex);
-	int i, j, wTemp, bearing;
-	MECH *otherMech;
-	float realRange, c3Range;
-	char buff[100];
-	char *mech_name;
-	char move_type[30];
-	char cStatus1, cStatus2, cStatus3, cStatus4, cStatus5;
-	char weaponarc;
-	int losFlag;
-	int arc;
-	int wSeeTarget = TARG_LOS_NONE;
-	int wC3SeeTarget = TARG_LOS_NONE;
-	int tShowStatusInfo = 0;
-	char bufflist[MAX_MECHS_PER_MAP][120];
-	float rangelist[MAX_MECHS_PER_MAP];
-	int buffindex = 0;
-	int sbuff[MAX_MECHS_PER_MAP];
-	int networkSize;
-	dbref myNetwork[C3_NETWORK_SIZE];
-	dbref c3Ref;
+    MAP *objMap = getMap(mech->mapindex);
+    int i, j, wTemp, bearing;
+    MECH *otherMech;
+    dllist_node *node;
+    float realRange, c3Range;
+    char buff[100];
+    char *mech_name;
+    char move_type[30];
+    char cStatus1, cStatus2, cStatus3, cStatus4, cStatus5;
+    char weaponarc;
+    int losFlag;
+    int arc;
+    int wSeeTarget = TARG_LOS_NONE;
+    int wC3SeeTarget = TARG_LOS_NONE;
+    int tShowStatusInfo = 0;
+    char bufflist[MAX_MECHS_PER_MAP][120];
+    float rangelist[MAX_MECHS_PER_MAP];
+    int buffindex = 0;
+    int sbuff[MAX_MECHS_PER_MAP];
+    int networkSize;
+    dbref myNetwork[C3_NETWORK_SIZE];
+    dbref c3Ref;
 
-	buildTempNetwork(mech, myNetwork, &networkSize, 1, 1, 0, tIsC3);
+    buildTempNetwork(mech, myNetwork, &networkSize, 1, 1, 0, tIsC3);
 
-	/*
-	 * Send then a 'contacts' style report. This is different from the
-	 * normal contacts since it has a 'physical' range in it too.
-	 */
-	notify_printf(player, "%s Contacts:", tIsC3 ? "C3" : "C3i");
+    /*
+     * Send then a 'contacts' style report. This is different from the
+     * normal contacts since it has a 'physical' range in it too.
+     */
+    notify_printf(player, "%s Contacts:", tIsC3 ? "C3" : "C3i");
 
-	for(i = 0; i < objMap->first_free; i++) {
-		if(!(objMap->mechsOnMap[i] != mech->mynum &&
-			 objMap->mechsOnMap[i] != -1))
-			continue;
+    for (node = dllist_head(objMap->mechs); node; node = dllist_next(node)) {
 
-		otherMech = (MECH *) FindObjectsData(objMap->mechsOnMap[i]);
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
 
-		if(!otherMech)
-			continue;
+        if (!(otherMech = getMech((int) dllist_data(node))))
+            continue;
 
-		if(!Good_obj(otherMech->mynum))
-			continue;
+        tShowStatusInfo = 0;
+        realRange = FlMechRange(objMap, mech, otherMech);
+        losFlag =
+            InLineOfSight(mech, otherMech, MechX(otherMech),
+                    MechY(otherMech), realRange);
 
-		tShowStatusInfo = 0;
-		realRange = FlMechRange(objMap, mech, otherMech);
-		losFlag =
-			InLineOfSight(mech, otherMech, MechX(otherMech),
-						  MechY(otherMech), realRange);
+        /*
+         * If we do see them, let's make sure it's not just a 'something'
+         */
+        if (losFlag) {
+            if (InLineOfSight_NB(mech, otherMech, MechX(otherMech),
+                        MechY(otherMech), 0.0))
+                wSeeTarget = TARG_LOS_CLEAR;
+            else
+                wSeeTarget = TARG_LOS_SOMETHING;
+        } else
+            wSeeTarget = TARG_LOS_NONE;
 
-		/*
-		 * If we do see them, let's make sure it's not just a 'something'
-		 */
-		if(losFlag) {
-			if(InLineOfSight_NB(mech, otherMech, MechX(otherMech),
-								MechY(otherMech), 0.0))
-				wSeeTarget = TARG_LOS_CLEAR;
-			else
-				wSeeTarget = TARG_LOS_SOMETHING;
-		} else
-			wSeeTarget = TARG_LOS_NONE;
+        /*
+         * If I don't see it, let's see if someone else in the network does
+         */
+        if (wSeeTarget != TARG_LOS_CLEAR)
+            wC3SeeTarget = mechSeenByNetwork(mech, otherMech, tIsC3);
 
-		/*
-		 * If I don't see it, let's see if someone else in the network does
-		 */
-		if(wSeeTarget != TARG_LOS_CLEAR)
-			wC3SeeTarget = mechSeenByNetwork(mech, otherMech, tIsC3);
+        /* If noone sees it, we continue */
+        if (!wSeeTarget && !wC3SeeTarget)
+            continue;
 
-		/* If noone sees it, we continue */
-		if(!wSeeTarget && !wC3SeeTarget)
-			continue;
+        /* Get our network range */
+        c3Range =
+            findC3RangeWithNetwork(mech, otherMech, realRange, myNetwork,
+                    networkSize, &c3Ref);
 
-		/* Get our network range */
-		c3Range =
-			findC3RangeWithNetwork(mech, otherMech, realRange, myNetwork,
-								   networkSize, &c3Ref);
+        /* Figure out if we show the info or not... ie, do we actually 'see' it */
+        if ((wSeeTarget != TARG_LOS_CLEAR) && (wC3SeeTarget != TARG_LOS_CLEAR)) {
+            tShowStatusInfo = 0;
+            mech_name = "something";
+        } else {
+            tShowStatusInfo = 1;
+            mech_name = silly_atr_get(otherMech->mynum, A_MECHNAME);
+        }
 
-		/* Figure out if we show the info or not... ie, do we actually 'see' it */
-		if((wSeeTarget != TARG_LOS_CLEAR) && (wC3SeeTarget != TARG_LOS_CLEAR)) {
-			tShowStatusInfo = 0;
-			mech_name = "something";
-		} else {
-			tShowStatusInfo = 1;
-			mech_name = silly_atr_get(otherMech->mynum, A_MECHNAME);
-		}
+        bearing =
+            FindBearing(MechFX(mech), MechFY(mech), MechFX(otherMech),
+                    MechFY(otherMech));
+        strcpy(move_type, GetMoveTypeID(MechMove(otherMech)));
 
-		bearing =
-			FindBearing(MechFX(mech), MechFY(mech), MechFX(otherMech),
-						MechFY(otherMech));
-		strcpy(move_type, GetMoveTypeID(MechMove(otherMech)));
+        /* Get our weapon arc */
+        arc = InWeaponArc(mech, MechFX(otherMech), MechFY(otherMech));
+        weaponarc = getWeaponArc(mech, arc);
 
-		/* Get our weapon arc */
-		arc = InWeaponArc(mech, MechFX(otherMech), MechFY(otherMech));
-		weaponarc = getWeaponArc(mech, arc);
+        /* Now get our status chars */
+        if (!tShowStatusInfo) {
+            cStatus1 = ' ';
+            cStatus2 = ' ';
+            cStatus3 = ' ';
+            cStatus4 = ' ';
+            cStatus5 = ' ';
+        } else {
+            cStatus1 = getStatusChar(mech, otherMech, 1);
+            cStatus2 = getStatusChar(mech, otherMech, 2);
+            cStatus3 = getStatusChar(mech, otherMech, 3);
+            cStatus4 = getStatusChar(mech, otherMech, 4);
+            cStatus5 = getStatusChar(mech, otherMech, 5);
+        }
 
-		/* Now get our status chars */
-		if(!tShowStatusInfo) {
-			cStatus1 = ' ';
-			cStatus2 = ' ';
-			cStatus3 = ' ';
-			cStatus4 = ' ';
-			cStatus5 = ' ';
-		} else {
-			cStatus1 = getStatusChar(mech, otherMech, 1);
-			cStatus2 = getStatusChar(mech, otherMech, 2);
-			cStatus3 = getStatusChar(mech, otherMech, 3);
-			cStatus4 = getStatusChar(mech, otherMech, 4);
-			cStatus5 = getStatusChar(mech, otherMech, 5);
-		}
+        /* Now, build the string */
+        sprintf(buff,
+                "%s%c%c%c[%s]%c %-11.11s x:%3d y:%3d z:%3d r:%4.1f c:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
+                otherMech->mynum == MechTarget(mech) ? "%ch%cr" :
+                (tShowStatusInfo &&
+                 !MechSeemsFriend(mech, otherMech)) ? "%ch%cy" : "",
+                (losFlag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
+                (losFlag & MECHLOSFLAG_SEESS) ? 'S' : ' ', weaponarc,
+                MechIDS(otherMech, MechSeemsFriend(mech, otherMech) ||
+                    !tShowStatusInfo), move_type[0], mech_name,
+                MechX(otherMech), MechY(otherMech), MechZ(otherMech),
+                realRange, c3Range, bearing, MechSpeed(otherMech),
+                MechVFacing(otherMech), cStatus1, cStatus2, cStatus3,
+                cStatus4, cStatus5, (otherMech->mynum == MechTarget(mech)
+                    || !MechSeemsFriend(mech,
+                        otherMech)) ? "%c" :
+                "");
 
-		/* Now, build the string */
-		sprintf(buff,
-				"%s%c%c%c[%s]%c %-11.11s x:%3d y:%3d z:%3d r:%4.1f c:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
-				otherMech->mynum == MechTarget(mech) ? "%ch%cr" :
-				(tShowStatusInfo &&
-				 !MechSeemsFriend(mech, otherMech)) ? "%ch%cy" : "",
-				(losFlag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
-				(losFlag & MECHLOSFLAG_SEESS) ? 'S' : ' ', weaponarc,
-				MechIDS(otherMech, MechSeemsFriend(mech, otherMech) ||
-						!tShowStatusInfo), move_type[0], mech_name,
-				MechX(otherMech), MechY(otherMech), MechZ(otherMech),
-				realRange, c3Range, bearing, MechSpeed(otherMech),
-				MechVFacing(otherMech), cStatus1, cStatus2, cStatus3,
-				cStatus4, cStatus5, (otherMech->mynum == MechTarget(mech)
-									 || !MechSeemsFriend(mech,
-														 otherMech)) ? "%c" :
-				"");
+        rangelist[buffindex] = realRange;
+        rangelist[buffindex] +=
+            (MechStatus(otherMech) & DESTROYED) ? 10000 : 0;
+        strcpy(bufflist[buffindex++], buff);
+    }
 
-		rangelist[buffindex] = realRange;
-		rangelist[buffindex] +=
-			(MechStatus(otherMech) & DESTROYED) ? 10000 : 0;
-		strcpy(bufflist[buffindex++], buff);
-	}
+    for (i = 0; i < buffindex; i++)
+        sbuff[i] = i;
 
-	for(i = 0; i < buffindex; i++)
-		sbuff[i] = i;
+    /* print a sorted list of detected mechs */
+    /* use the ever-popular bubble sort */
+    for (i = 0; i < (buffindex - 1); i++)
+        for (j = (i + 1); j < buffindex; j++)
+            if (rangelist[sbuff[j]] > rangelist[sbuff[i]]) {
+                wTemp = sbuff[i];
+                sbuff[i] = sbuff[j];
+                sbuff[j] = wTemp;
+            }
 
-	/* print a sorted list of detected mechs */
-	/* use the ever-popular bubble sort */
-	for(i = 0; i < (buffindex - 1); i++)
-		for(j = (i + 1); j < buffindex; j++)
-			if(rangelist[sbuff[j]] > rangelist[sbuff[i]]) {
-				wTemp = sbuff[i];
-				sbuff[i] = sbuff[j];
-				sbuff[j] = wTemp;
-			}
+    for (i = 0; i < buffindex; i++)
+        notify(player, bufflist[sbuff[i]]);
 
-	for(i = 0; i < buffindex; i++)
-		notify(player, bufflist[sbuff[i]]);
-
-	notify_printf(player, "End %s Contact List", tIsC3 ? "C3" : "C3i");
+    notify_printf(player, "End %s Contact List", tIsC3 ? "C3" : "C3i");
 }
 
 void showNetworkData(dbref player, MECH * mech, int tIsC3)

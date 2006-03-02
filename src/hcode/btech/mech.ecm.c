@@ -92,10 +92,12 @@ void sendECMNotification(MECH * objMech, int wMsgType)
 		break;
 	}
 }
+
 void checkECM(MECH * objMech)
 {
 	MAP *objMapmap;
 	MECH *objOtherMech;
+    dllist_node *node;
 	float range = 0.0;
 
 	int wFriendlyECM = 0;
@@ -114,15 +116,15 @@ void checkECM(MECH * objMech)
 	int tCheckECM = 0;
 	int tCheckECCM = 0;
 
-	int wIter = 0;
 	int tMark = 0;
 
-	if(!(objMapmap = FindObjectsData(objMech->mapindex)))	/* get our map */
+	if (!(objMapmap = getMap(objMech->mapindex)))	/* get our map */
 		return;
 
-	for(wIter = 0; wIter < objMapmap->first_free; wIter++) {
-		if(!(objOtherMech = FindObjectsData(objMapmap->mechsOnMap[wIter])))
-			continue;
+    for (node = dllist_head(objMapmap->mechs); node; node = dllist_next(node)) {
+
+        if (!(objOtherMech = getMech((int) dllist_data(node))))
+            continue;
 
 		if((range = FaMechRange(objOtherMech, objMech)) > ECM_RANGE)
 			continue;

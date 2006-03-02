@@ -809,6 +809,7 @@ typedef struct {
     dbref carrying;             /* Who are we lugging about? */
     dbref spotter;              /* Who's spotting for us? */
     dbref autopilot_num;        /* dbref of AI (if there is one) */
+    dbref towed_by;             /* Who is towing us */
 
     float heat;                 /* Heat index */
     float weapheat;             /* Weapon heat factor-> see manifesto */

@@ -39,56 +39,6 @@ int map_rbtree_compare(int left, int right, void *arg)
     return (right - left);
 }
 
-void debug_fixmap(dbref player, void *data, char *buffer)
-{
-	MAP *m = (MAP *) data;
-	int i, k;
-	MECH *mek;
-
-	if(!m)
-		return;
-	notify_printf(player, "Checking %d entries..", m->first_free);
-	DOLIST(k, Contents(m->mynum)) {
-		if(Hardcode(k)) {
-			if(WhichSpecial(k) == GTYPE_MECH) {
-				MECH *mek;
-
-				/* Check if it's on the map */
-				for(i = 0; i < m->first_free; i++)
-					if(m->mechsOnMap[i] == k)
-						break;
-				if(i != m->first_free)
-					continue;
-				mek = getMech(k);
-				mek->mapindex = -1;	/* Eep. */
-				mek->mapnumber = 0;
-			}
-		}
-	}
-	for(i = 0; i < m->first_free; i++)
-		if((k = m->mechsOnMap[i]) >= 0) {
-			if(!IsMech(k)) {
-				notify_printf(player,
-							  "Error: #%d isn't mech yet is in mapindex. Fixing..",
-							  k);
-				m->mechsOnMap[i] = -1;
-			} else if(!(mek = getMech(k))) {
-				notify_printf(player,
-							  "Error: #%d has no mech data. Removing..", k);
-				m->mechsOnMap[i] = -1;
-			} else if(mek->mapindex != m->mynum) {
-				notify_printf(player,
-							  "Error: #%d isn't really here! Removing..", k);
-				m->mechsOnMap[i] = -1;
-			} else if(mek->mapnumber != i) {
-				notify_printf(player,
-							  "Error: #%d has invalid mapnumber (mn:%d <-> real:%d)..",
-							  k, mek->mapnumber, i);
-			}
-		}
-	notify(player, "Done.");
-}
-
 /* Selectors */
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
@@ -536,55 +486,58 @@ extern void update_LOSinfo(dbref, MAP *);
 
 void map_update(dbref obj, void *data)
 {
-	MAP *map = ((MAP *) data);
-	MECH *mech;
-	char *tmps, changemsg[LBUF_SIZE] = "";
-	int ma, ml, wind, wspeed, cloudbase = 200;
-	int oldl, oldv, i, j;
-	AUTO *au;
+    MAP *map = ((MAP *) data);
+    MECH *mech;
+    AUTO *autopilot;
+    dllist_node *node;
+    char *tmps, changemsg[LBUF_SIZE] = "";
+    int ma, ml, wind, wspeed, cloudbase = 200;
+    int oldl, oldv;
 
-	/* Changed from % 25 to % 60. %60 never hit when muxevent_tick came here and was odd.
-	   % 25 should hit when its odd or even (25 75 125... when odd 50 100 150... when even */
+    /* Changed from % 25 to % 60. %60 never hit when muxevent_tick came here and was odd.
+       % 25 should hit when its odd or even (25 75 125... when odd 50 100 150... when even */
 
-	if(!(muxevent_tick % 25)) {
-		oldl = map->maplight;
-		oldv = map->mapvis;
-		if(!(tmps = silly_atr_get(obj, A_MAPVIS)) ||
-		   sscanf(tmps, "%d %d %d %d %d %[^\n]", &ma, &ml, &wind,
-				  &wspeed, &cloudbase, changemsg) < 4) {
-			ma = 30;
-			ml = 2;
-			wind = 0;
-			wspeed = 0;
-			cloudbase = 200;
-		}
-		map->winddir = wind;
-		map->windspeed = wspeed;
-		map->mapvis = BOUNDED(0, ma, 60);
-		map->maxvis = BOUNDED(24, ma * 3, 60);
-		map->maplight = BOUNDED(0, ml, 2);
-		map->cloudbase = cloudbase;
-		if(ml != oldl || ma != oldv)
-			for(i = 0; i < map->first_free; i++) {
-				if((j = map->mechsOnMap[i]) < 0)
-					continue;
-				if(!(mech = getMech(j)))
-					continue;
-				if(ml != oldl)
-					sensor_light_availability_check(mech);
-				if(strlen(changemsg) > 5)
-					mech_notify(mech, MECHALL, changemsg);
-				if(MechAuto(mech) > 0)
-					if((au = FindObjectsData(MechAuto(mech))))
-						if(Gunning(au))
-							UpdateAutoSensor(au, 0);
-			}
-	}
-	if(map->moves) {
-		update_LOSinfo(obj, map);
-		map->moves = 0;
-	}
-	/* Fire/Smoke are event-driven -> nothing related to them done here */
+    if (!(muxevent_tick % 25)) {
+        oldl = map->maplight;
+        oldv = map->mapvis;
+        if (!(tmps = silly_atr_get(obj, A_MAPVIS)) ||
+                sscanf(tmps, "%d %d %d %d %d %[^\n]", &ma, &ml, &wind,
+                    &wspeed, &cloudbase, changemsg) < 4) {
+            ma = 30;
+            ml = 2;
+            wind = 0;
+            wspeed = 0;
+            cloudbase = 200;
+        }
+        map->winddir = wind;
+        map->windspeed = wspeed;
+        map->mapvis = BOUNDED(0, ma, 60);
+        map->maxvis = BOUNDED(24, ma * 3, 60);
+        map->maplight = BOUNDED(0, ml, 2);
+        map->cloudbase = cloudbase;
+
+        /* Do we need to iterate through the units on the map and update them ? */
+        if (ml != oldl || ma != oldv) {
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+                if (!(mech = getMech((int) dllist_data(node))))
+                    continue;
+                if (ml != oldl)
+                    sensor_light_availability_check(mech);
+                if (strlen(changemsg) > 5)
+                    mech_notify(mech, MECHALL, changemsg);
+                if (MechAuto(mech) > 0)
+                    if ((autopilot = getAutopilot(MechAuto(mech))))
+                        if (Gunning(autopilot))
+                            UpdateAutoSensor(autopilot, 0);
+            }
+        }
+    }
+
+    if (map->moves) {
+        update_LOSinfo(obj, map);
+        map->moves = 0;
+    }
+    /* Fire/Smoke are event-driven -> nothing related to them done here */
 }
 
 void initialize_map_empty(MAP * new, dbref key)
@@ -637,6 +590,9 @@ void newfreemap(dbref key, void **data, int selector)
         case SPECIAL_FREE:
 
             /* Clear mechs off the map */
+            ShutDownMap(GOD, new->mynum);
+            dllist_destroy_list(new->mechs);
+            new->mechs = NULL;
 
             /* Clear map objects */
             del_mapobjs(new);
@@ -645,6 +601,7 @@ void newfreemap(dbref key, void **data, int selector)
             if (new->hexes) {
                 free(new->hexes);
             }
+            new->hexes = NULL;
 
             break;
     }
@@ -652,55 +609,55 @@ void newfreemap(dbref key, void **data, int selector)
 
 void map_listmechs(dbref player, void *data, char *buffer)
 {
-	MAP *map;
-	MECH *tempMech;
-	int i;
-	int count = 0;
-	char valid[50];
-	char *ID;
-	char *args[2];
-	char *cmds[] = { "MECHS", "OBJS", NULL };
-	enum {
-		MECHS, OBJS
-	};
+    MAP *map;
+    MECH *tempMech;
+    dllist_node *node;
+    int count = 0;
+    char valid[50];
+    char *ID;
+    char *args[2];
+    char *cmds[] = { "MECHS", "OBJS", NULL };
+    enum {
+        MECHS, OBJS
+    };
 
-	map = (MAP *) data;
+    map = (MAP *) data;
 
-	if(!CheckData(player, map))
-		return;
-	DOCHECK(mech_parseattributes(buffer, args, 1) == 0,
-			"Supply target type too!");
-	switch (listmatch(cmds, args[0])) {
-	case MECHS:
-		notify(player, "--- Mechs on Map ---");
-		for(i = 0; i < map->first_free; i++) {
-			if(map->mechsOnMap[i] != -1) {
-				tempMech = getMech(map->mechsOnMap[i]);
-				ID = MechIDS(tempMech, 0);
-				if(tempMech)
-					strcpy(valid, "Valid Data");
-				else
-					strcpy(valid, "Invalid Object Data!  Remove this Mech!");
-				notify_printf(player, "Mech DB Number: %d : [%s]\t%s",
-							  map->mechsOnMap[i], ID, valid);
-				count++;
-			}
-		}
-		notify_printf(player, "%d Mechs On Map", count);
-		notify_printf(player, "%d positions open", MAX_MECHS_PER_MAP - count);
-		if(count != map->first_free)
-			notify_printf(player,
-						  "%d is first free slot, according to db.",
-						  map->first_free);
-		return;
-		break;
-	case OBJS:
-		list_mapobjs(player, map);
-		return;
-		break;
-	}
-	notify_printf(player, "Invalid argument (%s)!", args[0]);
-	return;
+    if (!CheckData(player, map))
+        return;
+
+    DOCHECK(mech_parseattributes(buffer, args, 1) == 0,
+            "Supply target type too!");
+
+    switch (listmatch(cmds, args[0])) {
+        case MECHS:
+            notify(player, "--- Mechs on Map ---");
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+                tempMech = getMech((int) dllist_data(node));
+                if (tempMech) {
+                    ID = MechIDS(tempMech, 0);
+                    strcpy(valid, "Valid Data");
+                    notify_printf(player, "Mech DB Number: %6d : [%s]\t%s",
+                            tempMech->mynum, ID, valid);
+                } else {
+                    strcpy(valid, "Invalid Object Data!");
+                    notify_printf(player, "Mech DB Number: %6d : [##]\t%s",
+                            (int) dllist_data(node), valid);
+                }
+                count++;
+            }
+            notify_printf(player, "%d Mechs On Map", count);
+            notify_printf(player, "%d positions open", MAX_MECHS_PER_MAP - count);
+            return;
+            break;
+
+        case OBJS:
+            list_mapobjs(player, map);
+            return;
+            break;
+    }
+    notify_printf(player, "Invalid argument (%s)!", args[0]);
+    return;
 }
 
 void clear_hex(MECH * mech, int x, int y, int meant)
@@ -764,17 +721,20 @@ void map_pathfind(dbref player, void *data, char *buffer)
 
 void UpdateMechsTerrain(MAP * map, int x, int y, int t)
 {
-	MECH *mech;
-	int i;
+    MECH *mech;
+    dllist_node *node;
 
-	for(i = 0; i < map->first_free; i++) {
-		if(!(mech = FindObjectsData(map->mechsOnMap[i])))
-			continue;
-		if(MechX(mech) != x || MechY(mech) != y)
-			continue;
-		if(MechTerrain(mech) != t) {
-			MechTerrain(mech) = t;
-			MarkForLOSUpdate(mech);
-		}
-	}
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (!(mech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (MechX(mech) != x || MechY(mech) != y)
+            continue;
+
+        if (MechTerrain(mech) != t) {
+            MechTerrain(mech) = t;
+            MarkForLOSUpdate(mech);
+        }
+    }
 }

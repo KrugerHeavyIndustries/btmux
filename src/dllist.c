@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "dllist.h"
+#include "debug.h"
 
 /* Create the List */
 dllist *dllist_create_list()
@@ -19,7 +20,7 @@ dllist *dllist_create_list()
         return NULL;
     }
 
-    memset(temp, 0, sizeof(temp));
+    memset(temp, 0, sizeof(dllist));
     temp->head = NULL;
     temp->tail = NULL;
     temp->size = 0;
@@ -82,6 +83,24 @@ void *dllist_destroy_node(dllist_node * node)
 
     return data;
 
+}
+
+/* Frees an entire dllist and calls passed function on each node */
+void dllist_release(dllist *dllist, void (*release) (void *, void *), void *arg)
+{
+
+    dllist_node *node, *next;
+
+    for (node = dllist_head(dllist); node; node = next) {
+        
+        next = dllist_next(node);
+        release(node->data, arg);
+        dllist_remove(dllist, node);
+
+    }
+    
+    if (!dllist_destroy_list(dllist))
+        dprintk("Failed to clear dllist");
 }
 
 /* Insert a given node after a node */
@@ -272,6 +291,34 @@ void *dllist_remove_node_at_pos(dllist * dllist, int pos)
     data = dllist_remove(dllist, temp);
 
     return data;
+
+}
+
+/* Remove a Node that matches the given data */
+void *dllist_remove_node_matching_data(dllist *dllist, void *data)
+{
+
+    dllist_node *temp;
+
+    if (!dllist)
+        return NULL;
+
+    /* This assumes no one tries to store NULL data in the list... */
+    if (!data)
+        return NULL; 
+
+    temp = dllist_head(dllist);
+
+    while (temp) {
+
+        if (dllist_data(temp) == data) {
+            return dllist_remove(dllist, temp);
+        }
+
+        temp = dllist_next(temp);
+    }
+
+    return NULL;
 
 }
 

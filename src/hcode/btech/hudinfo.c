@@ -801,67 +801,68 @@ static char *hud_sensorstring(MECH * mech, int losflag)
 
 static void hud_contacts(DESC * d, MECH * mech, char *msgclass, char *args)
 {
-	char response[LBUF_SIZE];
-	MECH *other;
-	MAP *map = getMap(mech->mapindex);
-	int i, losflag, bearing, btc, weaponarc, x, y;
-	float range, rtc;
-	char jumph[12];
-	char *mechname, *constat;
+    char response[LBUF_SIZE];
+    MECH *other;
+    MAP *map = getMap(mech->mapindex);
+    dllist_node *node;
+    int losflag, bearing, btc, weaponarc, x, y;
+    float range, rtc;
+    char jumph[12];
+    char *mechname, *constat;
 
-	if(!map) {
-		hudinfo_notify(d, msgclass, "E", "You are on no map");
-		return;
-	}
+    if (!map) {
+        hudinfo_notify(d, msgclass, "E", "You are on no map");
+        return;
+    }
 
-	for(i = 0; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] == mech->mynum || map->mechsOnMap[i] == -1)
-			continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-		other = (MECH *) FindObjectsData(map->mechsOnMap[i]);
-		if(!other || !Good_obj(other->mynum))
-			continue;
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
 
-		range = FlMechRange(map, mech, other);
-		x = MechX(other);
-		y = MechY(other);
-		losflag = InLineOfSight(mech, other, x, y, range);
-		if(!losflag)
-			continue;
-		bearing = FindBearing(MechFX(mech), MechFY(mech), MechFX(other),
-							  MechFY(other));
-		weaponarc = InWeaponArc(mech, MechFX(other), MechFY(other));
+        if (!(other = getMech((int) dllist_data(node))))
+            continue;
 
-		if(Jumping(other))
-			sprintf(jumph, "%d", MechJumpHeading(other));
-		else
-			strcpy(jumph, "-");
+        range = FlMechRange(map, mech, other);
+        x = MechX(other);
+        y = MechY(other);
+        losflag = InLineOfSight(mech, other, x, y, range);
+        if (!losflag)
+            continue;
+        bearing = FindBearing(MechFX(mech), MechFY(mech), MechFX(other),
+                MechFY(other));
+        weaponarc = InWeaponArc(mech, MechFX(other), MechFY(other));
 
-		FindRangeAndBearingToCenter(other, &rtc, &btc);
+        if (Jumping(other))
+            sprintf(jumph, "%d", MechJumpHeading(other));
+        else
+            strcpy(jumph, "-");
 
-		if(!InLineOfSight_NB(mech, other, MechX(other), MechY(other), 0.0))
-			mechname = "something";
-		else
-			mechname = silly_atr_get(other->mynum, A_MECHNAME);
+        FindRangeAndBearingToCenter(other, &rtc, &btc);
 
-		if(!mechname || !*mechname)
-			mechname = "-";
+        if (!InLineOfSight_NB(mech, other, MechX(other), MechY(other), 0.0))
+            mechname = "something";
+        else
+            mechname = silly_atr_get(other->mynum, A_MECHNAME);
 
-		constat = getStatusString(other, !MechSeemsFriend(mech, other));
-		if(strlen(constat) == 0)
-			constat = "-";
+        if (!mechname || !*mechname)
+            mechname = "-";
 
-		sprintf(response,
-				"%s,%s,%s,%c,%s,%d,%d,%d,%.3f,%d,%.3f,%.3f,%d,%s,%.3f,%d,%d,%.0f,%s",
-				MechIDS(other, MechSeemsFriend(mech, other)),
-				hud_arcstring(weaponarc), hud_sensorstring(mech, losflag),
-				hud_typechar(other), mechname, MechX(other),
-				MechY(other), MechZ(other), range, bearing, MechSpeed(other),
-				MechVerticalSpeed(other), MechVFacing(other), jumph, rtc, btc,
-				MechTons(other), MechHeat(other), constat);
-		hudinfo_notify(d, msgclass, "L", response);
-	}
-	hudinfo_notify(d, msgclass, "D", "Done");
+        constat = getStatusString(other, !MechSeemsFriend(mech, other));
+        if (strlen(constat) == 0)
+            constat = "-";
+
+        sprintf(response,
+                "%s,%s,%s,%c,%s,%d,%d,%d,%.3f,%d,%.3f,%.3f,%d,%s,%.3f,%d,%d,%.0f,%s",
+                MechIDS(other, MechSeemsFriend(mech, other)),
+                hud_arcstring(weaponarc), hud_sensorstring(mech, losflag),
+                hud_typechar(other), mechname, MechX(other),
+                MechY(other), MechZ(other), range, bearing, MechSpeed(other),
+                MechVerticalSpeed(other), MechVFacing(other), jumph, rtc, btc,
+                MechTons(other), MechHeat(other), constat);
+        hudinfo_notify(d, msgclass, "L", response);
+    }
+    hudinfo_notify(d, msgclass, "D", "Done");
 }
 
 static char *building_status(MAP * map, int locked)

@@ -71,9 +71,8 @@ void clear_mech_from_LOS(MECH * mech)
     for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
         mek = getMech((int) dllist_data(node));
 
-        if (!mek) {
-
-        }
+        if (!mek)
+            continue;
 
         if ((MechStatus(mek) & LOCK_TARGET) &&
                 MechTarget(mek) == mech->mynum) {
@@ -139,99 +138,99 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 /* Team/Map commands */
 void mech_Rsetmapindex(dbref player, void *data, char *buffer)
 {
-	MECH *mech = (MECH *) data;
-	char *args[2], *tempstr;
-	int newindex, nargs, notdone = 0;
-	int loop;
-	MAP *newmap = NULL;
-	MAP *oldmap;
-	MECH *tempMech;
-	char targ[2];
+    MECH *mech = (MECH *) data;
+    char *args[2], *tempstr;
+    int newindex, nargs, notdone = 0;
+    int loop;
+    MAP *newmap = NULL;
+    MAP *oldmap;
+    MECH *tempMech;
+    dllist_node *node;
+    char targ[2];
 
-	if(!CheckData(player, mech))
-		return;
-	nargs = mech_parseattributes(buffer, args, 2);
-	DOCHECK(nargs < 1, "Invalid number of arguments to SETMAPINDX!");
-	newindex = atoi(args[0]);
-	DOCHECK(newindex < -1, "Invalid map index!");
-	if(newindex != -1) {
-		if(!(newmap = ValidMap(player, newindex)))
-			return;
-	}
-	/* Remove the mech from it's old map */
-	if(mech->mapindex != -1) {
-		if(!(oldmap = ValidMap(player, mech->mapindex)))
-			return;
-		remove_mech_from_map(oldmap, mech);
-		TAGTarget(mech) = -1;
-		clearC3iNetwork(mech, 1);
-		clearC3Network(mech, 1);
-	}
+    if (!CheckData(player, mech))
+        return;
+    nargs = mech_parseattributes(buffer, args, 2);
+    DOCHECK(nargs < 1, "Invalid number of arguments to SETMAPINDX!");
+    newindex = atoi(args[0]);
+    DOCHECK(newindex < -1, "Invalid map index!");
+    if (newindex != -1) {
+        if (!(newmap = ValidMap(player, newindex)))
+            return;
+    }
 
-	if(newindex == -1) {
-		notify(player, "Mech removed from map.");
-		SendLoc(tprintf("#%d removed #%d from map #%d.", player,
-						mech->mynum, oldmap->mynum));
-		return;
-	}
+    /* Remove the mech from it's old map */
+    if (mech->mapindex != -1) {
+        if (!(oldmap = ValidMap(player, mech->mapindex)))
+            return;
+        remove_mech_from_map(oldmap, mech);
+        TAGTarget(mech) = -1;
+        clearC3iNetwork(mech, 1);
+        clearC3Network(mech, 1);
+    }
 
-	/* Just make it random */
-	/* Find a clear spot for this mech */
-	if(nargs > 1 && strlen(args[1]) > 1) {
-		targ[0] = args[1][0];
-		targ[1] = args[1][1];
-	} else if((tempstr = silly_atr_get(mech->mynum, A_MECHPREFID))
-			  && strlen(tempstr) > 1) {
-		targ[0] = tempstr[0];
-		targ[1] = tempstr[1];
-	} else {
-		targ[0] = 65 + Number(0, 25);
-		targ[1] = 65 + Number(0, 25);
-	}
-	targ[0] = BOUNDED('A', toupper(targ[0]), 'Z');
-	targ[1] = BOUNDED('A', toupper(targ[1]), 'Z');
-	for(loop = 0; (loop < newmap->first_free && !notdone); loop++) {
-		if((tempMech = (MECH *)
-			FindObjectsData(newmap->mechsOnMap[loop])))
-			if(MechID(tempMech)[0] == targ[0] &&
-			   MechID(tempMech)[1] == targ[1])
-				notdone = 1;
-	}
-	while (notdone) {
-		targ[0] = 65 + Number(0, 25);
-		targ[1] = 65 + Number(0, 25);
-		notdone = 0;
-		for(loop = 0; (loop < newmap->first_free && !notdone); loop++) {
-			if((tempMech = (MECH *)
-				FindObjectsData(newmap->mechsOnMap[loop])))
-				if(MechID(tempMech)[0] == targ[0] &&
-				   MechID(tempMech)[1] == targ[1])
-					notdone = 1;
-		}
-	}
-	DOCHECK(loop == MAX_MECHS_PER_MAP,
-			"There are too many mechs on that map!");
-	add_mech_to_map(newmap, mech);
-	MechID(mech)[0] = targ[0];
-	MechID(mech)[1] = targ[1];
-	if(MechX(mech) > (newmap->width - 1) ||
-	   MechY(mech) > (newmap->height - 1)) {
-		MechX(mech) = 0;
-		MechLastX(mech) = 0;
-		MechY(mech) = 0;
-		MechLastY(mech) = 0;
-		MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
-							&MechFY(mech));
-		MechTerrain(mech) = GetTerrain(newmap, MechX(mech), MechY(mech));
-		MechElev(mech) = GetElevation(newmap, MechX(mech), MechY(mech));
-		notify(player,
-			   "You're current position is out of bounds, Pos changed to 0,0");
-	}
-	notify_printf(player, "MapIndex changed to %d", newindex);
-	notify_printf(player, "Your ID: %c%c", MechID(mech)[0], MechID(mech)[1]);
-	SendLoc(tprintf("#%d set #%d's mapindex to #%d.", player, mech->mynum,
-					newindex));
-	UnZombifyMech(mech);
+    if (newindex == -1) {
+        notify(player, "Mech removed from map.");
+        SendLoc(tprintf("#%d removed #%d from map #%d.", player,
+                    mech->mynum, oldmap->mynum));
+        return;
+    }
+
+    /* Just make it random */
+    /* Find a clear spot for this mech */
+    if (nargs > 1 && strlen(args[1]) > 1) {
+        targ[0] = args[1][0];
+        targ[1] = args[1][1];
+    } else if ((tempstr = silly_atr_get(mech->mynum, A_MECHPREFID))
+            && strlen(tempstr) > 1) {
+        targ[0] = tempstr[0];
+        targ[1] = tempstr[1];
+    } else {
+        targ[0] = 65 + Number(0, 25);
+        targ[1] = 65 + Number(0, 25);
+    }
+    targ[0] = BOUNDED('A', toupper(targ[0]), 'Z');
+    targ[1] = BOUNDED('A', toupper(targ[1]), 'Z');
+    for (node = dllist_head(newmap->mechs); node && !notdone; node = dllist_next(node)) {
+        if ((tempMech = getMech((int) dllist_data(node))))
+            if (MechID(tempMech)[0] == targ[0] &&
+                    MechID(tempMech)[1] == targ[1])
+                notdone = 1;
+    }
+    while (notdone) {
+        targ[0] = 65 + Number(0, 25);
+        targ[1] = 65 + Number(0, 25);
+        notdone = 0;
+        for (node = dllist_head(newmap->mechs); node && !notdone; node = dllist_next(node)) {
+            if ((tempMech = getMech((int) dllist_data(node))))
+                if (MechID(tempMech)[0] == targ[0] &&
+                        MechID(tempMech)[1] == targ[1])
+                    notdone = 1;
+        }
+    }
+    DOCHECK(dllist_size(newmap->mechs) == MAX_MECHS_PER_MAP,
+            "There are too many mechs on that map!");
+    add_mech_to_map(newmap, mech);
+    MechID(mech)[0] = targ[0];
+    MechID(mech)[1] = targ[1];
+    if (MechX(mech) > (newmap->width - 1) ||
+            MechY(mech) > (newmap->height - 1)) {
+        MechX(mech) = 0;
+        MechLastX(mech) = 0;
+        MechY(mech) = 0;
+        MechLastY(mech) = 0;
+        MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
+                &MechFY(mech));
+        MechTerrain(mech) = GetTerrain(newmap, MechX(mech), MechY(mech));
+        MechElev(mech) = GetElevation(newmap, MechX(mech), MechY(mech));
+        notify(player,
+                "You're current position is out of bounds, Pos changed to 0,0");
+    }
+    notify_printf(player, "MapIndex changed to %d", newindex);
+    notify_printf(player, "Your ID: %c%c", MechID(mech)[0], MechID(mech)[1]);
+    SendLoc("#%d set #%d's mapindex to #%d.", player, mech->mynum,
+            newindex);
+    UnZombifyMech(mech);
 }
 
 void mech_Rsetteam(dbref player, void *data, char *buffer)

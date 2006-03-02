@@ -55,6 +55,7 @@ int SearchLightInRange(MECH * mech, MAP * map)
 {
 
 	MECH *target;
+    dllist_node *node;
 	int i;
 
 	/* Make sure theres a valid mech or map */
@@ -62,10 +63,10 @@ int SearchLightInRange(MECH * mech, MAP * map)
 		return 0;
 
 	/* Loop through all the units on the map */
-	for(i = 0; i < map->first_free; i++) {
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
 		/* No units on the map */
-		if(!(target = FindObjectsData(map->mechsOnMap[i])))
+		if(!(target = getMech((int) dllist_data(node))))
 			continue;
 
 		/* The unit doesn't have slite on */
@@ -919,6 +920,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 										   punch with */
 
 	/* Stuff for Weapon Attacks */
+    dllist_node *node;          /* For iterating over the units on the map */
 	int accumulate_heat;		/* How much heat we're building up */
 	int i, j;
 
@@ -1052,63 +1054,62 @@ void auto_gun_event(MUXEVENT * muxevent)
 		targets = rb_init(&auto_generic_compare, NULL);
 
 		/* Cycle through possible targets and pick something to shoot */
-		for(i = 0; i < map->first_free; i++) {
+        for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			/* Make sure its on the right map */
-			if(i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+            /* Same unit ? */
+            if (mech->mynum == (int) dllist_data(node))
+                continue;
 
-				/* Is it a valid unit ? */
-				if(!(target = getMech(j)))
-					continue;
+            /* Is it a valid unit ? */
+            if(!(target = getMech((int) dllist_data(node))))
+                continue;
 
-				/* Score the target */
-				target_score =
-					auto_calc_target_score(autopilot, mech, target, map);
+            /* Score the target */
+            target_score =
+                auto_calc_target_score(autopilot, mech, target, map);
 
-				/* Log It */
-				print_autogun_log(autopilot,
-								  "Autogun - Possible target #%d with score %d",
-								  target->mynum, target_score);
+            /* Log It */
+            print_autogun_log(autopilot,
+                    "Autogun - Possible target #%d with score %d",
+                    target->mynum, target_score);
 
-				/* If target has a score add it to rbtree */
-				if(target_score > 0) {
+            /* If target has a score add it to rbtree */
+            if(target_score > 0) {
 
-					/* Create target node and fill with proper values */
-					temp_target_node = auto_create_target_node(target_score,
-															   target->mynum);
+                /* Create target node and fill with proper values */
+                temp_target_node = auto_create_target_node(target_score,
+                        target->mynum);
 
-					/*! \todo {should add check incase it returns a NULL struct} */
+                /*! \todo {should add check incase it returns a NULL struct} */
 
-					/* Add it to list but first make sure it doesn't overlap
-					 * with a current score */
-					while (1) {
+                /* Add it to list but first make sure it doesn't overlap
+                 * with a current score */
+                while (1) {
 
-						if(rb_exists
-						   (targets, &temp_target_node->target_score)) {
-							temp_target_node->target_score++;
-						} else {
-							break;
-						}
+                    if(rb_exists
+                            (targets, &temp_target_node->target_score)) {
+                        temp_target_node->target_score++;
+                    } else {
+                        break;
+                    }
 
-					}
+                }
 
-					/* Add it */
-					rb_insert(targets, &temp_target_node->target_score,
-							  temp_target_node);
+                /* Add it */
+                rb_insert(targets, &temp_target_node->target_score,
+                        temp_target_node);
 
-				}
+            }
 
-				/* Check to see if its our current target */
-				if(autopilot->target == target->mynum) {
+            /* Check to see if its our current target */
+            if(autopilot->target == target->mynum) {
 
-					/* Save the new score */
-					autopilot->target_score = target_score;
+                /* Save the new score */
+                autopilot->target_score = target_score;
 
-				}
+            }
 
-			}
-
-		}						/* End of for loop */
+        }						/* End of for loop */
 
 		/* Check to see if we couldn't find ANY targets within range,
 		 * if not, cycle autogun and set the update tick to 20, so we
@@ -1275,35 +1276,34 @@ void auto_gun_event(MUXEVENT * muxevent)
 		physical_target = NULL;
 
 		/* Cycle through possible targets and pick something to beat on */
-		for(i = 0; i < map->first_free; i++) {
+        for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			/* Make sure its on the right map */
-			if(i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+            /* Same unit ? */
+            if (mech->mynum == (int) dllist_data(node))
+                continue;
 
-				/* Is it a valid unit ? */
-				if(!(target = getMech(j)))
-					continue;
+            /* Is it a valid unit ? */
+            if(!(target = getMech((int) dllist_data(node))))
+                continue;
 
-				if(Destroyed(target))
-					continue;
+            if(Destroyed(target))
+                continue;
 
-				if(MechStatus(target) & COMBAT_SAFE)
-					continue;
+            if(MechStatus(target) & COMBAT_SAFE)
+                continue;
 
-				if(MechTeam(target) == MechTeam(mech))
-					continue;
+            if(MechTeam(target) == MechTeam(mech))
+                continue;
 
-				/* Check its range */
-				range = FindHexRange(MechFX(mech), MechFY(mech),
-									 MechFX(target), MechFY(target));
+            /* Check its range */
+            range = FindHexRange(MechFX(mech), MechFY(mech),
+                    MechFX(target), MechFY(target));
 
-				/* Just go for first one , can always add scoring later */
-				if(range < 1.0) {
-					physical_target = target;
-					break;
-				}
-
-			}
+            /* Just go for first one , can always add scoring later */
+            if(range < 1.0) {
+                physical_target = target;
+                break;
+            }
 
 		}
 

@@ -331,6 +331,7 @@ static int friend_c = 0;		/* Number of enemies */
 int getEnemies(MECH * mech, MAP * map, int reset)
 {
 	MECH *tempMech;
+    dllist_node *node;
 	int i;
 
 	if(reset) {
@@ -341,8 +342,8 @@ int getEnemies(MECH * mech, MAP * map, int reset)
 		return 0;
 	}
 	enemy_c = 0;
-	for(i = 0; i < map->first_free; i++) {
-		tempMech = FindObjectsData(map->mechsOnMap[i]);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        tempMech = getMech((int) dllist_data(node));
 		if(!tempMech)
 			continue;
 		if(Destroyed(tempMech))
@@ -356,7 +357,7 @@ int getEnemies(MECH * mech, MAP * map, int reset)
 		/* Something that is _possibly_ unnerving */
 		LOCInit(&enemy_l[enemy_c], tempMech);	/* Location */
 		enemy_m[enemy_c] = tempMech;	/* Mech data */
-		enemy_i[enemy_c++] = i;
+		enemy_i[enemy_c++] = tempMech->mynum;
 	}
 	return enemy_c;
 }
@@ -364,6 +365,7 @@ int getEnemies(MECH * mech, MAP * map, int reset)
 int getFriends(MECH * mech, MAP * map, int reset)
 {
 	MECH *tempMech;
+    dllist_node *node;
 	int i;
 
 	if(reset) {
@@ -374,8 +376,8 @@ int getFriends(MECH * mech, MAP * map, int reset)
 		return 0;
 	}
 	friend_c = 0;
-	for(i = 0; i < map->first_free; i++) {
-		tempMech = FindObjectsData(map->mechsOnMap[i]);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+        tempMech = getMech((int) dllist_data(node));
 		if(!tempMech)
 			continue;
 		if(Destroyed(tempMech))
@@ -388,7 +390,7 @@ int getFriends(MECH * mech, MAP * map, int reset)
 			continue;			/* Inconsequential */
 		LOCInit(&friend_l[friend_c], tempMech);	/* Location */
 		friend_m[friend_c] = tempMech;	/* Mech data */
-		friend_i[friend_c++] = i;
+		friend_i[friend_c++] = tempMech->mynum;
 	}
 	return friend_c;
 }
@@ -985,12 +987,14 @@ static astar_node *auto_create_astar_node(short x, short y,
  */
 int astar_compare(int a, int b, void *arg)
 {
-	return a - b;
+    return a - b;
 }
+
 void astar_release(void *key, void *data)
 {
-	free(data);
+    free(data);
 }
+
 int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 							 short end_y)
 {

@@ -144,79 +144,81 @@ static int blast_arcf(float fx, float fy, MECH * mech)
 #define TABLE_KICK  2
 
 void blast_hit_hexf(MAP * map, int dam, int singlehitsize, int heatdam,
-					float fx, float fy, float tfx, float tfy, char *tomsg,
-					char *otmsg, int table, int safeup, int safedown,
-					int isunderwater)
+        float fx, float fy, float tfx, float tfy, char *tomsg,
+        char *otmsg, int table, int safeup, int safedown,
+        int isunderwater)
 {
-	MECH *tempMech;
-	int loop;
-	int isrear = 0, iscritical = 0, hitloc;
-	int damleft, arc, ndam;
-	int ground_zero;
-	int tx, ty;
+    MECH *tempMech;
+    dllist_node *node;
+    int isrear = 0, iscritical = 0, hitloc;
+    int damleft, arc, ndam;
+    int ground_zero;
+    int tx, ty;
 
-	/* Not on a map so just return */
-	if(!map)
-		return;
+    /* Not on a map so just return */
+    if (!map)
+        return;
 
-	RealCoordToMapCoord(&tx, &ty, fx, fy);
-	if(tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
-		return;
-	if(!tomsg || !otmsg)
-		return;
-	if(isunderwater)
-		ground_zero = Elevation(map, tx, ty);
-	else
-		ground_zero = MAX(0, Elevation(map, tx, ty));
+    RealCoordToMapCoord(&tx, &ty, fx, fy);
+    if (tx < 0 || ty < 0 || tx >= map->width || ty >= map->height)
+        return;
+    if (!tomsg || !otmsg)
+        return;
+    if (isunderwater)
+        ground_zero = Elevation(map, tx, ty);
+    else
+        ground_zero = MAX(0, Elevation(map, tx, ty));
 
-	for(loop = 0; loop < map->first_free; loop++)
-		if(map->mechsOnMap[loop] >= 0) {
-			tempMech = (MECH *)
-				FindObjectsData(map->mechsOnMap[loop]);
-			if(!tempMech)
-				continue;
-			if(MechX(tempMech) != tx || MechY(tempMech) != ty)
-				continue;
-			/* Far too high.. */
-			if(MechZ(tempMech) >= (safeup + ground_zero))
-				continue;
-			/* Far too below (underwater, mostly) */
-			if(					/* MechTerrain(tempMech) == WATER &&  */
-				  MechZ(tempMech) <= (ground_zero - safedown))
-				continue;
-			MechLOSBroadcast(tempMech, otmsg);
-			mech_notify(tempMech, MECHALL, tomsg);
-			arc = blast_arcf(tfx, tfy, tempMech);
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(arc == BACK)
-				isrear = 1;
-			damleft = dam;
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
 
-			while (damleft > 0) {
-				if(singlehitsize <= damleft)
-					ndam = singlehitsize;
-				else
-					ndam = damleft;
+        if (MechX(tempMech) != tx || MechY(tempMech) != ty)
+            continue;
 
-				damleft -= ndam;
+        /* Far too high.. */
+        if (MechZ(tempMech) >= (safeup + ground_zero))
+            continue;
 
-				switch (table) {
-				case TABLE_PUNCH:
-					FindPunchLoc(tempMech, hitloc, arc, iscritical, isrear);
-					break;
-				case TABLE_KICK:
-					FindKickLoc(tempMech, hitloc, arc, iscritical, isrear);
-					break;
-				default:
-					hitloc =
-						FindHitLocation(tempMech, arc, &iscritical, &isrear);
-				}
+        /* Far too below (underwater, mostly) */
+        if (MechZ(tempMech) <= (ground_zero - safedown))
+            continue;
 
-				DamageMech(tempMech, tempMech, 0, -1, hitloc, isrear,
-						   iscritical, ndam, 0, -1, 0, -1, 0, 0);
-			}
-			heat_effect(NULL, tempMech, heatdam, 0);
-		}
+        MechLOSBroadcast(tempMech, otmsg);
+        mech_notify(tempMech, MECHALL, tomsg);
+        arc = blast_arcf(tfx, tfy, tempMech);
+
+        if(arc == BACK)
+            isrear = 1;
+
+        damleft = dam;
+
+        while (damleft > 0) {
+            if(singlehitsize <= damleft)
+                ndam = singlehitsize;
+            else
+                ndam = damleft;
+
+            damleft -= ndam;
+
+            switch (table) {
+                case TABLE_PUNCH:
+                    FindPunchLoc(tempMech, hitloc, arc, iscritical, isrear);
+                    break;
+                case TABLE_KICK:
+                    FindKickLoc(tempMech, hitloc, arc, iscritical, isrear);
+                    break;
+                default:
+                    hitloc =
+                        FindHitLocation(tempMech, arc, &iscritical, &isrear);
+            }
+
+            DamageMech(tempMech, tempMech, 0, -1, hitloc, isrear,
+                    iscritical, ndam, 0, -1, 0, -1, 0, 0);
+        }
+        heat_effect(NULL, tempMech, heatdam, 0);
+    }
 }
 
 void blast_hit_hex(MAP * map, int dam, int singlehitsize, int heatdam,

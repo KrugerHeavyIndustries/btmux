@@ -264,36 +264,34 @@ static void litemark_callback(MAP * map, int x, int y)
 
 static void litemark_map(MAP * map)
 {
-	MECH *mech;
-	int i;
-	int index;
-	mapobj *fire;
+    MECH *mech;
+    dllist_node *node;
+    int index;
+    mapobj *fire;
 
-	for(fire = first_mapobj(map, TYPE_FIRE); fire; fire = next_mapobj(fire)) {
-		set_sliteinfo(fire->x, fire->y, MAPLOSHEX_LIT);
-		visit_neighbor_hexes(map, fire->x, fire->y, litemark_callback);
-	}
+    for (fire = first_mapobj(map, TYPE_FIRE); fire; fire = next_mapobj(fire)) {
+        set_sliteinfo(fire->x, fire->y, MAPLOSHEX_LIT);
+        visit_neighbor_hexes(map, fire->x, fire->y, litemark_callback);
+    }
 
-	for(i = 0; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] < 0)
-			continue;
-		mech = FindObjectsData(map->mechsOnMap[i]);
-		if(!mech)
-			continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-		if(Jellied(mech)) {
-			set_sliteinfo(MechX(mech), MechY(mech), MAPLOSHEX_LIT);
-			visit_neighbor_hexes(map, MechX(mech), MechY(mech),
-								 litemark_callback);
-		}
+        if (!(mech = getMech((int) dllist_data(node))))
+            continue;
 
-		if(!MechLites(mech))
-			continue;
+        if (Jellied(mech)) {
+            set_sliteinfo(MechX(mech), MechY(mech), MAPLOSHEX_LIT);
+            visit_neighbor_hexes(map, MechX(mech), MechY(mech),
+                    litemark_callback);
+        }
 
-		for(index = 0; index < losmap.xsize * losmap.ysize; index++) {
-			trace_slitelos(map, mech, index, MechZ(mech) + MechHeight(mech));
-		}
-	}
+        if (!MechLites(mech))
+            continue;
+
+        for (index = 0; index < losmap.xsize * losmap.ysize; index++) {
+            trace_slitelos(map, mech, index, MechZ(mech) + MechHeight(mech));
+        }
+    }
 }
 
 #define DEF_MINA(mech, sn) (MechSeesTerrain(mech, sn) ? -20 : 1000)

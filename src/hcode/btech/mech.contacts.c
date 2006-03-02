@@ -257,6 +257,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data, *tempMech;
 	MAP *mech_map = getMap(mech->mapindex), *tmp_map;
 	mapobj *building;
+    dllist_node *node;
 	int loop, i, j, argc, bearing, buffindex = 0;
 	char *args[1], bufflist[MAX_MECHS_PER_MAP][120], buff[100];
 	int sbuff[MAX_MECHS_PER_MAP];
@@ -356,15 +357,14 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	else if(isvb <= 2)
 		notify(player, "Line of Sight Contacts:");
 
-	for(loop = 0; loop < mech_map->first_free; loop++) {
-		if(!(mech_map->mechsOnMap[loop] != mech->mynum &&
-			 mech_map->mechsOnMap[loop] != -1))
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+		if (!(tempMech = getMech((int) dllist_data(node))))
 			continue;
 
-		tempMech = (MECH *) FindObjectsData(mech_map->mechsOnMap[loop]);
-
-		if(!tempMech)
-			continue;
 		if(argc) {
 			if(!((MechSeemsFriend(mech, tempMech) ? (see_what & SEE_ALLY)
 				  : (see_what & SEE_ENEMA)) ||

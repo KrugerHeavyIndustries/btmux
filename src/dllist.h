@@ -28,8 +28,9 @@ dllist_node *dllist_create_node(void *data);
 
 /* The different destroy functions
  * destroy_node returns the data */
-int dllist_destroy_list(dllist *ddlist);
+int dllist_destroy_list(dllist *dllist);
 void *dllist_destroy_node(dllist_node *node);   /* Shouldn't include this one but whatever */
+void dllist_release(dllist *dllist, void (*) (void *, void *), void *arg);
 
 /* The various insert functions */
 void dllist_insert_after(dllist *dllist, dllist_node *node, dllist_node *newnode);
@@ -40,6 +41,7 @@ void dllist_insert_end(dllist *dllist, dllist_node *newnode);
 /* Remove nodes and return the data */
 void *dllist_remove(dllist *dllist, dllist_node *node);
 void *dllist_remove_node_at_pos(dllist *dllist, int pos);
+void *dllist_remove_node_matching_data(dllist *dllist, void *data);
 
 /* Utility functions */
 dllist_node *dllist_head(dllist *dllist);

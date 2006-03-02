@@ -653,6 +653,7 @@ void mech_embark(dbref player, void *data, char *buffer)
 		Shutdown(towee);
 		SetCarrying(mech, -1);
 		MechStatus(towee) &= ~TOWED;
+        MechTowedBy(towee) = -1;
 	}
 
 	/* Now handle the unit itself */

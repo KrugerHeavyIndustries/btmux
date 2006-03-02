@@ -142,16 +142,18 @@ MAP *ValidMap(dbref player, dbref map)
 
 dbref FindMechOnMap(MAP * map, char *mechid)
 {
-	int loop;
-	MECH *tempMech;
+    MECH *tempMech;
+    dllist_node *node;
 
-	for(loop = 0; loop < map->first_free; loop++)
-		if(map->mechsOnMap[loop] != -1) {
-			tempMech = getMech(map->mechsOnMap[loop]);
-			if(tempMech && !strncasecmp(MechID(tempMech), mechid, 2))
-				return tempMech->mynum;
-		}
-	return -1;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if (!(tempMech = getMech((int) dllist_data(node))))
+            continue;
+
+        if (!strncasecmp(MechID(tempMech), mechid, 2))
+            return tempMech->mynum;
+    }
+    return -1;
 }
 
 dbref FindTargetDBREFFromMapNumber(MECH * mech, char *mapnum)
@@ -867,54 +869,57 @@ void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x, float *cart_y)
 #define NAV_MAX_WIDTH 4+21+2
 
 void navigate_sketch_mechs(MECH * mech, MAP * map, int x, int y,
-						   char buff[NAVIGATE_LINES][MBUF_SIZE])
+        char buff[NAVIGATE_LINES][MBUF_SIZE])
 {
-	float corner_fx, corner_fy, fx, fy;
-	int i, row, column;
-	MECH *other;
+    float corner_fx, corner_fy, fx, fy;
+    int row, column;
+    MECH *other;
+    dllist_node *node;
 
-	MapCoordToRealCoord(x, y, &corner_fx, &corner_fy);
-	corner_fx -= 2 * ALPHA;
-	corner_fy -= HALF_Y;
+    MapCoordToRealCoord(x, y, &corner_fx, &corner_fy);
+    corner_fx -= 2 * ALPHA;
+    corner_fy -= HALF_Y;
 
-	for(i = 0; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] < 0)
-			continue;
-		if(!(other = FindObjectsData(map->mechsOnMap[i])))
-			continue;
-		if(other == mech)
-			continue;
-		if(MechX(other) != x || MechY(other) != y)
-			continue;
-		if(!InLineOfSight(mech, other, x, y, 0.5))
-			continue;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-		fx = MechFX(other) - corner_fx;
-		column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
+        if (!(other = getMech((int) dllist_data(node))))
+            continue;
 
-		fy = MechFY(other) - corner_fy;
-		row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
+        if (other == mech)
+            continue;
 
-		if(column < 0 || column > NAV_MAX_WIDTH ||
-		   row < 0 || row > NAV_MAX_HEIGHT)
-			continue;
+        if (MechX(other) != x || MechY(other) != y)
+            continue;
 
-		buff[row][column] = MechSeemsFriend(mech, other) ? 'x' : 'X';
-	}
+        if (!InLineOfSight(mech, other, x, y, 0.5))
+            continue;
 
-	/* Draw 'mech last so we always see it. */
+        fx = MechFX(other) - corner_fx;
+        column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
 
-	fx = MechFX(mech) - corner_fx;
-	column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
+        fy = MechFY(other) - corner_fy;
+        row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
 
-	fy = MechFY(mech) - corner_fy;
-	row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
+        if (column < 0 || column > NAV_MAX_WIDTH ||
+                row < 0 || row > NAV_MAX_HEIGHT)
+            continue;
 
-	if(column < 0 || column > NAV_MAX_WIDTH ||
-	   row < 0 || row > NAV_MAX_HEIGHT)
-		return;
+        buff[row][column] = MechSeemsFriend(mech, other) ? 'x' : 'X';
+    }
 
-	buff[row][column] = '*';
+    /* Draw 'mech last so we always see it. */
+
+    fx = MechFX(mech) - corner_fx;
+    column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
+
+    fy = MechFY(mech) - corner_fy;
+    row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
+
+    if (column < 0 || column > NAV_MAX_WIDTH ||
+            row < 0 || row > NAV_MAX_HEIGHT)
+        return;
+
+    buff[row][column] = '*';
 }
 
 int FindTargetXY(MECH * mech, float *x, float *y, float *z)
@@ -2322,34 +2327,40 @@ int FindObjWithDest(MECH * mech, int loc, int type)
  */
 MECH *find_mech_in_hex(MECH * mech, MAP * mech_map, int x, int y, int needlos)
 {
-	int loop;
-	MECH *target;
+    MECH *target;
+    dllist_node *node;
 
-	for(loop = 0; loop < mech_map->first_free; loop++)
-		if(mech_map->mechsOnMap[loop] != mech->mynum &&
-		   mech_map->mechsOnMap[loop] != -1) {
-			target = (MECH *) FindObjectsData(mech_map->mechsOnMap[loop]);
-			if(!target)
-				continue;
-			if(!(MechX(target) == x && MechY(target) == y) && !(needlos & 2))
-				continue;
-			if(needlos) {
-				if(needlos & 1)
-					if(!InLineOfSight(mech, target, x, y,
-									  FlMechRange(mech_map, mech, target)))
-						continue;
-				if(needlos & 2) {
-					if(MechTeam(mech) != MechTeam(target))
-						continue;
-					if(!(MechSeesHex(target, mech_map, x, y)))
-						continue;
-					if(mech == target)
-						continue;
-				}
-			}
-			return target;
-		}
-	return NULL;
+    for (node = dllist_head(mech_map->mechs); node; node = dllist_next(node)) {
+
+        if (mech->mynum == (int) dllist_data(node))
+            continue;
+
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
+
+        if (!(MechX(target) == x && MechY(target) == y) && !(needlos & 2))
+            continue;
+
+        if (needlos) {
+            if (needlos & 1)
+                if (!InLineOfSight(mech, target, x, y,
+                            FlMechRange(mech_map, mech, target)))
+                    continue;
+            if (needlos & 2) {
+                
+                if (MechTeam(mech) != MechTeam(target))
+                    continue;
+
+                if (!(MechSeesHex(target, mech_map, x, y)))
+                    continue;
+
+                if (mech == target)
+                    continue;
+            }
+        }
+        return target;
+    }
+    return NULL;
 }
 
 int FindAndCheckAmmo(MECH * mech,

@@ -538,6 +538,8 @@ void clear_mech(MECH * mech, int flag)
 	MechTargY(mech) = -1;
 	MechPilot(mech) = -1;
 	MechAim(mech) = NUM_SECTIONS;
+    MechCarrying(mech) = -1;
+    MechTowedBy(mech) = -1;
 	StopBurning(mech);
 	if(flag) {
 		for(i = 0; i < NUM_TICS; i++)

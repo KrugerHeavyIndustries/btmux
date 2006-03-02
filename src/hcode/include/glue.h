@@ -718,7 +718,6 @@ CommandsStruct mapcommands[] = {
 	map_addhex},
     {0, "SETLINKED", "@Sets the map linked", map_setlinked},
     {0, "@MAPEMIT <MESSAGE>", "@Emits stuff to the map", map_mapemit},
-    {0, "FIXMAP", "@Fixes inconsistencies in map", debug_fixmap},
     {0, "LOADMAP <NAME>", "@Loads the named map", map_loadmap},
     {0, "SAVEMAP <NAME>", "@Saves the map as name", map_savemap},
     {0, "SETMAPSIZE <X> <Y>", "@Sets x and y size of map", map_setmapsize},

@@ -875,6 +875,12 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
 
+void auto_command_release(void *data, void *arg)
+{
+    command_node *node = (command_node *) data;
+    auto_destroy_command_node(node);
+}
+
 /*
  * Called when either creating a new autopilot - SPECIAL_ALLOC
  * or when destroying an autopilot - SPECIAL_FREE
@@ -884,7 +890,6 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
     AUTO *autopilot = *data;
     MECH *mech;
-    command_node *temp;
     int i;
 
     switch (selector) {
@@ -899,7 +904,7 @@ void auto_newautopilot(dbref key, void **data, int selector)
             autopilot->astar_path = NULL;
             autopilot->weaplist = NULL;
 
-            for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
                 autopilot->profile[i] = NULL;
             }
 
@@ -913,29 +918,16 @@ void auto_newautopilot(dbref key, void **data, int selector)
             /* Make sure the AI is stopped */
             auto_stop_pilot(autopilot);
 
-            /* Go through the list and remove any leftover nodes */
-            while (dllist_size(autopilot->commands)) {
-
-                /* Remove the first node on the list and get the data
-                 * from it */
-                temp = (command_node *) dllist_remove(autopilot->commands,
-                        dllist_head(autopilot->commands));
-
-                /* Destroy the command node */
-                auto_destroy_command_node(temp);
-
-            }
-
             /* Destroy the list */
-            dllist_destroy_list(autopilot->commands);
+            dllist_release(autopilot->commands, auto_command_release, NULL);
             autopilot->commands = NULL;
 
             /* Destroy any astar path list thats on the AI */
             auto_destroy_astar_path(autopilot);
 
             /* Destroy profile array */
-            for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-                if(autopilot->profile[i]) {
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                if (autopilot->profile[i]) {
                     rb_destroy(autopilot->profile[i]);
                 }
                 autopilot->profile[i] = NULL;
@@ -946,10 +938,10 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
             /* Finally reset the AI value on its unit if
              * it needs to */
-            if((mech = getMech(autopilot->mymechnum))) {
+            if ((mech = getMech(autopilot->mymechnum))) {
 
                 /* Just incase another AI has taken over */
-                if(MechAuto(mech) == autopilot->mynum) {
+                if (MechAuto(mech) == autopilot->mynum) {
                     MechAuto(mech) = -1;
                 }
 

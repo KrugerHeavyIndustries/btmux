@@ -980,122 +980,118 @@ void mech_vertical(dbref player, void *data, char *buffer)
 
 void mech_thrash(dbref player, void *data, char *buffer)
 {
-	MECH *mech = (MECH *) data;
-	MECH *target;
-	MAP *map = getMap(mech->mapindex);
-	int terrain;
-	int limbs = 4;
-	int aLimbs[] = { RARM, LARM, LLEG, RLEG };
-	int i;
-	int tempLoc;
-	char locName[50];
-	int damage, tempDamage;
+    MECH *mech = (MECH *) data;
+    MECH *target;
+    MAP *map = getMap(mech->mapindex);
+    dllist_node *node;
+    int terrain;
+    int limbs = 4;
+    int aLimbs[] = { RARM, LARM, LLEG, RLEG };
+    int i;
+    int tempLoc;
+    char locName[50];
+    int damage, tempDamage;
 
-	cch(MECH_USUALO);
-	DOCHECK(!Fallen(mech), "You need to be prone to thrash!");
-	DOCHECK(!map, "Invalid map! Contact a wizard!");
+    cch(MECH_USUALO);
+    DOCHECK(!Fallen(mech), "You need to be prone to thrash!");
+    DOCHECK(!map, "Invalid map! Contact a wizard!");
 
-	terrain = GetRTerrain(map, MechX(mech), MechY(mech));
+    terrain = GetRTerrain(map, MechX(mech), MechY(mech));
 
-	DOCHECK(!((terrain == GRASSLAND) || (terrain == ROAD) ||
-			 (terrain == BRIDGE)),
-			"Thrashing only works in clear terrain or on roads or bridges.");
+    DOCHECK(!((terrain == GRASSLAND) || (terrain == ROAD) ||
+                (terrain == BRIDGE)),
+            "Thrashing only works in clear terrain or on roads or bridges.");
 
-	/* Check locations */
-	for(i = 0; i < 4; i++) {
-		tempLoc = aLimbs[i];
+    /* Check locations */
+    for (i = 0; i < 4; i++) {
+        tempLoc = aLimbs[i];
 
-		if(SectIsDestroyed(mech, tempLoc)) {
-			limbs--;
-			continue;
-		}
+        if (SectIsDestroyed(mech, tempLoc)) {
+            limbs--;
+            continue;
+        }
 
-		ArmorStringFromIndex(tempLoc, locName, MechType(mech),
-							 MechMove(mech));
+        ArmorStringFromIndex(tempLoc, locName, MechType(mech),
+                MechMove(mech));
 
-		DOCHECK(SectHasBusyWeap(mech, tempLoc),
-				tprintf("You have weapons recycling on your %s.", locName));
-		DOCHECK(MechSections(mech)[tempLoc].recycle,
-				tprintf("Your %s is still recovering from your last attack.",
-						locName));
-	}
+        DOCHECK(SectHasBusyWeap(mech, tempLoc),
+                tprintf("You have weapons recycling on your %s.", locName));
+        DOCHECK(MechSections(mech)[tempLoc].recycle,
+                tprintf("Your %s is still recovering from your last attack.",
+                    locName));
+    }
 
-	/* Can't thrash if we have no limbs */
-	if(!limbs) {
-		mech_notify(mech, MECHALL, "You can't thrash if you have no limbs!");
-		return;
-	}
+    /* Can't thrash if we have no limbs */
+    if (!limbs) {
+        mech_notify(mech, MECHALL, "You can't thrash if you have no limbs!");
+        return;
+    }
 #ifndef REALWEIGHT_DAMAGE
-	damage = MechTons(mech) / 3;
+    damage = MechTons(mech) / 3;
 #else
-	damage = MechRealTons(mech) / 3;
+    damage = MechRealTons(mech) / 3;
 #endif /* REALWEIGHT_DAMAGE */
-	damage = (damage * limbs) / 4;
+    damage = (damage * limbs) / 4;
 
-	mech_notify(mech, MECHALL,
-				"You start to flail your arms and legs like a wild man!");
-	MechLOSBroadcast(mech,
-					 "starts to flail its arms and legs like a wild beast!");
+    mech_notify(mech, MECHALL,
+            "You start to flail your arms and legs like a wild man!");
+    MechLOSBroadcast(mech,
+            "starts to flail its arms and legs like a wild beast!");
 
-	/* Let's see who we can smack around */
-	for(i = 0; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] >= 0) {
-			target = (MECH *) FindObjectsData(map->mechsOnMap[i]);
+    /* Let's see who we can smack around */
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-			if(!target)
-				continue;
+        if (!(target = getMech((int) dllist_data(node))))
+            continue;
 
-			if(MechType(target) != CLASS_BSUIT)
-				continue;
+        if (MechType(target) != CLASS_BSUIT)
+            continue;
 
-			if(MechTeam(target) == MechTeam(mech))
-				continue;
+        if (MechTeam(target) == MechTeam(mech))
+            continue;
 
-			if(Jumping(target) || OODing(target))
-				continue;
+        if (Jumping(target) || OODing(target))
+            continue;
 
-			if(FaMechRange(mech, target) > 1.0)
-				continue;
+        if (FaMechRange(mech, target) > 1.0)
+            continue;
 
-			mech_printf(mech, MECHALL, "You manage to hit %s!",
-						GetMechToMechID(mech, target));
-			mech_printf(target, MECHALL,
-						"You get hit by %s's thrashing limbs!",
-						GetMechToMechID(target, mech));
+        mech_printf(mech, MECHALL, "You manage to hit %s!",
+                GetMechToMechID(mech, target));
+        mech_printf(target, MECHALL,
+                "You get hit by %s's thrashing limbs!",
+                GetMechToMechID(target, mech));
 
-			tempDamage = damage;
+        tempDamage = damage;
 
-			while (tempDamage > 0) {
-				if(tempDamage > 5) {
-					DamageMech(target, mech, 1, MechPilot(mech), Number(0,
-																		NUM_BSUIT_MEMBERS
-																		- 1),
-							   0, 0, 5, 0, -1, 0, -1, 0, 1);
-					tempDamage -= 5;
-				} else {
-					DamageMech(target, mech, 1, MechPilot(mech), Number(0,
-																		NUM_BSUIT_MEMBERS
-																		- 1),
-							   0, 0, tempDamage, 0, -1, 0, -1, 0, 1);
-					tempDamage = 0;
-				}
-			}
-		}
-	}
+        while (tempDamage > 0) {
+            if (tempDamage > 5) {
+                DamageMech(target, mech, 1, MechPilot(mech), 
+                        Number(0, NUM_BSUIT_MEMBERS - 1),
+                        0, 0, 5, 0, -1, 0, -1, 0, 1);
+                tempDamage -= 5;
+            } else {
+                DamageMech(target, mech, 1, MechPilot(mech), 
+                        Number(0, NUM_BSUIT_MEMBERS - 1),
+                        0, 0, tempDamage, 0, -1, 0, -1, 0, 1);
+                tempDamage = 0;
+            }
+        }
+    }
 
-	/* Make our roll and recycle our limbs */
-	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
-		MechFalls(mech, 1, 1);
-	}
+    /* Make our roll and recycle our limbs */
+    if (!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
+        MechFalls(mech, 1, 1);
+    }
 
-	for(i = 0; i < 4; i++) {
-		tempLoc = aLimbs[i];
+    for (i = 0; i < 4; i++) {
+        tempLoc = aLimbs[i];
 
-		if(SectIsDestroyed(mech, tempLoc))
-			continue;
+        if (SectIsDestroyed(mech, tempLoc))
+            continue;
 
-		SetRecycleLimb(mech, tempLoc, PHYSICAL_RECYCLE_TIME);
-	}
+        SetRecycleLimb(mech, tempLoc, PHYSICAL_RECYCLE_TIME);
+    }
 }
 
 void mech_jump(dbref player, void *data, char *buffer)
@@ -1874,28 +1870,37 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 
 int mechs_in_hex(MAP * map, int x, int y, int friendly, int team)
 {
-	MECH *mech;
-	int i, cnt = 0;
+    MECH *mech;
+    dllist_node *node;
+    int cnt = 0;
 
-	for(i = 0; i < map->first_free; i++)
-		if((mech = FindObjectsData(map->mechsOnMap[i]))) {
-			if(MechX(mech) != x || MechY(mech) != y)
-				continue;
-			if(Destroyed(mech))
-				continue;
-			if(!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech)
-			   && (Landed(mech) || !Started(mech))) {
-				cnt += 2;
-				continue;
-			}
-			if(MechType(mech) != CLASS_MECH)
-				continue;
-			if(Jumping(mech) || OODing(mech))
-				continue;
-			if(friendly < 0 || ((MechTeam(mech) == team) == friendly))
-				cnt++;
-		}
-	return cnt;
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+
+        if ((mech = getMech((int) dllist_data(node)))) {
+
+            if (MechX(mech) != x || MechY(mech) != y)
+                continue;
+
+            if (Destroyed(mech))
+                continue;
+
+            if (!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech)
+                    && (Landed(mech) || !Started(mech))) {
+                cnt += 2;
+                continue;
+            }
+
+            if (MechType(mech) != CLASS_MECH)
+                continue;
+
+            if (Jumping(mech) || OODing(mech))
+                continue;
+
+            if (friendly < 0 || ((MechTeam(mech) == team) == friendly))
+                cnt++;
+        }
+    }
+    return cnt;
 }
 
 enum {
@@ -1938,122 +1943,133 @@ void cause_damage(MECH * att, MECH * mech, int dam, int table)
 }
 
 int domino_space_in_hex(MAP * map, MECH * me, int x, int y, int friendly,
-						int mode, int cnt)
+        int mode, int cnt)
 {
-	int tar = Number(0, cnt - 1), i, head, td;
-	MECH *mech = NULL;
-	int team = MechTeam(me);
+    int tar = Number(0, cnt - 1), head, td;
+    MECH *mech = NULL;
+    dllist_node *node;
+    int team = MechTeam(me);
 
-	for(i = 0; i < map->first_free; i++)
-		if((mech = FindObjectsData(map->mechsOnMap[i]))) {
-			if(MechX(mech) != x || MechY(mech) != y)
-				continue;
-			if(mech == me)
-				continue;
-			if(IsDS(mech) && (Landed(mech) || !Started(mech))) {
-				tar -= 2;
-			} else {
-				if(!Started(mech))
-					continue;
-				if(MechType(mech) != CLASS_MECH)
-					continue;
-				if(Jumping(mech) || OODing(mech))
-					continue;
-				if(friendly < 0 || ((MechTeam(mech) == team) == friendly))
-					tar--;
-				else
-					continue;
-			}
-			if(tar <= 0)
-				break;
-		}
-	if(i == map->first_free)
-		return 0;
-	/* Now we got a mech we hit, accidentally or otherwise */
-	/* Next, we figure out what'll happen */
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-	/* 'wannabe-charge' is entirely based on the directional difference */
-	/* Multiplied by the speed - if both go in same direction at same speed,
-	   nothing untoward happens (unlikely, though) */
-	/* Jumping to a hex with multiple guys is BAD Thing(tm), though */
+        if ((mech = getMech((int) dllist_data(node)))) {
 
-	switch (mode) {
-	case 1:
-	case 2:
-		head = MechJumpHeading(me);
-		td = JumpSpeedMP(me, map) * (MechRTons(me) / 1024 + 5) / 10;
-		break;
-	default:
-		head = MechFacing(me) + MechLateral(me);
-		td = fabs(((MechSpeed(me) - MechSpeed(mech) * cos((head -
-														   (MechFacing(mech) +
-															MechLateral
-															(mech))) * (M_PI /
-																		180.)))
-				   * MP_PER_KPH) * (MechRTons(me) / 1024 + 5) / 15);
-		break;
-	}
-	if(td > 10)
-		td = 10 + (td - 10) / 3;
-	if(td <= 1)					/* No point in 1pt hits */
-		return 0;
-	switch (mode) {
-	case 1:
-	case 2:
-		if(mudconf.btech_stacking == 2) {
-			int factor = mudconf.btech_stackdamage;
-			mech_printf(me, MECHALL, "You land on %s!",
-						GetMechToMechID(me, mech));
-			mech_printf(mech, MECHALL, "%s lands on you!",
-						GetMechToMechID(mech, me));
-			MechLOSBroadcasti(me, mech, "lands on %s!");
-			if(IsDS(mech)) {
-				cause_damage(me, mech, MAX(1, td * factor / 500), PUNCH);
-				cause_damage(me, me, MAX(1, td * factor / 100), KICK);
-			} else {
-				cause_damage(me, mech, MAX(1, td * factor / 100), PUNCH);
-				cause_damage(me, me, MAX(1, td * factor / 500), KICK);
-			}
-		} else {
-			mech_printf(me, MECHALL, "You nearly land on %s!",
-						GetMechToMechID(me, mech));
-			mech_printf(mech, MECHALL, "%s nearly lands on you!",
-						GetMechToMechID(mech, me));
-			MechLOSBroadcasti(me, mech, "nearly lands on %s!");
-			if(!MadePilotSkillRoll(me, cnt + JumpSpeedMP(me, map) / 2))
-				MechFalls(me, 1, JumpSpeedMP(me, map) / 2);
-		}
-		return 1;
-	}
-	if(mudconf.btech_stacking == 2) {
-		int factor = mudconf.btech_stackdamage;
-		mech_printf(me, MECHALL, "You bump into %s!",
-					GetMechToMechID(me, mech));
-		mech_printf(mech, MECHALL, "%s bumps into you!",
-					GetMechToMechID(mech, me));
-		MechLOSBroadcasti(me, mech, "bumps into %s!");
-		if(IsDS(mech)) {
-			cause_damage(me, mech, MAX(1, td * factor / 500), NORMAL);
-			cause_damage(me, me, MAX(1, td * factor / 100), NORMAL);
-		} else {
-			cause_damage(me, mech, MAX(1, td * factor / 100), NORMAL);
-			cause_damage(me, me, MAX(1, td * factor / 500), NORMAL);
-		}
-	} else {
-		mech_printf(me, MECHALL, "You nearly bump into %s!",
-					GetMechToMechID(me, mech));
-		mech_printf(mech, MECHALL, "%s nearly bumps into you!",
-					GetMechToMechID(mech, me));
-		MechLOSBroadcasti(me, mech, "nearly bumps into %s!");
-		if(!MadePilotSkillRoll(me, cnt))
-			MechFalls(me, 1, 0);
-		MechDesiredSpeed(me) = 0;
-		MechSpeed(me) = 0;
-	}
-	MechChargeTarget(me) = -1;
-	MechChargeTimer(me) = 0;
-	MechChargeDistance(me) = 0;
-	return 1;
+            if (MechX(mech) != x || MechY(mech) != y)
+                continue;
+
+            if (mech == me)
+                continue;
+
+            if (IsDS(mech) && (Landed(mech) || !Started(mech))) {
+                tar -= 2;
+            } else {
+                if (!Started(mech))
+                    continue;
+
+                if (MechType(mech) != CLASS_MECH)
+                    continue;
+
+                if (Jumping(mech) || OODing(mech))
+                    continue;
+
+                if (friendly < 0 || ((MechTeam(mech) == team) == friendly))
+                    tar--;
+                else
+                    continue;
+            }
+            if (tar <= 0)
+                break;
+        }
+    }
+
+    if (tar > 0)
+        return 0;
+
+    /* Now we got a mech we hit, accidentally or otherwise */
+    /* Next, we figure out what'll happen */
+
+    /* 'wannabe-charge' is entirely based on the directional difference */
+    /* Multiplied by the speed - if both go in same direction at same speed,
+       nothing untoward happens (unlikely, though) */
+    /* Jumping to a hex with multiple guys is BAD Thing(tm), though */
+
+    switch (mode) {
+        case 1:
+        case 2:
+            head = MechJumpHeading(me);
+            td = JumpSpeedMP(me, map) * (MechRTons(me) / 1024 + 5) / 10;
+            break;
+        default:
+            head = MechFacing(me) + MechLateral(me);
+            td = fabs(((MechSpeed(me) - MechSpeed(mech) * cos((head -
+                                    (MechFacing(mech) +
+                                     MechLateral
+                                     (mech))) * (M_PI /
+                                                 180.)))
+                        * MP_PER_KPH) * (MechRTons(me) / 1024 + 5) / 15);
+            break;
+    }
+    if(td > 10)
+        td = 10 + (td - 10) / 3;
+    if(td <= 1)					/* No point in 1pt hits */
+        return 0;
+    switch (mode) {
+        case 1:
+        case 2:
+            if(mudconf.btech_stacking == 2) {
+                int factor = mudconf.btech_stackdamage;
+                mech_printf(me, MECHALL, "You land on %s!",
+                        GetMechToMechID(me, mech));
+                mech_printf(mech, MECHALL, "%s lands on you!",
+                        GetMechToMechID(mech, me));
+                MechLOSBroadcasti(me, mech, "lands on %s!");
+                if(IsDS(mech)) {
+                    cause_damage(me, mech, MAX(1, td * factor / 500), PUNCH);
+                    cause_damage(me, me, MAX(1, td * factor / 100), KICK);
+                } else {
+                    cause_damage(me, mech, MAX(1, td * factor / 100), PUNCH);
+                    cause_damage(me, me, MAX(1, td * factor / 500), KICK);
+                }
+            } else {
+                mech_printf(me, MECHALL, "You nearly land on %s!",
+                        GetMechToMechID(me, mech));
+                mech_printf(mech, MECHALL, "%s nearly lands on you!",
+                        GetMechToMechID(mech, me));
+                MechLOSBroadcasti(me, mech, "nearly lands on %s!");
+                if(!MadePilotSkillRoll(me, cnt + JumpSpeedMP(me, map) / 2))
+                    MechFalls(me, 1, JumpSpeedMP(me, map) / 2);
+            }
+            return 1;
+    }
+    if(mudconf.btech_stacking == 2) {
+        int factor = mudconf.btech_stackdamage;
+        mech_printf(me, MECHALL, "You bump into %s!",
+                GetMechToMechID(me, mech));
+        mech_printf(mech, MECHALL, "%s bumps into you!",
+                GetMechToMechID(mech, me));
+        MechLOSBroadcasti(me, mech, "bumps into %s!");
+        if(IsDS(mech)) {
+            cause_damage(me, mech, MAX(1, td * factor / 500), NORMAL);
+            cause_damage(me, me, MAX(1, td * factor / 100), NORMAL);
+        } else {
+            cause_damage(me, mech, MAX(1, td * factor / 100), NORMAL);
+            cause_damage(me, me, MAX(1, td * factor / 500), NORMAL);
+        }
+    } else {
+        mech_printf(me, MECHALL, "You nearly bump into %s!",
+                GetMechToMechID(me, mech));
+        mech_printf(mech, MECHALL, "%s nearly bumps into you!",
+                GetMechToMechID(mech, me));
+        MechLOSBroadcasti(me, mech, "nearly bumps into %s!");
+        if(!MadePilotSkillRoll(me, cnt))
+            MechFalls(me, 1, 0);
+        MechDesiredSpeed(me) = 0;
+        MechSpeed(me) = 0;
+    }
+    MechChargeTarget(me) = -1;
+    MechChargeTimer(me) = 0;
+    MechChargeDistance(me) = 0;
+    return 1;
 }
 
 int domino_space(MECH * mech, int mode)

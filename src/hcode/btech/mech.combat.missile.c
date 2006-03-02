@@ -377,88 +377,90 @@ int MissileHitTarget(MECH * mech,
 }
 
 void SwarmHitTarget(MECH * mech,
-					int weapindx,
-					int wSection,
-					int wCritSlot,
-					MECH * hitMech,
-					int LOS, int baseToHit, int roll, int incoming, int fof,
-					int tIsSwarmAttack, int player_roll)
+        int weapindx,
+        int wSection,
+        int wCritSlot,
+        MECH * hitMech,
+        int LOS, int baseToHit, int roll, int incoming, int fof,
+        int tIsSwarmAttack, int player_roll)
 {
 #define MAX_STAR 10
-	/* Max # of targets we'll try to hit: 10 */
-	MECH *star[MAX_STAR];
-	int present_target = 0;
-	int missiles;
-	int loop;
-	MAP *map = FindObjectsData(mech->mapindex);
-	float r = 0.0, ran = 0, flrange = 0.0;
-	MECH *source = mech, *tempMech;
-	int i, j;
+    /* Max # of targets we'll try to hit: 10 */
+    MECH *star[MAX_STAR];
+    int present_target = 0;
+    int missiles;
+    int loop;
+    MAP *map = getMap(mech->mapindex);
+    float r = 0.0, ran = 0, flrange = 0.0;
+    MECH *source = mech, *tempMech;
+    int i, j;
+    dllist_node *node;
 
-	for(loop = 0; MissileHitTable[loop].key != -1; loop++)
-		if(MissileHitTable[loop].key == weapindx)
-			break;
+    for (loop = 0; MissileHitTable[loop].key != -1; loop++)
+        if (MissileHitTable[loop].key == weapindx)
+            break;
 
-	if(!(MissileHitTable[loop].key == weapindx))
-		return;
+    if (!(MissileHitTable[loop].key == weapindx))
+        return;
 
-	missiles = MissileHitTable[loop].num_missiles[10];
-	while (missiles > 0) {
-		flrange = flrange + FaMechRange(source, hitMech);
-		ran = FaMechRange(mech, hitMech);
-		if(flrange > EGunRange(weapindx)) {
-			mech_notify(hitMech, MECHALL,
-						"Luckily, the missiles fall short of you!");
-			return;
-		}
-		if(!(missiles =
-			 MissileHitTarget(mech, weapindx, wSection, wCritSlot,
-							  hitMech, -1, -1, InLineOfSight_NB(mech, hitMech,
-																MechX(mech),
-																MechY(mech),
-																ran) ?
-							  present_target == 0 ? 1 : 2 : 0, baseToHit,
-							  present_target == 0 ? roll : Roll(), missiles,
-							  tIsSwarmAttack, player_roll)))
-			return;
-		/* Try to acquire a new target NOT in the star */
-		if(present_target == MAX_STAR)
-			return;
-		star[present_target++] = hitMech;
-		source = hitMech;
-		hitMech = NULL;
-		for(i = 0; i < map->first_free; i++)
-			if((tempMech = FindObjectsData(map->mechsOnMap[i])))
-				if(!fof || (MechTeam(tempMech) != MechTeam(mech))) {
-					for(j = 0; j < present_target; j++)
-						if(tempMech == star[j])
-							break;
-					if(MechStatus(tempMech) & COMBAT_SAFE)
-						continue;
-					if(j != present_target)
-						continue;
-					if(!hitMech && (r = FaMechRange(source, tempMech)) < 1.9)
-						if(InLineOfSight_NB(source, tempMech,
-											MechX(source), MechY(source),
-											r)) {
-							hitMech = tempMech;
-							ran = r;
-						}
-				}
-		if(!hitMech)
-			return;
-		if(mech != hitMech)
-			mech_notify(hitMech, MECHALL,
-						"The missile-swarm turns towards you!");
-		if(InLineOfSight_NB(mech, source, MechX(mech), MechY(mech),
-							FaMechRange(mech, source)))
-			mech_printf(mech, MECHALL,
-						"Your missile-swarm of %d missile%s targets %s!",
-						missiles, missiles > 1 ? "s" : "",
-						mech == hitMech ? "YOU!!" : GetMechToMechID(mech,
-																	hitMech));
-		MechLOSBroadcasti(mech, hitMech, "'s missile-swarm targets %s!");
-	}
+    missiles = MissileHitTable[loop].num_missiles[10];
+    while (missiles > 0) {
+        flrange = flrange + FaMechRange(source, hitMech);
+        ran = FaMechRange(mech, hitMech);
+        if (flrange > EGunRange(weapindx)) {
+            mech_notify(hitMech, MECHALL,
+                    "Luckily, the missiles fall short of you!");
+            return;
+        }
+        if (!(missiles =
+                    MissileHitTarget(mech, weapindx, wSection, wCritSlot,
+                        hitMech, -1, -1, InLineOfSight_NB(mech, hitMech,
+                            MechX(mech),
+                            MechY(mech),
+                            ran) ?
+                        present_target == 0 ? 1 : 2 : 0, baseToHit,
+                        present_target == 0 ? roll : Roll(), missiles,
+                        tIsSwarmAttack, player_roll)))
+            return;
+        /* Try to acquire a new target NOT in the star */
+        if (present_target == MAX_STAR)
+            return;
+        star[present_target++] = hitMech;
+        source = hitMech;
+        hitMech = NULL;
+
+        for (node = dllist_head(map->mechs); node; node = dllist_next(node))
+            if ((tempMech = getMech((int) dllist_data(node))))
+                if (!fof || (MechTeam(tempMech) != MechTeam(mech))) {
+                    for (j = 0; j < present_target; j++)
+                        if (tempMech == star[j])
+                            break;
+                    if (MechStatus(tempMech) & COMBAT_SAFE)
+                        continue;
+                    if (j != present_target)
+                        continue;
+                    if (!hitMech && (r = FaMechRange(source, tempMech)) < 1.9)
+                        if (InLineOfSight_NB(source, tempMech,
+                                    MechX(source), MechY(source), r)) {
+                            hitMech = tempMech;
+                            ran = r;
+                        }
+                }
+
+        if (!hitMech)
+            return;
+        if (mech != hitMech)
+            mech_notify(hitMech, MECHALL,
+                    "The missile-swarm turns towards you!");
+        if (InLineOfSight_NB(mech, source, MechX(mech), MechY(mech),
+                    FaMechRange(mech, source)))
+            mech_printf(mech, MECHALL,
+                    "Your missile-swarm of %d missile%s targets %s!",
+                    missiles, missiles > 1 ? "s" : "",
+                    mech == hitMech ? "YOU!!" : GetMechToMechID(mech,
+                        hitMech));
+        MechLOSBroadcasti(mech, hitMech, "'s missile-swarm targets %s!");
+    }
 }
 
 /*

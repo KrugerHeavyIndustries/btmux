@@ -267,19 +267,20 @@ void mech_navigate(dbref player, void *data, char *buffer)
 /* INDENT OFF */
 
 /* 
-   0
-   ___________                                     /``\][/""\][/""\
-   /           \          HEX Location: 254, 122    \`1/``\""/``\""/
-   300  /             \  60     Terrain: Light Forest     /``\``/""\`3/""\
-   /               \        Elevation:  0             \`2/``\"1/``\""/
-   /                 \                                 /""\``|**\`3/""\
+                 0
+            ___________                                     /``\][/""\][/""\
+           /           \          HEX Location: 254, 122    \`1/``\""/``\""/
+     300  /             \  60     Terrain: Light Forest     /``\``/""\`3/""\
+         /               \        Elevation:  0             \`2/``\"1/``\""/
+        /                 \                                 /""\``|**\`3/""\
    270 (                   )  90  Speed: 0.0                \"4/``\"4/``\""/
-   \                 /       Vertical Speed: 0.0       /""\`3/""\`3/""\
-   \               /        Heading: 0                \"4/``\"4/``\""/
-   240  \             /  120                              /""\`3/""\`3/""\
-   \____*______/                                    \"4/][\"4/][\"4/
-   180
-   */
+        \                 /       Vertical Speed: 0.0       /""\`3/""\`3/""\
+         \               /        Heading: 0                \"4/``\"4/``\""/
+     240  \             /  120                              /""\`3/""\`3/""\
+           \____*______/                                    \"4/][\"4/][\"4/
+
+                180
+*/
 
 /* INDENT ON */
 
@@ -497,6 +498,7 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 {
 	int loop, b_width, e_width, b_height, e_height, i;
 	MECH *oMech;
+    dllist_node *node;
 
 	/* topbuff and botbuff must be capable of holding enough
 	 * characters to colorize all hexes in the most inefficient
@@ -552,16 +554,16 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 	notify(player, botbuff);
 
 	if(mode & LRS_MECHMODE) {
-		for(i = 0; i < map->first_free; i++) {
-			if((oMech = getMech(map->mechsOnMap[i]))) {
-				if((mech == oMech) ||
-				   (MechY(oMech) >= b_height && MechY(oMech) <= e_height &&
-					MechX(oMech) >= b_width && MechX(oMech) <= e_width &&
-					InLineOfSight(mech, oMech, MechX(oMech), MechY(oMech),
-								  FlMechRange(map, mech, oMech))))
-					mechs[last_mech++] = oMech;
-			}
-		}
+        for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
+            if ((oMech = getMech((int) dllist_data(node)))) {
+                if ((mech == oMech) ||
+                        (MechY(oMech) >= b_height && MechY(oMech) <= e_height &&
+                         MechX(oMech) >= b_width && MechX(oMech) <= e_width &&
+                         InLineOfSight(mech, oMech, MechX(oMech), MechY(oMech),
+                             FlMechRange(map, mech, oMech))))
+                    mechs[last_mech++] = oMech;
+            }
+        }
 		for(i = 0; i < (last_mech - 1); i++)	/* Bubble-sort the list 
 												 *  to y/x order */
 			for(loop = (i + 1); loop < last_mech; loop++) {
@@ -913,119 +915,113 @@ static void sketch_tac_ownmech(char *buf, MAP * map, MECH * mech, int sx,
 }
 
 static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
-							 int sx, int sy, int wx, int wy, int dispcols,
-							 int top_offset, int left_offset, int docolour,
-							 int labels)
+        int sx, int sy, int wx, int wy, int dispcols,
+        int top_offset, int left_offset, int docolour,
+        int labels)
 {
-	int i;
-	char *pos = buf + top_offset * dispcols + left_offset;
-	int oddcol1 = is_oddcol(sx);
+    char *pos = buf + top_offset * dispcols + left_offset;
+    char *base;
+    int oddcol1 = is_oddcol(sx);
+    int x, y;
+    MECH *mech;
+    dllist_node *node;
 
-	/*
-	 * Draw all the 'mechs on the map.
-	 */
-	for(i = 0; i < map->first_free; i++) {
-		int x, y;
-		char *base;
-		MECH *mech;
+    /*
+     * Draw all the 'mechs on the map.
+     */
+    for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
-		if(map->mechsOnMap[i] == -1) {
-			continue;
-		}
+        if (!(mech = getMech((int) dllist_data(node))))
+            continue;
 
-		mech = getMech(map->mechsOnMap[i]);
-		if(mech == NULL) {
-			continue;
-		}
+        /*
+         * Check to see if the 'mech is on the tac map and 
+         * that its in LOS of the player's 'mech.
+         */
+        x = MechX(mech) - sx;
+        y = MechY(mech) - sy;
+        if (!IsDS(mech) && (x < 0 || x >= wx || y < 0 || y >= wy)) {
+            continue;
+        }
 
-		/*
-		 * Check to see if the 'mech is on the tac map and 
-		 * that its in LOS of the player's 'mech.
-		 */
-		x = MechX(mech) - sx;
-		y = MechY(mech) - sy;
-		if(!IsDS(mech) && (x < 0 || x >= wx || y < 0 || y >= wy)) {
-			continue;
-		}
+        if (IsDS(mech) && (x < -1 || x > wx || y < -1 || y > wy)) {
+            continue;
+        }
 
-		if(IsDS(mech) && (x < -1 || x > wx || y < -1 || y > wy)) {
-			continue;
-		}
+        if (mech != player_mech &&
+                !InLineOfSight(player_mech, mech, MechX(mech), MechY(mech),
+                    FlMechRange(map, player_mech, mech))) {
+            continue;
+        }
 
-		if(mech != player_mech &&
-		   !InLineOfSight(player_mech, mech, MechX(mech), MechY(mech),
-						  FlMechRange(map, player_mech, mech))) {
-			continue;
-		}
+        base = pos + tac_hex_offset(x, y, dispcols, oddcol1);
+        if (!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech) &&
+                ((MechZ(mech) >= ORBIT_Z && mech != player_mech) || Landed(mech)
+                 || !Started(mech))) {
+            int ts = DSBearMod(mech);
+            int dir;
 
-		base = pos + tac_hex_offset(x, y, dispcols, oddcol1);
-		if(!(MechSpecials2(mech) & CARRIER_TECH) && IsDS(mech) &&
-		   ((MechZ(mech) >= ORBIT_Z && mech != player_mech) || Landed(mech)
-			|| !Started(mech))) {
-			int ts = DSBearMod(mech);
-			int dir;
+            /*
+             * Dropships are a special case.  They take up
+             * seven hexes on a tac map.  First draw the
+             * center hex and then the six surronding hexes.
+             */
 
-			/*
-			 * Dropships are a special case.  They take up
-			 * seven hexes on a tac map.  First draw the
-			 * center hex and then the six surronding hexes.
-			 */
+            for (dir = 0; dir < 6; dir++) {
+                int tx = x + dirs[dir][0];
+                int ty = y + dirs[dir][1];
 
-			for(dir = 0; dir < 6; dir++) {
-				int tx = x + dirs[dir][0];
-				int ty = y + dirs[dir][1];
+                if ((tx + oddcol1) % 2 == 0 && dirs[dir][0] != 0) {
+                    ty--;
+                }
+                if (tx < 0 || tx >= wx || ty < 0 || ty >= wy) {
+                    continue;
+                }
+                base = pos + tac_hex_offset(tx, ty, dispcols, oddcol1);
+                if (Find_DS_Bay_Number(mech, (dir - ts + 6) % 6)
+                        >= 0) {
+                    sketch_tac_ds(base, dispcols, '@');
+                } else {
+                    sketch_tac_ds(base, dispcols, '=');
+                }
+            }
+            if (x < 0 || x >= wx || y < 0 || y >= wy)
+                continue;
 
-				if((tx + oddcol1) % 2 == 0 && dirs[dir][0] != 0) {
-					ty--;
-				}
-				if(tx < 0 || tx >= wx || ty < 0 || ty >= wy) {
-					continue;
-				}
-				base = pos + tac_hex_offset(tx, ty, dispcols, oddcol1);
-				if(Find_DS_Bay_Number(mech, (dir - ts + 6) % 6)
-				   >= 0) {
-					sketch_tac_ds(base, dispcols, '@');
-				} else {
-					sketch_tac_ds(base, dispcols, '=');
-				}
-			}
-			if(x < 0 || x >= wx || y < 0 || y >= wy)
-				continue;
+            base = pos + tac_hex_offset(x, y, dispcols, oddcol1);
+            if (docolour) {
+                /*
+                 * Colour hack: 'X' would be confused with
+                 * any enemy con by colourize_tac_map()
+                 */
+                sketch_tac_ds(base, dispcols, '$');
+            } else {
+                sketch_tac_ds(base, dispcols, 'X');
+            }
 
-			base = pos + tac_hex_offset(x, y, dispcols, oddcol1);
-			if(docolour) {
-				/*
-				 * Colour hack: 'X' would be confused with
-				 * any enemy con by colourize_tac_map()
-				 */
-				sketch_tac_ds(base, dispcols, '$');
-			} else {
-				sketch_tac_ds(base, dispcols, 'X');
-			}
+            if (isalpha(base[0]))
+                continue;
 
-			if(isalpha(base[0]))
-				continue;
+            if (mech == player_mech) {
+                base[0] = '*';
+                base[1] = '*';
+            } else {
+                char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
+                base[0] = id[0];
+                base[1] = id[1];
+            }
 
-			if(mech == player_mech) {
-				base[0] = '*';
-				base[1] = '*';
-			} else {
-				char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
-				base[0] = id[0];
-				base[1] = id[1];
-			}
-
-		} else if(mech == player_mech) {
-			if(isalpha(base[0]))
-				continue;
-			base[0] = '*';
-			base[1] = '*';
-		} else {
-			char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
-			base[0] = id[0];
-			base[1] = id[1];
-		}
-	}
+        } else if (mech == player_mech) {
+            if (isalpha(base[0]))
+                continue;
+            base[0] = '*';
+            base[1] = '*';
+        } else {
+            char *id = MechIDS(mech, MechSeemsFriend(player_mech, mech));
+            base[0] = id[0];
+            base[1] = id[1];
+        }
+    }
 }
 
 static void sketch_tac_cliffs(char *buf, MAP * map, int sx, int sy, int wx,
