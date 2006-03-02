@@ -63,6 +63,15 @@ void mech_ood_event(MUXEVENT * e)
 	/* Time to hit da ground */
 	mech_notify(mech, MECHALL, "Your unit touches down!");
 
+	if(MechStatus(mech) & COMBAT_SAFE) {
+		/* If we're combat safe, we land regardless, since we're not gonna take any damage */
+		MechCocoon(mech) = 0;
+		MechLOSBroadcast(mech, "touches down safely!");
+		DropSetElevation(mech, 1);
+		MaybeMove(mech);
+		return;
+	}
+	
 	if(Fallen(mech))
 		mof = -10;
 	if(Uncon(mech) || !Started(mech) || Blinded(mech) || MechAutoFall(mech))
@@ -163,8 +172,10 @@ void mech_ood_event(MUXEVENT * e)
 		mech_notify(mech, MECHALL,
 				"Water floods your engine and your unit "
 				"becomes unoperable.");
-		MechLOSBroadcast(mech,
-				"emits some bubbles as its engines are flooded.");
+		if(MechType(mech) == CLASS_BSUIT)
+			MechLOSBroadcast(mech,"emits some bubbles and flails their arms around as they sink to the bottom!");
+		else
+			MechLOSBroadcast(mech,"emits some bubbles as its engines are flooded.");
 		DestroyMech(mech, mech, 0);
 	}
 

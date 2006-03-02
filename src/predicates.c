@@ -1494,12 +1494,7 @@ void did_it(dbref player, dbref thing, int what, const char *def, int owhat,
 			exec(buff, &bp, 0, thing, player,
 				 EV_EVAL | EV_FIGNORE | EV_TOP, &str, args, nargs);
 			*bp = '\0';
-			if(what == A_HTDESC) {
-				safe_str("\r\n", buff, &bp);
-				*bp = '\0';
-				notify_html(player, buff);
-			} else
-				notify(player, buff);
+			notify(player, buff);
 			free_lbuf(buff);
 		} else if(def) {
 			notify(player, def);

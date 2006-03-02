@@ -550,6 +550,14 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 	int weapon_number;
 
 	/* Basic checks */
+	if(!mech) {
+		dprintk("mech is bad!");
+		return;
+	}
+	if(!autopilot) {
+		dprintk("ai is bad!");
+		return;
+	}
 	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
 		return;
 

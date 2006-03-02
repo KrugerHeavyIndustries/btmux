@@ -86,7 +86,7 @@
 
 #define VACATION	0x01000000
 #define PLAYER_MAILS    0x02000000
-#define HTML		0x04000000	/* Player supports HTML */
+#define BLIND		0x04000000	/* Something to support blind players! */
 #define ZOMBIE          0x08000000	/* Hardcode object is a zombie */
 
 #define	SUSPECT		0x10000000	/* Report some activities to wizards */
@@ -623,7 +623,5 @@ extern void decompile_flags(dbref, dbref, char *);
 			    (Wizard(p) && \
 			     !((a)->flags & AF_GOD))))))
 #define	Has_power(p,x)	(check_access((p),powers_nametab[x].flag))
-#define Html(x) ((Flags2(x) & HTML) != 0)
-#define s_Html(x) s_Flags2((x), Flags2(x) | HTML)
 #define s_Dark(x) s_Flags((x),Flags(x) | DARK)
 #endif

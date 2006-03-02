@@ -555,7 +555,7 @@ static void hud_ammostatus(DESC * d, MECH * mech, char *msgclass, char *args)
 	int i, ammonum;
 	char response[LBUF_SIZE];
 
-	ammonum = FindAmmunition(mech, weapnums, curamm, maxamm, ammomode);
+	ammonum = FindAmmunition(mech, weapnums, curamm, maxamm, ammomode, 1);
 
 	for(i = 0; i < ammonum; i++) {
 		sprintf(response, "%d,%d,%s,%d,%d", i, weapnums[i],

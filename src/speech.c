@@ -77,8 +77,8 @@ void do_say(dbref player, dbref cause, int key, char *message)
 	 * Convert prefix-coded messages into the normal type 
 	 */
 
-	say_flags = key & (SAY_NOTAG | SAY_HERE | SAY_ROOM | SAY_HTML);
-	key &= ~(SAY_NOTAG | SAY_HERE | SAY_ROOM | SAY_HTML);
+	say_flags = key & (SAY_NOTAG | SAY_HERE | SAY_ROOM );
+	key &= ~(SAY_NOTAG | SAY_HERE | SAY_ROOM );
 
 	if(key == SAY_PREFIX) {
 		switch (*message++) {
@@ -138,12 +138,8 @@ void do_say(dbref player, dbref cause, int key, char *message)
 													message));
 		break;
 	case SAY_EMIT:
-		if((say_flags & SAY_HERE) || (say_flags & SAY_HTML) || !say_flags) {
-			if(say_flags & SAY_HTML) {
-				notify_all_from_inside_html(loc, player, message);
-			} else {
-				notify_all_from_inside(loc, player, message);
-			}
+		if((say_flags & SAY_HERE) || !say_flags) {
+			notify_all_from_inside(loc, player, message);
 		}
 		if(say_flags & SAY_ROOM) {
 			if((Typeof(loc) == TYPE_ROOM) && (say_flags & SAY_HERE)) {
@@ -700,8 +696,8 @@ void do_pemit(dbref player, dbref cause, int key, char *recipient,
 	} else {
 		do_contents = 0;
 	}
-	pemit_flags = key & (PEMIT_HERE | PEMIT_ROOM | PEMIT_HTML);
-	key &= ~(PEMIT_HERE | PEMIT_ROOM | PEMIT_HTML);
+	pemit_flags = key & (PEMIT_HERE | PEMIT_ROOM );
+	key &= ~(PEMIT_HERE | PEMIT_ROOM );
 	ok_to_do = 0;
 
 	switch (key) {
@@ -771,11 +767,8 @@ void do_pemit(dbref player, dbref cause, int key, char *recipient,
 					notify_all_from_inside(target, player, message);
 				}
 			} else {
-				if(pemit_flags & PEMIT_HTML) {
-					notify_with_cause_html(target, player, message);
-				} else {
-					notify_with_cause(target, player, message);
-				}
+				notify_with_cause(target, player, message);
+
 			}
 			break;
 		case PEMIT_OEMIT:

@@ -1004,7 +1004,7 @@ int FindWeapons_Advanced(MECH * mech, int index, unsigned char *weaparray,
 
 int FindAmmunition(MECH * mech, unsigned char *weaparray,
 				   unsigned short *ammoarray, unsigned short *ammomaxarray,
-				   unsigned int *modearray)
+				   unsigned int *modearray, int returnall)
 {
 	int loop;
 	int weapcount = 0;
@@ -1045,6 +1045,7 @@ int FindAmmunition(MECH * mech, unsigned char *weaparray,
 			}
 		}
 	/* Then, prune entries with 0 ammo left */
+	if (!returnall) {
 	for(i = 0; i < weapcount; i++)
 		if(!ammoarray[i]) {
 			for(j = i + 1; j < weapcount; j++) {
@@ -1055,7 +1056,8 @@ int FindAmmunition(MECH * mech, unsigned char *weaparray,
 			}
 			i--;
 			weapcount--;
-		}
+		} 
+	}
 	return (weapcount);
 }
 

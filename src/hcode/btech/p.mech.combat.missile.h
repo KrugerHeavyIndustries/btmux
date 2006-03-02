@@ -13,7 +13,7 @@ int AMSMissiles(MECH * mech, MECH * hitMech, int incoming, int type,
 int LocateAMSDefenses(MECH * target, int *AMStype, int *ammoLoc,
     int *ammoCrit);
 int MissileHitIndex(MECH * mech, MECH * hitMech, int weapindx,
-    int wSection, int wCritSlot);
+    int wSection, int wCritSlot, int glance);
 int MissileHitTarget(MECH * mech, int weapindx, int wSection,
     int wCritSlot, MECH * hitMech, int hitX, int hitY, int LOS,
     int baseToHit, int roll, int incoming, int tIsSwarmAttack, int player_roll);

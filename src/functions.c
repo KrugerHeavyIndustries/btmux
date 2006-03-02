@@ -226,6 +226,7 @@ char *trim_space_sep(char *str, char sep)
 {
 	char *p;
 
+    if(*str == '\0') return str;
 	if(sep != ' ')
 		return str;
 	while (*str && (*str == ' '))

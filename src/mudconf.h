@@ -89,7 +89,6 @@ struct confdata {
     char fixed_tel_msg[128];	/* Message displayed when teleporting and FIXED */
     char public_channel[32];	/* Name of public channel */
     char guests_channel[32];	/* Name of guests channel */
-    char pueblo_msg[1024];	/* Message displayed to Pueblo clients */
     int allow_unloggedwho;	/* Wether or not to allow unlogged-in clients to use WHO, DOING and SESSION */
     int btech_explode_reactor;	/* Allow or disallow explode reactor */
     int btech_explode_ammo;	/* Allow or disallow explode ammo */
@@ -149,7 +148,7 @@ struct confdata {
     int btech_ooc_comsys;	/* Enable bypassing of CA_NO_IC command checks for IC location blocking */
     int btech_idf_requires_spotter; /* Requires spotter for IDF firing */
     int btech_vtol_ice_causes_fire; /* VTOL ICE engines cause fire on crash/explosion */
-    int btech_use_glancing_blows;   /* BTH-1 rolls do half the damage */
+    int btech_glancing_blows; /* 0=Don't, 1=maxtech (BTH) , 2= Exile (BTH-1) */
     int btech_inferno_penalty;    /* FASA Inferno Ammo penalty (+30 heat, ammo explode) */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
@@ -404,7 +403,7 @@ struct statedata {
     HASHTAB attr_name_htab;	/* Attribute names hashtable */
     HASHTAB vattr_name_htab;	/* User attribute names hashtable */
     HASHTAB player_htab;	/* Player name->number hashtable */
-    rbtree *desctree;
+    rbtree desctree;
     NHSHTAB fwdlist_htab;	/* Room forwardlists */
     NHSHTAB parent_htab;	/* Parent $-command exclusion */
 #ifdef PARSE_TREES

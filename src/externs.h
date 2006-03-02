@@ -45,7 +45,6 @@ int dddb_init(void);
 /* From netcommon.c */
 void choke_player(dbref);
 void release_player(dbref);
-void raw_notify_html(dbref, const char *);
 void make_ulist(dbref, char *, char **);
 int fetch_idle(dbref);
 int fetch_connect(dbref);
@@ -75,14 +74,10 @@ void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int);
 void do_shutdown(dbref, dbref, int, char *);
 #define	notify(p,m)			notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
-#define notify_html(p,m)                notify_checked(p,p,m, \
-                                              MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN|MSG_HTML)
 #define	notify_quiet(p,m)		notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
 #define	notify_with_cause(p,c,m)	notify_checked(p,c,m, \
 						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
-#define notify_with_cause_html(p,c,m)   notify_checked(p,c,m, \
-                                              MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN|MSG_HTML)
 #define	notify_quiet_with_cause(p,c,m)	notify_checked(p,c,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
 #define	notify_puppet(p,c,m)		notify_checked(p,c,m, \
@@ -93,8 +88,6 @@ void do_shutdown(dbref, dbref, int, char *);
 						MSG_ME_ALL|MSG_NBR_EXITS|MSG_F_UP|MSG_F_CONTENTS)
 #define	notify_all_from_inside(p,c,m)	notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_NBR_EXITS_A|MSG_F_UP|MSG_F_CONTENTS|MSG_S_INSIDE)
-#define notify_all_from_inside_html(p,c,m)      notify_checked(p,c,m, \
-                                              MSG_ME_ALL|MSG_NBR_EXITS_A|MSG_F_UP|MSG_F_CONTENTS|MSG_S_INSIDE|MSG_HTML)
 #define	notify_all_from_outside(p,c,m)	notify_checked(p,c,m, \
 						MSG_ME_ALL|MSG_NBR_EXITS|MSG_F_UP|MSG_F_CONTENTS|MSG_S_OUTSIDE)
 void notify_except(dbref, dbref, dbref, const char *);
@@ -106,7 +99,6 @@ int Hearer(dbref);
 void report(void);
 int atr_match(dbref, dbref, char, char *, int);
 int list_check(dbref, dbref, char, char *, int);
-int html_escape(const char *src, char *dest, char **destp);
 
 /* From dnschild.c */
 int dnschild_init();
@@ -119,6 +111,8 @@ void shutdown_services();
 void flush_sockets();
 int eradicate_broken_fd(int);
 void mux_release_socket();
+int bind_descriptor(DESC *);
+int release_descriptor(DESC *);
 
 /* From signal.c */
 void bind_signals();
@@ -155,7 +149,6 @@ int log_to_file(dbref, const char *, const char *);
 
 /* From look.c */
 void look_in(dbref, dbref, int);
-void show_vrml_url(dbref, dbref);
 
 /* From move.c */
 void move_object(dbref, dbref);
@@ -481,8 +474,6 @@ void list_chashstats(dbref);
 #define MALIAS_RENAME	6	/* Renames a mail alias */
 #define MALIAS_LIST	8	/* Lists mail aliases */
 #define MALIAS_STATUS	9	/* Status of mail aliases */
-#define	MARK_SET	0	/* Set mark bits */
-#define	MARK_CLEAR	1	/* Clear mark bits */
 #define	MOTD_ALL	0	/* login message for all */
 #define	MOTD_WIZ	1	/* login message for wizards */
 #define	MOTD_DOWN	2	/* login message when logins disabled */
@@ -510,7 +501,6 @@ void list_chashstats(dbref);
 #define	PEMIT_HERE	16	/* Send to location (@femit, additive) */
 #define	PEMIT_ROOM	32	/* Send to containing rm (@femit, additive) */
 #define PEMIT_LIST      64	/* Send to a list */
-#define PEMIT_HTML	128	/* HTML escape, and no newline */
 #define	PS_BRIEF	0	/* Short PS report */
 #define	PS_LONG		1	/* Long PS report */
 #define	PS_SUMM		2	/* Queue counts only */
@@ -540,7 +530,6 @@ void list_chashstats(dbref);
 #define	SAY_NOTAG	32	/* Don't put Broadcast: in front (additive) */
 #define	SAY_HERE	64	/* Output to current location */
 #define	SAY_ROOM	128	/* Output to containing room */
-#define SAY_HTML	256	/* Don't output a newline */
 #define	SET_QUIET	1	/* Don't display 'Set.' message. */
 #define	SHUTDN_NORMAL	0	/* Normal shutdown */
 #define	SHUTDN_PANIC	1	/* Write a panic dump file */
@@ -628,7 +617,7 @@ void list_chashstats(dbref);
 #define	MSG_S_INSIDE	4096	/* Originator is inside target */
 #define	MSG_S_OUTSIDE	8192	/* Originator is outside target */
 #define MSG_COLORIZE    16384	/* Message needs to be given color */
-#define MSG_HTML	32768	/* Don't send \r\n */
+/* #define FREE		32768	*/
 #define MSG_NO_SLAVE    65536	/* Don't send to slaves */
 #define	MSG_ME_ALL	(MSG_ME|MSG_INV_EXITS|MSG_FWDLIST)
 #define	MSG_F_CONTENTS	(MSG_INV)
@@ -641,7 +630,6 @@ void list_chashstats(dbref);
 #define	LK_OBEYTERSE	0x0002
 #define	LK_SHOWATTR	0x0004
 #define	LK_SHOWEXIT	0x0008
-#define LK_SHOWVRML	0x0010
 
 /* Exit visibility precalculation codes */
 

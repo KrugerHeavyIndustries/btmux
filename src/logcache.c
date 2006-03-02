@@ -43,7 +43,7 @@ struct logfile_t {
 	struct event ev;
 };
 
-rbtree *logfiles = NULL;
+rbtree logfiles = NULL;
 
 static int logcache_compare(void *vleft, void *vright, void *arg)
 {

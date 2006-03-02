@@ -137,7 +137,7 @@ void cf_init(void)
 	mudconf.btech_ooc_comsys = 0;
 	mudconf.btech_idf_requires_spotter = 1;
 	mudconf.btech_vtol_ice_causes_fire = 1;
-	mudconf.btech_use_glancing_blows = 1;
+	mudconf.btech_glancing_blows = 1;
 	mudconf.btech_inferno_penalty = 0;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
@@ -192,7 +192,6 @@ void cf_init(void)
 	StringCopy(mudconf.fixed_tel_msg, "");
 	StringCopy(mudconf.public_channel, "Public");
 	StringCopy(mudconf.guests_channel, "Guests");
-	StringCopy(mudconf.pueblo_msg, "</xch_mudtext><img xch_mode=html>");
 	mudconf.indent_desc = 0;
 	mudconf.name_spaces = 1;
 	mudconf.fork_dump = 1;
@@ -1158,8 +1157,7 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_idf_requires_spotter, 0},
 	{(char *) "btech_vtol_ice_causes_fire",
 	 cf_int, CA_GOD, &mudconf.btech_vtol_ice_causes_fire, 0},
-	{(char *) "btech_use_glancing_blows",
-	 cf_int, CA_GOD, &mudconf.btech_use_glancing_blows, 0},
+	{(char *) "btech_glancing_blows", cf_int, CA_GOD, &mudconf.btech_glancing_blows, 0},
 	{(char *) "btech_inferno_penalty",
 	 cf_int, CA_GOD, &mudconf.btech_inferno_penalty, 0},
 #ifdef BT_FREETECHTIME
@@ -1249,8 +1247,6 @@ CONF conftable[] = {
 	 cf_string, CA_GOD, (void *) mudconf.dump_msg, 128},
 	{(char *) "postdump_message",
 	 cf_string, CA_GOD, (void *) mudconf.postdump_msg, 128},
-	{(char *) "pueblo_message",
-	 cf_string, CA_GOD, (int *) mudconf.pueblo_msg, 1024},
 	{(char *) "dump_offset",
 	 cf_int, CA_GOD, &mudconf.dump_offset, 0},
 	{(char *) "earn_limit",

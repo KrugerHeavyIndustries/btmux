@@ -772,7 +772,7 @@ void FireWeapon(MECH * mech,
 				int mapy, float range, int indirectFire, int sight, int ishex)
 {
 	MECH *altTarget;
-	int baseToHit;
+	int baseToHit,RbaseToHit;
 	int ammoLoc;
 	int ammoCrit;
 	int ammoLoc1;
@@ -1226,10 +1226,20 @@ void FireWeapon(MECH * mech,
 		}
 	}
 
+	/* Better setup some glancing stuff. There will be 3 ways to get hit..
+	 * Glancing_Blows = 0: NO Glancing. ROLL>=BTH=Normal
+	 * Glancing_Blows = 1: MaxTech Glancing. ROLL=BTH=Glance, ROLL>BTH=Normal
+	 * Glancing_Blows = 2: Exile Glancing. ROLL=BTH-1=Glance, ROLL>=BTH=Normal
+	 * We need to do a little handling here. The rest happens over it HitTarget 
+	 */
+	RbaseToHit = baseToHit;
+	if(mudconf.btech_glancing_blows == 2)
+		RbaseToHit = baseToHit - 1; /* only time we modify it */
+	
 	if(!isarty)
 		MechFireBroadcast(mech, ishex ? NULL : target, mapx, mapy,
 						  mech_map, &MechWeapons[weapindx].name[3],
-						  (roll >= baseToHit) && range_ok);
+						  (roll >= RbaseToHit) && range_ok);
 
 	/* Tell our target they were just shot at... */
 	if(target) {
@@ -1257,17 +1267,12 @@ void FireWeapon(MECH * mech,
 		if(IsMissile(weapindx)) {
 			HitTarget(mech, weapindx, section, critical, target, mapx,
 					  mapy, LOS, type, modifier,
-					  (roll >=
-					   (mudconf.btech_use_glancing_blows ? baseToHit -
-						1 : baseToHit))
-					  && range_ok, baseToHit, wGattlingShots, tIsSwarmAttack,
+				 (roll >= RbaseToHit) && range_ok, baseToHit, wGattlingShots, tIsSwarmAttack,
 					  roll);
 		} else {
-			if(roll >=
-			   (mudconf.btech_use_glancing_blows ? baseToHit -
-				1 : baseToHit)) {
+			if(roll >= RbaseToHit) {
 				HitTarget(mech, weapindx, section, critical, target, mapx,
-						  mapy, LOS, type, modifier, 1, baseToHit,
+						  mapy, LOS, type, modifier, 1, RbaseToHit,
 						  wGattlingShots, tIsSwarmAttack, roll);
 			} else {
 				int tTryClear = 1;
@@ -1282,9 +1287,7 @@ void FireWeapon(MECH * mech,
 										  critical, weapindx, range,
 										  altTarget, indirectFire, &c3Ref);
 
-						if(roll >=
-						   (mudconf.btech_use_glancing_blows ? baseToHit -
-							1 : baseToHit)) {
+						if(roll >= baseToHit) {
 							mech_notify(altTarget, MECHALL,
 										"The shot hits you instead!");
 							MechLOSBroadcast(altTarget,
@@ -1548,6 +1551,7 @@ void HitTarget(MECH * mech,
 					(!(MechCritStatus(mech) & TC_DESTROYED)) &&
 					((MechAim(mech) != NUM_SECTIONS) && hitMech &&
 					 (MechAimType(mech) == MechType(hitMech))));
+	int missileindex = 0;
 
 	if(hitMech) {
 
@@ -1571,14 +1575,17 @@ void HitTarget(MECH * mech,
 								   0);
 
 		/* Check if it is a glancing blow, if so, make an emit */
-		if(mudconf.btech_use_glancing_blows && (player_roll == (bth - 1))
-		   && hitMech) {
+		if((mudconf.btech_glancing_blows) && (player_roll == bth) && hitMech) {
+			/* Yes, even though we have two different glance modes, the above is correct
+			 * because we modified the bth in FireWeapon. Nothing to see here. move along
+			 */
 			MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
-			mech_notify(hitMech, MECHALL,
-						"You are nicked by a glancing blow!");
-			wWeapDamage = (int) (wWeapDamage + 1) / 2;
+			mech_notify(hitMech, MECHALL, 
+					"You are nicked by a glancing blow!");
+			wWeapDamage = (int ) (wWeapDamage +1) / 2 ;
+			if(wWeapDamage < 1 )
+				wWeapDamage = 1; /* very rare case */
 		}
-
 	}
 
 	/*
@@ -1592,16 +1599,6 @@ void HitTarget(MECH * mech,
 
 			/* Flamers - if in heat mode don't do damage */
 			if((IsFlamer(weapindx)) && (wFireMode & HEAT_MODE)) {
-
-				/* Check if it is a glancing blow, if so, make an emit */
-				if(mudconf.btech_use_glancing_blows &&
-				   (player_roll == (bth - 1)) && hitMech) {
-					MechLOSBroadcast(hitMech,
-									 "is nicked by a glancing blow!");
-					mech_notify(hitMech, MECHALL,
-								"You are nicked by a glancing blow!");
-					wBaseWeapDamage = (int) (wBaseWeapDamage + 1) / 2;
-				}
 
 				mech_notify(hitMech, MECHALL,
 							"%cy%chThe flaming plasma sprays all over you!%cn");
@@ -1619,32 +1616,12 @@ void HitTarget(MECH * mech,
 
 				if(wFireMode & HEAT_MODE) {
 
-					/* Check if it is a glancing blow, if so, make an emit */
-					if(mudconf.btech_use_glancing_blows &&
-					   (player_roll == (bth - 1)) && hitMech) {
-						MechLOSBroadcast(hitMech,
-										 "is nicked by a glancing blow!");
-						mech_notify(hitMech, MECHALL,
-									"You are nicked by a glancing blow!");
-						wBaseWeapDamage = (int) (wBaseWeapDamage + 1) / 2;
-					}
-
 					/* Hit our own unit with the coolant gun */
 					mech_notify(mech, MECHALL,
 								"%ccCoolant washes over your systems!!%c");
 					MechWeapHeat(mech) -= (float) wBaseWeapDamage;
 
 				} else {
-
-					/* Check if it is a glancing blow, if so, make an emit */
-					if(mudconf.btech_use_glancing_blows &&
-					   (player_roll == (bth - 1)) && hitMech) {
-						MechLOSBroadcast(hitMech,
-										 "is nicked by a glancing blow!");
-						mech_notify(hitMech, MECHALL,
-									"You are nicked by a glancing blow!");
-						wBaseWeapDamage = (int) (wBaseWeapDamage + 1) / 2;
-					}
 
 					/* Hit the target with the coolant gun */
 					mech_notify(mech, MECHALL,
@@ -1720,6 +1697,12 @@ void HitTarget(MECH * mech,
 	}
 
 	if(IsMissile(weapindx)) {
+		if(player_roll < bth )
+		{
+			return;
+		}
+		else
+
 		if(tIsSwarm && hitMech)	/* No swarms on hex hits */
 			SwarmHitTarget(mech, weapindx, wSection, wCritSlot, hitMech,
 						   LOS, bth, reallyhit ? bth + 1 : bth - 1,
@@ -1742,10 +1725,12 @@ void HitTarget(MECH * mech,
 		return;
 	}
 
-	num_missiles_hit =
-		MissileHitTable[loop].num_missiles[MissileHitIndex(mech, hitMech,
-														   weapindx, wSection,
-														   wCritSlot)];
+	missileindex = MissileHitIndex(mech, hitMech,weapindx, wSection, wCritSlot, (mudconf.btech_glancing_blows) && (player_roll == bth) ? 1: 0);
+	/* This is how we'll handle glancing. Any roll < 2 is considering just one missile hit, full damage */
+	if (missileindex == -1)
+		num_missiles_hit = 1;
+	else
+		num_missiles_hit = MissileHitTable[loop].num_missiles[missileindex];
 
 	/*
 	 * Check for non-missile, multiple hit weapons, like LBXs, RACs, RFACs and Ultras

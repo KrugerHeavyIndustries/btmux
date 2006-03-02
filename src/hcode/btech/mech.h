@@ -948,7 +948,7 @@ struct repair_data {
 #define PERFORMING_ACTION     0x00000200  /* (j) Set if the unit is performing some sort of action. Controlled by SCode */
 #define FLIPPED_ARMS          0x00000400  /* (k) */
 #define AMS_ENABLED           0x00000800  /* (l) only settable if mech has ANTI-MISSILE_TECH */
-#define UPDATE_LOS            0x00001000  /* (m) do we need to update the LOS info? */
+#define EXPLODE_SAFE          0x00001000  /* (m) Used to prevent a unit from doing EXPLODE AMMO */
 #define UNCONSCIOUS           0x00002000  /* (n) Pilot is unconscious */
 #define TOWED                 0x00004000  /* (o) Someone's towing us */
 #define LOCK_TARGET           0x00008000  /* (p) We mean business */
@@ -992,7 +992,7 @@ struct repair_data {
 #define PER_ECM_ENABLED       0x00001000  /* (m) Unit Personal ECM is enabled */
 #define PER_ECCM_ENABLED      0x00002000  /* (n) Unit Personal ECCM is enabled */
 #define AUTOTURN_TURRET       0x00004000  /* (o) Unit Auto-Turret enabled to locked target */
-/* UNUSED                     0x00008000     (p) */
+#define UPDATE_LOS            0x00008000  /* (p) do we need to update the LOS info? */
 #define SPRINTING             0x00010000  /* (q) Unit is Sprinting */
 #define EVADING               0x00020000  /* (r) Unit is Evading */
 #define DODGING               0x00040000  /* (s) Unit is Dodging */

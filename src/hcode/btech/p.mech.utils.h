@@ -59,7 +59,7 @@ int FindWeapons_Advanced(MECH * mech, int index, unsigned char *weaparray,
     unsigned char *weapdataarray, int *critical, int whine);
 int FindAmmunition(MECH * mech, unsigned char *weaparray,
     unsigned short *ammoarray, unsigned short *ammomaxarray,
-    unsigned int *modearray);
+    unsigned int *modearray, int returnall);
 int FindLegHeatSinks(MECH * mech);
 int FindWeaponNumberOnMech_Advanced(MECH * mech, int number, int *section,
     int *crit, int sight);

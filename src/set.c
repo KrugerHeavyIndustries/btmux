@@ -1430,7 +1430,7 @@ void do_wipe(dbref player, dbref cause, int key, char *it)
 			atr_get_str(atext, thing, ap->number, &aowner, &aflags);
 			if(Set_attr(player, thing, ap, aflags)) {
 				atr_clr(thing, ap->number);
-				got_one = 1;
+				got_one++;
 			}
 		}
 	}
@@ -1442,7 +1442,7 @@ void do_wipe(dbref player, dbref cause, int key, char *it)
 		notify_quiet(player, "No matching attributes.");
 	} else {
 		if(!Quiet(player))
-			notify_printf(player, "%s - Attributes wiped.", Name(thing));
+			notify_printf(player, "%s - %d attribute(s) wiped.", Name(thing), got_one);
 	}
 
 	free_lbuf(atext);

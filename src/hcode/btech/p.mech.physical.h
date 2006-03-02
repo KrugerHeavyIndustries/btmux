@@ -34,7 +34,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
     int AttackType, int argc, char **args, MAP * mech_map, int sect);
 void PhysicalTrip(MECH * mech, MECH * target);
 void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
-    int AttackType, int sect);
+    int AttackType, int sect, int glance);
 int DeathFromAbove(MECH * mech, MECH * target);
 void ChargeMech(MECH * mech, MECH * target);
 int checkGrabClubLocation(MECH * mech, int section, int emit);

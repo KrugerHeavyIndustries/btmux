@@ -116,7 +116,7 @@ void Missile_Hit(MECH * mech,
 }
 
 int MissileHitIndex(MECH * mech,
-					MECH * hitMech, int weapindx, int wSection, int wCritSlot)
+					MECH * hitMech, int weapindx, int wSection, int wCritSlot, int glance)
 {
 	int hit_roll;
 	int r1, r2, r3, rtmp;
@@ -171,9 +171,17 @@ int MissileHitIndex(MECH * mech,
 		return 10;
 	}
 
+	/* Glancing, per max tech, is -4 off the missile hit table */
+	if(glance)
+		wRollInc += -4;
 	if(wRollInc)
 		hit_roll = hit_roll + wRollInc;
-
+	/* Glancing, per max tech, if its lower than 2 on the hit table, we hit with one missile. 
+	 * return -1 so we can test for this elsewhere
+	 */
+	if(glance && (hit_roll < 0))
+		return -1;
+	
 	wFinalRoll = MAX(MIN(hit_roll, 10), 0);
 
 	return wFinalRoll;
@@ -198,6 +206,7 @@ int MissileHitTarget(MECH * mech,
 	int wNARCHitLoc = 0;
 	int tIsRear = 0;
 	char strLocName[30];
+	int missileindex = 0;
 
 	/* Check to see if we're a NARC or iNARC launcher firing homing missiles */
 	if(IsMissile(weapindx)) {
@@ -307,12 +316,12 @@ int MissileHitTarget(MECH * mech,
 	if(j < 0)
 		return 0;
 
-	hit =
-		MIN(incoming, MissileHitTable[j].num_missiles[MissileHitIndex(mech,
-																	  hitMech,
-																	  weapindx,
-																	  wSection,
-																	  wCritSlot)]);
+	missileindex = MissileHitIndex(mech,hitMech,weapindx,wSection,wCritSlot,(mudconf.btech_glancing_blows) && (player_roll == baseToHit) ? 1 : 0);
+	if (missileindex < 0 )
+		hit = MIN(incoming, 1);
+	else
+		hit = MIN(incoming, MissileHitTable[j].num_missiles[missileindex]);
+
 
 	if(LOS) {
 		mech_printf(mech, MECHALL, "%%cg%s with %d missile%s!%%c",
@@ -353,19 +362,14 @@ int MissileHitTarget(MECH * mech,
 																wCritSlot), 0,
 					0);
 	} else {
-		if(mudconf.btech_use_glancing_blows &&
-		   (player_roll == (baseToHit - 1)) && hitMech) {
-			MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
-			mech_notify(hitMech, MECHALL,
+		if(mudconf.btech_glancing_blows &&
+		   (player_roll == baseToHit) && hitMech ) {
+			if(!(MechWeapons[weapindx].special & STREAK)) {
+				MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
+				mech_notify(hitMech, MECHALL,
 						"You are nicked by a glancing blow!");
-			Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,
-						weapindx, GetPartFireMode(mech, wSection, wCritSlot),
-						GetPartAmmoMode(mech, wSection, wCritSlot), hit,
-						(int) (MechWeapons[weapindx].damage + 1) / 2,
-						Clustersize(weapindx), LOS, baseToHit,
-						tIsSwarmAttack);
-
-		} else
+			}
+		}
 			Missile_Hit(mech, hitMech, hitX, hitY, isrear, iscritical,
 						weapindx, GetPartFireMode(mech, wSection, wCritSlot),
 						GetPartAmmoMode(mech, wSection, wCritSlot), hit,

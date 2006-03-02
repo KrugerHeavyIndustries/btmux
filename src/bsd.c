@@ -60,6 +60,43 @@ int process_input(DESC *);
 
 void accept_new_connection(int, short, void *);
 
+int bind_descriptor(DESC *d) {
+    d->refcount++;
+#if 0
+    dprintk("%p bound, count %d", d, d->refcount);
+#endif
+}
+
+int release_descriptor(DESC *d) {
+    d->refcount--;
+#if 0
+    dprintk("%p released, count %d", d, d->refcount);
+#endif
+    if(d->refcount == 0) {
+        dprintk("%p destructing", d);
+        freeqs(d);
+
+		/*
+		 * Is this desc still in interactive mode? 
+		 */
+		if(d->program_data != NULL) {
+			int num = 0;
+            DESC *dtemp;
+			DESC_ITER_PLAYER(d->player, dtemp) num++;
+
+			if(num == 0) {
+				for(int i = 0; i < MAX_GLOBAL_REGS; i++) {
+					free_lbuf(d->program_data->wait_regs[i]);
+				}
+				free(d->program_data);
+			}
+		}
+
+		free(d);
+    }
+}
+
+
 void set_lastsite(DESC * d, char *lastsite)
 {
 	char buf[LBUF_SIZE];
@@ -409,27 +446,12 @@ void shutdownsock(DESC * d, int reason)
 		close(d->descriptor);
 		bufferevent_free(d->sock_buff);
 
-		freeqs(d);
 		*d->prev = d->next;
 		if(d->next)
 			d->next->prev = d->prev;
-
-		/*
-		 * Is this desc still in interactive mode? 
-		 */
-		if(d->program_data != NULL) {
-			num = 0;
-			DESC_ITER_PLAYER(d->player, dtemp) num++;
-
-			if(num == 0) {
-				for(i = 0; i < MAX_GLOBAL_REGS; i++) {
-					free_lbuf(d->program_data->wait_regs[i]);
-				}
-				free(d->program_data);
-			}
-		}
-
-		free(d);
+        d->flags |= DS_DEAD;
+        release_descriptor(d);
+		
 		ndescriptors--;
 	}
 }
@@ -511,6 +533,7 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 	d->last_time = 0;
 	memcpy(&d->saddr, saddr, saddr_len);
 	d->saddr_len = saddr_len;
+    d->refcount = 1;
 
 	if(descriptor_list)
 		descriptor_list->prev = &d->next;
@@ -546,14 +569,19 @@ int process_input(DESC * d)
 	cmdsave = mudstate.debug_cmd;
 	mudstate.debug_cmd = (char *) "< process_input >";
 
+
 	got = in = read(d->descriptor, buf, (sizeof buf - 1));
 	if(got <= 0) {
 		if(errno == EINTR)
 			return 1;
+        else if(errno == EAGAIN)
+            return 1;
 		else
 			return 0;
 	}
 
+    bind_descriptor(d);
+    
 	if(Wizard(d->player) && strncmp("@segfault", buf, 9) == 0) {
 		queue_string(d, "@segfault failed. (check logfile for reason.)\n");
 		*(char *) 0xDEADBEEF = '9';
@@ -569,6 +597,10 @@ int process_input(DESC * d)
 		if(*q == '\n') {
 			*p = '\0';
 			if(p > (char *) d->input) {
+                if(d->flags & DS_DEAD) {
+                    dprintk("bailing '%s' on dead descriptor %p for user #%d", d->input, d, d->player);
+                    break;
+                }
 				run_command(d, (char *) d->input);
 				memset(d->input, 0, sizeof(d->input));
 				p = d->raw_input_at = (char *) d->input;
@@ -602,7 +634,7 @@ int process_input(DESC * d)
 	d->input_tot += got;
 	d->input_size += in;
 	d->input_lost += lost;
-
+    release_descriptor(d);
 	mudstate.debug_cmd = cmdsave;
 	return 1;
 }

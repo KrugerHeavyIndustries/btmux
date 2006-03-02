@@ -216,6 +216,7 @@ void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS)
 					"%ch%crYou are sprayed with burning jelly!%cn");
 	}
 	heat_effect(mech, hitMech, hmod * 30, 1);	/* 3min for _each_ missile */
+	water_extinguish_inferno(hitMech); /* They could be in -2 standing or -1 prone.. Shooter just wastes his missiles! */
 }
 
 //extern int global_kill_cheat;
@@ -264,8 +265,16 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	MAP *mech_map;
 	MECH *ttarget;
 
-	if(Destroyed(target))
+	if(Destroyed(target)) {
+		/* This should be the last the amechdest stuff. pretty much a catchall */
+/*		if (mech)
+			ChannelEmitKill(target, mech);
+		else
+			ChannelEmitKill(target, target);
+
+*/
 		return;
+	}
 	//global_kill_cheat = 1;
 	if(mech && target)
 		ChannelEmitKill(target, mech);

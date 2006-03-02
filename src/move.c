@@ -33,10 +33,6 @@ static void process_leave_loc(dbref thing, dbref dest, dbref cause,
 	if(dest == HOME)
 		dest = Home(thing);
 
-	if(Html(thing)) {
-		notify_html(thing, "<xch_page clear=links>");
-	}
-
 	/*
 	 * Run the LEAVE attributes in the current room if we meet any of * * 
 	 * 
@@ -94,8 +90,6 @@ static void process_enter_loc(dbref thing, dbref src, dbref cause,
 	loc = Location(thing);
 	if((loc == NOTHING) || (loc == src))
 		return;
-
-	show_vrml_url(thing, loc);
 
 	/*
 	 * Run the ENTER attributes in the current room if we meet any of * * 

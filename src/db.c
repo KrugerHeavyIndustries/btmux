@@ -279,8 +279,6 @@ ATTR attr[] = {
 	{"VX", A_VA + 23, AF_ODARK, NULL},
 	{"VY", A_VA + 24, AF_ODARK, NULL},
 	{"VZ", A_VA + 25, AF_ODARK, NULL},
-	{"VRML_URL", A_VRML_URL, AF_ODARK, NULL},
-	{"HTDesc", A_HTDESC, AF_NOPROG, NULL},
 	{"Xtype", A_XTYPE, AF_MDARK | AF_WIZARD, NULL},
 	{"*Password", A_PASS, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
 	 NULL},
@@ -1597,6 +1595,7 @@ void initialize_objects(dbref first, dbref last)
 	dbref thing;
 
 	for(thing = first; thing < last; thing++) {
+        memset(&db[thing], 0, sizeof(db[0]));
 		s_Owner(thing, GOD);
 		s_Flags(thing, (TYPE_GARBAGE | GOING));
 		s_Flags2(thing, 0);
@@ -2255,6 +2254,7 @@ void load_restart_db()
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
+        d->refcount = 1;
 
 		d->saddr_len = sizeof(d->saddr);
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,
@@ -2310,7 +2310,12 @@ int load_restart_db_xdr()
 	mmdb = mmdb_open_read("restart.xdr");
     if(!mmdb) return 0;
 
-    mmdb_read_uint32(mmdb); // RESTART_MAGIC
+    val = mmdb_read_uint32(mmdb); // RESTART_MAGIC
+    if(val != RESTART_MAGIC) {
+        printk("restart database had invalid magic.");
+        printk("read %08x expected %08x.", val, RESTART_MAGIC);
+        return 0;
+    }
     mmdb_read_uint32(mmdb); // VERSION
     mmdb_read_uint32(mmdb); // VERSION
     mudstate.start_time = mmdb_read_uint32(mmdb);
@@ -2350,6 +2355,7 @@ int load_restart_db_xdr()
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
+        d->refcount = 1;
 
 		d->saddr_len = sizeof(d->saddr);
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,

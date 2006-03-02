@@ -1079,10 +1079,11 @@ void mech_thrash(dbref player, void *data, char *buffer)
         }
     }
 
-    /* Make our roll and recycle our limbs */
-    if (!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
-        MechFalls(mech, 1, 1);
-    }
+	/* Make our roll and recycle our limbs -- Removed. You gotta be prone anyways! */
+/*	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
+		MechFalls(mech, 1, 1);
+	}
+*/
 
     for (i = 0; i < 4; i++) {
         tempLoc = aLimbs[i];
@@ -1597,6 +1598,17 @@ void LandMech(MECH * mech)
 					dfa = 1;
 					done = 1;
 					MechFalls(mech, 1, 0);
+				}
+			} else if((MechCritStatus(mech) & GYRO_DAMAGED) || (MechCritStatus(mech) & GYRO_DESTROYED)) {
+				mech_notify(mech, MECHPILOT, "Your damaged gyro makes it harder to land");
+				if(!MadePilotSkillRoll(mech, 0)) {
+					mech_notify(mech, MECHALL,
+							"Your damaged gyro has caused you to fall upon landing!");
+					MechLOSBroadcast(mech,
+							"lands, twists awkwardly, and falls down!");
+					dfa = 1;
+					done = 1;
+					MechFalls(mech,1,0);
 				}
 			}
 		}

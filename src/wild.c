@@ -371,10 +371,12 @@ int wild(char *tstr, char *dstr, char *args[], int nargs)
 		switch (*scan) {
 		case '?':
 			args[i] = alloc_lbuf("wild.?");
+            memset(args[i], 0, LBUF_SIZE);
 			i++;
 			break;
 		case '*':
 			args[i] = alloc_lbuf("wild.*");
+            memset(args[i], 0, LBUF_SIZE);
 			i++;
 		}
 		scan++;

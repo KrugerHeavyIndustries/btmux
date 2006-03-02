@@ -680,39 +680,6 @@ void search_perform(dbref player, dbref cause, SEARCH * parm)
 	mudstate.func_invk_ctr = save_invk_ctr;
 }
 
-static void search_mark(dbref player, int key)
-{
-	dbref thing;
-	int nchanged, is_marked;
-
-	nchanged = 0;
-	for(thing = olist_first(); thing != NOTHING; thing = olist_next()) {
-		is_marked = Marked(thing);
-
-		/*
-		 * Don't bother checking if marking and already marked * (or
-		 * * * * if unmarking and not marked) 
-		 */
-
-		if(((key == SRCH_MARK) && is_marked) || ((key == SRCH_UNMARK) &&
-												 !is_marked))
-			continue;
-		/*
-		 * Toggle the mark bit and update the counters 
-		 */
-		if(key == SRCH_MARK) {
-			Mark(thing);
-			nchanged++;
-		} else {
-			Unmark(thing);
-			nchanged++;
-		}
-	}
-	notify_printf(player, "%d objects %smarked", nchanged,
-				  ((key == SRCH_MARK) ? "" : "un"));
-	return;
-}
-
 void do_search(dbref player, dbref cause, int key, char *arg)
 {
 	int flag, destitute;
@@ -721,25 +688,12 @@ void do_search(dbref player, dbref cause, int key, char *arg)
 	dbref thing, from, to;
 	SEARCH searchparm;
 
-	if((key != SRCH_SEARCH) && (mudconf.control_flags & CF_DBCHECK)) {
-		er_mark_disabled(player);
-		return;
-	}
 	if(!search_setup(player, arg, &searchparm))
 		return;
 	olist_push();
 	search_perform(player, cause, &searchparm);
 	destitute = 1;
 
-	/*
-	 * If we are doing a @mark command, handle that here. 
-	 */
-
-	if(key != SRCH_SEARCH) {
-		search_mark(player, key);
-		olist_pop();
-		return;
-	}
 	outbuf = alloc_lbuf("do_search.outbuf");
 
 	rcount = ecount = tcount = pcount = gcount = 0;
@@ -903,53 +857,6 @@ void do_search(dbref player, dbref cause, int key, char *arg)
 	}
 	free_lbuf(outbuf);
 	olist_pop();
-}
-
-/**
- * Sets or clear the mark bits of all objects in the db.
- */
-void do_markall(dbref player, dbref cause, int key)
-{
-	int i;
-
-	if(mudconf.control_flags & CF_DBCHECK) {
-		er_mark_disabled(player);
-		return;
-	}
-	if(key == MARK_SET)
-		Mark_all(i);
-	else if(key == MARK_CLEAR)
-		Unmark_all(i);
-	if(!Quiet(player))
-		notify(player, "Done.");
-}
-
-/**
- *Perform a command for each marked obj in the db.
- */
-void do_apply_marked(dbref player, dbref cause, int key, char *command,
-					 char *cargs[], int ncargs)
-{
-	char *buff;
-	int i;
-	int number = 0;
-
-	if(mudconf.control_flags & CF_DBCHECK) {
-		er_mark_disabled(player);
-		return;
-	}
-	buff = alloc_sbuf("do_apply_marked");
-	DO_WHOLE_DB(i) {
-		if(Marked(i)) {
-			sprintf(buff, "#%d", i);
-			number++;
-			bind_and_queue(player, cause, command, buff, cargs, ncargs,
-						   number);
-		}
-	}
-	free_sbuf(buff);
-	if(!Quiet(player))
-		notify(player, "Done.");
 }
 
 /**
