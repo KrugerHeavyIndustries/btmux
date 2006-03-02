@@ -1083,10 +1083,11 @@ void mech_thrash(dbref player, void *data, char *buffer)
 		}
 	}
 
-	/* Make our roll and recycle our limbs */
-	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
+	/* Make our roll and recycle our limbs -- Removed. You gotta be prone anyways! */
+/*	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
 		MechFalls(mech, 1, 1);
 	}
+*/
 
 	for(i = 0; i < 4; i++) {
 		tempLoc = aLimbs[i];
