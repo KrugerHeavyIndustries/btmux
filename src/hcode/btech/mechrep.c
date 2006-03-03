@@ -1052,9 +1052,9 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 		notify(player, "That weapon doesn't require ammo!");
 	else {
 		MechSections(mech)[index].criticals[subsect].type = I2Ammo(weapindex);
-		MechSections(mech)[index].criticals[subsect].firemode = 0;
+/*		MechSections(mech)[index].criticals[subsect].firemode = 0;
 		MechSections(mech)[index].criticals[subsect].ammomode = 0;
-
+*/
 		if(argc > 3)
 			switch (toupper(args[3][0])) {
 			case '+':
@@ -1133,6 +1133,9 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					AC_CASELESS_MODE;
 				break;
+			case '-':
+				MechSections(mech)[index].criticals[subsect].ammomode = 0;
+				MechSections(mech)[index].criticals[subsect].firemode = 0;
 			}
 
 		MechSections(mech)[index].criticals[subsect].data =
