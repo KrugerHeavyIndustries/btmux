@@ -998,6 +998,8 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 		flag = 4;
 	else if(strcasecmp(buf_flag, "MODE") == 0)
 		flag = 5;
+	else if(strcasecmp(buf_flag, "HALFTON") == 0)
+		flag = 6;
 	else
 		flag = 0;
 
@@ -1038,6 +1040,12 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 																		crit)));
 			return buffer;
 		}
+	} else if(flag == 6) {
+		if(!IsAmmo(type))
+			return "#-1 NOT AMMO";
+		snprintf(buffer, MBUF_SIZE, "%d", GetPartFireMode(mech, index, crit) & HALFTON_MODE ? 1 : 0);
+		return buffer;
+
 	}
 
 	if(type == EMPTY || IsCrap(type))
