@@ -869,6 +869,10 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 	SetSectRArmor(wounded, hitloc, 0);
 	SetSectDestroyed(wounded, hitloc);
 	MechSections(wounded)[hitloc].specials = 0;
+
+	/* uncycle the section <in the case of an arm/leg that was kicking getting blown */
+	SetRecycleLimb(wounded, hitloc, 0);
+
 	/* Tell the attacker about it... */
 	if(attacker) {
 		ArmorStringFromIndex(hitloc, locname, MechType(wounded),
