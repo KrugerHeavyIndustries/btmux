@@ -1060,6 +1060,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			  "That's a living, breathing person! Switch off the safety first, "
 			  "if you really want to assassinate the target.");
 
+	DOCHECKMA(MechCritStatus(mech) & MECH_STUNNED,
+		"You are still recovering from your stunning experience!");
 	/*
 	 * Attack-Specific checks.
 	 */
