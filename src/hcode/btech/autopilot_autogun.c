@@ -166,6 +166,16 @@ void auto_sensor_event(MUXEVENT * muxevent)
 
 	/* Make sure its a MECH Xcode Object and the AI is
 	 * an AUTOPILOT Xcode Object */
+        /* Basic checks */
+        if(!mech) {
+                dprintk("mech is bad!");
+                return;
+        }
+        if(!autopilot) {
+                dprintk("ai is bad!");
+                return;
+        }
+			
 	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
 		return;
 
