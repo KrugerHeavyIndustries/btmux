@@ -492,6 +492,14 @@ const char *GetMechToMechID(MECH * see, MECH * mech)
 	int team;
 	static char ids[SBUF_SIZE];
 
+	if(!mech ) {
+		dprintk("bad mech");
+		return "";
+	}
+	if(!see ) {
+		dprintk("bad see");
+		return "";
+	}
 	if(!Good_obj(mech->mynum))
 		return "";
 
