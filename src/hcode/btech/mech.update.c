@@ -2773,9 +2773,9 @@ void CheckDamage(MECH * wounded)
 				}
 
 				SetFacing(wounded,
-						  AcceptableDegree(MechFacing(wounded) +
-										   headingChange) * ((Roll() >=
-															  6) ? 1 : -1));
+						  AcceptableDegree((MechFacing(wounded) +
+										   headingChange) * (Roll() >=
+															  6 ? 1 : -1)));
 			} else {
 				switch (staggerLevel) {
 				case 1:
