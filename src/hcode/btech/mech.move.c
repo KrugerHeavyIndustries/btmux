@@ -1525,6 +1525,7 @@ void DropSetElevation(MECH * mech, int wantdrop)
 void LandMech(MECH * mech)
 {
 	MECH *target;
+	MAP *mech_map = getMap(mech->mapindex);
 	int dfa = 0;
 	int done = 0;
 
@@ -1561,7 +1562,10 @@ void LandMech(MECH * mech)
 			mech_notify(mech, MECHALL, "You finish your jump.");
 
 		/* Better reset the FZ */
+		MechElev(mech) = GetElev(mech_map, MechX(mech), MechY(mech));
+		MechZ(mech) = MechElev(mech) - 1;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+		DropSetElevation(mech, 1);
 
 		if(Staggering(mech)) {
 			mech_notify(mech, MECHALL,
@@ -1653,7 +1657,6 @@ void LandMech(MECH * mech)
 	StopJump(mech);				/* Kill the event for moving 'round */
 	MaybeMove(mech);			/* Possibly start movin' on da ground */
 
-	DropSetElevation(mech, 1);
 
 	if(!done)
 		possible_mine_poof(mech, MINE_LAND);
