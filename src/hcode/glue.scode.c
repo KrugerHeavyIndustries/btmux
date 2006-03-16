@@ -1345,6 +1345,38 @@ void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause,
 
 extern int xlate(char *);
 
+void fun_btticweaps(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	/* fargs[0] = dbref of mech
+	 * fargs[1] = tic #
+	 */
+
+	MECH *mech;
+	dbref it;
+	int i, j, k , l, section, critical;
+	int ticnum;
+	
+	it = match_thing(player, fargs[0]);
+	FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
+	FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
+	FUNCHECK(!(mech = FindObjectsData(it)), "#-1");
+	ticnum = atoi(fargs[1]);
+
+	for( j = 0; j < MAX_WEAPONS_PER_MECH; j++) {
+		k = j / SINGLE_TICLONG_SIZE;
+		l = j % SINGLE_TICLONG_SIZE;
+
+		if(mech->tic[ticnum][k] & (1 << l)) {
+			if(FindWeaponNumberOnMech(mech, j, &section, &critical) == -1) {
+				j = MAX_WEAPONS_PER_MECH ;
+				continue;
+			}
+			safe_tprintf_str(buff,bufc,tprintf("%d:%s ",j,&MechWeapons[Weapon2I(GetPartType(mech, section, critical))].name[3]));
+		}
+	}
+	
+
+}
 void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
