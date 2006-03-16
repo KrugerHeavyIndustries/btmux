@@ -757,7 +757,6 @@ void wait_que(dbref player, dbref cause, int wait, dbref sem, int attr,
 	}
 
     if(wait > 0) {
-        dprintk("waittime %d", wait);
         cmd->waittime = mudstate.now + wait;
     } else {
         cmd->waittime = 0;
