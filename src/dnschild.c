@@ -49,9 +49,10 @@ void *dnschild_request(DESC * d)
 {
 	int fds[2];
 	struct dns_query_state_t *dqst;
-	char address[256];
-	char outbuffer[1024];
+	char address[1024];
+	char outbuffer[255];
 	int length;
+    int result;
 
 	if(!dnschild_state) {
 		dprintk("bailing query, dnschild is shut down.");
@@ -76,9 +77,9 @@ void *dnschild_request(DESC * d)
 		/* begin child section */
 		unbind_signals();
         memset(address, 0, 1023);
-		if(getnameinfo((struct sockaddr *) &d->saddr, d->saddr_len,
+		if(result=getnameinfo((struct sockaddr *) &d->saddr, d->saddr_len,
 					   address, 1023, NULL, 0, NI_NAMEREQD)) {
-			length = snprintf(outbuffer, 255, "0%s", strerror(errno));
+			length = snprintf(outbuffer, 255, "0%s/%s", gai_strerror(result), strerror(errno));
 			outbuffer[length++] = '\0';
 			write(fds[1], outbuffer, length);
 		} else {
