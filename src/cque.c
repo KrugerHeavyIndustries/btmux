@@ -211,7 +211,6 @@ static int dump_bqe(struct mmdb_t *mmdb, BQUE *bqe) {
 static int dump_objqe(void *key, void *data, int depth, void *arg) {
     struct mmdb_t *mmdb = (struct mmdb_t *)arg;
     OBJQE *coq = (OBJQE *)data;
-    dprintk("dumping %d", coq->obj);
     mmdb_write_uint32(mmdb, coq->obj);
     dump_bqe(mmdb, coq->cque);
     return 1;

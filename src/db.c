@@ -2180,6 +2180,7 @@ void load_restart_db()
 	FILE *f;
 	DESC *d;
 	DESC *p;
+    struct stat statbuffer;
 
 	int val, version, new_strings = 0;
 	char *temp, buf[8];
@@ -2286,12 +2287,13 @@ void load_restart_db()
 			s_Flags2(d->player, Flags2(d->player) | CONNECTED);
 	}
 
-	DESC_ITER_CONN(d) {
-		if(!isPlayer(d->player)) {
-			shutdownsock(d, R_QUIT);
-		}
+    DESC_ITER_CONN(d) {
+        if(!isPlayer(d->player) || fstat(d->descriptor, &statbuffer) < 0) {
+            dprintk("dropping descriptor %d.\n", d->descriptor);
+            shutdownsock(d, R_QUIT);
+        }
 
-	}
+    }
 
 	fclose(f);
 	remove("restart.db");
@@ -2303,6 +2305,7 @@ int load_restart_db_xdr()
 	struct mmdb_t *mmdb;
     DESC *d;
 	DESC *p;
+    struct stat statbuffer;
 
 	int val, version, new_strings = 0;
 	char *temp, buf[8];
@@ -2388,7 +2391,8 @@ int load_restart_db_xdr()
 	}
 
 	DESC_ITER_CONN(d) {
-		if(!isPlayer(d->player)) {
+		if(!isPlayer(d->player) || fstat(d->descriptor, &statbuffer) < 0) {
+            dprintk("dropping descriptor %d.\n", d->descriptor);
 			shutdownsock(d, R_QUIT);
 		}
 
