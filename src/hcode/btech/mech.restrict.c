@@ -239,6 +239,7 @@ void newfreemech(dbref key, void **data, int selector)
 {
 	MECH *new = *data;
 	MAP *map;
+	AUTO *a;
 	int i;
 
 	switch (selector) {
@@ -255,5 +256,15 @@ void newfreemech(dbref key, void **data, int selector)
 	case SPECIAL_FREE:
 		if(new->mapindex != -1 && (map = getMap(new->mapindex)))
 			remove_mech_from_map(map, new);
+		if(MechAuto(new) > 0 ) {
+			AUTO *a = (AUTO *) FindObjectsData(MechAuto(new));
+			if (a) {
+				auto_stop_pilot(a);
+				a->mymechnum = 0;
+			}
+			MechAuto(new) = -1;
+		}
+					
+		
 	}
 }

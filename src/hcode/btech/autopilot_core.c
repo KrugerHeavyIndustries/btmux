@@ -626,7 +626,7 @@ static int auto_pilot_on(AUTO * autopilot)
 /*
  * Stop whatever the autopilot is doing
  */
-static void auto_stop_pilot(AUTO * autopilot)
+extern void auto_stop_pilot(AUTO * autopilot)
 {
 
 	int i;

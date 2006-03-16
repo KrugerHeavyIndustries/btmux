@@ -407,15 +407,15 @@ static int load_autopilot_data(Node * tmp)
 		/* Check to see if the AI is in a mech */
 	    /* Need to make this better, check if its got a target whatnot */
 
-/* Going to disable this snippet for now */
-/*		if(!autopilot->mymechnum ||
+
+		if(!autopilot->mymechnum ||
 		   !(autopilot->mymech = getMech(autopilot->mymechnum))) {
 			DoStopGun(autopilot);
 		} else {
 			if(Gunning(autopilot))
 				DoStartGun(autopilot);
 		}
-		*/
+
 
 	}
 
