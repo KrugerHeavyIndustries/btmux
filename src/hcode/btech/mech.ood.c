@@ -74,7 +74,7 @@ void mech_ood_event(MUXEVENT * e)
 	
 	if(Fallen(mech))
 		mof = -10;
-	if(Uncon(mech) || !Started(mech) || Blinded(mech) || MechAutoFall(mech))
+	if(Uncon(mech) || !Started(mech) || Blinded(mech))
 		mof = -20;
 	roll = Roll();
 	roll_needed = MechType(mech) == CLASS_BSUIT
