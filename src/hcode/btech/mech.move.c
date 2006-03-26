@@ -1674,6 +1674,9 @@ void MechFloodsLoc(MECH * mech, int loc, int lev)
 {
 	char locbuff[32];;
 
+	if(MechStatus(mech) & COMBAT_SAFE)
+		return;
+
 	if((GetSectArmor(mech, loc) && (GetSectRArmor(mech, loc) ||
 									!GetSectORArmor(mech, loc)))
 	   || !GetSectInt(mech, loc))
