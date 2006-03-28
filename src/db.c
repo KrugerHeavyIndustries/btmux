@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <sys/file.h>
+#include <sys/stat.h>
 
 #define __DB_C
 #include "mudconf.h"
