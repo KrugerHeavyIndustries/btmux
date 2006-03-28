@@ -234,6 +234,7 @@ void mech_Rsetteam(dbref player, void *data, char *buffer)
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
 
+extern void auto_stop_pilot(AUTO * autopilot);
 /* Alloc/free routine */
 void newfreemech(dbref key, void **data, int selector)
 {

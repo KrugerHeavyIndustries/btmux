@@ -60,14 +60,14 @@ int process_input(DESC *);
 
 void accept_new_connection(int, short, void *);
 
-int bind_descriptor(DESC *d) {
+void bind_descriptor(DESC *d) {
     d->refcount++;
 #if 0
     dprintk("%p bound, count %d", d, d->refcount);
 #endif
 }
 
-int release_descriptor(DESC *d) {
+void release_descriptor(DESC *d) {
     d->refcount--;
 #if 0
     dprintk("%p released, count %d", d, d->refcount);

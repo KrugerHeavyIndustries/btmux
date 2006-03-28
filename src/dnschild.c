@@ -77,8 +77,8 @@ void *dnschild_request(DESC * d)
 		/* begin child section */
 		unbind_signals();
         memset(address, 0, 1023);
-		if(result=getnameinfo((struct sockaddr *) &d->saddr, d->saddr_len,
-					   address, 1023, NULL, 0, NI_NAMEREQD)) {
+		if((result=getnameinfo((struct sockaddr *) &d->saddr, d->saddr_len,
+					   address, 1023, NULL, 0, NI_NAMEREQD))) {
 			length = snprintf(outbuffer, 255, "0%s/%s", gai_strerror(result), strerror(errno));
 			outbuffer[length++] = '\0';
 			write(fds[1], outbuffer, length);
