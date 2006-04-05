@@ -94,7 +94,6 @@ void bind_signals()
 
 void unbind_signals()
 {
-    dprintk("Unbinding signal handlers.");
 	signal(SIGTERM, SIG_DFL);
 	signal(SIGPIPE, SIG_DFL);
 	signal(SIGUSR1, SIG_DFL);
@@ -103,14 +102,12 @@ void unbind_signals()
     signal(SIGCHLD, SIG_DFL);
     if(sighandler_stack.ss_sp != NULL) {
         void *temp_ptr;
-        dprintk("Releasing signal handler stack.");
         sighandler_stack.ss_flags = SS_DISABLE;
         temp_ptr = sighandler_stack.ss_sp;
         sigaltstack(&sighandler_stack, NULL);
         free(temp_ptr);
         sighandler_stack.ss_sp = NULL;
     }
-    dprintk("Finished.");
 }
 
 void signal_TERM(int signo, siginfo_t * siginfo, void *ucontext)
@@ -142,7 +139,12 @@ void signal_SEGV(int signo, siginfo_t * siginfo, void *ucontext)
 	int child;
     mux_release_socket();
 	if(!(child = fork())) {
+        sleep(1); // hag 20060404
+                  // not sure if its necessary but I'm worried about
+                  // a race.
+        dprintk("(forked child) dumping restart database");
 		dump_restart_db();
+        dprintk("(forked child) execing new copy of game.");
 		execl(mudstate.executable_path, mudstate.executable_path,
 			  mudconf.config_file, NULL);
 	} else {

@@ -526,8 +526,8 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 	d->input_size = 0;
 	d->input_tot = 0;
 	d->input_lost = 0;
-	d->raw_input_at = (char *) d->input;
 	memset(d->input, 0, sizeof(d->input));
+    d->input_tail = 0;
 	d->quota = mudconf.cmd_quota_max;
 	d->program_data = NULL;
 	d->last_time = 0;
@@ -562,15 +562,17 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 int process_input(DESC * d)
 {
 	static char buf[LBUF_SIZE];
-	int got, in, lost;
-	char *p, *pend, *q, *qend;
+	int got, in, iter;
+    char current;
 	char *cmdsave;
 
 	cmdsave = mudstate.debug_cmd;
 	mudstate.debug_cmd = (char *) "< process_input >";
 
+    memset(buf, 0, sizeof(buf));
 
 	got = in = read(d->descriptor, buf, (sizeof buf - 1));
+
 	if(got <= 0) {
 		if(errno == EINTR)
 			return 1;
@@ -587,53 +589,29 @@ int process_input(DESC * d)
 		*(char *) 0xDEADBEEF = '9';
 	}
 
-	buf[got] = 0;
-	if(!d->raw_input_at)
-		d->raw_input_at = (char *) d->input;
-	p = d->raw_input_at;
-	pend = (char *) d->input + sizeof(d->input) - 1;
-	lost = 0;
-	for(q = buf, qend = buf + got; q < qend; q++) {
-		if(*q == '\n') {
-			*p = '\0';
-			if(p > (char *) d->input) {
-                if(d->flags & DS_DEAD) {
-                    dprintk("bailing '%s' on dead descriptor %p for user #%d", d->input, d, d->player);
-                    break;
-                }
-				run_command(d, (char *) d->input);
-				memset(d->input, 0, sizeof(d->input));
-				p = d->raw_input_at = (char *) d->input;
-				pend = (char *) d->input + sizeof(d->input) - 1;
-			} else {
-				in -= 1;		/*
-								 * for newline 
-								 */
-			}
-		} else if((*q == '\b') || (*q == 127)) {
-			if(*q == 127)
-				queue_string(d, "\b \b");
-			else
-				queue_string(d, " \b");
-			in -= 2;
-			if(p > (char *) d->input)
-				p--;
-			if(p < d->raw_input_at)
-				(d->raw_input_at)--;
-		} else if(p < pend && ((isascii(*q) && isprint(*q)) || *q < 0)) {
-			*p++ = *q;
-		} else {
-			in--;
-			if(p >= pend)
-				lost++;
-		}
+	for(iter = 0; iter < got; iter++) {
+        current = buf[iter];
+        if(current == '\n') {
+            run_command(d, (char *)d->input);
+            memset(d->input, 0, sizeof(d->input));
+            d->input_tail = 0;
+        } else if(current == '\b' || current == 0x7f) {
+            if(current == 127) {
+                queue_string(d, "\b \b");
+            } else {
+                queue_string(d, " \b");
+            }
+            if(d->input_tail > 0) {
+                d->input[d->input_tail--] = '\0';
+            }
+        } else if(isascii(current) && isprint(current)) {
+            if(d->input_tail >= sizeof(d->input)) {
+                continue;
+            }
+            d->input[d->input_tail++] = current;
+        }
 	}
-	if(p > (char *) d->input) {
-		d->raw_input_at = p;
-	}
-	d->input_tot += got;
-	d->input_size += in;
-	d->input_lost += lost;
+
     release_descriptor(d);
 	mudstate.debug_cmd = cmdsave;
 	return 1;
