@@ -1461,7 +1461,8 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 		 ((double) (my_BV + 1) * my_speed *
 		  MechWeapons[weapindx].battlevalue / damagemod));
 
-	multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Mod. Defaults to 1 anyways */
+	if(mudconf.btech_perunit_xpmod)
+		multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Mod. Defaults to 1 anyways */
 	
 	xp = BOUNDED(1, (int) (multiplier * damage / 100), 10);
 
@@ -1543,7 +1544,8 @@ void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
 
 	multiplier = multiplier * bth_modifier[bth - 3] / 36;
 	multiplier = multiplier * 2;	/* For average shot */
-	multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Modifier. Defaults to 1 */
+	if(mudconf.btech_perunit_xpmod)
+		multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Modifier. Defaults to 1 */
 
 	if(Number(1, 50) > (multiplier * numOccurences))
 		return;					/* Nothing for truly twinky stuff, occasionally */

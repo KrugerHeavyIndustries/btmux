@@ -150,6 +150,7 @@ struct confdata {
     int btech_vtol_ice_causes_fire; /* VTOL ICE engines cause fire on crash/explosion */
     int btech_glancing_blows; /* 0=Don't, 1=maxtech (BTH) , 2= Exile (BTH-1) */
     int btech_inferno_penalty;    /* FASA Inferno Ammo penalty (+30 heat, ammo explode) */
+    int btech_perunit_xpmod;	/* Allow per unit xp modifications */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

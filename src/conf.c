@@ -139,6 +139,7 @@ void cf_init(void)
 	mudconf.btech_vtol_ice_causes_fire = 1;
 	mudconf.btech_glancing_blows = 1;
 	mudconf.btech_inferno_penalty = 0;
+	mudconf.btech_perunit_xpmod = 1;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1155,8 +1156,10 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_ooc_comsys, 0},
 	{(char *) "btech_idf_requires_spotter",
 	 cf_int, CA_GOD, &mudconf.btech_idf_requires_spotter, 0},
+	{(char *) "btech_perunit_xpmod",
+	 cf_int, CA_GOD, &mudconf.btech_perunit_xpmod, 0},
 	{(char *) "btech_vtol_ice_causes_fire",
-	 cf_int, CA_GOD, &mudconf.btech_vtol_ice_causes_fire, 0},
+	cf_int, CA_GOD, &mudconf.btech_vtol_ice_causes_fire, 0},
 	{(char *) "btech_glancing_blows", cf_int, CA_GOD, &mudconf.btech_glancing_blows, 0},
 	{(char *) "btech_inferno_penalty",
 	 cf_int, CA_GOD, &mudconf.btech_inferno_penalty, 0},
