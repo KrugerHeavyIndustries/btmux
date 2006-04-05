@@ -1346,7 +1346,7 @@ float getPilotBVMod(MECH * mech, int weapindx)
  * Routines and formula for XP gain.
  */
 void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
-					 int damage, int multiplier, int weapindx, int bth)
+					 int damage, float multiplier, int weapindx, int bth)
 {
 	int omul, xp, my_BV, th_BV, my_speed, th_speed;
 	float myPilotBVMod = 1.0, theirPilotBVMod = 1.0;
@@ -1461,20 +1461,22 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 		 ((double) (my_BV + 1) * my_speed *
 		  MechWeapons[weapindx].battlevalue / damagemod));
 
-	xp = BOUNDED(1, (multiplier * damage / 100), 10);
+	multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Mod. Defaults to 1 anyways */
+	
+	xp = BOUNDED(1, (int) (multiplier * damage / 100), 10);
 
 	strcpy(buf, Name(wounded->mynum));
 
 	// Emit XP gain over MechAttackXP
-	if(char_gainxp(pilot, skname, xp))
+	if(char_gainxp(pilot, skname, (int) xp))
 		SendAttackXP(tprintf
-					 ("%s gained %d gun XP from feat of %d/100 difficulty "
-					  "(%d damage) against %s", Name(pilot), xp, multiplier,
+					 ("%s gained %d gun XP from feat of %f/100 difficulty "
+					  "(%d damage) against %s", Name(pilot), (int) xp, multiplier,
 					  damage, buf));
 }								// end AccumulateGunXP()
 
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
-						int numOccurences, int multiplier, int weapindx,
+						int numOccurences, float multiplier, int weapindx,
 						int bth)
 {
 	int omul, xp;
@@ -1541,19 +1543,20 @@ void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
 
 	multiplier = multiplier * bth_modifier[bth - 3] / 36;
 	multiplier = multiplier * 2;	/* For average shot */
+	multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Modifier. Defaults to 1 */
 
 	if(Number(1, 50) > (multiplier * numOccurences))
 		return;					/* Nothing for truly twinky stuff, occasionally */
 
-	xp = BOUNDED(1, (multiplier * numOccurences) / 100, 50);	/*Hardcoded limit */
+	xp = BOUNDED(1, (int) (multiplier * numOccurences) / 100, 50);	/*Hardcoded limit */
 	strcpy(buf, Name(wounded->mynum));
 	/* Switching to Exile method of tracking xp, where we split
 	 * Attacking and Piloting xp into two different channels
 	 */
-	if(char_gainxp(pilot, skname, xp))
-		SendAttackXP(tprintf("%s gained %d gun XP from feat of %d %% "
+	if(char_gainxp(pilot, skname, (int) xp))
+		SendAttackXP(tprintf("%s gained %d gun XP from feat of %f %% "
 							 "difficulty (%d occurences) against %s",
-							 Name(pilot), xp, multiplier, numOccurences,
+							 Name(pilot), (int) xp, multiplier, numOccurences,
 							 buf));
 }
 

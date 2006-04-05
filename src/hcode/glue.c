@@ -368,6 +368,8 @@ static int load_update1(Node * tmp)
 		MechC3iNetworkSize(mech) = -1;
 		MechHeatLast(mech) = 0;
 		MechCommLast(mech) = 0;
+		if(!(MechXPMod(mech)))
+			MechXPMod(mech) = 1;		
 		for(i = 0; i < FREQS; i++)
 			if(mech->freq[i] < 0)
 				mech->freq[i] = 0;

@@ -57,9 +57,9 @@ void AccumulateArtyXP(dbref pilot, MECH * attacker, MECH * wounded);
 void AccumulateComputerXP(dbref pilot, MECH * mech, int reason);
 int HasBoolAdvantage(dbref player, const char *name);
 void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
-    int numOccurences, int multiplier, int weapindx, int bth);
+    int numOccurences, float multiplier, int weapindx, int bth);
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
-    int numOccurences, int multiplier, int weapindx, int bth);
+    int numOccurences, float multiplier, int weapindx, int bth);
 void fun_btgetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,

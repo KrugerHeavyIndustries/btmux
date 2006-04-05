@@ -407,6 +407,7 @@ static GMV xcode_data[] = {
 	MeEntry("maxspeed", MechMaxSpeed, TYPE_FLOAT),
 	MeEntry("templatesp",TemplateMaxSpeed,TYPE_FLOAT),
 	MeEntry("pilotnum", MechPilot, TYPE_DBREF),
+	MeEntry("xpmod", MechXPMod, TYPE_FLOAT),
 	MeEntry("pilotdam", MechPilotStatus, TYPE_CHAR),
 	MeEntry("si", AeroSI, TYPE_CHAR),
 	MeEntry("si_orig", AeroSIOrig, TYPE_CHAR),
