@@ -329,8 +329,8 @@ void mech_udisembark(dbref player, void *data, char *buffer)
 	DOCHECK(under_repairs,
 			"This 'Mech is still under repairs (see checkstatus for more info)");
 
-	DOCHECK(abs(MechSpeed(target)) > 0,
-			"You cannot leave while the carrier is moving!");
+	DOCHECK(abs(MechSpeed(target)) > WalkingSpeed(MMaxSpeed(target)),
+			"You cannot leave while the carrier is moving faster than walk speed!");
 
 	/* Carry out the disembarking. */
 	mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",
