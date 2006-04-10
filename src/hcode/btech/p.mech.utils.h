@@ -42,6 +42,8 @@ int MadePilotSkillRoll(MECH * mech, int mods);
 int MechPilotSkillRoll_BTH(MECH *mech, int mods);
 int MadePilotSkillRoll_Advanced(MECH * mech, int mods,
     int succeedWhenFallen);
+int MadePilotSkillRoll_XP(MECH * mech, int mods,
+    int succeedWhenFallen);
 void FindXY(float x0, float y0, int bearing, float range, float *x1,
     float *y1);
 float FindRange(float x0, float y0, float z0, float x1, float y1,

@@ -1732,16 +1732,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 						"You attempt to climb a hill too steep for you.");
 
 			if(MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-										 MadePilotSkillRoll(mech,
-															(int) (fabs
-																   ((MechSpeed
-																	 (mech)) +
-																	MP1) /
-																   MP1) / 3))
-			   || (mudconf.btech_skidcliff
-				   && MadePilotSkillRoll(mech,
-										 SkidMod(fabs(MechSpeed(mech)) /
-												 MP1)))) {
+                        MadePilotSkillRoll_NoXP(mech,
+                            (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
+			   || (mudconf.btech_skidcliff &&
+                    MadePilotSkillRoll_NoXP(mech, 
+                        SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before crashing.");
@@ -1950,16 +1945,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 						"You attempt to climb a hill too steep for you.");
 
 			if(MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-										 MadePilotSkillRoll(mech,
-															(int) (fabs
-																   ((MechSpeed
-																	 (mech)) +
-																	MP1) /
-																   MP1) / 3))
-			   || (mudconf.btech_skidcliff
-				   && MadePilotSkillRoll(mech,
-										 SkidMod(fabs(MechSpeed(mech)) /
-												 MP1)))) {
+                        MadePilotSkillRoll_NoXP(mech,
+                            (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
+			   || (mudconf.btech_skidcliff &&
+                    MadePilotSkillRoll_NoXP(mech, 
+                        SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before crashing.");
@@ -2146,16 +2136,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 						"You attempt to climb a hill too steep for you.");
 
 			if(MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-										 MadePilotSkillRoll(mech,
-															(int) (fabs
-																   ((MechSpeed
-																	 (mech)) +
-																	MP1) /
-																   MP1) / 3))
-			   || (mudconf.btech_skidcliff
-				   && MadePilotSkillRoll(mech,
-										 SkidMod(fabs(MechSpeed(mech)) /
-												 MP1)))) {
+                        MadePilotSkillRoll_NoXP(mech,
+                            (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
+			   || (mudconf.btech_skidcliff &&
+                    MadePilotSkillRoll_NoXP(mech, 
+                        SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before crashing.");
@@ -2400,16 +2385,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 			mech_notify(mech, MECHALL,
 						"You attempt to climb a hill too steep for you.");
 			if(MechPilot(mech) == -1 || (!mudconf.btech_skidcliff &&
-										 MadePilotSkillRoll(mech,
-															(int) (fabs
-																   ((MechSpeed
-																	 (mech)) +
-																	MP1) /
-																   MP1) / 3))
-			   || (mudconf.btech_skidcliff
-				   && MadePilotSkillRoll(mech,
-										 SkidMod(fabs(MechSpeed(mech)) /
-												 MP1)))) {
+                        MadePilotSkillRoll_NoXP(mech,
+                            (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
+			   || (mudconf.btech_skidcliff &&
+                    MadePilotSkillRoll_NoXP(mech, 
+                        SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before crashing.");

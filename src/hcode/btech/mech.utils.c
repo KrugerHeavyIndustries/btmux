@@ -619,6 +619,31 @@ int MechPilotSkillRoll_BTH(MECH * mech, int mods)
 	return mods;
 }
 
+int MadePilotSkillRoll_NoXP(MECH * mech, int mods, int succeedWhenFallen)
+{
+	int roll, roll_needed;
+
+	if(Fallen(mech) && succeedWhenFallen)
+		return 1;
+	if(Uncon(mech) || !Started(mech) || Blinded(mech))
+		return 0;
+	roll = Roll();
+	roll_needed = MechPilotSkillRoll_BTH(mech, mods);
+
+	SendDebug(tprintf("Attempting to make pilot skill roll. "
+					  "SPilot: %d, mods: %d, MechPilot: %d, BTH: %d",
+					  FindSPilotPiloting(mech), mods,
+					  MechPilotSkillBase(mech), roll_needed));
+
+	mech_notify(mech, MECHPILOT, "You make a piloting skill roll!");
+	mech_printf(mech, MECHPILOT,
+				"Modified Pilot Skill: BTH %d\tRoll: %d", roll_needed, roll);
+	if(roll >= roll_needed) {
+		return 1;
+	}
+	return 0;
+}
+
 int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
 {
 	int roll, roll_needed;
