@@ -475,10 +475,10 @@ void move_mech(MECH * mech)
 		if(!Landed(mech)) {
 
 			MarkForLOSUpdate(mech);
-			MechFX(mech) += MechStartFX(mech) * MOVE_MOD;
-			MechFY(mech) += MechStartFY(mech) * MOVE_MOD;
 			MechFZ(mech) += MechStartFZ(mech) * MOVE_MOD;
 			MechZ(mech) = MechFZ(mech) / ZSCALE;
+			MechFX(mech) += MechStartFX(mech) * MOVE_MOD;
+			MechFY(mech) += MechStartFY(mech) * MOVE_MOD;			
 
 			/*! \todo {Need to rewrite this for aerodyne DSes unless they're
 			 * set as large aeros which i'm not sure but either way its
@@ -790,6 +790,15 @@ void CheckVTOLHeight(MECH * mech)
 		DestroyMech(mech, mech, 0);
 		return;
 	}
+
+	if((MechZ(mech) >= ORBIT_Z) && !is_aero(mech)) {
+		mech_notify(mech, MECHALL, "You cannot achieve orbit! Vertical Movement halted!");
+		MechZ(mech) = ORBIT_Z - 1;
+		MechFZ(mech) = ZSCALE * MechZ(mech);
+		MechVerticalSpeed(mech) = 0.0;
+		return;
+	}
+
 	if(MechZ(mech) >= MechElevation(mech))
 		return;
 	if(MechRTerrain(mech) == BRIDGE)
