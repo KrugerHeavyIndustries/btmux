@@ -1779,8 +1779,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
 
 			if(MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
-										 MadePilotSkillRoll(mech,
-															avoidbth))) {
+										 MadePilotSkillRoll_NoXP(mech,
+															avoidbth,1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before falling off.");
@@ -1991,8 +1991,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				SkidMod(fabs(MechSpeed(mech)) / MP1) :
 				((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
 			if(MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
-										 MadePilotSkillRoll(mech,
-															avoidbth))) {
+										 MadePilotSkillRoll_NoXP(mech,
+															avoidbth,1))) {
 				mech_notify(mech, MECHALL,
 							"You manage to stop before falling off.");
 				MechLOSBroadcast(mech,
@@ -2183,8 +2183,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
 
 			if(MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
-										 MadePilotSkillRoll(mech,
-															avoidbth))) {
+										 MadePilotSkillRoll_NoXP(mech,
+															avoidbth,1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before falling off.");
@@ -2432,8 +2432,8 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				((fabs((MechSpeed(mech)) + MP1) / MP1) / 3);
 
 			if(MechPilot(mech) == -1 || (!MechAutoFall(mech) &&
-										 MadePilotSkillRoll(mech,
-															avoidbth))) {
+										 MadePilotSkillRoll_NoXP(mech,
+															avoidbth,1))) {
 
 				mech_notify(mech, MECHALL,
 							"You manage to stop before falling off.");

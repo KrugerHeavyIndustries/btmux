@@ -655,7 +655,7 @@ int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
 	roll = Roll();
 	roll_needed = MechPilotSkillRoll_BTH(mech, mods);
 
-	SendDebug(tprintf("Attempting to make pilot skill roll. "
+	SendDebug(tprintf("Attempting to make pilot (noxp) skill roll. "
 					  "SPilot: %d, mods: %d, MechPilot: %d, BTH: %d",
 					  FindSPilotPiloting(mech), mods,
 					  MechPilotSkillBase(mech), roll_needed));
