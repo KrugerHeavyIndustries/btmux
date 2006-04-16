@@ -457,6 +457,7 @@ static GMV xcode_data[] = {
 	MeEntry("x", MechX, TYPE_SHORT),
 	MeEntry("y", MechY, TYPE_SHORT),
 	MeEntry("z", MechZ, TYPE_SHORT),
+	MeEntry("elevation", MechElev, TYPE_CHAR),
 
 	MeEntry("targcomp", MechTargComp, TYPE_CHAR),
 	MeEntry("lrsrange", MechLRSRange, TYPE_CHAR),
