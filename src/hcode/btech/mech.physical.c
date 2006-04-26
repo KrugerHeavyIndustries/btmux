@@ -1543,6 +1543,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 	int spread;
 	int i, tmpi;
 	char location[50];
+	MAP *map = getMap(mech->mapindex);
 
 	/* Weapons recycling check on each major section */
 	for(i = 0; i < DFA_SECTIONS; i++)
@@ -1577,6 +1578,8 @@ int DeathFromAbove(MECH * mech, MECH * target)
 		DOCHECKMA0(!Landed(target),
 				   "Your target is airborne, you cannot land on it.");
 
+	DOCHECKMA0((MechTeam(mech) == MechTeam(target)) && MapNoFriendlyFire(map),
+			"Friendly DFA? I don't think so....");
 	if(mudconf.btech_phys_use_pskill)
 		baseToHit = FindPilotPiloting(mech);
 
