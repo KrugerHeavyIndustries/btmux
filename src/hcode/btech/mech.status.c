@@ -559,47 +559,59 @@ void mech_status(dbref player, void *data, char *buffer)
 	doweird = 0;
 	cch(MECH_USUALSM);
 	if(!buffer || !strlen(buffer))
+		// No arguments, we'll go with our default 'status' output.
 		doweap = doinfo = doarmor = 1;
 	else {
+		// Argument provided, only show certain parts.
 		for(loop = 0; buffer[loop]; loop++) {
 			switch (toupper(buffer[loop])) {
 			case 'R':
 				doweap = doinfo = doarmor = usex = 1;
 				break;
 			case 'A':
+				// Armor status
 				if(toupper(buffer[loop + 1]) == 'R')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				doarmor = 1;
 				break;
 			case 'I':
+				// Speed/Heading/Heat
 				doinfo = 1;
 				if(toupper(buffer[loop + 1]) == 'N')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				break;
 			case 'W':
+				// Weapons list.
 				doweap = 1;
 				if(toupper(buffer[loop + 1]) == 'E')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				break;
 			case 'N':
+				// Really weird status display.
 				doweird = 1;
 				break;
 			case 'S':
+				// Very short one-line status.
 				doshort = 1;
 				break;
 			case 'H':
+				// Just the heat bar.
 				doheat = 1;
 				break;
 			}
 		}
 	}
+
+	// Very short one-line status.
 	if(doshort) {
 		PrintShortInfo(player, mech);
 		return;
 	}
+
+	// Really weird status display.
 	if(doweird) {
 		sprintf(buf, "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
 				MechType_Name(mech), MechTons(mech),
@@ -607,8 +619,11 @@ void mech_status(dbref player, void *data, char *buffer)
 				(int) (MechMaxSpeed(mech) / MP1),
 				(int) (MechJumpSpeed(mech) / MP1), MechActiveNumsinks(mech));
 		weirdbuf = buf;
+
 	} else if(!doheat || (doarmor | doinfo | doweap))
 		PrintGenericStatus(player, mech, 1, usex);
+
+	// Show our armor diagram.
 	if(doarmor) {
 		if(!doweird) {
 			PrintArmorStatus(player, mech, 1);
@@ -626,11 +641,15 @@ void mech_status(dbref player, void *data, char *buffer)
 				}
 		}
 	}
+
+	// Standard heat/heading/dive/etc.
 	if(doinfo && !doweird) {
 		PrintInfoStatus(player, mech, 1);
 		notify(player, " ");
 	}
-	if(doheat && !doinfo && MechType(mech) == CLASS_MECH) {
+
+	// Show our heat bar.
+	if(doheat && !doinfo && (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_AERO)) {
 		char *tmpstr, heatstr[9] = ".:::::::";
 
 		tmpstr = silly_atr_get(player, A_HEATCHARS);
@@ -644,8 +663,11 @@ void mech_status(dbref player, void *data, char *buffer)
 		}
 	}
 
+	// Weapons readout.
 	if(doweap)
 		PrintWeaponStatus(mech, player);
+
+	// Really strange, short status info.
 	if(doweird)
 		notify(player, buf);
 }
