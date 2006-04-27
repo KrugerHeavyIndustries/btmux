@@ -161,6 +161,14 @@ btonline-btechmux 0.6:
         * Added FASA Inferno Penalties for heat (Fitz + Power_Shaper)
         * Hotloaded LRMs jam on roll of 2 or 3 (Power_Shaper)
 	* BattletechMUX should now compile just fine on Mac OS X. (Dany/Darrenb)
+	* Aeros now use AT2 locations. (Greg Taylor)
+	* Much needed ergonomic improvements to mechrep commands. (Greg
+	  Taylor)
+	* Improved some arrangement in the 'status' command code, made
+	  working with the heat bar a little more modular. (Greg Taylor)
+	* Units triggering trigger mines now have their AMINETRIGGER attribute
+	  triggered. This serves to make channel monitoring the MineTriggers
+	  channel obsolete and is much more efficient. (Greg Taylor)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
@@ -185,9 +193,6 @@ btonline-btechmux 0.6:
 	* Ported Exile's heatcutoff code. (Dany)
         * Non Mech/Hover/Sub units drown when OOD'ing into water now. (Power_Shaper)
 	* Suits must recycle weaponary before special attacks. (Power_Shaper)
-	* Aeros now use AT2 locations. (Greg Taylor)
-	* Much needed ergonomic improvements to mechrep commands. (Greg
-	Taylor)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)
