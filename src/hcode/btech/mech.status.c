@@ -1635,29 +1635,28 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 {
-	int a, b, c = -1;
+	int a = -1;
+	int b = -1;
+	int c = -1;
 
 	if(flag & 2) {
 		if(SectIntsRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech,
-																	 loc) +
-														 1);
+		c = 5;				/* Blue */
+		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech, loc) + 1);
 	} else if(flag & 4) {
 		if(SectRArmorRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = ((1 + (b =
-				   GetSectRArmor(mech,
-								 loc))) * 100) / (GetSectORArmor(mech,
-																 loc) + 1);
+		c = 5;				/* Blue */
+		a = ((1 + (b = GetSectRArmor(mech, loc))) * 100) / (GetSectORArmor(mech, loc) + 1);
+	} else if(flag & 256) {
+		// Aero SI
+		c = 0;
+		a = ((1 + (b = AeroSI(mech))) * 100) / (AeroSIOrig(mech) + 1);
 	} else {
 		if(SectArmorRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = ((1 + (b =
-				   GetSectArmor(mech, loc))) * 100) / (GetSectOArmor(mech,
-																	 loc) +
-													   1);
+		c = 5;				/* Blue */
+		a = ((1 + (b = GetSectArmor(mech, loc))) * 100) / (GetSectOArmor(mech, loc) + 1);
 	}
+	
 	*opt = b;
 	if(c > 0)
 		return c;
@@ -1735,7 +1734,9 @@ char *show_armor(MECH * mech, int loc, int flag)
 {
 	static char foo[32];
 
-	if(!GetSectInt(mech, loc) && !(flag & 64))
+	if(flag & 256)
+		sprintf(foo, "%s%2i%%c", PrintArmorDamageColor(mech, 0, flag), PrintArmorDamageString(mech, loc, flag));
+	else if(!GetSectInt(mech, loc) && !(flag & 64))
 		sprintf(foo, (flag & 32) ? " " : (flag & 128) ? "   " : "  ");
 	else
 		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, loc, flag),
@@ -1751,6 +1752,8 @@ char *show_armor(MECH * mech, int loc, int flag)
 /* Just get da desc from string, strtok'ed with \ns. */
 
 /* 1-6 at beginning of line = key */
+
+/* &SI| = SI (aeros/ds) */
 
 /* &+num = armor */
 
@@ -1998,7 +2001,7 @@ char *aerodesc =
     "7              @0/@0^@0^@0\\\n"
     "1            @1/@1|@0`&+0@0'@2|@2\\\n"
     "2     @1|     @1|@1_@1|.--.@2|@2_@2|     @2|\n"
-    "3     @1|      @1/@1||  ||@2\\      @2|\n"
+    "3     @1|      @1/@1||&SI|||@2\\      @2|\n"
     "4     @1|    @1/@1'@1.@1-@3|@3-@3-@3|@2-@2.@2`@2\\    @2|\n"
     "5     @1|@1-@1-@1-'&+1@1| @3|&+3@3| @2|&+2`---@2|\n"
     "6     @1`@1-@1-@1_@1_@1_@1_@1_\\||||/@2_@2_@2_@2_@2_@2-@2-'\n"
@@ -2225,7 +2228,7 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 			break;
 		default:
 			strcpy(tmpbuf,
-				   " This 'toy' is of unknown type to me. It has yet to be templated\n for status.\n0");
+				   " This 'toy' is of unknown type. It has yet to be templated\n for status.\n0");
 			break;
 		}
 	}
@@ -2255,7 +2258,7 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 				q++;
 			} else if(*q == '&' && (*(q + 1) == '+' || *(q + 1) == '-' ||
 									*(q + 1) == ':' || *(q + 1) == '(' ||
-									*(q + 1) == ')')) {
+									*(q + 1) == ')' || *(q + 1) == 'S')) {
 				if(*(q + 1) == '(') {
 					gflag |= 8;
 					q++;
@@ -2263,6 +2266,11 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 				}
 				if(*(q + 1) == ')') {
 					gflag |= 128;
+					q++;
+					odd = 1;
+				}
+				if(*(q + 1) == 'S') {
+					gflag |= 256;
 					q++;
 					odd = 1;
 				}
