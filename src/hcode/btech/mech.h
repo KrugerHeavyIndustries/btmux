@@ -552,10 +552,10 @@ struct missile_hit_table_struct {
 #define AERO_NOSE	0
 #define AERO_LWING	1
 #define AERO_RWING	2
-#define AERO_FUSEL	3
-#define AERO_COCKPIT	4
-#define AERO_ENGINE	5
-#define NUM_AERO_SECTIONS 6
+//#define AERO_FUSEL	3
+//#define AERO_COCKPIT	4
+#define AERO_AFT	3
+#define NUM_AERO_SECTIONS 4
 
 #define NUM_BSUIT_MEMBERS 8
 

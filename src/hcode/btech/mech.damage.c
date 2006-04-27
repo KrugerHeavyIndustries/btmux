@@ -216,10 +216,7 @@ int cause_armordamage(MECH * wounded,
 			return 0;
 		}
 		switch (hitloc) {
-		case AERO_COCKPIT:
-			DestroyMech(wounded, attacker, 1);
-			return 0;
-		case AERO_ENGINE:
+		case AERO_AFT:
 			MakeMechFall(wounded);
 			MechSpeed(wounded) = 0;
 			SetMaxSpeed(wounded, 0);
@@ -595,8 +592,7 @@ void DamageMech(MECH * wounded,
 		}
 	}
 
-	if((hitloc == HEAD && MechType(wounded) == CLASS_MECH)
-	   || (hitloc == AERO_COCKPIT && MechType(wounded) == CLASS_AERO)) {
+	if(hitloc == HEAD && MechType(wounded) == CLASS_MECH) {
 
 		/*      mech_notify (wounded, MECHALL,
 		   "You take 10 points of Lethal damage!!"); */

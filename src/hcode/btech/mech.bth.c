@@ -321,11 +321,8 @@ int FindNormalBTH(MECH * mech,
 			BTHADD("Bsuitbonus", 1);
 
 		/* Let's see if we're targetting the head */
-		if(target && !IsMissile(weapindx) &&
-		   (((MechAim(mech) == HEAD) && ((MechType(target) == CLASS_MECH)
-										 || (MechType(target) == CLASS_MW)))
-			|| ((MechAim(mech) == AERO_COCKPIT)
-				&& (MechType(target) == CLASS_AERO)))) {
+		if(target && !IsMissile(weapindx) && MechAim(mech) == HEAD && 
+			(MechType(target) == CLASS_MECH || MechType(target) == CLASS_MW)) {
 			if(Immobile(target))
 				BTHADD("HeadTarget", 7);
 			else

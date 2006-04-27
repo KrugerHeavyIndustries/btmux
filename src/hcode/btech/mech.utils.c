@@ -109,8 +109,6 @@ int CritsInLoc(MECH * mech, int index)
 				return 6;
 	} else if(MechType(mech) == CLASS_MW)
 		return 2;
-	else if(MechType(mech) == CLASS_AERO && index == AERO_COCKPIT)
-		return 5;
 	return NUM_CRITICALS;
 }
 
@@ -1511,9 +1509,7 @@ char *aero_locs[NUM_AERO_SECTIONS + 1] = {
 	"Nose",
 	"Left Wing",
 	"Right Wing",
-	"Fuselage",
-	"Cockpit",
-	"Engine",
+	"Aft Side",
 	NULL
 };
 
@@ -1701,16 +1697,13 @@ int IsInWeaponArc(MECH * mech, float x, float y, int section, int critical)
 		case AERO_NOSE:
 			wantarc = FORWARDARC | LSIDEARC | RSIDEARC;
 			break;
-		case AERO_FUSEL:
-			wantarc = FORWARDARC | REARARC | LSIDEARC | RSIDEARC;
-			break;
 		case AERO_LWING:
 			wantarc = LSIDEARC | (isrear ? REARARC : FORWARDARC);
 			break;
 		case AERO_RWING:
 			wantarc = RSIDEARC | (isrear ? REARARC : FORWARDARC);
 			break;
-		case AERO_ENGINE:
+		case AERO_AFT:
 			wantarc = REARARC;
 			break;
 		}

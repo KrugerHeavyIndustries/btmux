@@ -49,16 +49,7 @@ void FillDefaultCriticals(MECH * mech, int index)
 
 	if(MechType(mech) == CLASS_AERO)
 		switch (index) {
-		case AERO_COCKPIT:
-			MechSections(mech)[index].criticals[0].type =
-				I2Special(LIFE_SUPPORT);
-			MechSections(mech)[index].criticals[1].type = I2Special(SENSORS);
-			MechSections(mech)[index].criticals[2].type = I2Special(COCKPIT);
-			MechSections(mech)[index].criticals[3].type = I2Special(SENSORS);
-			MechSections(mech)[index].criticals[4].type =
-				I2Special(LIFE_SUPPORT);
-			break;
-		case AERO_ENGINE:
+		case AERO_AFT:
 			for(loop = 0; loop < 12; loop++)
 				MechSections(mech)[index].criticals[loop].type =
 					I2Special(HEAT_SINK);

@@ -185,6 +185,9 @@ btonline-btechmux 0.6:
 	* Ported Exile's heatcutoff code. (Dany)
         * Non Mech/Hover/Sub units drown when OOD'ing into water now. (Power_Shaper)
 	* Suits must recycle weaponary before special attacks. (Power_Shaper)
+	* Aeros now use AT2 locations. (Greg Taylor)
+	* Much needed ergonomic improvements to mechrep commands. (Greg
+	Taylor)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)
