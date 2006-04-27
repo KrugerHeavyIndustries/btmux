@@ -60,7 +60,7 @@ void DisplayTarget(dbref player, MECH * mech)
 			if(InLineOfSight(mech, tempMech, MechX(tempMech),
 							 MechY(tempMech), FaMechRange(mech, tempMech))) {
 				sprintf(buff,
-						"\nTarget: %s\t   Range: %.1f hexes   Bearing: %d deg",
+						"Target: %s\t   Range: %.1f hexes   Bearing: %d deg\n",
 						GetMechToMechID(mech, tempMech), FaMechRange(mech,
 																	 tempMech),
 						FindBearing(MechFX(mech), MechFY(mech),
@@ -80,23 +80,23 @@ void DisplayTarget(dbref player, MECH * mech)
 				sprintf(buff1, "\t   Aimed Shot Location: %s", location);
 				strcat(buff, buff1);
 			} else
-				sprintf(buff, "\nTarget: NOT in line of sight!");
+				sprintf(buff, "Target: NOT in line of sight!\n");
 		}
 		notify(player, buff);
 	} else if(MechTargX(mech) != -1 && MechTargY(mech) != -1) {
 		if(MechStatus(mech) & LOCK_BUILDING)
-			notify_printf(player, "\nTarget: Building at %d %d",
+			notify_printf(player, "Target: Building at %d %d\n",
 						  MechTargX(mech), MechTargY(mech));
 		else if(MechStatus(mech) & LOCK_HEX)
-			notify_printf(player, "\nTarget: Hex %d %d", MechTargX(mech),
+			notify_printf(player, "Target: Hex %d %d\n", MechTargX(mech),
 						  MechTargY(mech));
 		else
-			notify_printf(player, "\nTarget: %d %d", MechTargX(mech),
+			notify_printf(player, "Target: %d %d\n", MechTargX(mech),
 						  MechTargY(mech));
 
 	}
 	if(MechPKiller(mech))
-		notify(player, "\nWeapon Safeties are %ch%crOFF%cn.");
+		notify(player, "Weapon Safeties are %ch%crOFF%cn.\n");
 	if(GotPilot(mech) && HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
 		notify_printf(player, "Turn Mode: %s",
 					  GetTurnMode(mech) ? "TIGHT" : "NORMAL");
@@ -106,12 +106,12 @@ void DisplayTarget(dbref player, MECH * mech)
 			return;
 		if(InLineOfSight(mech, tempMech, MechX(tempMech), MechY(tempMech),
 						 FaMechRange(mech, tempMech))) {
-			notify_printf(player, "\nChargeTarget: %s\t  ChargeTimer: %d",
+			notify_printf(player, "ChargeTarget: %s\t  ChargeTimer: %d\n",
 						  GetMechToMechID(mech, tempMech),
 						  MechChargeTimer(mech) / 2);
 		} else {
 			notify_printf(player,
-						  "\nChargeTarget: NOT in line of sight!\t Timer: %d",
+						  "ChargeTarget: NOT in line of sight!\t Timer: %d\n",
 						  MechChargeTimer(mech) / 2);
 		}
 	}
@@ -493,8 +493,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				 is_aero(mech) ? tprintf("%s angle: %%ch%%cg%d%%cn",
 										 MechDesiredAngle(mech) >=
 										 0 ? "Climbing" : "Diving",
-										 abs(MechDesiredAngle(mech))
-				 ) : "");
+										 abs(MechDesiredAngle(mech))) : "");
 		notify(player, buff);
 		if(FlyingT(mech) || MechMove(mech) == MOVE_SUB) {
 			sprintf(buff,
@@ -529,6 +528,11 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 
 		}
 		ShowTurretFacing(player, 0, mech);
+		if(MechHasHeat(mech)) {
+			notify_printf(player, "Excess Heat:%3d deg  Heat Production:     %3d deg   Heat Dissipation: %3d deg",
+				(int) (10. * MechHeat(mech)), (int) (10. * MechPlusHeat(mech)),
+				(int) (10. * MechMinusHeat(mech)));
+		}
 		break;
 	case CLASS_MW:
 	case CLASS_BSUIT:
@@ -548,10 +552,10 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 		PrintHeatBar(player, mech);
 
 		// Little extra space to preserve formatting.
-		if(MechTarget(mech) == -1 && MechTargX(mech) == -1)
-			notify(player, "  ");
+//		if(MechTarget(mech) == -1 && MechTargX(mech) == -1)
+//			notify(player, "  ");
 	}
-
+	notify(player, "  ");
 	// Show our locked target info (hex or unit).	
 	DisplayTarget(player, mech);
 
