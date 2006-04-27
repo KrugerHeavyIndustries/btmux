@@ -1633,13 +1633,19 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	}
 }
 
+/*
+ * Picks the character to show for the armor location on enemy scans.
+ */
 int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 {
 	int a = -1;
 	int b = -1;
 	int c = -1;
 
-	if(flag & 2) {
+	if(flag & 256) {
+		// Aero SI
+		a = ((1 + (b = AeroSI(mech))) * 100) / (AeroSIOrig(mech) + 1);
+	} else if(flag & 2) {
 		if(SectIntsRepair(mech, loc))
 		c = 5;				/* Blue */
 		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech, loc) + 1);
@@ -1647,10 +1653,6 @@ int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 		if(SectRArmorRepair(mech, loc))
 		c = 5;				/* Blue */
 		a = ((1 + (b = GetSectRArmor(mech, loc))) * 100) / (GetSectORArmor(mech, loc) + 1);
-	} else if(flag & 256) {
-		// Aero SI
-		c = 0;
-		a = ((1 + (b = AeroSI(mech))) * 100) / (AeroSIOrig(mech) + 1);
 	} else {
 		if(SectArmorRepair(mech, loc))
 		c = 5;				/* Blue */
@@ -1658,10 +1660,13 @@ int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 	}
 	
 	*opt = b;
+	// Blue (Character 5 in armordamltrstr)
 	if(c > 0)
 		return c;
+	// Yarr, we're breached.
 	if(!b)
 		return 4;
+	// Armor condition level characters.
 	if(a > 90)
 		return 0;
 	if(a > 70)
@@ -1672,10 +1677,8 @@ int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 }
 
 /* bright green, dark green, bright yellow, dark red, black */
-
-static char *armordamcolorstr[] = { "%ch%cg", "%cg", "%ch%cy",
-	"%cr", "%ch%cx", "%ch%cb"
-};								/* last on is for armor being repaired */
+static char *armordamcolorstr[] = { "%ch%cg", "%cg", "%ch%cy", "%cr", "%ch%cx", "%ch%cb" };
+/* Armor location character (enemy scan). Last on is for armor being repaired. */
 static char *armordamltrstr = "OoxX*?";
 
 char *PrintArmorDamageColor(MECH * mech, int loc, int flag)
@@ -1690,9 +1693,13 @@ char *PrintArmorDamageString(MECH * mech, int loc, int flag)
 	int a;
 	static char foo[6];
 
+	// Zero out our armor string.
 	for(a = 0; a < 4; a++)
 		foo[a] = 0;
+	
+	// Put a single character representing the section's health in front of array.
 	foo[0] = armordamltrstr[ArmorEvaluateSerious(mech, loc, flag, &a)];
+	
 	if(flag & 1) {
 		if(flag & 8)
 			sprintf(foo, "%1d", (flag & 32) ? ((a + 9) / 10) : a);
@@ -1700,6 +1707,7 @@ char *PrintArmorDamageString(MECH * mech, int loc, int flag)
 			sprintf(foo, "%3d", a);
 		else
 			sprintf(foo, "%2d", a);
+
 		if((flag & 16) && foo[0] == ' ')
 			foo[0] = '0';
 	} else
@@ -1735,7 +1743,7 @@ char *show_armor(MECH * mech, int loc, int flag)
 	static char foo[32];
 
 	if(flag & 256)
-		sprintf(foo, "%s%2i%%c", PrintArmorDamageColor(mech, 0, flag), PrintArmorDamageString(mech, loc, flag));
+		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, 0, flag), PrintArmorDamageString(mech, loc, flag));
 	else if(!GetSectInt(mech, loc) && !(flag & 64))
 		sprintf(foo, (flag & 32) ? " " : (flag & 128) ? "   " : "  ");
 	else
