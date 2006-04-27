@@ -54,5 +54,6 @@ void mechrep_Raddtech(dbref player, void *data, char *buffer);
 void mechrep_Rdelinftech(dbref player, void *data, char *buffer);
 void mechrep_Raddinftech(dbref player, void *data, char *buffer);
 void mechrep_setcargospace(dbref player, void *data, char *buffer);
+void invalid_section(dbref player, MECH * mech);
 
 #endif				/* _P_MECHREP_H */
