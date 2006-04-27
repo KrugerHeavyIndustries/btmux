@@ -251,6 +251,8 @@
 
 #define HS_Size(a)		(MechType(mech) == CLASS_MECH ? (ClanMech(a) ? 2 : ((MechSpecials(a) & DOUBLE_HEAT_TECH) ? 3 : 1)) : 1)
 #define HS_Efficiency(a)	(MechHasDHS(a) ? 2 : 1)
+#define MechHasHeat(a)		(MechType(a) == CLASS_MECH || MechType(a) == CLASS_AERO || MechType(a) == CLASS_DS || \
+				 MechType(a) == CLASS_SPHEROID_DS)
 
 #define DSSpam(mek,msg)		do { if (DropShip(MechType(mek)) && DSOkToNotify(mek)) MechLOSBroadcast(mek,msg); } while (0)
 #define DSSpam_O(mek,msg)	do { if (DropShip(MechType(mek))) MechLOSBroadcast(mek,msg); } while (0)

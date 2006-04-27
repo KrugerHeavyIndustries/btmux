@@ -1367,7 +1367,8 @@ void UpdateHeat(MECH * mech)
 	float inheat;
 	MAP *map;
 
-	if(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_AERO)
+	// These guys don't get heat updates.
+	if(!MechHasHeat(mech)) 
 		return;
 
 	inheat = MechHeat(mech);

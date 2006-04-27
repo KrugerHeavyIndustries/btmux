@@ -436,14 +436,26 @@ static char *MakeHeatScaleInfo(MECH * mech, char *fillchar, char *heatstr,
 	return heatstr;
 }
 
+void PrintHeatBar(dbref player, MECH * mech)
+{
+	char subbuff[256];
+	char buff[256];
+	char heatstr[9] = ".:::::::";
+	char *tmpstr;
+
+	tmpstr = silly_atr_get(player, A_HEATCHARS);
+	if(!tmpstr || !strlen(tmpstr) || sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1], &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5], &heatstr[6], &heatstr[7]) == 8) {
+		MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
+		snprintf(buff, 256, "Temp:%s", subbuff);
+		notify(player, buff);
+	}
+}
+
 void PrintInfoStatus(dbref player, MECH * mech, int own)
 {
 	char buff[256];
-	char subbuff[256];
-	char heatstr[9] = ".:::::::";
 	MECH *tempMech;
 	int f;
-	char *tmpstr;
 
 	switch (MechType(mech)) {
 	case CLASS_MECH:
@@ -463,15 +475,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				(int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
 				(int) (10. * MechMinusHeat(mech)));
 		notify(player, buff);
-		tmpstr = silly_atr_get(player, A_HEATCHARS);
-		if(!tmpstr || !strlen(tmpstr) ||
-		   sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-				  &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-				  &heatstr[6], &heatstr[7]) == 8) {
-			MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
-			snprintf(buff, 256, "Temp:%s", subbuff);
-			notify(player, buff);
-		}
+		
 		if(MechLateral(mech))
 			notify_printf(player, "You are moving laterally %s",
 						  LateralDesc(mech));
@@ -539,7 +543,18 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 		notify(player, buff);
 		break;
 	}
+
+	if(MechHasHeat(mech)) {
+		PrintHeatBar(player, mech);
+
+		// Little extra space to preserve formatting.
+		if(MechTarget(mech) == -1 && MechTargX(mech) == -1)
+			notify(player, "  ");
+	}
+
+	// Show our locked target info (hex or unit).	
 	DisplayTarget(player, mech);
+
 	if(MechCarrying(mech) > 0)
 		if((tempMech = getMech(MechCarrying(mech))))
 			notify_printf(player, "Towing %s.", GetMechToMechID(mech,
@@ -560,13 +575,13 @@ void mech_status(dbref player, void *data, char *buffer)
 	cch(MECH_USUALSM);
 	if(!buffer || !strlen(buffer))
 		// No arguments, we'll go with our default 'status' output.
-		doweap = doinfo = doarmor = 1;
+		doweap = doinfo = doarmor = doheat = 1;
 	else {
 		// Argument provided, only show certain parts.
 		for(loop = 0; buffer[loop]; loop++) {
 			switch (toupper(buffer[loop])) {
 			case 'R':
-				doweap = doinfo = doarmor = usex = 1;
+				doweap = doinfo = doarmor = doheat = usex = 1;
 				break;
 			case 'A':
 				// Armor status
@@ -645,22 +660,12 @@ void mech_status(dbref player, void *data, char *buffer)
 	// Standard heat/heading/dive/etc.
 	if(doinfo && !doweird) {
 		PrintInfoStatus(player, mech, 1);
-		notify(player, " ");
+		//notify(player, " ");
 	}
 
-	// Show our heat bar.
-	if(doheat && !doinfo && (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_AERO)) {
-		char *tmpstr, heatstr[9] = ".:::::::";
-
-		tmpstr = silly_atr_get(player, A_HEATCHARS);
-		if(!tmpstr || !strlen(tmpstr) ||
-		   sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-				  &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-				  &heatstr[6], &heatstr[7]) == 8) {
-			MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
-			sprintf(buf, "Temp:%s", subbuff);
-			notify(player, buf);
-		}
+	// Show our heat bar by itself.
+	if(!doinfo && doheat && MechHasHeat(mech)) { 
+		PrintHeatBar(player, mech);
 	}
 
 	// Weapons readout.
