@@ -263,6 +263,7 @@ btonline-btechmux 0.6:
 	  heat for the speed its currently at.
 	* Fix for embarking a carrier while towing a unit (wasn't pulling
 	  towed unit inside). (Casy)
+	* Corrected grammar for a number of messages. (Tetsuo Sormlaeng)
 
 btonline-btechmux 0.4:
 	- Changes

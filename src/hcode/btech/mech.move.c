@@ -1358,7 +1358,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	DOCHECK(!(MechStatus2(mech) & EVADING) && MechType(mech) == CLASS_MECH
 			&& (PartIsNonfunctional(mech, LLEG, 0)
 				|| PartIsNonfunctional(mech, RLEG, 0)),
-			"You need both hip functional to evade.");
+			"You need both hips functional to evade.");
 	DOCHECK(WaterBeast(mech)
 			&& NotInWater(mech),
 			"You are regrettably unable to move at this time. We apologize for the inconvenience.");

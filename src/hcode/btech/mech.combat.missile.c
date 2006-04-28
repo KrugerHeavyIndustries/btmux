@@ -277,7 +277,7 @@ int MissileHitTarget(MECH * mech,
 							INARC_HAYWIRE_ATTACHED;
 
 						mech_notify(hitMech, MECHALL,
-									"Your targetting systems goes a bit haywire!");
+									"Your targetting system goes a bit haywire!");
 					} else if(wNARCType == 4) {
 						MechSections(hitMech)[wNARCHitLoc].specials |=
 							INARC_ECM_ATTACHED;

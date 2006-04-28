@@ -361,16 +361,16 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 	/* Gauss rifle-ish weapons explode when critted */
 	if((MechWeapons[Weapon2I(critType)].special & GAUSS) && !wWeapDestroyed) {
 		mech_printf(wounded, MECHALL,
-					"Your %s has been destroyed!!",
+					"Your %s has been destroyed!",
 					&MechWeapons[Weapon2I(critType)].name[3]);
 
 		mech_printf(wounded, MECHALL,
-					"It explodes for %d points damage",
+					"It explodes for %d points damage.",
 					MechWeapons[Weapon2I(critType)].explosiondamage);
 
 		if(LOS && wounded != attacker && attacker)
 			mech_notify(attacker, MECHALL,
-						"Your target is covered with a large electrical discharge");
+						"Your target is covered in a large electrical discharge.");
 
 		DestroyWeapon(wounded, hitloc, critType, wFirstCrit, wMaxCrits,
 					  wMaxCrits);
@@ -384,7 +384,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 		return 1;
 	} else if(IsAMS(Weapon2I(critType))) {	/* Have to shut down AMS when its critted */
 		mech_printf(wounded, MECHALL,
-					"Your %s has been destroyed!!",
+					"Your %s has been destroyed!",
 					&MechWeapons[Weapon2I(critType)].name[3]);
 
 		MechStatus(wounded) &= ~AMS_ENABLED;
@@ -406,7 +406,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 			}
 
 			mech_printf(wounded, MECHALL,
-						"Your %s has been destroyed!!",
+						"Your %s has been destroyed!",
 						&MechWeapons[Weapon2I(critType)].name[3]);
 
 			mech_printf(wounded, MECHALL,
@@ -415,7 +415,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 
 			if(LOS && wounded != attacker && attacker)
 				MechLOSBroadcast(wounded,
-								 "looses a launcher in a brilliant explosion!");
+								 "loses a launcher in a brilliant explosion!");
 
 			DestroyWeapon(wounded, hitloc, critType, wFirstCrit, wMaxCrits,
 						  wMaxCrits);
@@ -436,7 +436,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 								 AC_INCENDIARY_MODE) > 0) {
 
 			mech_printf(wounded, MECHALL,
-						"Your %s has been destroyed!!",
+						"Your %s has been destroyed!",
 						&MechWeapons[Weapon2I(critType)].name[3]);
 
 			mech_printf(wounded, MECHALL,
@@ -445,7 +445,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 
 			if(LOS && wounded != attacker && attacker) {
 				sprintf(msgbuf,
-						"'s %s is engulfed by a brilliant blue flame!",
+						"'s %s is engulfed in a brilliant blue flame!",
 						locname);
 				MechLOSBroadcast(wounded, msgbuf);
 			}
@@ -629,7 +629,7 @@ void DoTurretJamCrit(MECH * objMech)
 
 	MechTankCritStatus(objMech) |= TURRET_JAMMED;
 	mech_notify(objMech, MECHALL,
-				"%ch%crYour turret gets jammed on it's current facing!%cn");
+				"%ch%crYour turret gets jammed on its current facing!%cn");
 }
 
 void DoWeaponJamCrit(MECH * objMech, int wLoc)
@@ -741,7 +741,7 @@ void DoTurretBlownOffCrit(MECH * objMech, MECH * objAttacker, int LOS)
 
 	mech_notify(objMech, MECHALL,
 				"%ch%crThe shot pops your turret clear off its housing!%cn");
-	MechLOSBroadcast(objMech, "'s Turret flies off!");
+	MechLOSBroadcast(objMech, "'s turret flies off!");
 	DestroySection(objMech, objAttacker, LOS, TURRET);
 }
 
@@ -848,7 +848,7 @@ void DoVehicleEngineHit(MECH * objMech, MECH * objAttacker)
 					MechVerticalSpeed(objMech) = 0.0;
 				}
 			} else {
-				mech_notify(objMech, MECHALL, "You crash to the ground!");
+				mech_notify(objMech, MECHALL, "The ground rushes up to meet you!");
 				mech_notify(objAttacker, MECHALL,
 							"You knock the VTOL out of the sky!");
 				MechLOSBroadcast(objMech, "falls from the sky!");
@@ -896,7 +896,7 @@ void DoVehicleCrewStunnedCrit(MECH * objMech)
 	 */
 	MechTankCritStatus(objMech) |= CREW_STUNNED;
 	mech_notify(objMech, MECHALL,
-				"%ch%crThe shot resonates throughout the crew compartment temporarily stunning you!%cn");
+				"%ch%crThe shot resonates throughout the crew compartment, temporarily stunning you!%cn");
 
 	StunCrew(objMech);
 	limitSpeedToCruise(objMech);
@@ -995,12 +995,12 @@ void DoVTOLRotorDestroyedCrit(MECH * objMech, MECH * objAttacker, int LOS)
 
 	mech_notify(objMech, MECHALL,
 				"%ch%crThe shot hits your fragile rotor mechanism!%cn");
-	MechLOSBroadcast(objMech, "'s Rotor snaps into several parts!");
+	MechLOSBroadcast(objMech, "'s rotor snaps into several parts!");
 	DestroySection(objMech, objAttacker, LOS, ROTOR);
 
 	if(!objAttacker) {
-		mech_notify(objMech, MECHALL, "Your Rotor has been destroyed!");
-		MechLOSBroadcast(objMech, "'s Rotor has been destroyed!");
+		mech_notify(objMech, MECHALL, "Your rotor has been destroyed!");
+		MechLOSBroadcast(objMech, "'s rotor has been destroyed!");
 	}
 }
 
@@ -1020,7 +1020,7 @@ void DoVTOLRotorDamagedCrit(MECH * objMech)
 		return;
 	}
 
-	mech_notify(objMech, MECHALL, "Your rotor is damaged!!");
+	mech_notify(objMech, MECHALL, "Your rotor is damaged!");
 
 	if(!Fallen(objMech))
 		LowerMaxSpeed(objMech, MP1);
@@ -1040,7 +1040,7 @@ void DoVTOLTailRotorDamagedCrit(MECH * objMech)
 	else {
 		MechTankCritStatus(objMech) |= TAIL_ROTOR_DESTROYED;
 		mech_notify(objMech, MECHALL,
-					"%ch%crYour tail rotor is damaged slowing you down!%cn");
+					"%ch%crYour tail rotor is damaged, slowing you down!%cn");
 
 		limitSpeedToCruise(objMech);
 	}
@@ -1083,7 +1083,7 @@ void HandleAdvFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	if(wRoll < 6)
 		return;
 
-	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 
 	switch (MechType(wounded)) {
 	case CLASS_VEH_GROUND:
@@ -1346,11 +1346,11 @@ void HandleAdvFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 					int num)
 {
-	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 	switch (random() % 6) {
 	case 0:
 		/* Crew killed */
-		mech_notify(wounded, MECHALL, "Your cockpit is destroyed!!");
+		mech_notify(wounded, MECHALL, "Your cockpit is destroyed!");
 		if(!Landed(wounded)) {
 			mech_notify(attacker, MECHALL,
 						"You knock the VTOL out of the sky!");
@@ -1370,7 +1370,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		break;
 	case 2:
 		/* Engine Hit */
-		mech_notify(wounded, MECHALL, "Your engine takes a direct hit!!");
+		mech_notify(wounded, MECHALL, "Your engine takes a direct hit!");
 		if(!Landed(wounded)) {
 			if(MechRTerrain(wounded) == GRASSLAND ||
 			   MechRTerrain(wounded) == ROAD ||
@@ -1386,7 +1386,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 					MechVerticalSpeed(wounded) = 0.0;
 				}
 			} else {
-				mech_notify(wounded, MECHALL, "You crash to the ground!");
+				mech_notify(wounded, MECHALL, "The ground rushes up to meet you!");
 				mech_notify(attacker, MECHALL,
 							"You knock the VTOL out of the sky!");
 				MechLOSBroadcast(wounded, "falls from the sky!");
@@ -1397,7 +1397,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		break;
 	case 3:
 		/* Crew Killed */
-		mech_notify(wounded, MECHALL, "Your cockpit is destroyed!!");
+		mech_notify(wounded, MECHALL, "Your cockpit is destroyed!");
 		if(!(MechStatus(wounded) & LANDED)) {
 			mech_notify(attacker, MECHALL,
 						"You knock the VTOL out of the sky!");
@@ -1425,7 +1425,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		break;
 	case 5:
 		/* Ammo/Power Plant Explodes */
-		mech_notify(wounded, MECHALL, "Your power plant explodes!!");
+		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		MechLOSBroadcast(wounded, "suddenly explodes!");
 		MechZ(wounded) = MechElevation(wounded);
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
@@ -1490,7 +1490,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	if(MechMove(wounded) == MOVE_NONE)
 		return;
 
-	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 	switch (random() % 6) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
@@ -1504,20 +1504,20 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	case 2:
 		/* Engine Hit */
 		mech_notify(wounded, MECHALL,
-					"Your engine takes a direct hit!!  You can't move anymore.");
+					"Your engine takes a direct hit!  You can't move anymore.");
 		SetMaxSpeed(wounded, 0.0);
 		break;
 	case 3:
 		/* Crew Killed */
 		mech_notify(wounded, MECHALL,
-					"Your armor is pierced and you are killed instantly!!");
+					"Your armor is pierced and you are killed instantly!");
 		DestroyMech(wounded, attacker, 0);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 4:
 		/* Fuel Tank Explodes */
 		mech_notify(wounded, MECHALL,
-					"Your fuel tank explodes in a ball of fire!!");
+					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
 		DestroyMech(wounded, attacker, 0);
@@ -1525,7 +1525,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		break;
 	case 5:
 		/* Ammo/Power Plant Explodes */
-		mech_notify(wounded, MECHALL, "Your power plant explodes!!");
+		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
 		DestroyMech(wounded, attacker, 0);
@@ -1545,10 +1545,10 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	if(hitloc == TURRET) {
 		if(Number(1, 3) == 2) {
 			if(!(MechTankCritStatus(wounded) & TURRET_LOCKED)) {
-				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 				MechTankCritStatus(wounded) |= TURRET_LOCKED;
 				mech_notify(wounded, MECHALL,
-							"Your turret takes a direct hit and immobilizes!");
+							"Your turret takes a direct hit and locks up!");
 			}
 			return;
 		}
@@ -1559,24 +1559,24 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		case 3:
 		case 4:
 			if(!Fallen(wounded)) {
-				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 				switch (MechMove(wounded)) {
 				case MOVE_TRACK:
 					mech_notify(wounded, MECHALL,
-								"One of your tracks is damaged!!");
+								"One of your tracks is damaged!");
 					break;
 				case MOVE_WHEEL:
 					mech_notify(wounded, MECHALL,
-								"One of your wheels is damaged!!");
+								"One of your wheels is damaged!");
 					break;
 				case MOVE_HOVER:
 					mech_notify(wounded, MECHALL,
-								"Your air skirt is damaged!!");
+								"Your air skirt is damaged!");
 					break;
 				case MOVE_HULL:
 				case MOVE_SUB:
 				case MOVE_FOIL:
-					mech_notify(wounded, MECHALL, "Your speed slows down..");
+					mech_notify(wounded, MECHALL, "Your craft suddenly slows!");
 					break;
 				}
 				LowerMaxSpeed(wounded, MP1);
@@ -1585,25 +1585,25 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 			break;
 		case 5:
 			if(!Fallen(wounded)) {
-				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+				mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 				switch (MechMove(wounded)) {
 				case MOVE_TRACK:
 					mech_notify(wounded, MECHALL,
-								"One of your tracks is destroyed, imobilizing your vehicle!!");
+								"One of your tracks is destroyed, immobilizing your vehicle!");
 					break;
 				case MOVE_WHEEL:
 					mech_notify(wounded, MECHALL,
-								"One of your wheels is destroyed, imobilizing your vehicle!!");
+								"One of your wheels is destroyed, immobilizing your vehicle!");
 					break;
 				case MOVE_HOVER:
 					mech_notify(wounded, MECHALL,
-								"Your lift fan is destroyed, imobilizing your vehicle!!");
+								"Your lift fan is destroyed, immobilizing your vehicle!");
 					break;
 				case MOVE_HULL:
 				case MOVE_SUB:
 				case MOVE_FOIL:
 					mech_notify(wounded, MECHALL,
-								"You are halted in your tracks - literally.");
+								"Your engines cut out and you drift to a halt!");
 				}
 				SetMaxSpeed(wounded, 0.0);
 
@@ -1612,7 +1612,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 			return;
 			break;
 		}
-	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
 	switch (random() % 6) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
@@ -1626,20 +1626,20 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	case 2:
 		/* Engine Hit */
 		mech_notify(wounded, MECHALL,
-					"Your engine takes a direct hit!!  You can't move anymore.");
+					"Your engine takes a direct hit!  You can't move anymore.");
 		SetMaxSpeed(wounded, 0.0);
 		break;
 	case 3:
 		/* Crew Killed */
 		mech_notify(wounded, MECHALL,
-					"Your armor is pierced and you are killed instantly!!");
+					"Your armor is pierced and you are killed instantly!");
 		DestroyMech(wounded, attacker, 0);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 4:
 		/* Fuel Tank Explodes */
 		mech_notify(wounded, MECHALL,
-					"Your fuel tank explodes in a ball of fire!!");
+					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
 		DestroyMech(wounded, attacker, 0);
@@ -1647,7 +1647,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		break;
 	case 5:
 		/* Ammo/Power Plant Explodes */
-		mech_notify(wounded, MECHALL, "Your power plant explodes!!");
+		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
 		DestroyMech(wounded, attacker, 0);
@@ -1678,7 +1678,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 
 	ArmorStringFromIndex(hitloc, locname, MechType(wounded),
 						 MechMove(wounded));
-	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!!%c");
+	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
 
 	if(IsAmmo(critType)) {
 		/* BOOM! */
@@ -1693,7 +1693,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		if(MechWeapons[weapindx].special & (GAUSS | NOBOOM)) {
 			if(MechWeapons[weapindx].special & GAUSS)
 				mech_notify(wounded, MECHALL,
-							"One of your Gauss Rifle Ammo feeds is destroyed");
+							"One of your Gauss Rifle ammo feeds is destroyed");
 			DestroyPart(wounded, hitloc, critHit);
 		} else if(damage) {
 			ammo_explosion(attacker, wounded, hitloc, critHit, damage);
@@ -1739,7 +1739,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				strcpy(partBuf, "engine");
 				break;
 			case TARGETING_COMPUTER:
-				strcpy(partBuf, "Targeting Computer");
+				strcpy(partBuf, "targeting computer");
 				break;
 			case GYRO:
 				strcpy(partBuf, "gyro");
@@ -1842,12 +1842,12 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		case LIFE_SUPPORT:
 			MechCritStatus(wounded) |= LIFE_SUPPORT_DESTROYED;
 			mech_notify(wounded, MECHALL,
-						"Your life support has been destroyed!!");
+						"Your life support has been destroyed!");
 			break;
 		case COCKPIT:
 			/* Destroy Mech for now, but later kill pilot as well */
 			mech_notify(wounded, MECHALL,
-						"Your cockpit is destroyed!!  Your body is fried!!!");
+						"Your cockpit is destroyed, your blood boils, and your body is fried! %cyYou're dead!%cn");
 			if(!Destroyed(wounded)) {
 				Destroy(wounded);
 				ChannelEmitKill(wounded, attacker);
@@ -1855,7 +1855,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 
 			if(LOS && attacker)
 				mech_notify(attacker, MECHALL,
-							"You destroy the cockpit!!  The pilot's blood splatters down the sides!!!");
+							"You destroy the cockpit! The pilot's blood splatters down the sides!");
 			MechLOSBroadcast(wounded,
 							 "spasms for a second then remains oddly still.");
 			MechPilot(wounded) = -1;
@@ -1869,14 +1869,14 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				MechBTH(wounded) += 2;
 				MechCritStatus(wounded) |= SENSORS_DAMAGED;
 				mech_notify(wounded, MECHALL,
-							"Your sensors have been damaged!!");
+							"Your sensors have been damaged!");
 			} else {
 				MechLRSRange(wounded) = 0;
 				MechTacRange(wounded) = 0;
 				MechScanRange(wounded) = 0;
 				MechBTH(wounded) = 75;
 				mech_notify(wounded, MECHALL,
-							"Your sensors have been destroyed!!");
+							"Your sensors have been destroyed!");
 			}
 			break;
 		case HEAT_SINK:
@@ -1907,7 +1907,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 						"One of your jump jet engines has shut down!");
 			if(attacker && MechJumpSpeed(wounded) < MP1 && Jumping(wounded)) {
 				mech_notify(wounded, MECHALL,
-							"Losing your last Jump Jet you fall from the sky!!!!!");
+							"Losing your last jump jet, you fall from the sky!");
 				MechLOSBroadcast(wounded, "falls from the sky!");
 				MechFalls(wounded, 1, 0);
 				domino_space(wounded, 2);
@@ -1921,21 +1921,21 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			if(MechEngineHeat(wounded) < 10) {
 				MechEngineHeat(wounded) += 5;
 				mech_notify(wounded, MECHALL,
-							"Your engine shielding takes a hit!  It's getting hotter in here!!");
+							"Your engine shielding takes a hit! It's getting hotter in here!");
 			} else if(MechEngineHeat(wounded) < 15) {
 				MechEngineHeat(wounded) = 15;
-				mech_notify(wounded, MECHALL, "Your engine is destroyed!!");
+				mech_notify(wounded, MECHALL, "Your engine is destroyed!");
 				if(wounded != attacker &&
 				   !(MechStatus(wounded) & DESTROYED) && attacker)
 					mech_notify(attacker, MECHALL,
-								"You destroy the engine!!");
+								"You destroy the engine!");
 				DestroyMech(wounded, attacker, 1);
 			}
 			break;
 		case TARGETING_COMPUTER:
 			if(!MechCritStatus(wounded) & TC_DESTROYED) {
 				mech_notify(wounded, MECHALL,
-							"Your Targeting Computer is Destroyed");
+							"Your targeting computer is destroyed!");
 				MechCritStatus(wounded) |= TC_DESTROYED;
 			}
 			break;
@@ -1943,19 +1943,19 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			/* Hardened Gyro's take one extra hit before damaged */
 			if(MechSpecials2(wounded) & HDGYRO_TECH)
 				if(!MechCritStatus2(wounded) & HDGYRO_DAMAGED) {
-					sprintf(msgbuf, "emits a screech as it's "
+					sprintf(msgbuf, "emits a screech as its "
 							"hardened gyro buckles slightly!");
 					MechLOSBroadcast(wounded, msgbuf);
 					MechCritStatus2(wounded) |= HDGYRO_DAMAGED;
 					mech_notify(wounded, MECHALL,
-								"Your hardened Gyro takes a hit!");
+								"Your hardened gyro takes a hit!");
 					break;
 				}
 
 			if(!(MechCritStatus(wounded) & GYRO_DAMAGED)) {
 				if(!Destroyed(wounded) && Started(wounded)) {
 					sprintf(msgbuf, "emits a loud screech as "
-							"it's gyro buckles under the impact!");
+							"its gyro buckles under the impact!");
 					MechLOSBroadcast(wounded, msgbuf);
 				}
 				MechCritStatus(wounded) |= GYRO_DAMAGED;
@@ -1971,7 +1971,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 							MechFalls(wounded, 1, 0);
 						} else {
 							mech_notify(wounded, MECHALL,
-										"You fall from the sky!!!!!");
+										"You fall from the sky!");
 							MechLOSBroadcast(wounded, "falls from the sky!");
 							MechFalls(wounded, JumpSpeedMP(wounded, map), 0);
 							domino_space(wounded, 2);
@@ -1980,19 +1980,19 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			} else if(!(MechCritStatus(wounded) & GYRO_DESTROYED)) {
 				MechCritStatus(wounded) |= GYRO_DESTROYED;
 				mech_notify(wounded, MECHALL,
-							"Your Gyro has been destroyed!!");
+							"Your Gyro has been destroyed!");
 
 				if(attacker) {
 					if(!Fallen(wounded) && !Jumping(wounded) &&
 					   !OODing(wounded)) {
 						mech_notify(wounded, MECHALL,
-									"You fall and you can't get up!!");
+									"You fall and you can't get up!");
 						MechLOSBroadcast(wounded, "is knocked over!");
 						MechFalls(wounded, 1, 0);
 					} else if(!Fallen(wounded)
 							  && (Jumping(wounded) || OODing(wounded))) {
 						mech_notify(wounded, MECHALL,
-									"You fall from the sky!!!!!");
+									"You fall from the sky!");
 						MechLOSBroadcast(wounded, "falls from the sky!");
 						MechFalls(wounded, JumpSpeedMP(wounded, map), 0);
 						domino_space(wounded, 2);
@@ -2018,7 +2018,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				}
 
 				mech_notify(wounded, MECHALL,
-							"Your hip takes a direct hit and freezes up!!");
+							"Your hip takes a direct hit and freezes up!");
 
 				if(!(MechCritStatus(wounded) & HIP_DAMAGED)) {
 					MechCritStatus(wounded) |= HIP_DAMAGED;
@@ -2047,11 +2047,11 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			if(tLocIsArm) {
 				if(Special2I(critType) == HAND_OR_FOOT_ACTUATOR)
 					mech_printf(wounded, MECHALL,
-								"Your %s hand actuator is destroyed!!",
+								"Your %s hand actuator is destroyed!",
 								hitloc == LARM ? "left" : "right");
 				else
 					mech_printf(wounded, MECHALL,
-								"Your %s %s arm actuator is destroyed!!",
+								"Your %s %s arm actuator is destroyed!",
 								hitloc == LARM ? "left" : "right",
 								Special2I(critType) ==
 								LOWER_ACTUATOR ? "lower" : "upper");
@@ -2063,7 +2063,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				NormalizeLocActuatorCrits(wounded, hitloc);
 			} else if(tLocIsLeg) {
 				mech_notify(wounded, MECHALL,
-							"One of your leg actuators is destroyed!!");
+							"One of your leg actuators is destroyed!");
 
 				if(OkayCritSectS(hitloc, 0, SHOULDER_OR_HIP)) {	/* don't need to bother with crits if we already have a hip crit here */
 					if(!Destroyed(wounded) && Started(wounded)) {
@@ -2237,11 +2237,11 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			break;
 		case DS_AERODOOR:
 			mech_notify(wounded, MECHALL,
-						"One of the aero doors is destroyed useless!");
+						"One of the aero doors has been rendered useless!");
 			break;
 		case DS_MECHDOOR:
 			mech_notify(wounded, MECHALL,
-						"One of the 'mech doors is destroyed useless!");
+						"One of the 'mech doors has been rendered useless!");
 		case NULL_SIGNATURE_SYSTEM:
 			mech_notify(wounded, MECHALL,
 						"Your Null Signature System has been destroyed!");
