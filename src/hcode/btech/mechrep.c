@@ -785,7 +785,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 			"You must specify a template name!");
 	DOCHECK(strstr(args[0], "/"), "Invalid file name!");
-	notify_printf(player, "Saving %s", args[0]);
+	notify_printf(player, "Saving %s...", args[0]);
 	sprintf(openfile, "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
 	DOCHECK(!(fp =
@@ -812,6 +812,9 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 	notify(player, "Saving complete!");
 }
 
+/*
+ * Template saving routines and logic.
+ */
 void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 {
 	char *args[1];
@@ -821,18 +824,34 @@ void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 
 	free_template_list();
 
-	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
-			"You must specify a template name!");
-	DOCHECK(strstr(args[0], "/"), "Invalid file name!");
+	// No template name given.
+	if(mech_parseattributes(buffer, args, 1) != 1) {
+	    notify(player, "You must specify a template name!");
+	    return;
+	}
+	
+	// Anti-twink measure. Don't allow directory saving... yet
+	if(strstr(args[0], "/")) { 
+	    notify(player, "Invalid file name!");
+	    return;
+	}
+	    
 	notify_printf(player, "Saving %s", args[0]);
 	sprintf(openfile, "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
-	DOCHECK(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024),
-			"Error saving template: Too heavy.");
-	DOCHECK(save_template(player, mech, args[0], openfile) < 0,
-			"Error saving the template file!");
+	
+	// Just warn on overweight.
+	if(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024))
+	    notify(player, "Warning: Template Overweight, see @weight.");
+	
+	// I/O or Permissions error.
+	if(save_template(player, mech, args[0], openfile) < 0) {
+	    notify(player, "Error saving the template file!");
+	    return ;
+	}
+
 	notify(player, "Saving complete!");
-}
+} // end mechrep_Rsavetemp2
 
 /*
  * Emits the valid sections when a player tries to setarmor/addsp/reload an

@@ -169,6 +169,9 @@ btonline-btechmux 0.6:
 	* Units triggering trigger mines now have their AMINETRIGGER attribute
 	  triggered. This serves to make channel monitoring the MineTriggers
 	  channel obsolete and is much more efficient. (Greg Taylor)
+	* You only see a warning now when a template you're saving is
+	  overweight. We'll leave it up to the admins to be smart enough to
+	  heed or disregard it. (Greg Taylor)
 
 	- Merge
 	* Added Exile's roll on back walk code. (Tuncay)
