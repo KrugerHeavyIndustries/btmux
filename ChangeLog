@@ -196,6 +196,8 @@ btonline-btechmux 0.6:
 	* Ported Exile's heatcutoff code. (Dany)
         * Non Mech/Hover/Sub units drown when OOD'ing into water now. (Power_Shaper)
 	* Suits must recycle weaponary before special attacks. (Power_Shaper)
+	* btlosm2m() now returns a 2 if there is only partial LOS on
+	  the "victim" unit. (Ronthar DelaRosa)
 
 	- Bugfixes
 	* Fixed mistiming in weapon recycling code. (Martin Murray)

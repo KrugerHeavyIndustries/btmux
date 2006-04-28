@@ -1298,11 +1298,14 @@ void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!IsMech(mechnum), "#-1 INVALID MECH");
 	FUNCHECK(!(target = getMech(mechnum)), "#-1 INVALID MECH");
 
-	if(InLineOfSight_NB(mech, target, MechX(mech), MechY(mech),
-						FlMechRange(getmap(mech->mapindex), mech, target)))
-		safe_tprintf_str(buff, bufc, "1");
+	if(InLineOfSight(mech, target, MechX(mech), MechY(mech), 		   FlMechRange(getmap(mech->mapindex), mech, target)))
+		if(InLineOfSight_NB(mech, target, MechX(mech), 			   MechY (mech), FlMechRange(getmap(mech->mapindex), mech, 			   target)))
+			safe_tprintf_str(buff, bufc, "1");
+		else	
+			safe_tprintf_str(buff, bufc, "2");
 	else
 		safe_tprintf_str(buff, bufc, "0");
+
 }
 
 /*
