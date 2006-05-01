@@ -79,7 +79,7 @@ void drop_thru_ice(MECH * mech)
 			MechFalls(mech, MechElev(mech), 0);
 	}
 	if(MechElev(mech) > 0 && MechType(mech) == CLASS_VEH_GROUND &&
-	   !Destroyed(mech)) {
+	   !Destroyed(mech) && !(MechSpecials2(mech) & WATERPROOF_TECH)) {
 		mech_notify(mech, MECHALL, "Water renders your vehicle inoperable.");
 		MechLOSBroadcast(mech,
 						 "fizzles and pops as water renders it inoperable.");
