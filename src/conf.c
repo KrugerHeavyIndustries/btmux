@@ -419,10 +419,8 @@ void cf_init(void)
 	mudconf.sqlDB_max_queries = 4;
 	memset(mudconf.sqlDB_mysql_socket, '\0', 128);
 #endif
-#ifdef EXTENDED_DEFAULT_PARENTS
 	mudconf.exit_parent = 0;
 	mudconf.room_parent = 0;
-#endif
 }
 
 /*
@@ -1620,14 +1618,11 @@ CONF conftable[] = {
 	{(char *) "sqlDB_max_queries",
 	 cf_int, CA_GOD, &mudconf.sqlDB_max_queries, 0},
 #endif
-#ifdef EXTENDED_DEFAULT_PARENTS
 	{(char *) "exit_parent",
 	 cf_int, CA_GOD, &mudconf.exit_parent, 0},
 	{(char *) "room_parent",
 	 cf_int, CA_GOD, &mudconf.room_parent, 0},
-#endif
-	{NULL,
-	 NULL, 0, NULL, 0}
+	{NULL, NULL, 0, NULL, 0}
 };
 
 /*

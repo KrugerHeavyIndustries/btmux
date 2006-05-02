@@ -319,16 +319,13 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 	s_Exits(obj, NOTHING);
 	s_Next(obj, NOTHING);
 	s_Link(obj, NOTHING);
-#ifndef EXTENDED_DEFAULT_PARENT
-	s_Parent(obj, NOTHING);
-#else
+
 	if(objtype == TYPE_ROOM && mudconf.room_parent > 0)
 		s_Parent(obj, mudconf.room_parent);
 	else if(objtype == TYPE_EXIT && mudconf.exit_parent > 0)
 		s_Parent(obj, mudconf.exit_parent);
 	else
 		s_Parent(obj, NOTHING);
-#endif
 
 	s_Zone(obj, Zone(player));
 	s_Flags(obj, objtype | f1);

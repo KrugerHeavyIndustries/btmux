@@ -303,10 +303,8 @@ struct confdata {
     char sqlDB_mysql_socket[128];
     int sqlDB_max_queries;
 #endif
-#ifdef EXTENDED_DEFAULT_PARENTS
     int room_parent;
     int exit_parent;
-#endif
 };
 
 extern CONFDATA mudconf;
