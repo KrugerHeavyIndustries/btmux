@@ -1,4 +1,4 @@
-#!/usr/bin/make -f
+#!/usr/bin/$(MAKE) $(MAKEFLAGS)-f
 
 CC             = @CC@
 MAKEDEPEND     = @CC@ -MM
@@ -184,10 +184,10 @@ ALLSRCS = $(ALLOBJS:.o=.c)
 TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX)
 
 debug:
-	@DEBUG=1 make all
+	@DEBUG=1 $(MAKE) $(MAKEFLAGS)all
 
 install-debug:
-	@DEBUG=1 make install
+	@DEBUG=1 $(MAKE) $(MAKEFLAGS)install
 
 mudflap:
 	$(CC) -g3 -DDEBUG -DSVN_REVISION="\"`svnversion .`\"" $(ALLFLAGS) $(VERSION_FLAGS) -fmudflap -o src/netmux.mudflap $(ALLSRCS) src/version.c $(LIBS) -lmudflap
@@ -195,8 +195,8 @@ mudflap:
 release all: Makefile $(TARGETS)
 
 Makefile: Makefile.dist configure.in Makefile.in
-	make -f Makefile.dist clean
-	exec make -f Makefile.dist
+	$(MAKE) $(MAKEFLAGS)-f Makefile.dist clean
+	exec $(MAKE) $(MAKEFLAGS)-f Makefile.dist
 
 # Install copies the 'game' directory to game.run, after trying to get all
 # files from svn. If the svn command fails, we don't really care.
@@ -235,7 +235,7 @@ cleandep: clean
 	rm -f $(ALLOBJS:%.o=%.d)
 
 distclean: clean cleandep
-	make -f Makefile.dist clean
+	$(MAKE) $(MAKEFLAGS)-f Makefile.dist clean
 
 mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
