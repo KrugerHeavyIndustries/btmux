@@ -361,7 +361,7 @@ void Mech_ShowFlags(dbref player, MECH * mech, int spaces, int level)
 		strcpy(buf + spaces, tprintf("%%ch%%cySIDESLIPPING%%c"));
 		notify(player, buf);
 	}
-	if(MechCritStatus(mech) & CREW_STUNNED ||
+	if(MechTankCritStatus(mech) & CREW_STUNNED ||
 	   MechCritStatus(mech) & MECH_STUNNED) {
 		strcpy(buf + spaces, "%ch%crSTUNNED%c");
 		notify(player, buf);
