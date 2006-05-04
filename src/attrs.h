@@ -143,7 +143,7 @@
 #define	A_OTOFAIL	142	/* Others teleport (from) fail message */
 #define	A_ATOFAIL	143	/* Teleport (from) fail action */
 #define A_LASTNAME	144	/* Last time you changed your name */
-#define A_HEATCHARS	145	/* heat meter characters -BTECH- */
+/* #define A_UNUSED	145	*/
 #define A_MECHPREFID	146	/* Preferred Mech ID on map */
 #define A_MAPCOLOR	147	/* ANSIMAP color scheme */
 

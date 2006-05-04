@@ -138,7 +138,6 @@ ATTR attr[] = {
 	{"Gfail", A_GFAIL, AF_ODARK | AF_NOPROG, NULL},
 	{"GiveLock", A_LGIVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
 	 NULL},
-	{"Heatchars", A_HEATCHARS, AF_ODARK, NULL},
 	{"Idesc", A_IDESC, AF_ODARK | AF_NOPROG, NULL},
 	{"Idle", A_IDLE, AF_ODARK | AF_NOPROG, NULL},
 	{"Infilter", A_INFILTER, AF_ODARK | AF_NOPROG, NULL},

@@ -443,8 +443,7 @@ void PrintHeatBar(dbref player, MECH * mech)
 	char heatstr[9] = ".:::::::";
 	char *tmpstr;
 
-	tmpstr = silly_atr_get(player, A_HEATCHARS);
-	if(!tmpstr || !strlen(tmpstr) || sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1], &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5], &heatstr[6], &heatstr[7]) == 8) {
+	if(sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1], &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5], &heatstr[6], &heatstr[7]) == 8) {
 		MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
 		snprintf(buff, 256, "Temp:%s", subbuff);
 		notify(player, buff);
