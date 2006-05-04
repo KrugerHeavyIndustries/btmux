@@ -2580,7 +2580,7 @@ void auto_roam_generate_target_hex(AUTO * autopilot, MECH * mech, MAP * map,
 	float x1, y1, x2, y2;
 	float range;
 	int bearing;
-	int max_range;
+	int max_range = 0;
 	int counter;
 
 	/* First tho we pick a hex differently based on which roam mode */

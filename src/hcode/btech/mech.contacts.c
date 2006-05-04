@@ -421,19 +421,12 @@ void mech_contacts(dbref player, void *data, char *buffer)
 			}
 
 			if(!IsUsingHUD) {
-#ifdef SIMPLE_SENSORS
 				sprintf(buff,
-						"%s%c[%s]%c %-12.12s x:%3d y:%3d z:%3d r:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
-#else
-				sprintf(buff,
-						"%s%c%c%c[%s]%c %-12.12s x:%3d y:%3d z:%3d r:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
-#endif
-						tempMech->mynum == MechTarget(mech) ? "%ch%cr" :
-						!MechSeemsFriend(mech, tempMech) ? "%ch%cy" : "",
-#ifndef SIMPLE_SENSORS
+				    "%s%c%c%c[%s]%c %-12.12s x:%3d y:%3d z:%3d r:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
+				    tempMech->mynum == MechTarget(mech) ? "%ch%cr" :
+				    !MechSeemsFriend(mech, tempMech) ? "%ch%cy" : "",
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
 						(losflag & MECHLOSFLAG_SEESS) ? 'S' : ' ',
-#endif
 						weaponarc, MechIDS(tempMech,
 										   MechSeemsFriend(mech, tempMech)),
 						move_type[0], mech_name, MechX(tempMech),
@@ -447,18 +440,12 @@ void mech_contacts(dbref player, void *data, char *buffer)
 						(tempMech->mynum == MechTarget(mech) ||
 						 !MechSeemsFriend(mech, tempMech)) ? "%c" : "");
 			} else {
-#ifdef SIMPLE_SENSORS
-				sprintf(buff, "#HUDINFO:CON#%c,%c,%s,%c,%-12.12s,%3d,%3d,%3d,%4.1f,%3d,%4.1f,%3d,%c%c%c%c%c",	/* ) <- balance */
-#else
 				sprintf(buff,
 						"#HUDINFO:CON#%c,%c,%c,%c,%s,%c,%-12.12s,%3d,%3d,%3d,%4.1f,%3d,%4.1f,%3d,%c%c%c%c%c",
-#endif
 						(tempMech->mynum == MechTarget(mech)) ? 'T' :
 						!MechSeemsFriend(mech, tempMech) ? 'E' : 'F',
-#ifndef SIMPLE_SENSORS
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
 						(losflag & MECHLOSFLAG_SEESS) ? 'S' : ' ',
-#endif
 						weaponarc, MechIDS(tempMech,
 										   MechSeemsFriend(mech, tempMech)),
 						move_type[0], mech_name, MechX(tempMech),
@@ -537,18 +524,11 @@ void mech_contacts(dbref player, void *data, char *buffer)
 				mech_name = strip_ansi(Name(building->obj));
 
 			if(!IsUsingHUD) {
-#ifdef SIMPLE_SENSORS
-				sprintf(buff,
-						"%s%c %-23.23s x:%3d y:%3d z:%2d r:%4.1f b:%3d CF:%4d /%4d S:%c%c%s",
-#else
 				sprintf(buff,
 						"%s%c%c%c %-23.23s x:%3d y:%3d z:%2d r:%4.1f b:%3d CF:%4d /%4d S:%c%c%s",
-#endif
 						j ? "%ch%cy" : "",
-#ifndef SIMPLE_SENSORS
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
 						(losflag & MECHLOSFLAG_SEESS) ? 'S' : ' ',
-#endif
 						weaponarc, mech_name, building->x, building->y, i,
 						range, bearing, tmp_map->cf, tmp_map->cfmax,
 						(BuildIsSafe(tmp_map) || (j &&
@@ -556,17 +536,11 @@ void mech_contacts(dbref player, void *data, char *buffer)
 						j ? 'x' : BuildIsCS(tmp_map) ? 'C' : ' ',
 						BuildIsHidden(tmp_map) ? 'H' : ' ', j ? "%c" : "");
 			} else {
-#ifdef SIMPLE_SENSORS
-				sprintf(buff, "#HUDINFO:CON#%c,%c,%-21.21s,%3d,%3d,%3d,%4.1f,%3d,%4d,%4d,%c%c",	/* ) <- balance */
-#else
 				sprintf(buff,
 						"#HUDINFO:CON#%c,%c,%c,%c,%-21.21s,%3d,%3d,%3d,%4.1f,%3d,%4d,%4d,%c%c",
-#endif
 						j ? 'E' : 'F',
-#ifndef SIMPLE_SENSORS
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
 						(losflag & MECHLOSFLAG_SEESS) ? 'S' : ' ',
-#endif
 						weaponarc, mech_name, building->x, building->y, i,
 						range, bearing, tmp_map->cf, tmp_map->cfmax,
 						(BuildIsSafe(tmp_map) || (j &&

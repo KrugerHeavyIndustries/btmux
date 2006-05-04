@@ -802,10 +802,6 @@ void mech_sensor(dbref player, void *data, char *buffer)
 
 	if(!mech)
 		return;
-#ifdef SIMPLE_SENSORS
-	notify(player, "Sensors are unavailable, as regrettable as it may be.");
-	return;
-#endif
 	DOCHECK(MechType(mech) == CLASS_MW,
 			"You're using your eyes, and nothing you can do changes that!");
 	argc = mech_parseattributes(buffer, args, 2);
