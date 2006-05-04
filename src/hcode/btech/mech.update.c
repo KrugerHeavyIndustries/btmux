@@ -1167,9 +1167,9 @@ void ammo_explosion(MECH * attacker, MECH * mech, int ammoloc,
 		mech_notify(mech, MECHPILOT,
 					"You take personal injury from the ammunition explosion!");
 		if(HasBoolAdvantage(MechPilot(mech), "pain_resistance"))
-			headhitmwdamage(mech, 1);
+			headhitmwdamage(mech, mech, 1);
 		else
-			headhitmwdamage(mech, 2);
+			headhitmwdamage(mech, mech, 2);
 	}
 }
 
@@ -1485,13 +1485,13 @@ void UpdateHeat(MECH * mech)
 			if(MechHeat(mech) > 25.) {
 				mech_notify(mech, MECHPILOT,
 							"You take personal injury from heat!");
-				headhitmwdamage(mech,
+				headhitmwdamage(mech, mech,
 								MechCritStatus(mech) & LIFE_SUPPORT_DESTROYED
 								? 2 : 1);
 			} else if(MechHeat(mech) >= 15.) {
 				mech_notify(mech, MECHPILOT,
 							"You take personal injury from heat!");
-				headhitmwdamage(mech, 1);
+				headhitmwdamage(mech, mech, 1);
 			}
 		}
 

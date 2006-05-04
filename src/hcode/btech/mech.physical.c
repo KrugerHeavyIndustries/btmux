@@ -1707,7 +1707,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 		if(!MadePilotSkillRoll(mech, 2)) {
 			mech_notify(mech, MECHALL,
 						"You take personal injury from the fall!");
-			headhitmwdamage(mech, 1);
+			headhitmwdamage(mech, mech, 1);
 		}
 
 		MechSpeed(mech) = 0.0;

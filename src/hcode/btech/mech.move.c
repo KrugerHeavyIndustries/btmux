@@ -1775,7 +1775,7 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 						"You take personal injury from the fall!");
 		else
 			mech_notify(mech, MECHPILOT, "You take personal injury!");
-		headhitmwdamage(mech, 1);
+		headhitmwdamage(mech, mech, 1);
 	}
 	MechSpeed(mech) = 0;
 	MechDesiredSpeed(mech) = 0;

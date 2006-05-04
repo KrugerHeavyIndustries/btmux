@@ -596,7 +596,7 @@ void DamageMech(MECH * wounded,
 
 		/*      mech_notify (wounded, MECHALL,
 		   "You take 10 points of Lethal damage!!"); */
-		headhitmwdamage(wounded, 1);
+		headhitmwdamage(wounded, attacker, 1);
 	}
 	if(kill) {
 		if(kill == 1) {
@@ -925,7 +925,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* Add 4 MW damage if it's a MW loosing a location */
 	if(MechType(wounded) == CLASS_MW) {
-		mwlethaldam(wounded, 4);
+		mwlethaldam(wounded, attacker, 4);
 	}
 
 	/* If it's a MW or a mech, let's see if there's additional stuff we need to do */

@@ -1049,7 +1049,7 @@ static void mech_explode_event(MUXEVENT * e)
 			}
 
 			MechZ(mech) = z;
-			headhitmwdamage(mech, 4);
+			headhitmwdamage(mech, mech, 4);
 		}
 	}
 }

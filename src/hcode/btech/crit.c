@@ -1358,8 +1358,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 		if(!Destroyed(wounded)) {
-			DestroyAndDump(wounded);
-			ChannelEmitKill(wounded, attacker);
+			DestroyMech(wounded, attacker, 1);
 		}
 		KillMechContentsIfIC(wounded->mynum);
 		break;
@@ -1405,8 +1404,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 		if(!Destroyed(wounded)) {
-			DestroyAndDump(wounded);
-			ChannelEmitKill(wounded, attacker);
+			DestroyMech(wounded, attacker, 1);
 		}
 		KillMechContentsIfIC(wounded->mynum);
 		break;
@@ -1494,7 +1492,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	switch (random() % 6) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
-		headhitmwdamage(wounded, 1);
+		headhitmwdamage(wounded, attacker, 1);
 		break;
 	case 1:
 		/* Weapon jams, set them recylcling maybe */
@@ -1616,7 +1614,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 	switch (random() % 6) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
-		headhitmwdamage(wounded, 1);
+		headhitmwdamage(wounded, attacker, 1);
 		break;
 	case 1:
 		/* Weapon jams, set them recylcling maybe */

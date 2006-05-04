@@ -156,7 +156,7 @@ void check_stackpole(MECH * wounded, MECH * attacker)
 						 "is hit by the blast!",
 						 mudconf.btech_explode_reactor > 1, 3, 5, 1, 2);
 		MechZ(wounded) = z;
-		headhitmwdamage(wounded, 4);
+		headhitmwdamage(wounded, attacker, 4);
 	}
 }
 

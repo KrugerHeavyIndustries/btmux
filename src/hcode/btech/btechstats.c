@@ -972,7 +972,7 @@ int handlemwconc(MECH * mech, int initial)
 	return 1;
 }
 
-void headhitmwdamage(MECH * mech, int dam)
+void headhitmwdamage(MECH * mech, MECH * attacker, int dam)
 {
 	PSTATS *s;
 	dbref player;
@@ -1014,8 +1014,7 @@ void headhitmwdamage(MECH * mech, int dam)
 			char_sbruise(s, playerBLD * 10);
 			store_stats(player, s, VALUES_HEALTH);
 			if(!Destroyed(mech)) {
-				DestroyAndDump(mech);
-				ChannelEmitKill(mech, mech);
+				DestroyMech(mech, attacker, 1);
 			}
 			KillMechContentsIfIC(mech->mynum);
 			return;
@@ -1028,7 +1027,7 @@ void headhitmwdamage(MECH * mech, int dam)
 	MechPilotStatus(mech) += dam;
 }
 
-void mwlethaldam(MECH * mech, int dam)
+void mwlethaldam(MECH * mech, MECH * attacker, int dam)
 {
 	PSTATS *s;
 	dbref player;
@@ -1058,8 +1057,7 @@ void mwlethaldam(MECH * mech, int dam)
 		char_sbruise(s, lethaldam);
 		store_stats(player, s, VALUES_HEALTH);
 		if(!Destroyed(mech)) {
-			DestroyAndDump(mech);
-			ChannelEmitKill(mech, mech);
+			DestroyMech(mech, attacker, 1);
 		}
 		KillMechContentsIfIC(mech->mynum);
 		return;
