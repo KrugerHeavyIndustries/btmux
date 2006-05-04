@@ -1788,7 +1788,7 @@ static struct mechpref_info {
 	{
 	MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety",
 			"MechWarrior Safeties flipped"}, {
-	MECHPREF_SLWARN, 0, "SLWarn",
+	MECHPREF_SLWARN, MECHPREF_FLAG_INVERTED, "SLWarn",
 			"The warning when lit by searchlight is now"}, {
 	MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall",
 			"Suicidal jumps off cliffs toggled"}, {
@@ -1798,7 +1798,7 @@ static struct mechpref_info {
 			"Warning when running out of Ammunition switched"}, {
 	MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown",
 			"Autocon on shutdown units turned"}, {
-MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety",
+        MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety",
 			"Friendly Fire Safeties flipped"},};
 #define NUM_MECHPREFERENCES (sizeof(mech_preferences) / sizeof(struct mechpref_info))
 
