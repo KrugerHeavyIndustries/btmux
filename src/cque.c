@@ -1046,6 +1046,8 @@ static void show_que(dbref player, int key, BQUE * queue, int *qent,
 			notify_printf(player, "----- %s Queue -----", header);
 
 		bufp = unparse_object(player, tmp->player, 0);
+		if((player != Owner(tmp->player) && !See_Queue(player))) 
+			continue;
 		if((tmp->waittime > 0) && (Good_obj(tmp->sem)))
 			notify_printf(player, "[#%d/%d]%s:%s", tmp->sem,
 						  tmp->waittime-mudstate.now, bufp, tmp->comm);
