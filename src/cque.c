@@ -1046,8 +1046,9 @@ static void show_que(dbref player, int key, BQUE * queue, int *qent,
 			notify_printf(player, "----- %s Queue -----", header);
 
 		bufp = unparse_object(player, tmp->player, 0);
-		if((player != Owner(tmp->player) && !See_Queue(player))) 
-			continue;
+		if ( !(key & PS_ALL) )
+			if((player != Owner(tmp->player))) 
+				continue;
 		if((tmp->waittime > 0) && (Good_obj(tmp->sem)))
 			notify_printf(player, "[#%d/%d]%s:%s", tmp->sem,
 						  tmp->waittime-mudstate.now, bufp, tmp->comm);
@@ -1087,6 +1088,7 @@ void do_ps(dbref player, dbref cause, int key, char *target)
 	int pqent, pqtot, pqdel, oqent, oqtot, oqdel, wqent, wqtot, sqent,
 		sqtot, i;
 	OBJQE *objq;
+	int tempkey;
 
 	/*
 	 * Figure out what to list the queue for 
@@ -1119,8 +1121,8 @@ void do_ps(dbref player, dbref cause, int key, char *target)
 			obj_targ = NOTHING;
 		}
 	}
+	tempkey = key;
 	key = key & ~PS_ALL;
-
 	switch (key) {
 	case PS_BRIEF:
 	case PS_SUMM:
@@ -1139,14 +1141,14 @@ void do_ps(dbref player, dbref cause, int key, char *target)
 		objq = mudstate.qhead;
 		while (objq && (objq = objq->next) != NULL) {
 			pqent = 0;
-			show_que(player, key, objq->cque, &pqent, "PLAYAH");
+			show_que(player, tempkey, objq->cque, &pqent, "PLAYAH");
 			pqtot += pqent;
 		}
 	} else {
 		pqent = 0;
 		objq = cque_find(player_targ);
 		if(objq) {
-			show_que(player, key, objq->cque, &pqent, "PLAYAH");
+			show_que(player, tempkey, objq->cque, &pqent, "PLAYAH");
 		}
 	}
 
@@ -1154,8 +1156,8 @@ void do_ps(dbref player, dbref cause, int key, char *target)
 	sqent = 0;
 	wqtot = 0;
 	sqtot = 0;
-	show_que(player, key, mudstate.qwait, &wqent, "Wait");
-	show_que(player, key, mudstate.qsemfirst, &sqent, "Semaphore");
+	show_que(player, tempkey, mudstate.qwait, &wqent, "Wait");
+	show_que(player, tempkey, mudstate.qsemfirst, &sqent, "Semaphore");
 
 	/*
 	 * Display stats 
