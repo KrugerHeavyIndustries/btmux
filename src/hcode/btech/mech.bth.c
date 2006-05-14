@@ -307,8 +307,7 @@ int FindNormalBTH(MECH * mech,
 	/* if our target is another unit... */
 	if(target) {
 		/* Add the dig-in bonus */
-		if(MechDugIn(target) && (!mudconf.btech_dig_only_fs &&
-								 (FindAreaHitGroup(mech, target) == FRONT)) &&
+		if(MechDugIn(target) && (!mudconf.btech_dig_only_fs || (FindAreaHitGroup(mech, target) == FRONT)) &&
 		   (MechZ(target) >= MechZ(mech)))
 			BTHADD("DugIn", mudconf.btech_digbonus);
 
