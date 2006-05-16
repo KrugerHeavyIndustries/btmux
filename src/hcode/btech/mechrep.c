@@ -272,6 +272,10 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
 		MechMove(mech) = MOVE_QUAD;
 		notify(player, "Movement set to QUAD");
 		break;
+	case 'B':
+		MechMove(mech) = MOVE_BIPED;
+		notify(player, "Movement set to BIPED");
+		break;
 	case 'S':
 		MechMove(mech) = MOVE_SUB;
 		notify(player, "Movement set to SUB");
@@ -293,7 +297,7 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
 		break;
 	default:
 		notify(player,
-			   "Types are: TRACK, WHEEL, VTOL, HOVER, HULL, FLY, SUB, FOIL and NONE");
+			   "Types are: TRACK, WHEEL, VTOL, QUAD, BIPED, HOVER, HULL, FLY, SUB, FOIL and NONE");
 		break;
 	}
 }
