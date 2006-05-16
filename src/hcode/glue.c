@@ -492,7 +492,7 @@ static void load_econdb()
 		return;
 	}
 	fclose(f);
-	fprintf(stderr, "LOADING: %s (done\n", mudconf.econ_db);
+	fprintf(stderr, "LOADING: %s (done)\n", mudconf.econ_db);
 }
 #endif
 
