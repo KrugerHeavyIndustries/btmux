@@ -1281,7 +1281,6 @@ int main(int argc, char *argv[])
 	init_attrtab();
 	init_version();
 
-	chat_init();
 #ifdef HUDINFO_SUPPORT
 	init_hudinfo();
 #endif

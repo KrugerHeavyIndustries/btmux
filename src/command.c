@@ -451,7 +451,6 @@ CMDENT command_table[] = {
 	{(char *) "@clone", clone_sw,
 	 CA_NO_SLAVE | CA_GBL_BUILD | CA_CONTENTS | CA_NO_GUEST,
 	 0, CS_TWO_ARG | CS_INTERP, do_clone},
-	{(char *) "@chatlist", NULL, CA_NO_SLAVE, 0, CS_NO_ARGS, do_chatlist},
 	{(char *) "@clist", clist_sw, CA_NO_SLAVE, 0, CS_NO_ARGS, do_chanlist},
 	{(char *) "@cstatus", cstatus_sw, CA_NO_SLAVE, 0, CS_ONE_ARG,
 	 do_chanstatus},

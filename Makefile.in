@@ -53,7 +53,6 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/game.o        \
                  src/help.o        \
                  src/log.o         \
-		 src/chat.o	   \
 @LOGCACHE@
                  src/look.o        \
                  src/macro.o       \
