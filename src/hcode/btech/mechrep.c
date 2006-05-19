@@ -1196,7 +1196,7 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 				MechSections(mech)[section].criticals[critical].firemode = 0;
 			}
 
-		notify(player,"Firemode changed!";					
+		notify(player,"Firemode changed!");					
 
 }
 /*

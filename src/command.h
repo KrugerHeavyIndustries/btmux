@@ -29,6 +29,9 @@
 
 /* Command function handlers */
 
+/* from chat.c */
+CMD_NO_ARG(do_chatlist);
+
 /* from comsys.c */
 
 CMD_TWO_ARG(do_cemit);		/* channel emit */
