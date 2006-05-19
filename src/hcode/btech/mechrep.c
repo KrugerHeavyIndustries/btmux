@@ -1096,6 +1096,109 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	}
 }								/* end mechrep_Raddweap() */
 
+void mechrep_Rfiremode(dbref player, void *data, char *buffer)
+{
+	char *args[4];
+	int argc;
+	int section, critical, weaptype;
+
+	MECHREP_COMMON(1);
+	argc = mech_parseattributes(buffer, args, 2);
+	DOCHECK(argc <2, "MECHREP: Invalid Syntax. Try FireMode <Weapon#> <Mode>");
+
+        weaptype = FindWeaponNumberOnMech_Advanced(mech, atoi(args[0]), &section, &critical, 0);
+
+	if(MechWeapons[weaptype].ammoperton == 0) {
+		                notify(player, "That weapon doesn't require ammo!");
+				return;
+	}
+	
+	   if(!(MechSections(mech)[section].criticals[critical].firemode & HALFTON_MODE)) {
+                        MechSections(mech)[section].criticals[critical].firemode = 0;
+                        MechSections(mech)[section].criticals[critical].ammomode = 0;
+	}
+
+	switch (toupper(args[1][0])) {
+			case 'W':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SWARM_MODE;
+				break;
+			case '1':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SWARM1_MODE;
+				break;
+			case 'I':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INFERNO_MODE;
+				break;
+			case 'L':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					LBX_MODE;
+				break;
+			case 'A':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					ARTEMIS_MODE;
+				break;
+			case 'N':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					NARC_MODE;
+				break;
+			case 'C':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					CLUSTER_MODE;
+				break;
+			case 'M':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					MINE_MODE;
+				break;
+			case 'S':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SMOKE_MODE;
+				break;
+			case 'X':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_EXPLO_MODE;
+				break;
+			case 'Y':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_HAYWIRE_MODE;
+				break;
+			case 'E':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_ECM_MODE;
+				break;
+			case 'R':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_AP_MODE;
+				break;
+			case 'F':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_FLECHETTE_MODE;
+				break;
+			case 'D':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_INCENDIARY_MODE;
+				break;
+			case 'P':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_PRECISION_MODE;
+				break;
+			case 'T':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					STINGER_MODE;
+				break;
+			case 'U':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_CASELESS_MODE;
+				break;
+			case '-':
+				MechSections(mech)[section].criticals[critical].ammomode = 0;
+				MechSections(mech)[section].criticals[critical].firemode = 0;
+			}
+
+		notify(player,"Firemode changed!";					
+
+}
 /*
  * Logic for the 'reload' mechrep command.
  */
