@@ -69,6 +69,7 @@ void cf_init(void)
 	StringCopy(mudconf.indb, "tinymush.db");
 	StringCopy(mudconf.outdb, "");
 	StringCopy(mudconf.crashdb, "");
+	StringCopy(mudconf.hourlydb, "");
 	StringCopy(mudconf.gdbm, "");
 	StringCopy(mudconf.mail_db, "mail.db");
 	StringCopy(mudconf.commac_db, "commac.db");
@@ -1729,6 +1730,10 @@ int cf_read(char *fn)
 	if(!*mudconf.gdbm) {
 		StringCopy(mudconf.gdbm, mudconf.indb);
 		strcat(mudconf.gdbm, ".gdbm");
+	}
+	if(!*mudconf.hourlydb) {
+		StringCopy(mudconf.hourlydb, mudconf.indb);
+		strcat(mudconf.outdb, ".hourly");
 	}
 	return retval;
 }

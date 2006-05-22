@@ -30,6 +30,7 @@ struct confdata {
     char indb[128];		/* database file name */
     char outdb[128];		/* checkpoint the database to here */
     char crashdb[128];		/* write database here on crash */
+    char hourlydb[128];
     char gdbm[128];		/* use this gdbm file if we need one */
     char mail_db[128];		/* name of the @mail database */
     char commac_db[128];	/* name of the comsys and macros db */
