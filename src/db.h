@@ -241,6 +241,5 @@ extern void dump_database_internal(int);
 #define DUMP_CRASHED 1
 #define DUMP_RESTART 2
 #define DUMP_KILLED  4
-#define DUMP_HOURLY  8
 
 #endif				/* __DB_H */

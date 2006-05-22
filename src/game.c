@@ -864,26 +864,6 @@ void dump_database_internal(int dump_type)
 	runPythonHook("save");
 #endif
 
-	if(dump_type == DUMP_HOURLY) {
-		unlink(mudconf.hourlydb);
-		f = fopen(mudconf.hourlydb, "w");
-		if (f != NULL ) {
-			db_write(f, F_MUX, UNLOAD_VERSION | UNLOAD_OUTFLAGS);
-			fclose(f);
-		} else {
-			log_perror("DMP", "FAIL", "Opening hourly file", mudconf.hourlydb);
-		}
-		if(mudconf.have_mailer)
-			if((f = fopen(mudconf.mail_db, "w"))) {
-				dump_mail(f);
-				fclose(f);
-			}
-		if(mudconf.have_comsys || mudconf.have_macros)
-			save_comsys_and_macros(mudconf.commac_db);
-		SaveSpecialObjects(DUMP_NORMAL);
-		return;
-	}
-
 	if(dump_type == DUMP_CRASHED) {
 		unlink(mudconf.crashdb);
 		f = fopen(mudconf.crashdb, "w");

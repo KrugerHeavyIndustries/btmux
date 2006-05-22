@@ -1011,7 +1011,6 @@ void check_events(void)
 	}
 	if(ltime->tm_hour != mudstate.events_lasthour) {
 		if(mudstate.events_lasthour >= 0) {
-			dump_database_internal(DUMP_HOURLY);
 			/* Run hourly maintenance */
 			DO_WHOLE_DB(thing) {
 				if(Going(thing))
