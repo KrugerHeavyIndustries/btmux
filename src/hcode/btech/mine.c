@@ -34,17 +34,16 @@
 
 /* Different types of mines
  *
- * The Trigger and ScenTrigger mines are used to let the MUX
+ * The Trigger mines are used to let the MUX
  * know if a unit has moved to a certain spot
  * 
  * The others are the explosive do damage kind */
 char *mine_type_names[] = {
 	"Standard",
 	"Inferno",
-	"CD",
+	"Command",
 	"Vibra",
-	"Trigger",
-	"ScenTrigger",
+	"Trigger",	
 	NULL
 };
 
