@@ -1770,6 +1770,11 @@ void mechrep_Raddinftech(dbref player, void *data, char *buffer)
 	MECHREP_COMMON(1);
 	nv = BuildBitVector(infantry_specials, buffer);
 
+	if(MechType(mech) != CLASS_BSUIT) {
+		notify(player, "That is not a valid target for infantry technologies. Try a Suit!");
+		return;
+	}
+
 	if(nv < 0) {
 		notify(player, "Invalid infantry tech: Available techs:");
 
