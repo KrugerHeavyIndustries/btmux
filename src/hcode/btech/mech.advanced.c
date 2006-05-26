@@ -831,6 +831,9 @@ static void mech_masc_event(MUXEVENT * e)
 	/* Break the Hips - FASA canon rule about MASC */
 	DestroyPart(mech, RLEG, 0);
 	DestroyPart(mech, LLEG, 0);
+	/* Don't forget to add in Hipped penalties (for landing, etc) */
+	MechSections(mech)[RLEG].basetohit += 2;
+	MechSections(mech)[LLEG].basetohit += 2;
 	if(MechMove(mech) == MOVE_QUAD) {
 		DestroyPart(mech, RARM, 0);
 		DestroyPart(mech, LARM, 0);
