@@ -436,7 +436,9 @@ static GMV xcode_data[] = {
 	MeEntry("realweight", MechRTonsV, TYPE_INT),
 	MeEntry("StaggerDamage", StaggerDamage, TYPE_INT_RO),
 	MeEntry("MechPrefs", MechPrefs, TYPE_BV),
-
+	MeEntry("SwarmTarget", MechSwarmTarget, TYPE_DBREF),
+	MeEntry("SwarmedBy", MechSwarmer, TYPE_DBREF),
+	
 	{GTYPE_MECH, "mechtype", mechTypefunc, TYPE_STRFUNC_BD},
 	{GTYPE_MECH, "mechmovetype", mechMovefunc, TYPE_STRFUNC_BD},
 	{GTYPE_MECH, "mechdamage", mechDamagefunc, TYPE_STRFUNC_BD},

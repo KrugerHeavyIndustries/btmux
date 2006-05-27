@@ -523,6 +523,7 @@ void clear_mech(MECH * mech, int flag)
 	MechChargeTimer(mech) = 0;
 	MechChargeDistance(mech) = 0;
 	MechSwarmTarget(mech) = -1;
+	MechSwarmer(mech) = -1;
 	MechDFATarget(mech) = -1;
 	MechTargX(mech) = -1;
 	MechStatus(mech) = 0;

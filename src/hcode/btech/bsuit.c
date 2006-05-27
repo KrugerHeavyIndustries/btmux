@@ -67,6 +67,10 @@ void StopSwarming(MECH * mech, int intentional)
 		return;
 
 	MechSwarmTarget(mech) = -1;
+	MechSwarmer(target) = -1;
+
+	MechStatus2(mech) &= ~UNIT_MOUNTING;
+	MechStatus2(target) &= ~UNIT_MOUNTED;
 
 	if(intentional > 0) {
 		mech_notify(mech, MECHALL,
@@ -423,6 +427,9 @@ void bsuit_swarm(dbref player, void *data, char *buffer)
 																	target));
 
 		MechSwarmTarget(mech) = target->mynum;
+		MechSwarmer(target) = mech->mynum;
+		MechStatus2(mech) |= UNIT_MOUNTING;
+		MechStatus2(target) |= UNIT_MOUNTED;
 
 		if(tIsMount) {
 			MechLOSBroadcasti(mech, target, "mounts %s!");

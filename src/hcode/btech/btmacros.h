@@ -205,6 +205,7 @@
 #define MechStatus2(a)      (a)->rd.status2
 /* #define MechSpecialsStatus(a)		(a)->rd.specialsstatus */
 #define MechSwarmTarget(a) 	(a)->rd.swarming
+#define MechSwarmer(a)		(a)->rd.swarmedby
 #define MechTacRange(a)	 	(a)->ud.tac_range
 #define MechTankCritStatus(a)	(a)->rd.tankcritstatus
 #define MechTargX(a)		(a)->rd.targx
