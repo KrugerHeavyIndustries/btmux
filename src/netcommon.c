@@ -378,8 +378,8 @@ void freeqs(DESC * d)
 {
 	CBLK *cb, *cnext;
 
-	d->input[0] = '\0';
-	d->raw_input_at = (char *) d->input;
+    d->input_tail = 0;
+    memset(d->input, 0, sizeof(d->input));
 }
 
 int desc_cmp(void *vleft, void *vright, void *token)

@@ -80,14 +80,6 @@ typedef char	IBUF[16];
 /* define DO_PARSE_WIZNEWS if wiznews.txt should be parsed like news.txt */
 /* #define DO_PARSE_WIZNEWS */
 
-/* define ARBITRARY_LOGFILES if you want (wiz-only) access to arbitrary
-   logfiles in game/logs/, through @log and logf(). */
-
-/* Define EXTENDED_DEFAULT_PARENTS to have room_parent and exit_parent mudconf
- * value (0 for none, default) to set a default exit and room parent. Usefull for some.
- */
-#define EXTENDED_DEFAULT_PARENTS
-
 #define CHANNEL_HISTORY
 #define CHANNEL_HISTORY_LEN     20	/* at max 20 last msgs */
 #define COMMAND_HISTORY_LEN     10	/* at max 10 last msgs */

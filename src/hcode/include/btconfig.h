@@ -3,13 +3,6 @@
 #ifndef BTCONFIG_H
 #define BTCONFIG_H
 
-/* Define this if you want to use some of Exile's extended skills
- * added. At this time it is just 'Research'. None of these skills
- * should involve anything but the extra skill entry and no hcode
- * behaviour added to them
- */
-#define BT_EXILE_SKILLS
-
 /* 
  * Define if you want BV calculation functions. This include btgetbv()
  * and btgetbv_ref(), but will also perform damage per time based updates
@@ -225,59 +218,17 @@
 #define LRS_DISPLAY_HEIGHT      11
 #define LRS_DISPLAY_HEIGHT2     5
 
-/* Census config: */
-
-#undef HAVE_LOC_IN_CENSUS
-
-#define NAMELEN 20
-#define RANKLEN 20
-#define JOBLEN  30
-#ifdef HAVE_LOC_IN_CENSUS
-#define LOCLEN  20
-#endif
-
-
-/*3030 / MUSE mode */
-
-/*ADVANCED_LOS: If we want the non-100 percent LOS or not */
-
-/*def for 3030, undef for MUSE */
-
-/*SIMPLE_SENSORS: Just basic vislight sensors without option of changing them*/
-
-/*undef for 3030, def for MUSE */
-
-/*LOCK_TICK: 8 for 3030, 0 for MUSE */
-
-#if 1
-
-/* 3030 set */
-
+/* Sensor Stuff */
 #define ADVANCED_LOS
-#undef  SIMPLE_SENSORS
 #define LOCK_TICK     8
-#else
-
-/* MUSE set */
-
-#undef ADVANCED_LOS
-#define SIMPLE_SENSORS
-#define LOCK_TICK     0
-
-#endif
-
-#define INITIAL_RANK 3        /* When starting chargen */
-#define FINAL_RANK   2        /* When finished with chargen */
 
 #define ECM_RANGE    6
 
 /* From 160 sec to 3840 sec */
-
 /* #define FIRE_DURATION  ((Number(40,Number(60,960))) * 4) */
 #define FIRE_DURATION ((Number(60,180)))
 
 /* From 90 sec to 1200 sec */
-
 /* #define SMOKE_DURATION ((Number(30,Number(60,400))) * 4) */
 #define SMOKE_DURATION ((Number(90,150)))
 

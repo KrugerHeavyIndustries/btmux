@@ -108,7 +108,7 @@ int ModifyHeadHit(int hitGroup, MECH * mech)
 	if(MechType(mech) != CLASS_MECH)
 		return newloc;
 	if(newloc != HEAD) {
-		mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+		mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 		mech_notify(mech, MECHALL,
 					"The cockpit violently shakes from a grazing blow! "
 					"You are momentarily stunned!");
@@ -145,15 +145,6 @@ int TransferTarget(MECH * mech, int hitloc)
 	case CLASS_BSUIT:
 		return get_bsuit_hitloc(mech);
 	case CLASS_AERO:
-		switch (hitloc) {
-		case AERO_NOSE:
-		case AERO_LWING:
-		case AERO_RWING:
-		case AERO_ENGINE:
-		case AERO_COCKPIT:
-			return AERO_FUSEL;
-		}
-		break;
 	case CLASS_MECH:
 	case CLASS_MW:
 		switch (hitloc) {
@@ -360,25 +351,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 3:
 				if(mudconf.btech_tankfriendly) {
 					if(!Fallen(mech)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						switch (MechMove(mech)) {
 						case MOVE_TRACK:
 							mech_notify(mech, MECHALL,
-										"One of your tracks is seriously damaged!!");
+										"One of your tracks is seriously damaged!");
 							break;
 						case MOVE_WHEEL:
 							mech_notify(mech, MECHALL,
-										"One of your wheels is seriously damaged!!");
+										"One of your wheels is seriously damaged!");
 							break;
 						case MOVE_HOVER:
 							mech_notify(mech, MECHALL,
-										"Your air skirt is seriously damaged!!");
+										"Your air skirt is seriously damaged!");
 							break;
 						case MOVE_HULL:
 						case MOVE_SUB:
 						case MOVE_FOIL:
 							mech_notify(mech, MECHALL,
-										"Your speed slows down a lot..");
+										"Your craft lurches and suddenly loses a lot of speed!");
 							break;
 						}
 						LowerMaxSpeed(mech, MP2);
@@ -387,25 +378,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				}
 				/* Cripple tank */
 				if(!Fallen(mech)) {
-					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 					switch (MechMove(mech)) {
 					case MOVE_TRACK:
 						mech_notify(mech, MECHALL,
-									"One of your tracks is destroyed, imobilizing your vehicle!!");
+									"One of your tracks is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_WHEEL:
 						mech_notify(mech, MECHALL,
-									"One of your wheels is destroyed, imobilizing your vehicle!!");
+									"One of your wheels is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_HOVER:
 						mech_notify(mech, MECHALL,
-									"Your lift fan is destroyed, imobilizing your vehicle!!");
+									"Your lift fan is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_HULL:
 					case MOVE_SUB:
 					case MOVE_FOIL:
 						mech_notify(mech, MECHALL,
-									"You are halted in your tracks - literally.");
+									"Your engines cut out and you drift to a halt!");
 					}
 					SetMaxSpeed(mech, 0.0);
 
@@ -416,24 +407,24 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 5:
 				/* MP -1 */
 				if(!Fallen(mech)) {
-					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 					switch (MechMove(mech)) {
 					case MOVE_TRACK:
 						mech_notify(mech, MECHALL,
-									"One of your tracks is damaged!!");
+									"One of your tracks is damaged!");
 						break;
 					case MOVE_WHEEL:
 						mech_notify(mech, MECHALL,
-									"One of your wheels is damaged!!");
+									"One of your wheels is damaged!");
 						break;
 					case MOVE_HOVER:
 						mech_notify(mech, MECHALL,
-									"Your air skirt is damaged!!");
+									"Your air skirt is damaged!");
 						break;
 					case MOVE_HULL:
 					case MOVE_SUB:
 					case MOVE_FOIL:
-						mech_notify(mech, MECHALL, "Your speed slows down..");
+						mech_notify(mech, MECHALL, "Your craft suddenly slows!");
 						break;
 					}
 					LowerMaxSpeed(mech, MP1);
@@ -451,10 +442,10 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 11:
 				if(GetSectInt(mech, TURRET)) {
 					if(!(MechTankCritStatus(mech) & TURRET_LOCKED)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						MechTankCritStatus(mech) |= TURRET_LOCKED;
 						mech_notify(mech, MECHALL,
-									"Your turret takes a direct hit and immobilizes!");
+									"Your turret takes a direct hit and locks up!");
 					}
 					return TURRET;
 				} else
@@ -473,25 +464,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 3:
 				if(mudconf.btech_tankfriendly) {
 					if(!Fallen(mech)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						switch (MechMove(mech)) {
 						case MOVE_TRACK:
 							mech_notify(mech, MECHALL,
-										"One of your tracks is seriously damaged!!");
+										"One of your tracks is seriously damaged!");
 							break;
 						case MOVE_WHEEL:
 							mech_notify(mech, MECHALL,
-										"One of your wheels is seriously damaged!!");
+										"One of your wheels is seriously damaged!");
 							break;
 						case MOVE_HOVER:
 							mech_notify(mech, MECHALL,
-										"Your air skirt is seriously damaged!!");
+										"Your air skirt is seriously damaged!");
 							break;
 						case MOVE_HULL:
 						case MOVE_SUB:
 						case MOVE_FOIL:
 							mech_notify(mech, MECHALL,
-										"Your speed slows down a lot..");
+										"Your craft lurches and suddenly loses a lot of speed!");
 							break;
 						}
 						LowerMaxSpeed(mech, MP2);
@@ -500,25 +491,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				}
 				/* Cripple Tank */
 				if(!Fallen(mech)) {
-					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 					switch (MechMove(mech)) {
 					case MOVE_TRACK:
 						mech_notify(mech, MECHALL,
-									"One of your tracks is destroyed, imobilizing your vehicle!!");
+									"One of your tracks is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_WHEEL:
 						mech_notify(mech, MECHALL,
-									"One of your wheels is destroyed, imobilizing your vehicle!!");
+									"One of your wheels is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_HOVER:
 						mech_notify(mech, MECHALL,
-									"Your lift fan is destroyed, imobilizing your vehicle!!");
+									"Your lift fan is destroyed, immobilizing your vehicle!");
 						break;
 					case MOVE_HULL:
 					case MOVE_SUB:
 					case MOVE_FOIL:
 						mech_notify(mech, MECHALL,
-									"You are halted in your tracks - literally.");
+									"Your engines cut out and you drift to a halt!");
 					}
 					SetMaxSpeed(mech, 0.0);
 
@@ -529,24 +520,24 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 5:
 				/* MP -1 */
 				if(!Fallen(mech)) {
-					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+					mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 					switch (MechMove(mech)) {
 					case MOVE_TRACK:
 						mech_notify(mech, MECHALL,
-									"One of your tracks is damaged!!");
+									"One of your tracks is damaged!");
 						break;
 					case MOVE_WHEEL:
 						mech_notify(mech, MECHALL,
-									"One of your wheels is damaged!!");
+									"One of your wheels is damaged!");
 						break;
 					case MOVE_HOVER:
 						mech_notify(mech, MECHALL,
-									"Your air skirt is damaged!!");
+									"Your air skirt is damaged!");
 						break;
 					case MOVE_HULL:
 					case MOVE_SUB:
 					case MOVE_FOIL:
-						mech_notify(mech, MECHALL, "Your speed slows down..");
+						mech_notify(mech, MECHALL, "Your craft suddenly slows!");
 						break;
 					}
 					LowerMaxSpeed(mech, MP1);
@@ -560,9 +551,9 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				/* MP -1 if hover */
 				if(!Fallen(mech)) {
 					if(MechMove(mech) == MOVE_HOVER) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						mech_notify(mech, MECHALL,
-									"Your air skirt is damaged!!");
+									"Your air skirt is damaged!");
 						LowerMaxSpeed(mech, MP1);
 					}
 				}
@@ -572,10 +563,10 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 			case 11:
 				if(GetSectInt(mech, TURRET)) {
 					if(!(MechTankCritStatus(mech) & TURRET_LOCKED)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						MechTankCritStatus(mech) |= TURRET_LOCKED;
 						mech_notify(mech, MECHALL,
-									"Your turret takes a direct hit and immobilizes!");
+									"Your turret takes a direct hit and locks up!");
 					}
 					return TURRET;
 				} else
@@ -600,25 +591,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 					if(mudconf.btech_tankfriendly) {
 						if(!Fallen(mech)) {
 							mech_notify(mech, MECHALL,
-										"%ch%cyCRITICAL HIT!!%c");
+										"%ch%cyCRITICAL HIT!%c");
 							switch (MechMove(mech)) {
 							case MOVE_TRACK:
 								mech_notify(mech, MECHALL,
-											"One of your tracks is seriously damaged!!");
+											"One of your tracks is seriously damaged!");
 								break;
 							case MOVE_WHEEL:
 								mech_notify(mech, MECHALL,
-											"One of your wheels is seriously damaged!!");
+											"One of your wheels is seriously damaged!");
 								break;
 							case MOVE_HOVER:
 								mech_notify(mech, MECHALL,
-											"Your air skirt is seriously damaged!!");
+											"Your air skirt is seriously damaged!");
 								break;
 							case MOVE_HULL:
 							case MOVE_SUB:
 							case MOVE_FOIL:
 								mech_notify(mech, MECHALL,
-											"Your speed slows down a lot..");
+											"Your craft lurches and suddenly loses a lot of speed!");
 								break;
 							}
 							LowerMaxSpeed(mech, MP2);
@@ -627,25 +618,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 					}
 					/* Cripple tank */
 					if(!Fallen(mech)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						switch (MechMove(mech)) {
 						case MOVE_TRACK:
 							mech_notify(mech, MECHALL,
-										"One of your tracks is destroyed, imobilizing your vehicle!!");
+										"One of your tracks is destroyed, immobilizing your vehicle!");
 							break;
 						case MOVE_WHEEL:
 							mech_notify(mech, MECHALL,
-										"One of your wheels is destroyed, imobilizing your vehicle!!");
+										"One of your wheels is destroyed, immobilizing your vehicle!");
 							break;
 						case MOVE_HOVER:
 							mech_notify(mech, MECHALL,
-										"Your lift fan is destroyed, imobilizing your vehicle!!");
+										"Your lift fan is destroyed, immobilizing your vehicle!");
 							break;
 						case MOVE_HULL:
 						case MOVE_SUB:
 						case MOVE_FOIL:
 							mech_notify(mech, MECHALL,
-										"You are halted in your tracks - literally.");
+										"Your engines cut out and you drift to a halt!");
 						}
 						SetMaxSpeed(mech, 0.0);
 
@@ -657,25 +648,25 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				/* MP -1 */
 				if(mudconf.btech_tankshield) {
 					if(!Fallen(mech)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						switch (MechMove(mech)) {
 						case MOVE_TRACK:
 							mech_notify(mech, MECHALL,
-										"One of your tracks is damaged!!");
+										"One of your tracks is damaged!");
 							break;
 						case MOVE_WHEEL:
 							mech_notify(mech, MECHALL,
-										"One of your wheels is damaged!!");
+										"One of your wheels is damaged!");
 							break;
 						case MOVE_HOVER:
 							mech_notify(mech, MECHALL,
-										"Your air skirt is damaged!!");
+										"Your air skirt is damaged!");
 							break;
 						case MOVE_HULL:
 						case MOVE_SUB:
 						case MOVE_FOIL:
 							mech_notify(mech, MECHALL,
-										"Your speed slows down..");
+										"Your craft suddenly slows!");
 							break;
 						}
 						LowerMaxSpeed(mech, MP1);
@@ -686,9 +677,9 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				/* MP -1 if Hovercraft */
 				if(!Fallen(mech)) {
 					if(MechMove(mech) == MOVE_HOVER) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						mech_notify(mech, MECHALL,
-									"Your air skirt is damaged!!");
+									"Your air skirt is damaged!");
 						LowerMaxSpeed(mech, MP1);
 					}
 				}
@@ -705,10 +696,10 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 				/* Lock turret into place */
 				if(GetSectInt(mech, TURRET)) {
 					if(!(MechTankCritStatus(mech) & TURRET_LOCKED)) {
-						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+						mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 						MechTankCritStatus(mech) |= TURRET_LOCKED;
 						mech_notify(mech, MECHALL,
-									"Your turret takes a direct hit and immobilizes!");
+									"Your turret takes a direct hit and locks up!");
 					}
 					return TURRET;
 				} else
@@ -727,85 +718,151 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 		switch (hitGroup) {
 		case FRONT:
 			switch (roll) {
-			case 2:
-			case 12:
-				return AERO_COCKPIT;
-			case 3:
-			case 11:
-				if(crittable(mech, AERO_NOSE, 90))
-					LoseWeapon(mech, AERO_NOSE);
-				return AERO_NOSE;
-			case 4:
-			case 10:
-				if(roll == 10)
-					DestroyBomb(mech, AERO_FUSEL);
-				return AERO_FUSEL;
-			case 5:
-				return AERO_RWING;
-			case 9:
-				return AERO_LWING;
-			case 6:
-			case 7:
-			case 8:
-				return AERO_NOSE;
+				case 2:
+					// Nose/Weapons
+					return AERO_NOSE;
+				case 3:
+					// Nose/Sensors
+					return AERO_NOSE;
+				case 4:
+					// Right Wing/Heat Sink
+					return AERO_RWING;
+				case 5:
+					// Right Wing/Weapon
+					return AERO_RWING;
+				case 6:
+					// Nose/Avionics
+					return AERO_NOSE;
+				case 7:
+					// Nose/Control
+					return AERO_NOSE;
+				case 8:
+					// Nose/FCS
+					return AERO_NOSE;
+				case 9:
+					// Left Wing/Weapon
+					return AERO_LWING;
+				case 10:
+					// Left Wing/Heat Sink
+					return AERO_LWING;
+				case 11:
+					// Nose/Gear
+					if(crittable(mech, AERO_NOSE, 90))
+						LoseWeapon(mech, AERO_NOSE);
+					return AERO_NOSE;
+				case 12:
+					// Nose/Weapon
+					return AERO_NOSE;
 			}
 			break;
 		case LEFTSIDE:
-		case RIGHTSIDE:
-			side = ((hitGroup == LEFTSIDE) ? AERO_LWING : AERO_RWING);
 			switch (roll) {
-			case 2:
-				return AERO_COCKPIT;
-			case 12:
-				if(crittable(mech, AERO_ENGINE, 99))
-					*iscritical = 1;
-				return AERO_ENGINE;
-			case 3:
-			case 11:
-				if(crittable(mech, side, 99))
-					LoseWeapon(mech, side);
-				return side;
-			case 4:
-			case 10:
-				if(crittable(mech, AERO_ENGINE, 90))
-					DestroyHeatSink(mech, AERO_ENGINE);
-				return AERO_ENGINE;
-			case 5:
-				DestroyBomb(mech, AERO_FUSEL);
-				return AERO_FUSEL;
-			case 9:
-				return AERO_NOSE;
-			case 6:
-			case 8:
-				return side;
-			case 7:
-				return AERO_FUSEL;
+				case 2:
+					// Nose/Weapon
+					return AERO_NOSE;
+				case 3:
+					// Wing/Gear
+					return AERO_LWING;
+				case 4:
+					// Nose/Senors
+					return AERO_NOSE;
+				case 5:
+					// Nose/Crew
+					return AERO_NOSE;
+				case 6:
+					// Wing/Weapons
+					return AERO_LWING;
+				case 7:
+					// Wing/Avionics
+					return AERO_LWING;
+				case 8:
+					// Wing/Bomb
+					return AERO_LWING;
+				case 9:
+					// Aft/Control
+					return AERO_AFT;
+				case 10:
+					// Aft/Engine
+					return AERO_AFT;
+				case 11:
+					// Wing/Gear
+					return AERO_LWING;
+				case 12:
+					// Aft/Weapon
+					return AERO_AFT;
+			}
+		case RIGHTSIDE:
+			switch (roll) {
+				case 2:
+					// Nose/Weapon
+					return AERO_NOSE;
+				case 3:
+					// Wing/Gear
+					return AERO_RWING;
+				case 4:
+					// Nose/Sensors
+					return AERO_NOSE;
+				case 5:
+					// Nose/Crew
+					return AERO_NOSE;
+				case 6:
+					// Wing/Weapons
+					return AERO_RWING;
+				case 7:
+					// Wing/Avionics
+					return AERO_RWING;
+				case 8:
+					// Wing/Bomb
+					return AERO_RWING;
+				case 9:
+					// Aft/Control
+					return AERO_AFT;
+				case 10:
+					// Aft/Engine
+					return AERO_AFT;
+				case 11:
+					// Wing/Gear
+					return AERO_RWING;
+				case 12:
+					// Aft/Weapon
+					return AERO_AFT;
 			}
 			break;
 		case BACK:
 			switch (roll) {
-			case 2:
-			case 12:
-				if(crittable(mech, AERO_ENGINE, 90))
-					*iscritical = 1;
-				return AERO_ENGINE;
-			case 3:
-			case 11:
-				aero_ControlEffect(mech);
-				return AERO_FUSEL;
-			case 4:
-			case 7:
-			case 10:
-				if(crittable(mech, AERO_FUSEL, 90))
-					DestroyHeatSink(mech, AERO_FUSEL);
-				return AERO_FUSEL;
-			case 5:
-				return AERO_RWING;
-			case 9:
-				return AERO_LWING;
-			case 6:
-			case 8:
-				return AERO_ENGINE;
+				case 2:
+					// Aft/Weapon
+					return AERO_AFT;
+				case 3:
+					// Aft/Heat Sink
+					return AERO_AFT;
+				case 4:
+					// Right Wing/Fuel
+					return AERO_RWING;
+				case 5:
+					// Right Wing/Weapon
+					return AERO_RWING;
+				case 6:
+					// Aft/Engine
+					return AERO_AFT;
+				case 7:
+					// Aft/Control
+					return AERO_AFT;
+				case 8:
+					// Aft/Engine
+					return AERO_AFT;
+				case 9:
+					// Left Wing/Weapon
+					return AERO_LWING;
+				case 10:
+					// Left Wing/Fuel
+					return AERO_LWING;
+				case 11:
+					// Aft/Heat Sink
+					return AERO_AFT;
+				case 12:
+					// Aft/Weapon
+					return AERO_AFT;
 			}
 		}
 		break;
@@ -1167,7 +1224,7 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 	if(wRoll < 8)				/* no effect */
 		return;
 
-	mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!!%c");
+	mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
 
 	if(wRoll < 10) {			/* minor effect */
 		MechPilotSkillBase(mech) += 1;
@@ -1594,13 +1651,11 @@ int FindHitLocation_CritProof(MECH * mech, int hitGroup, int *iscritical,
 			switch (roll) {
 			case 2:
 			case 12:
-				return AERO_COCKPIT;
 			case 3:
 			case 11:
 				return AERO_NOSE;
 			case 4:
 			case 10:
-				return AERO_FUSEL;
 			case 5:
 				return AERO_RWING;
 			case 9:
@@ -1616,45 +1671,41 @@ int FindHitLocation_CritProof(MECH * mech, int hitGroup, int *iscritical,
 			side = ((hitGroup == LEFTSIDE) ? AERO_LWING : AERO_RWING);
 			switch (roll) {
 			case 2:
-				return AERO_COCKPIT;
 			case 12:
-				return AERO_ENGINE;
+				return AERO_AFT;
 			case 3:
 			case 11:
 				return side;
 			case 4:
 			case 10:
-				return AERO_ENGINE;
+				return AERO_AFT;
 			case 5:
-				return AERO_FUSEL;
 			case 9:
 				return AERO_NOSE;
 			case 6:
 			case 8:
 				return side;
 			case 7:
-				return AERO_FUSEL;
+			    return side;
 			}
 			break;
 		case BACK:
 			switch (roll) {
 			case 2:
 			case 12:
-				return AERO_ENGINE;
+				return AERO_AFT;
 			case 3:
 			case 11:
-				return AERO_FUSEL;
 			case 4:
 			case 7:
 			case 10:
-				return AERO_FUSEL;
 			case 5:
 				return AERO_RWING;
 			case 9:
 				return AERO_LWING;
 			case 6:
 			case 8:
-				return AERO_ENGINE;
+				return AERO_AFT;
 			}
 		}
 		break;
@@ -2147,7 +2198,6 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 			switch (roll) {
 			case 2:
 			case 12:
-				return AERO_COCKPIT;
 			case 3:
 			case 11:
 				if(crittable(mech, AERO_NOSE, 90))
@@ -2155,9 +2205,6 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 				return AERO_NOSE;
 			case 4:
 			case 10:
-				if(roll == 10)
-					DestroyBomb(mech, AERO_FUSEL);
-				return AERO_FUSEL;
 			case 5:
 				return AERO_RWING;
 			case 9:
@@ -2173,11 +2220,10 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 			side = ((hitGroup == LEFTSIDE) ? AERO_LWING : AERO_RWING);
 			switch (roll) {
 			case 2:
-				return AERO_COCKPIT;
 			case 12:
-				if(crittable(mech, AERO_ENGINE, 99))
+				if(crittable(mech, AERO_AFT, 99))
 					*iscritical = 1;
-				return AERO_ENGINE;
+				return AERO_AFT;
 			case 3:
 			case 11:
 				if(crittable(mech, side, 99))
@@ -2185,45 +2231,38 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 				return side;
 			case 4:
 			case 10:
-				if(crittable(mech, AERO_ENGINE, 90))
-					DestroyHeatSink(mech, AERO_ENGINE);
-				return AERO_ENGINE;
+				if(crittable(mech, AERO_AFT, 90))
+					DestroyHeatSink(mech, AERO_AFT);
+				return AERO_AFT;
 			case 5:
-				DestroyBomb(mech, AERO_FUSEL);
-				return AERO_FUSEL;
 			case 9:
 				return AERO_NOSE;
 			case 6:
 			case 8:
 				return side;
 			case 7:
-				return AERO_FUSEL;
+			    return side;
 			}
 			break;
 		case BACK:
 			switch (roll) {
 			case 2:
 			case 12:
-				if(crittable(mech, AERO_ENGINE, 90))
+				if(crittable(mech, AERO_AFT, 90))
 					*iscritical = 1;
-				return AERO_ENGINE;
+				return AERO_AFT;
 			case 3:
 			case 11:
-				aero_ControlEffect(mech);
-				return AERO_FUSEL;
 			case 4:
 			case 7:
 			case 10:
-				if(crittable(mech, AERO_FUSEL, 90))
-					DestroyHeatSink(mech, AERO_FUSEL);
-				return AERO_FUSEL;
 			case 5:
 				return AERO_RWING;
 			case 9:
 				return AERO_LWING;
 			case 6:
 			case 8:
-				return AERO_ENGINE;
+				return AERO_AFT;
 			}
 		}
 		break;
@@ -2666,17 +2705,9 @@ int FindTCHitLoc(MECH * mech, MECH * target, int *isrear, int *iscritical)
 				if(hitGroup != LEFTSIDE)
 					return AERO_RWING;
 				break;
-			case AERO_COCKPIT:
-				if(hitGroup != BACK)
-					return AERO_COCKPIT;
-				break;
-			case AERO_FUSEL:
+			case AERO_AFT:
 				if(hitGroup != FRONT)
-					return AERO_FUSEL;
-				break;
-			case AERO_ENGINE:
-				if(hitGroup != FRONT)
-					return AERO_ENGINE;
+					return AERO_AFT;
 				break;
 			}
 		case CLASS_VEH_GROUND:

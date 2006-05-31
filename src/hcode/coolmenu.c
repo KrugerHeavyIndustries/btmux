@@ -63,7 +63,7 @@ void display_line(char **c, int *len, coolmenu * m)
 	char *ch = *c;
 	int i;
 
-	sprintf(ch, "%%cm");
+	sprintf(ch, "%%cb");
 	ch += strlen(ch);
 	for(i = 0; i < *len; i++)
 		*(ch++) = '-';
@@ -111,7 +111,7 @@ void display_string(char **c, int *len, coolmenu * m)
 		for(i = 0; i < p; i++)
 			(*c)[i] = ' ';
 		*c += p;
-		sprintf(*c, "%%ch%%cm");
+		sprintf(*c, "%%ch%%cb");
 		*c += strlen(*c);
 		strncpy(*c, m->text, (e - p) + 1);
 		*c += (e - p);

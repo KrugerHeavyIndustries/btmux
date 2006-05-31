@@ -163,9 +163,7 @@ struct char_value {
 #endif
     {"Protocol", CHAR_SKILL, CHAR_SOCIAL, 50},
     {"Quickdraw", CHAR_SKILL, CHAR_PHYSICAL, 50},
-#ifdef BT_EXILE_SKILLS
     {"Research", CHAR_SKILL, CHAR_MENTAL | CAREER_TECH, 100},
-#endif
     {"Running", CHAR_SKILL, SK_XP | CHAR_ATHLETIC, 100},
     {"Riding", CHAR_SKILL, CHAR_ATHLETIC, 50},
     {"Scrounge", CHAR_SKILL, CHAR_SOCIAL | CAREER_TECH, 50},

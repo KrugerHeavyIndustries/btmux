@@ -138,7 +138,7 @@ void stopTAG(MECH * mech)
 	if(TAGTarget(mech) > 0) {
 		TAGTarget(mech) = 0;
 
-		mech_notify(mech, MECHALL, "Your TAG connection as been broken.");
+		mech_notify(mech, MECHALL, "Your TAG connection has been broken.");
 
 		MECHEVENT(mech, EVENT_TAG_RECYCLE, tag_recycle_event,
 				  TAGRECYCLE_TICK, 0);

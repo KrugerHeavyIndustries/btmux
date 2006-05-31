@@ -1060,6 +1060,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			  "That's a living, breathing person! Switch off the safety first, "
 			  "if you really want to assassinate the target.");
 
+	DOCHECKMA(MechCritStatus(mech) & MECH_STUNNED,
+		"You are still recovering from your stunning experience!");
 	/*
 	 * Attack-Specific checks.
 	 */
@@ -1541,6 +1543,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 	int spread;
 	int i, tmpi;
 	char location[50];
+	MAP *map = getMap(mech->mapindex);
 
 	/* Weapons recycling check on each major section */
 	for(i = 0; i < DFA_SECTIONS; i++)
@@ -1575,6 +1578,8 @@ int DeathFromAbove(MECH * mech, MECH * target)
 		DOCHECKMA0(!Landed(target),
 				   "Your target is airborne, you cannot land on it.");
 
+	DOCHECKMA0((MechTeam(mech) == MechTeam(target)) && MapNoFriendlyFire(map),
+			"Friendly DFA? I don't think so....");
 	if(mudconf.btech_phys_use_pskill)
 		baseToHit = FindPilotPiloting(mech);
 
@@ -1702,7 +1707,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 		if(!MadePilotSkillRoll(mech, 2)) {
 			mech_notify(mech, MECHALL,
 						"You take personal injury from the fall!");
-			headhitmwdamage(mech, 1);
+			headhitmwdamage(mech, mech, 1);
 		}
 
 		MechSpeed(mech) = 0.0;

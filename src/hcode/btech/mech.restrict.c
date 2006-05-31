@@ -261,12 +261,16 @@ void mech_Rsetteam(dbref player, void *data, char *buffer)
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
 
+extern void auto_stop_pilot(AUTO * autopilot);
 /* Alloc/free routine */
 void newfreemech(dbref key, void **data, int selector)
 {
-    MECH *new = *data;
-    MAP *map;
-    int i;
+	MECH *new = *data;
+	MAP *map;
+	AUTO *a;
+	int i;
+
+
 
     switch (selector) {
         case SPECIAL_ALLOC:
@@ -286,5 +290,16 @@ void newfreemech(dbref key, void **data, int selector)
 
             /* Clean up rbtree(s) */
             rb_release(new->UnitsInLOS, (void *) mech_rbtree_release, NULL);
-    }
+            if(MechAuto(new) > 0 ) {
+			AUTO *a = (AUTO *) FindObjectsData(MechAuto(new));
+			if (a) {
+				auto_stop_pilot(a);
+				a->mymechnum = 0;
+			}
+			MechAuto(new) = -1;
+		}
+					
+		
+	}
+
 }

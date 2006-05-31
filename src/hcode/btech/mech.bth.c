@@ -307,8 +307,7 @@ int FindNormalBTH(MECH * mech,
 	/* if our target is another unit... */
 	if(target) {
 		/* Add the dig-in bonus */
-		if(MechDugIn(target) && (!mudconf.btech_dig_only_fs &&
-								 (FindAreaHitGroup(mech, target) == FRONT)) &&
+		if(MechDugIn(target) && (!mudconf.btech_dig_only_fs || (FindAreaHitGroup(mech, target) == FRONT)) &&
 		   (MechZ(target) >= MechZ(mech)))
 			BTHADD("DugIn", mudconf.btech_digbonus);
 
@@ -321,11 +320,8 @@ int FindNormalBTH(MECH * mech,
 			BTHADD("Bsuitbonus", 1);
 
 		/* Let's see if we're targetting the head */
-		if(target && !IsMissile(weapindx) &&
-		   (((MechAim(mech) == HEAD) && ((MechType(target) == CLASS_MECH)
-										 || (MechType(target) == CLASS_MW)))
-			|| ((MechAim(mech) == AERO_COCKPIT)
-				&& (MechType(target) == CLASS_AERO)))) {
+		if(target && !IsMissile(weapindx) && MechAim(mech) == HEAD && 
+			(MechType(target) == CLASS_MECH || MechType(target) == CLASS_MW)) {
 			if(Immobile(target))
 				BTHADD("HeadTarget", 7);
 			else

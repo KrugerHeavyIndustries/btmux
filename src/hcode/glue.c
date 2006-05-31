@@ -396,6 +396,8 @@ static int load_update1(Node * tmp)
 		MechC3iNetworkSize(mech) = -1;
 		MechHeatLast(mech) = 0;
 		MechCommLast(mech) = 0;
+		if(!(MechXPMod(mech)))
+			MechXPMod(mech) = 1;		
 		for(i = 0; i < FREQS; i++)
 			if(mech->freq[i] < 0)
 				mech->freq[i] = 0;
@@ -435,6 +437,7 @@ static int load_autopilot_data(Node * tmp)
 		/* Check to see if the AI is in a mech */
 	    /* Need to make this better, check if its got a target whatnot */
 
+
 		if(!autopilot->mymechnum ||
 		   !(autopilot->mymech = getMech(autopilot->mymechnum))) {
 			DoStopGun(autopilot);
@@ -442,6 +445,7 @@ static int load_autopilot_data(Node * tmp)
 			if(Gunning(autopilot))
 				DoStartGun(autopilot);
 		}
+
 
 	}
 
@@ -516,7 +520,7 @@ static void load_econdb()
 		return;
 	}
 	fclose(f);
-	fprintf(stderr, "LOADING: %s (done\n", mudconf.econ_db);
+	fprintf(stderr, "LOADING: %s (done)\n", mudconf.econ_db);
 }
 #endif
 

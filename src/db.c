@@ -6,6 +6,7 @@
 #include "config.h"
 
 #include <sys/file.h>
+#include <sys/stat.h>
 
 #define __DB_C
 #include "mudconf.h"
@@ -75,6 +76,9 @@ extern int fwdlist_ck(int, dbref, dbref, int, char *);
 extern void pcache_reload(dbref);
 extern void desc_reload(dbref);
 
+// Macro for the flags for character stats/skills attributes.
+#define PLSTAT_MODE (AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL)
+
 /*
  * list of attributes 
  */
@@ -135,9 +139,7 @@ ATTR attr[] = {
 	{"Filter", A_FILTER, AF_ODARK | AF_NOPROG, NULL},
 	{"Forwardlist", A_FORWARDLIST, AF_ODARK | AF_NOPROG, fwdlist_ck},
 	{"Gfail", A_GFAIL, AF_ODARK | AF_NOPROG, NULL},
-	{"GiveLock", A_LGIVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
-	{"Heatchars", A_HEATCHARS, AF_ODARK, NULL},
+	{"GiveLock", A_LGIVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
 	{"Idesc", A_IDESC, AF_ODARK | AF_NOPROG, NULL},
 	{"Idle", A_IDLE, AF_ODARK | AF_NOPROG, NULL},
 	{"Infilter", A_INFILTER, AF_ODARK | AF_NOPROG, NULL},
@@ -147,32 +149,24 @@ ATTR attr[] = {
 	{"Lalias", A_LALIAS, AF_ODARK | AF_NOPROG, NULL},
 	{"Last", A_LAST, AF_WIZARD | AF_NOCMD | AF_NOPROG, NULL},
 	{"Lastname", A_LASTNAME, AF_WIZARD | AF_NOPROG | AF_MDARK, NULL},
-	{"Lastpage", A_LASTPAGE,
-	 AF_INTERNAL | AF_NOCMD | AF_NOPROG | AF_GOD | AF_PRIVATE, NULL},
-	{"Lastsite", A_LASTSITE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_GOD,
-	 NULL},
+	{"Lastpage", A_LASTPAGE, AF_INTERNAL | AF_NOCMD | AF_NOPROG | AF_GOD | AF_PRIVATE, NULL},
+	{"Lastsite", A_LASTSITE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_GOD, NULL},
 	{"Leave", A_LEAVE, AF_ODARK, NULL},
-	{"LeaveLock", A_LLEAVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
+	{"LeaveLock", A_LLEAVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
 	{"Lfail", A_LFAIL, AF_ODARK | AF_NOPROG, NULL},
-	{"LinkLock", A_LLINK, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
+	{"LinkLock", A_LLINK, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
 	{"Listen", A_LISTEN, AF_ODARK, NULL},
 
-	{"Logindata", A_LOGINDATA,
-	 AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
+	{"Logindata", A_LOGINDATA, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
 	{"LRSheight", A_LRSHEIGHT, AF_ODARK, NULL},
 	{"Unused1", A_UNUSED1, AF_WIZARD | AF_MDARK, NULL},
 	{"Mailcurf", A_MAILCURF, AF_MDARK | AF_WIZARD | AF_NOPROG, NULL},
 	{"Mailflags", A_MAILFLAGS, AF_MDARK | AF_WIZARD | AF_NOPROG, NULL},
 	{"Mailfolders", A_MAILFOLDERS, AF_MDARK | AF_WIZARD | AF_NOPROG, NULL},
-	{"Mailmsg", A_MAILMSG, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
-	 NULL},
-	{"Mailsub", A_MAILSUB, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
-	 NULL},
+	{"Mailmsg", A_MAILMSG, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
+	{"Mailsub", A_MAILSUB, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
 	{"Mailsucc", A_MAIL, AF_ODARK | AF_NOPROG, NULL},
-	{"Mailto", A_MAILTO, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
-	 NULL},
+	{"Mailto", A_MAILTO, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
 	{"Mapcolor", A_MAPCOLOR, AF_ODARK, NULL},
 	{"Mapvis", A_MAPVIS, AF_MDARK | AF_WIZARD, NULL},
 	{"Mechdesc", A_MECHDESC, AF_MDARK, NULL},
@@ -183,8 +177,7 @@ ATTR attr[] = {
 	{"Mechskills", A_MECHSKILLS, AF_MDARK, NULL},
 	{"Mwtemplate", A_MWTEMPLATE, AF_MDARK, NULL},
 	{"Move", A_MOVE, AF_ODARK, NULL},
-	{"Name", A_NAME, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
-	 NULL},
+	{"Name", A_NAME, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
 	{"Odesc", A_ODESC, AF_ODARK | AF_NOPROG, NULL},
 	{"Odfail", A_ODFAIL, AF_ODARK | AF_NOPROG, NULL},
 	{"Odrop", A_ODROP, AF_ODARK | AF_NOPROG, NULL},
@@ -194,6 +187,7 @@ ATTR attr[] = {
 	{"Ogfail", A_OGFAIL, AF_ODARK | AF_NOPROG, NULL},
 	{"Okill", A_OKILL, AF_ODARK, NULL},
 	{"Amechdest", A_AMECHDEST, AF_MDARK, NULL},
+	{"Aminetrigger", A_AMINETRIGGER, AF_MDARK, NULL},
 	{"Oleave", A_OLEAVE, AF_ODARK, NULL},
 	{"Olfail", A_OLFAIL, AF_ODARK | AF_NOPROG, NULL},
 	{"Omove", A_OMOVE, AF_ODARK, NULL},
@@ -208,22 +202,17 @@ ATTR attr[] = {
 	{"Oxenter", A_OXENTER, AF_ODARK, NULL},
 	{"Oxleave", A_OXLEAVE, AF_ODARK, NULL},
 	{"Oxtport", A_OXTPORT, AF_ODARK | AF_NOPROG, NULL},
-	{"PageLock", A_LPAGE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
-	{"ParentLock", A_LPARENT, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
+	{"PageLock", A_LPAGE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
+	{"ParentLock", A_LPARENT, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
 	{"Pay", A_PAY, AF_ODARK, NULL},
 	{"PCequip", A_PCEQUIP, AF_MDARK, NULL},
 	{"Pilot", A_PILOTNUM, AF_MDARK, NULL},
 	{"Prefix", A_PREFIX, AF_ODARK | AF_NOPROG, NULL},
-	{"ProgCmd", A_PROGCMD, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
-	 NULL},
+	{"ProgCmd", A_PROGCMD, AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL, NULL},
 	{"QueueMax", A_QUEUEMAX, AF_MDARK | AF_WIZARD | AF_NOPROG, NULL},
 	{"Quota", A_QUOTA, AF_MDARK | AF_NOPROG | AF_GOD | AF_NOCMD, NULL},
 	{"Ranknum", A_RANKNUM, AF_MDARK | AF_WIZARD, NULL},
-	{"ReceiveLock", A_LRECEIVE,
-	 AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK,
-	 NULL},
+	{"ReceiveLock", A_LRECEIVE, AF_ODARK | AF_NOPROG | AF_NOCMD | AF_IS_LOCK, NULL},
 	{"Reject", A_REJECT, AF_ODARK | AF_NOPROG, NULL},
 	{"Rfail", A_RFAIL, AF_ODARK | AF_NOPROG, NULL},
 	{"Rquota", A_RQUOTA, AF_MDARK | AF_NOPROG | AF_GOD | AF_NOCMD, NULL},
@@ -291,11 +280,6 @@ ATTR attr[] = {
 	{"*EconParts", A_ECONPARTS,
 	 AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL,
 	 NULL},
-#if 1
-#define PLSTAT_MODE (AF_DARK | AF_NOPROG | AF_NOCMD | AF_INTERNAL)
-#else
-#define PLSTAT_MODE (AF_MDARK|AF_WIZARD)
-#endif
 	{"PLHEALTH", A_HEALTH, PLSTAT_MODE, NULL},
 	{"PLATTRS", A_ATTRS, PLSTAT_MODE, NULL},
 	{"PLADVS", A_ADVS, PLSTAT_MODE, NULL},
@@ -374,38 +358,33 @@ int fwdlist_load(FWDLIST * fp, dbref player, char *atext)
 	errors = 0;
 	bp = tp = alloc_lbuf("fwdlist_load.str");
 	StringCopy(tp, atext);
+	
 	do {
 		for(; *bp && isspace(*bp); bp++);	/*
-											 * skip spaces 
-											 */
+							 * skip spaces 
+							 */
 		for(dp = bp; *bp && !isspace(*bp); bp++);	/*
-													 * remember * 
-													 * 
-													 * *  * *  *
-													 * *  * * * * 
-													 * string  
-													 */
+								 * remember string
+								 */
 		if(*bp)
-			*bp++ = '\0';		/*
+			*bp++ = '\0';		                /*
 								 * terminate string 
 								 */
 		if((*dp++ == '#') && isdigit(*dp)) {
 			target = atoi(dp);
 			fail = (!Good_obj(target) || (!God(player) &&
-										  !controls(player, target)
-										  && (!Link_ok(target)
-											  || !could_doit(player, target,
-															 A_LLINK))));
+			    !controls(player, target) && (!Link_ok(target) || !could_doit(player, target,
+			    A_LLINK))));
 			if(fail) {
 				notify_printf(player,
-							  "Cannot forward to #%d: Permission denied.",
-							  target);
+				    "Cannot forward to #%d: Permission denied.", target);
 				errors++;
 			} else {
 				fp->data[count++] = target;
 			}
 		}
 	} while (*bp);
+	
 	free_lbuf(tp);
 	fp->count = count;
 	return errors;
@@ -2180,6 +2159,7 @@ void load_restart_db()
 	FILE *f;
 	DESC *d;
 	DESC *p;
+    struct stat statbuffer;
 
 	int val, version, new_strings = 0;
 	char *temp, buf[8];
@@ -2249,8 +2229,8 @@ void load_restart_db()
 		d->input_size = 0;
 		d->input_tot = 0;
 		d->input_lost = 0;
-		d->raw_input_at = NULL;
 		memset(d->input, 0, sizeof(d->input));
+        d->input_tail = 0;
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
@@ -2286,12 +2266,13 @@ void load_restart_db()
 			s_Flags2(d->player, Flags2(d->player) | CONNECTED);
 	}
 
-	DESC_ITER_CONN(d) {
-		if(!isPlayer(d->player)) {
-			shutdownsock(d, R_QUIT);
-		}
+    DESC_ITER_CONN(d) {
+        if(!isPlayer(d->player) || fstat(d->descriptor, &statbuffer) < 0) {
+            dprintk("dropping descriptor %d.\n", d->descriptor);
+            shutdownsock(d, R_QUIT);
+        }
 
-	}
+    }
 
 	fclose(f);
 	remove("restart.db");
@@ -2303,6 +2284,7 @@ int load_restart_db_xdr()
 	struct mmdb_t *mmdb;
     DESC *d;
 	DESC *p;
+    struct stat statbuffer;
 
 	int val, version, new_strings = 0;
 	char *temp, buf[8];
@@ -2350,8 +2332,8 @@ int load_restart_db_xdr()
 		d->input_size = 0;
 		d->input_tot = 0;
 		d->input_lost = 0;
-		d->raw_input_at = NULL;
 		memset(d->input, 0, sizeof(d->input));
+        d->input_tail = 0;
 		d->quota = mudconf.cmd_quota_max;
 		d->program_data = NULL;
 		d->hashnext = NULL;
@@ -2388,7 +2370,8 @@ int load_restart_db_xdr()
 	}
 
 	DESC_ITER_CONN(d) {
-		if(!isPlayer(d->player)) {
+		if(!isPlayer(d->player) || fstat(d->descriptor, &statbuffer) < 0) {
+            dprintk("dropping descriptor %d.\n", d->descriptor);
 			shutdownsock(d, R_QUIT);
 		}
 

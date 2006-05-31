@@ -111,8 +111,8 @@ void shutdown_services();
 void flush_sockets();
 int eradicate_broken_fd(int);
 void mux_release_socket();
-int bind_descriptor(DESC *);
-int release_descriptor(DESC *);
+void bind_descriptor(DESC *);
+void release_descriptor(DESC *);
 
 /* From signal.c */
 void bind_signals();

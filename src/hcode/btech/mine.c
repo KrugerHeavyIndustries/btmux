@@ -34,17 +34,16 @@
 
 /* Different types of mines
  *
- * The Trigger and ScenTrigger mines are used to let the MUX
+ * The Trigger mines are used to let the MUX
  * know if a unit has moved to a certain spot
  * 
  * The others are the explosive do damage kind */
 char *mine_type_names[] = {
 	"Standard",
 	"Inferno",
-	"CD",
+	"Command",
 	"Vibra",
-	"Trigger",
-	"ScenTrigger",
+	"Trigger",	
 	NULL
 };
 
@@ -148,6 +147,11 @@ void make_mine_explode(MECH * mech, MAP * map, mapobj * o, int x, int y,
 	case MINE_TRIGGER:
 		SendTrigger(tprintf("#%d %s activated trigger at %d,%d.",
 							mech->mynum, GetMechID(mech), o->x, o->y));
+
+		// Trigger the unit's AMECHDEST attribute.
+		if(mech->mynum > 0)
+		    did_it(mech->mynum, mech->mynum, 0, NULL, 0, NULL, A_AMINETRIGGER, (char **) NULL, 0);
+		
 		return;
 	case MINE_VIBRA:
 		unset_hex_mine(map, o->x, o->y);

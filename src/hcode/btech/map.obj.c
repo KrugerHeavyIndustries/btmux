@@ -611,7 +611,6 @@ void map_addfire(dbref player, void *data, char *buffer)
 	if(mech_parseattributes(buffer, args, 3) != 3) {
 		notify(player,
 			   "Error: Invalid number of attributes to addfire command.");
-		notify(player, "Excepted format: check damned HELP");
 		return;
 	}
 	x = atoi(args[0]);
@@ -631,7 +630,6 @@ void map_addsmoke(dbref player, void *data, char *buffer)
 	if(mech_parseattributes(buffer, args, 3) != 3) {
 		notify(player,
 			   "Error: Invalid number of attributes to addsmoke command.");
-		notify(player, "Excepted format: check damned HELP");
 		return;
 	}
 	x = atoi(args[0]);
@@ -731,8 +729,7 @@ void map_delobj(dbref player, void *data, char *buffer)
 	switch (mech_parseattributes(buffer, args, 3)) {
 	case 0:
 		notify(player,
-			   "Error: Invalid number of attributes to delobj command.");
-		notify(player, "Excepted format: check damned HELP");
+			   "Error: Invalid number of attributes to delobj command.");	
 		return;
 	case 1:
 		DOCHECK((tt = listmatch(map_types, args[0])) < 0, "Invalid type!");

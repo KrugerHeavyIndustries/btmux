@@ -22,6 +22,7 @@
 #include "p.bsuit.h"
 #include "autopilot.h"
 #include "p.mech.combat.h"
+#include "p.mech.combat.misc.h"
 #include "p.mech.utils.h"
 #include "p.btechstats.h"
 #include "p.econ_cmds.h"
@@ -162,8 +163,7 @@ static void char_eject(dbref player, MECH * mech)
 		DestroyPart(mech, HEAD, 2);
 	}
 	if(!Destroyed(mech)) {
-		DestroyAndDump(mech);
-		ChannelEmitKill(mech, mech);
+		DestroyMech(mech, mech, 0);
 	}
 }
 
@@ -329,8 +329,8 @@ void mech_udisembark(dbref player, void *data, char *buffer)
 	DOCHECK(under_repairs,
 			"This 'Mech is still under repairs (see checkstatus for more info)");
 
-	DOCHECK(abs(MechSpeed(target)) > 0,
-			"You cannot leave while the carrier is moving!");
+	DOCHECK(abs(MechSpeed(target)) > WalkingSpeed(MMaxSpeed(target)),
+			"You cannot leave while the carrier is moving faster than walk speed!");
 
 	/* Carry out the disembarking. */
 	mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d",

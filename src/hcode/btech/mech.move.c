@@ -1354,7 +1354,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	DOCHECK(!(MechStatus2(mech) & EVADING) && MechType(mech) == CLASS_MECH
 			&& (PartIsNonfunctional(mech, LLEG, 0)
 				|| PartIsNonfunctional(mech, RLEG, 0)),
-			"You need both hip functional to evade.");
+			"You need both hips functional to evade.");
 	DOCHECK(WaterBeast(mech)
 			&& NotInWater(mech),
 			"You are regrettably unable to move at this time. We apologize for the inconvenience.");
@@ -1521,6 +1521,7 @@ void DropSetElevation(MECH * mech, int wantdrop)
 void LandMech(MECH * mech)
 {
 	MECH *target;
+	MAP *mech_map = getMap(mech->mapindex);
 	int dfa = 0;
 	int done = 0;
 
@@ -1557,7 +1558,10 @@ void LandMech(MECH * mech)
 			mech_notify(mech, MECHALL, "You finish your jump.");
 
 		/* Better reset the FZ */
+		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
+		MechZ(mech) = MechElev(mech) - 1;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+		DropSetElevation(mech, 1);
 
 		if(Staggering(mech)) {
 			mech_notify(mech, MECHALL,
@@ -1649,7 +1653,6 @@ void LandMech(MECH * mech)
 	StopJump(mech);				/* Kill the event for moving 'round */
 	MaybeMove(mech);			/* Possibly start movin' on da ground */
 
-	DropSetElevation(mech, 1);
 
 	if(!done)
 		possible_mine_poof(mech, MINE_LAND);
@@ -1666,6 +1669,9 @@ void LandMech(MECH * mech)
 void MechFloodsLoc(MECH * mech, int loc, int lev)
 {
 	char locbuff[32];;
+
+	if(MechStatus(mech) & COMBAT_SAFE)
+		return;
 
 	if((GetSectArmor(mech, loc) && (GetSectRArmor(mech, loc) ||
 									!GetSectORArmor(mech, loc)))
@@ -1765,7 +1771,7 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 						"You take personal injury from the fall!");
 		else
 			mech_notify(mech, MECHPILOT, "You take personal injury!");
-		headhitmwdamage(mech, 1);
+		headhitmwdamage(mech, mech, 1);
 	}
 	MechSpeed(mech) = 0;
 	MechDesiredSpeed(mech) = 0;

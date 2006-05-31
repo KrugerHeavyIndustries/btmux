@@ -407,6 +407,7 @@ static GMV xcode_data[] = {
 	MeEntry("maxspeed", MechMaxSpeed, TYPE_FLOAT),
 	MeEntry("templatesp",TemplateMaxSpeed,TYPE_FLOAT),
 	MeEntry("pilotnum", MechPilot, TYPE_DBREF),
+	MeEntry("xpmod", MechXPMod, TYPE_FLOAT),
 	MeEntry("pilotdam", MechPilotStatus, TYPE_CHAR),
 	MeEntry("si", AeroSI, TYPE_CHAR),
 	MeEntry("si_orig", AeroSIOrig, TYPE_CHAR),
@@ -435,7 +436,9 @@ static GMV xcode_data[] = {
 	MeEntry("realweight", MechRTonsV, TYPE_INT),
 	MeEntry("StaggerDamage", StaggerDamage, TYPE_INT_RO),
 	MeEntry("MechPrefs", MechPrefs, TYPE_BV),
-
+	MeEntry("SwarmTarget", MechSwarmTarget, TYPE_DBREF),
+	MeEntry("SwarmedBy", MechSwarmer, TYPE_DBREF),
+	
 	{GTYPE_MECH, "mechtype", mechTypefunc, TYPE_STRFUNC_BD},
 	{GTYPE_MECH, "mechmovetype", mechMovefunc, TYPE_STRFUNC_BD},
 	{GTYPE_MECH, "mechdamage", mechDamagefunc, TYPE_STRFUNC_BD},
@@ -456,6 +459,7 @@ static GMV xcode_data[] = {
 	MeEntry("x", MechX, TYPE_SHORT),
 	MeEntry("y", MechY, TYPE_SHORT),
 	MeEntry("z", MechZ, TYPE_SHORT),
+	MeEntry("elevation", MechElev, TYPE_CHAR),
 
 	MeEntry("targcomp", MechTargComp, TYPE_CHAR),
 	MeEntry("lrsrange", MechLRSRange, TYPE_CHAR),
@@ -1295,11 +1299,14 @@ void fun_btlosm2m(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!IsMech(mechnum), "#-1 INVALID MECH");
 	FUNCHECK(!(target = getMech(mechnum)), "#-1 INVALID MECH");
 
-	if(InLineOfSight_NB(mech, target, MechX(mech), MechY(mech),
-						FlMechRange(getmap(mech->mapindex), mech, target)))
-		safe_tprintf_str(buff, bufc, "1");
+	if(InLineOfSight(mech, target, MechX(mech), MechY(mech), 		   FlMechRange(getmap(mech->mapindex), mech, target)))
+		if(InLineOfSight_NB(mech, target, MechX(mech), 			   MechY (mech), FlMechRange(getmap(mech->mapindex), mech, 			   target)))
+			safe_tprintf_str(buff, bufc, "1");
+		else	
+			safe_tprintf_str(buff, bufc, "2");
 	else
 		safe_tprintf_str(buff, bufc, "0");
+
 }
 
 /*
@@ -1344,6 +1351,38 @@ void fun_btaddstores(char *buff, char **bufc, dbref player, dbref cause,
 
 extern int xlate(char *);
 
+void fun_btticweaps(char *buff, char **bufc, dbref player, dbref cause, char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	/* fargs[0] = dbref of mech
+	 * fargs[1] = tic #
+	 */
+
+	MECH *mech;
+	dbref it;
+	int i, j, k , l, section, critical;
+	int ticnum;
+	
+	it = match_thing(player, fargs[0]);
+	FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
+	FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
+	FUNCHECK(!(mech = FindObjectsData(it)), "#-1");
+	ticnum = atoi(fargs[1]);
+
+	for( j = 0; j < MAX_WEAPONS_PER_MECH; j++) {
+		k = j / SINGLE_TICLONG_SIZE;
+		l = j % SINGLE_TICLONG_SIZE;
+
+		if(mech->tic[ticnum][k] & (1 << l)) {
+			if(FindWeaponNumberOnMech(mech, j, &section, &critical) == -1) {
+				j = MAX_WEAPONS_PER_MECH ;
+				continue;
+			}
+			safe_tprintf_str(buff,bufc,tprintf("%d:%s ",j,&MechWeapons[Weapon2I(GetPartType(mech, section, critical))].name[3]));
+		}
+	}
+	
+
+}
 void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

@@ -285,6 +285,10 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
 		MechMove(mech) = MOVE_QUAD;
 		notify(player, "Movement set to QUAD");
 		break;
+	case 'B':
+		MechMove(mech) = MOVE_BIPED;
+		notify(player, "Movement set to BIPED");
+		break;
 	case 'S':
 		MechMove(mech) = MOVE_SUB;
 		notify(player, "Movement set to SUB");
@@ -306,7 +310,7 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
 		break;
 	default:
 		notify(player,
-			   "Types are: TRACK, WHEEL, VTOL, HOVER, HULL, FLY, SUB, FOIL and NONE");
+			   "Types are: TRACK, WHEEL, VTOL, QUAD, BIPED, HOVER, HULL, FLY, SUB, FOIL and NONE");
 		break;
 	}
 }
@@ -532,6 +536,7 @@ void clear_mech(MECH * mech, int flag)
 	MechChargeTimer(mech) = 0;
 	MechChargeDistance(mech) = 0;
 	MechSwarmTarget(mech) = -1;
+	MechSwarmer(mech) = -1;
 	MechDFATarget(mech) = -1;
 	MechTargX(mech) = -1;
 	MechStatus(mech) = 0;
@@ -807,7 +812,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 			"You must specify a template name!");
 	DOCHECK(strstr(args[0], "/"), "Invalid file name!");
-	notify_printf(player, "Saving %s", args[0]);
+	notify_printf(player, "Saving %s...", args[0]);
 	sprintf(openfile, "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
 	DOCHECK(!(fp =
@@ -834,6 +839,9 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 	notify(player, "Saving complete!");
 }
 
+/*
+ * Template saving routines and logic.
+ */
 void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 {
 	char *args[1];
@@ -843,19 +851,84 @@ void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 
 	free_template_list();
 
-	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
-			"You must specify a template name!");
-	DOCHECK(strstr(args[0], "/"), "Invalid file name!");
+	// No template name given.
+	if(mech_parseattributes(buffer, args, 1) != 1) {
+	    notify(player, "You must specify a template name!");
+	    return;
+	}
+	
+	// Anti-twink measure. Don't allow directory saving... yet
+	if(strstr(args[0], "/")) { 
+	    notify(player, "Invalid file name!");
+	    return;
+	}
+	    
 	notify_printf(player, "Saving %s", args[0]);
 	sprintf(openfile, "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
-	DOCHECK(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024),
-			"Error saving template: Too heavy.");
-	DOCHECK(save_template(player, mech, args[0], openfile) < 0,
-			"Error saving the template file!");
+	
+	// Just warn on overweight.
+	if(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024))
+	    notify(player, "Warning: Template Overweight, see @weight.");
+	
+	// I/O or Permissions error.
+	if(save_template(player, mech, args[0], openfile) < 0) {
+	    notify(player, "Error saving the template file!");
+	    return ;
+	}
+
 	notify(player, "Saving complete!");
+} // end mechrep_Rsavetemp2
+
+/*
+ * Emits the valid sections when a player tries to setarmor/addsp/reload an
+ * invalid section
+ */
+void invalid_section(dbref player, MECH * mech)
+{
+	int mechtype = MechType(mech);
+	int movetype = MechMove(mech);
+	
+	notify(player, "Not a legal armor location, must be one of:");
+	
+	switch(mechtype) {
+		case CLASS_MW:
+		case CLASS_MECH:
+			notify(player, "HEAD (H), CTORSO (CT), LTORSO (LT), RTORSO (RT)");
+			
+			if (movetype == MOVE_QUAD)
+				notify(player, "LARM (LA), RARM (RA), LLEG (LL), RLEG (RL)");
+			else
+				notify(player, "FLLEG (FLL), FRLEG (FRL), RLLEG (RLL), RRLEG (RRL)");
+			
+			break;
+		case CLASS_VEH_NAVAL:
+		case CLASS_VEH_GROUND:
+			notify(player, "FSIDE (FS), RSIDE (RS), LSIDE (LS), ASIDE (AS), TURRET (TU)");
+			break;
+		case CLASS_VTOL:
+			notify(player, "FSIDE (FS), RSIDE (RS), LSIDE (LS), ASIDE (AS), ROTOR (RO)");
+			break;
+		case CLASS_AERO:
+			notify(player, "NOSE (N), LWING (LW), RWING (RW), ASIDE (AS)");
+			break;
+		case CLASS_DS:
+			notify(player, "NOSE (N), LWING (LW), RWING (RW), LRWING (LR), RRWING (RR), ASIDE (AS)");
+			break;
+		case CLASS_SPHEROID_DS:
+			notify(player, "NOSE (N), FRSIDE (FR), FLSIDE (FL), RLSIDE (RL), RRSIDE (RR), ASIDE (AS)");
+			break;
+		case CLASS_BSUIT:
+			notify(player, "S1, S2, S3, S4, S5, S6, S7, S8");
+			break;
+		default:
+			notify(player, "Invalid or unknown unit type!");
+	}
 }
 
+/*
+ * Logic for the 'setarmor' mechrep command.
+ */
 void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
 {
 	char *args[4];
@@ -867,42 +940,47 @@ void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(!argc, "Invalid number of arguments!");
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
+	
 	if(index == -1) {
-		notify(player, "Not a legal area. Must be HEAD, CTORSO");
-		notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-		notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+		// Invalid section, emit error and valid choices for unit type.
+		invalid_section(player, mech);
 		return;
 	}
+	
 	argc--;
+	
 	if(argc) {
+		// One Argument Given.
 		temp = atoi(args[1]);
 		if(temp < 0)
 			notify(player, "Invalid armor value!");
 		else {
-			notify(player, "Front armor set!");
+			notify_printf(player, "Front armor set to    : %d", temp);
 			SetSectArmor(mech, index, temp);
 			SetSectOArmor(mech, index, temp);
 		}
 		argc--;
 	}
 	if(argc) {
+		// Two Arguments Given.
 		temp = atoi(args[2]);
 		if(temp < 0)
 			notify(player, "Invalid Internal armor value!");
 		else {
-			notify(player, "Internal armor set!");
+			notify_printf(player, "Internal armor set to : %d", temp);
 			SetSectInt(mech, index, temp);
 			SetSectOInt(mech, index, temp);
 		}
 		argc--;
 	}
 	if(argc) {
+		// Three Arguments Given.
 		temp = atoi(args[3]);
 		if(index == CTORSO || index == RTORSO || index == LTORSO) {
 			if(temp < 0)
 				notify(player, "Invalid Rear armor value!");
 			else {
-				notify(player, "Rear armor set!");
+				notify_printf(player, "Rear armor set to     : %d", temp);
 				SetSectRArmor(mech, index, temp);
 				SetSectORArmor(mech, index, temp);
 			}
@@ -919,8 +997,8 @@ void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
 void mechrep_Raddweap(dbref player, void *data, char *buffer)
 {
 	char *args[20];				/* The argument array */
-	int argc;					/* Count of arguments */
-	int index;					/* Used to determine section validity */
+	int argc;				/* Count of arguments */
+	int index;				/* Used to determine section validity */
 	int weapindex;				/* Weapon index number */
 	int weapnumcrits;			/* Number of crits the desired weapon occupies. */
 	int weaptype;				/* The weapon type */
@@ -937,12 +1015,11 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 20);
 	DOCHECK(argc < 3, "Invalid number of arguments!")
 
-		index =
-		ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
+	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
+	
 	if(index == -1) {
-		notify_printf(player, "Not a legal area. Must be HEAD, CTORSO");
-		notify_printf(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-		notify_printf(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+		// Invalid section entered. Emit error and valid sections.
+		invalid_section(player, mech);
 		return;
 	}
 
@@ -1042,6 +1119,112 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	}
 }								/* end mechrep_Raddweap() */
 
+void mechrep_Rfiremode(dbref player, void *data, char *buffer)
+{
+	char *args[4];
+	int argc;
+	int section, critical, weaptype;
+
+	MECHREP_COMMON(1);
+	argc = mech_parseattributes(buffer, args, 2);
+	DOCHECK(argc <2, "MECHREP: Invalid Syntax. Try FireMode <Weapon#> <Mode>");
+
+        weaptype = FindWeaponNumberOnMech_Advanced(mech, atoi(args[0]), &section, &critical, 0);
+
+	if(MechWeapons[weaptype].ammoperton == 0) {
+		                notify(player, "That weapon doesn't require ammo!");
+				return;
+	}
+	
+	   if(!(MechSections(mech)[section].criticals[critical].firemode & HALFTON_MODE)) {
+                        MechSections(mech)[section].criticals[critical].firemode = 0;
+                        MechSections(mech)[section].criticals[critical].ammomode = 0;
+	}
+
+	switch (toupper(args[1][0])) {
+			case 'W':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SWARM_MODE;
+				break;
+			case '1':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SWARM1_MODE;
+				break;
+			case 'I':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INFERNO_MODE;
+				break;
+			case 'L':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					LBX_MODE;
+				break;
+			case 'A':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					ARTEMIS_MODE;
+				break;
+			case 'N':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					NARC_MODE;
+				break;
+			case 'C':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					CLUSTER_MODE;
+				break;
+			case 'M':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					MINE_MODE;
+				break;
+			case 'S':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					SMOKE_MODE;
+				break;
+			case 'X':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_EXPLO_MODE;
+				break;
+			case 'Y':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_HAYWIRE_MODE;
+				break;
+			case 'E':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					INARC_ECM_MODE;
+				break;
+			case 'R':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_AP_MODE;
+				break;
+			case 'F':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_FLECHETTE_MODE;
+				break;
+			case 'D':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_INCENDIARY_MODE;
+				break;
+			case 'P':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_PRECISION_MODE;
+				break;
+			case 'T':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					STINGER_MODE;
+				break;
+			case 'U':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					AC_CASELESS_MODE;
+				break;
+			case '-':
+				MechSections(mech)[section].criticals[critical].ammomode = 0;
+				MechSections(mech)[section].criticals[critical].firemode = 0;
+			}
+
+		notify(player,"Firemode changed!");					
+
+}
+/*
+ * Logic for the 'reload' mechrep command.
+ */
 void mechrep_Rreload(dbref player, void *data, char *buffer)
 {
 	char *args[4];
@@ -1054,18 +1237,21 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc <= 2, "Invalid number of arguments!");
 	weapindex = WeaponIndexFromString(args[0]);
+	
 	if(weapindex == -1) {
 		notify(player, "That is not a valid weapon!");
 		DumpWeapons(player);
 		return;
 	}
+	
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
+	
 	if(index == -1) {
-		notify(player, "Not a legal area. Must be HEAD, CTORSO");
-		notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-		notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+		// Invalid section entered. Emit error and valid sections.
+		invalid_section(player, mech);
 		return;
 	}
+	
 	subsect = atoi(args[2]);
 	subsect--;					/* from 1 based to 0 based */
 	DOCHECK(subsect < 0 ||
@@ -1074,8 +1260,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 		notify(player, "That weapon doesn't require ammo!");
 	else {
 		MechSections(mech)[index].criticals[subsect].type = I2Ammo(weapindex);
-		MechSections(mech)[index].criticals[subsect].firemode = 0;
-		MechSections(mech)[index].criticals[subsect].ammomode = 0;
+		if(!(MechSections(mech)[index].criticals[subsect].firemode & HALFTON_MODE)) {
+			MechSections(mech)[index].criticals[subsect].firemode = 0;
+			MechSections(mech)[index].criticals[subsect].ammomode = 0;
+		}
 
 		if(argc > 3)
 			switch (toupper(args[3][0])) {
@@ -1155,6 +1343,9 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					AC_CASELESS_MODE;
 				break;
+			case '-':
+				MechSections(mech)[index].criticals[subsect].ammomode = 0;
+				MechSections(mech)[index].criticals[subsect].firemode = 0;
 			}
 
 		MechSections(mech)[index].criticals[subsect].data =
@@ -1163,6 +1354,9 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 	}
 }
 
+/*
+ * Logic for the 'repair' mechrep command.
+ */
 void mechrep_Rrepair(dbref player, void *data, char *buffer)
 {
 	char *args[4];
@@ -1174,14 +1368,16 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc <= 2, "Invalid number of arguments!");
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
+	
 	if(index == -1) {
-		notify(player, "Not a legal area. Must be HEAD, CTORSO");
-		notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-		notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+		// Invalid section entered. Emit error and valid sections.
+		invalid_section(player, mech);
 		return;
 	}
+	
 	temp = atoi(args[2]);
 	DOCHECK(temp < 0, "Illegal value for armor!");
+	
 	switch (args[1][0]) {
 	case 'A':
 	case 'a':
@@ -1240,6 +1436,7 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc <= 2, "Invalid number of arguments!");
 	itemcode = FindSpecialItemCodeFromString(args[0]);
+	
 	if(itemcode == -1)
 		if(strcasecmp(args[0], "empty")) {
 			notify(player, "That is not a valid special object!");
@@ -1247,10 +1444,10 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 			return;
 		}
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
+	
 	if(index == -1) {
-		notify(player, "Not a legal area. Must be HEAD, CTORSO");
-		notify(player, "LTORSO, RTORSO, RLEG, LLEG, RARM, LARM");
-		notify(player, "TURRET, ROTOR, RSIDE, LSIDE, FRONT, AFT");
+		// Invalid section entered. Emit error and valid sections.
+		invalid_section(player, mech);
 		return;
 	}
 	subsect = atoi(args[2]);
@@ -1595,6 +1792,11 @@ void mechrep_Raddinftech(dbref player, void *data, char *buffer)
 
 	MECHREP_COMMON(1);
 	nv = BuildBitVector(infantry_specials, buffer);
+
+	if(MechType(mech) != CLASS_BSUIT) {
+		notify(player, "That is not a valid target for infantry technologies. Try a Suit!");
+		return;
+	}
 
 	if(nv < 0) {
 		notify(player, "Invalid infantry tech: Available techs:");

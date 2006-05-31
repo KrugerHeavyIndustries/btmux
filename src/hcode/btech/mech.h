@@ -553,10 +553,8 @@ struct missile_hit_table_struct {
 #define AERO_NOSE	0
 #define AERO_LWING	1
 #define AERO_RWING	2
-#define AERO_FUSEL	3
-#define AERO_COCKPIT	4
-#define AERO_ENGINE	5
-#define NUM_AERO_SECTIONS 6
+#define AERO_AFT	3
+#define NUM_AERO_SECTIONS 4
 
 #define NUM_BSUIT_MEMBERS 8
 
@@ -802,19 +800,29 @@ typedef struct {
     int num_seen;               /* Number of enemies seen */
     int lx, ly;
 
-    dbref chgtarget;            /* My CHARGE target */
-    dbref dfatarget;            /* My DFA target */
-    dbref target;               /* My default target */
-    dbref swarming;             /* Swarm target */
-    dbref carrying;             /* Who are we lugging about? */
-    dbref spotter;              /* Who's spotting for us? */
+
+
+
+
+
+
     dbref autopilot_num;        /* dbref of AI (if there is one) */
     dbref towed_by;             /* Who is towing us */
+
 
     float heat;                 /* Heat index */
     float weapheat;             /* Weapon heat factor-> see manifesto */
     float plus_heat;            /* how much heat I am producing */
     float minus_heat;           /* how much heat I can dissipate */
+
+    dbref chgtarget;		/* My CHARGE target */
+    dbref dfatarget;		/* My DFA target */
+    dbref target;		/* My default target */
+    dbref swarming;		/* Swarm target */
+    dbref swarmedby;		/* Who's swarming/mounting us */
+    dbref carrying;		/* Who are we lugging about? */
+    dbref spotter;		/* Who's spotting for us? */
+
 
     float startfx, startfy;     /* in real coords (for jump and goto) */
     float startfz, endfz;       /* startstuff's also aeros' speed */
@@ -867,6 +875,7 @@ typedef struct {
     int wxf;
     int maxsuits;               /* Maximum number of bsuits in this unit */
     int last_startup;           /* timestamp of last 'startup' */
+    float xpmod;		/* Used to modify XP values per unit. Will default loading to 1 */
 } mech_rd;
 
 typedef struct {
@@ -997,8 +1006,8 @@ struct repair_data {
 #define EVADING               0x00020000  /* (r) Unit is Evading */
 #define DODGING               0x00040000  /* (s) Unit is Dodging */
 #define ATTACKEMIT_MECH       0x00080000  /* (t) Units attacks sent to MechAttackEmits channel */
-/* UNUSED                     0x00100000     (u) */
-/* UNUSED                     0x00200000     (v) */
+#define UNIT_MOUNTED          0x00100000  /* (u) Unit has been mounted by a suit */
+#define UNIT_MOUNTING         0x00200000  /* (v) Unit is mounting another unit */
 /* UNUSED                     0x00400000     (w) */
 /* UNUSED                     0x00800000     (x) */
 /* UNUSED                     0x01000000     (y) */

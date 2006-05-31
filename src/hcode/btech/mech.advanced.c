@@ -831,6 +831,9 @@ static void mech_masc_event(MUXEVENT * e)
 	/* Break the Hips - FASA canon rule about MASC */
 	DestroyPart(mech, RLEG, 0);
 	DestroyPart(mech, LLEG, 0);
+	/* Don't forget to add in Hipped penalties (for landing, etc) */
+	MechSections(mech)[RLEG].basetohit += 2;
+	MechSections(mech)[LLEG].basetohit += 2;
 	if(MechMove(mech) == MOVE_QUAD) {
 		DestroyPart(mech, RARM, 0);
 		DestroyPart(mech, LARM, 0);
@@ -1049,7 +1052,7 @@ static void mech_explode_event(MUXEVENT * e)
 			}
 
 			MechZ(mech) = z;
-			headhitmwdamage(mech, 4);
+			headhitmwdamage(mech, mech, 4);
 		}
 	}
 }
@@ -1788,7 +1791,7 @@ static struct mechpref_info {
 	{
 	MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety",
 			"MechWarrior Safeties flipped"}, {
-	MECHPREF_SLWARN, 0, "SLWarn",
+	MECHPREF_SLWARN, MECHPREF_FLAG_INVERTED, "SLWarn",
 			"The warning when lit by searchlight is now"}, {
 	MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall",
 			"Suicidal jumps off cliffs toggled"}, {
@@ -1798,7 +1801,7 @@ static struct mechpref_info {
 			"Warning when running out of Ammunition switched"}, {
 	MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown",
 			"Autocon on shutdown units turned"}, {
-MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety",
+        MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety",
 			"Friendly Fire Safeties flipped"},};
 #define NUM_MECHPREFERENCES (sizeof(mech_preferences) / sizeof(struct mechpref_info))
 

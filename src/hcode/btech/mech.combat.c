@@ -112,7 +112,7 @@ void mech_target(dbref player, void *data, char *buffer)
 	DOCHECK(MechTarget(mech) < 0 ||
 			!(target =
 			  FindObjectsData(MechTarget(mech))),
-			"Error: You need to be locked at something to target it's part!");
+			"Error: You need to be locked onto something to target its part!");
 	type = MechType(target);
 	move = MechMove(target);
 	DOCHECK((index =
@@ -135,7 +135,7 @@ void mech_target(dbref player, void *data, char *buffer)
 char *ss_messages[] = {
 	"You feel you'll have your hands full before too long..",
 	"You have a bad feeling about this..",
-	"You feel a homicidal maniac is about to pounce you!",
+	"You feel a homicidal maniac is about to pounce on you!",
 
 	"You think something is amiss..",
 	"You have a slightly bad feeling about this..",
@@ -222,7 +222,7 @@ void mech_settarget(dbref player, void *data, char *buffer)
 		if(MechSwarmTarget(mech) > 0) {
 			if(MechSwarmTarget(mech) != target->mynum) {
 				mech_notify(mech, MECHALL,
-							"You're a bit to busy holding on for dear life to lock a target!");
+							"You're a bit too busy holding on for dear life to lock a target!");
 				return;
 			}
 		}
@@ -242,7 +242,7 @@ void mech_settarget(dbref player, void *data, char *buffer)
 		/* Targetted a square */
 		if(MechSwarmTarget(mech) > 0) {
 			mech_notify(mech, MECHALL,
-						"You're a bit to busy holding on for dear life to lock a target!");
+						"You're a bit too busy holding on for dear life to lock a target!");
 			return;
 		}
 
@@ -270,7 +270,7 @@ void mech_settarget(dbref player, void *data, char *buffer)
 		/* Targetted a square w/ special mode (hex / building) */
 		if(MechSwarmTarget(mech) > 0) {
 			mech_notify(mech, MECHALL,
-						"You're a bit to busy holding on for dear life to lock a target!");
+						"You're a bit too busy holding on for dear life to lock a target!");
 			return;
 		}
 
@@ -431,14 +431,14 @@ int FireWeaponNumber(dbref player,
 
 		/* Exile Stun Code Check */
 		DOCHECK0((MechCritStatus(mech) & MECH_STUNNED),
-				 "You cannot take actions while stunned! That include finding the trigger.");
+				 "You cannot take actions while stunned! That includes finding the trigger.");
 
 		DOCHECK0(PartTempNuke(mech, section, critical),
-				 "The weapons system chirps: 'That Weapon is still unusable - please stand by.'");
+				 "The weapons system chirps: 'That weapon is still unusable - please stand by.'");
 		DOCHECK0(weaptype == -3,
-				 "The weapon system chirps: 'That weapon is still reloading!'");
+				 "The weapons system chirps: 'That weapon is still reloading!'");
 		DOCHECK0(weaptype == -4,
-				 "The weapon system chirps: 'That weapon is still recharging!'");
+				 "The weapons system chirps: 'That weapon is still recharging!'");
 
 		/* New fancy message for when they try and fire a weapon and the section
 		 * is busy */
@@ -463,7 +463,7 @@ int FireWeaponNumber(dbref player,
 			wcDeadLegs = CountDestroyedLegs(mech);
 			if(MechIsQuad(mech))
 				DOCHECK0(wcDeadLegs > 2,
-						 "Quads need atleast 3 legs to fire while prone.");
+						 "Quads need at least 3 legs to fire while prone.");
 
 			/* quads with all 4 legs can fire all weapons while prone. They do not need to prop. */
 			if(!MechIsQuad(mech) || (MechIsQuad(mech) && wcDeadLegs > 0)) {
@@ -498,14 +498,14 @@ int FireWeaponNumber(dbref player,
 	if(IsMechMounted(mech)) {
 		DOCHECK0(((section == CTORSO) || (section == RTORSO) ||
 				  (section == LTORSO)),
-				 "You can not fire torso mounted weapons while you have battlesuits on you!");
+				 "You cannot fire torso-mounted weapons while you have battlesuits on you!");
 	}
 
 	DOCHECK0((MechDugIn(mech)) && section != TURRET,
 			 "Only turret weapons are available while in cover.");
 	DOCHECK0(weaptype == -2 ||
 			 (PartTempNuke(mech, section, critical) == FAIL_DESTROYED),
-			 "The weapons system chirps: 'That Weapon has been destroyed!'");
+			 "The weapons system chirps: 'That weapon has been destroyed!'");
 	DOCHECK0(IsAMS(weaptype), "That weapon is defensive only!");
 	DOCHECK0(argc > 3, "Invalid number of arguments!");
 
@@ -742,7 +742,7 @@ int weapon_failure_stuff(MECH * mech,
 		if((EGunRangeWithCheck(mech, *section,
 							   *weapindx) - *modifier) < range) {
 			mech_notify(mech, MECHALL,
-						"Due to weapons failure your shot fails short of its target!");
+						"Due to weapons failure your shot falls short of its target!");
 			*range_ok = 0;
 		}
 	return 0;
@@ -1382,7 +1382,7 @@ void FireWeapon(MECH * mech,
 	   (MechType(mech) == CLASS_MECH)) {
 		if(abs(MechSpeed(mech)) > 0.0) {
 			mech_notify(mech, MECHALL,
-						"You realize that moving while firing this weapon may not be a good idea afterall.");
+						"You realize that moving while firing this weapon may not be a good idea after all.");
 			if(MechTons(mech) <= 35)
 				wHGRPSkillMod = 2;
 			else if(MechTons(mech) <= 55)

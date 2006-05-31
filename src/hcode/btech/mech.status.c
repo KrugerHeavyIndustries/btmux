@@ -60,7 +60,7 @@ void DisplayTarget(dbref player, MECH * mech)
 			if(InLineOfSight(mech, tempMech, MechX(tempMech),
 							 MechY(tempMech), FaMechRange(mech, tempMech))) {
 				sprintf(buff,
-						"\nTarget: %s\t   Range: %.1f hexes   Bearing: %d deg",
+						"Target: %s\t   Range: %.1f hexes   Bearing: %d deg\n",
 						GetMechToMechID(mech, tempMech), FaMechRange(mech,
 																	 tempMech),
 						FindBearing(MechFX(mech), MechFY(mech),
@@ -80,23 +80,23 @@ void DisplayTarget(dbref player, MECH * mech)
 				sprintf(buff1, "\t   Aimed Shot Location: %s", location);
 				strcat(buff, buff1);
 			} else
-				sprintf(buff, "\nTarget: NOT in line of sight!");
+				sprintf(buff, "Target: NOT in line of sight!\n");
 		}
 		notify(player, buff);
 	} else if(MechTargX(mech) != -1 && MechTargY(mech) != -1) {
 		if(MechStatus(mech) & LOCK_BUILDING)
-			notify_printf(player, "\nTarget: Building at %d %d",
+			notify_printf(player, "Target: Building at %d %d\n",
 						  MechTargX(mech), MechTargY(mech));
 		else if(MechStatus(mech) & LOCK_HEX)
-			notify_printf(player, "\nTarget: Hex %d %d", MechTargX(mech),
+			notify_printf(player, "Target: Hex %d %d\n", MechTargX(mech),
 						  MechTargY(mech));
 		else
-			notify_printf(player, "\nTarget: %d %d", MechTargX(mech),
+			notify_printf(player, "Target: %d %d\n", MechTargX(mech),
 						  MechTargY(mech));
 
 	}
 	if(MechPKiller(mech))
-		notify(player, "\nWeapon Safeties are %ch%crOFF%cn.");
+		notify(player, "Weapon Safeties are %ch%crOFF%cn.\n");
 	if(GotPilot(mech) && HasBoolAdvantage(MechPilot(mech), "maneuvering_ace"))
 		notify_printf(player, "Turn Mode: %s",
 					  GetTurnMode(mech) ? "TIGHT" : "NORMAL");
@@ -106,12 +106,12 @@ void DisplayTarget(dbref player, MECH * mech)
 			return;
 		if(InLineOfSight(mech, tempMech, MechX(tempMech), MechY(tempMech),
 						 FaMechRange(mech, tempMech))) {
-			notify_printf(player, "\nChargeTarget: %s\t  ChargeTimer: %d",
+			notify_printf(player, "ChargeTarget: %s\t  ChargeTimer: %d\n",
 						  GetMechToMechID(mech, tempMech),
 						  MechChargeTimer(mech) / 2);
 		} else {
 			notify_printf(player,
-						  "\nChargeTarget: NOT in line of sight!\t Timer: %d",
+						  "ChargeTarget: NOT in line of sight!\t Timer: %d\n",
 						  MechChargeTimer(mech) / 2);
 		}
 	}
@@ -436,14 +436,22 @@ static char *MakeHeatScaleInfo(MECH * mech, char *fillchar, char *heatstr,
 	return heatstr;
 }
 
+void PrintHeatBar(dbref player, MECH * mech)
+{
+	char subbuff[256];
+	char buff[256];
+	char heatstr[9] = ".:::::::";
+
+	MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
+	snprintf(buff, 256, "Temp:%s", subbuff);
+	notify(player, buff);
+}
+
 void PrintInfoStatus(dbref player, MECH * mech, int own)
 {
 	char buff[256];
-	char subbuff[256];
-	char heatstr[9] = ".:::::::";
 	MECH *tempMech;
 	int f;
-	char *tmpstr;
 
 	switch (MechType(mech)) {
 	case CLASS_MECH:
@@ -463,15 +471,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				(int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
 				(int) (10. * MechMinusHeat(mech)));
 		notify(player, buff);
-		tmpstr = silly_atr_get(player, A_HEATCHARS);
-		if(!tmpstr || !strlen(tmpstr) ||
-		   sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-				  &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-				  &heatstr[6], &heatstr[7]) == 8) {
-			MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
-			snprintf(buff, 256, "Temp:%s", subbuff);
-			notify(player, buff);
-		}
+		
 		if(MechLateral(mech))
 			notify_printf(player, "You are moving laterally %s",
 						  LateralDesc(mech));
@@ -489,8 +489,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				 is_aero(mech) ? tprintf("%s angle: %%ch%%cg%d%%cn",
 										 MechDesiredAngle(mech) >=
 										 0 ? "Climbing" : "Diving",
-										 abs(MechDesiredAngle(mech))
-				 ) : "");
+										 abs(MechDesiredAngle(mech))) : "");
 		notify(player, buff);
 		if(FlyingT(mech) || MechMove(mech) == MOVE_SUB) {
 			sprintf(buff,
@@ -525,6 +524,11 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 
 		}
 		ShowTurretFacing(player, 0, mech);
+		if(MechHasHeat(mech)) {
+			notify_printf(player, "Excess Heat:%3d deg  Heat Production:     %3d deg   Heat Dissipation: %3d deg",
+				(int) (10. * MechHeat(mech)), (int) (10. * MechPlusHeat(mech)),
+				(int) (10. * MechMinusHeat(mech)));
+		}
 		break;
 	case CLASS_MW:
 	case CLASS_BSUIT:
@@ -539,6 +543,16 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 		notify(player, buff);
 		break;
 	}
+
+	if(MechHasHeat(mech)) {
+		PrintHeatBar(player, mech);
+
+		// Little extra space to preserve formatting.
+//		if(MechTarget(mech) == -1 && MechTargX(mech) == -1)
+//			notify(player, "  ");
+	}
+	notify(player, "  ");
+	// Show our locked target info (hex or unit).	
 	DisplayTarget(player, mech);
 
     if (MechCarrying(mech) > 0)
@@ -548,7 +562,6 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
     if (MechTowedBy(mech) > -1)
         if ((tempMech = getMech(MechTowedBy(mech))))
             notify_printf(player, "Being Towed by %s.", GetMechToMechID(mech, tempMech));
-
 }
 
 /* Status commands! */
@@ -564,47 +577,59 @@ void mech_status(dbref player, void *data, char *buffer)
 	doweird = 0;
 	cch(MECH_USUALSM);
 	if(!buffer || !strlen(buffer))
-		doweap = doinfo = doarmor = 1;
+		// No arguments, we'll go with our default 'status' output.
+		doweap = doinfo = doarmor = doheat = 1;
 	else {
+		// Argument provided, only show certain parts.
 		for(loop = 0; buffer[loop]; loop++) {
 			switch (toupper(buffer[loop])) {
 			case 'R':
-				doweap = doinfo = doarmor = usex = 1;
+				doweap = doinfo = doarmor = doheat = usex = 1;
 				break;
 			case 'A':
+				// Armor status
 				if(toupper(buffer[loop + 1]) == 'R')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				doarmor = 1;
 				break;
 			case 'I':
+				// Speed/Heading/Heat
 				doinfo = 1;
 				if(toupper(buffer[loop + 1]) == 'N')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				break;
 			case 'W':
+				// Weapons list.
 				doweap = 1;
 				if(toupper(buffer[loop + 1]) == 'E')
 					while (buffer[loop + 1] && buffer[loop + 1] != ' ')
 						loop++;
 				break;
 			case 'N':
+				// Really weird status display.
 				doweird = 1;
 				break;
 			case 'S':
+				// Very short one-line status.
 				doshort = 1;
 				break;
 			case 'H':
+				// Just the heat bar.
 				doheat = 1;
 				break;
 			}
 		}
 	}
+
+	// Very short one-line status.
 	if(doshort) {
 		PrintShortInfo(player, mech);
 		return;
 	}
+
+	// Really weird status display.
 	if(doweird) {
 		sprintf(buf, "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
 				MechType_Name(mech), MechTons(mech),
@@ -612,8 +637,11 @@ void mech_status(dbref player, void *data, char *buffer)
 				(int) (MechMaxSpeed(mech) / MP1),
 				(int) (MechJumpSpeed(mech) / MP1), MechActiveNumsinks(mech));
 		weirdbuf = buf;
+
 	} else if(!doheat || (doarmor | doinfo | doweap))
 		PrintGenericStatus(player, mech, 1, usex);
+
+	// Show our armor diagram.
 	if(doarmor) {
 		if(!doweird) {
 			PrintArmorStatus(player, mech, 1);
@@ -631,26 +659,23 @@ void mech_status(dbref player, void *data, char *buffer)
 				}
 		}
 	}
+
+	// Standard heat/heading/dive/etc.
 	if(doinfo && !doweird) {
 		PrintInfoStatus(player, mech, 1);
-		notify(player, " ");
-	}
-	if(doheat && !doinfo && MechType(mech) == CLASS_MECH) {
-		char *tmpstr, heatstr[9] = ".:::::::";
-
-		tmpstr = silly_atr_get(player, A_HEATCHARS);
-		if(!tmpstr || !strlen(tmpstr) ||
-		   sscanf(tmpstr, "[%c%c%c%c%c%c%c%c]", &heatstr[0], &heatstr[1],
-				  &heatstr[2], &heatstr[3], &heatstr[4], &heatstr[5],
-				  &heatstr[6], &heatstr[7]) == 8) {
-			MakeHeatScaleInfo(mech, heatstr, subbuff, 256);
-			sprintf(buf, "Temp:%s", subbuff);
-			notify(player, buf);
-		}
+		//notify(player, " ");
 	}
 
+	// Show our heat bar by itself.
+	if(!doinfo && doheat && MechHasHeat(mech)) { 
+		PrintHeatBar(player, mech);
+	}
+
+	// Weapons readout.
 	if(doweap)
 		PrintWeaponStatus(mech, player);
+
+	// Really strange, short status info.
 	if(doweird)
 		notify(player, buf);
 }
@@ -1003,6 +1028,8 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 		flag = 4;
 	else if(strcasecmp(buf_flag, "MODE") == 0)
 		flag = 5;
+	else if(strcasecmp(buf_flag, "HALFTON") == 0)
+		flag = 6;
 	else
 		flag = 0;
 
@@ -1043,6 +1070,12 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 																		crit)));
 			return buffer;
 		}
+	} else if(flag == 6) {
+		if(!IsAmmo(type))
+			return "#-1 NOT AMMO";
+		snprintf(buffer, MBUF_SIZE, "%d", GetPartFireMode(mech, index, crit) & HALFTON_MODE ? 1 : 0);
+		return buffer;
+
 	}
 
 	if(type == EMPTY || IsCrap(type))
@@ -1599,36 +1632,40 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	}
 }
 
+/*
+ * Picks the character to show for the armor location on enemy scans.
+ */
 int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 {
-	int a, b, c = -1;
+	int a = -1;
+	int b = -1;
+	int c = -1;
 
-	if(flag & 2) {
+	if(flag & 256) {
+		// Aero SI
+		a = ((1 + (b = AeroSI(mech))) * 100) / (AeroSIOrig(mech) + 1);
+	} else if(flag & 2) {
 		if(SectIntsRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech,
-																	 loc) +
-														 1);
+		c = 5;				/* Blue */
+		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech, loc) + 1);
 	} else if(flag & 4) {
 		if(SectRArmorRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = ((1 + (b =
-				   GetSectRArmor(mech,
-								 loc))) * 100) / (GetSectORArmor(mech,
-																 loc) + 1);
+		c = 5;				/* Blue */
+		a = ((1 + (b = GetSectRArmor(mech, loc))) * 100) / (GetSectORArmor(mech, loc) + 1);
 	} else {
 		if(SectArmorRepair(mech, loc))
-			c = 5;				/* Blue */
-		a = ((1 + (b =
-				   GetSectArmor(mech, loc))) * 100) / (GetSectOArmor(mech,
-																	 loc) +
-													   1);
+		c = 5;				/* Blue */
+		a = ((1 + (b = GetSectArmor(mech, loc))) * 100) / (GetSectOArmor(mech, loc) + 1);
 	}
+	
 	*opt = b;
+	// Blue (Character 5 in armordamltrstr)
 	if(c > 0)
 		return c;
+	// Yarr, we're breached.
 	if(!b)
 		return 4;
+	// Armor condition level characters.
 	if(a > 90)
 		return 0;
 	if(a > 70)
@@ -1639,10 +1676,8 @@ int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
 }
 
 /* bright green, dark green, bright yellow, dark red, black */
-
-static char *armordamcolorstr[] = { "%ch%cg", "%cg", "%ch%cy",
-	"%cr", "%ch%cx", "%ch%cb"
-};								/* last on is for armor being repaired */
+static char *armordamcolorstr[] = { "%ch%cg", "%cg", "%ch%cy", "%cr", "%ch%cx", "%ch%cb" };
+/* Armor location character (enemy scan). Last on is for armor being repaired. */
 static char *armordamltrstr = "OoxX*?";
 
 char *PrintArmorDamageColor(MECH * mech, int loc, int flag)
@@ -1657,9 +1692,13 @@ char *PrintArmorDamageString(MECH * mech, int loc, int flag)
 	int a;
 	static char foo[6];
 
+	// Zero out our armor string.
 	for(a = 0; a < 4; a++)
 		foo[a] = 0;
+	
+	// Put a single character representing the section's health in front of array.
 	foo[0] = armordamltrstr[ArmorEvaluateSerious(mech, loc, flag, &a)];
+	
 	if(flag & 1) {
 		if(flag & 8)
 			sprintf(foo, "%1d", (flag & 32) ? ((a + 9) / 10) : a);
@@ -1667,6 +1706,7 @@ char *PrintArmorDamageString(MECH * mech, int loc, int flag)
 			sprintf(foo, "%3d", a);
 		else
 			sprintf(foo, "%2d", a);
+
 		if((flag & 16) && foo[0] == ' ')
 			foo[0] = '0';
 	} else
@@ -1701,7 +1741,9 @@ char *show_armor(MECH * mech, int loc, int flag)
 {
 	static char foo[32];
 
-	if(!GetSectInt(mech, loc) && !(flag & 64))
+	if(flag & 256)
+		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, 0, flag), PrintArmorDamageString(mech, loc, flag));
+	else if(!GetSectInt(mech, loc) && !(flag & 64))
 		sprintf(foo, (flag & 32) ? " " : (flag & 128) ? "   " : "  ");
 	else
 		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, loc, flag),
@@ -1717,6 +1759,8 @@ char *show_armor(MECH * mech, int loc, int flag)
 /* Just get da desc from string, strtok'ed with \ns. */
 
 /* 1-6 at beginning of line = key */
+
+/* &SI| = SI (aeros/ds) */
 
 /* &+num = armor */
 
@@ -1950,25 +1994,25 @@ char *subdesc =
 
 /*
   Aero
-            /^^\
-          /|`99'|\
-   |     |_|.--.|_|     |
-   |      /||99||\      |
-   |    /'.-|--|-.`\    |
-   |---'99| |99| |99`---|
-   `--_____\||||/_____--'
-           `=99='
+              /^^\
+            /|`18'|\
+     |     |_|.--.|_|     |
+     |      /||  ||\      |
+     |    /'.-|--|-.`\    |
+     |---'18| |20| |20`---|
+     `--_____\||||/_____--'
+             '===='
  */
 
 char *aerodesc =
     "7              @0/@0^@0^@0\\\n"
     "1            @1/@1|@0`&+0@0'@2|@2\\\n"
-    "2     @1|     @1|@1_@1|@4.@4-@4-@4.@2|@2_@2|     @2|\n"
-    "3     @1|      @1/@1|@4|&+4|@4|@2\\      @2|\n"
+    "2     @1|     @1|@1_@1|.--.@2|@2_@2|     @2|\n"
+    "3     @1|      @1/@1||&SI|||@2\\      @2|\n"
     "4     @1|    @1/@1'@1.@1-@3|@3-@3-@3|@2-@2.@2`@2\\    @2|\n"
     "5     @1|@1-@1-@1-'&+1@1| @3|&+3@3| @2|&+2`---@2|\n"
-    "6     @1`@1-@1-@1_@1_@1_@1_@1_!15\\@5|@5|@5|@5|!25/@2_@2_@2_@2_@2_@2-@2-'\n"
-    "7             @1`@5=&+5@5=@2'\n0";
+    "6     @1`@1-@1-@1_@1_@1_@1_@1_\\||||/@2_@2_@2_@2_@2_@2-@2-'\n"
+    "7             @1'===='\n0";
 
 /*
   Spheroid Dropship
@@ -2191,7 +2235,7 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 			break;
 		default:
 			strcpy(tmpbuf,
-				   " This 'toy' is of unknown type to me. It has yet to be templated\n for status.\n0");
+				   " This 'toy' is of unknown type. It has yet to be templated\n for status.\n0");
 			break;
 		}
 	}
@@ -2221,7 +2265,7 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 				q++;
 			} else if(*q == '&' && (*(q + 1) == '+' || *(q + 1) == '-' ||
 									*(q + 1) == ':' || *(q + 1) == '(' ||
-									*(q + 1) == ')')) {
+									*(q + 1) == ')' || *(q + 1) == 'S')) {
 				if(*(q + 1) == '(') {
 					gflag |= 8;
 					q++;
@@ -2229,6 +2273,11 @@ void PrintArmorStatus(dbref player, MECH * mech, int owner)
 				}
 				if(*(q + 1) == ')') {
 					gflag |= 128;
+					q++;
+					odd = 1;
+				}
+				if(*(q + 1) == 'S') {
+					gflag |= 256;
 					q++;
 					odd = 1;
 				}

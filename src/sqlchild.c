@@ -410,10 +410,9 @@ static void sqlchild_check_queue()
 		log_perror("SQL", "FAIL", NULL, "pipe");
 		return;
 	}
-
 	if((aqt->pid = fork()) == 0) {
 		aqt->fd = fds[1];
-        close(fds[0]);
+		close(fds[0]);
 		unbind_signals();
 		sqlchild_child_execute_query(aqt);
 		exit(0);
@@ -422,6 +421,7 @@ static void sqlchild_check_queue()
 		aqt->fd = fds[0];
 		close(fds[1]);
 	}
+	
 	dprintk("waiting on sqlchild pid %d executing request %d", aqt->pid,
 			aqt->serial);
 
@@ -510,13 +510,15 @@ static void sqlchild_make_connection(char db_slot)
 		dbi_state = DBIS_EFAIL;
 		return;
 	}
-	if(strncmp(db_type, "mysql", 128) == 0
-	   && strnlen(mudconf.sqlDB_mysql_socket, 128) > 0
-	   && dbi_conn_set_option(conn, "mysql_unix_socket",
-							  mudconf.sqlDB_mysql_socket)) {
-		dprintk("failed to set mysql_unix_socket");
-		dbi_state = DBIS_EFAIL;
-		return;
+	if(strncmp(db_type, "mysql", 128) == 0) {
+		// dbi_conn_set_option(conn, "mysql_include_trailing_null", 1);
+		if(strnlen(mudconf.sqlDB_mysql_socket, 128) > 0
+				&& dbi_conn_set_option(conn, "mysql_unix_socket",
+					mudconf.sqlDB_mysql_socket)) {
+			dprintk("failed to set mysql_unix_socket");
+			dbi_state = DBIS_EFAIL;
+			return;
+		}
 	}
 	if(strncmp(db_type, "sqlite", 128) == 0
 	   && strnlen(mudconf.sqlDB_sqlite_dbdir, 128) > 0
@@ -561,9 +563,7 @@ static char *sqlchild_sanitize_string(char *input, int length)
 			retval[i] = ' ';
 		}
 	}
-	dprintk("length: %d, i is %d, terimnal character is 0x%02x.", length, i,
-			input[i]);
-	free(input);
+	dprintk("length: %d, i is %d, terimnal character is 0x%02x.", length, i, input[i]);
 	return retval;
 }
 
@@ -580,7 +580,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 
 	long long type_int;
 	double type_fp;
-	char *type_string;
+	char *type_string, *binbuffer;
 	time_t type_time;
 
 	ptr = output_buffer;
@@ -596,13 +596,13 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	}
 	if(dbi_state != DBIS_READY) {
 		sqlchild_child_abort_query_dbi(aqt,
-									   "unknown error in sqlchild_make_connection");
+				"unknown error in sqlchild_make_connection");
 		return;
 	}
 
 	if(!conn) {
 		sqlchild_child_abort_query_dbi(aqt,
-									   "unknown error in sqlchild_make_connection");
+				"unknown error in sqlchild_make_connection");
 		return;
 	}
 
@@ -614,7 +614,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	result = dbi_conn_query(conn, aqt->query);
 	if(result == NULL) {
 		sqlchild_child_abort_query_dbi(aqt,
-									   "unknown error in dbi_conn_query");
+				"unknown error in dbi_conn_query");
 		return;
 	}
 
@@ -634,43 +634,44 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 				delim = aqt->cdelim;
 			// XXX: handle error values form snprintf()
 			switch (dbi_result_get_field_type_idx(result, i)) {
-			case DBI_TYPE_INTEGER:
-				type_int = dbi_result_get_longlong_idx(result, i);
-				ptr += snprintf(ptr, eptr - ptr, "%lld%s", type_int, delim);
-				break;
-			case DBI_TYPE_DECIMAL:
-				type_fp = dbi_result_get_double_idx(result, i);
-				ptr += snprintf(ptr, eptr - ptr, "%f%s", type_fp, delim);
-				break;
-			case DBI_TYPE_STRING:
-
-				type_string = dbi_result_get_string_copy_idx(result, i);
-				ptr += snprintf(ptr, eptr - ptr, "%s%s", type_string, delim);
-				free(type_string);
-				break;
-			case DBI_TYPE_BINARY:
-				binary_length = dbi_result_get_field_length_idx(result, i);
-				if(binary_length) {
-					type_string = (char *)dbi_result_get_binary_copy_idx(result, i);
-					type_string = sqlchild_sanitize_string(type_string,
-														   dbi_result_get_field_length_idx
-														   (result, i));
-					ptr +=
-						snprintf(ptr, eptr - ptr, "%s%s", type_string, delim);
+				case DBI_TYPE_INTEGER:
+					type_int = dbi_result_get_longlong_idx(result, i);
+					ptr += snprintf(ptr, eptr - ptr, "%lld%s", type_int, delim);
+					break;
+				case DBI_TYPE_DECIMAL:
+					type_fp = dbi_result_get_double_idx(result, i);
+					ptr += snprintf(ptr, eptr - ptr, "%f%s", type_fp, delim);
+					break;
+				case DBI_TYPE_STRING:
+					type_string = dbi_result_get_string_copy_idx(result, i);
+					ptr += snprintf(ptr, eptr - ptr, "%s%s", type_string, delim);
 					free(type_string);
-				} else {
-					ptr += snprintf(ptr, eptr - ptr, "%s", delim);
-				}
-				break;
-			case DBI_TYPE_DATETIME:
-				type_time = dbi_result_get_datetime_idx(result, i);
-				localtime_r(&type_time, &tm);
-				asctime_r(&tm, time_buffer);
-				ptr += snprintf(ptr, eptr - ptr, "%s%s", time_buffer, delim);
-				break;
-			default:
-				sqlchild_child_abort_query(aqt, "unknown type");
-				return;
+					break;
+				case DBI_TYPE_BINARY:
+					binary_length = dbi_result_get_field_length_idx(result, i);
+					if(binary_length) {
+						type_string = (char *)dbi_result_get_binary_idx(result, i);
+						if(strncmp(type_string, "ERROR", 5)==0) {
+							sqlchild_child_abort_query(aqt, "fucked.");
+							return;
+						}
+						binbuffer = sqlchild_sanitize_string(type_string,
+								binary_length);
+						ptr += snprintf(ptr, eptr - ptr, "%s%s", binbuffer, delim);
+						free(binbuffer);
+					} else {
+						ptr += snprintf(ptr, eptr - ptr, "%s", delim);
+					}
+					break;
+				case DBI_TYPE_DATETIME:
+					type_time = dbi_result_get_datetime_idx(result, i);
+					localtime_r(&type_time, &tm);
+					asctime_r(&tm, time_buffer);
+					ptr += snprintf(ptr, eptr - ptr, "%s%s", time_buffer, delim);
+					break;
+				default:
+					sqlchild_child_abort_query(aqt, "unknown type");
+					return;
 			}
 			if(eptr - ptr < 1) {
 				sqlchild_child_abort_query(aqt, "result too large");

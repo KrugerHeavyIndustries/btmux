@@ -5,6 +5,6 @@
 
 #include "copyright.h"
 
-#define MINOR_REVNUM		"0-rc3"		/* Minor revision and/or rc number */
+#define MINOR_REVNUM		"0-rc4"		/* Minor revision and/or rc number */
 #define RELEASE_NAME        "Fly"
 

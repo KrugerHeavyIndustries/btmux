@@ -18,8 +18,9 @@
 void DisplayTarget(dbref player, MECH * mech);
 void show_miscbrands(MECH * mech, dbref player);
 void PrintGenericStatus(dbref player, MECH * mech, int own, int usex);
-void PrintShortInfo(dbref player, MECH * mech);
+void PrintHeatBar(dbref player, MECH * mech);
 void PrintInfoStatus(dbref player, MECH * mech, int own);
+void PrintShortInfo(dbref player, MECH * mech);
 void mech_status(dbref player, void *data, char *buffer);
 void mech_critstatus(dbref player, void *data, char *buffer);
 char *part_name(int type, int brand);

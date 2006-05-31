@@ -94,6 +94,7 @@
 #define MechBaseRun(a)	(a)->ud.runspeed
 #define MechBoomStart(a)	(a)->rd.boom_start
 #define MechCarriedCargo(a) 	(a)->rd.cargo_weight
+#define MechXPMod(a)		(a)->rd.xpmod
 #define SetCWCheck(a)		MechCritStatus(a) &= ~LOAD_OK
 #define SetWCheck(a)		MechCritStatus(a) &= ~OWEIGHT_OK
 #define SetCarriedCargo(a,b) 	do { MechCarriedCargo(a) = (b) ; SetCWCheck(a); } while (0)
@@ -205,6 +206,7 @@
 #define MechStatus2(a)      (a)->rd.status2
 /* #define MechSpecialsStatus(a)		(a)->rd.specialsstatus */
 #define MechSwarmTarget(a) 	(a)->rd.swarming
+#define MechSwarmer(a)		(a)->rd.swarmedby
 #define MechTacRange(a)	 	(a)->ud.tac_range
 #define MechTankCritStatus(a)	(a)->rd.tankcritstatus
 #define MechTargX(a)		(a)->rd.targx
@@ -251,6 +253,8 @@
 
 #define HS_Size(a)		(MechType(mech) == CLASS_MECH ? (ClanMech(a) ? 2 : ((MechSpecials(a) & DOUBLE_HEAT_TECH) ? 3 : 1)) : 1)
 #define HS_Efficiency(a)	(MechHasDHS(a) ? 2 : 1)
+#define MechHasHeat(a)		(MechType(a) == CLASS_MECH || MechType(a) == CLASS_AERO || MechType(a) == CLASS_DS || \
+				 MechType(a) == CLASS_SPHEROID_DS)
 
 #define DSSpam(mek,msg)		do { if (DropShip(MechType(mek)) && DSOkToNotify(mek)) MechLOSBroadcast(mek,msg); } while (0)
 #define DSSpam_O(mek,msg)	do { if (DropShip(MechType(mek))) MechLOSBroadcast(mek,msg); } while (0)

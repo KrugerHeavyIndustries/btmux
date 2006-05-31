@@ -109,8 +109,6 @@ int CritsInLoc(MECH * mech, int index)
 				return 6;
 	} else if(MechType(mech) == CLASS_MW)
 		return 2;
-	else if(MechType(mech) == CLASS_AERO && index == AERO_COCKPIT)
-		return 5;
 	return NUM_CRITICALS;
 }
 
@@ -621,7 +619,7 @@ int MechPilotSkillRoll_BTH(MECH * mech, int mods)
 	return mods;
 }
 
-int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
+int MadePilotSkillRoll_NoXP(MECH * mech, int mods, int succeedWhenFallen)
 {
 	int roll, roll_needed;
 
@@ -633,6 +631,31 @@ int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
 	roll_needed = MechPilotSkillRoll_BTH(mech, mods);
 
 	SendDebug(tprintf("Attempting to make pilot skill roll. "
+					  "SPilot: %d, mods: %d, MechPilot: %d, BTH: %d",
+					  FindSPilotPiloting(mech), mods,
+					  MechPilotSkillBase(mech), roll_needed));
+
+	mech_notify(mech, MECHPILOT, "You make a piloting skill roll!");
+	mech_printf(mech, MECHPILOT,
+				"Modified Pilot Skill: BTH %d\tRoll: %d", roll_needed, roll);
+	if(roll >= roll_needed) {
+		return 1;
+	}
+	return 0;
+}
+
+int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
+{
+	int roll, roll_needed;
+
+	if(Fallen(mech) && succeedWhenFallen)
+		return 1;
+	if(Uncon(mech) || !Started(mech) || Blinded(mech))
+		return 0;
+	roll = Roll();
+	roll_needed = MechPilotSkillRoll_BTH(mech, mods);
+
+	SendDebug(tprintf("Attempting to make pilot (noxp) skill roll. "
 					  "SPilot: %d, mods: %d, MechPilot: %d, BTH: %d",
 					  FindSPilotPiloting(mech), mods,
 					  MechPilotSkillBase(mech), roll_needed));
@@ -1491,9 +1514,7 @@ char *aero_locs[NUM_AERO_SECTIONS + 1] = {
 	"Nose",
 	"Left Wing",
 	"Right Wing",
-	"Fuselage",
-	"Cockpit",
-	"Engine",
+	"Aft Side",
 	NULL
 };
 
@@ -1681,16 +1702,13 @@ int IsInWeaponArc(MECH * mech, float x, float y, int section, int critical)
 		case AERO_NOSE:
 			wantarc = FORWARDARC | LSIDEARC | RSIDEARC;
 			break;
-		case AERO_FUSEL:
-			wantarc = FORWARDARC | REARARC | LSIDEARC | RSIDEARC;
-			break;
 		case AERO_LWING:
 			wantarc = LSIDEARC | (isrear ? REARARC : FORWARDARC);
 			break;
 		case AERO_RWING:
 			wantarc = RSIDEARC | (isrear ? REARARC : FORWARDARC);
 			break;
-		case AERO_ENGINE:
+		case AERO_AFT:
 			wantarc = REARARC;
 			break;
 		}

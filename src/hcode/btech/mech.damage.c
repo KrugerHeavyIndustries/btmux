@@ -216,10 +216,7 @@ int cause_armordamage(MECH * wounded,
 			return 0;
 		}
 		switch (hitloc) {
-		case AERO_COCKPIT:
-			DestroyMech(wounded, attacker, 1);
-			return 0;
-		case AERO_ENGINE:
+		case AERO_AFT:
 			MakeMechFall(wounded);
 			MechSpeed(wounded) = 0;
 			SetMaxSpeed(wounded, 0);
@@ -433,9 +430,9 @@ void DamageMech(MECH * wounded,
 
 	if((damage > 0 || intDamage > 0) && MechCritStatus(wounded) & HIDDEN) {
 		MechCritStatus(wounded) &= ~HIDDEN;
-		MechLOSBroadcast(wounded, "loses it's cover as it takes damage!");
+		MechLOSBroadcast(wounded, "loses its cover as it takes damage!");
 		mech_notify(wounded, MECHALL,
-					"Your cover is ruined you take damage!");
+					"Your cover is ruined as you take damage!");
 		if(!MoveModeChange(wounded))
 			MechCritStatus(wounded) &= ~HIDDEN;
 	}
@@ -462,7 +459,7 @@ void DamageMech(MECH * wounded,
 		if(MechCritStatus(wounded) & HIDDEN) {
 			mech_notify(wounded, MECHALL,
 						"Your cover is ruined as you take damage!");
-			MechLOSBroadcast(wounded, "loses it's cover as it takes damage.");
+			MechLOSBroadcast(wounded, "loses its cover as it takes damage.");
 			MechCritStatus(wounded) &= ~HIDDEN;
 		}
 
@@ -595,18 +592,17 @@ void DamageMech(MECH * wounded,
 		}
 	}
 
-	if((hitloc == HEAD && MechType(wounded) == CLASS_MECH)
-	   || (hitloc == AERO_COCKPIT && MechType(wounded) == CLASS_AERO)) {
+	if(hitloc == HEAD && MechType(wounded) == CLASS_MECH) {
 
 		/*      mech_notify (wounded, MECHALL,
 		   "You take 10 points of Lethal damage!!"); */
-		headhitmwdamage(wounded, 1);
+		headhitmwdamage(wounded, attacker, 1);
 	}
 	if(kill) {
 		if(kill == 1) {
 			mech_notify(wounded, MECHALL,
-						"The blast causes last of your craft's structural integrity disappear, blowing");
-			mech_notify(wounded, MECHALL, "it's pieces all over the sky!");
+						"The blast causes the last of your craft's structure to disintegrate, blowing");
+			mech_notify(wounded, MECHALL, "its pieces all over the sky!");
 			if(!Landed(wounded) && Started(wounded)) {
 				mech_notify(attacker, MECHALL,
 							"You shoot the craft from the sky!");
@@ -869,6 +865,10 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 	SetSectRArmor(wounded, hitloc, 0);
 	SetSectDestroyed(wounded, hitloc);
 	MechSections(wounded)[hitloc].specials = 0;
+
+	/* uncycle the section <in the case of an arm/leg that was kicking getting blown */
+	SetRecycleLimb(wounded, hitloc, 0);
+
 	/* Tell the attacker about it... */
 	if(attacker) {
 		ArmorStringFromIndex(hitloc, locname, MechType(wounded),
@@ -925,7 +925,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* Add 4 MW damage if it's a MW loosing a location */
 	if(MechType(wounded) == CLASS_MW) {
-		mwlethaldam(wounded, 4);
+		mwlethaldam(wounded, attacker, 4);
 	}
 
 	/* If it's a MW or a mech, let's see if there's additional stuff we need to do */

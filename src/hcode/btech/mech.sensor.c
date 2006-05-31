@@ -528,7 +528,10 @@ void update_LOSinfo(dbref obj, MAP * map)
 				if(MechStatus2(mech) & SLITE_ON)
 					if(range < LITE_RANGE)
 						cause_lite(mech, target);
-				if(Started(target))
+/* for now, commenting out this if(Started... section 
+ * it was causing problems with bap. so we update los a bit more often now
+ */
+/*				if(Started(target))
 					if(map->LOSinfo[j][i] & MECHLOSFLAG_BLOCK) {
 						wlf = !(map->LOSinfo[i][j] & MECHLOSFLAG_BLOCK) &&
 							((map->LOSinfo[i][j] & MECHLOSFLAG_SEESP) ||
@@ -545,6 +548,7 @@ void update_LOSinfo(dbref obj, MAP * map)
 #endif
 						continue;
 					}
+*/
 				if(range > map->maxvis && MechZ(target) < 11 &&
 				   MechZ(mech) < 11) {
 					map->LOSinfo[i][j] = MECHLOSFLAG_BLOCK;
@@ -798,10 +802,6 @@ void mech_sensor(dbref player, void *data, char *buffer)
 
 	if(!mech)
 		return;
-#ifdef SIMPLE_SENSORS
-	notify(player, "Sensors are unavailable, as regrettable as it may be.");
-	return;
-#endif
 	DOCHECK(MechType(mech) == CLASS_MW,
 			"You're using your eyes, and nothing you can do changes that!");
 	argc = mech_parseattributes(buffer, args, 2);

@@ -35,6 +35,7 @@ ECMD(mechrep_Rdisplaysection);
 ECMD(mechrep_Rloadnew);
 ECMD(mechrep_Rloadnew2);
 ECMD(mechrep_Rreload);
+ECMD(mechrep_Rfiremode);
 ECMD(mechrep_Rrepair);
 ECMD(mechrep_Rresetcrits);
 ECMD(mechrep_Rrestore);

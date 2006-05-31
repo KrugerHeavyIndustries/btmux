@@ -1240,7 +1240,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 				/* Don't bother trying to enter a water hex
 				 * unless we can */
 				if((MechType(mech) == CLASS_VEH_GROUND) &&
-				   (MechMove(mech) != MOVE_HOVER))
+				   (MechMove(mech) != MOVE_HOVER) && !(MechSpecials2(mech) & WATERPROOF_TECH))
 					continue;
 
 				/* We really don't want them trying to enter water */
@@ -1251,7 +1251,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 				/* Don't bother trying to enter a water hex
 				 * unless we can */
 				if((MechType(mech) == CLASS_VEH_GROUND) &&
-				   (MechMove(mech) != MOVE_HOVER))
+				   (MechMove(mech) != MOVE_HOVER) && !(MechSpecials2(mech) & WATERPROOF_TECH))
 					continue;
 
 				/* We really don't want them trying to enter water */

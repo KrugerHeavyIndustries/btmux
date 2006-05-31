@@ -95,6 +95,7 @@ extern void fun_btnumrepjobs();
 extern void fun_btsetxy();
 extern void fun_btmapemit();
 extern void fun_btparttype();
+extern void fun_btticweaps();
 #ifdef BT_ADVANCED_ECON
 extern void fun_btgetpartcost();
 extern void fun_btsetpartcost();
@@ -5621,6 +5622,8 @@ FUN flist[] = {
 	{"BTTECHTIME", fun_bttechtime, 0, 0, CA_WIZARD}
 	,
 	{"BTTHRESHOLD", fun_btthreshold, 1, 0, CA_WIZARD}
+	,
+	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD}
 	,
 	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER}
 	,
