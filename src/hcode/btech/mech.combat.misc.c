@@ -264,6 +264,7 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	int loop;
 	MAP *mech_map;
 	MECH *ttarget;
+	int a;
 
 	if(Destroyed(target)) {
 		return;
@@ -308,6 +309,16 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 				mech_dropoff(GOD, target, "");
 			}
 		}
+	}
+
+	/* destroy contents if they are units and the containter is IC*/
+	if(In_Character(target->mynum)) {
+		DOLIST(a,Contents(target->mynum))
+			if(IsMech(a) && In_Character(a)) {	
+				mech_notify(getMech(a), MECHALL, "Due to your transports destruction, your unit is destroyed!");
+				mech_udisembark(a, getMech(a), "");
+				DestroyMech(getMech(a),mech,0);
+			}
 	}
 	/* shut it down */
 	if(mech) {
