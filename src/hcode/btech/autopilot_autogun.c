@@ -559,6 +559,16 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 	int weapon_number;
 
 	/* Basic checks */
+	/* some accounting checks. try to prevent some race stuff */
+
+	if(!IsMech(autopilot->mymechnum)) {
+		/* most commonly, the mech is a bad memory space.
+		 * lets not try to access it
+		 */
+		dprintk("ap mymechnum is bad");
+		return;
+	}
+
 	if(!mech) {
 		dprintk("mech is bad!");
 		return;
