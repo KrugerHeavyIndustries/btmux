@@ -868,7 +868,17 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* uncycle the section <in the case of an arm/leg that was kicking getting blown */
 	SetRecycleLimb(wounded, hitloc, 0);
-
+	
+	/* drop off what we were carrying, since we really can't pick it up with one arm */
+	if((hitloc == RARM || hitloc == LARM)) {
+		if(MechCarrying(wounded) > 0) {
+			if((ttarget = getMech(MechCarrying(wounded)))) {
+				mech_notify(ttarget, MECHALL, "Your tow lines go suddenly slack!");
+				mech_dropoff(GOD, wounded, "");
+			}
+		}
+	}
+		
 	/* Tell the attacker about it... */
 	if(attacker) {
 		ArmorStringFromIndex(hitloc, locname, MechType(wounded),
