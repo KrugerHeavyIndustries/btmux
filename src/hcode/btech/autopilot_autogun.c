@@ -564,11 +564,14 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 	/* Basic checks */
 	/* some accounting checks. try to prevent some race stuff */
 
-	if(!IsMech(autopilot->mymechnum)) {
+	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
 		/* most commonly, the mech is a bad memory space.
 		 * lets not try to access it
 		 */
+
+	     
 		dprintk("ap mymechnum is bad");
+		TrulyStopGun(autopilot);
 		return;
 	}
 
