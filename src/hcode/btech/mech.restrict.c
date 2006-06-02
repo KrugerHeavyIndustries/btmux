@@ -242,7 +242,8 @@ void newfreemech(dbref key, void **data, int selector)
 	MAP *map;
 	AUTO *a;
 	int i;
-
+        command_node *temp;
+		
 	switch (selector) {
 	case SPECIAL_ALLOC:
 		new->mynum = key;
@@ -261,6 +262,38 @@ void newfreemech(dbref key, void **data, int selector)
 			AUTO *a = (AUTO *) FindObjectsData(MechAuto(new));
 			if (a) {
 				auto_stop_pilot(a);
+				 /* Go through the list and remove any leftover nodes */
+                while (dllist_size(a->commands)) {
+
+                        /* Remove the first node on the list and get the data
+                         * from it */
+                        temp = (command_node *) dllist_remove(a->commands,
+                                                                                                  dllist_head(a->
+                                                                                                                          commands));
+
+                        /* Destroy the command node */
+                        auto_destroy_command_node(temp);
+
+                }
+
+                /* Destroy the list */
+                dllist_destroy_list(a->commands);
+                a->commands = NULL;
+
+                /* Destroy any astar path list thats on the AI */
+                auto_destroy_astar_path(a);
+
+                /* Destroy profile array */
+                for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                        if(a->profile[i]) {
+                                rb_destroy(a->profile[i]);
+                        }
+                        a->profile[i] = NULL;
+                }
+
+                /* Destroy weaponlist */
+                auto_destroy_weaplist(a);
+
 				a->mymechnum = 0;
 			}
 			MechAuto(new) = -1;

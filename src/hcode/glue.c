@@ -992,6 +992,8 @@ int WhichSpecial(dbref key)
 {
 	Node *n;
 
+	if(!Good_obj(key))
+		return -1;
 	if(!Hardcode(key))
 		return -1;
 	if(!(n = FindObjectsNode(key)))
