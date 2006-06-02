@@ -114,7 +114,10 @@
 
 /* Various AI Macros */
 #define UpdateAutoSensor(a, flag) \
-    AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag)
+ if(muxevent_count_type_data(EVENT_AUTO_SENSOR, (void *) a)) \
+	                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, (void *) a);\
+AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag); \
+
 
 #define TrulyStartGun(a) \
     do { \
