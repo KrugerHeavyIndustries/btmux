@@ -153,7 +153,6 @@ void auto_sensor_event(MUXEVENT * muxevent)
 {
 
 	AUTO *autopilot = (AUTO *) muxevent->data;
-	MECH *mech = (MECH *) autopilot->mymech;
 	MECH *target = NULL;
 	MAP *map;
 	int flag = (int) muxevent->data2;
@@ -164,10 +163,17 @@ void auto_sensor_event(MUXEVENT * muxevent)
 	float trng;
 	int set = 0;
 
+	if (!(muxevent->data)) {
+		dprintk("muxevent data is bad!");
+		return;
+	}
+	
+	MECH *mech = (MECH *) autopilot->mymech;
+	
 	/* Make sure its a MECH Xcode Object and the AI is
 	 * an AUTOPILOT Xcode Object */
         /* Basic checks */
-        if(!mech) {
+	if(!mech) {
                 dprintk("mech is bad!");
                 return;
         }
