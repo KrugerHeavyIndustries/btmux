@@ -1531,7 +1531,9 @@ MECH *getMech(dbref d)
 {
 	Node *tmp;
 
-	if(d < 0)
+	if(!(Good_obj(d)))
+		return NULL;
+	if(!(Hardcode(d)))
 		return NULL;
 	if(!(tmp = FindObjectsNode(d)))
 		return NULL;
