@@ -123,7 +123,7 @@ AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag); \
     do { \
         AUTOEVENT(a, EVENT_AUTO_PROFILE, auto_update_profile_event, 1, 0); \
         AUTOEVENT(a, EVENT_AUTOGUN, auto_gun_event, 1, 0); \
-        AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, 0); \
+        UpdateAutoSensor(a, 0); \
     } while (0)
 
 #define DoStartGun(a) \

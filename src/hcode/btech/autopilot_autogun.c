@@ -299,9 +299,12 @@ void auto_sensor_event(MUXEVENT * muxevent)
 
 	}
 
-	if(!flag)
+	if(!flag) {
+		if(muxevent_count_type_data(EVENT_AUTO_SENSOR, (void *) autopilot)) 
+			                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, (void *) autopilot);
 		AUTOEVENT(autopilot, EVENT_AUTO_SENSOR, auto_sensor_event,
 				  AUTO_SENSOR_TICK, 0);
+	}
 
 }
 
