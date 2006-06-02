@@ -843,7 +843,8 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 				  ((hitloc == RARM || hitloc == LARM)
 				   && (MechIsQuad(wounded))));
 	dbref wounded_pilot = MechPilot(wounded);
-
+	MECH *ttarget;
+	
 	/* Prevent the rare occurance of a section getting destroyed twice */
 	if(SectIsDestroyed(wounded, hitloc)) {
 		fprintf(stderr, "Double-desting section %d on mech #%d\n",
