@@ -222,8 +222,10 @@ void muxevent_remove_type_data(int type, void *data) {
     if (type > last_muxevent_type)
         return;
     for (e = muxevent_first_in_type[type]; e; e = e->next_in_type)
-        if (e->data == data)
+        if (e->data == data) {
+		
             e->flags |= FLAG_ZOMBIE;
+	}
 }
 
 void muxevent_remove_type_data2(int type, void *data) {

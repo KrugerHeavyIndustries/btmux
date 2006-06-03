@@ -219,7 +219,7 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		Zombify(autopilot);
 		return;
 	}
-
+	
 	/* Get the target if there is one */
 	if(MechTarget(mech) > 0)
 		target = getMech(MechTarget(mech));
@@ -315,13 +315,13 @@ void auto_sensor_event(MUXEVENT * muxevent)
 
 	}
 
-	if(!flag) {
+/*	if(!flag) {
 		if(muxevent_count_type_data(EVENT_AUTO_SENSOR, (void *) autopilot)) 
 			                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, (void *) autopilot);
 		AUTOEVENT(autopilot, EVENT_AUTO_SENSOR, auto_sensor_event,
 				  AUTO_SENSOR_TICK, 0);
 	}
-
+*/
 }
 
 /*
@@ -1011,6 +1011,9 @@ void auto_gun_event(MUXEVENT * muxevent)
 
 	/* Check the profile - if it doesn't exist, calc it, then re-run autogun */
 	if(autopilot->weaplist == NULL) {
+		if(muxevent_count_type_data(EVENT_AUTO_PROFILE, (void *) autopilot)) {
+			muxevent_remove_type_data(EVENT_AUTO_PROFILE, (void *) autopilot);
+		}
 		AUTOEVENT(autopilot, EVENT_AUTO_PROFILE, auto_update_profile_event, 1,
 				  0);
 

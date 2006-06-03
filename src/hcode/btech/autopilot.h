@@ -114,8 +114,8 @@
 
 /* Various AI Macros */
 #define UpdateAutoSensor(a, flag) \
- if(muxevent_count_type_data(EVENT_AUTO_SENSOR, (void *) a)) \
-	                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, (void *) a);\
+ if(muxevent_count_type_data(EVENT_AUTO_SENSOR, a)) \
+	                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, a);\
 AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag); \
 
 
@@ -427,10 +427,10 @@ void auto_destroy_astar_path(AUTO *autopilot);
 /* From autopilot_autogun.c */
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
-void auto_sensor_event(MUXEVENT *muxevent);
-void auto_gun_event(MUXEVENT *muxevent);
+void auto_sensor_event(MUXEVENT * muxevent);
+void auto_gun_event(MUXEVENT * muxevent);
 void auto_destroy_weaplist(AUTO *autopilot);
-void auto_update_profile_event(MUXEVENT *muxevent);
+void auto_update_profile_event(MUXEVENT * muxevent);
 
 /* From autopilot_radio.c */
 void auto_reply_event(MUXEVENT *muxevent);

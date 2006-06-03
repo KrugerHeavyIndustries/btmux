@@ -917,7 +917,7 @@ void DisposeSpecialObject(dbref player, dbref key)
 		if(typeOfObject->allocfreefunc)
 			typeOfObject->allocfreefunc(key, &NodeData(tmp), SPECIAL_FREE);
 		NodeData(tmp) = NULL;
-		DeleteEntry(&xcode_tree, key);
+		DeleteEntry(&xcode_tree, key);	
 		muxevent_remove_data(t);
 		free(t);
 	} else if(typeOfObject->datasize > 0) {
