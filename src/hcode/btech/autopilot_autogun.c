@@ -168,6 +168,12 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		return;
 	}
 	
+	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
+		dprintk("mymechnum is bad!");
+		return;
+	}
+			 
+	
 	MECH *mech = (MECH *) autopilot->mymech;
 	
 	/* Make sure its a MECH Xcode Object and the AI is
