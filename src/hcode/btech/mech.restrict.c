@@ -294,7 +294,7 @@ void newfreemech(dbref key, void **data, int selector)
                 /* Destroy weaponlist */
                 auto_destroy_weaplist(a);
 
-				a->mymechnum = 0;
+				a->mymechnum = -1;
 			}
 			MechAuto(new) = -1;
 		}
