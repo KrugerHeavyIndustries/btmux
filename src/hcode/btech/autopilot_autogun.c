@@ -172,6 +172,10 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		dprintk("mymechnum is bad!");
 		return;
 	}
+	if((autopilot->mynum > mudstate.db_top) || (autopilot->mynum < 0 )) {
+		dprintk("mynum is bad!");
+		return;
+	}
 			 
 	
 	MECH *mech = (MECH *) autopilot->mymech;
