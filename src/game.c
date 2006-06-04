@@ -962,6 +962,7 @@ void dump_database_internal(int dump_type)
 		} else {
 			log_perror("SAV", "FAIL", "Opening", tmpfile);
 		}
+		rename(prevfile, mudconf.indb);
 	}
 
 	if(mudconf.have_mailer)
