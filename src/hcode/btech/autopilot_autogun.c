@@ -298,13 +298,11 @@ void auto_sensor_event(AUTO *autopilot)
 		wanted_s[0] = BOUNDED(SENSOR_VIS, wanted_s[0], SENSOR_BHAP);
 		wanted_s[1] = BOUNDED(SENSOR_VIS, wanted_s[1], SENSOR_BHAP);
 
-		memset(buf, '\0', sizeof(char) * 16);
-		sprintf(buf, "%c  %c",
-				sensors[wanted_s[0]].matchletter[0],
-				sensors[wanted_s[1]].matchletter[0]);
-
-		mech_sensor(autopilot->mynum, mech, buf);
-
+		MechSensor(mech)[0] = wanted_s[0];
+		MechSensor(mech)[1] = wanted_s[1];
+		mech_notify(mech, MECHALL, "As your sensors change, your lock clears.");
+		MechTarget(mech) = -1;
+		MarkForLOSUpdate(mech);
 	}
 }
 
