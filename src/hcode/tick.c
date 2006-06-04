@@ -24,6 +24,7 @@
 static struct event heartbeat_ev;
 static struct timeval heartbeat_tv = { 1, 0 };
 static int heartbeat_running = 0;
+unsigned int global_tick = 0;
 extern Tree xcode_tree;
 
 void GoThruTree(Tree tree, int (*func) (Node *));
@@ -61,7 +62,7 @@ int heartbeat_dispatch(Node *node) {
 
 void heartbeat_run(int fd, short event, void *arg) {
     evtimer_add(&heartbeat_ev, &heartbeat_tv);
-    dprintk("beat.");
     GoThruTree(xcode_tree, heartbeat_dispatch);
+    global_tick++;
 }
 

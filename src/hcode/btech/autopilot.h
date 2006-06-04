@@ -112,36 +112,22 @@
 #define AUTO_GOET               15
 #define AUTO_GOTT               240
 
-#define TrulyStartGun(a) \
-    do { \
-        AUTOEVENT(a, EVENT_AUTO_PROFILE, auto_update_profile_event, 1, 0); \
-        AUTOEVENT(a, EVENT_AUTOGUN, auto_gun_event, 1, 0); \
-    } while (0)
-
 #define DoStartGun(a) \
     do { \
         StartGun(a); \
-        TrulyStartGun(a); \
         a->flags &= ~AUTOPILOT_GUNZOMBIE; \
     } while (0)
 
-#define TrulyStopGun(a) \
-    do { \
-        muxevent_remove_type_data(EVENT_AUTO_PROFILE, a); \
-        muxevent_remove_type_data(EVENT_AUTOGUN, a); \
-    } while (0)
-
-#define DoStopGun(a)        \
-    do { StopGun(a); TrulyStopGun(a); } while (0)
+#define DoStopGun(a)       StopGun(a) 
 
 #define Zombify(a) \
-    do { a->flags |= AUTOPILOT_GUNZOMBIE; TrulyStopGun(a); } while (0)
+    do { a->flags |= AUTOPILOT_GUNZOMBIE; StopGun(a); } while (0)
 
 #define PilZombify(a) \
     do { a->flags |= AUTOPILOT_PILZOMBIE; } while (0)
 
 #define UnZombify(a) \
-    do { if (a->flags & AUTOPILOT_GUNZOMBIE) { TrulyStartGun(a);\
+    do { if (a->flags & AUTOPILOT_GUNZOMBIE) { StartGun(a);\
         a->flags &= ~AUTOPILOT_GUNZOMBIE; } } while (0)
 
 #define UnZombifyAuto(a) \
@@ -422,9 +408,9 @@ void auto_destroy_astar_path(AUTO *autopilot);
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
 void auto_sensor_event(AUTO * muxevent);
-void auto_gun_event(MUXEVENT * muxevent);
+void auto_gun_event(AUTO * AUTOPILOT);
 void auto_destroy_weaplist(AUTO *autopilot);
-void auto_update_profile_event(MUXEVENT * muxevent);
+void auto_update_profile_event(AUTO * autopilot);
 
 /* From autopilot_radio.c */
 void auto_reply_event(MUXEVENT *muxevent);

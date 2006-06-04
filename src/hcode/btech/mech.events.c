@@ -22,6 +22,7 @@
 #undef WEAPON_RECYCLE_DEBUG
 
 void mech_heartbeat(MECH *mech) {
+    UpdateRecycling(mech);
     return;
 }
 
@@ -133,15 +134,6 @@ void mech_recovery_event(MUXEVENT * e)
 	}
 }
 
-void mech_recycle_event(MUXEVENT * e)
-{
-	MECH *mech = (MECH *) e->data;
-	int t;
-
-	if((t = recycle_weaponry(mech)) > 0)
-		MaybeRecycle(mech, t);
-}
-
 void ProlongUncon(MECH * mech, int len)
 {
 	int l;
@@ -156,31 +148,6 @@ void ProlongUncon(MECH * mech, int len)
 	l = muxevent_last_type_data(EVENT_RECOVERY, (void *) mech) + len;
 	muxevent_remove_type_data(EVENT_RECOVERY, (void *) mech);
 	MECHEVENT(mech, EVENT_RECOVERY, mech_recovery_event, l, 0);
-}
-
-void MaybeRecycle(MECH * mech, int wticks)
-{
-	int nr, dat;
-
-	if(!(Started(mech) && !Destroyed(mech)))
-		return;
-	nr = NextRecycle(mech);
-	UpdateRecycling(mech);
-	if(nr < 0)
-		MechLWRT(mech) = muxevent_tick;
-	if(nr < 0 || nr > ((wticks + 1))) {
-		dat = MAX(1, wticks);
-		MECHEVENT(mech, EVENT_RECYCLE, mech_recycle_event, dat, 0);
-#ifdef WEAPON_RECYCLE_DEBUG
-		SendDebug(tprintf("%6d Recycle event for #%d set in %ds.",
-						  muxevent_tick, mech->mynum, dat));
-#endif
-	}
-#ifdef WEAPON_RECYCLE_DEBUG
-	else
-		SendDebug(tprintf("%6d Recycle event for #%d exists at %d secs",
-						  muxevent_tick, mech->mynum, nr));
-#endif
 }
 
 struct foo {

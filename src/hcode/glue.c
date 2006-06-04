@@ -285,7 +285,7 @@ static int load_update4(Node * tmp)
 		if(!Started(mech))
 			return 1;
 		StartSeeing(mech);
-		MaybeRecycle(mech, 1);
+		UpdateRecycling(mech);
 		MaybeMove(mech);
 
 	}
