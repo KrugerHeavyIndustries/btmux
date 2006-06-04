@@ -278,8 +278,6 @@ typedef struct {
 
     int b_msc, w_msc, b_bsc, w_bsc, b_dan, w_dan, last_upd;
 
-    /* event counters */
-    int countdown_profile;
 } AUTO;
 
 /* command_node struct to store AI 
