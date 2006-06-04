@@ -959,3 +959,8 @@ void auto_newautopilot(dbref key, void **data, int selector)
 	}
 
 }
+
+void auto_heartbeat(AUTO *autopilot) {
+    dprintk(".");
+    auto_sensor_event(autopilot);
+}

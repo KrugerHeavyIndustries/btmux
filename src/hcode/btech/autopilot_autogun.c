@@ -149,13 +149,10 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
  * target and situation
  */
 /*! \todo {Improve this so it knows more about the terrain} */
-void auto_sensor_event(MUXEVENT * muxevent)
+void auto_sensor_event(AUTO *autopilot)
 {
-
-	AUTO *autopilot = (AUTO *) muxevent->data;
 	MECH *target = NULL;
 	MAP *map;
-	int flag = (int) muxevent->data2;
 	char buf[16];
 	int wanted_s[2];
 	int rvis;
@@ -163,11 +160,6 @@ void auto_sensor_event(MUXEVENT * muxevent)
 	float trng;
 	int set = 0;
 
-	if (!(muxevent->data)) {
-		dprintk("muxevent data is bad!");
-		return;
-	}
-	
 	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
 		dprintk("mymechnum is bad!");
 		return;
@@ -314,14 +306,6 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		mech_sensor(autopilot->mynum, mech, buf);
 
 	}
-
-/*	if(!flag) {
-		if(muxevent_count_type_data(EVENT_AUTO_SENSOR, (void *) autopilot)) 
-			                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, (void *) autopilot);
-		AUTOEVENT(autopilot, EVENT_AUTO_SENSOR, auto_sensor_event,
-				  AUTO_SENSOR_TICK, 0);
-	}
-*/
 }
 
 /*

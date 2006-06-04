@@ -540,10 +540,6 @@ void map_update(dbref obj, void *data)
 					sensor_light_availability_check(mech);
 				if(strlen(changemsg) > 5)
 					mech_notify(mech, MECHALL, changemsg);
-				if(MechAuto(mech) > 0)
-					if((au = FindObjectsData(MechAuto(mech))))
-						if(Gunning(au))
-							UpdateAutoSensor(au, 0);
 			}
 	}
 	if(map->moves) {

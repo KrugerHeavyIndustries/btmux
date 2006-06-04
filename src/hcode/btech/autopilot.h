@@ -112,18 +112,10 @@
 #define AUTO_GOET               15
 #define AUTO_GOTT               240
 
-/* Various AI Macros */
-#define UpdateAutoSensor(a, flag) \
- if(muxevent_count_type_data(EVENT_AUTO_SENSOR, a)) \
-	                         muxevent_remove_type_data(EVENT_AUTO_SENSOR, a);\
-AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag); \
-
-
 #define TrulyStartGun(a) \
     do { \
         AUTOEVENT(a, EVENT_AUTO_PROFILE, auto_update_profile_event, 1, 0); \
         AUTOEVENT(a, EVENT_AUTOGUN, auto_gun_event, 1, 0); \
-        UpdateAutoSensor(a, 0); \
     } while (0)
 
 #define DoStartGun(a) \
@@ -137,7 +129,6 @@ AUTOEVENT(a, EVENT_AUTO_SENSOR, auto_sensor_event, 1, flag); \
     do { \
         muxevent_remove_type_data(EVENT_AUTO_PROFILE, a); \
         muxevent_remove_type_data(EVENT_AUTOGUN, a); \
-        muxevent_remove_type_data(EVENT_AUTO_SENSOR, a); \
     } while (0)
 
 #define DoStopGun(a)        \
@@ -300,6 +291,9 @@ typedef struct {
     int auto_nervous;
 
     int b_msc, w_msc, b_bsc, w_bsc, b_dan, w_dan, last_upd;
+
+    /* event counters */
+    int countdown_profile;
 } AUTO;
 
 /* command_node struct to store AI 
@@ -427,7 +421,7 @@ void auto_destroy_astar_path(AUTO *autopilot);
 /* From autopilot_autogun.c */
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
-void auto_sensor_event(MUXEVENT * muxevent);
+void auto_sensor_event(AUTO * muxevent);
 void auto_gun_event(MUXEVENT * muxevent);
 void auto_destroy_weaplist(AUTO *autopilot);
 void auto_update_profile_event(MUXEVENT * muxevent);
