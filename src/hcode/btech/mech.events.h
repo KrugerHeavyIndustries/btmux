@@ -56,14 +56,14 @@
 
 #define EVENT_MASC_FAIL   20	/* MASC roll for failure of stuff */
 #define EVENT_MASC_REGEN  21	/* MASC recovery during non-use */
-#define EVENT_AMMOWARN    22	/* Warn of running out of ammo */
+#define EVENT_AMMOWARN    22	/* CONVERTED. NO EVENT NEEDED NOW.  Warn of running out of ammo */
 
 #define FIRST_AUTO_EVENT        23
 #define EVENT_AUTOGOTO          23  /* Autopilot goto */
 #define EVENT_AUTOLEAVE         24  /* Autopilot leavebase */
 #define EVENT_AUTOCOM           25  /* Autopilot next command */
 #define EVENT_AUTOGUN           26  /* Autopilot gun control */
-#define EVENT_AUTO_SENSOR       27  /* Autopilot gun/sensor change */
+#define EVENT_AUTO_SENSOR       27  /* CONVERTED Autopilot gun/sensor change */
 #define EVENT_AUTOFOLLOW        28  /* Autopilot follow */
 #define EVENT_AUTOENTERBASE     29  /* Autopilot enterbase */
 #define EVENT_AUTO_REPLY        30  /* Autopilot reply */
