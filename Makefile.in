@@ -94,6 +94,7 @@ HCODE_OBJECTS =  src/hcode/coolmenu.o        \
                  src/hcode/mech.lostracer.o  \
                  src/hcode/mechfile.o        \
                  src/hcode/spath.o           \
+				 src/hcode/tick.o			 \
 
 BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/aero.move.o                \

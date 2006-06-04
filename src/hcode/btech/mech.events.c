@@ -21,6 +21,10 @@
 
 #undef WEAPON_RECYCLE_DEBUG
 
+void mech_heartbeat(MECH *mech) {
+    return;
+}
+
 static int factoral(int n)
 {
 	int i, j = 0;

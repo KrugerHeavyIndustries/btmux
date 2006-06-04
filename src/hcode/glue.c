@@ -496,6 +496,8 @@ static void load_econdb()
 }
 #endif
 
+void heartbeat_init();
+
 static void load_xcode()
 {
 	FILE *f;
@@ -534,6 +536,7 @@ static void load_xcode()
 #ifdef BT_ADVANCED_ECON
 	load_econdb();
 #endif
+    heartbeat_init();
 }
 
 static int zappable_node;
