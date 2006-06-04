@@ -787,6 +787,7 @@ static int set_sensor(MECH * mech, char ps, char ss)
 			return -1;
 		if(!CanChangeTo(mech, sec))
 			return -1;
+		StopSensorChange(mech);
 		MECHEVENT(mech, EVENT_SCHANGE, mech_sensorchange_event,
 				  SCHANGE_TICK, ((prim * NUM_SENSORS) + sec));
 	}
