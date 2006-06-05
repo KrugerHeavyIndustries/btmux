@@ -407,8 +407,6 @@ do { MechSections(a)[b].config &= ~SECTION_BREACHED ; SetWCheck(a); } while (0)
 #define Starting(a)          muxevent_count_type_data(EVENT_STARTUP,(void *) a)
 #define Recovering(a)        muxevent_count_type_data(EVENT_RECOVERY,(void *) a)
 #define TakingOff(a)         muxevent_count_type_data(EVENT_TAKEOFF,(void *) a)
-#define NextRecycle(a)       muxevent_first_type_data(EVENT_RECYCLE,(void *) a)
-#define Recycling(a)         (NextRecycle(a) >= 0 ? 1 : 0)
 #define FlyingT(a)           (is_aero(a) || MechMove(a) == MOVE_VTOL)
 #define RollingT(a)          ((MechType(a) == CLASS_AERO) || (MechType(a) == CLASS_DS))
 #define MaybeMove(a) \

@@ -34,7 +34,7 @@
 	/* Makes da mech stand */
 #define EVENT_JUMP         6
 	/* Advances us one jump 'step' */
-#define EVENT_RECYCLE      7	/* mech */
+#define EVENT_RECYCLE      7	/* CONVERTED. mech */
 	/* Weapons recycling.. */
 #define EVENT_JUMPSTABIL   8	/* mech */
 	/* If event of this type doesn't exist for mech, we've finished
