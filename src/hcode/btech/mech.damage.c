@@ -1096,6 +1096,7 @@ void mech_damage(dbref player, MECH * mech, char *buffer)
 	DOCHECK(Readnum(iscritical, args[3]), "Invalid iscritical flag!");
 	DOCHECK(damage <= 0 || damage > 1000, "Invalid damage!");
 	DOCHECK(clustersize <= 0, "Invalid cluster size!");
+	DOCHECK(clustersize > damage, "Invalid cluster size! (must be smaller than damage amount, but > 0)");
 	DOCHECK(MechType(mech) == CLASS_MW, "No MW killings!");
 	Missile_Hit(mech, mech, -1, -1, isrear, iscritical, 0, -1, -1,
 				clustersize, damage / clustersize, 1, 0, 0, 0);
