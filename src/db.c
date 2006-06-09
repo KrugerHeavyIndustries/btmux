@@ -542,13 +542,14 @@ INLINE void s_Name(dbref thing, char *s)
 	char new[MBUF_SIZE];
 	/* Truncate the name if we have to */
 
+	strncpy(new,s,MBUF_SIZE-1);
 	if(s && (strlen(s) > MBUF_SIZE))
 		s[MBUF_SIZE] = '\0';
 
 	atr_add_raw(thing, A_NAME, (char *) s);
 
 	if(mudconf.cache_names) {
-		strncpy(new, s, MBUF_SIZE-1);
+
 		set_string(&purenames[thing], strip_ansi_r(new,s,strlen(s)));
 	}
 }
