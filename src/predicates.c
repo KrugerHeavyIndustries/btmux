@@ -393,10 +393,11 @@ void giveto(dbref who, int pennies)
 int ok_name(const char *name)
 {
 	const char *cp;
+	char new[LBUF_SIZE];
 
 	/* Disallow pure ANSI names */
-
-	if(strlen(strip_ansi(name)) == 0)
+	strncpy(new, name, LBUF_SIZE-1);
+	if(strlen(strip_ansi_r(new,name,strlen(name))) == 0)
 		return 0;
 
 	/* Disallow leading spaces */

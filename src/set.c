@@ -162,6 +162,7 @@ void do_name(dbref player, dbref cause, int key, char *name, char *newname)
 	dbref thing;
 	char *buff;
 	char *buff2;
+	char new[LBUF_SIZE];
 
 	if((thing = match_controlled(player, name)) == NOTHING)
 		return;
@@ -169,7 +170,8 @@ void do_name(dbref player, dbref cause, int key, char *name, char *newname)
 	/*
 	 * check for bad name 
 	 */
-	if((*newname == '\0') || (strlen(strip_ansi(newname)) == 0)) {
+	strncpy(new, newname, LBUF_SIZE-1);
+	if((*newname == '\0') || (strlen(strip_ansi_r(new,newname,strlen(newname))) == 0)) {
 		notify_quiet(player, "Give it what new name?");
 		return;
 	}

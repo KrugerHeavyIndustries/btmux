@@ -1270,6 +1270,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 	int val, aflags, ca, atr;
 	ATTR *attr;
 	NAMETAB *np;
+	char new[LBUF_SIZE];
 
 	/* Check for obj/attr first */
 
@@ -1282,6 +1283,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 		} else {
 			StringCopy(thingname, Name(thing));
 		}
+		strncpy(new, thingname, LBUF_SIZE-1);
 		for(atr = olist_first(); atr != NOTHING; atr = olist_next()) {
 			if((atr == A_NAME || atr == A_LOCK))
 				continue;
@@ -1296,7 +1298,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 					ltext = unparse_boolexp_decompile(player, bool);
 					free_boolexp(bool);
 					notify_printf(player, "@lock/%s %s=%s", attr->name,
-								  strip_ansi(thingname), ltext);
+								  strip_ansi_r(new,thingname,strlen(thingname)), ltext);
 				} else {
 					StringCopy(buff, attr->name);
 					for(s = thingname; *s; s++) {
@@ -1307,11 +1309,11 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 					}
 					notify_printf(player, "%c%s %s=%s",
 								  ((atr < A_USER_START) ? '@' : '&'), buff,
-								  strip_ansi(thingname), got);
+								  strip_ansi_r(new,thingname,strlen(thingname)), got);
 
 					if(aflags & AF_LOCK) {
 						notify_printf(player, "@lock %s/%s",
-									  strip_ansi(thingname), buff);
+									  strip_ansi_r(new,thingname,strlen(thingname)), buff);
 					}
 
 					for(np = indiv_attraccess_nametab; np->name; np++) {
@@ -1321,7 +1323,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 						   (!(np->perm & CA_NO_DECOMP))) {
 
 							notify_printf(player, "@set %s/%s = %s",
-										  strip_ansi(thingname), buff,
+										  strip_ansi_r(new,thingname,strlen(thingname)), buff,
 										  np->name);
 						}
 					}
@@ -1395,8 +1397,9 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 	 * Report the lock (if any) 
 	 */
 
+	strncpy(new, thingname, LBUF_SIZE-1);
 	if(bool != TRUE_BOOLEXP) {
-		notify_printf(player, "@lock %s=%s", strip_ansi(thingname),
+		notify_printf(player, "@lock %s=%s", strip_ansi_r(new,thingname,strlen(thingname)),
 					  unparse_boolexp_decompile(player, bool));
 	}
 	free_boolexp(bool);
@@ -1427,11 +1430,11 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 				StringCopy(buff, attr->name);
 				notify_printf(player, "%c%s %s=%s",
 							  ((ca < A_USER_START) ? '@' : '&'), buff,
-							  strip_ansi(thingname), got);
+							  strip_ansi_r(new,thingname,strlen(thingname)), got);
 
 				if(aflags & AF_LOCK) {
 					notify_printf(player, "@lock %s/%s",
-								  strip_ansi(thingname), buff);
+								  strip_ansi_r(new,thingname,strlen(thingname)), buff);
 				}
 				for(np = indiv_attraccess_nametab; np->name; np++) {
 
@@ -1440,7 +1443,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 					   (!(np->perm & CA_NO_DECOMP))) {
 
 						notify_printf(player, "@set %s/%s = %s",
-									  strip_ansi(thingname), buff, np->name);
+									  strip_ansi_r(new,thingname,strlen(thingname)), buff, np->name);
 					}
 				}
 			}
@@ -1457,14 +1460,14 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 	 */
 
 	if(Parent(thing) != NOTHING)
-		notify_printf(player, "@parent %s=#%d", strip_ansi(thingname),
+		notify_printf(player, "@parent %s=#%d", strip_ansi_r(new,thingname,strlen(thingname)),
 					  Parent(thing));
 
 	/*
 	 * If the object has a zone, report it 
 	 */
 	if(Zone(thing) != NOTHING)
-		notify_printf(player, "@chzone %s=#%d", strip_ansi(thingname),
+		notify_printf(player, "@chzone %s=#%d", strip_ansi_r(new,thingname,strlen(thingname)),
 					  Zone(thing));
 
 	free_lbuf(thingname);

@@ -1496,7 +1496,8 @@ static void fun_mid(char *buff, char **bufc, dbref player, dbref cause,
 {
 	int l, len;
 	char *oldp;
-
+	char new[LBUF_SIZE];
+	
 	oldp = *bufc;
 	l = atoi(fargs[1]);
 	len = atoi(fargs[2]);
@@ -1504,8 +1505,9 @@ static void fun_mid(char *buff, char **bufc, dbref player, dbref cause,
 		safe_str("#-1 OUT OF RANGE", buff, bufc);
 		return;
 	}
-	if(l < strlen(strip_ansi(fargs[0])))
-		safe_str(strip_ansi(fargs[0]) + l, buff, bufc);
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	if(l < strlen(strip_ansi_r(new,fargs[0],strlen(fargs[0]))))
+		safe_str(strip_ansi_r(new,fargs[0],strlen(fargs[0])) + l, buff, bufc);
 	oldp[len] = 0;
 	if((oldp + len) < *bufc) {
 		*bufc = oldp + len;
@@ -2138,8 +2140,10 @@ static void fun_version(char *buff, char **bufc, dbref player, dbref cause,
 static void fun_strlen(char *buff, char **bufc, dbref player, dbref cause,
 					   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
+	char new[LBUF_SIZE];
+	strncpy(new, fargs[0], LBUF_SIZE-1);
 	safe_tprintf_str(buff, bufc, "%d",
-					 (int) strlen((char *) strip_ansi(fargs[0])));
+					 (int) strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0]))));
 }
 
 static void fun_num(char *buff, char **bufc, dbref player, dbref cause,
@@ -4294,8 +4298,10 @@ static void fun_edit(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	char *tstr;
-
-	edit_string((char *) strip_ansi(fargs[0]), &tstr, fargs[1], fargs[2]);
+	char new[LBUF_SIZE];
+	
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	edit_string((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])), &tstr, fargs[1], fargs[2]);
 	safe_str(tstr, buff, bufc);
 	free_lbuf(tstr);
 }
@@ -4965,9 +4971,11 @@ static void fun_ljust(char *buff, char **bufc, dbref player, dbref cause,
 {
 	int spaces, i;
 	char sep;
+	char new[LBUF_SIZE];
 
 	varargs_preamble("LJUST", 3);
-	spaces = atoi(fargs[1]) - strlen((char *) strip_ansi(fargs[0]));
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	spaces = atoi(fargs[1]) - strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])));
 
 	/*
 	 * Sanitize number of spaces 
@@ -4992,9 +5000,11 @@ static void fun_rjust(char *buff, char **bufc, dbref player, dbref cause,
 {
 	int spaces, i;
 	char sep;
-
+	char new[LBUF_SIZE];
+	
 	varargs_preamble("RJUST", 3);
-	spaces = atoi(fargs[1]) - strlen((char *) strip_ansi(fargs[0]));
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	spaces = atoi(fargs[1]) - strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])));
 
 	/*
 	 * Sanitize number of spaces 
@@ -5019,11 +5029,13 @@ static void fun_center(char *buff, char **bufc, dbref player, dbref cause,
 {
 	char sep;
 	int i, len, lead_chrs, trail_chrs, width;
+	char new[LBUF_SIZE];
 
 	varargs_preamble("CENTER", 3);
 
 	width = atoi(fargs[1]);
-	len = strlen((char *) strip_ansi(fargs[0]));
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	len = strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])));
 
 	if(width > LBUF_SIZE) {
 		safe_str("#-1 OUT OF RANGE", buff, bufc);

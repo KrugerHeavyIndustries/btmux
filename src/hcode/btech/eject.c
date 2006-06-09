@@ -470,6 +470,7 @@ void mech_embark(dbref player, void *data, char *buffer)
 				!InLineOfSight(mech, target, MechX(target), MechY(target),
 							   FaMechRange(mech, target)),
 				"That target is not in your line of sight.");
+		DOCHECK(OODing(target), "You should wait for your target to land first");
 		DOCHECK(MechZ(mech) > (MechZ(target) + 1),
 				"You are too high above the target.");
 		DOCHECK(MechZ(mech) < (MechZ(target) - 1),

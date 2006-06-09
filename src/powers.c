@@ -320,6 +320,7 @@ void decompile_powers(dbref player, dbref thing, char *thingname)
 {
 	POWER f1, f2;
 	POWERENT *fp;
+	char new[LBUF_SIZE];
 
 	/*
 	 * Report generic powers 
@@ -359,8 +360,8 @@ void decompile_powers(dbref player, dbref thing, char *thingname)
 		/*
 		 * We made it this far, report this power 
 		 */
-
-		notify_printf(player, "@power %s=%s", strip_ansi(thingname),
+		strncpy(new, thingname, LBUF_SIZE-1);
+		notify_printf(player, "@power %s=%s", strip_ansi_r(new,thingname,strlen(thingname)),
 					  fp->powername);
 	}
 }

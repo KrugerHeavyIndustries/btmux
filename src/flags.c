@@ -873,7 +873,8 @@ void decompile_flags(dbref player, dbref thing, char *thingname)
 {
 	FLAG f1, f2, f3;
 	FLAGENT *fp;
-
+	char new[LBUF_SIZE];
+	
 	/*
 	 * Report generic flags 
 	 */
@@ -916,8 +917,8 @@ void decompile_flags(dbref player, dbref thing, char *thingname)
 		/*
 		 * We made it this far, report this flag 
 		 */
-
-		notify_printf(player, "@set %s=%s", strip_ansi(thingname),
+		strncpy(new, thingname, LBUF_SIZE-1);
+		notify_printf(player, "@set %s=%s", strip_ansi_r(new,thingname,strlen(thingname)),
 					  fp->flagname);
 	}
 }								/* end decompile_flags() */

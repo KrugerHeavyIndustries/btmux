@@ -183,7 +183,9 @@ void log_perror(const char *primary, const char *secondary, const char *extra,
  */
 void log_text(char *text)
 {
-	fprintf(stderr, "%s", strip_ansi(text));
+	char new[LBUF_SIZE];
+	strncpy(new, text, LBUF_SIZE-1);
+	fprintf(stderr, "%s", strip_ansi_r(new,text,strlen(text)));
 }
 
 void log_error(int key, char *primary, char *secondary, char *format, ...)
@@ -251,19 +253,22 @@ void log_number(int num)
 void log_name(dbref target)
 {
 	char *tp;
+	char new[LBUF_SIZE];
 
 	if((mudconf.log_info & LOGOPT_FLAGS) != 0)
 		tp = unparse_object((dbref) GOD, target, 0);
 	else
 		tp = unparse_object_numonly(target);
-	fprintf(stderr, "%s", strip_ansi(tp));
+	strncpy(new, tp, LBUF_SIZE-1);
+	fprintf(stderr, "%s", strip_ansi_r(new,tp,strlen(tp)));
 	free_lbuf(tp);
 	if(((mudconf.log_info & LOGOPT_OWNER) != 0) && (target != Owner(target))) {
 		if((mudconf.log_info & LOGOPT_FLAGS) != 0)
 			tp = unparse_object((dbref) GOD, Owner(target), 0);
 		else
 			tp = unparse_object_numonly(Owner(target));
-		fprintf(stderr, "[%s]", strip_ansi(tp));
+		strncpy(new, tp, LBUF_SIZE-1);
+		fprintf(stderr, "[%s]", strip_ansi_r(new,tp,strlen(tp)));
 		free_lbuf(tp);
 	}
 	return;

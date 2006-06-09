@@ -365,13 +365,10 @@ void queue_string(DESC * d, const char *s)
 {
 	char new[LBUF_SIZE];
 
-    strncpy(new, s, LBUF_SIZE-1);
+        strncpy(new, s, LBUF_SIZE-1);
 
-	if(!Ansi(d->player) && index(s, ESC_CHAR)) {
-        strip_ansi_r(new, s, strlen(s));
-	} else if(NoBleed(d->player)) {
-		new = normal_to_white(s);
-	} 	
+	if(!Ansi(d->player) && index(s, ESC_CHAR)) 
+	        strip_ansi_r(new, s, strlen(s));
     queue_write(d, new, strlen(new));
 }
 

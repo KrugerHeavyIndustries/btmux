@@ -272,6 +272,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	int isvb;
 	int inlos;
 	int IsUsingHUD = 0;
+	char new[LBUF_SIZE];
 
 	cch(MECH_USUAL);
 	mechfound = 0;
@@ -520,8 +521,10 @@ void mech_contacts(dbref player, void *data, char *buffer)
 			weaponarc = getWeaponArc(mech, InWeaponArc(mech, fx, fy));
 
 			mech_name = silly_atr_get(building->obj, A_MECHNAME);
-			if(!mech_name || !*mech_name)
-				mech_name = strip_ansi(Name(building->obj));
+			if(!mech_name || !*mech_name) {
+				strncpy(new, Name(building->obj), LBUF_SIZE-1);
+				mech_name = strip_ansi_r(new,Name(building->obj),strlen(Name(building->obj)));
+			}
 
 			if(!IsUsingHUD) {
 				sprintf(buff,

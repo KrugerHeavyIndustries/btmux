@@ -903,6 +903,7 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 	mapobj *building;
 	float fx, fy, range;
 	int z, losflag, locked, bearing, weaponarc;
+	char new[LBUF_SIZE];
 
 	if(!map) {
 		hudinfo_notify(d, msgclass, "E", "You are on no map");
@@ -938,8 +939,10 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 		bearing = FindBearing(MechFX(mech), MechFY(mech), fx, fy);
 		weaponarc = InWeaponArc(mech, fx, fy);
 		building_name = silly_atr_get(building->obj, A_MECHNAME);
-		if(!building_name || !*building_name)
-			building_name = strip_ansi(Name(building->obj));
+		if(!building_name || !*building_name) {
+			strncpy(new, Name(building->obj), LBUF_SIZE-1);
+			building_name = strip_ansi_r(new,Name(building->obj),strlen(Name(building->obj)));
+		}
 
 		if(!building_name || !*building_name)
 			building_name = "-";

@@ -517,6 +517,7 @@ INLINE char *PureName(dbref thing)
 	int aflags;
 	char *buff;
 	static char *tbuff[LBUF_SIZE];
+	char new[LBUF_SIZE];
 
 	if(mudconf.cache_names) {
 		if(thing > mudstate.db_top || thing < 0) {
@@ -524,18 +525,21 @@ INLINE char *PureName(dbref thing)
 		}
 		if(!purenames[thing]) {
 			buff = atr_get(thing, A_NAME, &aowner, &aflags);
-			set_string(&purenames[thing], strip_ansi(buff));
+			strncpy(new, buff, LBUF_SIZE-1);
+			set_string(&purenames[thing], strip_ansi_r(new,buff,strlen(buff)));
 			free_lbuf(buff);
 		}
 		return purenames[thing];
 	}
 
 	atr_get_str((char *) tbuff, thing, A_NAME, &aowner, &aflags);
-	return (strip_ansi((char *) tbuff));
+	strncpy(new, (char *) tbuff,LBUF_SIZE-1);
+	return (strip_ansi_r(new,(char *) tbuff,strlen((char *) tbuff)));
 }
 
 INLINE void s_Name(dbref thing, char *s)
 {
+	char new[MBUF_SIZE];
 	/* Truncate the name if we have to */
 
 	if(s && (strlen(s) > MBUF_SIZE))
@@ -544,7 +548,8 @@ INLINE void s_Name(dbref thing, char *s)
 	atr_add_raw(thing, A_NAME, (char *) s);
 
 	if(mudconf.cache_names) {
-		set_string(&purenames[thing], strip_ansi((char *) s));
+		strncpy(new, (char *) s, MBUF_SIZE-1);
+		set_string(&purenames[thing], strip_ansi_r(new,(char *) s,strlen((char *) s)));
 	}
 }
 
