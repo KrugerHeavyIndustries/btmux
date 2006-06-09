@@ -548,8 +548,8 @@ INLINE void s_Name(dbref thing, char *s)
 	atr_add_raw(thing, A_NAME, (char *) s);
 
 	if(mudconf.cache_names) {
-		strncpy(new, (char *) s, MBUF_SIZE-1);
-		set_string(&purenames[thing], strip_ansi_r(new,(char *) s,strlen((char *) s)));
+		strncpy(new, s, MBUF_SIZE-1);
+		set_string(&purenames[thing], strip_ansi_r(new,s,strlen(s)));
 	}
 }
 
