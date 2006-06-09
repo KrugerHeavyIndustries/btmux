@@ -152,7 +152,7 @@ int bind_mux_socket(int port)
 		exit(4);
 	}
 	dprintk("connection socket raised and bound, %d", s);
-	listen(s, 5);
+	listen(s, 25);
 	return s;
 }
 
@@ -635,13 +635,14 @@ void flush_sockets()
 			d->chokes = 0;
 		}
 		if(d->sock_buff && EVBUFFER_LENGTH(d->sock_buff->output)) {
+/*
 			dprintk("sock %d for user #%d output evbuffer misalign: %d, totallen: %d, off: %d, pending %d.",
 				 (int) d->descriptor, 
                  (int) d->player,
                  (int) d->sock_buff->output->misalign,
 				 (int) d->sock_buff->output->totallen,
 				 (int) d->sock_buff->output->off, 
-                 EVBUFFER_LENGTH(d->sock_buff->output));
+                 EVBUFFER_LENGTH(d->sock_buff->output)); */
 			evbuffer_write(d->sock_buff->output, d->descriptor);
 		}
 		fsync(d->descriptor);
@@ -654,7 +655,7 @@ void close_sockets(int emergency, char *message)
 
 	DESC_SAFEITER_ALL(d, dnext) {
 		if(emergency) {
-			WRITE(d->descriptor, message, strlen(message));
+			write(d->descriptor, message, strlen(message));
 			if(shutdown(d->descriptor, 2) < 0)
 				log_perror("NET", "FAIL", NULL, "shutdown");
 			dprintk("shutting down fd %d", d->descriptor);
@@ -665,6 +666,7 @@ void close_sockets(int emergency, char *message)
 			fsync(d->descriptor);
 			if(d->outstanding_dnschild_query)
 				dnschild_kill(d->outstanding_dnschild_query);
+            d->outstanding_dnschild_query = NULL;
 			event_loop(EVLOOP_ONCE);
 			event_del(&d->sock_ev);
 			bufferevent_free(d->sock_buff);

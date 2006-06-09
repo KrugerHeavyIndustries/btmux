@@ -363,15 +363,16 @@ void queue_write(DESC * d, char *b, int n)
 
 void queue_string(DESC * d, const char *s)
 {
-	char *new;
+	char new[LBUF_SIZE];
 
-	if(!Ansi(d->player) && index(s, ESC_CHAR))
-		new = strip_ansi(s);
-	else if(NoBleed(d->player))
+    strncpy(new, s, LBUF_SIZE-1);
+
+	if(!Ansi(d->player) && index(s, ESC_CHAR)) {
+        strip_ansi_r(new, s, strlen(s));
+	} else if(NoBleed(d->player)) {
 		new = normal_to_white(s);
-	else
-		new = (char *) s;
-	queue_write(d, new, strlen(new));
+	} 	
+    queue_write(d, new, strlen(new));
 }
 
 void freeqs(DESC * d)

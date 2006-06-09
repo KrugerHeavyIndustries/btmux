@@ -70,35 +70,12 @@ char *strip_ansi_r(char *dest, char *raw, size_t n)
 	*q = '\0';
 	return dest;
 }
-char *strip_ansi(const char *raw)
-{
-	static char buf[LBUF_SIZE];
-	char *p = (char *) raw;
-	char *q = buf;
 
-	while (p && *p) {
-		if(*p == ESC_CHAR) {
-			/*
-			 * Start of ANSI code. Skip to end. 
-			 */
-			while (*p && !isalpha(*p))
-				p++;
-			if(*p)
-				p++;
-		} else
-			*q++ = *p++;
-	}
-	*q = '\0';
-	return buf;
-}
-
-char *normal_to_white(const char *raw)
-{
-	static char buf[LBUF_SIZE];
-	char *p = (char *) raw;
-	char *q = buf;
-
-	while (p && *p) {
+char *normal_to_white_r(char *dest, const char *raw, size_t n) {
+    char *p = (char *) raw;
+	char *q = dest;
+    
+	while (p && *p && ((q - dest) < n)) {
 		if(*p == ESC_CHAR) {
 			/*
 			 * Start of ANSI code. 
@@ -109,12 +86,11 @@ char *normal_to_white(const char *raw)
 			*q++ = *p++;		/*
 								 * [ character. 
 								 */
-			if(*p == '0') {		/*
-								 * ANSI_NORMAL 
-								 */
-				safe_str("0m", buf, &q);
-				safe_chr(ESC_CHAR, buf, &q);
-				safe_str("[37m", buf, &q);
+			if(*p == '0') {
+                if((q - dest + 7) < n) {
+                    memcpy(q, "0m\x1b[37m", 7);
+                    q += 7;
+                }
 				p += 2;
 			}
 		} else
