@@ -128,9 +128,8 @@ void helpindex_init(void);
 int cf_ntab_access(int *, char *, long, dbref, char *);
 
 /* From log.c */
-char *strip_ansi(const char *);
-char *strip_ansi_r(char *, char *, size_t);
-char *normal_to_white(const char *);
+char *strip_ansi_r(char *, const char *, size_t);
+char *normal_to_white_r(char *, const char *, size_t);
 int start_log(const char *, const char *);
 void end_log(void);
 void log_perror(const char *, const char *, const char *, const char *);

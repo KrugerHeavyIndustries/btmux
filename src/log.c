@@ -50,7 +50,7 @@ NAMETAB logoptions_nametab[] = {
 	{NULL, 0, 0, 0}
 };
 
-char *strip_ansi_r(char *dest, char *raw, size_t n)
+char *strip_ansi_r(char *dest, const char *raw, size_t n)
 {
 	char *p = (char *) raw;
 	char *q = dest;
@@ -97,7 +97,7 @@ char *normal_to_white_r(char *dest, const char *raw, size_t n) {
 			*q++ = *p++;
 	}
 	*q = '\0';
-	return buf;
+	return dest;
 }
 
 /**

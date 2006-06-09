@@ -561,7 +561,7 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 
 int process_input(DESC * d)
 {
-	static char buf[LBUF_SIZE];
+	char buf[LBUF_SIZE];
 	int got, in, iter;
     char current;
 	char *cmdsave;
@@ -602,7 +602,7 @@ int process_input(DESC * d)
                 queue_string(d, " \b");
             }
             if(d->input_tail > 0) {
-                d->input[d->input_tail--] = '\0';
+                d->input[--d->input_tail] = '\0';
             }
         } else if(isascii(current) && isprint(current)) {
             if(d->input_tail >= sizeof(d->input)) {
