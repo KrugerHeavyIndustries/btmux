@@ -83,13 +83,13 @@ void desc_addhash(DESC * d)
 
 void desc_delhash(DESC * d)
 {
-    DESC *hdesc;
+    char buffer2[4096];
+    DESC *hdesc = NULL;
     char buffer[4096];
-
+    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player);
     hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
+    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player);
 
-    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc,
-            Name(d->player), d->player);
 
     if(!hdesc) {
         snprintf(buffer, 4096,
@@ -490,6 +490,7 @@ void shutdownsock(DESC * d, int reason)
 	}
     d->flags |= DS_DEAD;
     release_descriptor(d);
+    dprintk("shutdown.");
 }
 
 void make_nonblocking(int s)
@@ -595,7 +596,11 @@ int process_input(DESC * d)
 	int got, in, iter;
     char current;
 
-    if(d->flags & DS_DEAD) return 0;
+    if(d->flags & DS_DEAD) { 
+        dprintk("Bailing on process_input %p %d %s %d", 
+        d, d->descriptor, (d->player?Name(d->player):""), d->player);
+        return 0;
+    }
 
     memset(buf, 0, sizeof(buf));
 
@@ -626,12 +631,16 @@ int process_input(DESC * d)
         current = buf[iter];
         if(current == '\n') {
             if(d->flags & DS_CONNECTED) {
-                dprintk("authed as %s running command '%s' refcount %d", Name(d->player), d->input, d->refcount);
+                dprintk("authed as %s running command '%s' refcount %d descriptor %p fd %d", Name(d->player), d->input, d->refcount, d, d->descriptor);
                 run_command(d, (char *)d->input);
             } else {
-                dprintk("unauth running command '%s' %d", d->input, d->refcount);
-                if(!do_unauth_command(d, d->input)) 
+                dprintk("unauth running command '%s' refcount %d descriptor %p fd %d", d->input, d->refcount, 
+                d, d->descriptor);
+                if(!do_unauth_command(d, d->input))  {
+                    dprintk("logout on %p fd %d, bailing.", d, d->descriptor);
+                    shutdownsock(d, R_QUIT);
                     break;
+                }
             }
             memset(d->input, 0, sizeof(d->input));
             d->input_tail = 0;
@@ -654,6 +663,7 @@ int process_input(DESC * d)
             d->input_size++;
         }
 	}
+    dprintk("finished %p fd %d", d, d->descriptor);
 
     release_descriptor(d);
 	return 1;

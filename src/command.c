@@ -1220,7 +1220,6 @@ void process_command(dbref player, dbref cause, int interactive,
 	char *macroout;
 	int macerr;
 	int eins = 1, null = 0;
-	DESC *d;
 
 	/*
 	 * Robustify player 
