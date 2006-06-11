@@ -595,6 +595,7 @@ int process_input(DESC * d)
 	int got, in, iter;
     char current;
 
+    if(d->flags & DS_DEAD) return 0;
 
     memset(buf, 0, sizeof(buf));
 
@@ -606,6 +607,9 @@ int process_input(DESC * d)
         else if(errno == EAGAIN)
             return 1;
 		else {
+            dprintk("error %s (errno %d) read on fd %d descriptor %p %s(%d)\n",
+            strerror(errno), errno,
+                d->descriptor, d, (d->player?Name(d->player):""), d->player);
             shutdownsock(d, R_SOCKDIED);
             return 1;
         }
@@ -631,7 +635,7 @@ int process_input(DESC * d)
             }
             memset(d->input, 0, sizeof(d->input));
             d->input_tail = 0;
-            if(d->flags | DS_DEAD) break;
+            if(d->flags & DS_DEAD) break;
         } else if(current == '\b' || current == 0x7f) {
             if(current == 127) {
                 queue_string(d, "\b \b");

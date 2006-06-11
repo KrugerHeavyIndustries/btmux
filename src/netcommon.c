@@ -509,6 +509,8 @@ static const char *time_format_2(time_t dt)
 	return buf;
 }
 
+extern char *mux_version;
+
 static void announce_connect(dbref player, DESC * d)
 {
 	dbref loc, aowner, temp;
@@ -517,6 +519,10 @@ static void announce_connect(dbref player, DESC * d)
 	int aflags, num, key, count;
 	char *buf, *time_str;
 	DESC *dtemp;
+
+    queue_string(d, "Connected.\n");
+    queue_string(d, mux_version);
+    queue_string(d, "\n\n");
 
 	desc_addhash(d);
 
