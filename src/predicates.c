@@ -17,7 +17,7 @@
 #include "htab.h"
 
 extern dbref match_thing(dbref, char *);
-extern int do_command(DESC *, char *, int);
+extern int do_command(DESC *, char *);
 extern void dump_database(void);
 extern void dump_restart_db(void);
 
@@ -846,7 +846,7 @@ void handle_prog(DESC * d, char *message)
 	 */
 
 	if(*message == '|') {
-		do_command(d, message + 1, 1);
+		do_command(d, message + 1);
 		/* Use telnet protocol's GOAHEAD command to show prompt */
 		if(d->program_data != NULL)
 			queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE,

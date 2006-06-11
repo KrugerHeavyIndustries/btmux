@@ -1234,15 +1234,8 @@ void process_command(dbref player, dbref cause, int interactive,
 	}
 
 	if(!Good_obj(player)) {
-		STARTLOG(LOG_BUGS, "CMD", "PLYR") {
-			lcbuf = alloc_mbuf("process_command.LOG.badplayer");
-			sprintf(lcbuf, "Bad player in process_command: %d", player);
-			log_text(lcbuf);
-			free_mbuf(lcbuf);
-			ENDLOG;
-		}
+        log_error(LOG_BUGS, "CMD", "PLYR", "Bad player in process_command: %d", player);
 		mudstate.debug_cmd = cmdsave;
-
 		goto exit;
 	}
 

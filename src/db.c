@@ -2246,20 +2246,14 @@ void load_restart_db()
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
+        
+        d->next = descriptor_list;
+        descriptor_list = d->next;
 
-		if(descriptor_list) {
-			for(p = descriptor_list; p->next; p = p->next);
-			d->prev = &p->next;
-			p->next = d;
-			d->next = NULL;
-		} else {
-			d->next = descriptor_list;
-			d->prev = &descriptor_list;
-			descriptor_list = d;
-		}
-		d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
+        d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
+
 		bufferevent_disable(d->sock_buff, EV_READ);
 		bufferevent_enable(d->sock_buff, EV_WRITE);
 
@@ -2350,17 +2344,10 @@ int load_restart_db_xdr()
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
 
-		if(descriptor_list) {
-			for(p = descriptor_list; p->next; p = p->next);
-			d->prev = &p->next;
-			p->next = d;
-			d->next = NULL;
-		} else {
-			d->next = descriptor_list;
-			d->prev = &descriptor_list;
-			descriptor_list = d;
-		}
-		d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
+        d->next = descriptor_list;
+        descriptor_list = d;
+
+        d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
 		bufferevent_disable(d->sock_buff, EV_READ);

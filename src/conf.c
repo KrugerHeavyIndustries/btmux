@@ -433,13 +433,8 @@ void cf_log_notfound(dbref player, char *cmd, const char *thingname,
 	char *buff;
 
 	if(mudstate.initializing) {
-		STARTLOG(LOG_STARTUP, "CNF", "NFND") {
-			buff = alloc_lbuf("cf_log_notfound.LOG");
-			sprintf(buff, "%s: %s %s not found", cmd, thingname, thing);
-			log_text(buff);
-			free_lbuf(buff);
-			ENDLOG;
-		}
+        log_error(LOG_STARTUP, "CNF", "NFND", "%s: %s %s not found.", cmd,
+            thingname, thing);
 	} else {
 		buff = alloc_lbuf("cf_log_notfound");
 		sprintf(buff, "%s %s not found", thingname, thing);
@@ -455,22 +450,10 @@ void cf_log_notfound(dbref player, char *cmd, const char *thingname,
 
 void cf_log_syntax(dbref player, char *cmd, const char *template, char *arg)
 {
-	char *buff;
-
 	if(mudstate.initializing) {
-		STARTLOG(LOG_STARTUP, "CNF", "SYNTX") {
-			buff = alloc_lbuf("cf_log_syntax.LOG");
-			sprintf(buff, template, arg);
-			log_text(cmd);
-			log_text((char *) ": ");
-			log_text(buff);
-			free_lbuf(buff);
-			ENDLOG;
-	}} else {
-		buff = alloc_lbuf("cf_log_syntax");
-		sprintf(buff, template, arg);
-		notify(player, buff);
-		free_lbuf(buff);
+        log_error(LOG_STARTUP, "CNF", "SYNTX", "%s: %s %s", cmd, template, arg);
+	} else {
+        notify_printf(player, template, arg);
 	}
 }
 
@@ -499,13 +482,7 @@ int cf_status_from_succfail(dbref player, char *cmd, int success, int failure)
 
 	if(failure == 0) {
 		if(mudstate.initializing) {
-			STARTLOG(LOG_STARTUP, "CNF", "NDATA") {
-				buff = alloc_lbuf("cf_status_from_succfail.LOG");
-				sprintf(buff, "%s: Nothing to set", cmd);
-				log_text(buff);
-				free_lbuf(buff);
-				ENDLOG;
-			}
+            log_error(LOG_STARTUP, "CNF", "NDATA", "%s: Nothing to set", cmd);
 		} else {
 			notify(player, "Nothing to set");
 		}
@@ -588,13 +565,7 @@ int cf_string(int *vp, char *str, long extra, dbref player, char *cmd)
 	if(strlen(str) >= extra) {
 		str[extra - 1] = '\0';
 		if(mudstate.initializing) {
-			STARTLOG(LOG_STARTUP, "CNF", "NFND") {
-				buff = alloc_lbuf("cf_string.LOG");
-				sprintf(buff, "%s: String truncated", cmd);
-				log_text(buff);
-				free_lbuf(buff);
-				ENDLOG;
-			}
+            log_error(LOG_STARTUP, "CNF", "NFND", "%s: String truncated", cmd);
 		} else {
 			notify(player, "String truncated");
 		}
@@ -886,15 +857,15 @@ int cf_site(long **vp, char *str, long extra, dbref player, char *cmd)
 	if(addr_txt)
 		mask_txt = strtok(NULL, " \t=,");
 	if(!addr_txt || !*addr_txt || !mask_txt || !*mask_txt) {
-		cf_log_syntax(player, cmd, "Missing host address or mask.",
-					  (char *) "");
+		cf_log_syntax(player, cmd, "Missing host address or mask.", (char *) "");
 		return -1;
 	}
+
 	addr_num.s_addr = inet_addr(addr_txt);
 	mask_num.s_addr = inet_addr(mask_txt);
 
 	if(addr_num.s_addr == -1) {
-		cf_log_syntax(player, cmd, "Bad host address: %s", addr_txt);
+		cf_log_syntax(player, cmd, "Bad host address: ", addr_txt);
 		return -1;
 	}
 	head = (SITE *) * vp;
@@ -1646,35 +1617,16 @@ int cf_set(char *cp, char *ap, dbref player)
 				notify(player, "Permission denied.");
 				return (-1);
 			}
-			if(!mudstate.initializing) {
-				buff = alloc_lbuf("cf_set");
-				StringCopy(buff, ap);
-			}
+            buff = alloc_lbuf("cf_set");
+            StringCopy(buff, ap);
 			i = tp->interpreter(tp->loc, ap, tp->extra, player, cp);
 			if(!mudstate.initializing) {
-				STARTLOG(LOG_CONFIGMODS, "CFG", "UPDAT") {
-					log_name(player);
-					log_text((char *) " entered config directive: ");
-					log_text(cp);
-					log_text((char *) " with args '");
-					log_text(buff);
-					log_text((char *) "'.  Status: ");
-					switch (i) {
-					case 0:
-						log_text((char *) "Success.");
-						break;
-					case 1:
-						log_text((char *) "Partial success.");
-						break;
-					case -1:
-						log_text((char *) "Failure.");
-						break;
-					default:
-						log_text((char *) "Strange.");
-					}
-					ENDLOG;
-				} free_lbuf(buff);
+                log_error(LOG_CONFIGMODS, "CFG", "UPDAT", 
+                "%s entered config directive: %s with args '%s'. Status: %s%s%s%s", 
+                Name(player), cp, buff, (i==0?"Success":(i==1?"Partial success":(i==-1?"Failure":"Strange"))));
+
 			}
+            free_lbuf(buff);
 			return i;
 		}
 	}

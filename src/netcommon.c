@@ -41,7 +41,7 @@ extern void handle_prog(DESC *, char *);
 extern void fcache_dump_conn(DESC *, int);
 extern void do_comconnect(dbref, DESC *);
 extern void do_comdisconnect(dbref);
-extern void set_lastsite(DESC *, char *);
+void set_lastsite(DESC *, char *);
 
 /*
  * ---------------------------------------------------------------------------
@@ -379,98 +379,6 @@ void freeqs(DESC * d)
     d->input_tail = 0;
     memset(d->input, 0, sizeof(d->input));
 }
-
-int desc_cmp(void *vleft, void *vright, void *token)
-{
-	dbref left = (dbref) vleft;
-	dbref right = (dbref) vright;
-
-	return (left - right);
-}
-
-/*
- * ---------------------------------------------------------------------------
- * * desc_addhash: Add a net descriptor to its player hash list.
- */
-
-void desc_addhash(DESC * d)
-{
-	dbref player;
-	DESC *hdesc;
-
-    bind_descriptor(d);
-	player = d->player;
-
-	hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
-	dprintk("Adding descriptor %p(%d) to list root at %p (%d).",
-			d, d->player, hdesc, (hdesc ? hdesc->player : -1));
-
-	if(hdesc == NULL) {
-		d->hashnext = NULL;
-	} else {
-		d->hashnext = hdesc;
-	}
-	rb_insert(mudstate.desctree, (void *) d->player, d);
-}
-
-/*
- * ---------------------------------------------------------------------------
- * * desc_delhash: Remove a net descriptor from its player hash list.
- */
-
-static void desc_delhash(DESC * d)
-{
-	DESC *hdesc, *last;
-	dbref player;
-	char buffer[4096];
-
-	player = d->player;
-	last = NULL;
-	hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
-
-	dprintk("removing descriptor %p(%d) from list root %p(%d).", d, d->player,
-			hdesc, hdesc ? hdesc->player : -1);
-
-	if(!hdesc) {
-		snprintf(buffer, 4096,
-				 "desc_delhash: unable to find player(%d)'s descriptors from hashtable.\n",
-				 d->player);
-		log_text(buffer);
-		return;
-	}
-	dprintk("hdesc: %p, d: %p, hdesc->hashnext: %p, d->hashnext: %p", hdesc,
-			d, hdesc->hashnext, d->hashnext);
-
-	if(hdesc == d && hdesc->hashnext) {
-		dprintk("updating %d to use hashroot %p", d->player, hdesc->hashnext);
-		rb_insert(mudstate.desctree, (void *) d->player, hdesc->hashnext);
-        release_descriptor(d);
-		return;
-	} else if(hdesc == d) {
-		dprintk("removing %d table", d->player);
-		rb_delete(mudstate.desctree, (void *) d->player);
-        release_descriptor(d);
-		return;
-	}
-
-	while (hdesc->hashnext != NULL) {
-		if(hdesc->hashnext == d) {
-			hdesc->hashnext = hdesc->hashnext->hashnext;
-			break;
-		}
-		hdesc = hdesc->hashnext;
-	}
-	if(!hdesc) {
-		snprintf(buffer, 4096,
-				 "Unable to find descriptor in player(%d)'s descriptor list.\n",
-				 d->player);
-		log_text(buffer);
-	}
-	d->hashnext = NULL;
-    release_descriptor(d);
-    return;
-}
-
 extern int fcache_conn_c;
 
 void welcome_user(DESC * d)
@@ -484,6 +392,21 @@ void welcome_user(DESC * d)
 		}
 		fcache_dump(d, FC_CONN);
 	}
+}
+
+void set_lastsite(DESC * d, char *lastsite)
+{
+    int i, j;
+    char buf[LBUF_SIZE];
+
+    if(d->player) {
+        if(lastsite) {
+            strncpy(buf, lastsite, LBUF_SIZE-1);
+        } else {
+            atr_get_str(buf, d->player, A_LASTSITE, &i, &j);
+        }
+        atr_add_raw(d->player, A_LASTSITE, buf);
+    }
 }
 
 static void set_userstring(char **userstring, const char *command)
@@ -504,8 +427,7 @@ static void set_userstring(char **userstring, const char *command)
 }
 
 static void parse_connect(const char *msg, char *command, char *user,
-						  char *pass)
-{
+  char *pass) {
 	char *p;
 
 	if(strlen(msg) > MBUF_SIZE) {
@@ -619,7 +541,7 @@ static void announce_connect(dbref player, DESC * d)
 	s_Connected(player);
 
 
-	raw_notify(player, tprintf("\n%sMOTD:%s %s\n", ANSI_HILITE,
+	queue_string(d, tprintf("\n%sMOTD:%s %s\n", ANSI_HILITE,
 							   ANSI_NORMAL, mudconf.motd_msg));
 	if(Wizard(player)) {
 		raw_notify(player, tprintf("%sWIZMOTD:%s %s\n", ANSI_HILITE,
@@ -860,7 +782,6 @@ void announce_disconnect(dbref player, DESC * d, const char *reason)
 
 	mudstate.curr_enactor = temp;
 	release_player(player);
-	desc_delhash(d);
 }
 
 int boot_off(dbref player, char *message)
@@ -956,83 +877,6 @@ int fetch_connect(dbref target)
 	return result;
 }
 
-void check_idle(void)
-{
-	DESC *d, *dnext;
-	time_t idletime;
-
-	DESC_SAFEITER_ALL(d, dnext) {
-		if(d->flags & DS_CONNECTED) {
-			idletime = mudstate.now - d->last_time;
-			if((idletime > d->timeout) && !Can_Idle(d->player)) {
-				queue_string(d, "*** Inactivity Timeout ***\r\n");
-				shutdownsock(d, R_TIMEOUT);
-			} else if(mudconf.idle_wiz_dark &&
-					  (idletime > mudconf.idle_timeout) && Can_Idle(d->player)
-					  && !Dark(d->player)) {
-				s_Flags(d->player, Flags(d->player) | DARK);
-				d->flags |= DS_AUTODARK;
-			}
-		} else {
-			idletime = mudstate.now - d->connected_at;
-			if(idletime > mudconf.conn_timeout) {
-				queue_string(d, "*** Login Timeout ***\r\n");
-				shutdownsock(d, R_TIMEOUT);
-			}
-		}
-	}
-}
-
-void check_events(void)
-{
-	struct tm *ltime;
-	dbref thing, parent;
-	int lev;
-
-	ltime = localtime(&mudstate.now);
-	if((ltime->tm_hour == mudconf.events_daily_hour)
-	   && !(mudstate.events_flag & ET_DAILY)) {
-		mudstate.events_flag = mudstate.events_flag | ET_DAILY;
-		DO_WHOLE_DB(thing) {
-			if(Going(thing))
-				continue;
-
-			ITER_PARENTS(thing, parent, lev) {
-				if(Flags2(thing) & HAS_DAILY) {
-					did_it(Owner(thing), thing, 0, NULL, 0, NULL, A_DAILY,
-						   (char **) NULL, 0);
-
-					break;
-				}
-			}
-		}
-	}
-	if(ltime->tm_hour != mudstate.events_lasthour) {
-		if(mudstate.events_lasthour >= 0) {
-			/* Run hourly maintenance */
-			DO_WHOLE_DB(thing) {
-				if(Going(thing))
-					continue;
-
-				ITER_PARENTS(thing, parent, lev) {
-					if(Flags2(thing) & HAS_HOURLY) {
-						did_it(Owner(thing), thing, 0, NULL, 0, NULL,
-							   A_HOURLY, (char **) NULL, 0);
-
-						break;
-					}
-				}
-			}
-
-		}
-		mudstate.events_lasthour = ltime->tm_hour;
-	}
-	if(ltime->tm_hour == 23) {	/*
-								 * Nightly resetting 
-								 */
-		mudstate.events_flag = 0;
-	}
-}
 static char *trimmed_name(dbref player)
 {
 	static char cbuff[18];
@@ -1106,9 +950,7 @@ static void dump_users(DESC * e, char *match, int key)
 					continue;
 #endif
 			rcount++;
-			if((key == CMD_SESSION) && !(Wizard_Who(e->player) &&
-										 (e->flags & DS_CONNECTED))
-			   && (d->player != e->player))
+			if((key == CMD_SESSION) && !(Wizard_Who(e->player) && (e->flags & DS_CONNECTED)) && (d->player != e->player))
 				continue;
 
 			/*
@@ -1584,7 +1426,85 @@ static int check_connect(DESC * d, char *msg)
 	return 1;
 }
 
-int do_command(DESC * d, char *command, int first)
+int do_unauth_command(DESC *d, char *command) {
+    char *arg;
+    NAMETAB *cp;
+
+    d->last_time = mudstate.now;
+    arg = command;
+
+    dassert(!(d->flags & DS_CONNECTED));
+    if(d->flags & DS_DEAD) return 0;
+
+    while(*arg && !isspace(*arg)) arg++;
+
+    if(*arg) 
+        *arg++ = '\0';
+
+    cp = (NAMETAB *) hashfind(command, &mudstate.logout_cmd_htab);
+    if(*arg) 
+        *--arg = ' ';
+
+    if(!cp) 
+        return check_connect(d, command);
+    
+    d->command_count++;
+    if(!(cp->flag & CMD_NOxFIX)) {
+        if(d->output_prefix) {
+            queue_string(d, d->output_prefix);
+            queue_write(d, "\r\n", 2);
+        }
+    }
+
+    switch (cp->flag & CMD_MASK) {
+        case CMD_QUIT:
+            shutdownsock(d, R_QUIT);
+            return 0;
+        case CMD_WHO:
+            if(d->player || mudconf.allow_unloggedwho) {
+                dump_users(d, arg, CMD_WHO);
+            } else {
+                queue_string(d, "This MUX does not allow WHO at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
+            }
+            break;
+        case CMD_DOING:
+            if(d->player || mudconf.allow_unloggedwho) {
+                dump_users(d, arg, CMD_DOING);
+            } else {
+                queue_string(d, "This MUX does not allow DOING at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
+            }
+            break;
+        case CMD_SESSION:
+            if(d->player || mudconf.allow_unloggedwho) {
+                dump_users(d, arg, CMD_SESSION);
+            } else {
+                queue_string(d, "This MUX does not allow SESSION at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
+            }
+            break;
+        case CMD_PREFIX:
+            set_userstring(&d->output_prefix, arg);
+            break;
+        case CMD_SUFFIX:
+            set_userstring(&d->output_suffix, arg);
+            break;
+        default:
+            log_error(LOG_BUGS, "BUG", "PARSE", "Prefix command with no handler: '%s'", command);
+    }
+
+    if(!(cp->flag & CMD_NOxFIX)) {
+        if(d->output_prefix) {
+            queue_string(d, d->output_suffix);
+            queue_write(d, "\r\n", 2);
+        }
+    }
+    return 1;
+}
+
+
+int do_command(DESC * d, char *command)
 {
 	char *arg, *cmdsave;
 	NAMETAB *cp;
@@ -1624,115 +1544,24 @@ int do_command(DESC * d, char *command, int first)
 	}
 #endif
 
-	/*
-	 * Look up the command.  If we don't find it, turn it over to the normal
-	 * logged-in command processor or to create/connect
-	 */
 
-	if(!(d->flags & DS_CONNECTED)) {
-		cp = (NAMETAB *) hashfind(command, &mudstate.logout_cmd_htab);
-	} else
-		cp = NULL;
+    if(*arg)
+        *--arg = ' ';	
 
-	if(cp == NULL) {
-		if(*arg)
-			*--arg = ' ';		/*
-								 * restore nullified space 
-								 */
-		if(d->flags & DS_CONNECTED) {
-			d->command_count++;
-			if(d->output_prefix) {
-				queue_string(d, d->output_prefix);
-				queue_write(d, "\r\n", 2);
-			}
-			mudstate.curr_player = d->player;
-			mudstate.curr_enactor = d->player;
-			process_command(d->player, d->player, 1, command,
-							(char **) NULL, 0);
-			if(d->output_suffix) {
-				queue_string(d, d->output_suffix);
-				queue_write(d, "\r\n", 2);
-			}
-			mudstate.debug_cmd = cmdsave;
-			return 1;
-		} else {
-			mudstate.debug_cmd = cmdsave;
-			return (check_connect(d, command));
-		}
-	}
-	/*
-	 * The command was in the logged-out command table.  Perform prefix and
-	 * suffix processing, and invoke the command handler.
-	 */
-
-	d->command_count++;
-	if(!(cp->flag & CMD_NOxFIX)) {
-		if(d->output_prefix) {
-			queue_string(d, d->output_prefix);
-			queue_write(d, "\r\n", 2);
-		}
-	}
-	if((!check_access(d->player, cp->perm)) || ((cp->perm & CA_PLAYER) &&
-												!(d->flags & DS_CONNECTED))) {
-		queue_string(d, "Permission denied.\r\n");
-	} else {
-		mudstate.debug_cmd = cp->name;
-		switch (cp->flag & CMD_MASK) {
-		case CMD_QUIT:
-			shutdownsock(d, R_QUIT);
-			mudstate.debug_cmd = cmdsave;
-			return 0;
-		case CMD_LOGOUT:
-			shutdownsock(d, R_LOGOUT);
-			break;
-		case CMD_WHO:
-			if(d->player || mudconf.allow_unloggedwho) {
-				dump_users(d, arg, CMD_WHO);
-			} else {
-				queue_string(d,
-							 "This MUX does not allow WHO at the login screen.\r\nPlease login or create a character first.\r\n");
-			}
-			break;
-		case CMD_DOING:
-			if(d->player || mudconf.allow_unloggedwho) {
-				dump_users(d, arg, CMD_DOING);
-			} else {
-				queue_string(d,
-							 "This MUX does not allow DOING at the login screen.\r\nPlease login or create a character first.\r\n");
-			}
-			break;
-		case CMD_SESSION:
-			if(d->player || mudconf.allow_unloggedwho) {
-				dump_users(d, arg, CMD_SESSION);
-			} else {
-				queue_string(d,
-							 "This MUX does not allow SESSION at the login screen.\r\nPlease login or create a character first.\r\n");
-			}
-			break;
-		case CMD_PREFIX:
-			set_userstring(&d->output_prefix, arg);
-			break;
-		case CMD_SUFFIX:
-			set_userstring(&d->output_suffix, arg);
-			break;
-		default:
-			STARTLOG(LOG_BUGS, "BUG", "PARSE") {
-				arg = alloc_lbuf("do_command.LOG");
-				sprintf(arg, "Prefix command with no handler: '%s'", command);
-				log_text(arg);
-				free_lbuf(arg);
-				ENDLOG;
-			}
-		}
-	}
-	if(!(cp->flag & CMD_NOxFIX)) {
-		if(d->output_prefix) {
-			queue_string(d, d->output_suffix);
-			queue_write(d, "\r\n", 2);
-		}
-	}
-	mudstate.debug_cmd = cmdsave;
-	return 1;
+    d->command_count++;
+    if(d->output_prefix) {
+        queue_string(d, d->output_prefix);
+        queue_write(d, "\r\n", 2);
+    }
+    mudstate.curr_player = d->player;
+    mudstate.curr_enactor = d->player;
+    process_command(d->player, d->player, 1, command, (char **) NULL, 0);
+    if(d->output_suffix) {
+        queue_string(d, d->output_suffix);
+        queue_write(d, "\r\n", 2);
+    }
+    mudstate.debug_cmd = cmdsave;
+    return 1;
 }
 
 void logged_out(dbref player, dbref cause, int key, char *arg)
@@ -1742,6 +1571,7 @@ void logged_out(dbref player, dbref cause, int key, char *arg)
 
 	if(player != cause)
 		return;
+
 	DESC_ITER_PLAYER(player, d) {
 		idletime = (mudstate.now - d->last_time);
 
@@ -1765,8 +1595,8 @@ void logged_out(dbref player, dbref cause, int key, char *arg)
 					return;
 				}
 			} else {
-				queue_string(d,
-							 "This MUX does not allow WHO at the login screen.\r\nPlease login or create a character first.\r\n");
+				queue_string(d, "This MUX does not allow WHO at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
 			}
 			break;
 		case CMD_DOING:
@@ -1776,8 +1606,8 @@ void logged_out(dbref player, dbref cause, int key, char *arg)
 					return;
 				}
 			} else {
-				queue_string(d,
-							 "This MUX does not allow DOING at the login screen.\r\nPlease login or create a character first.\r\n");
+				queue_string(d, "This MUX does not allow DOING at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
 			}
 			break;
 		case CMD_SESSION:
@@ -1787,8 +1617,8 @@ void logged_out(dbref player, dbref cause, int key, char *arg)
 					return;
 				}
 			} else {
-				queue_string(d,
-							 "This MUX does not allow SESSION at the login screen.\r\nPlease login or create a character first.\r\n");
+				queue_string(d, "This MUX does not allow SESSION at the login screen.\r\n");
+                queue_string(d, "Please login or create a character first.\r\n");
 			}
 			break;
 		case CMD_PREFIX:
@@ -1957,5 +1787,5 @@ void run_command(DESC * d, char *command)
 	if(d->program_data != NULL)
 		handle_prog(d, command);
 	else
-		do_command(d, command, 1);
+		do_command(d, command);
 }
