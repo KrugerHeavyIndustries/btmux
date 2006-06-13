@@ -422,8 +422,8 @@ static void set_userstring(char **userstring, const char *command)
 		if(*userstring == NULL) {
 			*userstring = alloc_lbuf("set_userstring");
 		}
-		StringCopy(*userstring, command);
-	}
+	    snprintf(*userstring, LBUF_SIZE-1, "%s\r\n", command);
+    }
 }
 
 static void parse_connect(const char *msg, char *command, char *user,
@@ -1458,7 +1458,6 @@ int do_unauth_command(DESC *d, char *command) {
     if(!(cp->flag & CMD_NOxFIX)) {
         if(d->output_prefix) {
             queue_string(d, d->output_prefix);
-            queue_write(d, "\r\n", 2);
         }
     }
 
@@ -1501,9 +1500,8 @@ int do_unauth_command(DESC *d, char *command) {
     }
 
     if(!(cp->flag & CMD_NOxFIX)) {
-        if(d->output_prefix) {
+        if(d->output_suffix) {
             queue_string(d, d->output_suffix);
-            queue_write(d, "\r\n", 2);
         }
     }
     return 1;
@@ -1559,16 +1557,17 @@ int do_command(DESC * d, char *command)
         d->command_count++;
         if(d->output_prefix) {
             queue_string(d, d->output_prefix);
-            queue_write(d, "\r\n", 2);
         }
         mudstate.curr_player = d->player;
         mudstate.curr_enactor = d->player;
         process_command(d->player, d->player, 1, command, (char **) NULL, 0);
         if(d->output_suffix) {
             queue_string(d, d->output_suffix);
-            queue_write(d, "\r\n", 2);
         }
     } else {
+        if(d->output_prefix) {
+            queue_string(d, d->output_prefix);
+        }
         switch (cp->flag & CMD_MASK) {
             case CMD_QUIT:
                 shutdownsock(d, R_QUIT);
@@ -1606,85 +1605,12 @@ int do_command(DESC * d, char *command)
             default:
                 log_error(LOG_BUGS, "BUG", "PARSE", "Prefix command with no handler: '%s'", command);
         }
+        if(d->output_suffix) {
+            queue_string(d, d->output_suffix);
+        }
     }
-
-
     mudstate.debug_cmd = cmdsave;
     return 1;
-}
-
-void logged_out(dbref player, dbref cause, int key, char *arg)
-{
-	DESC *d;
-	int idletime;
-
-	if(player != cause)
-		return;
-
-	DESC_ITER_PLAYER(player, d) {
-		idletime = (mudstate.now - d->last_time);
-
-		switch (key) {
-		case CMD_QUIT:
-			if(idletime == 0) {
-				dassert(0);
-                shutdownsock(d, R_QUIT);
-				return;
-			}
-			break;
-		case CMD_LOGOUT:
-			if(idletime == 0) {
-				shutdownsock(d, R_LOGOUT);
-				return;
-			}
-			break;
-		case CMD_WHO:
-			if(d->player || mudconf.allow_unloggedwho) {
-				if(idletime == 0) {
-					dump_users(d, arg, CMD_WHO);
-					return;
-				}
-			} else {
-				queue_string(d, "This MUX does not allow WHO at the login screen.\r\n");
-                queue_string(d, "Please login or create a character first.\r\n");
-			}
-			break;
-		case CMD_DOING:
-			if(d->player || mudconf.allow_unloggedwho) {
-				if(idletime == 0) {
-					dump_users(d, arg, CMD_DOING);
-					return;
-				}
-			} else {
-				queue_string(d, "This MUX does not allow DOING at the login screen.\r\n");
-                queue_string(d, "Please login or create a character first.\r\n");
-			}
-			break;
-		case CMD_SESSION:
-			if(d->player || mudconf.allow_unloggedwho) {
-				if(idletime == 0) {
-					dump_users(d, arg, CMD_SESSION);
-					return;
-				}
-			} else {
-				queue_string(d, "This MUX does not allow SESSION at the login screen.\r\n");
-                queue_string(d, "Please login or create a character first.\r\n");
-			}
-			break;
-		case CMD_PREFIX:
-			if(idletime == 0) {
-				set_userstring(&d->output_prefix, arg);
-				return;
-			}
-			break;
-		case CMD_SUFFIX:
-			if(idletime == 0) {
-				set_userstring(&d->output_suffix, arg);
-				return;
-			}
-			break;
-		}
-	}
 }
 
 /*

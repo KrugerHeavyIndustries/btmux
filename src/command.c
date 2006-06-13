@@ -26,7 +26,6 @@
 
 extern void list_cf_access(dbref);
 extern void list_siteinfo(dbref);
-extern void logged_out(dbref, dbref, int, char *);
 #ifdef ARBITRARY_LOGFILES
 extern void logcache_init(void);
 void logcache_list(dbref player);
@@ -658,19 +657,7 @@ CMDENT command_table[] = {
 #endif
 	{(char *) PLUSHELP_COMMAND, NULL, 0, HELP_PLUSHELP, CS_ONE_ARG, do_help},
 	{(char *) "wiznews", NULL, CA_WIZARD, HELP_WIZNEWS, CS_ONE_ARG, do_help},
-	{(char *) "doing", NULL, CA_PUBLIC, CMD_DOING, CS_ONE_ARG, logged_out},
-	{(char *) "quit", NULL, CA_PUBLIC, CMD_QUIT, CS_NO_ARGS, logged_out},
-	{(char *) "logout", NULL, CA_PUBLIC, CMD_LOGOUT, CS_NO_ARGS, logged_out},
-	{(char *) "who", NULL, CA_PUBLIC, CMD_WHO, CS_ONE_ARG, logged_out},
-	{(char *) "session", NULL, CA_PUBLIC, CMD_SESSION, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "outputprefix", NULL, CA_PUBLIC, CMD_PREFIX, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "outputsuffix", NULL, CA_PUBLIC, CMD_SUFFIX, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "puebloclient", NULL, CA_PUBLIC, CMD_PUEBLOCLIENT, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "\\", NULL, CA_NO_GUEST | CA_LOCATION | CF_DARK | CA_NO_SLAVE,
+    {(char *) "\\", NULL, CA_NO_GUEST | CA_LOCATION | CF_DARK | CA_NO_SLAVE,
 	 SAY_PREFIX, CS_ONE_ARG | CS_INTERP, do_say},
 	{(char *) "#", NULL, CA_NO_SLAVE | CA_GBL_INTERP | CF_DARK, 0,
 	 CS_ONE_ARG | CS_INTERP | CS_CMDARG, do_force_prefixed},
