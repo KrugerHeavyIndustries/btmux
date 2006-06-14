@@ -167,6 +167,11 @@ void release_descriptor(DESC *d) {
         if(descriptor_list == d) {
             descriptor_list = d->next;
         } else {
+            if(!descriptor_list) {
+                dprintk("Oh sweet jesus, we have major braindamage.");
+                descriptor_list = d->next;
+                break;
+            }
             DESC *dtemp = descriptor_list;
             while(dtemp->next != NULL) {
                 if(dtemp->next == d) {
