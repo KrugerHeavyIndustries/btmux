@@ -170,22 +170,22 @@ void release_descriptor(DESC *d) {
             if(!descriptor_list) {
                 dprintk("Oh sweet jesus, we have major braindamage.");
                 descriptor_list = d->next;
-                return;
-            }
-            DESC *dtemp = descriptor_list;
-            while(dtemp->next != NULL) {
-                if(dtemp->next == d) {
-                    dtemp->next = d->next;
-                    break;
-                } else {
-                    dtemp = dtemp->next;
+            } else {
+                DESC *dtemp = descriptor_list;
+                while(dtemp->next != NULL) {
+                    if(dtemp->next == d) {
+                        dtemp->next = d->next;
+                        break;
+                    } else {
+                        dtemp = dtemp->next;
+                    }
                 }
             }
         }
 
         d->next = NULL;
         ndescriptors--;
-//        free(d);
+        free(d);
     }
 }
 

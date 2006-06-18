@@ -801,13 +801,13 @@ void do_destroy(dbref player, dbref cause, int key, char *what)
 									 tprintf
 									 ("You will be rewarded shortly for %s(#%d).",
 									  Name(thing), thing));
-					if((Owner(thing) != player) && !Quiet(player)) {
+					if((Owner(thing) != player) && !Quiet(player)) 
 						notify_quiet(player,
 									 tprintf("Destroyed. #%d's %s(#%d)",
 											 Owner(thing), Name(thing),
 											 thing));
 						s_Going(thing);
-					}
+					
 				}
 			}
 		}
