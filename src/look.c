@@ -179,10 +179,9 @@ static void view_atr(dbref player, dbref thing, ATTR * ap, char *text,
 
 	if(!Controls(player, thing) && (Owner(player) != aowner)) {
 		if(skip_tag && (ap->number == A_DESC))
-			buf = text;
+			notify_printf(player, "%s", text);
 		else
-			buf = tprintf("\033[1m%s:\033[0m %s", ap->name, text);
-		notify(player, buf);
+			notify_printf(player, "\033[1m%s:\033[0m %s", ap->name, text);
 		return;
 	}
 	/*
@@ -208,17 +207,14 @@ static void view_atr(dbref player, dbref thing, ATTR * ap, char *text,
 	*xbufp = '\0';
 
 	if((aowner != Owner(thing)) && (aowner != NOTHING)) {
-		buf =
-			tprintf("\033[1m%s [#%d%s]:\033[0m %s", ap->name, aowner, xbuf,
-					text);
+		notify_printf(player, "\033[1m%s [#%d%s]:\033[0m %s", ap->name, aowner, xbuf, text);
 	} else if(*xbuf) {
-		buf = tprintf("\033[1m%s [%s]:\033[0m %s", ap->name, xbuf, text);
+		notify_printf(player, "\033[1m%s [%s]:\033[0m %s", ap->name, xbuf, text);
 	} else if(!skip_tag || (ap->number != A_DESC)) {
-		buf = tprintf("\033[1m%s:\033[0m %s", ap->name, text);
+		notify_printf(player, "\033[1m%s:\033[0m %s", ap->name, text);
 	} else {
-		buf = text;
-	}
-	notify(player, buf);
+	    notify_printf(player, "%s", text);
+    }
 }
 
 static void look_atrs1(dbref player, dbref thing, dbref othing,
