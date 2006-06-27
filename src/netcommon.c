@@ -250,10 +250,11 @@ void notify_printf(dbref player, const char *format, ...)
 	DESC *d;
 	char buffer[LBUF_SIZE];
 	va_list ap;
+    memset(buffer, 0, LBUF_SIZE);
 
 	va_start(ap, format);
 
-	vsnprintf(buffer, LBUF_SIZE, format, ap);
+	vsnprintf(buffer, LBUF_SIZE-1, format, ap);
 	va_end(ap);
 
 	strncat(buffer, "\r\n", LBUF_SIZE);
@@ -285,13 +286,15 @@ void hudinfo_notify(DESC * d, const char *msgclass, const char *msgtype,
 {
 	char buf[LBUF_SIZE];
 
+    memset(buffer, 0, LBUF_SIZE);
+
 	if(!msgclass || !msgtype) {
 		queue_string(d, msg);
 		queue_write(d, "\r\n", 2);
 		return;
 	}
 
-	snprintf(buf, LBUF_SIZE, "#HUD:%s:%s:%s# %s\r\n",
+	snprintf(buf, LBUF_SIZE-1, "#HUD:%s:%s:%s# %s\r\n",
 			 d->hudkey[0] ? d->hudkey : "???", msgclass, msgtype, msg);
 	buf[LBUF_SIZE - 1] = '\0';
 	queue_string(d, buf);
@@ -320,7 +323,6 @@ void raw_broadcast(int inflags, char *template, ...)
 		if((Flags(d->player) & inflags) == inflags) {
 			queue_string(d, buff);
 			queue_write(d, "\r\n", 2);
-			// process_output(d);
 		}
 	}
 	flush_sockets();
@@ -430,7 +432,7 @@ static void parse_connect(const char *msg, char *command, char *user,
   char *pass) {
 	char *p;
 
-	if(strlen(msg) > MBUF_SIZE) {
+	if(strlen(msg) > (MBUF_SIZE-1)) {
 		*command = '\0';
 		*user = '\0';
 		*pass = '\0';
