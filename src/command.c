@@ -1248,9 +1248,8 @@ void process_command(dbref player, dbref cause, int interactive,
 			free_lbuf(lcbuf);
 			ENDLOG;
 		}
-		send_channel("SuspectsLog",
-					 tprintf("%s (#%d) (in #%d) entered: %s", Name(player),
-							 player, Location(player), command));
+		send_channel("SuspectsLog", "%s (#%d) (in #%d) entered: %s", Name(player),
+							 player, Location(player), command);
 	} else {
 		STARTLOG(LOG_ALLCOMMANDS, "CMD", "ALL") {
 			log_name_and_loc(player);

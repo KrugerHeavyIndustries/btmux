@@ -286,7 +286,7 @@ void hudinfo_notify(DESC * d, const char *msgclass, const char *msgtype,
 {
 	char buf[LBUF_SIZE];
 
-    memset(buffer, 0, LBUF_SIZE);
+    memset(buf, 0, LBUF_SIZE);
 
 	if(!msgclass || !msgtype) {
 		queue_string(d, msg);
@@ -512,6 +512,7 @@ static const char *time_format_2(time_t dt)
 }
 
 extern char *mux_version;
+void desc_addhash(DESC *);
 
 static void announce_connect(dbref player, DESC * d)
 {

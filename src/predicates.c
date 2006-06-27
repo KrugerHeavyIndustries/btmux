@@ -860,7 +860,7 @@ void handle_prog(DESC * d, char *message)
 	/* First, set 'all' to a descriptor we find for this player */
 
 	//all = (DESC *) nhashfind(d->player, &mudstate.desc_htab);
-	all = (DESC *) rb_find(mudstate.desctree, d->player);
+	all = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
 
 	for(i = 0; i < MAX_GLOBAL_REGS; i++) {
 		free_lbuf(all->program_data->wait_regs[i]);

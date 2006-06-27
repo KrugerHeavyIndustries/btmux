@@ -51,6 +51,7 @@ int fetch_connect(dbref);
 void raw_broadcast(int, char *, ...);
 int desc_cmp(void *, void *, void *);
 void run_command(DESC *d, char *);
+int do_unauth_command(DESC *d, char *);
 
 /* From cque.c */
 int nfy_que(dbref, int, int, int);

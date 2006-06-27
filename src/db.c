@@ -982,7 +982,7 @@ int Commer(dbref thing)
  * * atr_encode: Encode an attribute string.
  */
 static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
-						int atr)
+						int atr, char *dest_buffer)
 {
 
 	/*
@@ -990,8 +990,11 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
 	 * * * * * * * just store the string. 
 	 */
 
-	if(((owner == Owner(thing)) || (owner == NOTHING)) && !flags)
-		return iattr;
+	if(((owner == Owner(thing)) || (owner == NOTHING)) && !flags) {
+        memset(dest_buffer, 0, LBUF_SIZE);
+        strncpy(dest_buffer, iattr, LBUF_SIZE-1);
+		return dest_buffer;
+    }
 
 	/*
 	 * Encode owner and flags into the attribute text 
@@ -999,7 +1002,9 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
 
 	if(owner == NOTHING)
 		owner = Owner(thing);
-	return tprintf("%c%d:%d:%s", ATR_INFO_CHAR, owner, flags, iattr);
+    memset(dest_buffer, 0, LBUF_SIZE);
+    snprintf(dest_buffer, LBUF_SIZE - 1, "%c%d:%d:%s", ATR_INFO_CHAR, owner, flags, iattr);
+    return dest_buffer;
 }
 
 /*
@@ -1275,11 +1280,12 @@ void atr_add_raw(dbref thing, int atr, char *buff)
 void atr_add(dbref thing, int atr, char *buff, dbref owner, int flags)
 {
 	char *tbuff;
+    char buffer[LBUF_SIZE];
 
 	if(!buff || !*buff) {
 		atr_clr(thing, atr);
 	} else {
-		tbuff = atr_encode(buff, thing, owner, flags, atr);
+		tbuff = atr_encode(buff, thing, owner, flags, atr, buffer);
 		atr_add_raw(thing, atr, tbuff);
 	}
 }

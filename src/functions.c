@@ -1128,12 +1128,14 @@ static void fun_xget(char *buff, char **bufc, dbref player, dbref cause,
 	ATTR *attr;
 	char *atr_gotten;
 	struct boolexp *bool;
+    char buffer[MBUF_SIZE];
+
 
 	if(!*fargs[0] || !*fargs[1])
 		return;
 
-	if(!parse_attrib(player, tprintf("%s/%s", fargs[0], fargs[1]), &thing,
-					 &attrib)) {
+    snprintf(buffer, MBUF_SIZE - 1, "%s/%s", fargs[0], fargs[1]);
+	if(!parse_attrib(player, buffer, &thing, &attrib)) {
 		safe_str("#-1 NO MATCH", buff, bufc);
 		return;
 	}
@@ -1258,6 +1260,7 @@ static void fun_eval(char *buff, char **bufc, dbref player, dbref cause,
 	ATTR *attr;
 	char *atr_gotten, *str;
 	struct boolexp *bool;
+    char buffer[MBUF_SIZE];
 
 	if((nfargs != 1) && (nfargs != 2)) {
 		safe_str("#-1 FUNCTION (EVAL) EXPECTS 1 OR 2 ARGUMENTS", buff, bufc);
@@ -1271,8 +1274,8 @@ static void fun_eval(char *buff, char **bufc, dbref player, dbref cause,
 	if(!*fargs[0] || !*fargs[1])
 		return;
 
-	if(!parse_attrib(player, tprintf("%s/%s", fargs[0], fargs[1]), &thing,
-					 &attrib)) {
+    snprintf(buffer, MBUF_SIZE-1, "%s/%s", fargs[0], fargs[1]);
+	if(!parse_attrib(player, buffer, &thing, &attrib)) {
 		safe_str("#-1 NO MATCH", buff, bufc);
 		return;
 	}
@@ -1458,6 +1461,7 @@ static void fun_parse(char *buff, char **bufc, dbref player, dbref cause,
 	char *curr, *objstring, *buff2, *buff3, *cp, sep;
 	char *dp, *str;
 	int first, number = 0;
+    char buffer[MBUF_SIZE];
 
 	evarargs_preamble("PARSE", 3);
 	cp = curr = dp = alloc_lbuf("fun_parse");
@@ -1478,7 +1482,8 @@ static void fun_parse(char *buff, char **bufc, dbref player, dbref cause,
 		number++;
 		objstring = split_token(&cp, sep);
 		buff2 = replace_string(BOUND_VAR, objstring, fargs[1]);
-		buff3 = replace_string(LISTPLACE_VAR, tprintf("%d", number), buff2);
+        snprintf(buffer, MBUF_SIZE-1, "%d", number);
+		buff3 = replace_string(LISTPLACE_VAR, buffer, buff2);
 		str = buff3;
 		exec(buff, bufc, 0, player, cause, EV_STRIP | EV_FCHECK | EV_EVAL,
 			 &str, cargs, ncargs);
@@ -6239,8 +6244,11 @@ void do_function(dbref player, dbref cause, int key, char *fname,
 	ufp->atr = atr;
 	ufp->flags = key;
 	free_sbuf(np);
-	if(!Quiet(player))
-		notify_quiet(player, tprintf("Function %s defined.", fname));
+	if(!Quiet(player)) {
+        char buffer[MBUF_SIZE];
+        snprintf(buffer, MBUF_SIZE - 1, "Function %s defined.", fname);
+        notify_quiet(player, buffer);
+    }
 }
 
 /*

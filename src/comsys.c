@@ -26,6 +26,7 @@ static void do_save_com(chmsg *);
 static void do_show_com(chmsg *);
 static void do_comlast(dbref, struct channel *);
 static void do_comsend(struct channel *, char *);
+static void do_comprintf(struct channel *, char *, ...);
 extern void do_joinchannel(dbref, struct channel *);
 static void do_leavechannel(dbref, struct channel *);
 static void do_comwho(dbref, struct channel *);
@@ -56,7 +57,7 @@ void send_channel(char *chan, const char *format, ...)
 	vsnprintf(data, LBUF_SIZE, format, ap);
 	va_end(ap);
 
-	snprintf(buf, LBUF_SIZE, "[%s] %s", chan, data);
+	snprintf(buf, LBUF_SIZE-1, "[%s] %s", chan, data);
 	while ((newline = strchr(buf, '\n')))
 		*newline = ' ';
 	do_comsend(ch, buf);
@@ -123,9 +124,7 @@ void load_comsystem(FILE * fp)
 
 		hashadd(ch->name, (int *) ch, &mudstate.channel_htab);
 
-#ifdef CHANNEL_HISTORY
 		ch->last_messages = NULL;
-#endif
 
 		if(new) {				/* V1 or higher */
 
@@ -140,17 +139,13 @@ void load_comsystem(FILE * fp)
 				/* Do things with 'dummy' */
 				if(dummy > 0) {
 					for(j = 0; j < dummy; j++) {
-#ifdef CHANNEL_HISTORY
 						chmsg *c;
-#endif
 
 						fscanf(fp, "%d %[^\n]\n", &k, temp);
-#ifdef CHANNEL_HISTORY
 						Create(c, chmsg, 1);
 						c->msg = strdup(temp);
 						c->time = k;
 						myfifo_push(&ch->last_messages, c);
-#endif
 					}
 				}
 			}
@@ -267,7 +262,6 @@ static void do_show_com(chmsg * d)
 
 static void do_comlast(dbref player, struct channel *ch)
 {
-#ifdef CHANNEL_HISTORY
 	if(!myfifo_length(&ch->last_messages)) {
 		notify_printf(player, "There haven't been any messages on %s.",
 					  ch->name);
@@ -275,12 +269,10 @@ static void do_comlast(dbref player, struct channel *ch)
 	}
 	cheat_player = player;
 	myfifo_trav_r(&ch->last_messages, do_show_com);
-#endif
 }
 
 void do_processcom(dbref player, char *arg1, char *arg2)
 {
-	char mess[LBUF_SIZE];
 	struct channel *ch;
 	struct comuser *user;
 
@@ -334,18 +326,13 @@ void do_processcom(dbref player, char *arg1, char *arg2)
 		}
 
 		if((*arg2) == ':')
-			snprintf(mess, LBUF_SIZE, "[%s] %s %s", arg1, Name(player),
-					 arg2 + 1);
+			do_comprintf(ch, "[%s] %s %s", arg1, Name(player), arg2 + 1);
 		else if((*arg2) == ';')
-			snprintf(mess, LBUF_SIZE, "[%s] %s%s", arg1, Name(player),
-					 arg2 + 1);
+			do_comprintf(ch, "[%s] %s%s", arg1, Name(player), arg2 + 1);
 		else if(strlen(user->title))
-			snprintf(mess, LBUF_SIZE, "[%s] %s: <%s> %s", arg1,
-					 Name(player), user->title, arg2);
+			do_comprintf(ch, "[%s] %s: <%s> %s", arg1, Name(player), user->title, arg2);
 		else
-			snprintf(mess, LBUF_SIZE, "[%s] %s: %s", arg1, Name(player),
-					 arg2);
-		do_comsend(ch, mess);
+			do_comprintf(ch, "[%s] %s: %s", arg1, Name(player), arg2);
 	}
 }
 
@@ -365,7 +352,6 @@ static void do_comsend(struct channel *ch, char *mess)
 		}
 	}
 	/* Also, add it to the history of channel */
-#ifdef CHANNEL_HISTORY
 	if(myfifo_length(&ch->last_messages) >= CHANNEL_HISTORY_LEN) {
 		c = myfifo_pop(&ch->last_messages);
 		free((void *) c->msg);
@@ -374,7 +360,38 @@ static void do_comsend(struct channel *ch, char *mess)
 	c->msg = strdup(mess);
 	c->time = mudstate.now;
 	myfifo_push(&ch->last_messages, c);
-#endif
+}
+
+static void do_comprintf(struct channel *ch, char *messfmt, ...)
+{
+	struct comuser *user;
+	chmsg *c;
+    va_list ap;
+    char buffer[LBUF_SIZE];
+    memset(buffer, 0, LBUF_SIZE);
+    va_start(ap, messfmt);
+    vsnprintf(buffer, LBUF_SIZE-1, messfmt, ap);
+    va_end(ap);
+
+    ch->num_messages++;
+	for(user = ch->on_users; user; user = user->on_next) {
+		if(user->on && do_test_access(user->who, CHANNEL_RECIEVE, ch) &&
+		   (Wizard(user->who) || !In_IC_Loc(user->who))) {
+			if(Typeof(user->who) == TYPE_PLAYER && Connected(user->who))
+				raw_notify(user->who, buffer);
+			else
+				notify(user->who, buffer);
+		}
+	}
+	/* Also, add it to the history of channel */
+	if(myfifo_length(&ch->last_messages) >= CHANNEL_HISTORY_LEN) {
+		c = myfifo_pop(&ch->last_messages);
+		free((void *) c->msg);
+	} else
+		Create(c, chmsg, 1);
+	c->msg = strdup(buffer);
+	c->time = mudstate.now;
+	myfifo_push(&ch->last_messages, c);
 }
 
 extern void do_joinchannel(dbref player, struct channel *ch)
@@ -423,8 +440,7 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 	notify_printf(player, "You have joined channel %s.", ch->name);
 
 	if(!Dark(player)) {
-		do_comsend(ch, tprintf("[%s] %s has joined this channel.",
-							   ch->name, Name(player)));
+		do_comprintf(ch, "[%s] %s has joined this channel.", ch->name, Name(player));
 	}
 }
 
@@ -451,8 +467,7 @@ static void do_leavechannel(dbref player, struct channel *ch)
 		char *c = Name(player);
 
 		if(c && *c) {
-			do_comsend(ch, tprintf("[%s] %s has left this channel.",
-								   ch->name, c));
+			do_comprintf(ch,"[%s] %s has left this channel.", ch->name, c);
 		}
 	}
 	user->on = 0;
@@ -714,9 +729,7 @@ void do_delcomchannel(dbref player, char *channel)
 					char *c = Name(player);
 
 					if(c && *c)
-						do_comsend(ch,
-								   tprintf("[%s] %s has left this channel.",
-										   channel, c));
+						do_comprintf(ch, "[%s] %s has left this channel.", channel, c);
 				}
 				notify_printf(player, "You have left channel %s.", channel);
 
@@ -756,9 +769,7 @@ void do_createchannel(dbref player, dbref cause, int key, char *channel)
 
 	strncpy(newchannel->name, channel, CHAN_NAME_LEN - 1);
 	newchannel->name[CHAN_NAME_LEN - 1] = '\0';
-#ifdef CHANNEL_HISTORY
 	newchannel->last_messages = NULL;
-#endif
 	newchannel->type = 127;
 	newchannel->temp1 = 0;
 	newchannel->temp2 = 0;
@@ -1058,8 +1069,7 @@ void do_comdisconnectraw_notify(dbref player, char *chan)
 		return;
 
 	if((ch->type & CHANNEL_LOUD) && (cu->on) && (!Dark(player))) {
-		do_comsend(ch, tprintf("[%s] %s has disconnected.",
-							   ch->name, Name(player)));
+		do_comprintf(ch, "[%s] %s has disconnected.", ch->name, Name(player));
 	}
 }
 
@@ -1074,8 +1084,7 @@ void do_comconnectraw_notify(dbref player, char *chan)
 		return;
 
 	if((ch->type & CHANNEL_LOUD) && (cu->on) && (!Dark(player))) {
-		do_comsend(ch, tprintf("[%s] %s has connected.",
-							   ch->name, Name(player)));
+		do_comprintf(ch, "[%s] %s has connected.", ch->name, Name(player));
 	}
 }
 
@@ -1110,12 +1119,9 @@ void do_comdisconnect(dbref player)
 
 	for(i = 0; i < c->numchannels; i++) {
 		do_comdisconnectchannel(player, c->channels[i]);
-#ifdef CHANNEL_LOUD
 		do_comdisconnectraw_notify(player, c->channels[i]);
-#endif
 	}
-	send_channel("MUXConnections", tprintf("* %s has disconnected *",
-										   Name(player)));
+	send_channel("MUXConnections", "* %s has disconnected *", Name(player));
 }
 
 void do_comconnect(dbref player, DESC * d)
@@ -1132,13 +1138,9 @@ void do_comconnect(dbref player, DESC * d)
 	}
 	lsite = d->addr;
 	if(lsite && *lsite)
-		send_channel("MUXConnections",
-					 tprintf("* %s has connected from %s *", Name(player),
-							 lsite));
+		send_channel("MUXConnections","* %s has connected from %s *", Name(player), lsite);
 	else
-		send_channel("MUXConnections",
-					 tprintf("* %s has connected from somewhere *",
-							 Name(player)));
+		send_channel("MUXConnections","* %s has connected from somewhere *", Name(player));
 }
 
 void do_comdisconnectchannel(dbref player, char *channel)
@@ -1391,7 +1393,7 @@ void do_cemit(dbref player, dbref cause, int key, char *chan, char *text)
 	if(key == CEMIT_NOHEADER)
 		do_comsend(ch, text);
 	else
-		do_comsend(ch, tprintf("[%s] %s", chan, text));
+		do_comprintf(ch, "[%s] %s", chan, text);
 }
 
 void do_chopen(dbref player, dbref cause, int key, char *chan, char *object)
@@ -1560,9 +1562,8 @@ void do_chboot(dbref player, dbref cause, int key, char *channel,
 	/*
 	 * We should be in the clear now. :) 
 	 */
-	do_comsend(ch, tprintf("[%s] %s boots %s off the channel.", ch->name,
-						   unparse_object_numonly(player),
-						   unparse_object_numonly(thing)));
+	do_comprintf(ch, "[%s] %s boots %s off the channel.", ch->name,
+               unparse_object_numonly(player), unparse_object_numonly(thing));
 	do_delcomchannel(thing, channel);
 
 }
@@ -1755,7 +1756,6 @@ void fun_cemit(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 
-	snprintf(smbuf, LBUF_SIZE - 1, "[%s] %s", fargs[0], fargs[1]);
-	do_comsend(ch, smbuf);
+	do_comprintf(ch, "[%s] %s", fargs[0], fargs[1]);
 	*buff = '\0';
 }
