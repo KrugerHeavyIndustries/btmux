@@ -661,96 +661,6 @@ void auto_init(AUTO * autopilot, MECH * mech)
 }
 
 /*
- * Setup all the flags and variables to current, then
- * start the AI's first command.
- */
-void auto_engage(dbref player, void *data, char *buffer)
-{
-
-	AUTO *autopilot = (AUTO *) data;
-	MECH *mech;
-
-    /* Make sure its an AI */
-    if (!autopilot && !IsAuto(autopilot->mynum)) {
-        notify(player, "Internal error! - Bad AI Object");
-        /* Insert error message to somewhere */
-        /* Insert Cleanup */
-        return;
-    }
-
-    /* Set the mech number as the current location */
-    autopilot->mymechnum = Location(autopilot->mynum);
-    
-    /* getMech checks to make sure its a valid obj and mech */
-    if (!(mech = getMech(autopilot->mymechnum))) {
-        notify(player, "AI not in a mech ... try moving it or putting it in one");
-        /* No mech so return - do something about AI cleanup? */
-        return;
-    }
-
-    /* Mech Destroyed ? */
-    if (Destroyed(mech)) {
-        notify(player, "That mech has been destroyed ... nothing to do");
-        /* Cleanup */
-        return;
-    }
-
-    if (IsAutoOn(autopilot)) {
-        notify(player, "The autopilot is already online."
-                " You have to disengage it first.");
-        return;
-    }
-
-    /* Turn Autopilot On */
-    AutoOn(autopilot);
-
-	if (MechAuto(mech) <= 0)
-		auto_init(autopilot, mech);
-
-	MechAuto(mech) = autopilot->mynum;
-
-	if (MechAuto(mech) > 0)
-		auto_set_comtitle(autopilot, mech);
-
-	autopilot->mapindex = mech->mapindex;
-
-	notify(player, "Engaging autopilot...");
-    notify(player, "Welcome to " AUTOPILOT_VERSION);
-
-	return;
-
-}
-
-/*
- * Turn off the autopilot
- */
-void auto_disengage(dbref player, void *data, char *buffer)
-{
-
-	AUTO *autopilot = (AUTO *) data;
-
-    /* Make sure its an AI */
-    if (!autopilot && !IsAuto(autopilot->mynum)) {
-        notify(player, "Internal error! - Bad AI Object");
-        /* Insert error message to somewhere */
-        /* Insert Cleanup */
-        return;
-    }
-
-    if (!IsAutoOn(autopilot)) {
-	    notify(player, "The autopilot's already offline! You have to engage it first.");
-        return;
-    }
-
-    AutoOff(autopilot);
-
-	notify(player, "Autopilot has been disengaged.");
-
-	return;
-
-}
-
-/*
  * Remove the first command_node in the list and go to the next
  */
 void auto_goto_next_command(AUTO * autopilot, int time)
@@ -888,6 +798,96 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 
 }
 
+/*
+ * Setup all the flags and variables to current, then
+ * start the AI's first command.
+ */
+void auto_engage(dbref player, void *data, char *buffer)
+{
+
+    AUTO *autopilot = (AUTO *) data;
+    MECH *mech;
+
+    /* Make sure its an AI */
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        notify(player, "Internal error! - Bad AI Object");
+        /* Insert error message to somewhere */
+        /* Insert Cleanup */
+        return;
+    }
+
+    /* Set the mech number as the current location */
+    autopilot->mymechnum = Location(autopilot->mynum);
+
+    /* getMech checks to make sure its a valid obj and mech */
+    if (!(mech = getMech(autopilot->mymechnum))) {
+        notify(player, "AI not in a mech ... try moving it or putting it in one");
+        /* No mech so return - do something about AI cleanup? */
+        return;
+    }
+
+    /* Mech Destroyed ? */
+    if (Destroyed(mech)) {
+        notify(player, "That mech has been destroyed ... nothing to do");
+        /* Cleanup */
+        return;
+    }
+
+    if (IsAutoOn(autopilot)) {
+        notify(player, "The autopilot is already online."
+                " You have to disengage it first.");
+        return;
+    }
+
+    /* Turn Autopilot On */
+    AutoOn(autopilot);
+
+    if (MechAuto(mech) <= 0)
+        auto_init(autopilot, mech);
+
+    MechAuto(mech) = autopilot->mynum;
+
+    if (MechAuto(mech) > 0)
+        auto_set_comtitle(autopilot, mech);
+
+    autopilot->mapindex = mech->mapindex;
+
+    notify(player, "Engaging autopilot...");
+    notify(player, "Welcome to " AUTOPILOT_VERSION);
+
+    return;
+
+}
+
+/*
+ * Turn off the autopilot
+ */
+void auto_disengage(dbref player, void *data, char *buffer)
+{
+
+    AUTO *autopilot = (AUTO *) data;
+
+    /* Make sure its an AI */
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        notify(player, "Internal error! - Bad AI Object");
+        /* Insert error message to somewhere */
+        /* Insert Cleanup */
+        return;
+    }
+
+    if (!IsAutoOn(autopilot)) {
+        notify(player, "The autopilot's already offline! You have to engage it first.");
+        return;
+    }
+
+    AutoOff(autopilot);
+
+    notify(player, "Autopilot has been disengaged.");
+
+    return;
+
+}
+
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1
 
@@ -898,81 +898,78 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 void auto_newautopilot(dbref key, void **data, int selector)
 {
 
-	AUTO *autopilot = *data;
-	MECH *mech;
-	command_node *temp;
-	int i;
+    AUTO *autopilot = *data;
+    MECH *mech;
+    command_node *temp;
+    int i;
 
-	switch (selector) {
-	case SPECIAL_ALLOC:
+    switch (selector) {
+        case SPECIAL_ALLOC:
 
-		/* Allocate the command list */
-		autopilot->commands = dllist_create_list();
+            /* Allocate the command list */
+            autopilot->commands = dllist_create_list();
 
-		/* Make sure certain things are set NULL */
-		autopilot->astar_path = NULL;
-		autopilot->weaplist = NULL;
+            /* Make sure certain things are set NULL */
+            autopilot->astar_path = NULL;
+            autopilot->weaplist = NULL;
 
-		for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-			autopilot->profile[i] = NULL;
-		}
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                autopilot->profile[i] = NULL;
+            }
 
-		/* And some things not set null */
-		autopilot->speed = 100;
+            /* And some things not set null */
+            autopilot->speed = 100;
 
-		break;
+            break;
 
-	case SPECIAL_FREE:
+        case SPECIAL_FREE:
 
-		/* Make sure the AI is stopped */
-		auto_stop_pilot(autopilot);
+            /* Make sure the AI is stopped */
+            auto_stop_pilot(autopilot);
 
-		/* Go through the list and remove any leftover nodes */
-		while (dllist_size(autopilot->commands)) {
+            /* Go through the list and remove any leftover nodes */
+            while (dllist_size(autopilot->commands)) {
 
-			/* Remove the first node on the list and get the data
-			 * from it */
-			temp = (command_node *) dllist_remove(autopilot->commands,
-												  dllist_head(autopilot->
-															  commands));
+                /* Remove the first node on the list and get the data
+                 * from it */
+                temp = (command_node *) dllist_remove(autopilot->commands,
+                        dllist_head(autopilot->commands));
 
-			/* Destroy the command node */
-			auto_destroy_command_node(temp);
+                /* Destroy the command node */
+                auto_destroy_command_node(temp);
 
-		}
+            }
 
-		/* Destroy the list */
-		dllist_destroy_list(autopilot->commands);
-		autopilot->commands = NULL;
+            /* Destroy the list */
+            dllist_destroy_list(autopilot->commands);
+            autopilot->commands = NULL;
 
-		/* Destroy any astar path list thats on the AI */
-		auto_destroy_astar_path(autopilot);
+            /* Destroy any astar path list thats on the AI */
+            auto_destroy_astar_path(autopilot);
 
-		/* Destroy profile array */
-		for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-			if(autopilot->profile[i]) {
-				rb_destroy(autopilot->profile[i]);
-			}
-			autopilot->profile[i] = NULL;
-		}
+            /* Destroy profile array */
+            for (i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                if (autopilot->profile[i]) {
+                    rb_destroy(autopilot->profile[i]);
+                }
+                autopilot->profile[i] = NULL;
+            }
 
-		/* Destroy weaponlist */
-		auto_destroy_weaplist(autopilot);
+            /* Destroy weaponlist */
+            auto_destroy_weaplist(autopilot);
 
-		/* Finally reset the AI value on its unit if
-		 * it needs to */
-		if((mech = getMech(autopilot->mymechnum))) {
+            /* Finally reset the AI value on its unit if
+             * it needs to */
+            if ((mech = getMech(autopilot->mymechnum))) {
 
-			/* Just incase another AI has taken over */
-			if(MechAuto(mech) == autopilot->mynum) {
-				MechAuto(mech) = -1;
-			}
+                /* Just incase another AI has taken over */
+                if (MechAuto(mech) == autopilot->mynum) {
+                    MechAuto(mech) = -1;
+                }
 
-		}
-
-		break;
-
-	}
+            }
+            break;
+    }
 
 }
 
@@ -1021,26 +1018,33 @@ void auto_heartbeat(AUTO *autopilot) {
     /* Is the mech on a map? */
     if (!(map = getMap(mech->mapindex))) {
         /* Do something here haven't decided what */
+        /* Possibly set a flag, like NOT ON MAP or something
+         * because it can still check commands like udisembark
+         * if its not on a map */
     }
 
     /* Init the AI if its not init'd */
 
+    /* Check to see if its been setup - Right now this doesn't do
+     * anything but it will handle stuff later - perhaps */
+    if (!IsAutoSetup(autopilot)) {
+        AutoSetup(autopilot);
+    }
+
     /* Weaplist */
+    /*
     if (autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
         auto_update_profile_event(autopilot);
+    */
 
     /* Ok now the fun stuff */
 
     /* What do we need to do */
 
-        /* Check current commands */
-        /* Target */
-        /* Sensor */
-        /* Shoot */
-        /* Move */
-        /* Anything else */
-    /*
-    auto_sensor_event(autopilot);
-    auto_gun_event(autopilot);
-    */
+    /* Check current commands */
+    /* Target */
+    /* Sensor */
+    /* Shoot */
+    /* Move */
+    /* Anything else */
 }

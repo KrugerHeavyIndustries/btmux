@@ -24,10 +24,15 @@
 
 /* Status Flags for the AI */
 #define AUTOPILOT_ON            1       /* Is the AI even on? */
+#define AUTOPILOT_SETUP         2       /* AI has been setup? */
 
 #define IsAutoOn(a)             ((a)->status & AUTOPILOT_ON)
 #define AutoOn(a)               ((a)->status |= AUTOPILOT_ON)
 #define AutoOff(a)              ((a)->status &= ~AUTOPILOT_ON)
+
+#define IsAutoSetup(a)          ((a)->status & AUTOPILOT_SETUP)
+#define AutoSetup(a)            ((a)->status & AUTOPILOT_SETUP)
+#define ClearAutoSetup(a)       ((a)->status & AUTOPILOT_SETUP)
 
 /* Old stuff delete it */
 
