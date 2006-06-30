@@ -164,7 +164,7 @@ void release_descriptor(DESC *d) {
             bufferevent_free(d->sock_buff);
         d->sock_buff = NULL;
         
-        if(descriptor_list == d) {
+/*        if(descriptor_list == d) {
             descriptor_list = d->next;
         } else {
             if(!descriptor_list) {
@@ -184,6 +184,14 @@ void release_descriptor(DESC *d) {
         }
 
         d->next = NULL;
+	*/
+	 if (d->prev)
+		     d->prev->next = d->next;
+	   else                          /* d was the first one! */
+		       descriptor_list = d->next;
+	     if (d->next)
+		         d->next->prev = d->prev;
+
         ndescriptors--;
         free(d);
     }
@@ -577,9 +585,12 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 	getnameinfo((struct sockaddr *) saddr, saddr_len, d->addr,
 				sizeof(d->addr), NULL, 0, NI_NUMERICHOST);
 
-    d->next = descriptor_list;
-	descriptor_list = d;
-
+	if (descriptor_list)
+		descriptor_list->prev = d;
+        d->next = descriptor_list;
+        d->prev = NULL;
+        descriptor_list = d;
+       
 	d->outstanding_dnschild_query = dnschild_request(d);
 
 	d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,

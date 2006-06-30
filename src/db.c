@@ -2096,7 +2096,9 @@ void dump_restart_db(void)
 	putref(f, mudstate.start_time);
 	putstring(f, mudstate.doing_hdr);
 	putref(f, mudstate.record_players);
-	DESC_ITER_ALL(d) {
+	for (d = descriptor_list ; d && d->next ; d = d->next);
+	for(; d != NULL ; d = d->prev) {
+		dprintk("d: %p dnext: %p dprev: %p", d, d->next, d->prev);
 		putref(f, d->descriptor);
 		putref(f, d->flags);
 		putref(f, d->connected_at);
@@ -2137,9 +2139,12 @@ void dump_restart_db_xdr(void)
     mmdb_write_uint32(mmdb, 1);
     mmdb_write_uint32(mmdb, version);
     mmdb_write_uint32(mmdb, mudstate.start_time);
-    mmdb_write_string(mmdb, mudstate.doing_hdr);
+   mmdb_write_string(mmdb, mudstate.doing_hdr);
 	mmdb_write_uint32(mmdb, mudstate.record_players);
-	DESC_ITER_ALL(d) {
+	    for (d = descriptor_list; d && d->next; d = d->next) ;
+	    
+	for (; d != NULL; d = d->prev) {
+		dprintk("XDR!! d: %p dnext: %p dprev: %p", d, d->next, d->prev);
 		mmdb_write_uint32(mmdb, d->descriptor);
 		mmdb_write_uint32(mmdb, d->flags);
 		mmdb_write_uint32(mmdb, d->connected_at);
@@ -2253,9 +2258,14 @@ void load_restart_db()
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
         
-        d->next = descriptor_list;
-        descriptor_list = d->next;
 
+
+	 if (descriptor_list)
+	         descriptor_list->prev = d;
+         d->next = descriptor_list;
+         d->prev = NULL;
+         descriptor_list = d;
+		   
         d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
@@ -2350,9 +2360,15 @@ int load_restart_db_xdr()
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
 
-        d->next = descriptor_list;
-        descriptor_list = d;
 
+
+
+	 if (descriptor_list)
+		 descriptor_list->prev = d;
+	 d->next = descriptor_list;
+	 d->prev = NULL;
+	 descriptor_list = d;
+			   
         d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
