@@ -20,6 +20,17 @@
 #include "mech.events.h"
 #include "dllist.h"
 
+#define AUTOPILOT_VERSION       "BTMux AI 3.0 - Zeke"
+
+/* Status Flags for the AI */
+#define AUTOPILOT_ON            1       /* Is the AI even on? */
+
+#define IsAutoOn(a)             ((a)->status & AUTOPILOT_ON)
+#define AutoOn(a)               ((a)->status |= AUTOPILOT_ON)
+#define AutoOff(a)              ((a)->status &= ~AUTOPILOT_ON)
+
+/* Old stuff delete it */
+
 #define AUTOPILOT_MEMORY        100     /* Number of command slots available to AI */
 #define AUTOPILOT_MAX_ARGS      5       /* Max number of arguments for a given AI Command
                                            Includes the command as the first argument */
@@ -222,9 +233,9 @@ typedef struct profile_node_t {
  */
 typedef struct {
     dbref mynum;                    /* The AI's dbref number */
+    dbref mymechnum;                /* the dbref of the AI's mech */
     MECH *mymech;                   /* The AI's unit */
     int mapindex;                   /* The map the AI is currently on */
-    dbref mymechnum;                /* the dbref of the AI's mech */
     unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
     int ofsx, ofsy;                 /* ? */
 
@@ -241,6 +252,7 @@ typedef struct {
     int follow_update_tick;         /* When should we update follow */
 
     /* Special AI flags */
+    int status;                     /* Status of the AI - Main flags here */
     unsigned short flags;
 
     /* The autopilot's command list */

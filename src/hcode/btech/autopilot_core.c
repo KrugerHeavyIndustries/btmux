@@ -284,18 +284,6 @@ void auto_load_commands(FILE * file, AUTO * autopilot)
  * of the AI
  */
 
-/*! \todo {See if we need this function and remove it if not} */
-int auto_valid_progline(AUTO * a, int p)
-{
-	int i;
-#if 0
-	for(i = 0; i < a->first_free; i += (acom[a->commands[i]].argcount + 1))
-		if(i == p)
-			return 1;
-#endif
-	return 0;
-}
-
 /*
  * Internal function to return a string that
  * displays a command from a command_node
@@ -431,16 +419,6 @@ void auto_jump(dbref player, void *data, char *buffer)
 
 	notify(player, "jump has been temporarly disabled till I can figure out"
 		   " how I want to change it - Dany");
-#if 0
-	skipws(buffer);
-	DOCHECK(!*buffer, "Argument expected!");
-	DOCHECK(Readnum(p, buffer), "Invalid argument - single number expected.");
-	/* Find out if it's valid position */
-	DOCHECK(!auto_valid_progline(a, p),
-			"Invalid : Argument out of range, or argument, not command.");
-	PG(a) = p;
-	notify_printf(player, "Program Counter set to #%d.", p);
-#endif
 }
 
 /*
@@ -692,25 +670,52 @@ void auto_engage(dbref player, void *data, char *buffer)
 	AUTO *autopilot = (AUTO *) data;
 	MECH *mech;
 
-	autopilot->mymech = mech =
-		getMech((autopilot->mymechnum = Location(autopilot->mynum)));
-	DOCHECK(!autopilot, "Internal error! - Bad AI object!");
-	DOCHECK(!mech, "Error: The autopilot isn't inside a 'mech!");
-	DOCHECK(auto_pilot_on(autopilot),
-			"The autopilot's already online! You have to disengage it first.");
+    /* Make sure its an AI */
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        notify(player, "Internal error! - Bad AI Object");
+        /* Insert error message to somewhere */
+        /* Insert Cleanup */
+        return;
+    }
 
-	if(MechAuto(mech) <= 0)
+    /* Set the mech number as the current location */
+    autopilot->mymechnum = Location(autopilot->mynum);
+    
+    /* getMech checks to make sure its a valid obj and mech */
+    if (!(mech = getMech(autopilot->mymechnum))) {
+        notify(player, "AI not in a mech ... try moving it or putting it in one");
+        /* No mech so return - do something about AI cleanup? */
+        return;
+    }
+
+    /* Mech Destroyed ? */
+    if (Destroyed(mech)) {
+        notify(player, "That mech has been destroyed ... nothing to do");
+        /* Cleanup */
+        return;
+    }
+
+    if (IsAutoOn(autopilot)) {
+        notify(player, "The autopilot is already online."
+                " You have to disengage it first.");
+        return;
+    }
+
+    /* Turn Autopilot On */
+    AutoOn(autopilot);
+
+	if (MechAuto(mech) <= 0)
 		auto_init(autopilot, mech);
+
 	MechAuto(mech) = autopilot->mynum;
 
-	if(MechAuto(mech) > 0)
+	if (MechAuto(mech) > 0)
 		auto_set_comtitle(autopilot, mech);
 
 	autopilot->mapindex = mech->mapindex;
 
 	notify(player, "Engaging autopilot...");
-	AUTOEVENT(autopilot, EVENT_AUTOCOM, auto_com_event, AUTOPILOT_NC_DELAY,
-			  0);
+    notify(player, "Welcome to " AUTOPILOT_VERSION);
 
 	return;
 
@@ -724,10 +729,21 @@ void auto_disengage(dbref player, void *data, char *buffer)
 
 	AUTO *autopilot = (AUTO *) data;
 
-	DOCHECK(!auto_pilot_on(autopilot),
-			"The autopilot's already offline! You have to engage it first.");
+    /* Make sure its an AI */
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        notify(player, "Internal error! - Bad AI Object");
+        /* Insert error message to somewhere */
+        /* Insert Cleanup */
+        return;
+    }
 
-	auto_stop_pilot(autopilot);
+    if (!IsAutoOn(autopilot)) {
+	    notify(player, "The autopilot's already offline! You have to engage it first.");
+        return;
+    }
+
+    AutoOff(autopilot);
+
 	notify(player, "Autopilot has been disengaged.");
 
 	return;
@@ -963,10 +979,68 @@ void auto_newautopilot(dbref key, void **data, int selector)
 // XXX: put in a header file
 extern unsigned int global_tick;
 
+/* Called once a second for each AI thats out there */
 void auto_heartbeat(AUTO *autopilot) {
-    if(!autopilot->mymech) return;
-    auto_sensor_event(autopilot);
-    if(autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
+
+    MECH *mech;
+    MAP *map;
+
+    /* Do basic checks */
+
+    /* Make sure its an AI */
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        /* Insert error message to somewhere */
+        /* Insert Cleanup */
+        return;
+    }
+
+    /* getMech checks to make sure its a valid obj and mech */
+    if (!(mech = getMech(autopilot->mymechnum))) {
+        /* No mech so return - do something about AI cleanup? */
+        return;
+    }
+
+    /* Mech Destroyed ? */
+    if (Destroyed(mech)) {
+        /* Cleanup */
+        return;
+    }
+
+    /* Check Location */
+    if (Location(autopilot->mynum) != autopilot->mymechnum) {
+        /* AI not in its mech - add cleanup? */
+        return;
+    }
+
+    /* Check to make sure the AI is 'On' */
+    if (IsAutoOn(autopilot)) {
+        /* Not on so just return */
+        return;
+    }
+
+    /* Is the mech on a map? */
+    if (!(map = getMap(mech->mapindex))) {
+        /* Do something here haven't decided what */
+    }
+
+    /* Init the AI if its not init'd */
+
+    /* Weaplist */
+    if (autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
         auto_update_profile_event(autopilot);
+
+    /* Ok now the fun stuff */
+
+    /* What do we need to do */
+
+        /* Check current commands */
+        /* Target */
+        /* Sensor */
+        /* Shoot */
+        /* Move */
+        /* Anything else */
+    /*
+    auto_sensor_event(autopilot);
     auto_gun_event(autopilot);
+    */
 }
