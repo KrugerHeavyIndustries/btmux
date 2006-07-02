@@ -39,109 +39,88 @@
 #include "p.mech.advanced.h"
 #include "p.mech.bth.h"
 
-#if 0
-static char *my2string(const char *old)
-{
-	static char new[64];
-
-	strncpy(new, old, 63);
-	new[63] = '\0';
-	return new;
-}
-#endif
-
 /* Function to determine if there are any slites affecting the AI */
-int SearchLightInRange(MECH * mech, MAP * map)
+int SearchLightInRange(MECH *mech, MAP *map)
 {
 
-	MECH *target;
-	int i;
+    MECH *target;
+    int i;
 
-	/* Make sure theres a valid mech or map */
-	if(!mech || !map)
-		return 0;
+    /* Loop through all the units on the map */
+    for (i = 0; i < map->first_free; i++) {
 
-	/* Loop through all the units on the map */
-	for(i = 0; i < map->first_free; i++) {
+        /* No units on the map */
+        if (!(target = getMech(map->mechsOnMap[i])))
+            continue;
 
-		/* No units on the map */
-		if(!(target = FindObjectsData(map->mechsOnMap[i])))
-			continue;
+        /* The unit doesn't have slite on */
+        if (!(MechSpecials(target) & SLITE_TECH)
+                || MechCritStatus(mech) & SLITE_DEST)
+            continue;
 
-		/* The unit doesn't have slite on */
-		if(!(MechSpecials(target) & SLITE_TECH)
-		   || MechCritStatus(mech) & SLITE_DEST)
-			continue;
+        /* Is the mech close enough to be affected by the slite */
+        if (FaMechRange(target, mech) < LITE_RANGE) {
 
-		/* Is the mech close enough to be affected by the slite */
-		if(FaMechRange(target, mech) < LITE_RANGE) {
+            /* Returning true, but let's differentiate also between being in-arc. */
+            if ((MechStatus(target) & SLITE_ON) &&
+                    InWeaponArc(target, MechFX(mech), MechFY(mech)) & FORWARDARC) {
 
-			/* Returning true, but let's differentiate also between being in-arc. */
-			if((MechStatus(target) & SLITE_ON) &&
-			   InWeaponArc(target, MechFX(mech), MechFY(mech)) & FORWARDARC) {
+                /* Make sure its in los */
+                if (!(map->LOSinfo[target->mapnumber][mech->mapnumber] &
+                            MECHLOSFLAG_BLOCK))
 
-				/* Make sure its in los */
-				if(!
-				   (map->
-					LOSinfo[target->mapnumber][mech->
-											   mapnumber] &
-					MECHLOSFLAG_BLOCK))
+                    /* Slite on and, arced, and LoS to you */
+                    return 3;
+                else
+                    /* Slite on, arced, but LoS blocked */
+                    return 4;
 
-					/* Slite on and, arced, and LoS to you */
-					return 3;
-				else
-					/* Slite on, arced, but LoS blocked */
-					return 4;
+            } else if (!MechStatus(target) & SLITE_ON &&
+                    InWeaponArc(target, MechFX(mech),
+                        MechFY(mech)) & FORWARDARC) {
 
-			} else if(!MechStatus(target) & SLITE_ON &&
-					  InWeaponArc(target, MechFX(mech),
-								  MechFY(mech)) & FORWARDARC) {
+                if (!(map->LOSinfo[target->mapnumber][mech->mapnumber] &
+                            MECHLOSFLAG_BLOCK))
 
-				if(!
-				   (map->
-					LOSinfo[target->mapnumber][mech->
-											   mapnumber] &
-					MECHLOSFLAG_BLOCK))
+                    /* Slite off, arced, and LoS to you */
+                    return 5;
 
-					/* Slite off, arced, and LoS to you */
-					return 5;
+                else
+                    /* Slite off, arced, and LoS blocked */
+                    return 6;
+            }
 
-				else
-					/* Slite off, arced, and LoS blocked */
-					return 6;
-			}
+            /* Slite is in range of you, but apparently not arced on you. 
+             * Return tells wether on or off */
+            return (MechStatus(target) & SLITE_ON ? 1 : 2);
+        }
 
-			/* Slite is in range of you, but apparently not arced on you. 
-			 * Return tells wether on or off */
-			return (MechStatus(target) & SLITE_ON ? 1 : 2);
-		}
-
-	}
-	return 0;
+    }
+    return 0;
 }
 
 /* Function to determine if the AI should use V or L sensor */
 int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
 {
 
-	/* No map or mech so use default till we get put somewhere */
-	if(!mech || !map)
-		return SENSOR_VIS;
+    /* No map or mech so use default till we get put somewhere */
+    if (!mech || !map)
+        return SENSOR_VIS;
 
-	/* Ok the AI is lit or using slite so use V */
-	if(MechStatus(mech) & SLITE_ON || MechCritStatus(mech) & SLITE_LIT)
-		return SENSOR_VIS;
+    /* Ok the AI is lit or using slite so use V */
+    if (MechStatus(mech) & SLITE_ON || MechCritStatus(mech) & SLITE_LIT)
+        return SENSOR_VIS;
 
-	/* The target is lit so use V */
-	if(target && MechCritStatus(target) & SLITE_LIT)
-		return SENSOR_VIS;
+    /* The target is lit so use V */
+    if (target && MechCritStatus(target) & SLITE_LIT)
+        return SENSOR_VIS;
 
-	/* Ok if its night/dawn/dusk and theres no slite use L */
-	if(map->maplight <= 1 && slite != 3 && slite != 5)
-		return SENSOR_LA;
+    /* Ok if its night/dawn/dusk and theres no slite use L */
+    if (map->maplight <= 1 && slite != 3 && slite != 5)
+        return SENSOR_LA;
 
-	/* Default sensor */
-	return SENSOR_VIS;
+    /* Default sensor */
+    return SENSOR_VIS;
 }
 
 /*
@@ -149,187 +128,145 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
  * target and situation
  */
 /*! \todo {Improve this so it knows more about the terrain} */
-void auto_sensor_event(AUTO *autopilot)
+void auto_sensor(AUTO *autopilot, MECH *mech, MAP *map)
 {
-	MECH *target = NULL;
-	MAP *map;
-	char buf[16];
-	int wanted_s[2];
-	int rvis;
-	int slite, prefvis;
-	float trng;
-	int set = 0;
+    MECH *target = NULL;
+    char buf[16];
+    int wanted_s[2];
+    int rvis;
+    int slite, prefvis;
+    float trng;
+    int set = 0;
 
-	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
-		dprintk("mymechnum is bad!");
-		return;
-	}
-	if((autopilot->mynum > mudstate.db_top) || (autopilot->mynum < 0 )) {
-		dprintk("mynum is bad!");
-		return;
-	}
-			 
-	
-	MECH *mech = (MECH *) autopilot->mymech;
-	
-	/* Make sure its a MECH Xcode Object and the AI is
-	 * an AUTOPILOT Xcode Object */
-        /* Basic checks */
-	if(!mech) {
-                dprintk("mech is bad!");
-                return;
+    /* Mech isn't started */
+    if (!Started(mech)) {
+        Zombify(autopilot);
+        return;
+    }
+
+    /* The mech is using user defined sensors so don't try
+     * and change them */
+    if (autopilot->flags & AUTOPILOT_LSENS)
+        return;
+
+    /* Get the target if there is one */
+    if (MechTarget(mech) > 0)
+        target = getMech(MechTarget(mech));
+
+    /* Checks to see if there is slite, and what types of vis
+     * and which visual sensor (V or L) to use */
+    slite = (map->mapvis != 2 ? SearchLightInRange(mech, map) : 0);
+    rvis = (map->maplight ? (map->mapvis) : (map->mapvis * (slite ? 1 : 3)));
+    prefvis = PrefVisSens(mech, map, slite, target);
+
+    /* Is there a target */
+    if (target) {
+
+        /* Range to target */
+        trng = FaMechRange(mech, target);
+
+        /* Actually not gonna bother with this */
+        /* If the target is running hot and is close switch to IR */
+        if (!set && HeatFactor(target) > 35 && (int) trng < 15) {
+            //wanted_s[0] = SENSOR_IR;
+            //wanted_s[1] = ((MechTons(target) >= 60) ? SENSOR_EM : prefvis);
+            //set++;
         }
-        if(!autopilot) {
-                dprintk("ai is bad!");
-                return;
+
+        /* If the target is BIG and close enough, use EM */
+        if (!set && MechTons(target) >= 60 && (int) trng <= 20) {
+            wanted_s[0] = SENSOR_EM;
+            wanted_s[1] = SENSOR_IR;
+            set++;
         }
-			
-	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
-		return;
 
-	/* Mech is dead so stop trying to shoot things */
-	if(Destroyed(mech)) {
-		DoStopGun(autopilot);
-		return;
-	}
+        /* If the target is flying switch to Radar */
+        if (!set && !Landed(target) && FlyingT(target)) {
+            wanted_s[0] = SENSOR_RA;
+            wanted_s[1] = prefvis;
+            set++;
+        }
 
-	/* Mech isn't started */
-	if(!Started(mech)) {
-		Zombify(autopilot);
-		return;
-	}
+        /* If the target is really close and the unit has BAP, use it */
+        if (!set && (int) trng <= 4 && MechSpecials(mech) & BEAGLE_PROBE_TECH
+                && !(MechCritStatus(mech) & BEAGLE_DESTROYED)) {
+            wanted_s[0] = SENSOR_BAP;
+            wanted_s[1] = SENSOR_BAP;
+            set++;
+        }
 
-	/* The mech is using user defined sensors so don't try
-	 * and change them */
-	if(autopilot->flags & AUTOPILOT_LSENS)
-		return;
+        /* If the target is really close and the unit has Bloodhound, use it */
+        if (!set && (int) trng <= 8
+                && MechSpecials2(mech) & BLOODHOUND_PROBE_TECH
+                && !(MechCritStatus(mech) & BLOODHOUND_DESTROYED)) {
+            wanted_s[0] = SENSOR_BHAP;
+            wanted_s[1] = SENSOR_BHAP;
+            set++;
+        }
 
-	/* Get the map */
-	if(!(map = getMap(mech->mapindex))) {
+        /* Didn't stop at any of the others so use selected visual sensors */
+        if (!set) {
+            wanted_s[0] = prefvis;
+            wanted_s[1] = (rvis <= 15 ? SENSOR_EM : prefvis);
+            set++;
+        }
 
-		/* Bad Map */
-		Zombify(autopilot);
-		return;
-	}
-	
-	/* Get the target if there is one */
-	if(MechTarget(mech) > 0)
-		target = getMech(MechTarget(mech));
+    }
 
-	/* Checks to see if there is slite, and what types of vis
-	 * and which visual sensor (V or L) to use */
-	slite = (map->mapvis != 2 ? SearchLightInRange(mech, map) : 0);
-	rvis = (map->maplight ? (map->mapvis) : (map->mapvis * (slite ? 1 : 3)));
-	prefvis = PrefVisSens(mech, map, slite, target);
+    /* Ok no target and no sensors set yet so lets go for defaults */
+    if (!set) {
+        if (rvis <= 15) {
+            /* Vis is less then or equal to 15 so go to E I for longer range */
+            wanted_s[0] = SENSOR_EM;
+            wanted_s[1] = SENSOR_IR;
+        } else {
+            /* Ok lets go with default visual sensors */
+            wanted_s[0] = prefvis;
+            wanted_s[1] = prefvis;
+        }
+    }
 
-	/* Is there a target */
-	if(target) {
+    /* Check to make sure valid sensors are selected and then set them */
+    if (wanted_s[0] >= SENSOR_VIS && wanted_s[0] <= SENSOR_BHAP &&
+            wanted_s[1] >= SENSOR_VIS && wanted_s[1] <= SENSOR_BHAP &&
+            (MechSensor(mech)[0] != wanted_s[0]
+             || MechSensor(mech)[1] != wanted_s[1])) {
 
-		/* Range to target */
-		trng = FaMechRange(mech, target);
+        wanted_s[0] = BOUNDED(SENSOR_VIS, wanted_s[0], SENSOR_BHAP);
+        wanted_s[1] = BOUNDED(SENSOR_VIS, wanted_s[1], SENSOR_BHAP);
 
-		/* Actually not gonna bother with this */
-		/* If the target is running hot and is close switch to IR */
-		if(!set && HeatFactor(target) > 35 && (int) trng < 15) {
-			//wanted_s[0] = SENSOR_IR;
-			//wanted_s[1] = ((MechTons(target) >= 60) ? SENSOR_EM : prefvis);
-			//set++;
-		}
-
-		/* If the target is BIG and close enough, use EM */
-		if(!set && MechTons(target) >= 60 && (int) trng <= 20) {
-			wanted_s[0] = SENSOR_EM;
-			wanted_s[1] = SENSOR_IR;
-			set++;
-		}
-
-		/* If the target is flying switch to Radar */
-		if(!set && !Landed(target) && FlyingT(target)) {
-			wanted_s[0] = SENSOR_RA;
-			wanted_s[1] = prefvis;
-			set++;
-		}
-
-		/* If the target is really close and the unit has BAP, use it */
-		if(!set && (int) trng <= 4 && MechSpecials(mech) & BEAGLE_PROBE_TECH
-		   && !(MechCritStatus(mech) & BEAGLE_DESTROYED)) {
-			wanted_s[0] = SENSOR_BAP;
-			wanted_s[1] = SENSOR_BAP;
-			set++;
-		}
-
-		/* If the target is really close and the unit has Bloodhound, use it */
-		if(!set && (int) trng <= 8
-		   && MechSpecials2(mech) & BLOODHOUND_PROBE_TECH
-		   && !(MechCritStatus(mech) & BLOODHOUND_DESTROYED)) {
-			wanted_s[0] = SENSOR_BHAP;
-			wanted_s[1] = SENSOR_BHAP;
-			set++;
-		}
-
-		/* Didn't stop at any of the others so use selected visual sensors */
-		if(!set) {
-			wanted_s[0] = prefvis;
-			wanted_s[1] = (rvis <= 15 ? SENSOR_EM : prefvis);
-			set++;
-		}
-
-	}
-
-	/* Ok no target and no sensors set yet so lets go for defaults */
-	if(!set) {
-		if(rvis <= 15) {
-			/* Vis is less then or equal to 15 so go to E I for longer range */
-			wanted_s[0] = SENSOR_EM;
-			wanted_s[1] = SENSOR_IR;
-		} else {
-			/* Ok lets go with default visual sensors */
-			wanted_s[0] = prefvis;
-			wanted_s[1] = prefvis;
-		}
-	}
-
-	/* Check to make sure valid sensors are selected and then set them */
-	if(wanted_s[0] >= SENSOR_VIS && wanted_s[0] <= SENSOR_BHAP &&
-	   wanted_s[1] >= SENSOR_VIS && wanted_s[1] <= SENSOR_BHAP &&
-	   (MechSensor(mech)[0] != wanted_s[0]
-		|| MechSensor(mech)[1] != wanted_s[1])) {
-
-		wanted_s[0] = BOUNDED(SENSOR_VIS, wanted_s[0], SENSOR_BHAP);
-		wanted_s[1] = BOUNDED(SENSOR_VIS, wanted_s[1], SENSOR_BHAP);
-
-		MechSensor(mech)[0] = wanted_s[0];
-		MechSensor(mech)[1] = wanted_s[1];
-		mech_notify(mech, MECHALL, "As your sensors change, your lock clears.");
-		MechTarget(mech) = -1;
-		MarkForLOSUpdate(mech);
-	}
+        MechSensor(mech)[0] = wanted_s[0];
+        MechSensor(mech)[1] = wanted_s[1];
+        mech_notify(mech, MECHALL, "As your sensors change, your lock clears.");
+        MechTarget(mech) = -1;
+        MarkForLOSUpdate(mech);
+    }
 }
 
 /*
  * Create a weapon_list node
  */
 weapon_node *auto_create_weapon_node(short weapon_number,
-									 short weapon_db_number, short section,
-									 short critical)
+        short weapon_db_number, short section,
+        short critical)
 {
 
-	weapon_node *temp;
+    weapon_node *temp;
 
-	temp = malloc(sizeof(weapon_node));
+    temp = malloc(sizeof(weapon_node));
 
-	if(temp == NULL) {
-		return NULL;
-	}
+    if (temp == NULL) {
+        return NULL;
+    }
 
-	memset(temp, 0, sizeof(weapon_node));
+    memset(temp, 0, sizeof(weapon_node));
 
-	temp->weapon_number = weapon_number;
-	temp->weapon_db_number = weapon_db_number;
-	temp->section = section;
-	temp->critical = critical;
+    temp->weapon_number = weapon_number;
+    temp->weapon_db_number = weapon_db_number;
+    temp->section = section;
+    temp->critical = critical;
 
-	return temp;
+    return temp;
 
 }
 
@@ -338,9 +275,8 @@ weapon_node *auto_create_weapon_node(short weapon_number,
  */
 void auto_destroy_weapon_node(weapon_node * victim)
 {
-
-	free(victim);
-	return;
+    free(victim);
+    return;
 }
 
 /*
@@ -349,20 +285,20 @@ void auto_destroy_weapon_node(weapon_node * victim)
 target_node *auto_create_target_node(int target_score, dbref target_dbref)
 {
 
-	target_node *temp;
+    target_node *temp;
 
-	temp = malloc(sizeof(target_node));
+    temp = malloc(sizeof(target_node));
 
-	if(temp == NULL) {
-		return NULL;
-	}
+    if (temp == NULL) {
+        return NULL;
+    }
 
-	memset(temp, 0, sizeof(target_node));
+    memset(temp, 0, sizeof(target_node));
 
-	temp->target_score = target_score;
-	temp->target_dbref = target_dbref;
+    temp->target_score = target_score;
+    temp->target_dbref = target_dbref;
 
-	return temp;
+    return temp;
 
 }
 
@@ -371,10 +307,8 @@ target_node *auto_create_target_node(int target_score, dbref target_dbref)
  */
 void auto_destroy_target_node(target_node * victim)
 {
-
-	free(victim);
-	return;
-
+    free(victim);
+    return;
 }
 
 /*
@@ -383,27 +317,27 @@ void auto_destroy_target_node(target_node * victim)
 void auto_destroy_weaplist(AUTO * autopilot)
 {
 
-	weapon_node *temp_weapon_node;
+    weapon_node *temp_weapon_node;
 
-	/* Check to make sure there is a weapon list */
-	if(!(autopilot->weaplist))
-		return;
+    /* Check to make sure there is a weapon list */
+    if (!(autopilot->weaplist))
+        return;
 
-	/* There is a weapon list - lets kill it */
-	if(dllist_size(autopilot->weaplist) > 0) {
+    /* There is a weapon list - lets kill it */
+    if (dllist_size(autopilot->weaplist) > 0) {
 
-		while (dllist_size(autopilot->weaplist)) {
-			temp_weapon_node =
-				(weapon_node *) dllist_remove_node_at_pos(autopilot->weaplist,
-														  1);
-			auto_destroy_weapon_node(temp_weapon_node);
-		}
+        while (dllist_size(autopilot->weaplist)) {
+            temp_weapon_node =
+                (weapon_node *) dllist_remove_node_at_pos(autopilot->weaplist,
+                                                          1);
+            auto_destroy_weapon_node(temp_weapon_node);
+        }
 
-	}
+    }
 
-	/* Finally destroying the list */
-	dllist_destroy_list(autopilot->weaplist);
-	autopilot->weaplist = NULL;
+    /* Finally destroying the list */
+    dllist_destroy_list(autopilot->weaplist);
+    autopilot->weaplist = NULL;
 
 }
 
@@ -413,12 +347,12 @@ void auto_destroy_weaplist(AUTO * autopilot)
 static int auto_targets_callback(void *key, void *data, int depth, void *arg)
 {
 
-	target_node *temp;
+    target_node *temp;
 
-	temp = (target_node *) data;
-	auto_destroy_target_node(temp);
+    temp = (target_node *) data;
+    auto_destroy_target_node(temp);
 
-	return 1;
+    return 1;
 
 }
 
@@ -428,12 +362,12 @@ static int auto_targets_callback(void *key, void *data, int depth, void *arg)
 static int auto_generic_compare(void *a, void *b, void *token)
 {
 
-	int *one, *two;
+    int *one, *two;
 
-	one = (int *) a;
-	two = (int *) b;
+    one = (int *) a;
+    two = (int *) b;
 
-	return (*one - *two);
+    return (*one - *two);
 }
 
 /*
@@ -463,7 +397,7 @@ int auto_calc_weapon_score(int weapon_db_number, int range)
     /* Assume default values */
     weapon_score = 0;
     weapon_damage = 0;
-    range_score = 500;			/* Since by default we assume its SR */
+    range_score = 500;  /* Since by default we assume its SR */
     damage_score = 0;
     heat_score = 0;
     minrange_score = 0;
@@ -747,15 +681,15 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
      * give us a good starting point */
 
     /* Is the target dead? */
-    if(Destroyed(target))
+    if (Destroyed(target))
         return target_score;
 
     /* If target is combat safe don't even try to shoot it */
-    if(MechStatus(target) & COMBAT_SAFE)
+    if (MechStatus(target) & COMBAT_SAFE)
         return target_score;
 
     /* Compare Teams - for now we won't try to shoot a guy on our team */
-    if(MechTeam(target) == MechTeam(mech))
+    if (MechTeam(target) == MechTeam(mech))
         return target_score;
 
     /* Are we in los of the target - not sure really what to do about this
@@ -767,7 +701,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
             MechFY(target));
 
     /* Our we outside the range of the AI's System */
-    if((range >= (float) AUTO_GUN_MAX_RANGE)) {
+    if ((range >= (float) AUTO_GUN_MAX_RANGE)) {
         return target_score;
     }
 
@@ -794,7 +728,7 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
 
     /* Get the damage of the target by cycling through all the sections
      * and adding up the current and original values */
-    for(section = 0; section < NUM_SECTIONS; section++) {
+    for (section = 0; section < NUM_SECTIONS; section++) {
 
         /* Total the current armor and original armor */
         total_armor_current += GetSectArmor(target, section) +
@@ -814,18 +748,18 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
      * by zero. */
 
     /* Check the totals before we divide so no Divide by zeros */
-    if(total_internal_original == 0 && total_armor_original == 0) {
+    if (total_internal_original == 0 && total_armor_original == 0) {
 
         /* Both values are zero, not going to try and shoot it */
         return target_score;
 
-    } else if(total_internal_original == 0) {
+    } else if (total_internal_original == 0) {
 
         /* Just use armor part of the calc */
         damage_score = -3.0 * ((float) total_armor_current /
                 (float) total_armor_original) + 300.0;
 
-    } else if(total_armor_original == 0) {
+    } else if (total_armor_original == 0) {
 
         /* Just use internal part of the calc */
         damage_score = -2.0 * ((float) total_internal_current /
@@ -842,13 +776,13 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
     }
 
     /* Get the 'state' ie: shutdown, prone whatever */
-    if(!Started(target))
+    if (!Started(target))
         status_score += 100.0;
 
-    if(Uncon(target))
+    if (Uncon(target))
         status_score += 100.0;
 
-    if(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
+    if (MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
         status_score += 500.0;
 
     /* Add the individual scores and return the value */
@@ -856,6 +790,227 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
             damage_score + status_score);
 
     return target_score;
+
+}
+
+void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
+
+    MECH *target;
+    rbtree targets;			        /* all the targets we're looking at */
+    target_node *temp_target_node;	/* temp target node struct */
+
+    char buffer[LBUF_SIZE];		    /* General use buffer */
+
+    int target_score;			    /* variable to store temp score */
+    int threshold_score;		    /* The score to beat to switch targets */
+    int i, j;
+
+    float range;				    /* General variable for range */
+
+    /* First check to make sure we have a valid current target */
+    if (autopilot->target > -1) {
+
+        if (!(target = getMech(autopilot->target))) {
+
+            /* ok its not a valid target reset */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
+
+        } else if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
+
+            /* Target is either dead or not on the map anymore */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
+
+        } else {
+
+            /* Will keep on an assigned target even if its to far
+             * away */
+
+            /* Get range from mech to current target */
+            range = FindHexRange(MechFX(mech), MechFY(mech),
+                    MechFX(target), MechFY(target));
+
+            if ((range >= (float) AUTO_GUN_MAX_RANGE) &&
+                    !AssignedTarget(autopilot)) {
+
+                /* Target is to far away */
+                autopilot->target = -1;
+                autopilot->target_score = 0;
+
+            }
+
+        }
+
+    }
+
+    /* Were we given a target and its no longer there? */
+    if (AssignedTarget(autopilot) && autopilot->target == -1) {
+
+        /* Ok we had an assigned target but its gone now */
+        UnassignTarget(autopilot);
+
+        /*! \todo {Possibly add a radio message saying target destroyed} */
+    }
+
+    /* Do we need to look for a new target */
+    if (autopilot->target == -1 ||
+            (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
+             !AssignedTarget(autopilot))) {
+
+        /* Ok looking for a new target */
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Looking for new target");
+
+        /* Reset the update ticker */
+        autopilot->target_update_tick = 0;
+
+        /* Setup the rbtree */
+        targets = rb_init(&auto_generic_compare, NULL);
+
+        /* Cycle through possible targets and pick something to shoot */
+        for (i = 0; i < map->first_free; i++) {
+
+            /* Make sure its on the right map */
+            if (i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+
+                /* Is it a valid unit ? */
+                if (!(target = getMech(j)))
+                    continue;
+
+                /* Score the target */
+                target_score =
+                    auto_calc_target_score(autopilot, mech, target, map);
+
+                /* Log It */
+                print_autogun_log(autopilot,
+                        "Autogun - Possible target #%d with score %d",
+                        target->mynum, target_score);
+
+                /* If target has a score add it to rbtree */
+                if (target_score > 0) {
+
+                    /* Create target node and fill with proper values */
+                    temp_target_node = auto_create_target_node(target_score,
+                            target->mynum);
+
+                    /*! \todo {should add check incase it returns a NULL struct} */
+
+                    /* Add it to list but first make sure it doesn't overlap
+                     * with a current score */
+                    while (1) {
+
+                        if (rb_exists(targets, &temp_target_node->target_score)) {
+                            temp_target_node->target_score++;
+                        } else {
+                            break;
+                        }
+
+                    }
+
+                    /* Add it */
+                    rb_insert(targets, &temp_target_node->target_score,
+                            temp_target_node);
+
+                }
+
+                /* Check to see if its our current target */
+                if (autopilot->target == target->mynum) {
+
+                    /* Save the new score */
+                    autopilot->target_score = target_score;
+
+                }
+
+            }
+
+        } /* End of for loop */
+
+        /* Check to see if we couldn't find ANY targets within range,
+         * if not, cycle autogun and set the update tick to 20, so we
+         * check again in 10 seconds */
+        if (!(rb_size(targets) > 0)) {
+
+            /* Have the AI look for a new target 10 seconds from now */
+            /*! \todo {Possibly change this since this gives an attacker who
+             * appears somehow very quickly 10 seconds to hose the AI} */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
+            autopilot->target_update_tick = 0;
+
+            /* Don't need the target list any more so lets destroy it */
+            rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
+            rb_destroy(targets);
+
+            /* Log It */
+            print_autogun_log(autopilot, "Autogun in idle mode");
+            print_autogun_log(autopilot, "Autogun Event Finished");
+            return;
+        }
+
+        /* Now if we have a current target, compare it to best target from
+         * the new list.  If better then threshold, lock new target, else
+         * stay on target */
+
+        /* Best target */
+        temp_target_node =
+            (target_node *) rb_search(targets, SEARCH_LAST, NULL);
+
+        /* Log It */
+        print_autogun_log(autopilot,
+                "Autogun - Best target #%d with score %d",
+                temp_target_node->target_dbref,
+                temp_target_node->target_score);
+        print_autogun_log(autopilot,
+                "Autogun - Current target #%d with score %d",
+                autopilot->target, autopilot->target_score);
+
+        if (autopilot->target > -1 && autopilot->target_score > 0) {
+
+            /* Check to see if its our current target */
+            if (autopilot->target != temp_target_node->target_dbref) {
+
+                /* Calc the threshold score to beat */
+                threshold_score =
+                    ((100.0 + (float) autopilot->target_threshold) / 100.0) *
+                    autopilot->target_score;
+
+                if (temp_target_node->target_score > threshold_score) {
+
+                    /* Change targets */
+                    autopilot->target = temp_target_node->target_dbref;
+                    autopilot->target_score = temp_target_node->target_score;
+
+                    print_autogun_log(autopilot, "Switching Target to #%d",
+                            autopilot->target);
+
+                }
+
+                /* Else: Don't switch targets */
+
+            }
+
+            /* Else: Don't need to swtich targets */
+
+        } else {
+
+            /* Don't have a good current target so lock this one */
+            autopilot->target = temp_target_node->target_dbref;
+            autopilot->target_score = temp_target_node->target_score;
+
+        }						/* End of choosing new target */
+
+        /* Don't need the target list any more so lets destroy it */
+        rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
+        rb_destroy(targets);
+
+    } else {
+
+        /* Ok didn't need to look for a new target so update the ticker */
+        autopilot->target_update_tick++;
+
+    }
 
 }
 

@@ -1043,10 +1043,17 @@ void auto_heartbeat(AUTO *autopilot) {
     /* Check current commands */
 
     /* Sensor */
+    auto_sensor(autopilot, mech, map);
 
+    /* Target Selection and Gunning */
     if (IsAutoGunning(autopilot)) {
+
         /* Target */
-        /* Shoot */
+        auto_select_target(autopilot, mech, map);
+
+        /* Attack */
+        auto_gun(autopilot, mech, map);
+
     }
 
     /* Move */

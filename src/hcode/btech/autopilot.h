@@ -23,9 +23,10 @@
 #define AUTOPILOT_VERSION       "BTMux AI 3.0 - Zeke"
 
 /* Status Flags for the AI */
-#define AUTOPILOT_ON            1       /* Is the AI even on? */
-#define AUTOPILOT_SETUP         2       /* AI has been setup? */
-#define AUTOPILOT_GUNNING       4       /* Should the AI be shooting stuff */
+#define AUTOPILOT_ON                1   /* Is the AI even on? */
+#define AUTOPILOT_SETUP             2   /* AI has been setup? */
+#define AUTOPILOT_GUNNING           4   /* Should the AI be shooting stuff */
+#define AUTOPILOT_ASSIGNED_TARGET   8   /* Are we assigned a target? */
 
 #define IsAutoOn(a)             ((a)->status & AUTOPILOT_ON)
 #define AutoOn(a)               ((a)->status |= AUTOPILOT_ON)
@@ -39,13 +40,27 @@
 #define AutoGunning(a)          ((a)->status |= AUTOPILOT_GUNNING)
 #define StopAutoGunning(a)      ((a)->status &= ~(AUTOPILOT_GUNNING))
 
-/* Stuff specifically for autogun */
+#define AutoAssignedTarget(a)   ((a)->status & AUTOPILOT_ASSIGNED_TARGET)
+#define AutoAssignTarget(a)     ((a)->status |= AUTOPILOT_ASSIGNED_TARGET)
+#define AutoUnassignTarget(a)   ((a)->status &= ~(AUTOPILOT_ASSIGNED_TARGET))
+
+/* Stuff for Auto Sensor */
+#define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
+
+/* Stuff specifically for auto_gun and auto_select_target */
 #define AUTO_PROFILE_TICK               180     /* How often to update the weapon profile 
                                                    of the AI */
 #define AUTO_PROFILE_MAX_SIZE           30      /* Size of the profile array */
 
-/* Stuff for Auto Sensor */
-#define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
+#define AUTO_GUN_MAX_RANGE              30      /* Max range to look for targets */
+#define AUTO_GUN_TICK                   1       /* Every second */
+#define AUTO_GUN_MAX_HEAT               6.0     /* Last heat we let heat go to */
+#define AUTO_GUN_MAX_TARGETS            100     /* Don't really use this one */
+#define AUTO_GUN_UPDATE_TICK            30      /* When to look for a new target */
+#define AUTO_GUN_IDLE_TICK              10      /* How often to call autogun when in idle mode */
+#define AUTO_GUN_PHYSICAL_RANGE_MIN     3.0     /* Min range at which to physically attack 
+                                                   other targets if our main target is beyond
+                                                   this distance */
 
 /* Old stuff delete it */
 
@@ -62,7 +77,6 @@
 #define AUTOPILOT_CHASETARG         32      /* Should chase the target */
 #define AUTOPILOT_WAS_CHASE_ON      64      /* Was chasetarg on, for use with movement stuff */
 #define AUTOPILOT_SWARMCHARGE       128 
-#define AUTOPILOT_ASSIGNED_TARGET   256     /* We given a specific target ? */
 
 /* Various delays for the autopilot */
 #define AUTOPILOT_NC_DELAY              1       /* Generic command wait time before executing */
@@ -81,24 +95,10 @@
 #define AUTOPILOT_STARTUP_TICK  STARTUP_TIME + AUTOPILOT_NC_DELAY   /* Delay for startup */
 
 /* Defines for the autogun/autosensor stuff */
-#define AUTO_GUN_TICK                   1       /* Every second */
-#define AUTO_GUN_MAX_HEAT               6.0     /* Last heat we let heat go to */
-#define AUTO_GUN_MAX_TARGETS            100     /* Don't really use this one */
-#define AUTO_GUN_MAX_RANGE              30      /* Max range to look for targets */
-#define AUTO_GUN_UPDATE_TICK            30      /* When to look for a new target */
-#define AUTO_GUN_IDLE_TICK              10      /* How often to call autogun when in idle mode */
-#define AUTO_GUN_PHYSICAL_RANGE_MIN     3.0     /* Min range at which to physically attack 
-                                                   other targets if our main target is beyond
-                                                   this distance */
-
 #define Gunning(a)              ((a)->flags & AUTOPILOT_AUTOGUN)
 #define StartGun(a)             (a)->flags |= AUTOPILOT_AUTOGUN
 #define StopGun(a)              (a)->flags &= ~(AUTOPILOT_AUTOGUN|AUTOPILOT_GUNZOMBIE)
 
-/* Do we have an assigned target */
-#define AssignedTarget(a)       ((a)->flags & AUTOPILOT_ASSIGNED_TARGET)
-#define AssignTarget(a)         (a)->flags |= AUTOPILOT_ASSIGNED_TARGET
-#define UnassignTarget(a)       (a)->flags &= ~(AUTOPILOT_ASSIGNED_TARGET)
 
 /* Chase Target stuff for use with auto_set_chasetarget_mode */
 #define AUTO_CHASETARGET_ON             1       /* Turns it on and resets the values */
@@ -430,11 +430,11 @@ void auto_destroy_astar_path(AUTO *autopilot);
 
 /* From autopilot_autogun.c */
 void auto_update_profile(AUTO *autopilot, MECH *mech);
+void auto_destroy_weaplist(AUTO *autopilot);
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
-void auto_sensor_event(AUTO * muxevent);
+void auto_sensor(AUTO *autopilot, MECH *mech, MAP *map);
 void auto_gun(AUTO *AUTOPILOT, MECH *mech, MAP *map);
-void auto_destroy_weaplist(AUTO *autopilot);
 
 /* From autopilot_radio.c */
 void auto_reply_event(MUXEVENT *muxevent);
