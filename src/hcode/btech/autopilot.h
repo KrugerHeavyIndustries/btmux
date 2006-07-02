@@ -99,6 +99,10 @@
 #define StartGun(a)             (a)->flags |= AUTOPILOT_AUTOGUN
 #define StopGun(a)              (a)->flags &= ~(AUTOPILOT_AUTOGUN|AUTOPILOT_GUNZOMBIE)
 
+/* Do we have an assigned target */
+#define AssignedTarget(a)       ((a)->flags & AUTOPILOT_ASSIGNED_TARGET)
+#define AssignTarget(a)         (a)->flags |= AUTOPILOT_ASSIGNED_TARGET
+#define UnassignTarget(a)       (a)->flags &= ~(AUTOPILOT_ASSIGNED_TARGET)
 
 /* Chase Target stuff for use with auto_set_chasetarget_mode */
 #define AUTO_CHASETARGET_ON             1       /* Turns it on and resets the values */
@@ -248,17 +252,20 @@ typedef struct profile_node_t {
 typedef struct {
     dbref mynum;                    /* The AI's dbref number */
     dbref mymechnum;                /* the dbref of the AI's mech */
-    MECH *mymech;                   /* The AI's unit */
-    int mapindex;                   /* The map the AI is currently on */
-    unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
-    int ofsx, ofsy;                 /* ? */
+    int status;                     /* Status of the AI - Main flags here */
 
-    unsigned char verbose_level;    /* How talkative should the AI be */
+    int mapindex;                   /* The map the AI is currently on */
 
     dbref target;                   /* The AI's current target */
     int target_score;               /* Current score of the AI's target */
     int target_threshold;           /* Threshold at which to change to another target */
     int target_update_tick;         /* What autogun tick we currently at and should we update */
+
+    MECH *mymech;                   /* The AI's unit */
+    unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
+    int ofsx, ofsy;                 /* ? */
+
+    unsigned char verbose_level;    /* How talkative should the AI be */
 
     dbref chase_target;             /* Current target we are chasing */
     int chasetarg_update_tick;      /* When should we update chasetarg */
@@ -266,7 +273,6 @@ typedef struct {
     int follow_update_tick;         /* When should we update follow */
 
     /* Special AI flags */
-    int status;                     /* Status of the AI - Main flags here */
     unsigned short flags;
 
     /* The autopilot's command list */
@@ -393,18 +399,22 @@ enum {
 void auto_destroy_command_node(command_node *node);
 void auto_save_commands(FILE *file, AUTO *autopilot);
 void auto_load_commands(FILE *file, AUTO *autopilot);
+
 void auto_delcommand(dbref player, void *data, char *buffer);
 void auto_addcommand(dbref player, void *data, char *buffer);
 void auto_listcommands(dbref player, void *data, char *buffer);
-void auto_eventstats(dbref player, void *data, char *buffer);
+
 void auto_set_comtitle(AUTO *autopilot, MECH * mech);
 void auto_init(AUTO *autopilot, MECH *mech);
 void auto_engage(dbref player, void *data, char *buffer);
 void auto_disengage(dbref player, void *data, char *buffer);
+
 void auto_goto_next_command(AUTO *autopilot, int time);
 char *auto_get_command_arg(AUTO *autopilot, int command_number, int arg_number);
 int auto_get_command_enum(AUTO *autopilot, int command_number);
+
 void auto_newautopilot(dbref key, void **data, int selector);
+void auto_heartbeat(AUTO *autopilot);
 
 /* From autopilot_commands.c */
 void auto_cal_mapindex(MECH *mech);
@@ -434,6 +444,7 @@ void auto_destroy_weaplist(AUTO *autopilot);
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
 void auto_sensor(AUTO *autopilot, MECH *mech, MAP *map);
+void auto_select_target(AUTO *AUTOPILOT, MECH *mech, MAP *map);
 void auto_gun(AUTO *AUTOPILOT, MECH *mech, MAP *map);
 
 /* From autopilot_radio.c */

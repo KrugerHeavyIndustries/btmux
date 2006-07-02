@@ -646,9 +646,6 @@ CommandsStruct mechcommands[] = {
 	set_xcodestuff},
     {0, "@VIEWXCODE", "@Views xcode values on object", list_xcodestuff},
 
-    {0, "SNIPE <ID> <WEAPON>",
-	    "@Lets you 'snipe' (=shoot artillery weapons with movement prediction)",
-	mech_snipe},
     {0, "ADDSTUFF <NAME> <COUNT>",
 	    "@Adds <COUNT> <NAME> to mech's inventory",
 	mech_Raddstuff},
@@ -816,8 +813,6 @@ CommandsStruct autopilotcommands[] = {
 	auto_delcommand},
     {0, "LISTCOMMANDS", "Lists whole command queue of the autopilot",
 	auto_listcommands},
-    {0, "JUMP <NUM>", "Sets current instruction to <NUM>", auto_jump},
-    {0, "EVENTSTATS", "Lists current events for this AI", auto_eventstats},
     {0, NULL, NULL, NULL}
 };
 
