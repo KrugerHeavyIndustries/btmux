@@ -25,14 +25,27 @@
 /* Status Flags for the AI */
 #define AUTOPILOT_ON            1       /* Is the AI even on? */
 #define AUTOPILOT_SETUP         2       /* AI has been setup? */
+#define AUTOPILOT_GUNNING       4       /* Should the AI be shooting stuff */
 
 #define IsAutoOn(a)             ((a)->status & AUTOPILOT_ON)
 #define AutoOn(a)               ((a)->status |= AUTOPILOT_ON)
-#define AutoOff(a)              ((a)->status &= ~AUTOPILOT_ON)
+#define AutoOff(a)              ((a)->status &= ~(AUTOPILOT_ON))
 
 #define IsAutoSetup(a)          ((a)->status & AUTOPILOT_SETUP)
 #define AutoSetup(a)            ((a)->status & AUTOPILOT_SETUP)
-#define ClearAutoSetup(a)       ((a)->status & AUTOPILOT_SETUP)
+#define ClearAutoSetup(a)       ((a)->status &= ~(AUTOPILOT_SETUP))
+
+#define IsAutoGunning(a)        ((a)->status & AUTOPILOT_GUNNING)
+#define AutoGunning(a)          ((a)->status |= AUTOPILOT_GUNNING)
+#define StopAutoGunning(a)      ((a)->status &= ~(AUTOPILOT_GUNNING))
+
+/* Stuff specifically for autogun */
+#define AUTO_PROFILE_TICK               180     /* How often to update the weapon profile 
+                                                   of the AI */
+#define AUTO_PROFILE_MAX_SIZE           30      /* Size of the profile array */
+
+/* Stuff for Auto Sensor */
+#define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
 
 /* Old stuff delete it */
 
@@ -77,10 +90,6 @@
 #define AUTO_GUN_PHYSICAL_RANGE_MIN     3.0     /* Min range at which to physically attack 
                                                    other targets if our main target is beyond
                                                    this distance */
-#define AUTO_PROFILE_TICK               180     /* How often to update the weapon profile 
-                                                   of the AI */
-#define AUTO_PROFILE_MAX_SIZE           30      /* Size of the profile array */
-#define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
 
 #define Gunning(a)              ((a)->flags & AUTOPILOT_AUTOGUN)
 #define StartGun(a)             (a)->flags |= AUTOPILOT_AUTOGUN
@@ -420,12 +429,12 @@ int auto_astar_generate_path(AUTO *autopilot, MECH *mech, short end_x, short end
 void auto_destroy_astar_path(AUTO *autopilot);
 
 /* From autopilot_autogun.c */
+void auto_update_profile(AUTO *autopilot, MECH *mech);
 int SearchLightInRange(MECH *mech, MAP *map);
 int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target);
 void auto_sensor_event(AUTO * muxevent);
-void auto_gun_event(AUTO * AUTOPILOT);
+void auto_gun(AUTO *AUTOPILOT, MECH *mech, MAP *map);
 void auto_destroy_weaplist(AUTO *autopilot);
-void auto_update_profile_event(AUTO * autopilot);
 
 /* From autopilot_radio.c */
 void auto_reply_event(MUXEVENT *muxevent);

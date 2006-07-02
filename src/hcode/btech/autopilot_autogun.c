@@ -442,95 +442,95 @@ static int auto_generic_compare(void *a, void *b, void *token)
 int auto_calc_weapon_score(int weapon_db_number, int range)
 {
 
-	int weapon_score;
-	int range_score;
-	int damage_score;
-	int heat_score;
-	int minrange_score;
+    int weapon_score;
+    int range_score;
+    int damage_score;
+    int heat_score;
+    int minrange_score;
 
-	int weapon_damage;
-	int weapon_heat;
+    int weapon_damage;
+    int weapon_heat;
 
-	int i;
+    int i;
 
-	/* Simple Calc */
+    /* Simple Calc */
 
-	/* For the modifiers I assumed best was approx 550
-	 *
-	 * So for SR, chance of hitting is roughly 92% which is 506 rounded to 500 
-	 * For MR, its 72%, so 390 and LR its 41% its 225 */
+    /* For the modifiers I assumed best was approx 550
+     *
+     * So for SR, chance of hitting is roughly 92% which is 506 rounded to 500 
+     * For MR, its 72%, so 390 and LR its 41% its 225 */
 
-	/* Assume default values */
-	weapon_score = 0;
-	weapon_damage = 0;
-	range_score = 500;			/* Since by default we assume its SR */
-	damage_score = 0;
-	heat_score = 0;
-	minrange_score = 0;
+    /* Assume default values */
+    weapon_score = 0;
+    weapon_damage = 0;
+    range_score = 500;			/* Since by default we assume its SR */
+    damage_score = 0;
+    heat_score = 0;
+    minrange_score = 0;
 
-	/* Don't bother trying to set a value if its outside its range */
-	if(range >= MechWeapons[weapon_db_number].longrange) {
-		return weapon_score;
-	}
+    /* Don't bother trying to set a value if its outside its range */
+    if (range >= MechWeapons[weapon_db_number].longrange) {
+        return weapon_score;
+    }
 
-	/* Are we at LR ? */
-	if(range >= MechWeapons[weapon_db_number].medrange) {
-		range_score = 215;
-	}
+    /* Are we at LR ? */
+    if (range >= MechWeapons[weapon_db_number].medrange) {
+        range_score = 215;
+    }
 
-	/* Are we at MR ? */
-	if(range >= MechWeapons[weapon_db_number].shortrange &&
-	   range < MechWeapons[weapon_db_number].medrange) {
-		range_score = 390;
-	}
+    /* Are we at MR ? */
+    if (range >= MechWeapons[weapon_db_number].shortrange &&
+            range < MechWeapons[weapon_db_number].medrange) {
+        range_score = 390;
+    }
 
-	/* Check min range */
-	/* Use a polynomial equation here because at 2 under min its equiv to MR, at
-	 * 4 under its equiv to LR, so we want it to balance out the range score */
-	/* score = -12.5(min - range)^2 - 25 * (min - range) */
-	if(range < MechWeapons[weapon_db_number].min) {
-		minrange_score =
-			-12.5 * (float) ((MechWeapons[weapon_db_number].min - range) *
-							 (MechWeapons[weapon_db_number].min - range)) -
-			25.0 * (float) (MechWeapons[weapon_db_number].min - range);
-	}
+    /* Check min range */
+    /* Use a polynomial equation here because at 2 under min its equiv to MR, at
+     * 4 under its equiv to LR, so we want it to balance out the range score */
+    /* score = -12.5(min - range)^2 - 25 * (min - range) */
+    if (range < MechWeapons[weapon_db_number].min) {
+        minrange_score =
+            -12.5 * (float) ((MechWeapons[weapon_db_number].min - range) *
+                    (MechWeapons[weapon_db_number].min - range)) -
+            25.0 * (float) (MechWeapons[weapon_db_number].min - range);
+    }
 
-	/* Get the damage for the weapon */
-	if(IsMissile(weapon_db_number)) {
+    /* Get the damage for the weapon */
+    if (IsMissile(weapon_db_number)) {
 
-		/* Its a missile weapon so lookup in the Missile table get the max
-		 * number of missiles it can hit with, and multiply by the damage
-		 * per missile */
-		/* To make it more fair going to use the avg # of missile hits
-		 * which is when they would roll a 7, which becomes slot #
-		 * 5 */
-		for(i = 0; MissileHitTable[i].key != -1; i++) {
-			if(MissileHitTable[i].key == weapon_db_number) {
-				weapon_damage = MissileHitTable[i].num_missiles[5] *
-					MechWeapons[weapon_db_number].damage;
-				break;
-			}
-		}
+        /* Its a missile weapon so lookup in the Missile table get the max
+         * number of missiles it can hit with, and multiply by the damage
+         * per missile */
+        /* To make it more fair going to use the avg # of missile hits
+         * which is when they would roll a 7, which becomes slot #
+         * 5 */
+        for (i = 0; MissileHitTable[i].key != -1; i++) {
+            if (MissileHitTable[i].key == weapon_db_number) {
+                weapon_damage = MissileHitTable[i].num_missiles[5] *
+                    MechWeapons[weapon_db_number].damage;
+                break;
+            }
+        }
 
-	} else {
-		weapon_damage = MechWeapons[weapon_db_number].damage;
-	}
+    } else {
+        weapon_damage = MechWeapons[weapon_db_number].damage;
+    }
 
-	/* Get the damage score */
-	/* Straight linear plot */
-	damage_score = 50 * weapon_damage;
+    /* Get the damage score */
+    /* Straight linear plot */
+    damage_score = 50 * weapon_damage;
 
-	/* Get the heat */
-	weapon_heat = MechWeapons[weapon_db_number].heat;
+    /* Get the heat */
+    weapon_heat = MechWeapons[weapon_db_number].heat;
 
-	/* Get the heat score */
-	/* Straight inverse linear plot - more heat bad... */
-	heat_score = -25 * weapon_heat + 250;
+    /* Get the heat score */
+    /* Straight inverse linear plot - more heat bad... */
+    heat_score = -25 * weapon_heat + 250;
 
-	/* Final calc */
-	weapon_score = range_score + damage_score + heat_score + minrange_score;
+    /* Final calc */
+    weapon_score = range_score + damage_score + heat_score + minrange_score;
 
-	return weapon_score;
+    return weapon_score;
 
 }
 
@@ -539,202 +539,164 @@ int auto_calc_weapon_score(int weapon_db_number, int range)
  *
  * Every so often updates the profile for the AI's weapons
  */
-void auto_update_profile_event(AUTO *autopilot) {
-	MECH *mech = (MECH *) autopilot->mymech;
+void auto_update_profile(AUTO *autopilot, MECH *mech) {
 
-	weapon_node *temp_weapon_node;
-	dllist_node *temp_dllist_node;
+    weapon_node *temp_weapon_node;
+    dllist_node *temp_dllist_node;
 
-	int section;
-	int weapon_count_section;
-	unsigned char weaparray[MAX_WEAPS_SECTION];
-	unsigned char weapdata[MAX_WEAPS_SECTION];
-	int critical[MAX_WEAPS_SECTION];
+    int section;
+    int weapon_count_section;
+    unsigned char weaparray[MAX_WEAPS_SECTION];
+    unsigned char weapdata[MAX_WEAPS_SECTION];
+    int critical[MAX_WEAPS_SECTION];
 
-	int range;
+    int range;
 
-	int weapon_count;
-	int weapon_number;
+    int weapon_count;
+    int weapon_number;
 
-	/* Basic checks */
-	/* some accounting checks. try to prevent some race stuff */
+    /* Log Message */
+    print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
 
-	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 1 )) {
-		/* most commonly, the mech is a bad memory space.
-		 * lets not try to access it
-		 */
-		dprintk("ap mymechnum is bad");
-		StopGun(autopilot);
-		return;
-	}
+    /* Destroy the arrays first, don't worry about the weap
+     * structures because we can clear them with the ddlist
+     * weaplist */
 
-	if(!mech) {
-		dprintk("mech is bad!");
-		return;
-	}
-	if(!autopilot) {
-		dprintk("ai is bad!");
-		return;
-	}
-	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
-		return;
+    /* Zero the array of rbtree stuff */
+    for (range = 0; range < AUTO_PROFILE_MAX_SIZE; range++) {
 
-	/* Ok our mech is dead we're done */
-	if(Destroyed(mech)) {
-		return;
-	}
-    
-    dprintk("aobrtion!");
-	/* Log Message */
-	print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
+        if (autopilot->profile[range]) {
 
-	/* Destroy the arrays first, don't worry about the weap
-	 * structures because we can clear them with the ddlist
-	 * weaplist */
+            /* Destroy rbtree */
+            rb_destroy(autopilot->profile[range]);
+        }
+        autopilot->profile[range] = NULL;
+    }
 
-	/* Zero the array of rbtree stuff */
-	for(range = 0; range < AUTO_PROFILE_MAX_SIZE; range++) {
+    /* Check to see if the weaplist exists */
+    if (autopilot->weaplist != NULL) {
 
-		if(autopilot->profile[range]) {
+        /* Destroy the list */
+        auto_destroy_weaplist(autopilot);
+    }
 
-			/* Destroy rbtree */
-			rb_destroy(autopilot->profile[range]);
-		}
-		autopilot->profile[range] = NULL;
-	}
+    /* List doesn't exist so lets build it */
+    autopilot->weaplist = dllist_create_list();
 
-	/* Check to see if the weaplist exists */
-	if(autopilot->weaplist != NULL) {
+    /* Reset the AI's max range value for its mech */
+    autopilot->mech_max_range = 0;
 
-		/* Destroy the list */
-		auto_destroy_weaplist(autopilot);
-	}
+    /* Set our counter */
+    weapon_count = -1;
 
-	/* List doesn't exist so lets build it */
-	autopilot->weaplist = dllist_create_list();
+    /* Now loop through the weapons building a list */
+    for (section = 0; section < NUM_SECTIONS; section++) {
 
-	/* Reset the AI's max range value for its mech */
-	autopilot->mech_max_range = 0;
+        /* Find all the weapons for a given section */
+        weapon_count_section = FindWeapons(mech, section,
+                weaparray, weapdata, critical);
 
-	/* Set our counter */
-	weapon_count = -1;
+        /* No weapons here */
+        if (weapon_count_section <= 0)
+            continue;
 
-	/* Now loop through the weapons building a list */
-	for(section = 0; section < NUM_SECTIONS; section++) {
+        /* loop through the possible weapons */
+        for (weapon_number = 0; weapon_number < weapon_count_section;
+                weapon_number++) {
 
-		/* Find all the weapons for a given section */
-		weapon_count_section = FindWeapons(mech, section,
-										   weaparray, weapdata, critical);
+            /* Count it even if its not a valid weapon like AMS */
+            /* This is so when we go to fire the weapon we know
+             * which one to send in the command */
+            weapon_count++;
 
-		/* No weapons here */
-		if(weapon_count_section <= 0)
-			continue;
+            if (IsAMS(weaparray[weapon_number]))
+                continue;
 
-		/* loop through the possible weapons */
-		for(weapon_number = 0; weapon_number < weapon_count_section;
-			weapon_number++) {
+            /* Does it work? */
+            if (WeaponIsNonfunctional(mech, section, critical[weapon_number],
+                        GetWeaponCrits(mech, Weapon2I(weaparray [weapon_number]))) > 0)
+                continue;
 
-			/* Count it even if its not a valid weapon like AMS */
-			/* This is so when we go to fire the weapon we know
-			 * which one to send in the command */
-			weapon_count++;
+            /* Ok made it this far, lets add it to our list */
+            temp_weapon_node = auto_create_weapon_node(weapon_count,
+                    weaparray[weapon_number], section, critical[weapon_number]);
 
-			if(IsAMS(weaparray[weapon_number]))
-				continue;
+            temp_dllist_node = dllist_create_node(temp_weapon_node);
+            dllist_insert_end(autopilot->weaplist, temp_dllist_node);
 
-			/* Does it work? */
-			if(WeaponIsNonfunctional(mech, section, critical[weapon_number],
-									 GetWeaponCrits(mech,
-													Weapon2I(weaparray
-															 [weapon_number])))
-			   > 0)
-				continue;
+            /* Check the max range */
+            if (autopilot->mech_max_range <
+                    MechWeapons[weaparray[weapon_number]].longrange) {
+                autopilot->mech_max_range =
+                    MechWeapons[weaparray[weapon_number]].longrange;
+            }
 
-			/* Ok made it this far, lets add it to our list */
-			temp_weapon_node = auto_create_weapon_node(weapon_count,
-													   weaparray
-													   [weapon_number],
-													   section,
-													   critical
-													   [weapon_number]);
+        }
 
-			temp_dllist_node = dllist_create_node(temp_weapon_node);
-			dllist_insert_end(autopilot->weaplist, temp_dllist_node);
+    }
 
-			/* Check the max range */
-			if(autopilot->mech_max_range <
-			   MechWeapons[weaparray[weapon_number]].longrange) {
-				autopilot->mech_max_range =
-					MechWeapons[weaparray[weapon_number]].longrange;
-			}
+    /* Now build the profile array, basicly loop through 
+     * all the current avail weapons, get its max range,
+     * then loop through ranges and for each range add it
+     * to profile */
 
-		}
+    /* Our counter */
+    weapon_number = 1;
 
-	}
+    while (weapon_number <= dllist_size(autopilot->weaplist)) {
 
-	/* Now build the profile array, basicly loop through 
-	 * all the current avail weapons, get its max range,
-	 * then loop through ranges and for each range add it
-	 * to profile */
+        /* Get the weapon */
+        temp_weapon_node =
+            (weapon_node *) dllist_get_node(autopilot->weaplist,
+                                            weapon_number);
 
-	/* Our counter */
-	weapon_number = 1;
+        for (range = 0; 
+                range < MechWeapons[temp_weapon_node->weapon_db_number].longrange;
+                range++) {
 
-	while (weapon_number <= dllist_size(autopilot->weaplist)) {
+            /* Out side the the range of AI's profile system */
+            if (range >= AUTO_PROFILE_MAX_SIZE) {
+                break;
+            }
 
-		/* Get the weapon */
-		temp_weapon_node =
-			(weapon_node *) dllist_get_node(autopilot->weaplist,
-											weapon_number);
+            /* Score the weapon */
+            temp_weapon_node->range_scores[range] =
+                auto_calc_weapon_score(temp_weapon_node->weapon_db_number, range);
 
-		for(range = 0; range <
-			MechWeapons[temp_weapon_node->weapon_db_number].longrange;
-			range++) {
+            /* If rbtree for this range doesn't exist, create it */
+            if (autopilot->profile[range] == NULL) {
+                autopilot->profile[range] =
+                    rb_init(&auto_generic_compare, NULL);
+            }
 
-			/* Out side the the range of AI's profile system */
-			if(range >= AUTO_PROFILE_MAX_SIZE) {
-				break;
-			}
+            /* Check to see if the score exists in the tree
+             * if so alter it slightly so we don't have
+             * overlaping keys */
+            while (1) {
 
-			/* Score the weapon */
-			temp_weapon_node->range_scores[range] =
-				auto_calc_weapon_score(temp_weapon_node->weapon_db_number,
-									   range);
+                if (rb_exists(autopilot->profile[range],
+                            &temp_weapon_node->range_scores[range])) {
+                    temp_weapon_node->range_scores[range]++;
+                } else {
+                    break;
+                }
 
-			/* If rbtree for this range doesn't exist, create it */
-			if(autopilot->profile[range] == NULL) {
-				autopilot->profile[range] =
-					rb_init(&auto_generic_compare, NULL);
-			}
+            }
 
-			/* Check to see if the score exists in the tree
-			 * if so alter it slightly so we don't have
-			 * overlaping keys */
-			while (1) {
+            /* Add it to tree */
+            rb_insert(autopilot->profile[range],
+                    &temp_weapon_node->range_scores[range],
+                    temp_weapon_node);
 
-				if(rb_exists(autopilot->profile[range],
-							 &temp_weapon_node->range_scores[range])) {
-					temp_weapon_node->range_scores[range]++;
-				} else {
-					break;
-				}
+        }
 
-			}
+        /* Increment */
+        weapon_number++;
 
-			/* Add it to tree */
-			rb_insert(autopilot->profile[range],
-					  &temp_weapon_node->range_scores[range],
-					  temp_weapon_node);
+    }
 
-		}
-
-		/* Increment */
-		weapon_number++;
-
-	}
-
-	/* Log Message */
-	print_autogun_log(autopilot, "Finished Profiling");
+    /* Log Message */
+    print_autogun_log(autopilot, "Finished Profiling");
 
 }
 
@@ -742,158 +704,158 @@ void auto_update_profile_event(AUTO *autopilot) {
  * Function to calculate a score based on a target and
  * its range to the AI
  */
-int auto_calc_target_score(AUTO * autopilot, MECH * mech, MECH * target,
-						   MAP * map)
+int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
+        MAP *map)
 {
 
-	int target_score;
-	float range;
-	float target_speed;
-	int target_bv;
+    int target_score;
+    float range;
+    float target_speed;
+    int target_bv;
 
-	int total_armor_current;
-	int total_armor_original;
-	int total_internal_current;
-	int total_internal_original;
+    int total_armor_current;
+    int total_armor_original;
+    int total_internal_current;
+    int total_internal_original;
 
-	int section;
+    int section;
 
-	float damage_score;
-	float bv_score;
-	float speed_score;
-	float range_score;
-	float status_score;
+    float damage_score;
+    float bv_score;
+    float speed_score;
+    float range_score;
+    float status_score;
 
-	/* Default Values */
-	target_score = 0;
+    /* Default Values */
+    target_score = 0;
 
-	total_armor_current = 0;
-	total_armor_original = 0;
-	total_internal_current = 0;
-	total_internal_original = 0;
+    total_armor_current = 0;
+    total_armor_original = 0;
+    total_internal_current = 0;
+    total_internal_original = 0;
 
-	damage_score = 0.0;
-	bv_score = 0.0;
-	speed_score = 0.0;
-	range_score = 0.0;
-	status_score = 0.0;
+    damage_score = 0.0;
+    bv_score = 0.0;
+    speed_score = 0.0;
+    range_score = 0.0;
+    status_score = 0.0;
 
-	/* Here is the meat of the function, basicly I gave each
-	 * part a maximum score, then fit a linear plot from the
-	 * max to a min value and score.  Then I just summed
-	 * all the pieces together, very linear but should
-	 * give us a good starting point */
+    /* Here is the meat of the function, basicly I gave each
+     * part a maximum score, then fit a linear plot from the
+     * max to a min value and score.  Then I just summed
+     * all the pieces together, very linear but should
+     * give us a good starting point */
 
-	/* Is the target dead? */
-	if(Destroyed(target))
-		return target_score;
+    /* Is the target dead? */
+    if(Destroyed(target))
+        return target_score;
 
-	/* If target is combat safe don't even try to shoot it */
-	if(MechStatus(target) & COMBAT_SAFE)
-		return target_score;
+    /* If target is combat safe don't even try to shoot it */
+    if(MechStatus(target) & COMBAT_SAFE)
+        return target_score;
 
-	/* Compare Teams - for now we won't try to shoot a guy on our team */
-	if(MechTeam(target) == MechTeam(mech))
-		return target_score;
+    /* Compare Teams - for now we won't try to shoot a guy on our team */
+    if(MechTeam(target) == MechTeam(mech))
+        return target_score;
 
-	/* Are we in los of the target - not sure really what to do about this
-	 * one, since we want the AI to be smart and all, for now, lets have
-	 * it be all seeing */
+    /* Are we in los of the target - not sure really what to do about this
+     * one, since we want the AI to be smart and all, for now, lets have
+     * it be all seeing */
 
-	/* Range to target */
-	range = FindHexRange(MechFX(mech), MechFY(mech), MechFX(target),
-						 MechFY(target));
+    /* Range to target */
+    range = FindHexRange(MechFX(mech), MechFY(mech), MechFX(target),
+            MechFY(target));
 
-	/* Our we outside the range of the AI's System */
-	if((range >= (float) AUTO_GUN_MAX_RANGE)) {
-		return target_score;
-	}
+    /* Our we outside the range of the AI's System */
+    if((range >= (float) AUTO_GUN_MAX_RANGE)) {
+        return target_score;
+    }
 
-	/* Range score calc */
-	/* Min range is 0, max range is 30, so score goes from 300 to 0 */
-	range_score = -10.0 * range + 300.0;
+    /* Range score calc */
+    /* Min range is 0, max range is 30, so score goes from 300 to 0 */
+    range_score = -10.0 * range + 300.0;
 
-	/* Get the Speed of the target */
-	target_speed = MechSpeed(target);
+    /* Get the Speed of the target */
+    target_speed = MechSpeed(target);
 
-	/* Speed score calc */
-	/* Min speed is 0, max is 150 (can go higher tho), and score goes from
-	 * 300 to 0 (can go negative if the target is faster then 150) */
-	/*! \todo {Check to see what happens when the target is backing} */
-	speed_score = -2.0 * target_speed + 300.0;
+    /* Speed score calc */
+    /* Min speed is 0, max is 150 (can go higher tho), and score goes from
+     * 300 to 0 (can go negative if the target is faster then 150) */
+    /*! \todo {Check to see what happens when the target is backing} */
+    speed_score = -2.0 * target_speed + 300.0;
 
-	/* Get the BV of the target */
-	target_bv = MechBV(target);
+    /* Get the BV of the target */
+    target_bv = MechBV(target);
 
-	/* BV score calc */
-	/* Min bv is 0, max is around 2000 (can go higher), and score goes from
-	 * 0 to 100 (can go higher but we don't care much about bv) */
-	bv_score = 0.05 * ((float) target_bv);
+    /* BV score calc */
+    /* Min bv is 0, max is around 2000 (can go higher), and score goes from
+     * 0 to 100 (can go higher but we don't care much about bv) */
+    bv_score = 0.05 * ((float) target_bv);
 
-	/* Get the damage of the target by cycling through all the sections
-	 * and adding up the current and original values */
-	for(section = 0; section < NUM_SECTIONS; section++) {
+    /* Get the damage of the target by cycling through all the sections
+     * and adding up the current and original values */
+    for(section = 0; section < NUM_SECTIONS; section++) {
 
-		/* Total the current armor and original armor */
-		total_armor_current += GetSectArmor(target, section) +
-			GetSectRArmor(target, section);
-		total_armor_original += GetSectOArmor(target, section) +
-			GetSectORArmor(target, section);
+        /* Total the current armor and original armor */
+        total_armor_current += GetSectArmor(target, section) +
+            GetSectRArmor(target, section);
+        total_armor_original += GetSectOArmor(target, section) +
+            GetSectORArmor(target, section);
 
-		/* Total the current internal and original internal */
-		total_internal_current += GetSectInt(target, section);
-		total_internal_original += GetSectOInt(target, section);
+        /* Total the current internal and original internal */
+        total_internal_current += GetSectInt(target, section);
+        total_internal_original += GetSectOInt(target, section);
 
-	}
+    }
 
-	/* Ok like above, we set a min and max, for armor was 100% to 0%
-	 * and scored from 0 to 300.  For internal was 100% to 0% and
-	 * scored from 0 to 200. But we have to take care not to divide
-	 * by zero. */
+    /* Ok like above, we set a min and max, for armor was 100% to 0%
+     * and scored from 0 to 300.  For internal was 100% to 0% and
+     * scored from 0 to 200. But we have to take care not to divide
+     * by zero. */
 
-	/* Check the totals before we divide so no Divide by zeros */
-	if(total_internal_original == 0 && total_armor_original == 0) {
+    /* Check the totals before we divide so no Divide by zeros */
+    if(total_internal_original == 0 && total_armor_original == 0) {
 
-		/* Both values are zero, not going to try and shoot it */
-		return target_score;
+        /* Both values are zero, not going to try and shoot it */
+        return target_score;
 
-	} else if(total_internal_original == 0) {
+    } else if(total_internal_original == 0) {
 
-		/* Just use armor part of the calc */
-		damage_score = -3.0 * ((float) total_armor_current /
-							   (float) total_armor_original) + 300.0;
+        /* Just use armor part of the calc */
+        damage_score = -3.0 * ((float) total_armor_current /
+                (float) total_armor_original) + 300.0;
 
-	} else if(total_armor_original == 0) {
+    } else if(total_armor_original == 0) {
 
-		/* Just use internal part of the calc */
-		damage_score = -2.0 * ((float) total_internal_current /
-							   (float) total_internal_original) + 200.0;
+        /* Just use internal part of the calc */
+        damage_score = -2.0 * ((float) total_internal_current /
+                (float) total_internal_original) + 200.0;
 
-	} else {
+    } else {
 
-		/* Use the whole thing */
-		damage_score = -3.0 * ((float) total_armor_current /
-							   (float) total_armor_original) + 300.0
-			- 2.0 * ((float) total_internal_current /
-					 (float) total_internal_original) + 200.0;
+        /* Use the whole thing */
+        damage_score = -3.0 * ((float) total_armor_current /
+                (float) total_armor_original) + 300.0
+            - 2.0 * ((float) total_internal_current /
+                    (float) total_internal_original) + 200.0;
 
-	}
+    }
 
-	/* Get the 'state' ie: shutdown, prone whatever */
-	if(!Started(target))
-		status_score += 100.0;
+    /* Get the 'state' ie: shutdown, prone whatever */
+    if(!Started(target))
+        status_score += 100.0;
 
-	if(Uncon(target))
-		status_score += 100.0;
+    if(Uncon(target))
+        status_score += 100.0;
 
-	if(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
-		status_score += 500.0;
+    if(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
+        status_score += 500.0;
 
-	/* Add the individual scores and return the value */
-	target_score = (int) floor(range_score + speed_score + bv_score +
-							   damage_score + status_score);
+    /* Add the individual scores and return the value */
+    target_score = (int) floor(range_score + speed_score + bv_score +
+            damage_score + status_score);
 
-	return target_score;
+    return target_score;
 
 }
 
@@ -903,1326 +865,1241 @@ int auto_calc_target_score(AUTO * autopilot, MECH * mech, MECH * target,
  * Loops through all the cons around it, scoring them and deciding
  * what to shoot and what weapons to shoot at it
  */
-void auto_gun_event(AUTO *autopilot)
+void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
 {
-	MECH *mech = (MECH *) autopilot->mymech;	/* Its Mech */
-	MAP *map;					/* The current Map */
-	MECH *target;				/* Our current target */
-	MECH *physical_target;		/* Our physical target */
-	rbtree targets;			    /* all the targets we're looking at */
-	target_node *temp_target_node;	/* temp target node struct */
-	weapon_node *temp_weapon_node;	/* temp weapon node struct */
+    MECH *target;				    /* Our current target */
+    MECH *physical_target;		    /* Our physical target */
+    rbtree targets;			        /* all the targets we're looking at */
+    target_node *temp_target_node;	/* temp target node struct */
+    weapon_node *temp_weapon_node;	/* temp weapon node struct */
 
-	char buffer[LBUF_SIZE];		/* General use buffer */
+    char buffer[LBUF_SIZE];		    /* General use buffer */
 
-	int target_score;			/* variable to store temp score */
-	int threshold_score;		/* The score to beat to switch targets */
+    int target_score;			    /* variable to store temp score */
+    int threshold_score;		    /* The score to beat to switch targets */
 
-	/* Stuff for Physical attacks */
-	int elevation_diff;			/* Whats the elevation difference between
-								   the target and the mech */
-	int what_arc;				/* What arc is the target in */
-	int new_arc;				/* What arc now that we've twisted
-								   our torso */
-	int relative_bearing;		/* Int to figure out which part of
-								   the rear arc hes in */
-	int is_section_destroyed[4];	/* Array of the different possible
-									   sections that could be destroyed */
-	int section_hasbusyweap[4];	/* Array to show if a section has a
-								   cycling weapon in it */
-	int rleg_bth, lleg_bth;		/* To help us decide which leg to kick
-								   with */
-	int is_rarm_ready, is_larm_ready;	/* To help us decide which arms to
-										   punch with */
+    /* Stuff for Physical attacks */
+    int elevation_diff;			    /* Whats the elevation difference between
+                                       the target and the mech */
+    int what_arc;				    /* What arc is the target in */
+    int new_arc;				    /* What arc now that we've twisted
+                                       our torso */
+    int relative_bearing;		    /* Int to figure out which part of
+                                       the rear arc hes in */
+    int is_section_destroyed[4];	/* Array of the different possible
+                                       sections that could be destroyed */
+    int section_hasbusyweap[4];	    /* Array to show if a section has a
+                                       cycling weapon in it */
+    int rleg_bth, lleg_bth;		    /* To help us decide which leg to kick
+                                       with */
+    int is_rarm_ready, is_larm_ready;	/* To help us decide which arms to
+                                           punch with */
 
-	/* Stuff for Weapon Attacks */
-	int accumulate_heat;		/* How much heat we're building up */
-	int i, j;
+    /* Stuff for Weapon Attacks */
+    int accumulate_heat;		    /* How much heat we're building up */
+    int i, j;
 
-	float range;				/* General variable for range */
-	float maxspeed;				/* So we know how fast our guy is going */
+    float range;				    /* General variable for range */
+    float maxspeed;				    /* So we know how fast our guy is going */
 
-	/* For use with chase targ */
-	short x, y;
-	float fx, fy;
-	char do_chasetarget;		/* Flag should we do chasetarget
-								   based on certain conditions */
+    /*! \todo {Need to change this incase the AI shuts down while fighting} */
+    if (!Started(mech)) {
+        Zombify(autopilot);
+        return;
+    }
 
-	/* Basic checks */
-	if(!mech || !autopilot)
-		return;
+    /* Log it */
+    print_autogun_log(autopilot, "Autogun Event Started");
 
-	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
-		return;
+    /* check for a gun profile. */
+    if (autopilot->weaplist == NULL) {
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+    }
 
-	/* Ok our mech is dead we're done */
-	if(Destroyed(mech)) {
-		DoStopGun(autopilot);
-		return;
-	}
+    /* OODing so don't shoot any guns */
+    if (OODing(mech)) {
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+    }
 
-	/*! \todo {Need to change this incase the AI shuts down while fighting} */
-	if(!Started(mech)) {
-		Zombify(autopilot);
-		return;
-	}
+    /* First check to make sure we have a valid current target */
+    if (autopilot->target > -1) {
 
-	/* Not on map - so lets calm down */
-	if(!(map = getMap(mech->mapindex))) {
-		Zombify(autopilot);
-		return;
-	}
+        if (!(target = getMech(autopilot->target))) {
 
-	/* Log it */
-	print_autogun_log(autopilot, "Autogun Event Started");
+            /* ok its not a valid target reset */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
 
-	/* check for a gun profile. */
-    if(autopilot->weaplist == NULL) {
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
-	}
+        } else if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
 
-	/* OODing so don't shoot any guns */
-	if(OODing(mech)) {
-		/* Log It */
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
-	}
+            /* Target is either dead or not on the map anymore */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
 
-	/* First check to make sure we have a valid current target */
-	if(autopilot->target > -1) {
+        } else {
 
-		if(!(target = getMech(autopilot->target))) {
+            /* Will keep on an assigned target even if its to far
+             * away */
 
-			/* ok its not a valid target reset */
-			autopilot->target = -1;
-			autopilot->target_score = 0;
+            /* Get range from mech to current target */
+            range = FindHexRange(MechFX(mech), MechFY(mech),
+                    MechFX(target), MechFY(target));
 
-		} else if(Destroyed(target) || (target->mapindex != mech->mapindex)) {
+            if ((range >= (float) AUTO_GUN_MAX_RANGE) &&
+                    !AssignedTarget(autopilot)) {
 
-			/* Target is either dead or not on the map anymore */
-			autopilot->target = -1;
-			autopilot->target_score = 0;
+                /* Target is to far away */
+                autopilot->target = -1;
+                autopilot->target_score = 0;
 
-		} else {
+            }
 
-			/* Will keep on an assigned target even if its to far
-			 * away */
+        }
 
-			/* Get range from mech to current target */
-			range = FindHexRange(MechFX(mech), MechFY(mech),
-								 MechFX(target), MechFY(target));
+    }
 
-			if((range >= (float) AUTO_GUN_MAX_RANGE) &&
-			   !AssignedTarget(autopilot)) {
+    /* Were we given a target and its no longer there? */
+    if (AssignedTarget(autopilot) && autopilot->target == -1) {
 
-				/* Target is to far away */
-				autopilot->target = -1;
-				autopilot->target_score = 0;
+        /* Ok we had an assigned target but its gone now */
+        UnassignTarget(autopilot);
 
-			}
+        /*! \todo {Possibly add a radio message saying target destroyed} */
+    }
 
-		}
+    /* Do we need to look for a new target */
+    if (autopilot->target == -1 ||
+            (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
+             !AssignedTarget(autopilot))) {
 
-	}
+        /* Ok looking for a new target */
 
-	/* Were we given a target and its no longer there? */
-	if(AssignedTarget(autopilot) && autopilot->target == -1) {
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Looking for new target");
 
-		/* Ok we had an assigned target but its gone now */
-		UnassignTarget(autopilot);
+        /* Reset the update ticker */
+        autopilot->target_update_tick = 0;
 
-		/*! \todo {Possibly add a radio message saying target destroyed} */
-	}
+        /* Setup the rbtree */
+        targets = rb_init(&auto_generic_compare, NULL);
 
-	/* Do we need to look for a new target */
-	if(autopilot->target == -1 ||
-	   (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
-		!AssignedTarget(autopilot))) {
+        /* Cycle through possible targets and pick something to shoot */
+        for (i = 0; i < map->first_free; i++) {
 
-		/* Ok looking for a new target */
+            /* Make sure its on the right map */
+            if (i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
 
-		/* Log It */
-		print_autogun_log(autopilot, "Autogun - Looking for new target");
+                /* Is it a valid unit ? */
+                if (!(target = getMech(j)))
+                    continue;
 
-		/* Reset the update ticker */
-		autopilot->target_update_tick = 0;
+                /* Score the target */
+                target_score =
+                    auto_calc_target_score(autopilot, mech, target, map);
 
-		/* Setup the rbtree */
-		targets = rb_init(&auto_generic_compare, NULL);
+                /* Log It */
+                print_autogun_log(autopilot,
+                        "Autogun - Possible target #%d with score %d",
+                        target->mynum, target_score);
 
-		/* Cycle through possible targets and pick something to shoot */
-		for(i = 0; i < map->first_free; i++) {
+                /* If target has a score add it to rbtree */
+                if (target_score > 0) {
 
-			/* Make sure its on the right map */
-			if(i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+                    /* Create target node and fill with proper values */
+                    temp_target_node = auto_create_target_node(target_score,
+                            target->mynum);
 
-				/* Is it a valid unit ? */
-				if(!(target = getMech(j)))
-					continue;
+                    /*! \todo {should add check incase it returns a NULL struct} */
 
-				/* Score the target */
-				target_score =
-					auto_calc_target_score(autopilot, mech, target, map);
+                    /* Add it to list but first make sure it doesn't overlap
+                     * with a current score */
+                    while (1) {
 
-				/* Log It */
-				print_autogun_log(autopilot,
-								  "Autogun - Possible target #%d with score %d",
-								  target->mynum, target_score);
+                        if (rb_exists(targets, &temp_target_node->target_score)) {
+                            temp_target_node->target_score++;
+                        } else {
+                            break;
+                        }
 
-				/* If target has a score add it to rbtree */
-				if(target_score > 0) {
+                    }
 
-					/* Create target node and fill with proper values */
-					temp_target_node = auto_create_target_node(target_score,
-															   target->mynum);
+                    /* Add it */
+                    rb_insert(targets, &temp_target_node->target_score,
+                            temp_target_node);
 
-					/*! \todo {should add check incase it returns a NULL struct} */
+                }
 
-					/* Add it to list but first make sure it doesn't overlap
-					 * with a current score */
-					while (1) {
+                /* Check to see if its our current target */
+                if (autopilot->target == target->mynum) {
 
-						if(rb_exists
-						   (targets, &temp_target_node->target_score)) {
-							temp_target_node->target_score++;
-						} else {
-							break;
-						}
+                    /* Save the new score */
+                    autopilot->target_score = target_score;
 
-					}
+                }
 
-					/* Add it */
-					rb_insert(targets, &temp_target_node->target_score,
-							  temp_target_node);
+            }
 
-				}
+        } /* End of for loop */
 
-				/* Check to see if its our current target */
-				if(autopilot->target == target->mynum) {
+        /* Check to see if we couldn't find ANY targets within range,
+         * if not, cycle autogun and set the update tick to 20, so we
+         * check again in 10 seconds */
+        if (!(rb_size(targets) > 0)) {
 
-					/* Save the new score */
-					autopilot->target_score = target_score;
+            /* Have the AI look for a new target 10 seconds from now */
+            /*! \todo {Possibly change this since this gives an attacker who
+             * appears somehow very quickly 10 seconds to hose the AI} */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
+            autopilot->target_update_tick = 0;
 
-				}
-
-			}
-
-		}						/* End of for loop */
-
-		/* Check to see if we couldn't find ANY targets within range,
-		 * if not, cycle autogun and set the update tick to 20, so we
-		 * check again in 10 seconds */
-		if(!(rb_size(targets) > 0)) {
-
-			/* Have the AI look for a new target 10 seconds from now */
-			/*! \todo {Possibly change this since this gives an attacker who
-			 * appears somehow very quickly 10 seconds to hose the AI} */
-			autopilot->target = -1;
-			autopilot->target_score = 0;
-			autopilot->target_update_tick = 0;
-
-			/* Don't need the target list any more so lets destroy it */
-			rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
-			rb_destroy(targets);
+            /* Don't need the target list any more so lets destroy it */
+            rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
+            rb_destroy(targets);
 
             /* Log It */
-			print_autogun_log(autopilot, "Autogun in idle mode");
-			print_autogun_log(autopilot, "Autogun Event Finished");
-			return;
-		}
+            print_autogun_log(autopilot, "Autogun in idle mode");
+            print_autogun_log(autopilot, "Autogun Event Finished");
+            return;
+        }
 
-		/* Now if we have a current target, compare it to best target from
-		 * the new list.  If better then threshold, lock new target, else
-		 * stay on target */
+        /* Now if we have a current target, compare it to best target from
+         * the new list.  If better then threshold, lock new target, else
+         * stay on target */
 
-		/* Best target */
-		temp_target_node =
-			(target_node *) rb_search(targets, SEARCH_LAST, NULL);
-
-		/* Log It */
-		print_autogun_log(autopilot,
-						  "Autogun - Best target #%d with score %d",
-						  temp_target_node->target_dbref,
-						  temp_target_node->target_score);
-		print_autogun_log(autopilot,
-						  "Autogun - Current target #%d with score %d",
-						  autopilot->target, autopilot->target_score);
-
-		if(autopilot->target > -1 && autopilot->target_score > 0) {
-
-			/* Check to see if its our current target */
-			if(autopilot->target != temp_target_node->target_dbref) {
-
-				/* Calc the threshold score to beat */
-				threshold_score =
-					((100.0 +
-					  (float) autopilot->target_threshold) / 100.0) *
-					autopilot->target_score;
-
-				if(temp_target_node->target_score > threshold_score) {
-
-					/* Change targets */
-					autopilot->target = temp_target_node->target_dbref;
-					autopilot->target_score = temp_target_node->target_score;
-
-					print_autogun_log(autopilot, "Switching Target to #%d",
-									  autopilot->target);
-
-				}
-
-				/* Else: Don't switch targets */
-
-			}
-
-			/* Else: Don't need to swtich targets */
-
-		} else {
-
-			/* Don't have a good current target so lock this one */
-			autopilot->target = temp_target_node->target_dbref;
-			autopilot->target_score = temp_target_node->target_score;
-
-		}						/* End of choosing new target */
-
-		/* Don't need the target list any more so lets destroy it */
-		rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
-		rb_destroy(targets);
-
-	} else {
-
-		/* Ok didn't need to look for a new target so update the ticker */
-		autopilot->target_update_tick++;
-
-	}
-
-	/* End of picking a new target */
-
-	/* Log It */
-	print_autogun_log(autopilot, "Autogun - Current target #%d with score %d",
-					  autopilot->target, autopilot->target_score);
-
-	/* Setup the current target */
-	if(!(target = getMech(autopilot->target))) {
-
-		/* There were no valid targets so
-		 * rerun autogun */
-
-		/* Reset the AI */
-		autopilot->target = -1;
-		autopilot->target_score = 0;
+        /* Best target */
+        temp_target_node =
+            (target_node *) rb_search(targets, SEARCH_LAST, NULL);
 
         /* Log It */
-		print_autogun_log(autopilot, "Autogun - No valid current targets");
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
+        print_autogun_log(autopilot,
+                "Autogun - Best target #%d with score %d",
+                temp_target_node->target_dbref,
+                temp_target_node->target_score);
+        print_autogun_log(autopilot,
+                "Autogun - Current target #%d with score %d",
+                autopilot->target, autopilot->target_score);
 
-	}
+        if (autopilot->target > -1 && autopilot->target_score > 0) {
 
-	/* Check to see if we need to (re)lock our target */
-	if(MechTarget(mech) != autopilot->target) {
+            /* Check to see if its our current target */
+            if (autopilot->target != temp_target_node->target_dbref) {
 
-		/* Lock Him */
-		snprintf(buffer, LBUF_SIZE, "%c%c", MechID(target)[0],
-				 MechID(target)[1]);
-		mech_settarget(autopilot->mynum, mech, buffer);
+                /* Calc the threshold score to beat */
+                threshold_score =
+                    ((100.0 + (float) autopilot->target_threshold) / 100.0) *
+                    autopilot->target_score;
 
-		/* Log It */
-		print_autogun_log(autopilot, "Autogun - Locking target #%d",
-						  autopilot->target);
+                if (temp_target_node->target_score > threshold_score) {
 
-	}
+                    /* Change targets */
+                    autopilot->target = temp_target_node->target_dbref;
+                    autopilot->target_score = temp_target_node->target_score;
 
-	/* Update autosensor */
+                    print_autogun_log(autopilot, "Switching Target to #%d",
+                            autopilot->target);
 
-	/* Now lets get physical */
+                }
 
-	/* Log It */
-	print_autogun_log(autopilot, "Autogun - Start Physical Attack Stage");
+                /* Else: Don't switch targets */
 
-	/* Get range from mech to current target */
-	range =
-		FindHexRange(MechFX(mech), MechFY(mech), MechFX(target),
-					 MechFY(target));
+            }
 
-	/* First check our range to our target, if within range attack it, else
-	 * check to see if its outside our range threshold and if so pick a target
-	 * close and attack that */
+            /* Else: Don't need to swtich targets */
 
-	/*! \todo {Might need to add in here something incase the target is a bsuit} */
-	if(range < 1.0) {
+        } else {
 
-		/* We're beating on our main target */
-		physical_target = target;
+            /* Don't have a good current target so lock this one */
+            autopilot->target = temp_target_node->target_dbref;
+            autopilot->target_score = temp_target_node->target_score;
 
-	} else if(range > AUTO_GUN_PHYSICAL_RANGE_MIN) {
+        }						/* End of choosing new target */
 
-		/* Try and find a target */
+        /* Don't need the target list any more so lets destroy it */
+        rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
+        rb_destroy(targets);
 
-		physical_target = NULL;
+    } else {
 
-		/* Cycle through possible targets and pick something to beat on */
-		for(i = 0; i < map->first_free; i++) {
+        /* Ok didn't need to look for a new target so update the ticker */
+        autopilot->target_update_tick++;
 
-			/* Make sure its on the right map */
-			if(i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+    }
 
-				/* Is it a valid unit ? */
-				if(!(target = getMech(j)))
-					continue;
+    /* End of picking a new target */
 
-				if(Destroyed(target))
-					continue;
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Current target #%d with score %d",
+            autopilot->target, autopilot->target_score);
 
-				if(MechStatus(target) & COMBAT_SAFE)
-					continue;
+    /* Setup the current target */
+    if (!(target = getMech(autopilot->target))) {
 
-				if(MechTeam(target) == MechTeam(mech))
-					continue;
+        /* There were no valid targets so
+         * rerun autogun */
 
-				/* Check its range */
-				range = FindHexRange(MechFX(mech), MechFY(mech),
-									 MechFX(target), MechFY(target));
-
-				/* Just go for first one , can always add scoring later */
-				if(range < 1.0) {
-					physical_target = target;
-					break;
-				}
-
-			}
-
-		}
-
-	} else {
-
-		/* Our target is close so dont try and physically attack anyone */
-		physical_target = NULL;
-
-	}
-
-	/* Now nail it with a physical attack but only if we see it */
-	if(physical_target &&
-	   (MechToMech_LOSFlag(map, mech, physical_target) & MECHLOSFLAG_SEEN)) {
-
-		/* Log It */
-		print_autogun_log(autopilot,
-						  "Autogun - Attempting physical attack against"
-						  " target #%d", physical_target->mynum);
-
-		/* Calculate elevation difference */
-		elevation_diff = MechZ(mech) - MechZ(target);
-
-		/* Are we a biped Mech */
-		if((MechType(mech) == CLASS_MECH) && (MechMove(mech) == MOVE_BIPED)) {
-
-			/* Center the torso */
-			MechStatus(mech) &= ~(TORSO_RIGHT | TORSO_LEFT);
-
-			if(MechSpecials(mech) & FLIPABLE_ARMS) {
-
-				/* Center the arms if need be */
-				MechStatus(mech) &= ~(FLIPPED_ARMS);
-			}
-
-			/* Find direction of bad guy */
-			what_arc =
-				InWeaponArc(mech, MechFX(physical_target),
-							MechFY(physical_target));
-
-			/* Rotate if we need to */
-			if(what_arc & LSIDEARC) {
-
-				/* Rotate Left */
-				MechStatus(mech) |= TORSO_LEFT;
-
-			} else if(what_arc & RSIDEARC) {
-
-				/* Rotate Right */
-				MechStatus(mech) |= TORSO_RIGHT;
-
-			} else if(what_arc & REARARC) {
-
-				/* Find out if it would be better to
-				 * rotate left or right */
-				relative_bearing =
-					MechFacing(mech) - FindBearing(MechFX(mech), MechFY(mech),
-												   MechFX(physical_target),
-												   MechFY(physical_target));
-
-				if(relative_bearing > 120 && relative_bearing < 180) {
-
-					/* Rotate Right */
-					MechStatus(mech) |= TORSO_RIGHT;
-
-				} else if(relative_bearing > 180 && relative_bearing < 240) {
-
-					/* Rotate Left */
-					MechStatus(mech) |= TORSO_LEFT;
-
-				}
-
-				/* ELSE: Hes directly behind us so we can't do anything */
-
-			}
-
-			/* Calculate the new arc */
-			new_arc =
-				InWeaponArc(mech, MechFX(physical_target),
-							MechFY(physical_target));
-
-			/* Check to see what sections are destroyed */
-			memset(is_section_destroyed, 0, sizeof(is_section_destroyed));
-			is_section_destroyed[0] = SectIsDestroyed(mech, RARM);
-			is_section_destroyed[1] = SectIsDestroyed(mech, LARM);
-			is_section_destroyed[2] = SectIsDestroyed(mech, RLEG);
-			is_section_destroyed[3] = SectIsDestroyed(mech, LLEG);
-
-			/* Check to see if the sections have a busy weapon */
-			memset(section_hasbusyweap, 0, sizeof(section_hasbusyweap));
-			section_hasbusyweap[0] = SectHasBusyWeap(mech, RARM);
-			section_hasbusyweap[1] = SectHasBusyWeap(mech, LARM);
-			section_hasbusyweap[2] = SectHasBusyWeap(mech, RLEG);
-			section_hasbusyweap[3] = SectHasBusyWeap(mech, LLEG);
-
-			/* Try weapon physical attacks */
-
-			/* Right Arm */
-			if(!is_section_destroyed[0] && !section_hasbusyweap[0] &&
-			   !AnyLimbsRecycling(mech) && ((new_arc & FORWARDARC) ||
-											(new_arc & RSIDEARC)) &&
-			   (elevation_diff == 0 || elevation_diff == -1)) {
-
-				snprintf(buffer, LBUF_SIZE, "r %c%c",
-						 MechID(target)[0], MechID(target)[1]);
-
-				if(have_axe(mech, RARM))
-					mech_axe(autopilot->mynum, mech, buffer);
-				/* else if (have_mace(mech, RARM)) */
-				/*! \todo {Add in mace code here} */
-				else if(have_sword(mech, RARM))
-					mech_sword(autopilot->mynum, mech, buffer);
-
-			}
-
-			/* Left Arm */
-			if(!is_section_destroyed[1] && !section_hasbusyweap[1] &&
-			   !AnyLimbsRecycling(mech) && ((new_arc & FORWARDARC) ||
-											(new_arc & LSIDEARC)) &&
-			   (elevation_diff == 0 || elevation_diff == -1)) {
-
-				snprintf(buffer, LBUF_SIZE, "l %c%c",
-						 MechID(target)[0], MechID(target)[1]);
-
-				if(have_axe(mech, LARM))
-					mech_axe(autopilot->mynum, mech, buffer);
-				/* else if (have_mace(mech, RARM)) */
-				/*! \todo {Add in mace code here} */
-				else if(have_sword(mech, LARM))
-					mech_sword(autopilot->mynum, mech, buffer);
-
-			}
-
-			/* Try and kick but only if we got two legs, one of them
-			 * doesn't have a cycling weapon and the target is in the
-			 * front arc */
-			if((!section_hasbusyweap[2] || !section_hasbusyweap[3]) &&
-			   !is_section_destroyed[2] && !is_section_destroyed[3] &&
-			   (what_arc & FORWARDARC) && !AnyLimbsRecycling(mech) &&
-			   (elevation_diff == 0 || elevation_diff == 1)) {
-
-				rleg_bth = 0;
-				lleg_bth = 0;
-
-				/* Check the RLEG for any crits or weaps cycling */
-				if(!section_hasbusyweap[2]) {
-					if(!OkayCritSectS(RLEG, 0, SHOULDER_OR_HIP))
-						rleg_bth += 3;
-					if(!OkayCritSectS(RLEG, 1, UPPER_ACTUATOR))
-						rleg_bth++;
-					if(!OkayCritSectS(RLEG, 2, LOWER_ACTUATOR))
-						rleg_bth++;
-					if(!OkayCritSectS(RLEG, 3, HAND_OR_FOOT_ACTUATOR))
-						rleg_bth++;
-				} else {
-					rleg_bth = 99;
-				}
-
-				/* Check the LLEG for any crits or weaps cycling */
-				if(!section_hasbusyweap[3]) {
-					if(!OkayCritSectS(LLEG, 0, SHOULDER_OR_HIP))
-						lleg_bth += 3;
-					if(!OkayCritSectS(LLEG, 1, UPPER_ACTUATOR))
-						lleg_bth++;
-					if(!OkayCritSectS(LLEG, 2, LOWER_ACTUATOR))
-						lleg_bth++;
-					if(!OkayCritSectS(LLEG, 3, HAND_OR_FOOT_ACTUATOR))
-						lleg_bth++;
-				} else {
-					rleg_bth = 99;
-				}
-
-				/* Now kick depending on which one would be better 
-				 * to kick with */
-				if(rleg_bth <= lleg_bth) {
-					snprintf(buffer, LBUF_SIZE, "r %c%c",
-							 MechID(physical_target)[0],
-							 MechID(physical_target)[1]);
-				} else {
-					snprintf(buffer, LBUF_SIZE, "l %c%c",
-							 MechID(physical_target)[0],
-							 MechID(physical_target)[1]);
-				}
-				mech_kick(autopilot->mynum, mech, buffer);
-			}
-
-			/* Finally try to punch */
-			if(((!is_section_destroyed[0] && !section_hasbusyweap[0]) ||
-				(!is_section_destroyed[1] && !section_hasbusyweap[1]))
-			   && !AnyLimbsRecycling(mech) &&
-			   (elevation_diff == 0 || elevation_diff == -1)) {
-
-				is_rarm_ready = 0;
-				is_larm_ready = 0;
-
-				if(!is_section_destroyed[0] &&
-				   !section_hasbusyweap[0] &&
-				   ((new_arc & FORWARDARC) || (new_arc & RSIDEARC))) {
-
-					/* We can use the right arm */
-					is_rarm_ready = 1;
-				}
-
-				if(!is_section_destroyed[1] &&
-				   !section_hasbusyweap[1] &&
-				   ((new_arc & FORWARDARC) || (new_arc & LSIDEARC))) {
-
-					/* We can use the left arm */
-					is_larm_ready = 1;
-				}
-
-				if(is_rarm_ready == 1 && is_larm_ready == 1) {
-					snprintf(buffer, LBUF_SIZE, "b %c%c",
-							 MechID(target)[0], MechID(target)[1]);
-				} else if(is_rarm_ready == 1) {
-					snprintf(buffer, LBUF_SIZE, "r %c%c",
-							 MechID(target)[0], MechID(target)[1]);
-				} else {
-					snprintf(buffer, LBUF_SIZE, "l %c%c",
-							 MechID(target)[0], MechID(target)[1]);
-				}
-
-				/* Now punch */
-				mech_punch(autopilot->mynum, mech, buffer);
-
-			}
-
-		} else if((MechType(mech) == CLASS_MECH) &&
-				  (MechMove(mech) == MOVE_QUAD)) {
-
-			/* Quad Mech - Right now only supporting kicking front style for quad */
-			/* Remember, the RARM becomes the Front RLEG and the LARM becomes the
-			 * Front LLEG */
-
-			/* Find direction of bad guy */
-			what_arc =
-				InWeaponArc(mech, MechFX(physical_target),
-							MechFY(physical_target));
-
-			/* Check to see what sections are destroyed */
-			memset(is_section_destroyed, 0, sizeof(is_section_destroyed));
-			is_section_destroyed[0] = SectIsDestroyed(mech, RARM);
-			is_section_destroyed[1] = SectIsDestroyed(mech, LARM);
-			is_section_destroyed[2] = SectIsDestroyed(mech, RLEG);
-			is_section_destroyed[3] = SectIsDestroyed(mech, LLEG);
-
-			/* Check to see if the sections have a busy weapon */
-			memset(section_hasbusyweap, 0, sizeof(section_hasbusyweap));
-			section_hasbusyweap[0] = SectHasBusyWeap(mech, RARM);
-			section_hasbusyweap[1] = SectHasBusyWeap(mech, LARM);
-			//section_hasbusyweap[2] = SectHasBusyWeap(mech, RLEG);
-			//section_hasbusyweap[3] = SectHasBusyWeap(mech, LLEG);
-
-			/* Try and kick but only if we got two legs, one of them
-			 * doesn't have a cycling weapon and the target is in the
-			 * front arc */
-			if((!section_hasbusyweap[0] || !section_hasbusyweap[0]) &&
-			   !is_section_destroyed[0] && !is_section_destroyed[1] &&
-			   !is_section_destroyed[2] && !is_section_destroyed[3] &&
-			   (what_arc & FORWARDARC) && !AnyLimbsRecycling(mech) &&
-			   (elevation_diff == 0 || elevation_diff == 1)) {
-
-				rleg_bth = 0;
-				lleg_bth = 0;
-
-				/* Check the Front Right Leg for any crits or weaps cycling */
-				if(!section_hasbusyweap[0]) {
-					if(!OkayCritSectS(RARM, 0, SHOULDER_OR_HIP))
-						rleg_bth += 3;
-					if(!OkayCritSectS(RARM, 1, UPPER_ACTUATOR))
-						rleg_bth++;
-					if(!OkayCritSectS(RARM, 2, LOWER_ACTUATOR))
-						rleg_bth++;
-					if(!OkayCritSectS(RARM, 3, HAND_OR_FOOT_ACTUATOR))
-						rleg_bth++;
-				} else {
-					rleg_bth = 99;
-				}
-
-				/* Check the Front Left Leg for any crits or weaps cycling */
-				if(!section_hasbusyweap[1]) {
-					if(!OkayCritSectS(LARM, 0, SHOULDER_OR_HIP))
-						lleg_bth += 3;
-					if(!OkayCritSectS(LARM, 1, UPPER_ACTUATOR))
-						lleg_bth++;
-					if(!OkayCritSectS(LARM, 2, LOWER_ACTUATOR))
-						lleg_bth++;
-					if(!OkayCritSectS(LARM, 3, HAND_OR_FOOT_ACTUATOR))
-						lleg_bth++;
-				} else {
-					rleg_bth = 99;
-				}
-
-				/* Now kick depending on which one would be better 
-				 * to kick with */
-				if(rleg_bth <= lleg_bth) {
-					snprintf(buffer, LBUF_SIZE, "r %c%c",
-							 MechID(physical_target)[0],
-							 MechID(physical_target)[1]);
-				} else {
-					snprintf(buffer, LBUF_SIZE, "l %c%c",
-							 MechID(physical_target)[0],
-							 MechID(physical_target)[1]);
-				}
-				mech_kick(autopilot->mynum, mech, buffer);
-			}
-
-		} else if(MechType(mech) == CLASS_BSUIT) {
-
-			/* Are we a BSuit */
-
-		} else {
-
-			/* Eventually add code here maybe for other physical attacks for
-			 * tanks perhaps */
-
-		}
-
-	}
-
-	/* End of physical attack */
-	/* Log It */
-	print_autogun_log(autopilot, "Autogun - End Physical Attack Stage");
-
-	/* Now we mow down our target */
-
-	/* Get our current target */
-	/* Check to make sure we didn't kill it with physical attack
-	 * or something */
-	if(!(target = getMech(autopilot->target))) {
-
-		/* There were no valid targets so
-		 * rerun autogun */
-
-		/* Reset the AI */
-		autopilot->target = -1;
-		autopilot->target_score = 0;
+        /* Reset the AI */
+        autopilot->target = -1;
+        autopilot->target_score = 0;
 
         /* Log It */
-		print_autogun_log(autopilot, "Autogun - No valid current target");
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
+        print_autogun_log(autopilot, "Autogun - No valid current targets");
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
 
-	} else if(Destroyed(target) || (target->mapindex != mech->mapindex)) {
+    }
 
-		/* Target is either dead or not on the map anymore */
-		autopilot->target = -1;
-		autopilot->target_score = 0;
+    /* Check to see if we need to (re)lock our target */
+    if (MechTarget(mech) != autopilot->target) {
+
+        /* Lock Him */
+        snprintf(buffer, LBUF_SIZE, "%c%c", MechID(target)[0],
+                MechID(target)[1]);
+        mech_settarget(autopilot->mynum, mech, buffer);
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - Locking target #%d",
+                autopilot->target);
+
+    }
+
+    /* Update autosensor */
+
+    /* Now lets get physical */
+
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Start Physical Attack Stage");
+
+    /* Get range from mech to current target */
+    range = FindHexRange(MechFX(mech), MechFY(mech), MechFX(target),
+                MechFY(target));
+
+    /* First check our range to our target, if within range attack it, else
+     * check to see if its outside our range threshold and if so pick a target
+     * close and attack that */
+
+    /*! \todo {Might need to add in here something incase the target is a bsuit} */
+    if (range < 1.0) {
+
+        /* We're beating on our main target */
+        physical_target = target;
+
+    } else if (range > AUTO_GUN_PHYSICAL_RANGE_MIN) {
+
+        /* Try and find a target */
+
+        physical_target = NULL;
+
+        /* Cycle through possible targets and pick something to beat on */
+        for (i = 0; i < map->first_free; i++) {
+
+            /* Make sure its on the right map */
+            if (i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
+
+                /* Is it a valid unit ? */
+                if (!(target = getMech(j)))
+                    continue;
+
+                if (Destroyed(target))
+                    continue;
+
+                if (MechStatus(target) & COMBAT_SAFE)
+                    continue;
+
+                if (MechTeam(target) == MechTeam(mech))
+                    continue;
+
+                /* Check its range */
+                range = FindHexRange(MechFX(mech), MechFY(mech),
+                        MechFX(target), MechFY(target));
+
+                /* Just go for first one , can always add scoring later */
+                if (range < 1.0) {
+                    physical_target = target;
+                    break;
+                }
+
+            }
+
+        }
+
+    } else {
+
+        /* Our target is close so dont try and physically attack anyone */
+        physical_target = NULL;
+
+    }
+
+    /* Now nail it with a physical attack but only if we see it */
+    if (physical_target &&
+            (MechToMech_LOSFlag(map, mech, physical_target) & MECHLOSFLAG_SEEN)) {
+
+        /* Log It */
+        print_autogun_log(autopilot,
+                "Autogun - Attempting physical attack against"
+                " target #%d", physical_target->mynum);
+
+        /* Calculate elevation difference */
+        elevation_diff = MechZ(mech) - MechZ(target);
+
+        /* Are we a biped Mech */
+        if ((MechType(mech) == CLASS_MECH) && (MechMove(mech) == MOVE_BIPED)) {
+
+            /* Center the torso */
+            MechStatus(mech) &= ~(TORSO_RIGHT | TORSO_LEFT);
+
+            if (MechSpecials(mech) & FLIPABLE_ARMS) {
+
+                /* Center the arms if need be */
+                MechStatus(mech) &= ~(FLIPPED_ARMS);
+            }
+
+            /* Find direction of bad guy */
+            what_arc = InWeaponArc(mech, MechFX(physical_target),
+                        MechFY(physical_target));
+
+            /* Rotate if we need to */
+            if (what_arc & LSIDEARC) {
+
+                /* Rotate Left */
+                MechStatus(mech) |= TORSO_LEFT;
+
+            } else if(what_arc & RSIDEARC) {
+
+                /* Rotate Right */
+                MechStatus(mech) |= TORSO_RIGHT;
+
+            } else if (what_arc & REARARC) {
+
+                /* Find out if it would be better to
+                 * rotate left or right */
+                relative_bearing =
+                    MechFacing(mech) - FindBearing(MechFX(mech), MechFY(mech),
+                            MechFX(physical_target),
+                            MechFY(physical_target));
+
+                if (relative_bearing > 120 && relative_bearing < 180) {
+
+                    /* Rotate Right */
+                    MechStatus(mech) |= TORSO_RIGHT;
+
+                } else if (relative_bearing > 180 && relative_bearing < 240) {
+
+                    /* Rotate Left */
+                    MechStatus(mech) |= TORSO_LEFT;
+
+                }
+
+                /* ELSE: Hes directly behind us so we can't do anything */
+
+            }
+
+            /* Calculate the new arc */
+            new_arc = InWeaponArc(mech, MechFX(physical_target),
+                        MechFY(physical_target));
+
+            /* Check to see what sections are destroyed */
+            memset(is_section_destroyed, 0, sizeof(is_section_destroyed));
+            is_section_destroyed[0] = SectIsDestroyed(mech, RARM);
+            is_section_destroyed[1] = SectIsDestroyed(mech, LARM);
+            is_section_destroyed[2] = SectIsDestroyed(mech, RLEG);
+            is_section_destroyed[3] = SectIsDestroyed(mech, LLEG);
+
+            /* Check to see if the sections have a busy weapon */
+            memset(section_hasbusyweap, 0, sizeof(section_hasbusyweap));
+            section_hasbusyweap[0] = SectHasBusyWeap(mech, RARM);
+            section_hasbusyweap[1] = SectHasBusyWeap(mech, LARM);
+            section_hasbusyweap[2] = SectHasBusyWeap(mech, RLEG);
+            section_hasbusyweap[3] = SectHasBusyWeap(mech, LLEG);
+
+            /* Try weapon physical attacks */
+
+            /* Right Arm */
+            if (!is_section_destroyed[0] && !section_hasbusyweap[0] &&
+                    !AnyLimbsRecycling(mech) && ((new_arc & FORWARDARC) ||
+                        (new_arc & RSIDEARC)) &&
+                    (elevation_diff == 0 || elevation_diff == -1)) {
+
+                snprintf(buffer, LBUF_SIZE, "r %c%c",
+                        MechID(target)[0], MechID(target)[1]);
+
+                if (have_axe(mech, RARM))
+                    mech_axe(autopilot->mynum, mech, buffer);
+                /* else if (have_mace(mech, RARM)) */
+                /*! \todo {Add in mace code here} */
+                else if (have_sword(mech, RARM))
+                    mech_sword(autopilot->mynum, mech, buffer);
+
+            }
+
+            /* Left Arm */
+            if (!is_section_destroyed[1] && !section_hasbusyweap[1] &&
+                    !AnyLimbsRecycling(mech) && ((new_arc & FORWARDARC) ||
+                        (new_arc & LSIDEARC)) &&
+                    (elevation_diff == 0 || elevation_diff == -1)) {
+
+                snprintf(buffer, LBUF_SIZE, "l %c%c",
+                        MechID(target)[0], MechID(target)[1]);
+
+                if (have_axe(mech, LARM))
+                    mech_axe(autopilot->mynum, mech, buffer);
+                /* else if (have_mace(mech, RARM)) */
+                /*! \todo {Add in mace code here} */
+                else if (have_sword(mech, LARM))
+                    mech_sword(autopilot->mynum, mech, buffer);
+
+            }
+
+            /* Try and kick but only if we got two legs, one of them
+             * doesn't have a cycling weapon and the target is in the
+             * front arc */
+            if((!section_hasbusyweap[2] || !section_hasbusyweap[3]) &&
+                    !is_section_destroyed[2] && !is_section_destroyed[3] &&
+                    (what_arc & FORWARDARC) && !AnyLimbsRecycling(mech) &&
+                    (elevation_diff == 0 || elevation_diff == 1)) {
+
+                rleg_bth = 0;
+                lleg_bth = 0;
+
+                /* Check the RLEG for any crits or weaps cycling */
+                if (!section_hasbusyweap[2]) {
+                    if (!OkayCritSectS(RLEG, 0, SHOULDER_OR_HIP))
+                        rleg_bth += 3;
+                    if (!OkayCritSectS(RLEG, 1, UPPER_ACTUATOR))
+                        rleg_bth++;
+                    if (!OkayCritSectS(RLEG, 2, LOWER_ACTUATOR))
+                        rleg_bth++;
+                    if (!OkayCritSectS(RLEG, 3, HAND_OR_FOOT_ACTUATOR))
+                        rleg_bth++;
+                } else {
+                    rleg_bth = 99;
+                }
+
+                /* Check the LLEG for any crits or weaps cycling */
+                if (!section_hasbusyweap[3]) {
+                    if (!OkayCritSectS(LLEG, 0, SHOULDER_OR_HIP))
+                        lleg_bth += 3;
+                    if (!OkayCritSectS(LLEG, 1, UPPER_ACTUATOR))
+                        lleg_bth++;
+                    if (!OkayCritSectS(LLEG, 2, LOWER_ACTUATOR))
+                        lleg_bth++;
+                    if (!OkayCritSectS(LLEG, 3, HAND_OR_FOOT_ACTUATOR))
+                        lleg_bth++;
+                } else {
+                    rleg_bth = 99;
+                }
+
+                /* Now kick depending on which one would be better 
+                 * to kick with */
+                if (rleg_bth <= lleg_bth) {
+                    snprintf(buffer, LBUF_SIZE, "r %c%c",
+                            MechID(physical_target)[0],
+                            MechID(physical_target)[1]);
+                } else {
+                    snprintf(buffer, LBUF_SIZE, "l %c%c",
+                            MechID(physical_target)[0],
+                            MechID(physical_target)[1]);
+                }
+                mech_kick(autopilot->mynum, mech, buffer);
+            }
+
+            /* Finally try to punch */
+            if (((!is_section_destroyed[0] && !section_hasbusyweap[0]) ||
+                        (!is_section_destroyed[1] && !section_hasbusyweap[1]))
+                    && !AnyLimbsRecycling(mech) &&
+                    (elevation_diff == 0 || elevation_diff == -1)) {
+
+                is_rarm_ready = 0;
+                is_larm_ready = 0;
+
+                if (!is_section_destroyed[0] &&
+                        !section_hasbusyweap[0] &&
+                        ((new_arc & FORWARDARC) || (new_arc & RSIDEARC))) {
+
+                    /* We can use the right arm */
+                    is_rarm_ready = 1;
+                }
+
+                if (!is_section_destroyed[1] &&
+                        !section_hasbusyweap[1] &&
+                        ((new_arc & FORWARDARC) || (new_arc & LSIDEARC))) {
+
+                    /* We can use the left arm */
+                    is_larm_ready = 1;
+                }
+
+                if (is_rarm_ready == 1 && is_larm_ready == 1) {
+                    snprintf(buffer, LBUF_SIZE, "b %c%c",
+                            MechID(target)[0], MechID(target)[1]);
+                } else if (is_rarm_ready == 1) {
+                    snprintf(buffer, LBUF_SIZE, "r %c%c",
+                            MechID(target)[0], MechID(target)[1]);
+                } else {
+                    snprintf(buffer, LBUF_SIZE, "l %c%c",
+                            MechID(target)[0], MechID(target)[1]);
+                }
+
+                /* Now punch */
+                mech_punch(autopilot->mynum, mech, buffer);
+
+            }
+
+        } else if ((MechType(mech) == CLASS_MECH) &&
+                (MechMove(mech) == MOVE_QUAD)) {
+
+            /* Quad Mech - Right now only supporting kicking front style for quad */
+            /* Remember, the RARM becomes the Front RLEG and the LARM becomes the
+             * Front LLEG */
+
+            /* Find direction of bad guy */
+            what_arc =
+                InWeaponArc(mech, MechFX(physical_target),
+                        MechFY(physical_target));
+
+            /* Check to see what sections are destroyed */
+            memset(is_section_destroyed, 0, sizeof(is_section_destroyed));
+            is_section_destroyed[0] = SectIsDestroyed(mech, RARM);
+            is_section_destroyed[1] = SectIsDestroyed(mech, LARM);
+            is_section_destroyed[2] = SectIsDestroyed(mech, RLEG);
+            is_section_destroyed[3] = SectIsDestroyed(mech, LLEG);
+
+            /* Check to see if the sections have a busy weapon */
+            memset(section_hasbusyweap, 0, sizeof(section_hasbusyweap));
+            section_hasbusyweap[0] = SectHasBusyWeap(mech, RARM);
+            section_hasbusyweap[1] = SectHasBusyWeap(mech, LARM);
+            //section_hasbusyweap[2] = SectHasBusyWeap(mech, RLEG);
+            //section_hasbusyweap[3] = SectHasBusyWeap(mech, LLEG);
+
+            /* Try and kick but only if we got two legs, one of them
+             * doesn't have a cycling weapon and the target is in the
+             * front arc */
+            if ((!section_hasbusyweap[0] || !section_hasbusyweap[0]) &&
+                    !is_section_destroyed[0] && !is_section_destroyed[1] &&
+                    !is_section_destroyed[2] && !is_section_destroyed[3] &&
+                    (what_arc & FORWARDARC) && !AnyLimbsRecycling(mech) &&
+                    (elevation_diff == 0 || elevation_diff == 1)) {
+
+                rleg_bth = 0;
+                lleg_bth = 0;
+
+                /* Check the Front Right Leg for any crits or weaps cycling */
+                if (!section_hasbusyweap[0]) {
+                    if (!OkayCritSectS(RARM, 0, SHOULDER_OR_HIP))
+                        rleg_bth += 3;
+                    if (!OkayCritSectS(RARM, 1, UPPER_ACTUATOR))
+                        rleg_bth++;
+                    if (!OkayCritSectS(RARM, 2, LOWER_ACTUATOR))
+                        rleg_bth++;
+                    if (!OkayCritSectS(RARM, 3, HAND_OR_FOOT_ACTUATOR))
+                        rleg_bth++;
+                } else {
+                    rleg_bth = 99;
+                }
+
+                /* Check the Front Left Leg for any crits or weaps cycling */
+                if (!section_hasbusyweap[1]) {
+                    if (!OkayCritSectS(LARM, 0, SHOULDER_OR_HIP))
+                        lleg_bth += 3;
+                    if (!OkayCritSectS(LARM, 1, UPPER_ACTUATOR))
+                        lleg_bth++;
+                    if (!OkayCritSectS(LARM, 2, LOWER_ACTUATOR))
+                        lleg_bth++;
+                    if (!OkayCritSectS(LARM, 3, HAND_OR_FOOT_ACTUATOR))
+                        lleg_bth++;
+                } else {
+                    rleg_bth = 99;
+                }
+
+                /* Now kick depending on which one would be better 
+                 * to kick with */
+                if (rleg_bth <= lleg_bth) {
+                    snprintf(buffer, LBUF_SIZE, "r %c%c",
+                            MechID(physical_target)[0],
+                            MechID(physical_target)[1]);
+                } else {
+                    snprintf(buffer, LBUF_SIZE, "l %c%c",
+                            MechID(physical_target)[0],
+                            MechID(physical_target)[1]);
+                }
+                mech_kick(autopilot->mynum, mech, buffer);
+            }
+
+        } else if (MechType(mech) == CLASS_BSUIT) {
+
+            /* Are we a BSuit */
+
+        } else {
+
+            /* Eventually add code here maybe for other physical attacks for
+             * tanks perhaps */
+
+        }
+
+    }
+
+    /* End of physical attack */
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - End Physical Attack Stage");
+
+    /* Now we mow down our target */
+
+    /* Get our current target */
+    /* Check to make sure we didn't kill it with physical attack
+     * or something */
+    if (!(target = getMech(autopilot->target))) {
+
+        /* There were no valid targets so
+         * rerun autogun */
+
+        /* Reset the AI */
+        autopilot->target = -1;
+        autopilot->target_score = 0;
+
+        /* Log It */
+        print_autogun_log(autopilot, "Autogun - No valid current target");
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+
+    } else if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
+
+        /* Target is either dead or not on the map anymore */
+        autopilot->target = -1;
+        autopilot->target_score = 0;
 
         /* Log it */
-		print_autogun_log(autopilot, "Autogun - Target Gone");
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
-	}
-
-	/* Log It */
-	print_autogun_log(autopilot, "Autogun - Starting Weapon Attack Phase");
-
-	/* Get range from mech to current target */
-	range = FindHexRange(MechFX(mech), MechFY(mech),
-						 MechFX(target), MechFY(target));
-
-	/* This probably unnecessary but since it doesn't
-	 * take much to calc range it should be ok for
-	 * testing for now */
-	if((range >= (float) AUTO_GUN_MAX_RANGE) && !AssignedTarget(autopilot)) {
-
-		/* Target is to far - reset */
-		autopilot->target = -1;
-		autopilot->target_score = 0;
-
-
-		/* Log it */
-		print_autogun_log(autopilot, "Autogun - Target out of range");
-		print_autogun_log(autopilot, "Autogun Event Finished");
-		return;
-	}
-
-	/* Cycle through Guns while watching the heat */
-	if((range < (float) AUTO_GUN_MAX_RANGE)
-	   && autopilot->profile[(int) range]) {
-
-		/* Ok we got weapons lets use them */
-
-		/* Reset heat counter to current heat */
-		accumulate_heat = MechWeapHeat(mech);
-
-		/* If the unit is moving need to account for the heat of that as well */
-		if((MechType(mech) == CLASS_MECH) && (fabs(MechSpeed(mech)) > 0.0)) {
-
-			maxspeed = MMaxSpeed(mech);
-			if(IsRunning(MechDesiredSpeed(mech), maxspeed))
-				accumulate_heat += 2;
-			else
-				accumulate_heat += 1;
-		}
-
-		/* Get first weapon */
-		temp_weapon_node =
-			(weapon_node *) rb_search(autopilot->profile[(int) range],
-									  SEARCH_LAST, NULL);
-
-		while (temp_weapon_node) {
-
-			/* Check to see if the weapon even works */
-			if(WeaponIsNonfunctional(mech, temp_weapon_node->section,
-									 temp_weapon_node->critical,
-									 GetWeaponCrits(mech,
-													Weapon2I
-													(temp_weapon_node->
-													 weapon_db_number))) >
-			   0) {
-
-				/* Weapon Doesn't work so go to next one */
-				temp_weapon_node =
-					(weapon_node *) rb_search(autopilot->profile[(int) range],
-											  SEARCH_PREV,
-											  &temp_weapon_node->
-											  range_scores[(int) range]);
-
-				continue;
-			}
-
-			/* Check to see if its cycling */
-			if(WpnIsRecycling
-			   (mech, temp_weapon_node->section,
-				temp_weapon_node->critical)) {
-
-				/* Go to the next one */
-				temp_weapon_node =
-					(weapon_node *) rb_search(autopilot->profile[(int) range],
-											  SEARCH_PREV,
-											  &temp_weapon_node->
-											  range_scores[(int) range]);
-
-				continue;
-			}
-
-			if(IsAMS(temp_weapon_node->weapon_db_number)) {
-
-				/* Ok its an AMS so go to next weapon */
-				temp_weapon_node =
-					(weapon_node *) rb_search(autopilot->profile[(int) range],
-											  SEARCH_PREV,
-											  &temp_weapon_node->
-											  range_scores[(int) range]);
-				continue;
-			}
-
-			/* Check heat levels, since the heat isn't updated untill we're done
-			 * we have to manage the heat ourselves */
-			/*! \todo {Add a check also for aeros} */
-			if((MechType(mech) == CLASS_MECH) && (((float) accumulate_heat +
-												   (float)
-												   MechWeapons
-												   [temp_weapon_node->
-													weapon_db_number].heat -
-												   (float)
-												   MechMinusHeat(mech)) >
-												  AUTO_GUN_MAX_HEAT)) {
-
-				/* Would make ourselves to hot to fire this gun */
-				temp_weapon_node =
-					(weapon_node *) rb_search(autopilot->profile[(int) range],
-											  SEARCH_PREV,
-											  &temp_weapon_node->
-											  range_scores[(int) range]);
+        print_autogun_log(autopilot, "Autogun - Target Gone");
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+    }
+
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - Starting Weapon Attack Phase");
+
+    /* Get range from mech to current target */
+    range = FindHexRange(MechFX(mech), MechFY(mech),
+            MechFX(target), MechFY(target));
+
+    /* This probably unnecessary but since it doesn't
+     * take much to calc range it should be ok for
+     * testing for now */
+    if ((range >= (float) AUTO_GUN_MAX_RANGE) && !AssignedTarget(autopilot)) {
 
-				continue;
-			}
+        /* Target is to far - reset */
+        autopilot->target = -1;
+        autopilot->target_score = 0;
 
-			/* Ok passed the checks now setup the arcs and see if we can fire it */
+        /* Logs it */
+        print_autogun_log(autopilot, "Autogun - Target out of range");
+        print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+    }
 
-			/* Ok the rest depends on what type of unit we driving */
-			if((MechType(mech) == CLASS_MECH) &&
-			   (MechMove(mech) == MOVE_BIPED)) {
-
-				/* Center ourself and get target arc */
-				MechStatus(mech) &= ~(TORSO_RIGHT | TORSO_LEFT);
-				if(MechSpecials(mech) & FLIPABLE_ARMS) {
-
-					/* Center the arms if need be */
-					MechStatus(mech) &= ~(FLIPPED_ARMS);
-				}
+    /* Cycle through Guns while watching the heat */
+    if ((range < (float) AUTO_GUN_MAX_RANGE)
+            && autopilot->profile[(int) range]) {
 
-				/* Get Target Arc */
-				what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
+        /* Ok we got weapons lets use them */
 
-				/* Now go through the various arcs and see if we
-				 * need to flip arm or rotorso or something */
-				if(what_arc & REARARC) {
+        /* Reset heat counter to current heat */
+        accumulate_heat = MechWeapHeat(mech);
 
-					if(temp_weapon_node->section == LARM ||
-					   temp_weapon_node->section == RARM) {
+        /* If the unit is moving need to account for the heat of that as well */
+        if ((MechType(mech) == CLASS_MECH) && (fabs(MechSpeed(mech)) > 0.0)) {
 
-						/* First see if we can flip arms */
-						if(MechSpecials(mech) & FLIPABLE_ARMS) {
+            maxspeed = MMaxSpeed(mech);
+            if (IsRunning(MechDesiredSpeed(mech), maxspeed))
+                accumulate_heat += 2;
+            else
+                accumulate_heat += 1;
+        }
 
-							/* Flip the arms */
-							MechStatus(mech) |= FLIPPED_ARMS;
-
-						} else {
+        /* Get first weapon */
+        temp_weapon_node =
+            (weapon_node *) rb_search(autopilot->profile[(int) range],
+                                      SEARCH_LAST, NULL);
 
-							/* Now see if we can rotatorso */
+        while (temp_weapon_node) {
 
-							/* Find out if it would be better to
-							 * rotate left or right */
-							relative_bearing = MechFacing(mech) -
-								FindBearing(MechFX(mech), MechFY(mech),
-											MechFX(target), MechFY(target));
+            /* Check to see if the weapon even works */
+            if (WeaponIsNonfunctional(mech, temp_weapon_node->section,
+                        temp_weapon_node->critical, GetWeaponCrits(mech,
+                            Weapon2I(temp_weapon_node->weapon_db_number))) > 0) {
 
-							if(relative_bearing > 120
-							   && relative_bearing < 180
-							   && temp_weapon_node->section == RARM) {
+                /* Weapon Doesn't work so go to next one */
+                temp_weapon_node = (weapon_node *) rb_search(autopilot->profile[(int) range],
+                        SEARCH_PREV, &temp_weapon_node->range_scores[(int) range]);
 
-								/* Rotate Right */
-								MechStatus(mech) |= TORSO_RIGHT;
+                continue;
+            }
 
-							} else if(relative_bearing > 180
-									  && relative_bearing < 240
-									  && temp_weapon_node->section == LARM) {
+            /* Check to see if its cycling */
+            if (WpnIsRecycling(mech, temp_weapon_node->section,
+                     temp_weapon_node->critical)) {
 
-								/* Rotate Left */
-								MechStatus(mech) |= TORSO_LEFT;
-
-							} else {
+                /* Go to the next one */
+                temp_weapon_node = (weapon_node *) rb_search(autopilot->profile[(int) range],
+                        SEARCH_PREV, &temp_weapon_node->range_scores[(int) range]);
 
-								/* Can't do anything so go to next weapon */
-								temp_weapon_node =
-									(weapon_node *) rb_search(autopilot->
-															  profile[(int)
-																	  range],
-															  SEARCH_PREV,
-															  &temp_weapon_node->
-															  range_scores[(int) range]);
+                continue;
+            }
 
-								continue;
+            if (IsAMS(temp_weapon_node->weapon_db_number)) {
 
-							}
+                /* Ok its an AMS so go to next weapon */
+                temp_weapon_node = (weapon_node *) rb_search(autopilot->profile[(int) range],
+                        SEARCH_PREV, &temp_weapon_node->range_scores[(int) range]);
+                continue;
+            }
 
-						}
+            /* Check heat levels, since the heat isn't updated untill we're done
+             * we have to manage the heat ourselves */
+            /*! \todo {Add a check also for aeros} */
+            if ((MechType(mech) == CLASS_MECH) && (((float) accumulate_heat +
+                            (float) MechWeapons[temp_weapon_node->weapon_db_number].heat -
+                            (float) MechMinusHeat(mech)) >
+                        AUTO_GUN_MAX_HEAT)) {
 
-					} else
-						if(!
-						   (GetPartFireMode
-							(mech, temp_weapon_node->section,
-							 temp_weapon_node->critical) & REAR_MOUNT)) {
+                /* Would make ourselves to hot to fire this gun */
+                temp_weapon_node = (weapon_node *) rb_search(autopilot->profile[(int) range],
+                        SEARCH_PREV, &temp_weapon_node->range_scores[(int) range]);
 
-						/* Weapon is forward torso or leg mounted weapon
-						 * so no way to shoot with */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                continue;
+            }
 
-						continue;
+            /* Ok passed the checks now setup the arcs and see if we can fire it */
 
-					}
+            /* Ok the rest depends on what type of unit we driving */
+            if ((MechType(mech) == CLASS_MECH) &&
+                    (MechMove(mech) == MOVE_BIPED)) {
 
-					/* ELSE: Weapon is rear mounted so don't need to 
-					 * do anything */
+                /* Center ourself and get target arc */
+                MechStatus(mech) &= ~(TORSO_RIGHT | TORSO_LEFT);
+                if (MechSpecials(mech) & FLIPABLE_ARMS) {
 
-				} else if(what_arc & LSIDEARC) {
+                    /* Center the arms if need be */
+                    MechStatus(mech) &= ~(FLIPPED_ARMS);
+                }
 
-					if(temp_weapon_node->section == RLEG ||
-					   temp_weapon_node->section == LLEG) {
+                /* Get Target Arc */
+                what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
 
-						/* No way can we hit him with leg mounted
-						 * weapons so lets go to next one */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                /* Now go through the various arcs and see if we
+                 * need to flip arm or rotorso or something */
+                if (what_arc & REARARC) {
 
-						continue;
+                    if (temp_weapon_node->section == LARM ||
+                            temp_weapon_node->section == RARM) {
 
-					}
+                        /* First see if we can flip arms */
+                        if (MechSpecials(mech) & FLIPABLE_ARMS) {
 
-					/* Rotate torso left */
-					MechStatus(mech) |= TORSO_LEFT;
+                            /* Flip the arms */
+                            MechStatus(mech) |= FLIPPED_ARMS;
 
-				} else if(what_arc & RSIDEARC) {
+                        } else {
 
-					if(temp_weapon_node->section == RLEG ||
-					   temp_weapon_node->section == LLEG) {
+                            /* Now see if we can rotatorso */
 
-						/* No way can we hit him with leg mounted
-						 * weapons so lets go to next one */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                            /* Find out if it would be better to
+                             * rotate left or right */
+                            relative_bearing = MechFacing(mech) -
+                                FindBearing(MechFX(mech), MechFY(mech),
+                                        MechFX(target), MechFY(target));
 
-						continue;
+                            if (relative_bearing > 120
+                                    && relative_bearing < 180
+                                    && temp_weapon_node->section == RARM) {
 
-					}
+                                /* Rotate Right */
+                                MechStatus(mech) |= TORSO_RIGHT;
 
-					/* Rotate torso right */
-					MechStatus(mech) |= TORSO_RIGHT;
+                            } else if (relative_bearing > 180
+                                    && relative_bearing < 240
+                                    && temp_weapon_node->section == LARM) {
 
-				} else {
+                                /* Rotate Left */
+                                MechStatus(mech) |= TORSO_LEFT;
 
-					if(GetPartFireMode(mech, temp_weapon_node->section,
-									   temp_weapon_node->
-									   critical) & REAR_MOUNT) {
+                            } else {
 
-						/* No way can we hit the guy with a rear
-						 * gun so lets go to next one */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                                /* Can't do anything so go to next weapon */
+                                temp_weapon_node = (weapon_node *) 
+                                    rb_search(autopilot->profile[(int) range],
+                                            SEARCH_PREV,
+                                            &temp_weapon_node->range_scores[(int) range]);
 
-						continue;
+                                continue;
 
-					}
+                            }
 
-				}
+                        }
 
-			} else if((MechType(mech) == CLASS_MECH) &&
-					  (MechMove(mech) == MOVE_QUAD)) {
+                    } else {
+                        if (!(GetPartFireMode(mech, temp_weapon_node->section,
+                                        temp_weapon_node->critical) & REAR_MOUNT)) {
 
-				/* Get Target Arc */
-				what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
+                            /* Weapon is forward torso or leg mounted weapon
+                             * so no way to shoot with */
+                            temp_weapon_node = (weapon_node *) 
+                                rb_search(autopilot->profile[(int) range],
+                                        SEARCH_PREV,
+                                        &temp_weapon_node->range_scores[(int) range]);
 
-				if(what_arc & REARARC) {
+                                    continue;
 
-					if(!(GetPartFireMode(mech, temp_weapon_node->section,
-										 temp_weapon_node->
-										 critical) & REAR_MOUNT)) {
+                        }
+                    }
 
-						/* Weapon is not rear mounted so skip it and
-						 * go to the next weapon */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                    /* ELSE: Weapon is rear mounted so don't need to 
+                     * do anything */
 
-						continue;
+                } else if (what_arc & LSIDEARC) {
 
-					}
+                    if (temp_weapon_node->section == RLEG ||
+                            temp_weapon_node->section == LLEG) {
 
-				} else if(what_arc & FORWARDARC) {
+                        /* No way can we hit him with leg mounted
+                         * weapons so lets go to next one */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-					if(GetPartFireMode(mech, temp_weapon_node->section,
-									   temp_weapon_node->
-									   critical) & REAR_MOUNT) {
+                        continue;
 
-						/* Weapon is rear mounted so skip it and
-						 * go to the next weapon */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
-
-						continue;
+                    }
 
-					}
+                    /* Rotate torso left */
+                    MechStatus(mech) |= TORSO_LEFT;
 
-				} else {
+                } else if (what_arc & RSIDEARC) {
 
-					/* The attacker is in a zone we can't possibly
-					 * shoot into, so just go to next weapon */
-					temp_weapon_node =
-						(weapon_node *) rb_search(autopilot->
-												  profile[(int) range],
-												  SEARCH_PREV,
-												  &temp_weapon_node->
-												  range_scores[(int) range]);
+                    if (temp_weapon_node->section == RLEG ||
+                            temp_weapon_node->section == LLEG) {
 
-					continue;
+                        /* No way can we hit him with leg mounted
+                         * weapons so lets go to next one */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-				}
+                        continue;
 
-			} else if((MechType(mech) == CLASS_VEH_GROUND) ||
-					  (MechType(mech) == CLASS_VEH_NAVAL)) {
+                    }
 
-				/* Get Target Arc */
-				what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
+                    /* Rotate torso right */
+                    MechStatus(mech) |= TORSO_RIGHT;
 
-				/* Check if turret exists and weapon is there */
-				if(GetSectInt(mech, TURRET)
-				   && temp_weapon_node->section == TURRET) {
+                } else {
 
-					/* Rotate Turret and nail the guy */
-					if(!(MechTankCritStatus(mech) & TURRET_JAMMED) &&
-					   !(MechTankCritStatus(mech) & TURRET_LOCKED) &&
-					   (AcceptableDegree
-						(MechTurretFacing(mech) + MechFacing(mech)) !=
-						FindBearing(MechFX(mech), MechFY(mech),
-									MechFX(target), MechFY(target)))) {
+                    if (GetPartFireMode(mech, temp_weapon_node->section,
+                                temp_weapon_node->critical) & REAR_MOUNT) {
 
-						snprintf(buffer, LBUF_SIZE, "%d",
-								 FindBearing(MechFX(mech), MechFY(mech),
-											 MechFX(target), MechFY(target)));
-						mech_turret(autopilot->mynum, mech, buffer);
-					}
+                        /* No way can we hit the guy with a rear
+                         * gun so lets go to next one */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-				} else {
+                        continue;
 
-					/* Check if in arc of weapon */
-					if(!IsInWeaponArc(mech, MechFX(target), MechFY(target),
-									  temp_weapon_node->section,
-									  temp_weapon_node->critical)) {
+                    }
 
-						/* Not in the arc so lets go to the next weapon */
-						temp_weapon_node =
-							(weapon_node *) rb_search(autopilot->
-													  profile[(int) range],
-													  SEARCH_PREV,
-													  &temp_weapon_node->
-													  range_scores[(int)
-																   range]);
+                }
 
-						continue;
+            } else if ((MechType(mech) == CLASS_MECH) &&
+                    (MechMove(mech) == MOVE_QUAD)) {
 
-					}
+                /* Get Target Arc */
+                what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
 
-				}
+                if (what_arc & REARARC) {
 
-			} else {
+                    if (!(GetPartFireMode(mech, temp_weapon_node->section,
+                                    temp_weapon_node->critical) & REAR_MOUNT)) {
 
-				/* We're either an aero, ds, bsuit, mechwarrior or vtol
-				 *
-				 * Still need to add code for them */
+                        /* Weapon is not rear mounted so skip it and
+                         * go to the next weapon */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-			}
+                        continue;
 
-			/* Done moving around, fire the weapon */
-			snprintf(buffer, LBUF_SIZE, "%d",
-					 temp_weapon_node->weapon_number);
-			mech_fireweapon(autopilot->mynum, mech, buffer);
+                    }
 
-			/* Log It */
-			print_autogun_log(autopilot, "Autogun - Fired Weapon #%d "
-							  "at target #%d",
-							  temp_weapon_node->weapon_number,
-							  autopilot->target);
+                } else if (what_arc & FORWARDARC) {
 
-			/* Ok check to see if weapon was fired if so account for the
-			 * heat */
-			if(WpnIsRecycling
-			   (mech, temp_weapon_node->section,
-				temp_weapon_node->critical)) {
-				accumulate_heat +=
-					MechWeapons[temp_weapon_node->weapon_db_number].heat;
-			}
+                    if (GetPartFireMode(mech, temp_weapon_node->section,
+                                temp_weapon_node->critical) & REAR_MOUNT) {
 
-			/* Ok go to the next weapon */
-			temp_weapon_node =
-				(weapon_node *) rb_search(autopilot->profile[(int) range],
-										  SEARCH_PREV,
-										  &temp_weapon_node->
-										  range_scores[(int) range]);
+                        /* Weapon is rear mounted so skip it and
+                         * go to the next weapon */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-		}						/* End of cycling through weapons */
+                        continue;
 
-	}
+                    }
 
-	/* Log It */
-	print_autogun_log(autopilot, "Autogun - End Weapon Attack Phase");
+                } else {
 
-	/* Setup chasetarg 
-	 * 
-	 * Since chasetarget uses follow but we don't want follow getting
-	 * messed up if its following a normal target.  We define our own
-	 * follow (basicly its follow but with the command name chasetarget */
+                    /* The attacker is in a zone we can't possibly
+                     * shoot into, so just go to next weapon */
+                    temp_weapon_node = (weapon_node *) 
+                        rb_search(autopilot->profile[(int) range],
+                                SEARCH_PREV,
+                                &temp_weapon_node->range_scores[(int) range]);
 
-	/* Get the first command, if its chasetarget or there is no command
-	 * check to see if we need to update chasetarget, otherwise means
-	 * AI is doing something else important so don't try to chase
-	 * anything */
+                    continue;
 
-	if(ChasingTarget(autopilot)) {
+                }
 
-		/* Reset the flag */
-		do_chasetarget = 0;
+            } else if ((MechType(mech) == CLASS_VEH_GROUND) ||
+                    (MechType(mech) == CLASS_VEH_NAVAL)) {
 
-		/* Get the first command's enum and check it */
-		switch (auto_get_command_enum(autopilot, 1)) {
+                /* Get Target Arc */
+                what_arc = InWeaponArc(mech, MechFX(target), MechFY(target));
 
-		case GOAL_CHASETARGET:
+                /* Check if turret exists and weapon is there */
+                if (GetSectInt(mech, TURRET)
+                        && temp_weapon_node->section == TURRET) {
 
-			/* Ok its our command so we can change it */
-			do_chasetarget = 1;
-			break;
+                    /* Rotate Turret and nail the guy */
+                    if (!(MechTankCritStatus(mech) & TURRET_JAMMED) &&
+                            !(MechTankCritStatus(mech) & TURRET_LOCKED) &&
+                            (AcceptableDegree
+                             (MechTurretFacing(mech) + MechFacing(mech)) !=
+                             FindBearing(MechFX(mech), MechFY(mech),
+                                 MechFX(target), MechFY(target)))) {
 
-		case -1:
+                        snprintf(buffer, LBUF_SIZE, "%d",
+                                FindBearing(MechFX(mech), MechFY(mech),
+                                    MechFX(target), MechFY(target)));
+                        mech_turret(autopilot->mynum, mech, buffer);
+                    }
 
-			/* No current commands so we can do our chasetarget */
-			do_chasetarget = 1;
-			break;
+                } else {
 
-			/* ALl the other stuff we don't want to mess with */
-		default:
+                    /* Check if in arc of weapon */
+                    if (!IsInWeaponArc(mech, MechFX(target), MechFY(target),
+                                temp_weapon_node->section,
+                                temp_weapon_node->critical)) {
 
-			/* Reset the chase values */
-			autopilot->chase_target = -10;
-			autopilot->chasetarg_update_tick =
-				AUTOPILOT_CHASETARG_UPDATE_TICK;
-			autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
-			break;
+                        /* Not in the arc so lets go to the next weapon */
+                        temp_weapon_node = (weapon_node *) 
+                            rb_search(autopilot->profile[(int) range],
+                                    SEARCH_PREV,
+                                    &temp_weapon_node->range_scores[(int) range]);
 
-		}
+                        continue;
 
-		/* Check the flag */
-		if(do_chasetarget) {
+                    }
 
-			/* Ok lets chase the guy */
+                }
 
-			/* First see if we need to update */
-			if((autopilot->target != autopilot->chase_target) ||
-			   (autopilot->chasetarg_update_tick >=
-				AUTOPILOT_CHASETARG_UPDATE_TICK)) {
+            } else {
 
-				/* Tell the AI to follow its target */
-				/* Basicly remove all the commands, add in
-				 * autogun and follow and engage */
+                /* We're either an aero, ds, bsuit, mechwarrior or vtol
+                 *
+                 * Still need to add code for them */
 
-				/* Let the AI know we chasing this guy */
-				autopilot->chase_target = autopilot->target;
+            }
 
-				/* Reset the tickers */
-				autopilot->chasetarg_update_tick = 0;
-				autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
+            /* Done moving around, fire the weapon */
+            snprintf(buffer, LBUF_SIZE, "%d",
+                    temp_weapon_node->weapon_number);
+            mech_fireweapon(autopilot->mynum, mech, buffer);
 
-				/* Reset the AI */
-				auto_disengage(autopilot->mynum, autopilot, "");
-				auto_delcommand(autopilot->mynum, autopilot, "-1");
+            /* Log It */
+            print_autogun_log(autopilot, "Autogun - Fired Weapon #%d "
+                    "at target #%d",
+                    temp_weapon_node->weapon_number,
+                    autopilot->target);
 
-				/* Add in autogun and follow and engage */
-				if(AssignedTarget(autopilot) && autopilot->target != -1) {
-					snprintf(buffer, LBUF_SIZE, "autogun target %d",
-							 autopilot->target);
-				} else {
-					snprintf(buffer, LBUF_SIZE, "autogun on");
-				}
+            /* Ok check to see if weapon was fired if so account for the
+             * heat */
+            if (WpnIsRecycling
+                    (mech, temp_weapon_node->section,
+                     temp_weapon_node->critical)) {
+                accumulate_heat +=
+                    MechWeapons[temp_weapon_node->weapon_db_number].heat;
+            }
 
-				auto_addcommand(autopilot->mynum, autopilot, buffer);
-				snprintf(buffer, LBUF_SIZE, "chasetarget %d",
-						 autopilot->target);
-				auto_addcommand(autopilot->mynum, autopilot, buffer);
-				auto_engage(autopilot->mynum, autopilot, "");
+            /* Ok go to the next weapon */
+            temp_weapon_node = (weapon_node *) 
+                rb_search(autopilot->profile[(int) range],
+                        SEARCH_PREV,
+                        &temp_weapon_node->range_scores[(int) range]);
 
-				/* Log it */
-				print_autogun_log(autopilot, "Autogun Event Finished");
+        }						/* End of cycling through weapons */
 
-				return;
+    }
 
-			} else {
+    /* Log It */
+    print_autogun_log(autopilot, "Autogun - End Weapon Attack Phase");
 
-				/* Update the ticker */
-				autopilot->chasetarg_update_tick++;
+    /* Setup chasetarg 
+     * 
+     * Since chasetarget uses follow but we don't want follow getting
+     * messed up if its following a normal target.  We define our own
+     * follow (basicly its follow but with the command name chasetarget */
 
-				/* Check to see if we need to turn to face the guy by
-				 * generating our target hex and seeing if we are in that
-				 * hex then face the bad guy */
-				if((target = getMech(autopilot->target)) &&
-				   (!Destroyed(target)
-					&& (target->mapindex == mech->mapindex))) {
+    /* Get the first command, if its chasetarget or there is no command
+     * check to see if we need to update chasetarget, otherwise means
+     * AI is doing something else important so don't try to chase
+     * anything */
+#if 0
+    if(ChasingTarget(autopilot)) {
 
-					/* Generate the target hex */
-					/*! \todo {Instead of calcing this all the time, possibly add
-					 * variables to the AI to remember it} */
-					FindXY(MechFX(target), MechFY(target),
-						   MechFacing(target) + autopilot->ofsx,
-						   autopilot->ofsy, &fx, &fy);
+        /* Reset the flag */
+        do_chasetarget = 0;
 
-					RealCoordToMapCoord(&x, &y, fx, fy);
+        /* Get the first command's enum and check it */
+        switch (auto_get_command_enum(autopilot, 1)) {
 
-					/* Make sure the hex is sane */
-					if(x < 0 || y < 0 || x >= map->map_width
-					   || y >= map->map_height) {
+            case GOAL_CHASETARGET:
 
-						/* Bad Target Hex */
+                /* Ok its our command so we can change it */
+                do_chasetarget = 1;
+                break;
 
-						/* Reset the hex to the Target's current hex */
-						x = MechX(target);
-						y = MechY(target);
+            case -1:
 
-					}
+                /* No current commands so we can do our chasetarget */
+                do_chasetarget = 1;
+                break;
 
-					/* Are we in the target hex and is the target not moving */
-					if((MechX(mech) == x) && (MechY(mech) == y)
-					   && (MechSpeed(target) < 0.5)) {
+                /* ALl the other stuff we don't want to mess with */
+            default:
 
-						/* Get his bearing and face him */
-						MapCoordToRealCoord(x, y, &fx, &fy);
+                /* Reset the chase values */
+                autopilot->chase_target = -10;
+                autopilot->chasetarg_update_tick =
+                    AUTOPILOT_CHASETARG_UPDATE_TICK;
+                autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
+                break;
 
-						/* If we're not facing him, turn towards him */
-						if(MechDesiredFacing(mech) !=
-						   FindBearing(MechFX(mech), MechFY(mech), fx, fy)) {
+        }
 
-							snprintf(buffer, LBUF_SIZE, "%d",
-									 FindBearing(MechFX(mech), MechFY(mech),
-												 fx, fy));
-							mech_heading(autopilot->mynum, mech, buffer);
+        /* Check the flag */
+        if(do_chasetarget) {
 
-						}
-						/* Turn towards him */
-					}
-					/* Is he moving and are we in target hex */
-				}
-				/* Do we need to turn towards him */
-			}					/* Do we need to update */
+            /* Ok lets chase the guy */
 
-		}
-		/* Do we run chasetarget */
-	}
+            /* First see if we need to update */
+            if((autopilot->target != autopilot->chase_target) ||
+                    (autopilot->chasetarg_update_tick >=
+                     AUTOPILOT_CHASETARG_UPDATE_TICK)) {
 
-	/* Is chasetarget on */
-	/* Make sure multiple instances of autogun aren't running */
+                /* Tell the AI to follow its target */
+                /* Basicly remove all the commands, add in
+                 * autogun and follow and engage */
 
-	/* Log it */
-	print_autogun_log(autopilot, "Autogun Event Finished");
+                /* Let the AI know we chasing this guy */
+                autopilot->chase_target = autopilot->target;
 
-	/* The End */
+                /* Reset the tickers */
+                autopilot->chasetarg_update_tick = 0;
+                autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
+
+                /* Reset the AI */
+                auto_disengage(autopilot->mynum, autopilot, "");
+                auto_delcommand(autopilot->mynum, autopilot, "-1");
+
+                /* Add in autogun and follow and engage */
+                if(AssignedTarget(autopilot) && autopilot->target != -1) {
+                    snprintf(buffer, LBUF_SIZE, "autogun target %d",
+                            autopilot->target);
+                } else {
+                    snprintf(buffer, LBUF_SIZE, "autogun on");
+                }
+
+                auto_addcommand(autopilot->mynum, autopilot, buffer);
+                snprintf(buffer, LBUF_SIZE, "chasetarget %d",
+                        autopilot->target);
+                auto_addcommand(autopilot->mynum, autopilot, buffer);
+                auto_engage(autopilot->mynum, autopilot, "");
+
+                /* Log it */
+                print_autogun_log(autopilot, "Autogun Event Finished");
+
+                return;
+
+            } else {
+
+                /* Update the ticker */
+                autopilot->chasetarg_update_tick++;
+
+                /* Check to see if we need to turn to face the guy by
+                 * generating our target hex and seeing if we are in that
+                 * hex then face the bad guy */
+                if((target = getMech(autopilot->target)) &&
+                        (!Destroyed(target)
+                         && (target->mapindex == mech->mapindex))) {
+
+                    /* Generate the target hex */
+                    /*! \todo {Instead of calcing this all the time, possibly add
+                     * variables to the AI to remember it} */
+                    FindXY(MechFX(target), MechFY(target),
+                            MechFacing(target) + autopilot->ofsx,
+                            autopilot->ofsy, &fx, &fy);
+
+                    RealCoordToMapCoord(&x, &y, fx, fy);
+
+                    /* Make sure the hex is sane */
+                    if(x < 0 || y < 0 || x >= map->map_width
+                            || y >= map->map_height) {
+
+                        /* Bad Target Hex */
+
+                        /* Reset the hex to the Target's current hex */
+                        x = MechX(target);
+                        y = MechY(target);
+
+                    }
+
+                    /* Are we in the target hex and is the target not moving */
+                    if((MechX(mech) == x) && (MechY(mech) == y)
+                            && (MechSpeed(target) < 0.5)) {
+
+                        /* Get his bearing and face him */
+                        MapCoordToRealCoord(x, y, &fx, &fy);
+
+                        /* If we're not facing him, turn towards him */
+                        if(MechDesiredFacing(mech) !=
+                                FindBearing(MechFX(mech), MechFY(mech), fx, fy)) {
+
+                            snprintf(buffer, LBUF_SIZE, "%d",
+                                    FindBearing(MechFX(mech), MechFY(mech),
+                                        fx, fy));
+                            mech_heading(autopilot->mynum, mech, buffer);
+
+                        }
+                        /* Turn towards him */
+                    }
+                    /* Is he moving and are we in target hex */
+                }
+                /* Do we need to turn towards him */
+            }					/* Do we need to update */
+
+        }
+        /* Do we run chasetarget */
+    }
+
+    /* Is chasetarget on */
+    /* Make sure multiple instances of autogun aren't running */
+#endif
+    /* Log it */
+    print_autogun_log(autopilot, "Autogun Event Finished");
+
+    /* The End */
 }

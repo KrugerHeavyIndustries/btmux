@@ -1031,20 +1031,24 @@ void auto_heartbeat(AUTO *autopilot) {
         AutoSetup(autopilot);
     }
 
-    /* Weaplist */
-    /*
-    if (autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
-        auto_update_profile_event(autopilot);
-    */
+    /* Update Weapon Profile if needbe */
+    if (autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0) {
+        auto_update_profile(autopilot, mech);
+    }
 
     /* Ok now the fun stuff */
 
     /* What do we need to do */
 
     /* Check current commands */
-    /* Target */
+
     /* Sensor */
-    /* Shoot */
+
+    if (IsAutoGunning(autopilot)) {
+        /* Target */
+        /* Shoot */
+    }
+
     /* Move */
     /* Anything else */
 }
