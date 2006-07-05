@@ -28,41 +28,42 @@
 #define AUTOPILOT_GUNNING           4   /* Should the AI be shooting stuff */
 #define AUTOPILOT_ASSIGNED_TARGET   8   /* Are we assigned a target? */
 
-#define IsAutoOn(a)             ((a)->status & AUTOPILOT_ON)
-#define AutoOn(a)               ((a)->status |= AUTOPILOT_ON)
-#define AutoOff(a)              ((a)->status &= ~(AUTOPILOT_ON))
+#define IsAutoOn(a)                 ((a)->status & AUTOPILOT_ON)
+#define AutoOn(a)                   ((a)->status |= AUTOPILOT_ON)
+#define AutoOff(a)                  ((a)->status &= ~(AUTOPILOT_ON))
 
-#define IsAutoSetup(a)          ((a)->status & AUTOPILOT_SETUP)
-#define AutoSetup(a)            ((a)->status & AUTOPILOT_SETUP)
-#define ClearAutoSetup(a)       ((a)->status &= ~(AUTOPILOT_SETUP))
+#define IsAutoSetup(a)              ((a)->status & AUTOPILOT_SETUP)
+#define AutoSetup(a)                ((a)->status & AUTOPILOT_SETUP)
+#define ClearAutoSetup(a)           ((a)->status &= ~(AUTOPILOT_SETUP))
 
-#define IsAutoGunning(a)        ((a)->status & AUTOPILOT_GUNNING)
-#define AutoGunning(a)          ((a)->status |= AUTOPILOT_GUNNING)
-#define StopAutoGunning(a)      ((a)->status &= ~(AUTOPILOT_GUNNING))
+#define IsAutoGunning(a)            ((a)->status & AUTOPILOT_GUNNING)
+#define AutoGunning(a)              ((a)->status |= AUTOPILOT_GUNNING)
+#define StopAutoGunning(a)          ((a)->status &= ~(AUTOPILOT_GUNNING))
 
-#define AutoAssignedTarget(a)   ((a)->status & AUTOPILOT_ASSIGNED_TARGET)
-#define AutoAssignTarget(a)     ((a)->status |= AUTOPILOT_ASSIGNED_TARGET)
-#define AutoUnassignTarget(a)   ((a)->status &= ~(AUTOPILOT_ASSIGNED_TARGET))
-
-/* Stuff for Auto Sensor */
-#define AUTO_SENSOR_TICK                30      /* Every 30 seconds or so */
+#define AutoHasAssignedTarget(a)    ((a)->status & AUTOPILOT_ASSIGNED_TARGET)
+#define AutoAssignTarget(a)         ((a)->status |= AUTOPILOT_ASSIGNED_TARGET)
+#define AutoUnassignTarget(a)       ((a)->status &= ~(AUTOPILOT_ASSIGNED_TARGET))
 
 /* Stuff specifically for auto_gun and auto_select_target */
-#define AUTO_PROFILE_TICK               180     /* How often to update the weapon profile 
-                                                   of the AI */
-#define AUTO_PROFILE_MAX_SIZE           30      /* Size of the profile array */
+#define AUTO_PROFILE_TICK           180     /* How often to update the weapon profile 
+                                               of the AI */
+#define AUTO_PROFILE_MAX_SIZE       30      /* Size of the profile array - Range */
 
-#define AUTO_GUN_MAX_RANGE              30      /* Max range to look for targets */
+#define AUTO_GUN_MAX_RANGE          30      /* Max range to look for targets */
+#define AUTO_GUN_MAX_HEAT           6.0     /* Last heat we let heat go to */
+#define AUTO_GUN_PHYSICAL_RANGE_MIN 3.0     /* Min range at which to physically attack 
+                                               other targets if our main target is beyond
+                                               this distance */
+
+/* Old stuff delete it */
+
+/* Stuff for Auto Sensor */
+#define AUTO_SENSOR_TICK            30      /* Every 30 seconds or so */
+
 #define AUTO_GUN_TICK                   1       /* Every second */
-#define AUTO_GUN_MAX_HEAT               6.0     /* Last heat we let heat go to */
 #define AUTO_GUN_MAX_TARGETS            100     /* Don't really use this one */
 #define AUTO_GUN_UPDATE_TICK            30      /* When to look for a new target */
 #define AUTO_GUN_IDLE_TICK              10      /* How often to call autogun when in idle mode */
-#define AUTO_GUN_PHYSICAL_RANGE_MIN     3.0     /* Min range at which to physically attack 
-                                                   other targets if our main target is beyond
-                                                   this distance */
-
-/* Old stuff delete it */
 
 #define AUTOPILOT_MEMORY        100     /* Number of command slots available to AI */
 #define AUTOPILOT_MAX_ARGS      5       /* Max number of arguments for a given AI Command
@@ -259,9 +260,8 @@ typedef struct {
     dbref target;                   /* The AI's current target */
     int target_score;               /* Current score of the AI's target */
     int target_threshold;           /* Threshold at which to change to another target */
-    int target_update_tick;         /* What autogun tick we currently at and should we update */
 
-    MECH *mymech;                   /* The AI's unit */
+    MECH *mymech;                   /* The AI's unit */ /* Delete this */
     unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
     int ofsx, ofsy;                 /* ? */
 

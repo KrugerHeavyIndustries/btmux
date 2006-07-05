@@ -386,7 +386,6 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 			/* Reset the AI parameters */
 			autopilot->target = -1;
 			autopilot->target_score = 0;
-			autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
 
 			/* Check if assigned target flag on */
 			if(AssignedTarget(autopilot)) {
@@ -405,9 +404,8 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 		} else if(strcmp(args[0], "off") == 0) {
 
 			/* Reset the target */
-			autopilot->target = -2;
+			autopilot->target = -1;
 			autopilot->target_score = 0;
-			autopilot->target_update_tick = 0;
 
 			/* Check if Assigned Target Flag on */
 			if(AssignedTarget(autopilot)) {
@@ -468,7 +466,6 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 			/* Ok valid unit so lets lock it and setup parameters */
 			autopilot->target = target_dbref;
 			autopilot->target_score = 0;
-			autopilot->target_update_tick = 0;
 
 			/* Set the Assigned Flag */
 			if(!AssignedTarget(autopilot)) {

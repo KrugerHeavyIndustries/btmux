@@ -148,7 +148,6 @@ void auto_radio_command_autogun(AUTO * autopilot, MECH * mech,
 
 		autopilot->target = -1;
 		autopilot->target_score = 0;
-		autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
 
 		/* Reset the Assigned target flag */
 		if(AssignedTarget(autopilot)) {
@@ -166,9 +165,7 @@ void auto_radio_command_autogun(AUTO * autopilot, MECH * mech,
 	} else if(strcmp(args[1], "off") == 0) {
 
 		/* Reset the AI */
-		autopilot->target = -2;
 		autopilot->target_score = 0;
-		autopilot->target_update_tick = 0;
 
 		/* Reset this flag since we don't want to be shooting anything */
 		if(AssignedTarget(autopilot)) {
@@ -902,7 +899,6 @@ void auto_radio_command_target(AUTO * autopilot, MECH * mech,
 		/* Basicly doing the same as 'autogun on' */
 		autopilot->target = -1;
 		autopilot->target_score = 0;
-		autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
 
 		if(AssignedTarget(autopilot)) {
 			UnassignTarget(autopilot);
@@ -928,7 +924,6 @@ void auto_radio_command_target(AUTO * autopilot, MECH * mech,
 
 	autopilot->target = targetref;
 	autopilot->target_score = 0;
-	autopilot->target_update_tick = 0;
 
 	/* Let the AI know its an assigned target */
 	if(!AssignedTarget(autopilot)) {

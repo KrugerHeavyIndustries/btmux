@@ -25,19 +25,11 @@
  * more aware of its terrain } */
 
 #include "mech.h"
-#include "mech.events.h"
 #include "autopilot.h"
-#include "failures.h"
 #include "mech.sensor.h"
-#include "p.autogun.h"
-#include "p.bsuit.h"
-#include "p.glue.h"
-#include "p.mech.sensor.h"
 #include "p.mech.utils.h"
 #include "p.mech.physical.h"
 #include "p.mech.combat.h"
-#include "p.mech.advanced.h"
-#include "p.mech.bth.h"
 
 /* Function to determine if there are any slites affecting the AI */
 int SearchLightInRange(MECH *mech, MAP *map)
@@ -100,12 +92,8 @@ int SearchLightInRange(MECH *mech, MAP *map)
 }
 
 /* Function to determine if the AI should use V or L sensor */
-int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
+int PrefVisSens(MECH *mech, MAP *map, int slite, MECH *target)
 {
-
-    /* No map or mech so use default till we get put somewhere */
-    if (!mech || !map)
-        return SENSOR_VIS;
 
     /* Ok the AI is lit or using slite so use V */
     if (MechStatus(mech) & SLITE_ON || MechCritStatus(mech) & SLITE_LIT)
@@ -130,7 +118,7 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
 /*! \todo {Improve this so it knows more about the terrain} */
 void auto_sensor(AUTO *autopilot, MECH *mech, MAP *map)
 {
-    MECH *target = NULL;
+    MECH *target;
     char buf[16];
     int wanted_s[2];
     int rvis;
@@ -140,7 +128,6 @@ void auto_sensor(AUTO *autopilot, MECH *mech, MAP *map)
 
     /* Mech isn't started */
     if (!Started(mech)) {
-        Zombify(autopilot);
         return;
     }
 
@@ -328,8 +315,7 @@ void auto_destroy_weaplist(AUTO * autopilot)
 
         while (dllist_size(autopilot->weaplist)) {
             temp_weapon_node =
-                (weapon_node *) dllist_remove_node_at_pos(autopilot->weaplist,
-                                                          1);
+                (weapon_node *) dllist_remove_node_at_pos(autopilot->weaplist, 1);
             auto_destroy_weapon_node(temp_weapon_node);
         }
 
@@ -638,8 +624,7 @@ void auto_update_profile(AUTO *autopilot, MECH *mech) {
  * Function to calculate a score based on a target and
  * its range to the AI
  */
-int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
-        MAP *map)
+int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target, MAP *map)
 {
 
     int target_score;
@@ -796,16 +781,21 @@ int auto_calc_target_score(AUTO *autopilot, MECH *mech, MECH *target,
 void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
 
     MECH *target;
-    rbtree targets;			        /* all the targets we're looking at */
-    target_node *temp_target_node;	/* temp target node struct */
+    rbtree targets;                 /* all the targets we're looking at */
+    target_node *temp_target_node;  /* temp target node struct */
 
-    char buffer[LBUF_SIZE];		    /* General use buffer */
+    char buffer[LBUF_SIZE];         /* General use buffer */
 
-    int target_score;			    /* variable to store temp score */
-    int threshold_score;		    /* The score to beat to switch targets */
+    int target_score;               /* variable to store temp score */
+    int threshold_score;            /* The score to beat to switch targets */
     int i, j;
 
-    float range;				    /* General variable for range */
+    float range;                    /* General variable for range */
+
+    /* No sense hunting for a contact if we're shutdown */
+    if (!Started(mech)) {
+        return;
+    }
 
     /* First check to make sure we have a valid current target */
     if (autopilot->target > -1) {
@@ -832,7 +822,7 @@ void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
                     MechFX(target), MechFY(target));
 
             if ((range >= (float) AUTO_GUN_MAX_RANGE) &&
-                    !AssignedTarget(autopilot)) {
+                    !AutoHasAssignedTarget(autopilot)) {
 
                 /* Target is to far away */
                 autopilot->target = -1;
@@ -845,26 +835,21 @@ void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
     }
 
     /* Were we given a target and its no longer there? */
-    if (AssignedTarget(autopilot) && autopilot->target == -1) {
+    if (AutoHasAssignedTarget(autopilot) && autopilot->target == -1) {
 
         /* Ok we had an assigned target but its gone now */
-        UnassignTarget(autopilot);
+        AutoUnassignTarget(autopilot);
 
         /*! \todo {Possibly add a radio message saying target destroyed} */
     }
 
     /* Do we need to look for a new target */
-    if (autopilot->target == -1 ||
-            (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
-             !AssignedTarget(autopilot))) {
+    if (!AutoHasAssignedTarget(autopilot)) {
 
         /* Ok looking for a new target */
 
         /* Log It */
         print_autogun_log(autopilot, "Autogun - Looking for new target");
-
-        /* Reset the update ticker */
-        autopilot->target_update_tick = 0;
 
         /* Setup the rbtree */
         targets = rb_init(&auto_generic_compare, NULL);
@@ -927,90 +912,61 @@ void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
 
         } /* End of for loop */
 
-        /* Check to see if we couldn't find ANY targets within range,
-         * if not, cycle autogun and set the update tick to 20, so we
-         * check again in 10 seconds */
-        if (!(rb_size(targets) > 0)) {
+        /* Check if any targets in the area - get the best one and use that */
+        if (rb_size(targets) > 0) {
 
-            /* Have the AI look for a new target 10 seconds from now */
-            /*! \todo {Possibly change this since this gives an attacker who
-             * appears somehow very quickly 10 seconds to hose the AI} */
-            autopilot->target = -1;
-            autopilot->target_score = 0;
-            autopilot->target_update_tick = 0;
-
-            /* Don't need the target list any more so lets destroy it */
-            rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
-            rb_destroy(targets);
+            /* Best target */
+            temp_target_node =
+                (target_node *) rb_search(targets, SEARCH_LAST, NULL);
 
             /* Log It */
-            print_autogun_log(autopilot, "Autogun in idle mode");
-            print_autogun_log(autopilot, "Autogun Event Finished");
-            return;
-        }
+            print_autogun_log(autopilot,
+                    "Autogun - Best target #%d with score %d",
+                    temp_target_node->target_dbref,
+                    temp_target_node->target_score);
+            print_autogun_log(autopilot,
+                    "Autogun - Current target #%d with score %d",
+                    autopilot->target, autopilot->target_score);
 
-        /* Now if we have a current target, compare it to best target from
-         * the new list.  If better then threshold, lock new target, else
-         * stay on target */
+            /* Now choose between current target and new possible target */
 
-        /* Best target */
-        temp_target_node =
-            (target_node *) rb_search(targets, SEARCH_LAST, NULL);
+            /* Calc the threshold score to beat */
+            threshold_score =
+                ((100.0 + (float) autopilot->target_threshold) / 100.0) *
+                autopilot->target_score;
 
-        /* Log It */
-        print_autogun_log(autopilot,
-                "Autogun - Best target #%d with score %d",
-                temp_target_node->target_dbref,
-                temp_target_node->target_score);
-        print_autogun_log(autopilot,
-                "Autogun - Current target #%d with score %d",
-                autopilot->target, autopilot->target_score);
+            if (temp_target_node->target_score > threshold_score) {
 
-        if (autopilot->target > -1 && autopilot->target_score > 0) {
+                /* Change targets */
+                autopilot->target = temp_target_node->target_dbref;
+                autopilot->target_score = temp_target_node->target_score;
 
-            /* Check to see if its our current target */
-            if (autopilot->target != temp_target_node->target_dbref) {
+                print_autogun_log(autopilot, "Switching Target to #%d",
+                        autopilot->target);
 
-                /* Calc the threshold score to beat */
-                threshold_score =
-                    ((100.0 + (float) autopilot->target_threshold) / 100.0) *
-                    autopilot->target_score;
+            } else {
 
-                if (temp_target_node->target_score > threshold_score) {
-
-                    /* Change targets */
-                    autopilot->target = temp_target_node->target_dbref;
-                    autopilot->target_score = temp_target_node->target_score;
-
-                    print_autogun_log(autopilot, "Switching Target to #%d",
-                            autopilot->target);
-
-                }
-
-                /* Else: Don't switch targets */
+                print_autogun_log(autopilot, "Staying with Target #%d",
+                        autopilot->target);
 
             }
 
-            /* Else: Don't need to swtich targets */
-
         } else {
 
-            /* Don't have a good current target so lock this one */
-            autopilot->target = temp_target_node->target_dbref;
-            autopilot->target_score = temp_target_node->target_score;
+            /* No targets - reset values and try again later */
+            autopilot->target = -1;
+            autopilot->target_score = 0;
 
-        }						/* End of choosing new target */
+            /* Log It */
+            print_autogun_log(autopilot, "Autogun - No targets found");
+            print_autogun_log(autopilot, "Autogun Event Finished");
+        }
 
         /* Don't need the target list any more so lets destroy it */
         rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
         rb_destroy(targets);
 
-    } else {
-
-        /* Ok didn't need to look for a new target so update the ticker */
-        autopilot->target_update_tick++;
-
-    }
+    } /* End of selecting a new target */
 
 }
 
@@ -1022,306 +978,65 @@ void auto_select_target(AUTO *autopilot, MECH *mech, MAP *map) {
  */
 void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
 {
-    MECH *target;				    /* Our current target */
-    MECH *physical_target;		    /* Our physical target */
-    rbtree targets;			        /* all the targets we're looking at */
-    target_node *temp_target_node;	/* temp target node struct */
-    weapon_node *temp_weapon_node;	/* temp weapon node struct */
+    MECH *target;                   /* Our current target */
+    MECH *physical_target;          /* Our physical target */
+    weapon_node *temp_weapon_node;  /* temp weapon node struct */
 
-    char buffer[LBUF_SIZE];		    /* General use buffer */
-
-    int target_score;			    /* variable to store temp score */
-    int threshold_score;		    /* The score to beat to switch targets */
+    char buffer[LBUF_SIZE];         /* General use buffer */
 
     /* Stuff for Physical attacks */
-    int elevation_diff;			    /* Whats the elevation difference between
+    int elevation_diff;             /* Whats the elevation difference between
                                        the target and the mech */
-    int what_arc;				    /* What arc is the target in */
-    int new_arc;				    /* What arc now that we've twisted
+    int what_arc;                   /* What arc is the target in */
+    int new_arc;                    /* What arc now that we've twisted
                                        our torso */
-    int relative_bearing;		    /* Int to figure out which part of
+    int relative_bearing;           /* Int to figure out which part of
                                        the rear arc hes in */
-    int is_section_destroyed[4];	/* Array of the different possible
+    int is_section_destroyed[4];    /* Array of the different possible
                                        sections that could be destroyed */
-    int section_hasbusyweap[4];	    /* Array to show if a section has a
+    int section_hasbusyweap[4];     /* Array to show if a section has a
                                        cycling weapon in it */
-    int rleg_bth, lleg_bth;		    /* To help us decide which leg to kick
+    int rleg_bth, lleg_bth;         /* To help us decide which leg to kick
                                        with */
-    int is_rarm_ready, is_larm_ready;	/* To help us decide which arms to
+    int is_rarm_ready, is_larm_ready;   /* To help us decide which arms to
                                            punch with */
 
     /* Stuff for Weapon Attacks */
-    int accumulate_heat;		    /* How much heat we're building up */
+    int accumulate_heat;            /* How much heat we're building up */
     int i, j;
 
-    float range;				    /* General variable for range */
-    float maxspeed;				    /* So we know how fast our guy is going */
-
-    /*! \todo {Need to change this incase the AI shuts down while fighting} */
-    if (!Started(mech)) {
-        Zombify(autopilot);
-        return;
-    }
-
-    /* Log it */
-    print_autogun_log(autopilot, "Autogun Event Started");
+    float range;                    /* General variable for range */
+    float maxspeed;                 /* So we know how fast our guy is going */
 
     /* check for a gun profile. */
     if (autopilot->weaplist == NULL) {
+        print_autogun_log(autopilot, "No weaplist profile found");
         print_autogun_log(autopilot, "Autogun Event Finished");
+        return;
+    }
+
+    /*! \todo {Need to change this incase the AI shuts down while fighting} */
+    if (!Started(mech)) {
         return;
     }
 
     /* OODing so don't shoot any guns */
     if (OODing(mech)) {
         /* Log It */
+        print_autogun_log(autopilot, "OODing!");
         print_autogun_log(autopilot, "Autogun Event Finished");
         return;
     }
 
-    /* First check to make sure we have a valid current target */
-    if (autopilot->target > -1) {
-
-        if (!(target = getMech(autopilot->target))) {
-
-            /* ok its not a valid target reset */
-            autopilot->target = -1;
-            autopilot->target_score = 0;
-
-        } else if (Destroyed(target) || (target->mapindex != mech->mapindex)) {
-
-            /* Target is either dead or not on the map anymore */
-            autopilot->target = -1;
-            autopilot->target_score = 0;
-
-        } else {
-
-            /* Will keep on an assigned target even if its to far
-             * away */
-
-            /* Get range from mech to current target */
-            range = FindHexRange(MechFX(mech), MechFY(mech),
-                    MechFX(target), MechFY(target));
-
-            if ((range >= (float) AUTO_GUN_MAX_RANGE) &&
-                    !AssignedTarget(autopilot)) {
-
-                /* Target is to far away */
-                autopilot->target = -1;
-                autopilot->target_score = 0;
-
-            }
-
-        }
-
-    }
-
-    /* Were we given a target and its no longer there? */
-    if (AssignedTarget(autopilot) && autopilot->target == -1) {
-
-        /* Ok we had an assigned target but its gone now */
-        UnassignTarget(autopilot);
-
-        /*! \todo {Possibly add a radio message saying target destroyed} */
-    }
-
-    /* Do we need to look for a new target */
-    if (autopilot->target == -1 ||
-            (autopilot->target_update_tick >= AUTO_GUN_UPDATE_TICK &&
-             !AssignedTarget(autopilot))) {
-
-        /* Ok looking for a new target */
-
-        /* Log It */
-        print_autogun_log(autopilot, "Autogun - Looking for new target");
-
-        /* Reset the update ticker */
-        autopilot->target_update_tick = 0;
-
-        /* Setup the rbtree */
-        targets = rb_init(&auto_generic_compare, NULL);
-
-        /* Cycle through possible targets and pick something to shoot */
-        for (i = 0; i < map->first_free; i++) {
-
-            /* Make sure its on the right map */
-            if (i != mech->mapnumber && (j = map->mechsOnMap[i]) > 0) {
-
-                /* Is it a valid unit ? */
-                if (!(target = getMech(j)))
-                    continue;
-
-                /* Score the target */
-                target_score =
-                    auto_calc_target_score(autopilot, mech, target, map);
-
-                /* Log It */
-                print_autogun_log(autopilot,
-                        "Autogun - Possible target #%d with score %d",
-                        target->mynum, target_score);
-
-                /* If target has a score add it to rbtree */
-                if (target_score > 0) {
-
-                    /* Create target node and fill with proper values */
-                    temp_target_node = auto_create_target_node(target_score,
-                            target->mynum);
-
-                    /*! \todo {should add check incase it returns a NULL struct} */
-
-                    /* Add it to list but first make sure it doesn't overlap
-                     * with a current score */
-                    while (1) {
-
-                        if (rb_exists(targets, &temp_target_node->target_score)) {
-                            temp_target_node->target_score++;
-                        } else {
-                            break;
-                        }
-
-                    }
-
-                    /* Add it */
-                    rb_insert(targets, &temp_target_node->target_score,
-                            temp_target_node);
-
-                }
-
-                /* Check to see if its our current target */
-                if (autopilot->target == target->mynum) {
-
-                    /* Save the new score */
-                    autopilot->target_score = target_score;
-
-                }
-
-            }
-
-        } /* End of for loop */
-
-        /* Check to see if we couldn't find ANY targets within range,
-         * if not, cycle autogun and set the update tick to 20, so we
-         * check again in 10 seconds */
-        if (!(rb_size(targets) > 0)) {
-
-            /* Have the AI look for a new target 10 seconds from now */
-            /*! \todo {Possibly change this since this gives an attacker who
-             * appears somehow very quickly 10 seconds to hose the AI} */
-            autopilot->target = -1;
-            autopilot->target_score = 0;
-            autopilot->target_update_tick = 0;
-
-            /* Don't need the target list any more so lets destroy it */
-            rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
-            rb_destroy(targets);
-
-            /* Log It */
-            print_autogun_log(autopilot, "Autogun in idle mode");
-            print_autogun_log(autopilot, "Autogun Event Finished");
-            return;
-        }
-
-        /* Now if we have a current target, compare it to best target from
-         * the new list.  If better then threshold, lock new target, else
-         * stay on target */
-
-        /* Best target */
-        temp_target_node =
-            (target_node *) rb_search(targets, SEARCH_LAST, NULL);
-
-        /* Log It */
-        print_autogun_log(autopilot,
-                "Autogun - Best target #%d with score %d",
-                temp_target_node->target_dbref,
-                temp_target_node->target_score);
-        print_autogun_log(autopilot,
-                "Autogun - Current target #%d with score %d",
-                autopilot->target, autopilot->target_score);
-
-        if (autopilot->target > -1 && autopilot->target_score > 0) {
-
-            /* Check to see if its our current target */
-            if (autopilot->target != temp_target_node->target_dbref) {
-
-                /* Calc the threshold score to beat */
-                threshold_score =
-                    ((100.0 + (float) autopilot->target_threshold) / 100.0) *
-                    autopilot->target_score;
-
-                if (temp_target_node->target_score > threshold_score) {
-
-                    /* Change targets */
-                    autopilot->target = temp_target_node->target_dbref;
-                    autopilot->target_score = temp_target_node->target_score;
-
-                    print_autogun_log(autopilot, "Switching Target to #%d",
-                            autopilot->target);
-
-                }
-
-                /* Else: Don't switch targets */
-
-            }
-
-            /* Else: Don't need to swtich targets */
-
-        } else {
-
-            /* Don't have a good current target so lock this one */
-            autopilot->target = temp_target_node->target_dbref;
-            autopilot->target_score = temp_target_node->target_score;
-
-        }						/* End of choosing new target */
-
-        /* Don't need the target list any more so lets destroy it */
-        rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
-        rb_destroy(targets);
-
-    } else {
-
-        /* Ok didn't need to look for a new target so update the ticker */
-        autopilot->target_update_tick++;
-
-    }
-
-    /* End of picking a new target */
-
-    /* Log It */
-    print_autogun_log(autopilot, "Autogun - Current target #%d with score %d",
-            autopilot->target, autopilot->target_score);
-
-    /* Setup the current target */
+    /* Get target unit */
     if (!(target = getMech(autopilot->target))) {
 
-        /* There were no valid targets so
-         * rerun autogun */
-
-        /* Reset the AI */
-        autopilot->target = -1;
-        autopilot->target_score = 0;
-
-        /* Log It */
-        print_autogun_log(autopilot, "Autogun - No valid current targets");
-        print_autogun_log(autopilot, "Autogun Event Finished");
+        /* Somehow our target doesn't exist - meaning theres no bad guys
+         * near by */
         return;
-
     }
 
-    /* Check to see if we need to (re)lock our target */
-    if (MechTarget(mech) != autopilot->target) {
-
-        /* Lock Him */
-        snprintf(buffer, LBUF_SIZE, "%c%c", MechID(target)[0],
-                MechID(target)[1]);
-        mech_settarget(autopilot->mynum, mech, buffer);
-
-        /* Log It */
-        print_autogun_log(autopilot, "Autogun - Locking target #%d",
-                autopilot->target);
-
-    }
-
-    /* Update autosensor */
+    /* Add stuff here for weird cases like bsuits swarming what not */
 
     /* Now lets get physical */
 
@@ -1364,6 +1079,7 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
                 if (MechStatus(target) & COMBAT_SAFE)
                     continue;
 
+                /*! \todo {Possibly add something here to let AIs attack teammates...maybe} */ 
                 if (MechTeam(target) == MechTeam(mech))
                     continue;
 
@@ -1422,7 +1138,7 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
                 /* Rotate Left */
                 MechStatus(mech) |= TORSO_LEFT;
 
-            } else if(what_arc & RSIDEARC) {
+            } else if (what_arc & RSIDEARC) {
 
                 /* Rotate Right */
                 MechStatus(mech) |= TORSO_RIGHT;
@@ -1511,7 +1227,7 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
             /* Try and kick but only if we got two legs, one of them
              * doesn't have a cycling weapon and the target is in the
              * front arc */
-            if((!section_hasbusyweap[2] || !section_hasbusyweap[3]) &&
+            if ((!section_hasbusyweap[2] || !section_hasbusyweap[3]) &&
                     !is_section_destroyed[2] && !is_section_destroyed[3] &&
                     (what_arc & FORWARDARC) && !AnyLimbsRecycling(mech) &&
                     (elevation_diff == 0 || elevation_diff == 1)) {
@@ -1772,9 +1488,8 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
         }
 
         /* Get first weapon */
-        temp_weapon_node =
-            (weapon_node *) rb_search(autopilot->profile[(int) range],
-                                      SEARCH_LAST, NULL);
+        temp_weapon_node = (weapon_node *) 
+            rb_search(autopilot->profile[(int) range], SEARCH_LAST, NULL);
 
         while (temp_weapon_node) {
 
@@ -2082,8 +1797,7 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
 
             /* Ok check to see if weapon was fired if so account for the
              * heat */
-            if (WpnIsRecycling
-                    (mech, temp_weapon_node->section,
+            if (WpnIsRecycling(mech, temp_weapon_node->section,
                      temp_weapon_node->critical)) {
                 accumulate_heat +=
                     MechWeapons[temp_weapon_node->weapon_db_number].heat;
@@ -2095,164 +1809,13 @@ void auto_gun(AUTO *autopilot, MECH *mech, MAP *map)
                         SEARCH_PREV,
                         &temp_weapon_node->range_scores[(int) range]);
 
-        }						/* End of cycling through weapons */
+        } /* End of cycling through weapons */
 
     }
 
     /* Log It */
     print_autogun_log(autopilot, "Autogun - End Weapon Attack Phase");
 
-    /* Setup chasetarg 
-     * 
-     * Since chasetarget uses follow but we don't want follow getting
-     * messed up if its following a normal target.  We define our own
-     * follow (basicly its follow but with the command name chasetarget */
-
-    /* Get the first command, if its chasetarget or there is no command
-     * check to see if we need to update chasetarget, otherwise means
-     * AI is doing something else important so don't try to chase
-     * anything */
-#if 0
-    if(ChasingTarget(autopilot)) {
-
-        /* Reset the flag */
-        do_chasetarget = 0;
-
-        /* Get the first command's enum and check it */
-        switch (auto_get_command_enum(autopilot, 1)) {
-
-            case GOAL_CHASETARGET:
-
-                /* Ok its our command so we can change it */
-                do_chasetarget = 1;
-                break;
-
-            case -1:
-
-                /* No current commands so we can do our chasetarget */
-                do_chasetarget = 1;
-                break;
-
-                /* ALl the other stuff we don't want to mess with */
-            default:
-
-                /* Reset the chase values */
-                autopilot->chase_target = -10;
-                autopilot->chasetarg_update_tick =
-                    AUTOPILOT_CHASETARG_UPDATE_TICK;
-                autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
-                break;
-
-        }
-
-        /* Check the flag */
-        if(do_chasetarget) {
-
-            /* Ok lets chase the guy */
-
-            /* First see if we need to update */
-            if((autopilot->target != autopilot->chase_target) ||
-                    (autopilot->chasetarg_update_tick >=
-                     AUTOPILOT_CHASETARG_UPDATE_TICK)) {
-
-                /* Tell the AI to follow its target */
-                /* Basicly remove all the commands, add in
-                 * autogun and follow and engage */
-
-                /* Let the AI know we chasing this guy */
-                autopilot->chase_target = autopilot->target;
-
-                /* Reset the tickers */
-                autopilot->chasetarg_update_tick = 0;
-                autopilot->follow_update_tick = AUTOPILOT_FOLLOW_UPDATE_TICK;
-
-                /* Reset the AI */
-                auto_disengage(autopilot->mynum, autopilot, "");
-                auto_delcommand(autopilot->mynum, autopilot, "-1");
-
-                /* Add in autogun and follow and engage */
-                if(AssignedTarget(autopilot) && autopilot->target != -1) {
-                    snprintf(buffer, LBUF_SIZE, "autogun target %d",
-                            autopilot->target);
-                } else {
-                    snprintf(buffer, LBUF_SIZE, "autogun on");
-                }
-
-                auto_addcommand(autopilot->mynum, autopilot, buffer);
-                snprintf(buffer, LBUF_SIZE, "chasetarget %d",
-                        autopilot->target);
-                auto_addcommand(autopilot->mynum, autopilot, buffer);
-                auto_engage(autopilot->mynum, autopilot, "");
-
-                /* Log it */
-                print_autogun_log(autopilot, "Autogun Event Finished");
-
-                return;
-
-            } else {
-
-                /* Update the ticker */
-                autopilot->chasetarg_update_tick++;
-
-                /* Check to see if we need to turn to face the guy by
-                 * generating our target hex and seeing if we are in that
-                 * hex then face the bad guy */
-                if((target = getMech(autopilot->target)) &&
-                        (!Destroyed(target)
-                         && (target->mapindex == mech->mapindex))) {
-
-                    /* Generate the target hex */
-                    /*! \todo {Instead of calcing this all the time, possibly add
-                     * variables to the AI to remember it} */
-                    FindXY(MechFX(target), MechFY(target),
-                            MechFacing(target) + autopilot->ofsx,
-                            autopilot->ofsy, &fx, &fy);
-
-                    RealCoordToMapCoord(&x, &y, fx, fy);
-
-                    /* Make sure the hex is sane */
-                    if(x < 0 || y < 0 || x >= map->map_width
-                            || y >= map->map_height) {
-
-                        /* Bad Target Hex */
-
-                        /* Reset the hex to the Target's current hex */
-                        x = MechX(target);
-                        y = MechY(target);
-
-                    }
-
-                    /* Are we in the target hex and is the target not moving */
-                    if((MechX(mech) == x) && (MechY(mech) == y)
-                            && (MechSpeed(target) < 0.5)) {
-
-                        /* Get his bearing and face him */
-                        MapCoordToRealCoord(x, y, &fx, &fy);
-
-                        /* If we're not facing him, turn towards him */
-                        if(MechDesiredFacing(mech) !=
-                                FindBearing(MechFX(mech), MechFY(mech), fx, fy)) {
-
-                            snprintf(buffer, LBUF_SIZE, "%d",
-                                    FindBearing(MechFX(mech), MechFY(mech),
-                                        fx, fy));
-                            mech_heading(autopilot->mynum, mech, buffer);
-
-                        }
-                        /* Turn towards him */
-                    }
-                    /* Is he moving and are we in target hex */
-                }
-                /* Do we need to turn towards him */
-            }					/* Do we need to update */
-
-        }
-        /* Do we run chasetarget */
-    }
-
-    /* Is chasetarget on */
-    /* Make sure multiple instances of autogun aren't running */
-#endif
     /* Log it */
     print_autogun_log(autopilot, "Autogun Event Finished");
 

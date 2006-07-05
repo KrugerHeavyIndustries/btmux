@@ -607,10 +607,9 @@ void auto_init(AUTO * autopilot, MECH * mech)
 	autopilot->flags = 0;
 
 	/* Target Stuff */
-	autopilot->target = -2;
+	autopilot->target = -1;
 	autopilot->target_score = 0;
 	autopilot->target_threshold = 50;
-	autopilot->target_update_tick = AUTO_GUN_UPDATE_TICK;
 
 	/* Follow & Chase target stuff */
 	autopilot->chase_target = -10;
