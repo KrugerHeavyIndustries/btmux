@@ -240,7 +240,7 @@ void newfreemech(dbref key, void **data, int selector)
 {
 	MECH *new = *data;
 	MAP *map;
-	AUTO *a;
+	AUTO *autopilot;
 	int i;
         command_node *temp;
 		
@@ -258,47 +258,15 @@ void newfreemech(dbref key, void **data, int selector)
 	case SPECIAL_FREE:
 		if(new->mapindex != -1 && (map = getMap(new->mapindex)))
 			remove_mech_from_map(map, new);
-		if(MechAuto(new) > 0 ) {
-			AUTO *a = (AUTO *) FindObjectsData(MechAuto(new));
-			if (a) {
-				auto_stop_pilot(a);
-				 /* Go through the list and remove any leftover nodes */
-                while (dllist_size(a->commands)) {
 
-                        /* Remove the first node on the list and get the data
-                         * from it */
-                        temp = (command_node *) dllist_remove(a->commands,
-                                                                                                  dllist_head(a->
-                                                                                                                          commands));
+		if (MechAuto(new) > 0 ) {
+            autopilot = (AUTO *) FindObjectsData(MechAuto(new));
 
-                        /* Destroy the command node */
-                        auto_destroy_command_node(temp);
+            if (autopilot && IsAuto(autopilot->mynum)) {
+                AutoOff(autopilot); 
+            }
 
-                }
-
-                /* Destroy the list */
-                dllist_destroy_list(a->commands);
-                a->commands = NULL;
-
-                /* Destroy any astar path list thats on the AI */
-                auto_destroy_astar_path(a);
-
-                /* Destroy profile array */
-                for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
-                        if(a->profile[i]) {
-                                rb_destroy(a->profile[i]);
-                        }
-                        a->profile[i] = NULL;
-                }
-
-                /* Destroy weaponlist */
-                auto_destroy_weaplist(a);
-
-				a->mymechnum = -1;
-			}
-			MechAuto(new) = -1;
 		}
-					
 		
 	}
 }
