@@ -1303,6 +1303,7 @@ int recycle_weaponry(MECH *mech);
 #include "p.glue.hcode.h"
 #include "map.h"
 #include "map.coding.h"
+#include "autopilot.h"
 #include "glue.h"
 #include "p.glue.h"
 #include "mech.notify.h"

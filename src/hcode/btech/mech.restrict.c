@@ -260,10 +260,10 @@ void newfreemech(dbref key, void **data, int selector)
 			remove_mech_from_map(map, new);
 
 		if (MechAuto(new) > 0 ) {
-            autopilot = (AUTO *) FindObjectsData(MechAuto(new));
 
-            if (autopilot && IsAuto(autopilot->mynum)) {
-                AutoOff(autopilot); 
+            if ((autopilot = getAuto(MechAuto(new)))) {
+                AutoOff(autopilot);
+                autopilot->mymechnum = -1;
             }
 
 		}

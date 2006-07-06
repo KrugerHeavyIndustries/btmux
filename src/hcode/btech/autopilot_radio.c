@@ -46,9 +46,6 @@ if (a->target >= -1) { \
     auto_addcommand(a->mynum, autopilot, buffer); \
 } \
 
-#define BACMD(name) char * name (AUTO *autopilot, MECH *mech, char **args, int argc, int chn)
-#define ACMD(name) static BACMD(name)
-
 /* 
  * Master list of AI - radio commands
  */
@@ -62,58 +59,60 @@ struct {
     {
 #if 0
         "auto", "autogun", 1, 0, auto_radio_command_autogun}, {
-            "auto", "autogun", 2, 0, auto_radio_command_autogun}, {
-                "att", "attackleg", 1, 0, auto_attackleg}, {
-                    "chanf", "chanfreq", 2, 0, auto_setchanfreq}, {
-                        "chanm", "chanmode", 2, 0, auto_setchanmode}, {
-                            "chase", "chasetarg", 1, 0, auto_radio_command_chasetarg}, {
-                                "cm", "cmode", 2, 0, auto_cmode}, {
-                                    "dfo", "dfollow", 1, 0, auto_radio_command_dfollow}, {
-                                        "dgo", "dgoto", 2, 0, auto_radio_command_dgoto}, {
-                                            "dr", "drally", 2, 0, auto_drally}, {
-                                                "dr", "drally", 3, 0, auto_drally}, {
-                                                    "drop", "dropoff", 0, 0, auto_radio_command_dropoff}, {
-                                                        "emb", "embark", 1, 0, auto_radio_command_embark}, {
-                                                            "en", "enterbase", 0, 0, auto_radio_command_enterbase}, {
-                                                                "en", "enterbase", 1, 0, auto_radio_command_enterbase}, {
-                                                                    "en", "enterbay", 0, 0, auto_enterbay}, {
-                                                                        "en", "enterbay", 1, 0, auto_enterbay}, {
-                                                                            "fo", "follow", 1, 0, auto_radio_command_follow}, {
-                                                                                "fr", "freq", 1, 0, auto_freq}, {
-                                                                                    "go", "goto", 2, 0, auto_radio_command_goto}, {
-                                                                                        "he", "heading", 1, 0, auto_radio_command_heading}, {
-                                                                                            "he", "help", 0, 1, auto_radio_command_help}, {
-                                                                                                "hi", "hide", 0, 0, auto_radio_command_hide}, {
-                                                                                                    "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet}, {
-                                                                                                        "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet}, {
-                                                                                                            "le", "leavebase", 1, 0, auto_radio_command_leavebase}, {
-                                                                                                                "nog", "nogun", 0, 0, auto_nogun}, {
-                                                                                                                    "not", "notarget", 0, 0, auto_notarget}, {
-                                                                                                                        "ogo", "ogoto", 2, 0, auto_radio_command_ogoto}, {
-                                                                                                                            "pick", "pickup", 1, 0, auto_radio_command_pickup}, {
-                                                                                                                                "pos", "position", 2, 0, auto_radio_command_position}, {
-                                                                                                                                    "pr", "prone", 0, 0, auto_radio_command_prone}, {
-                                                                                                                                        "ra", "rally", 2, 0, auto_rally}, {
-                                                                                                                                            "ra", "rally", 3, 0, auto_rally}, {
-                                                                                                                                                "re", "report", 0, 1, auto_radio_command_report}, {
-                                                                                                                                                    "reset", "reset", 0, 0, auto_radio_command_reset}, {
-                                                                                                                                                        "roam", "roammode", 1, 0, auto_roammode}, {
-                                                                                                                                                            "se", "sensor", 2, 0, auto_radio_command_sensor}, {
-                                                                                                                                                                "se", "sensor", 0, 0, auto_radio_command_sensor}, {
-                                                                                                                                                                    "sh", "shutdown", 0, 0, auto_radio_command_shutdown}, {
-                                                                                                                                                                        "sp", "speed", 1, 0, auto_radio_command_speed}, {
-                                                                                                                                                                            "st", "stand", 0, 0, auto_radio_command_stand}, {
-                                                                                                                                                                                "st", "startup", 0, 0, auto_radio_command_startup}, {
-                                                                                                                                                                                    "st", "startup", 1, 0, auto_radio_command_startup}, {
-                                                                                                                                                                                        "st", "stop", 0, 0, auto_radio_command_stop}, {
-                                                                                                                                                                                            "sw", "sweight", 2, 1, auto_radio_command_sweight}, {
-                                                                                                                                                                                                "swa", "swarm", 1, 0, auto_swarm}, {
-                                                                                                                                                                                                    "swarmc", "swarmcharge", 1, 0, auto_swarmcharge}, {
-                                                                                                                                                                                                        "swarmm", "swarmmode", 1, 0, auto_swarmmode}, {
-                                                                                                                                                                                                            "ta", "target", 1, 0, auto_radio_command_target}, {
-                                                                                                                                                                                                                "ta", "target", 2, 0, auto_target}, {
+        "auto", "autogun", 2, 0, auto_radio_command_autogun}, {
+        "att", "attackleg", 1, 0, auto_attackleg}, {
+        "chanf", "chanfreq", 2, 0, auto_setchanfreq}, {
+        "chanm", "chanmode", 2, 0, auto_setchanmode}, {
+        "chase", "chasetarg", 1, 0, auto_radio_command_chasetarg}, {
+        "cm", "cmode", 2, 0, auto_cmode}, {
+        "dfo", "dfollow", 1, 0, auto_radio_command_dfollow}, {
+        "dgo", "dgoto", 2, 0, auto_radio_command_dgoto}, {
+        "dr", "drally", 2, 0, auto_drally}, {
+        "dr", "drally", 3, 0, auto_drally}, {
+        "drop", "dropoff", 0, 0, auto_radio_command_dropoff}, {
+        "emb", "embark", 1, 0, auto_radio_command_embark}, {
+        "en", "enterbase", 0, 0, auto_radio_command_enterbase}, {
+        "en", "enterbase", 1, 0, auto_radio_command_enterbase}, {
+        "en", "enterbay", 0, 0, auto_enterbay}, {
+        "en", "enterbay", 1, 0, auto_enterbay}, {
+        "fo", "follow", 1, 0, auto_radio_command_follow}, {
+        "fr", "freq", 1, 0, auto_freq}, {
+        "go", "goto", 2, 0, auto_radio_command_goto}, {
+        "he", "heading", 1, 0, auto_radio_command_heading}, {
+        "he", "help", 0, 1, auto_radio_command_help}, {
+        "hi", "hide", 0, 0, auto_radio_command_hide}, {
+        "jump", "jumpjet", 1, 0, auto_radio_command_jumpjet}, {
+        "jump", "jumpjet", 2, 0, auto_radio_command_jumpjet}, {
+        "le", "leavebase", 1, 0, auto_radio_command_leavebase}, {
+        "nog", "nogun", 0, 0, auto_nogun}, {
+        "not", "notarget", 0, 0, auto_notarget}, {
+        "ogo", "ogoto", 2, 0, auto_radio_command_ogoto}, {
+        "pick", "pickup", 1, 0, auto_radio_command_pickup}, {
+        "pos", "position", 2, 0, auto_radio_command_position}, {
+        "pr", "prone", 0, 0, auto_radio_command_prone}, {
+        "ra", "rally", 2, 0, auto_rally}, {
+        "ra", "rally", 3, 0, auto_rally}, {
 #endif
-                                                                                                                                                                                                                    NULL, NULL, 0, 0, NULL}
+        "re", "report", 0, 1, auto_radio_command_report}, {
+#if 0
+        "reset", "reset", 0, 0, auto_radio_command_reset}, {
+        "roam", "roammode", 1, 0, auto_roammode}, {
+        "se", "sensor", 2, 0, auto_radio_command_sensor}, {
+        "se", "sensor", 0, 0, auto_radio_command_sensor}, {
+        "sh", "shutdown", 0, 0, auto_radio_command_shutdown}, {
+        "sp", "speed", 1, 0, auto_radio_command_speed}, {
+        "st", "stand", 0, 0, auto_radio_command_stand}, {
+        "st", "startup", 0, 0, auto_radio_command_startup}, {
+        "st", "startup", 1, 0, auto_radio_command_startup}, {
+        "st", "stop", 0, 0, auto_radio_command_stop}, {
+        "sw", "sweight", 2, 1, auto_radio_command_sweight}, {
+        "swa", "swarm", 1, 0, auto_swarm}, {
+        "swarmc", "swarmcharge", 1, 0, auto_swarmcharge}, {
+        "swarmm", "swarmmode", 1, 0, auto_swarmmode}, {
+        "ta", "target", 1, 0, auto_radio_command_target}, {
+        "ta", "target", 2, 0, auto_target}, {
+#endif
+        NULL, NULL, 0, 0, NULL}
 };
 
 /*
@@ -1183,8 +1182,8 @@ void auto_reply(MECH * mech, char *buf)
         return;
 
     /* Make sure valid objects */
-    if (!(FindObjectsData(MechAuto(mech))) ||
-            !Good_obj(MechAuto(mech)) || Location(MechAuto(mech)) != mech->mynum) {
+    if (!(getAuto(MechAuto(mech))) || 
+            (Location(MechAuto(mech)) != mech->mynum)) {
         MechAuto(mech) = -1;
         return;
     }
@@ -1196,8 +1195,7 @@ void auto_reply(MECH * mech, char *buf)
         MECHEVENT(mech, EVENT_AUTO_REPLY, auto_reply_event, Number(1, 2),
                 reply);
     } else {
-        SendAI
-            ("Interal AI Error: Attempting to radio reply but unable to copy string");
+        SendAI("Interal AI Error: Attempting to radio reply but unable to copy string");
     }
 
 }
@@ -1205,7 +1203,7 @@ void auto_reply(MECH * mech, char *buf)
 /*
  * Parse an AI radio command
  */
-void auto_parse_command(AUTO * autopilot, MECH * mech, int chn, char *buffer)
+void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
 {
 
     int argc, cmd;
@@ -1217,10 +1215,20 @@ void auto_parse_command(AUTO * autopilot, MECH * mech, int chn, char *buffer)
     int i;
 
     /* Basic checks */
-    if (!autopilot || !mech)
+    if (!autopilot && !IsAuto(autopilot->mynum)) {
+        /* Add error message? */
         return;
-    if (Destroyed(mech))
+    }
+
+    if (!mech && !IsMech(mech->mynum)) {
+        /* Add error message? */
         return;
+    }
+
+    if (Destroyed(mech)) {
+        /* Add error message? */
+        return;
+    } 
 
     /* Get the args - just need the first one */
     if (proper_explodearguments(buffer, args, 2) < 2) {
@@ -1255,11 +1263,10 @@ void auto_parse_command(AUTO * autopilot, MECH * mech, int chn, char *buffer)
 
     /* Loop through the various possible commands looking for ours */
     for (i = 0; auto_cmds[i].sho; i++) {
-        if (!strncmp
-                (auto_cmds[i].sho, command_args[0], strlen(auto_cmds[i].sho)))
-            if (!strncmp
-                    (auto_cmds[i].name, command_args[0],
-                     strlen(command_args[0]))) {
+        if (!strncmp(auto_cmds[i].sho, command_args[0], 
+                    strlen(auto_cmds[i].sho)))
+            if (!strncmp(auto_cmds[i].name, command_args[0],
+                        strlen(command_args[0]))) {
                 if (argc == (auto_cmds[i].args + 1)) {
                     cmd = i;
                     break;

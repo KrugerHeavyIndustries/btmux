@@ -752,11 +752,8 @@ void auto_engage(dbref player, void *data, char *buffer)
         return;
     }
 
-    /* Set the mech number as the current location */
-    autopilot->mymechnum = Location(autopilot->mynum);
-
     /* getMech checks to make sure its a valid obj and mech */
-    if (!(mech = getMech(autopilot->mymechnum))) {
+    if (!(mech = getMech(Location(autopilot->mynum)))) {
         notify(player, "AI not in a mech ... try moving it or putting it in one");
         /* No mech so return - do something about AI cleanup? */
         return;
@@ -777,6 +774,9 @@ void auto_engage(dbref player, void *data, char *buffer)
 
     /* Turn Autopilot On */
     AutoOn(autopilot);
+
+    /* Set the mech number as the current location */
+    autopilot->mymechnum = Location(autopilot->mynum);
 
     if (MechAuto(mech) <= 0)
         auto_init(autopilot, mech);
@@ -817,6 +817,8 @@ void auto_disengage(dbref player, void *data, char *buffer)
     }
 
     AutoOff(autopilot);
+
+    /*! \todo {Maybe add some code to reset the AI values on the Mech?} */
 
     notify(player, "Autopilot has been disengaged.");
 

@@ -1544,3 +1544,18 @@ MECH *getMech(dbref d)
 		return NULL;
 	return (MECH *) NodeData(tmp);
 }
+
+AUTO *getAuto(dbref d)
+{
+	Node *tmp;
+
+	if(!(Good_obj(d)))
+		return NULL;
+	if(!(Hardcode(d)))
+		return NULL;
+	if(!(tmp = FindObjectsNode(d)))
+		return NULL;
+	if(NodeType(tmp) != GTYPE_AUTO)
+		return NULL;
+	return (AUTO *) NodeData(tmp);
+}

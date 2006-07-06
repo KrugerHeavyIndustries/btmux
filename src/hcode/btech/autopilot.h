@@ -261,20 +261,6 @@ typedef struct {
     int target_score;               /* Current score of the AI's target */
     int target_threshold;           /* Threshold at which to change to another target */
 
-    MECH *mymech;                   /* The AI's unit */ /* Delete this */
-    unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
-    int ofsx, ofsy;                 /* ? */
-
-    unsigned char verbose_level;    /* How talkative should the AI be */
-
-    dbref chase_target;             /* Current target we are chasing */
-    int chasetarg_update_tick;      /* When should we update chasetarg */
-
-    int follow_update_tick;         /* When should we update follow */
-
-    /* Special AI flags */
-    unsigned short flags;
-
     /* The autopilot's command list */
     dllist *commands;
 
@@ -289,6 +275,22 @@ typedef struct {
 
     /* Max Range of AI's mech's weapons */
     int mech_max_range;
+
+/* Delete below this line */
+
+    MECH *mymech;                   /* The AI's unit */ /* Delete this */
+    unsigned short speed;           /* % of speed (1-100) that the AI should drive at */
+    int ofsx, ofsy;                 /* ? */
+
+    unsigned char verbose_level;    /* How talkative should the AI be */
+
+    dbref chase_target;             /* Current target we are chasing */
+    int chasetarg_update_tick;      /* When should we update chasetarg */
+
+    int follow_update_tick;         /* When should we update follow */
+
+    /* Special AI flags */
+    unsigned short flags;
 
     /* Roam Stuff */
     unsigned char roam_type;            /* What type of ROAM are we doing */

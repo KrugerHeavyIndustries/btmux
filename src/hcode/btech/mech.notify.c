@@ -1094,6 +1094,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 	/* The _smart_ code :-) */
 	int loop, range, bearing, i, isxp;
 	MECH *tempMech;
+    AUTO *autopilot;
 	MAP *mech_map = getMap(mech->mapindex);
 	char buf[LBUF_SIZE];
 	char buf2[LBUF_SIZE];
@@ -1209,27 +1210,35 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 			}
 
 			/* This is where we check to see if the mech has an AI and
-			 * then we give the radio commands to the AI */
-			if(MechAuto(tempMech) > 0 && tempMech->freq[i]) {
-				AUTO *a = (AUTO *) FindObjectsData(MechAuto(tempMech));
+			 * then we give the radio commands to the AI -
+             * Only non zero freqs also */
+			if (MechAuto(tempMech) > 0 && tempMech->freq[i]) {
 
 				/* First check to make sure the AI is still there */
-				if(!a) {
+                if (!(autopilot = getAuto(MechAuto(tempMech)))) {
+
 					/* No AI there so reset the AI value on the mech */
 					MechAuto(tempMech) = -1;
-				} else if(a && Location(a->mynum) != tempMech->mynum) {
+
+				} else if (Location(autopilot->mynum) != tempMech->mynum) {
+
 					/* Check to see if the AI is still in the same mech */
 					snprintf(ai_buf, LBUF_SIZE,
 							 "Autopilot #%d (Location: #%d) "
 							 "reported on Mech #%d but not in the proper location",
-							 a->mynum, Location(a->mynum), tempMech->mynum);
+							 autopilot->mynum, Location(autopilot->mynum), 
+                             tempMech->mynum);
 					SendAI(ai_buf);
-				} else if(a && !ECMDisturbed(tempMech)) {
+
+				} else if (!ECMDisturbed(tempMech)) {
+
 					/* Ok send the command to the AI provided its not ECM'd */
 					strncpy(buf3, msg, LBUF_SIZE);
-					auto_parse_command(a, tempMech, i, buf3);
+					auto_parse_command(autopilot, tempMech, i, buf3);
 				}
+
 			}
+
 			/* Removed the Radio fail stuff because it annoys me - Dany
 			   CheckGenericFail(tempMech, -2, &rfail_type, &rfail_mod);
 			 */
