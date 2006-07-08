@@ -1295,6 +1295,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(MechCarrying(mech) > 0, "You cannot sprint while towing!");
@@ -1345,6 +1346,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1400,6 +1402,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1442,6 +1445,7 @@ void mech_hulldown(dbref player, void *data, char *buffer)
 
 	cch(MECH_USUALO);
 
+        DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(!MechIsQuad(mech), "Only QUADs can hulldown.");
 	DOCHECK(Fallen(mech), "You can't hulldown from a FALLEN position");
 	DOCHECK(Jumping(mech), "You can't hulldown while jumping!");
