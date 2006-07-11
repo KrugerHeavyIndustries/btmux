@@ -838,7 +838,8 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
     AUTO *autopilot = *data;
     MECH *mech;
-    command_node *temp;
+    command_node *temp_command_node;
+    char *temp_string;
     int i;
 
     switch (selector) {
@@ -846,6 +847,9 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
             /* Allocate the command list */
             autopilot->commands = dllist_create_list();
+
+            /* Setup the radio reply list */
+            autopilot->radio_replies = dllist_create_list();
 
             /* Make sure certain things are set NULL */
             autopilot->astar_path = NULL;
@@ -870,17 +874,29 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
                 /* Remove the first node on the list and get the data
                  * from it */
-                temp = (command_node *) dllist_remove(autopilot->commands,
+                temp_command_node = (command_node *) dllist_remove(autopilot->commands,
                         dllist_head(autopilot->commands));
 
                 /* Destroy the command node */
-                auto_destroy_command_node(temp);
+                auto_destroy_command_node(temp_command_node);
 
             }
 
             /* Destroy the list */
             dllist_destroy_list(autopilot->commands);
             autopilot->commands = NULL;
+
+            /* Destroy radio reply list */
+            while (dllist_size(autopilot->radio_replies)) {
+
+                /* Remove the reply */
+                temp_string = (char *) dllist_remove(autopilot->radio_replies,
+                        dllist_head(autopilot->radio_replies));
+                free(temp_string);
+            }
+
+            dllist_destroy_list(autopilot->radio_replies);
+            autopilot->radio_replies = NULL;
 
             /* Destroy any astar path list thats on the AI */
             auto_destroy_astar_path(autopilot);
@@ -981,6 +997,9 @@ void auto_heartbeat(AUTO *autopilot) {
     /* Check current commands */
 
     if (map) {
+
+        /* Send out any replies we have stored up */
+        auto_send_radio_reply(autopilot, mech);
 
         /* Sensor */
         auto_sensor(autopilot, mech, map);

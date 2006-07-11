@@ -444,7 +444,7 @@ void auto_radio_command_help(AUTO * autopilot, MECH * mech,
         strncat(mesg, auto_cmds[i].name, LBUF_SIZE);
     }
 
-    auto_reply(mech, mesg);
+    auto_radio_reply(mech, mesg);
 
 }
 
@@ -697,7 +697,7 @@ void auto_radio_command_report(AUTO * autopilot, MECH * mech,
     }
 
     /* Send the mesg to the reply system, this is a silent command */
-    auto_reply(mech, mesg);
+    auto_radio_reply(mech, mesg);
 
 }
 
@@ -1142,39 +1142,37 @@ ACMD(auto_cmode)
 #endif
 
 /*
- * Event to get AI to radio a message
+ * Called once a second from auto_heartbeat and sends any stored
+ * radio replies for the AI
  */
-void auto_reply_event(MUXEVENT * muxevent)
-{
+void auto_send_radio_reply(AUTO *autopilot, MECH *mech) {
 
-    MECH *mech = (MECH *) muxevent->data;
-    char *buf = (char *) muxevent->data2;
-    MAP *map;
+    char *radio_reply;
 
-    /* Make sure its a mech */
-    if (!IsMech(mech->mynum)) {
-        free(buf);
-        return;
+    if (dllist_size(autopilot->radio_replies) > 0) {
+
+        radio_reply = (char *) dllist_remove(autopilot->radio_replies,
+                dllist_head(autopilot->radio_replies));
+        sendchannelstuff(mech, 0, radio_reply);
+        free(radio_reply);
     }
 
-    /* If valid object */
-    if (mech)
-        if ((map = (getMap(mech->mapindex))))
-            sendchannelstuff(mech, 0, buf);
-
-    free(buf);
 }
 
 /*
  * Force the AI to reply over radio
  */
-void auto_reply(MECH * mech, char *buf)
+void auto_radio_reply(MECH *mech, char *buf)
 {
 
+    /* Maybe alter this so autopilot & map is given? */
+    AUTO *autopilot;
+    MAP *map;
     char *reply;
+    dllist_node *temp_dllist_node;
 
     /* No zero freq messages */
-    if (!mech->freq[0])
+    if (!(mech->freq[0]))
         return;
 
     /* Make sure there is an autopilot */
@@ -1182,7 +1180,7 @@ void auto_reply(MECH * mech, char *buf)
         return;
 
     /* Make sure valid objects */
-    if (!(getAuto(MechAuto(mech))) || 
+    if (!(autopilot = getAuto(MechAuto(mech))) || 
             (Location(MechAuto(mech)) != mech->mynum)) {
         MechAuto(mech) = -1;
         return;
@@ -1192,8 +1190,13 @@ void auto_reply(MECH * mech, char *buf)
     reply = strdup(buf);
 
     if (reply) {
-        MECHEVENT(mech, EVENT_AUTO_REPLY, auto_reply_event, Number(1, 2),
-                reply);
+
+        /* Store it on the AI and to display next heartbeat */
+        if (dllist_size(autopilot->radio_replies) <= AUTOPILOT_MAX_RADIO_REPLIES) {
+            temp_dllist_node = dllist_create_node(reply);
+            dllist_insert_end(autopilot->radio_replies, temp_dllist_node);
+        }
+
     } else {
         SendAI("Interal AI Error: Attempting to radio reply but unable to copy string");
     }
@@ -1203,7 +1206,7 @@ void auto_reply(MECH * mech, char *buf)
 /*
  * Parse an AI radio command
  */
-void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
+void auto_parse_radio_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
 {
 
     int argc, cmd;
@@ -1214,7 +1217,9 @@ void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
     char reply[LBUF_SIZE];
     int i;
 
-    /* Basic checks */
+    /* Basic checks - Don't need these, well shouldn't but leaving
+     * them in just the same */
+
     if (!autopilot && !IsAuto(autopilot->mynum)) {
         /* Add error message? */
         return;
@@ -1264,7 +1269,7 @@ void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
     /* Loop through the various possible commands looking for ours */
     for (i = 0; auto_cmds[i].sho; i++) {
         if (!strncmp(auto_cmds[i].sho, command_args[0], 
-                    strlen(auto_cmds[i].sho)))
+                    strlen(auto_cmds[i].sho))) {
             if (!strncmp(auto_cmds[i].name, command_args[0],
                         strlen(command_args[0]))) {
                 if (argc == (auto_cmds[i].args + 1)) {
@@ -1272,13 +1277,14 @@ void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
                     break;
                 }
             }
+        }
     }
 
     /* Did we find a command */
     if (cmd < 0) {
 
         snprintf(message, LBUF_SIZE, "Unable to comprehend the command.");
-        auto_reply(mech, message);
+        auto_radio_reply(mech, message);
 
         /* free args */
         for (i = 0; i < 2; i++) {
@@ -1374,13 +1380,13 @@ void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer)
 
         }
 
-        auto_reply(mech, reply);
+        auto_radio_reply(mech, reply);
 
     } else if (!auto_cmds[cmd].silent) {
 
         /* Command isn't silent but it didn't return a message */
         snprintf(reply, LBUF_SIZE, "Ok.");
-        auto_reply(mech, reply);
+        auto_radio_reply(mech, reply);
 
     }
 

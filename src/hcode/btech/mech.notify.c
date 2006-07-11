@@ -1234,7 +1234,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 
 					/* Ok send the command to the AI provided its not ECM'd */
 					strncpy(buf3, msg, LBUF_SIZE);
-					auto_parse_command(autopilot, tempMech, i, buf3);
+					auto_parse_radio_command(autopilot, tempMech, i, buf3);
 				}
 
 			}
@@ -1344,7 +1344,7 @@ void mech_radio(dbref player, void *data, char *buffer)
 					GetMechToMechID(mech, tempMech), args[2]);
 		mech_printf(tempMech, MECHSTARTED, "%s radios you with, '%s'",
 					GetMechToMechID(tempMech, mech), args[2]);
-		auto_reply(tempMech,
+		auto_radio_reply(tempMech,
 				   tprintf("%s radio'ed me '%s'",
 						   GetMechToMechID(tempMech, mech), args[2]));
 	}

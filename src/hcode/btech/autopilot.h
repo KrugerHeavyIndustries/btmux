@@ -20,8 +20,13 @@
 #include "mech.events.h"
 #include "dllist.h"
 
-#define AUTOPILOT_VERSION       "BTMux AI 3.0 - Zeke"
+#define AUTOPILOT_VERSION           "BTMux AI 3.0 - Zeke"
 
+#define AUTOPILOT_MAX_ARGS          5       /* Max number of arguments for a given AI Radio
+                                               Command, includes the command as the first 
+                                               argument */
+#define AUTOPILOT_MAX_RADIO_REPLIES 5   /* Max # of radio replies the AI can store at a given
+                                           time */
 /* Status Flags for the AI */
 #define AUTOPILOT_ON                1   /* Is the AI even on? */
 #define AUTOPILOT_SETUP             2   /* AI has been setup? */
@@ -66,8 +71,6 @@
 #define AUTO_GUN_IDLE_TICK              10      /* How often to call autogun when in idle mode */
 
 #define AUTOPILOT_MEMORY        100     /* Number of command slots available to AI */
-#define AUTOPILOT_MAX_ARGS      5       /* Max number of arguments for a given AI Command
-                                           Includes the command as the first argument */
 
 /* The various flags for the AI */
 #define AUTOPILOT_AUTOGUN           1       /* Is autogun enabled, ie: shoot what AI wants to */
@@ -264,6 +267,9 @@ typedef struct {
     /* The autopilot's command list */
     dllist *commands;
 
+    /* autopilot's radio reply list */
+    dllist *radio_replies;
+
     /* AI A* pathfinding stuff */
     dllist *astar_path;
 
@@ -450,9 +456,9 @@ void auto_select_target(AUTO *AUTOPILOT, MECH *mech, MAP *map);
 void auto_gun(AUTO *AUTOPILOT, MECH *mech, MAP *map);
 
 /* From autopilot_radio.c */
-void auto_reply_event(MUXEVENT *muxevent);
-void auto_reply(MECH *mech, char *buf);
-void auto_parse_command(AUTO *autopilot, MECH *mech, int chn, char *buffer);
+void auto_send_radio_reply(AUTO *autopilot, MECH *mech);
+void auto_radio_reply(MECH *mech, char *buf);
+void auto_parse_radio_command(AUTO *autopilot, MECH *mech, int chn, char *buffer);
 
 void auto_radio_command_autogun(AUTO *autopilot, MECH *mech,
         char **args, int argc, char *mesg);

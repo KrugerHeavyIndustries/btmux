@@ -25,7 +25,7 @@
 #include "p.mech.los.h"
 #include "p.mech.status.h"
 
-extern void auto_reply(MECH * mech, char *buf);
+extern void auto_radio_reply(MECH * mech, char *buf);
 
 #ifdef HUDINFO_SUPPORT
 
@@ -1018,7 +1018,7 @@ static MECH *hud_scantarget(DESC * d, MECH * mech, char *msgclass, char *args)
 		mech_notify(targ, MECHSTARTED,
 					tprintf("You are being scanned by %s",
 							GetMechToMechID(targ, mech)));
-		auto_reply(targ, tprintf("%s just scanned me.",
+		auto_radio_reply(targ, tprintf("%s just scanned me.",
 								 GetMechToMechID(targ, mech)));
 	}
 	return targ;

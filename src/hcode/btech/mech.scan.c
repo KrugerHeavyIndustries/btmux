@@ -215,7 +215,7 @@ void mech_scan(dbref player, void *data, char *buffer)
 			mech_printf(tempMech, MECHSTARTED,
 						"You are being scanned by %s",
 						GetMechToMechID(tempMech, mech));
-			auto_reply(tempMech, tprintf("%s just scanned me.",
+			auto_radio_reply(tempMech, tprintf("%s just scanned me.",
 										 GetMechToMechID(tempMech, mech)));
 		}
 		return;
