@@ -1149,6 +1149,10 @@ void auto_send_radio_reply(AUTO *autopilot, MECH *mech) {
 
     char *radio_reply;
 
+    /* No zero freq messages */
+    if (!(mech->freq[0]))
+        return;
+
     if (dllist_size(autopilot->radio_replies) > 0) {
 
         radio_reply = (char *) dllist_remove(autopilot->radio_replies,
@@ -1195,6 +1199,8 @@ void auto_radio_reply(MECH *mech, char *buf)
         if (dllist_size(autopilot->radio_replies) <= AUTOPILOT_MAX_RADIO_REPLIES) {
             temp_dllist_node = dllist_create_node(reply);
             dllist_insert_end(autopilot->radio_replies, temp_dllist_node);
+        } else {
+            /* For now do nothing */
         }
 
     } else {
