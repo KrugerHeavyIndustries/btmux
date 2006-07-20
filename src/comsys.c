@@ -407,6 +407,8 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 			ch->max_users += 10;
 			ch->users = realloc(ch->users, sizeof(struct comuser *) *
 								ch->max_users);
+			memset(ch->users+(ch->num_users-1), 0, 
+				sizeof(struct comuser *)*(ch->max_users-ch->num_users));
 		}
 		user = (struct comuser *) malloc(sizeof(struct comuser));
 
@@ -429,14 +431,15 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 		notify_printf(player, "You are already on channel %s.", ch->name);
 		return;
 	}
-
+#if 0
 	/* Trigger AENTER of any channel objects on the channel */
 	for(i = ch->num_users - 1; i > 0; i--) {
+		if(!ch->users[i]) break;
 		if(Typeof(ch->users[i]->who) == TYPE_THING)
 			did_it(player, ch->users[i]->who, 0, NULL, 0, NULL, A_AENTER,
 				   (char **) NULL, 0);
 	}
-
+#endif
 	notify_printf(player, "You have joined channel %s.", ch->name);
 
 	if(!Dark(player)) {

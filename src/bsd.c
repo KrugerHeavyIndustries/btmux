@@ -130,12 +130,12 @@ void desc_delhash(DESC * d)
 
 void bind_descriptor(DESC *d) {
     d->refcount++;
-    dprintk("bound desciptor %p, refcount now %d", d, d->refcount);
+    //dprintk("bound desciptor %p, refcount now %d", d, d->refcount);
 }
 
 void release_descriptor(DESC *d) {
     d->refcount--;
-    dprintk("descriptor %p released, refcount now %d", d, d->refcount);
+    //dprintk("descriptor %p released, refcount now %d", d, d->refcount);
     if(d->refcount == 0) {
         dprintk("%p destructing", d);
         freeqs(d);
@@ -294,7 +294,7 @@ void accept_client_input(int fd, short event, void *arg)
 {
 	DESC *connection = (DESC *) arg;
 
-    dprintk("callback on fd %d DESC %p", fd, arg);
+    //dprintk("callback on fd %d DESC %p", fd, arg);
 
 	if(connection->flags & DS_AUTODARK) {
 		connection->flags &= ~DS_AUTODARK;
@@ -302,7 +302,7 @@ void accept_client_input(int fd, short event, void *arg)
 	}
     bind_descriptor(connection);
 	process_input(connection);
-    dprintk("finish on fd %d DESC %p", fd, arg);
+    //dprintk("finish on fd %d DESC %p", fd, arg);
     release_descriptor(connection);
 }
 
@@ -647,11 +647,11 @@ int process_input(DESC * d)
         current = buf[iter];
         if(current == '\n') {
             if(d->flags & DS_CONNECTED) {
-                dprintk("authed as %s running command '%s' refcount %d descriptor %p fd %d", Name(d->player), d->input, d->refcount, d, d->descriptor);
+                //dprintk("authed as %s running command '%s' refcount %d descriptor %p fd %d", Name(d->player), d->input, d->refcount, d, d->descriptor);
                 run_command(d, (char *)d->input);
             } else {
-                dprintk("unauth running command '%s' refcount %d descriptor %p fd %d", d->input, d->refcount, 
-                d, d->descriptor);
+                //dprintk("unauth running command '%s' refcount %d descriptor %p fd %d", d->input, d->refcount, 
+                //d, d->descriptor);
                 if(!do_unauth_command(d, d->input))  {
                     dprintk("logout on %p fd %d, bailing.", d, d->descriptor);
                     shutdownsock(d, R_QUIT);
@@ -679,7 +679,7 @@ int process_input(DESC * d)
             d->input_size++;
         }
 	}
-    dprintk("finished %p fd %d", d, d->descriptor);
+    //dprintk("finished %p fd %d", d, d->descriptor);
 
     release_descriptor(d);
 	return 1;
