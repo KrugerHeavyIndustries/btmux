@@ -1911,7 +1911,6 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 										 WalkingSpeed(MMaxSpeed(mech)));
 #ifdef BT_MOVEMENT_MODES
 			if(MechStatus2(mech) & SPRINTING) {
-				MechStatus2(mech) &= ~SPRINTING;
 				MechLOSBroadcast(mech,
 								 "breaks out of its sprint as it enters water!");
 				mech_notify(mech, MECHALL,
