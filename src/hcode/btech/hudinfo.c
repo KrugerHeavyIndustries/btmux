@@ -1152,6 +1152,11 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 		hudinfo_notify(d, msgclass, "E", "Invalid arguments");
 		return;
 	}
+	
+	if( (cx < 0) || (cx > map->map_width) || (cy > map_height) || (cy < 0)) {
+		hudinfo_notify(d, msgclass, "E", "Out of range");
+		return;
+	}
 
 	height = MIN(height, 2 * MechLRSRange(mech));
 	height = MIN(height, map->map_height);
