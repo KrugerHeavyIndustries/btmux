@@ -73,8 +73,7 @@ void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int);
 
 /* From game.c */
 void do_shutdown(dbref, dbref, int, char *);
-#define	notify(p,m)			notify_checked(p,p,m, \
-						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
+#define	notify(p,m)			notify_checked(p,p,m, MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
 #define	notify_quiet(p,m)		notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
 #define	notify_with_cause(p,c,m)	notify_checked(p,c,m, \

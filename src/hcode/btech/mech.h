@@ -1280,7 +1280,6 @@ extern struct missile_hit_table_struct MissileHitTable[];
 #define MINE_DROP	4	/* Someone drops to ground in the hex */
 
 extern void *FindObjectsData(dbref key);
-int recycle_weaponry(MECH *mech);
 #ifndef ECMD
 #define ECMD(a) extern void a (dbref player, void *data, char *buffer)
 #endif

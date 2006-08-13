@@ -293,6 +293,7 @@ int eradicate_broken_fd(int fd)
 void accept_client_input(int fd, short event, void *arg)
 {
 	DESC *connection = (DESC *) arg;
+	if(connection->descriptor != fd) return;
 
     //dprintk("callback on fd %d DESC %p", fd, arg);
 

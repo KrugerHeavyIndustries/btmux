@@ -5480,643 +5480,326 @@ static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 FUN flist[] = {
-	{"ABS", fun_abs, 1, 0, CA_PUBLIC}
-	,
-	{"ACOS", fun_acos, 1, 0, CA_PUBLIC}
-	,
-	{"ADD", fun_add, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"AFTER", fun_after, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ALPHAMAX", fun_alphamax, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ALPHAMIN", fun_alphamin, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"AND", fun_and, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ANDFLAGS", fun_andflags, 2, 0, CA_PUBLIC}
-	,
-	{"ANSI", fun_ansi, 2, 0, CA_PUBLIC}
-	,
-	{"ANSISECURE", fun_ansi_secure, -1, 0, CA_PUBLIC}
-	,
-	{"APOSS", fun_aposs, 1, 0, CA_PUBLIC}
-	,
-	{"ART", fun_art, 1, 0, CA_PUBLIC}
-	,
-	{"ASIN", fun_asin, 1, 0, CA_PUBLIC}
-	,
-	{"ATAN", fun_atan, 1, 0, CA_PUBLIC}
-	,
-	{"BEEP", fun_beep, 0, 0, CA_BUILDER}
-	,
-	{"BEFORE", fun_before, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"BTADDSTORES", fun_btaddstores, 3, 0, CA_WIZARD}
-	,
-	{"BTARMORSTATUS", fun_btarmorstatus, 2, 0, CA_WIZARD}
-	,
-	{"BTARMORSTATUS_REF", fun_btarmorstatus_ref, 2, 0, CA_WIZARD}
-	,
-	{"BTCHARLIST", fun_btcharlist, 1, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTCRITSLOT", fun_btcritslot, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTCRITSLOT_REF", fun_btcritslot_ref, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTCRITSTATUS", fun_btcritstatus, 2, 0, CA_WIZARD}
-	,
-	{"BTCRITSTATUS_REF", fun_btcritstatus_ref, 2, 0, CA_WIZARD}
-	,
-	{"BTDAMAGEMECH", fun_btdamagemech, 7, 0, CA_WIZARD}
-	,
-	{"BTDAMAGES", fun_btdamages, 1, 0, CA_WIZARD}
-	,
-	{"BTDESIGNEX", fun_btdesignex, 1, 0, CA_PUBLIC}
-	,
-	{"BTENGRATE", fun_btengrate, 1, 0, CA_WIZARD}
-	,
-	{"BTENGRATE_REF", fun_btengrate_ref, 1, 0, CA_WIZARD}
-	,
+	{"ABS", fun_abs, 1, 0, CA_PUBLIC},
+	{"ACOS", fun_acos, 1, 0, CA_PUBLIC},
+	{"ADD", fun_add, 0, FN_VARARGS, CA_PUBLIC},
+	{"AFTER", fun_after, 0, FN_VARARGS, CA_PUBLIC},
+	{"ALPHAMAX", fun_alphamax, 0, FN_VARARGS, CA_PUBLIC},
+	{"ALPHAMIN", fun_alphamin, 0, FN_VARARGS, CA_PUBLIC},
+	{"AND", fun_and, 0, FN_VARARGS, CA_PUBLIC},
+	{"ANDFLAGS", fun_andflags, 2, 0, CA_PUBLIC},
+	{"ANSI", fun_ansi, 2, 0, CA_PUBLIC},
+	{"ANSISECURE", fun_ansi_secure, -1, 0, CA_PUBLIC},
+	{"APOSS", fun_aposs, 1, 0, CA_PUBLIC},
+	{"ART", fun_art, 1, 0, CA_PUBLIC},
+	{"ASIN", fun_asin, 1, 0, CA_PUBLIC},
+	{"ATAN", fun_atan, 1, 0, CA_PUBLIC},
+	{"BEEP", fun_beep, 0, 0, CA_BUILDER},
+	{"BEFORE", fun_before, 0, FN_VARARGS, CA_PUBLIC},
+	{"BTADDSTORES", fun_btaddstores, 3, 0, CA_WIZARD},
+	{"BTARMORSTATUS", fun_btarmorstatus, 2, 0, CA_WIZARD},
+	{"BTARMORSTATUS_REF", fun_btarmorstatus_ref, 2, 0, CA_WIZARD},
+	{"BTCHARLIST", fun_btcharlist, 1, FN_VARARGS, CA_WIZARD},
+	{"BTCRITSLOT", fun_btcritslot, 0, FN_VARARGS, CA_WIZARD},
+	{"BTCRITSLOT_REF", fun_btcritslot_ref, 0, FN_VARARGS, CA_WIZARD},
+	{"BTCRITSTATUS", fun_btcritstatus, 2, 0, CA_WIZARD},
+	{"BTCRITSTATUS_REF", fun_btcritstatus_ref, 2, 0, CA_WIZARD},
+	{"BTDAMAGEMECH", fun_btdamagemech, 7, 0, CA_WIZARD},
+	{"BTDAMAGES", fun_btdamages, 1, 0, CA_WIZARD},
+	{"BTDESIGNEX", fun_btdesignex, 1, 0, CA_PUBLIC},
+	{"BTENGRATE", fun_btengrate, 1, 0, CA_WIZARD},
+	{"BTENGRATE_REF", fun_btengrate_ref, 1, 0, CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
-	{"BTFASABASECOST_REF", fun_btfasabasecost_ref, 1, 0, CA_WIZARD}
-	,
+	{"BTFASABASECOST_REF", fun_btfasabasecost_ref, 1, 0, CA_WIZARD},
 #endif
-	{"BTGETBV", fun_btgetbv, 1, 0, CA_WIZARD}
-	,
-	{"BTGETBV_REF", fun_btgetbv_ref, 1, 0, CA_WIZARD}
-	,
-	{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0, CA_WIZARD}
-	,
+	{"BTGETBV", fun_btgetbv, 1, 0, CA_WIZARD},
+	{"BTGETBV_REF", fun_btgetbv_ref, 1, 0, CA_WIZARD},
+	{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0, CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
-	{"BTGETPARTCOST", fun_btgetpartcost, 1, 0, CA_WIZARD}
-	,
+	{"BTGETPARTCOST", fun_btgetpartcost, 1, 0, CA_WIZARD},
 #endif
-	{"BTGETRANGE", fun_btgetrange, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTGETREALMAXSPEED", fun_btgetrealmaxspeed, 1, 0, CA_WIZARD}
-	,
-	{"BTGETWEIGHT", fun_btgetweight, 1, 0, CA_WIZARD}
-	,
-	{"BTGETXCODEVALUE", fun_btgetxcodevalue, 2, 0, CA_WIZARD}
-	,
-	{"BTGETXCODEVALUE_REF", fun_btgetxcodevalue_ref, 2, 0, CA_WIZARD}
-	,
-	{"BTHEXEMIT", fun_bthexemit, 4, 0, CA_WIZARD}
-	,
-	{"BTHEXINBLZ", fun_bthexinblz, 3, 0, CA_WIZARD}
-	,
-	{"BTHEXLOS", fun_bthexlos, 3, 0, CA_WIZARD}
-	,
-	{"BTID2DB", fun_btid2db, 2, 0, CA_WIZARD}
-	,
-	{"BTLAG", fun_lag, 0, 0, CA_WIZARD}
-	,
-	{"BTLISTBLZ", fun_btlistblz, 1, 0, CA_WIZARD}
-	,
-	{"BTLOADMAP", fun_btloadmap, 2, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTLOADMECH", fun_btloadmech, 2, 0, CA_WIZARD}
-	,
-	{"BTLOSM2M", fun_btlosm2m, 2, 0, CA_WIZARD}
-	,
-	{"BTMAKEMECHS", fun_btmakemechs, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0, CA_WIZARD}
-	,
-	{"BTMAPELEV", fun_btmapelev, 3, 0, CA_WIZARD}
-	,
-	{"BTMAPEMIT", fun_btmapemit, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTMAPTERR", fun_btmapterr, 3, 0, CA_WIZARD}
-	,
-	{"BTMAPUNITS", fun_btmapunits, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTMECHFREQS", fun_btmechfreqs, 1, 0, CA_WIZARD}
-	,
-	{"BTNUMREPJOBS", fun_btnumrepjobs, 1, 0, CA_WIZARD}
-	,
-	{"BTPARTTYPE", fun_btparttype, 1, 0, CA_WIZARD}
-	,
-	{"BTPARTMATCH", fun_btpartmatch, 1, 0, CA_WIZARD}
-	,
-	{"BTPARTNAME", fun_btpartname, 2, 0, CA_WIZARD}
-	,
-	{"BTPARTWEIGHT", fun_btgetweight, 1, 0, CA_WIZARD}
-	,
-	{"BTPAYLOAD_REF", fun_btpayload_ref, 1, 0, CA_WIZARD}
-	,
-	{"BTREMOVESTORES", fun_btremovestores, 3, 0, CA_WIZARD}
-	,
-	{"BTSETARMORSTATUS", fun_btsetarmorstatus, 4, 0, CA_WIZARD}
-	,
-	{"BTSETCHARVALUE", fun_btsetcharvalue, 4, 0, CA_WIZARD}
-	,
-	{"BTSETMAXSPEED", fun_btsetmaxspeed, 2, 0, CA_WIZARD}
-	,
+	{"BTGETRANGE", fun_btgetrange, 0, FN_VARARGS, CA_WIZARD},
+	{"BTGETREALMAXSPEED", fun_btgetrealmaxspeed, 1, 0, CA_WIZARD},
+	{"BTGETWEIGHT", fun_btgetweight, 1, 0, CA_WIZARD},
+	{"BTGETXCODEVALUE", fun_btgetxcodevalue, 2, 0, CA_WIZARD},
+	{"BTGETXCODEVALUE_REF", fun_btgetxcodevalue_ref, 2, 0, CA_WIZARD},
+	{"BTHEXEMIT", fun_bthexemit, 4, 0, CA_WIZARD},
+	{"BTHEXINBLZ", fun_bthexinblz, 3, 0, CA_WIZARD},
+	{"BTHEXLOS", fun_bthexlos, 3, 0, CA_WIZARD},
+	{"BTID2DB", fun_btid2db, 2, 0, CA_WIZARD},
+	{"BTLAG", fun_lag, 0, 0, CA_WIZARD},
+	{"BTLISTBLZ", fun_btlistblz, 1, 0, CA_WIZARD},
+	{"BTLOADMAP", fun_btloadmap, 2, FN_VARARGS, CA_WIZARD},
+	{"BTLOADMECH", fun_btloadmech, 2, 0, CA_WIZARD},
+	{"BTLOSM2M", fun_btlosm2m, 2, 0, CA_WIZARD},
+	{"BTMAKEMECHS", fun_btmakemechs, 0, FN_VARARGS, CA_WIZARD},
+	{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0, CA_WIZARD},
+	{"BTMAPELEV", fun_btmapelev, 3, 0, CA_WIZARD},
+	{"BTMAPEMIT", fun_btmapemit, 0, FN_VARARGS, CA_WIZARD},
+	{"BTMAPTERR", fun_btmapterr, 3, 0, CA_WIZARD},
+	{"BTMAPUNITS", fun_btmapunits, 0, FN_VARARGS, CA_WIZARD},
+	{"BTMECHFREQS", fun_btmechfreqs, 1, 0, CA_WIZARD},
+	{"BTNUMREPJOBS", fun_btnumrepjobs, 1, 0, CA_WIZARD},
+	{"BTPARTTYPE", fun_btparttype, 1, 0, CA_WIZARD},
+	{"BTPARTMATCH", fun_btpartmatch, 1, 0, CA_WIZARD},
+	{"BTPARTNAME", fun_btpartname, 2, 0, CA_WIZARD},
+	{"BTPARTWEIGHT", fun_btgetweight, 1, 0, CA_WIZARD},
+	{"BTPAYLOAD_REF", fun_btpayload_ref, 1, 0, CA_WIZARD},
+	{"BTREMOVESTORES", fun_btremovestores, 3, 0, CA_WIZARD},
+	{"BTSETARMORSTATUS", fun_btsetarmorstatus, 4, 0, CA_WIZARD},
+	{"BTSETCHARVALUE", fun_btsetcharvalue, 4, 0, CA_WIZARD},
+	{"BTSETMAXSPEED", fun_btsetmaxspeed, 2, 0, CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
-	{"BTSETPARTCOST", fun_btsetpartcost, 2, 0, CA_WIZARD}
-	,
+	{"BTSETPARTCOST", fun_btsetpartcost, 2, 0, CA_WIZARD},
 #endif
-	{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0, CA_WIZARD}
-	,
-	{"BTSETXY", fun_btsetxy, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTSHOWCRITSTATUS_REF", fun_btshowcritstatus_ref, 3, 0, CA_WIZARD}
-	,
-	{"BTSHOWSTATUS_REF", fun_btshowstatus_ref, 2, 0, CA_WIZARD}
-	,
-	{"BTSHOWWSPECS_REF", fun_btshowwspecs_ref, 2, 0, CA_WIZARD}
-	,
-	{"BTSTORES", fun_btstores, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTTECHLIST", fun_bttechlist, 1, 0, CA_WIZARD}
-	,
-	{"BTTECHLIST_REF", fun_bttechlist_ref, 1, 0, CA_WIZARD}
-	,
-	{"BTTECHSTATUS", fun_bttechstatus, 1, 0, CA_WIZARD}
-	,
-	{"BTTECHTIME", fun_bttechtime, 0, 0, CA_WIZARD}
-	,
-	{"BTTHRESHOLD", fun_btthreshold, 1, 0, CA_WIZARD}
-	,
-	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD}
-	,
-	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER}
-	,
-	{"BTUNITFIXABLE", fun_btunitfixable, 1, 0, CA_WIZARD}
-	,
-	{"BTWEAPONSTATUS", fun_btweaponstatus, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTWEAPONSTATUS_REF", fun_btweaponstatus_ref, 0, FN_VARARGS, CA_WIZARD}
-	,
-	{"BTWEAPSTAT", fun_btweapstat, 2, 0, CA_WIZARD}
-	,
-
-	{"CAPSTR", fun_capstr, -1, 0, CA_PUBLIC}
-	,
-	{"CASE", fun_case, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"CAT", fun_cat, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"CEIL", fun_ceil, 1, 0, CA_PUBLIC}
-	,
-	{"CENTER", fun_center, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"CHILDREN", fun_children, 1, 0, CA_PUBLIC}
-	,
-	{"COBJ", fun_cobj, 1, 0, CA_PUBLIC}
-	,
-	{"COLORPAIRS", fun_colorpairs, 1, 0, CA_PUBLIC}
-	,
-	{"COLUMNS", fun_columns, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"COMP", fun_comp, 2, 0, CA_PUBLIC}
-	,
-	{"CON", fun_con, 1, 0, CA_PUBLIC}
-	,
-	{"CONFIG", fun_config, 1, 0, CA_WIZARD}
-	,
-	{"CONN", fun_conn, 1, 0, CA_PUBLIC}
-	,
-	{"CONNRECORD", fun_connrecord, 0, 0, CA_PUBLIC}
-	,
-	{"CONTROLS", fun_controls, 2, 0, CA_PUBLIC}
-	,
-	{"CONVSECS", fun_convsecs, 1, 0, CA_PUBLIC}
-	,
-	{"CONVTIME", fun_convtime, 1, 0, CA_PUBLIC}
-	,
-	{"CONVUPTIME", fun_convuptime, 1, 0, CA_PUBLIC}
-	,
-	{"COS", fun_cos, 1, 0, CA_PUBLIC}
-	,
-	{"CREATE", fun_create, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"CWHO", fun_cwho, 1, 0, CA_PUBLIC}
-	,
-	{"CLIST", fun_clist, 1, 0, CA_PUBLIC}
-	,
-	{"CEMIT", fun_cemit, 2, 0, CA_PUBLIC}
-	,
-	{"DEC", fun_dec, 1, 0, CA_PUBLIC}
-	,
-	{"DECRYPT", fun_decrypt, 2, 0, CA_PUBLIC}
-	,
-	{"DEFAULT", fun_default, 2, FN_NO_EVAL, CA_PUBLIC}
-	,
-	{"DELETE", fun_delete, 3, 0, CA_PUBLIC}
-	,
-	{"DIGITTIME", fun_digittime, 1, 0, CA_PUBLIC}
-	,
-	{"DIE", fun_die, 2, 0, CA_PUBLIC}
-	,
-	{"DIST2D", fun_dist2d, 4, 0, CA_PUBLIC}
-	,
-	{"DIST3D", fun_dist3d, 6, 0, CA_PUBLIC}
-	,
-	{"DIV", fun_div, 2, 0, CA_PUBLIC}
-	,
-	{"DOING", fun_doing, 1, 0, CA_WIZARD}
-	,
-	{"E", fun_e, 0, 0, CA_PUBLIC}
-	,
-	{"EDEFAULT", fun_edefault, 2, FN_NO_EVAL, CA_PUBLIC}
-	,
-	{"EDIT", fun_edit, 3, 0, CA_PUBLIC}
-	,
-	{"ELEMENTS", fun_elements, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ELOCK", fun_elock, 2, 0, CA_PUBLIC}
-	,
-	{"EMPTY", fun_empty, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ENCRYPT", fun_encrypt, 2, 0, CA_PUBLIC}
-	,
-	{"EQ", fun_eq, 2, 0, CA_PUBLIC}
-	,
-	{"ESCAPE", fun_escape, -1, 0, CA_PUBLIC}
-	,
-	{"EXIT", fun_exit, 1, 0, CA_PUBLIC}
-	,
-	{"EXP", fun_exp, 1, 0, CA_PUBLIC}
-	,
-	{"EXTRACT", fun_extract, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"EVAL", fun_eval, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"FDIV", fun_fdiv, 2, 0, CA_PUBLIC}
-	,
-	{"FILTER", fun_filter, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"FINDABLE", fun_findable, 2, 0, CA_PUBLIC}
-	,
-	{"FIRST", fun_first, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"FLAGS", fun_flags, 1, 0, CA_PUBLIC}
-	,
-	{"FLOOR", fun_floor, 1, 0, CA_PUBLIC}
-	,
-	{"FOLD", fun_fold, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"FOREACH", fun_foreach, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"FULLNAME", fun_fullname, 1, 0, CA_PUBLIC}
-	,
-	{"GET", fun_get, 1, 0, CA_PUBLIC}
-	,
-	{"GET_EVAL", fun_get_eval, 1, 0, CA_PUBLIC}
-	,
-	{"GRAB", fun_grab, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"GRABALL", fun_graball, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"GREP", fun_grep, 3, 0, CA_PUBLIC}
-	,
-	{"GREPI", fun_grepi, 3, 0, CA_PUBLIC}
-	,
-	{"GT", fun_gt, 2, 0, CA_PUBLIC}
-	,
-	{"GTE", fun_gte, 2, 0, CA_PUBLIC}
-	,
-	{"HASATTR", fun_hasattr, 2, 0, CA_PUBLIC}
-	,
-	{"HASATTRP", fun_hasattrp, 2, 0, CA_PUBLIC}
-	,
-	{"HASFLAG", fun_hasflag, 2, 0, CA_PUBLIC}
-	,
-	{"HASPOWER", fun_haspower, 2, 0, CA_PUBLIC}
-	,
-	{"HASTYPE", fun_hastype, 2, 0, CA_PUBLIC}
-	,
-	{"HOME", fun_home, 1, 0, CA_PUBLIC}
-	,
-	{"IDLE", fun_idle, 1, 0, CA_PUBLIC}
-	,
-	{"IFELSE", fun_ifelse, 3, FN_NO_EVAL, CA_PUBLIC}
-	,
-	{"INC", fun_inc, 1, 0, CA_PUBLIC}
-	,
-	{"INDEX", fun_index, 4, 0, CA_PUBLIC}
-	,
-	{"INSERT", fun_insert, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"INZONE", fun_inzone, 1, 0, CA_PUBLIC}
-	,
-	{"ISDBREF", fun_isdbref, 1, 0, CA_PUBLIC}
-	,
-	{"ISNUM", fun_isnum, 1, 0, CA_PUBLIC}
-	,
-	{"ISWORD", fun_isword, 1, 0, CA_PUBLIC}
-	,
-	{"ITEMS", fun_items, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ITER", fun_iter, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"LAST", fun_last, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"LATTR", fun_lattr, 1, 0, CA_PUBLIC}
-	,
-	{"LCON", fun_lcon, 1, 0, CA_PUBLIC}
-	,
-	{"LCSTR", fun_lcstr, -1, 0, CA_PUBLIC}
-	,
-	{"LDELETE", fun_ldelete, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"LEXITS", fun_lexits, 1, 0, CA_PUBLIC}
-	,
-	{"LPARENT", fun_lparent, 1, 0, CA_PUBLIC}
-	,
-	{"LIST", fun_list, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"LIT", fun_lit, 1, FN_NO_EVAL, CA_PUBLIC}
-	,
-	{"LJUST", fun_ljust, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"LINK", fun_link, 2, 0, CA_PUBLIC}
-	,
-	{"LN", fun_ln, 1, 0, CA_PUBLIC}
-	,
-	{"LNUM", fun_lnum, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"LOC", fun_loc, 1, 0, CA_BUILDER}
-	,
-	{"LOCATE", fun_locate, 3, 0, CA_BUILDER}
-	,
-	{"LOCK", fun_lock, 1, 0, CA_PUBLIC}
-	,
-	{"LOG", fun_log, 1, 0, CA_PUBLIC}
-	,
+	{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0, CA_WIZARD},
+	{"BTSETXY", fun_btsetxy, 0, FN_VARARGS, CA_WIZARD},
+	{"BTSHOWCRITSTATUS_REF", fun_btshowcritstatus_ref, 3, 0, CA_WIZARD},
+	{"BTSHOWSTATUS_REF", fun_btshowstatus_ref, 2, 0, CA_WIZARD},
+	{"BTSHOWWSPECS_REF", fun_btshowwspecs_ref, 2, 0, CA_WIZARD},
+	{"BTSTORES", fun_btstores, 0, FN_VARARGS, CA_WIZARD},
+	{"BTTECHLIST", fun_bttechlist, 1, 0, CA_WIZARD},
+	{"BTTECHLIST_REF", fun_bttechlist_ref, 1, 0, CA_WIZARD},
+	{"BTTECHSTATUS", fun_bttechstatus, 1, 0, CA_WIZARD},
+	{"BTTECHTIME", fun_bttechtime, 0, 0, CA_WIZARD},
+	{"BTTHRESHOLD", fun_btthreshold, 1, 0, CA_WIZARD},
+	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD},
+	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER},
+	{"BTUNITFIXABLE", fun_btunitfixable, 1, 0, CA_WIZARD},
+	{"BTWEAPONSTATUS", fun_btweaponstatus, 0, FN_VARARGS, CA_WIZARD},
+	{"BTWEAPONSTATUS_REF", fun_btweaponstatus_ref, 0, FN_VARARGS, CA_WIZARD},
+	{"BTWEAPSTAT", fun_btweapstat, 2, 0, CA_WIZARD},
+	{"CAPSTR", fun_capstr, -1, 0, CA_PUBLIC},
+	{"CASE", fun_case, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"CAT", fun_cat, 0, FN_VARARGS, CA_PUBLIC},
+	{"CEIL", fun_ceil, 1, 0, CA_PUBLIC},
+	{"CENTER", fun_center, 0, FN_VARARGS, CA_PUBLIC},
+	{"CHILDREN", fun_children, 1, 0, CA_PUBLIC},
+	{"COBJ", fun_cobj, 1, 0, CA_PUBLIC},
+	{"COLORPAIRS", fun_colorpairs, 1, 0, CA_PUBLIC},
+	{"COLUMNS", fun_columns, 0, FN_VARARGS, CA_PUBLIC},
+	{"COMP", fun_comp, 2, 0, CA_PUBLIC},
+	{"CON", fun_con, 1, 0, CA_PUBLIC},
+	{"CONFIG", fun_config, 1, 0, CA_WIZARD},
+	{"CONN", fun_conn, 1, 0, CA_PUBLIC},
+	{"CONNRECORD", fun_connrecord, 0, 0, CA_PUBLIC},
+	{"CONTROLS", fun_controls, 2, 0, CA_PUBLIC},
+	{"CONVSECS", fun_convsecs, 1, 0, CA_PUBLIC},
+	{"CONVTIME", fun_convtime, 1, 0, CA_PUBLIC},
+	{"CONVUPTIME", fun_convuptime, 1, 0, CA_PUBLIC},
+	{"COS", fun_cos, 1, 0, CA_PUBLIC},
+	{"CREATE", fun_create, 0, FN_VARARGS, CA_PUBLIC},
+	{"CWHO", fun_cwho, 1, 0, CA_PUBLIC},
+	{"CLIST", fun_clist, 1, 0, CA_PUBLIC},
+	{"CEMIT", fun_cemit, 2, 0, CA_PUBLIC},
+	{"DEC", fun_dec, 1, 0, CA_PUBLIC},
+	{"DECRYPT", fun_decrypt, 2, 0, CA_PUBLIC},
+	{"DEFAULT", fun_default, 2, FN_NO_EVAL, CA_PUBLIC},
+	{"DELETE", fun_delete, 3, 0, CA_PUBLIC},
+	{"DIGITTIME", fun_digittime, 1, 0, CA_PUBLIC},
+	{"DIE", fun_die, 2, 0, CA_PUBLIC},
+	{"DIST2D", fun_dist2d, 4, 0, CA_PUBLIC},
+	{"DIST3D", fun_dist3d, 6, 0, CA_PUBLIC},
+	{"DIV", fun_div, 2, 0, CA_PUBLIC},
+	{"DOING", fun_doing, 1, 0, CA_WIZARD},
+	{"E", fun_e, 0, 0, CA_PUBLIC},
+	{"EDEFAULT", fun_edefault, 2, FN_NO_EVAL, CA_PUBLIC},
+	{"EDIT", fun_edit, 3, 0, CA_PUBLIC},
+	{"ELEMENTS", fun_elements, 0, FN_VARARGS, CA_PUBLIC},
+	{"ELOCK", fun_elock, 2, 0, CA_PUBLIC},
+	{"EMPTY", fun_empty, 0, FN_VARARGS, CA_PUBLIC},
+	{"ENCRYPT", fun_encrypt, 2, 0, CA_PUBLIC},
+	{"EQ", fun_eq, 2, 0, CA_PUBLIC},
+	{"ESCAPE", fun_escape, -1, 0, CA_PUBLIC},
+	{"EXIT", fun_exit, 1, 0, CA_PUBLIC},
+	{"EXP", fun_exp, 1, 0, CA_PUBLIC},
+	{"EXTRACT", fun_extract, 0, FN_VARARGS, CA_PUBLIC},
+	{"EVAL", fun_eval, 0, FN_VARARGS, CA_PUBLIC},
+	{"FDIV", fun_fdiv, 2, 0, CA_PUBLIC},
+	{"FILTER", fun_filter, 0, FN_VARARGS, CA_PUBLIC},
+	{"FINDABLE", fun_findable, 2, 0, CA_PUBLIC},
+	{"FIRST", fun_first, 0, FN_VARARGS, CA_PUBLIC},
+	{"FLAGS", fun_flags, 1, 0, CA_PUBLIC},
+	{"FLOOR", fun_floor, 1, 0, CA_PUBLIC},
+	{"FOLD", fun_fold, 0, FN_VARARGS, CA_PUBLIC},
+	{"FOREACH", fun_foreach, 0, FN_VARARGS, CA_PUBLIC},
+	{"FULLNAME", fun_fullname, 1, 0, CA_PUBLIC},
+	{"GET", fun_get, 1, 0, CA_PUBLIC},
+	{"GET_EVAL", fun_get_eval, 1, 0, CA_PUBLIC},
+	{"GRAB", fun_grab, 0, FN_VARARGS, CA_PUBLIC},
+	{"GRABALL", fun_graball, 0, FN_VARARGS, CA_PUBLIC},
+	{"GREP", fun_grep, 3, 0, CA_PUBLIC},
+	{"GREPI", fun_grepi, 3, 0, CA_PUBLIC},
+	{"GT", fun_gt, 2, 0, CA_PUBLIC},
+	{"GTE", fun_gte, 2, 0, CA_PUBLIC},
+	{"HASATTR", fun_hasattr, 2, 0, CA_PUBLIC},
+	{"HASATTRP", fun_hasattrp, 2, 0, CA_PUBLIC},
+	{"HASFLAG", fun_hasflag, 2, 0, CA_PUBLIC},
+	{"HASPOWER", fun_haspower, 2, 0, CA_PUBLIC},
+	{"HASTYPE", fun_hastype, 2, 0, CA_PUBLIC},
+	{"HOME", fun_home, 1, 0, CA_PUBLIC},
+	{"IDLE", fun_idle, 1, 0, CA_PUBLIC},
+	{"IFELSE", fun_ifelse, 3, FN_NO_EVAL, CA_PUBLIC},
+	{"INC", fun_inc, 1, 0, CA_PUBLIC},
+	{"INDEX", fun_index, 4, 0, CA_PUBLIC},
+	{"INSERT", fun_insert, 0, FN_VARARGS, CA_PUBLIC},
+	{"INZONE", fun_inzone, 1, 0, CA_PUBLIC},
+	{"ISDBREF", fun_isdbref, 1, 0, CA_PUBLIC},
+	{"ISNUM", fun_isnum, 1, 0, CA_PUBLIC},
+	{"ISWORD", fun_isword, 1, 0, CA_PUBLIC},
+	{"ITEMS", fun_items, 0, FN_VARARGS, CA_PUBLIC},
+	{"ITER", fun_iter, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"LAST", fun_last, 0, FN_VARARGS, CA_PUBLIC},
+	{"LATTR", fun_lattr, 1, 0, CA_PUBLIC},
+	{"LCON", fun_lcon, 1, 0, CA_PUBLIC},
+	{"LCSTR", fun_lcstr, -1, 0, CA_PUBLIC},
+	{"LDELETE", fun_ldelete, 0, FN_VARARGS, CA_PUBLIC},
+	{"LEXITS", fun_lexits, 1, 0, CA_PUBLIC},
+	{"LPARENT", fun_lparent, 1, 0, CA_PUBLIC},
+	{"LIST", fun_list, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"LIT", fun_lit, 1, FN_NO_EVAL, CA_PUBLIC},
+	{"LJUST", fun_ljust, 0, FN_VARARGS, CA_PUBLIC},
+	{"LINK", fun_link, 2, 0, CA_PUBLIC},
+	{"LN", fun_ln, 1, 0, CA_PUBLIC},
+	{"LNUM", fun_lnum, 0, FN_VARARGS, CA_PUBLIC},
+	{"LOC", fun_loc, 1, 0, CA_BUILDER},
+	{"LOCATE", fun_locate, 3, 0, CA_BUILDER},
+	{"LOCK", fun_lock, 1, 0, CA_PUBLIC},
+	{"LOG", fun_log, 1, 0, CA_PUBLIC},
 #ifdef ARBITRARY_LOGFILES
-	{"LOGF", fun_logf, 2, 0, CA_WIZARD}
-	,
+	{"LOGF", fun_logf, 2, 0, CA_WIZARD},
 #endif
-	{"LSTACK", fun_lstack, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"LT", fun_lt, 2, 0, CA_PUBLIC}
-	,
-	{"LTE", fun_lte, 2, 0, CA_PUBLIC}
-	,
-	{"LWHO", fun_lwho, 0, 0, CA_BUILDER}
-	,
-	{"MAIL", fun_mail, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MAILFROM", fun_mailfrom, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MAP", fun_map, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MATCH", fun_match, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MATCHALL", fun_matchall, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MAX", fun_max, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MEMBER", fun_member, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MERGE", fun_merge, 3, 0, CA_PUBLIC}
-	,
-	{"MID", fun_mid, 3, 0, CA_PUBLIC}
-	,
-	{"MIN", fun_min, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MIX", fun_mix, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MOD", fun_mod, 2, 0, CA_PUBLIC}
-	,
-	{"MONEY", fun_money, 1, 0, CA_PUBLIC}
-	,
-	{"MUDNAME", fun_mudname, 0, 0, CA_PUBLIC}
-	,
-	{"MUL", fun_mul, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"MUNGE", fun_munge, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"NAME", fun_name, 1, 0, CA_PUBLIC}
-	,
-	{"NEARBY", fun_nearby, 2, 0, CA_PUBLIC}
-	,
-	{"NEQ", fun_neq, 2, 0, CA_PUBLIC}
-	,
-	{"NEXT", fun_next, 1, 0, CA_PUBLIC}
-	,
-	{"NOT", fun_not, 1, 0, CA_PUBLIC}
-	,
-	{"NUM", fun_num, 1, 0, CA_PUBLIC}
-	,
-	{"OBJ", fun_obj, 1, 0, CA_PUBLIC}
-	,
-	{"OBJEVAL", fun_objeval, 2, FN_NO_EVAL, CA_PUBLIC}
-	,
-	{"OBJMEM", fun_objmem, 1, 0, CA_PUBLIC}
-	,
-	{"OR", fun_or, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ORFLAGS", fun_orflags, 2, 0, CA_PUBLIC}
-	,
-	{"OWNER", fun_owner, 1, 0, CA_PUBLIC}
-	,
-	{"PAIRS", fun_pairs, 1, 0, CA_PUBLIC}
-	,
-	{"PARENT", fun_parent, 1, 0, CA_PUBLIC}
-	,
-	{"PARSE", fun_parse, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"PEEK", fun_peek, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"PEMIT", fun_pemit, 2, 0, CA_PUBLIC}
-	,
-	{"PI", fun_pi, 0, 0, CA_PUBLIC}
-	,
-	{"PLAYMEM", fun_playmem, 1, 0, CA_PUBLIC}
-	,
-	{"PMATCH", fun_pmatch, 1, 0, CA_PUBLIC}
-	,
-	{"POLL", fun_poll, 0, 0, CA_WIZARD}
-	,
-	{"POP", fun_pop, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"PORTS", fun_ports, 1, 0, CA_PUBLIC}
-	,
-	{"POS", fun_pos, 2, 0, CA_PUBLIC}
-	,
-	{"POSS", fun_poss, 1, 0, CA_PUBLIC}
-	,
-	{"POWER", fun_power, 2, 0, CA_PUBLIC}
-	,
-	{"PUSH", fun_push, 0, FN_VARARGS, CA_PUBLIC}
-	,
+	{"LSTACK", fun_lstack, 0, FN_VARARGS, CA_PUBLIC},
+	{"LT", fun_lt, 2, 0, CA_PUBLIC},
+	{"LTE", fun_lte, 2, 0, CA_PUBLIC},
+	{"LWHO", fun_lwho, 0, 0, CA_BUILDER},
+	{"MAIL", fun_mail, 0, FN_VARARGS, CA_PUBLIC},
+	{"MAILFROM", fun_mailfrom, 0, FN_VARARGS, CA_PUBLIC},
+	{"MAP", fun_map, 0, FN_VARARGS, CA_PUBLIC},
+	{"MATCH", fun_match, 0, FN_VARARGS, CA_PUBLIC},
+	{"MATCHALL", fun_matchall, 0, FN_VARARGS, CA_PUBLIC},
+	{"MAX", fun_max, 0, FN_VARARGS, CA_PUBLIC},
+	{"MEMBER", fun_member, 0, FN_VARARGS, CA_PUBLIC},
+	{"MERGE", fun_merge, 3, 0, CA_PUBLIC},
+	{"MID", fun_mid, 3, 0, CA_PUBLIC},
+	{"MIN", fun_min, 0, FN_VARARGS, CA_PUBLIC},
+	{"MIX", fun_mix, 0, FN_VARARGS, CA_PUBLIC},
+	{"MOD", fun_mod, 2, 0, CA_PUBLIC},
+	{"MONEY", fun_money, 1, 0, CA_PUBLIC},
+	{"MUDNAME", fun_mudname, 0, 0, CA_PUBLIC},
+	{"MUL", fun_mul, 0, FN_VARARGS, CA_PUBLIC},
+	{"MUNGE", fun_munge, 0, FN_VARARGS, CA_PUBLIC},
+	{"NAME", fun_name, 1, 0, CA_PUBLIC},
+	{"NEARBY", fun_nearby, 2, 0, CA_PUBLIC},
+	{"NEQ", fun_neq, 2, 0, CA_PUBLIC},
+	{"NEXT", fun_next, 1, 0, CA_PUBLIC},
+	{"NOT", fun_not, 1, 0, CA_PUBLIC},
+	{"NUM", fun_num, 1, 0, CA_PUBLIC},
+	{"OBJ", fun_obj, 1, 0, CA_PUBLIC},
+	{"OBJEVAL", fun_objeval, 2, FN_NO_EVAL, CA_PUBLIC},
+	{"OBJMEM", fun_objmem, 1, 0, CA_PUBLIC},
+	{"OR", fun_or, 0, FN_VARARGS, CA_PUBLIC},
+	{"ORFLAGS", fun_orflags, 2, 0, CA_PUBLIC},
+	{"OWNER", fun_owner, 1, 0, CA_PUBLIC},
+	{"PAIRS", fun_pairs, 1, 0, CA_PUBLIC},
+	{"PARENT", fun_parent, 1, 0, CA_PUBLIC},
+	{"PARSE", fun_parse, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"PEEK", fun_peek, 0, FN_VARARGS, CA_PUBLIC},
+	{"PEMIT", fun_pemit, 2, 0, CA_PUBLIC},
+	{"PI", fun_pi, 0, 0, CA_PUBLIC},
+	{"PLAYMEM", fun_playmem, 1, 0, CA_PUBLIC},
+	{"PMATCH", fun_pmatch, 1, 0, CA_PUBLIC},
+	{"POLL", fun_poll, 0, 0, CA_WIZARD},
+	{"POP", fun_pop, 0, FN_VARARGS, CA_PUBLIC},
+	{"PORTS", fun_ports, 1, 0, CA_PUBLIC},
+	{"POS", fun_pos, 2, 0, CA_PUBLIC},
+	{"POSS", fun_poss, 1, 0, CA_PUBLIC},
+	{"POWER", fun_power, 2, 0, CA_PUBLIC},
+	{"PUSH", fun_push, 0, FN_VARARGS, CA_PUBLIC},
 #ifdef USE_PYTHON
-	{"PYTHON", fun_python, 1, FN_NO_EVAL, CA_WIZARD}
-	,
-	{"PYTHONCALL", fun_pythoncall, 0, FN_VARARGS, CA_WIZARD}
-	,
+	{"PYTHON", fun_python, 1, FN_NO_EVAL, CA_WIZARD},
+	{"PYTHONCALL", fun_pythoncall, 0, FN_VARARGS, CA_WIZARD},
 #endif
-	{"R", fun_r, 1, 0, CA_PUBLIC}
-	,
-	{"RAND", fun_rand, 1, 0, CA_PUBLIC}
-	,
-	{"REGMATCH", fun_regmatch, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"REMOVE", fun_remove, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"REPEAT", fun_repeat, 2, 0, CA_PUBLIC}
-	,
-	{"REPLACE", fun_replace, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"REST", fun_rest, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"REVERSE", fun_reverse, -1, 0, CA_PUBLIC}
-	,
-	{"REVWORDS", fun_revwords, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"RJUST", fun_rjust, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"RLOC", fun_rloc, 2, 0, CA_PUBLIC}
-	,
-	{"ROOM", fun_room, 1, 0, CA_PUBLIC}
-	,
-	{"ROUND", fun_round, 2, 0, CA_PUBLIC}
-	,
-	{"S", fun_s, -1, 0, CA_PUBLIC}
-	,
-	{"SCRAMBLE", fun_scramble, 1, 0, CA_PUBLIC}
-	,
-	{"SEARCH", fun_search, -1, 0, CA_PUBLIC}
-	,
-	{"SECS", fun_secs, 0, 0, CA_PUBLIC}
-	,
-	{"SECURE", fun_secure, -1, 0, CA_PUBLIC}
-	,
-	{"SET", fun_set, 2, 0, CA_PUBLIC}
-	,
-	{"SETDIFF", fun_setdiff, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SETINTER", fun_setinter, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SETLOCK", fun_setlock, 3, 0, CA_WIZARD}
-	,
-	{"SETQ", fun_setq, 2, 0, CA_PUBLIC}
-	,
-	{"SETR", fun_setr, 2, 0, CA_PUBLIC}
-	,
-	{"SETUNION", fun_setunion, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SHL", fun_shl, 2, 0, CA_PUBLIC}
-	,
-	{"SHR", fun_shr, 2, 0, CA_PUBLIC}
-	,
-	{"SHUFFLE", fun_shuffle, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SIGN", fun_sign, 1, 0, CA_PUBLIC}
-	,
-	{"SIN", fun_sin, 1, 0, CA_PUBLIC}
-	,
-	{"SORT", fun_sort, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SORTBY", fun_sortby, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SPACE", fun_space, 1, 0, CA_PUBLIC}
-	,
-	{"SPLICE", fun_splice, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"SQRT", fun_sqrt, 1, 0, CA_PUBLIC}
-	,
-	{"SQUISH", fun_squish, 1, 0, CA_PUBLIC}
-	,
-	{"STARTSECS", fun_startsecs, 0, 0, CA_PUBLIC}
-	,
-	{"STARTTIME", fun_starttime, 0, 0, CA_PUBLIC}
-	,
-	{"STATS", fun_stats, 1, 0, CA_PUBLIC}
-	,
-	{"STRCAT", fun_strcat, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"STRIPANSI", fun_stripansi, 1, 0, CA_PUBLIC}
-	,
-	{"STRLEN", fun_strlen, -1, 0, CA_PUBLIC}
-	,
-	{"STRMATCH", fun_strmatch, 2, 0, CA_PUBLIC}
-	,
-	{"STRTRUNC", fun_strtrunc, 2, 0, CA_PUBLIC}
-	,
-	{"SUB", fun_sub, 2, 0, CA_PUBLIC}
-	,
-	{"SUBEVAL", fun_subeval, 1, 0, CA_PUBLIC}
-	,
-	{"SUBJ", fun_subj, 1, 0, CA_PUBLIC}
-	,
-	{"SWITCH", fun_switch, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"TAN", fun_tan, 1, 0, CA_PUBLIC}
-	,
-	{"T", fun_t, 1, 0, CA_PUBLIC}
-	,
-	{"TEL", fun_tel, 2, 0, CA_PUBLIC}
-	,
-	{"TIME", fun_time, 0, 0, CA_PUBLIC}
-	,
-	{"TRANSLATE", fun_translate, 2, 0, CA_PUBLIC}
-	,
-	{"TRIM", fun_trim, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"TRUE", fun_t, 1, 0, CA_PUBLIC}
-	,
-	{"TRUNC", fun_trunc, 1, 0, CA_PUBLIC}
-	,
-	{"TYPE", fun_type, 1, 0, CA_PUBLIC}
-	,
-	{"U", fun_u, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"UCSTR", fun_ucstr, -1, 0, CA_PUBLIC}
-	,
-	{"UDEFAULT", fun_udefault, 0, FN_VARARGS | FN_NO_EVAL,
-	 CA_PUBLIC}
-	,
-	{"ULOCAL", fun_ulocal, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"V", fun_v, 1, 0, CA_PUBLIC}
-	,
-	{"VADD", fun_vadd, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VALID", fun_valid, 2, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VDIM", fun_vdim, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VERSION", fun_version, 0, 0, CA_PUBLIC}
-	,
-	{"VISIBLE", fun_visible, 2, 0, CA_PUBLIC}
-	,
-	{"VMAG", fun_vmag, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VMUL", fun_vmul, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VSUB", fun_vsub, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"VUNIT", fun_vunit, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"WHERE", fun_where, 1, 0, CA_PUBLIC}
-	,
-	{"WORDPOS", fun_wordpos, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"WORDS", fun_words, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"XGET", fun_xget, 2, 0, CA_PUBLIC}
-	,
-	{"XOR", fun_xor, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ZFUN", fun_zfun, 0, FN_VARARGS, CA_PUBLIC}
-	,
-	{"ZONE", fun_zone, 1, 0, CA_PUBLIC}
-	,
-	{"ZPLAYERS", fun_zplayers, 1, 0, CA_PUBLIC}
-	,
-	{"ZWHO", fun_zwho, 1, 0, CA_PUBLIC}
-	,
+	{"R", fun_r, 1, 0, CA_PUBLIC},
+	{"RAND", fun_rand, 1, 0, CA_PUBLIC},
+	{"REGMATCH", fun_regmatch, 0, FN_VARARGS, CA_PUBLIC},
+	{"REMOVE", fun_remove, 0, FN_VARARGS, CA_PUBLIC},
+	{"REPEAT", fun_repeat, 2, 0, CA_PUBLIC},
+	{"REPLACE", fun_replace, 0, FN_VARARGS, CA_PUBLIC},
+	{"REST", fun_rest, 0, FN_VARARGS, CA_PUBLIC},
+	{"REVERSE", fun_reverse, -1, 0, CA_PUBLIC},
+	{"REVWORDS", fun_revwords, 0, FN_VARARGS, CA_PUBLIC},
+	{"RJUST", fun_rjust, 0, FN_VARARGS, CA_PUBLIC},
+	{"RLOC", fun_rloc, 2, 0, CA_PUBLIC},
+	{"ROOM", fun_room, 1, 0, CA_PUBLIC},
+	{"ROUND", fun_round, 2, 0, CA_PUBLIC},
+	{"S", fun_s, -1, 0, CA_PUBLIC},
+	{"SCRAMBLE", fun_scramble, 1, 0, CA_PUBLIC},
+	{"SEARCH", fun_search, -1, 0, CA_PUBLIC},
+	{"SECS", fun_secs, 0, 0, CA_PUBLIC},
+	{"SECURE", fun_secure, -1, 0, CA_PUBLIC},
+	{"SET", fun_set, 2, 0, CA_PUBLIC},
+	{"SETDIFF", fun_setdiff, 0, FN_VARARGS, CA_PUBLIC},
+	{"SETINTER", fun_setinter, 0, FN_VARARGS, CA_PUBLIC},
+	{"SETLOCK", fun_setlock, 3, 0, CA_WIZARD},
+	{"SETQ", fun_setq, 2, 0, CA_PUBLIC},
+	{"SETR", fun_setr, 2, 0, CA_PUBLIC},
+	{"SETUNION", fun_setunion, 0, FN_VARARGS, CA_PUBLIC},
+	{"SHL", fun_shl, 2, 0, CA_PUBLIC},
+	{"SHR", fun_shr, 2, 0, CA_PUBLIC},
+	{"SHUFFLE", fun_shuffle, 0, FN_VARARGS, CA_PUBLIC},
+	{"SIGN", fun_sign, 1, 0, CA_PUBLIC},
+	{"SIN", fun_sin, 1, 0, CA_PUBLIC},
+	{"SORT", fun_sort, 0, FN_VARARGS, CA_PUBLIC},
+	{"SORTBY", fun_sortby, 0, FN_VARARGS, CA_PUBLIC},
+	{"SPACE", fun_space, 1, 0, CA_PUBLIC},
+	{"SPLICE", fun_splice, 0, FN_VARARGS, CA_PUBLIC},
+	{"SQRT", fun_sqrt, 1, 0, CA_PUBLIC},
+	{"SQUISH", fun_squish, 1, 0, CA_PUBLIC},
+	{"STARTSECS", fun_startsecs, 0, 0, CA_PUBLIC},
+	{"STARTTIME", fun_starttime, 0, 0, CA_PUBLIC},
+	{"STATS", fun_stats, 1, 0, CA_PUBLIC},
+	{"STRCAT", fun_strcat, 0, FN_VARARGS, CA_PUBLIC},
+	{"STRIPANSI", fun_stripansi, 1, 0, CA_PUBLIC},
+	{"STRLEN", fun_strlen, -1, 0, CA_PUBLIC},
+	{"STRMATCH", fun_strmatch, 2, 0, CA_PUBLIC},
+	{"STRTRUNC", fun_strtrunc, 2, 0, CA_PUBLIC},
+	{"SUB", fun_sub, 2, 0, CA_PUBLIC},
+	{"SUBEVAL", fun_subeval, 1, 0, CA_PUBLIC},
+	{"SUBJ", fun_subj, 1, 0, CA_PUBLIC},
+	{"SWITCH", fun_switch, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"TAN", fun_tan, 1, 0, CA_PUBLIC},
+	{"T", fun_t, 1, 0, CA_PUBLIC},
+	{"TEL", fun_tel, 2, 0, CA_PUBLIC},
+	{"TIME", fun_time, 0, 0, CA_PUBLIC},
+	{"TRANSLATE", fun_translate, 2, 0, CA_PUBLIC},
+	{"TRIM", fun_trim, 0, FN_VARARGS, CA_PUBLIC},
+	{"TRUE", fun_t, 1, 0, CA_PUBLIC},
+	{"TRUNC", fun_trunc, 1, 0, CA_PUBLIC},
+	{"TYPE", fun_type, 1, 0, CA_PUBLIC},
+	{"U", fun_u, 0, FN_VARARGS, CA_PUBLIC},
+	{"UCSTR", fun_ucstr, -1, 0, CA_PUBLIC},
+	{"UDEFAULT", fun_udefault, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
+	{"ULOCAL", fun_ulocal, 0, FN_VARARGS, CA_PUBLIC},
+	{"V", fun_v, 1, 0, CA_PUBLIC},
+	{"VADD", fun_vadd, 0, FN_VARARGS, CA_PUBLIC},
+	{"VALID", fun_valid, 2, FN_VARARGS, CA_PUBLIC},
+	{"VDIM", fun_vdim, 0, FN_VARARGS, CA_PUBLIC},
+	{"VERSION", fun_version, 0, 0, CA_PUBLIC},
+	{"VISIBLE", fun_visible, 2, 0, CA_PUBLIC},
+	{"VMAG", fun_vmag, 0, FN_VARARGS, CA_PUBLIC},
+	{"VMUL", fun_vmul, 0, FN_VARARGS, CA_PUBLIC},
+	{"VSUB", fun_vsub, 0, FN_VARARGS, CA_PUBLIC},
+	{"VUNIT", fun_vunit, 0, FN_VARARGS, CA_PUBLIC},
+	{"WHERE", fun_where, 1, 0, CA_PUBLIC},
+	{"WORDPOS", fun_wordpos, 0, FN_VARARGS, CA_PUBLIC},
+	{"WORDS", fun_words, 0, FN_VARARGS, CA_PUBLIC},
+	{"XGET", fun_xget, 2, 0, CA_PUBLIC},
+	{"XOR", fun_xor, 0, FN_VARARGS, CA_PUBLIC},
+	{"ZFUN", fun_zfun, 0, FN_VARARGS, CA_PUBLIC},
+	{"ZONE", fun_zone, 1, 0, CA_PUBLIC},
+	{"ZPLAYERS", fun_zplayers, 1, 0, CA_PUBLIC},
+	{"ZWHO", fun_zwho, 1, 0, CA_PUBLIC},
 	{NULL, NULL, 0, 0, 0}
 };
 

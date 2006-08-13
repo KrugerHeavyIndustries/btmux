@@ -881,6 +881,7 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 	char *buf1, *buf2, tchar, *bp, *str, *buff, *s, *j, *new;
 	char *args[MAX_ARG];
 	int nargs, i, fail, interp, key, xkey, aflags;
+	int length;
 	int hasswitch = 0;
 	dbref aowner;
 	char *aargs[10];
@@ -1014,7 +1015,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 			str = arg;
 			exec(buf1, &bp, 0, player, cause, interp | EV_FCHECK | EV_TOP,
 				 &str, cargs, ncargs);
-			*bp = '\0';
+			length = strnlen(buf1, LBUF_SIZE-1);
+			buf1[length] = '\0';
 		} else
 			buf1 = parse_to(&arg, '\0', interp | EV_TOP);
 
@@ -1110,7 +1112,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 		str = buf2;
 		exec(buf1, &bp, 0, player, cause,
 			 EV_STRIP | EV_FCHECK | EV_EVAL | EV_TOP, &str, cargs, ncargs);
-		*bp = '\0';
+		length = strnlen(buf1, LBUF_SIZE-1);
+		buf1[length] ='\0';
 
 		if(cmdp->callseq & CS_ARGV) {
 
@@ -1153,7 +1156,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 				str = arg;
 				exec(buf2, &bp, 0, player, cause,
 					 interp | EV_FCHECK | EV_TOP, &str, cargs, ncargs);
-				*bp = '\0';
+				length = strnlen(buf2, LBUF_SIZE-1);
+				buf2[length] = '\0';
 			} else if(cmdp->callseq & CS_UNPARSE) {
 				buf2 = parse_to(&arg, '\0', interp | EV_TOP | EV_NO_COMPRESS);
 			} else {
@@ -1206,6 +1210,7 @@ void process_command(dbref player, dbref cause, int interactive,
 	char *macroout;
 	int macerr;
 	int eins = 1, null = 0;
+	int length;
 
 	/*
 	 * Robustify player 
@@ -1434,7 +1439,8 @@ void process_command(dbref player, dbref cause, int interactive,
 	str = command;
 	exec(lcbuf, &bp, 0, player, cause,
 		 EV_EVAL | EV_FCHECK | EV_STRIP | EV_TOP, &str, args, nargs);
-	*bp = '\0';
+	length = strnlen(lcbuf, LBUF_SIZE-1);
+	lcbuf[length] = '\0';
 	succ = 0;
 
 	/*
@@ -1584,7 +1590,7 @@ void process_command(dbref player, dbref cause, int interactive,
 		STARTLOG(LOG_BADCOMMANDS, "CMD", "BAD") {
 			log_name_and_loc(player);
 			lcbuf = alloc_lbuf("process_commands.LOG.badcmd");
-			sprintf(lcbuf, " entered: '%s'", command);
+			snprintf(lcbuf, LBUF_SIZE, " entered: '%s'", command);
 			log_text(lcbuf);
 			free_lbuf(lcbuf);
 			ENDLOG;

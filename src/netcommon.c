@@ -257,7 +257,8 @@ void notify_printf(dbref player, const char *format, ...)
 	vsnprintf(buffer, LBUF_SIZE-1, format, ap);
 	va_end(ap);
 
-	strncat(buffer, "\r\n", LBUF_SIZE);
+	strncat(buffer, "\r\n", LBUF_SIZE-1);
+	buffer[LBUF_SIZE-1] = '\0';
 
 	DESC_ITER_PLAYER(player, d) {
 		queue_string(d, buffer);
@@ -289,7 +290,7 @@ void hudinfo_notify(DESC * d, const char *msgclass, const char *msgtype,
     memset(buf, 0, LBUF_SIZE);
 
 	if(!msgclass || !msgtype) {
-		queue_string(d, msg);
+		queue_write(d, msg, strnlen(msg, LBUF_SIZE-1));
 		queue_write(d, "\r\n", 2);
 		return;
 	}
@@ -297,7 +298,7 @@ void hudinfo_notify(DESC * d, const char *msgclass, const char *msgtype,
 	snprintf(buf, LBUF_SIZE-1, "#HUD:%s:%s:%s# %s\r\n",
 			 d->hudkey[0] ? d->hudkey : "???", msgclass, msgtype, msg);
 	buf[LBUF_SIZE - 1] = '\0';
-	queue_string(d, buf);
+	queue_write(d, buf, strnlen(buf, LBUF_SIZE-1));
 }
 #endif
 
@@ -308,7 +309,7 @@ void hudinfo_notify(DESC * d, const char *msgclass, const char *msgtype,
 
 void raw_broadcast(int inflags, char *template, ...)
 {
-	char *buff;
+	char buff[LBUF_SIZE];
 	DESC *d;
 	va_list ap;
 
@@ -316,17 +317,16 @@ void raw_broadcast(int inflags, char *template, ...)
 	if(!template || !*template)
 		return;
 
-	buff = alloc_lbuf("raw_broadcast");
-	vsprintf(buff, template, ap);
+	vsnprintf(buff, LBUF_SIZE, template, ap);
+	buff[LBUF_SIZE-1] = '\0';
 
 	DESC_ITER_CONN(d) {
 		if((Flags(d->player) & inflags) == inflags) {
-			queue_string(d, buff);
+			queue_write(d, buff, strnlen(buff, LBUF_SIZE-1));
 			queue_write(d, "\r\n", 2);
 		}
 	}
 	flush_sockets();
-	free_lbuf(buff);
 	va_end(ap);
 }
 
@@ -367,7 +367,8 @@ void queue_string(DESC * d, const char *s)
 {
 	char new[LBUF_SIZE];
 
-        strncpy(new, s, LBUF_SIZE-1);
+	strncpy(new, s, LBUF_SIZE-1);
+	new[LBUF_SIZE-1] = '\0';
 
 	if(!Ansi(d->player) && index(s, ESC_CHAR)) 
 	        strip_ansi_r(new, s, strlen(s));
@@ -404,6 +405,7 @@ void set_lastsite(DESC * d, char *lastsite)
     if(d->player) {
         if(lastsite) {
             strncpy(buf, lastsite, LBUF_SIZE-1);
+			buf[LBUF_SIZE-1] = '\0';
         } else {
             atr_get_str(buf, d->player, A_LASTSITE, &i, &j);
         }
