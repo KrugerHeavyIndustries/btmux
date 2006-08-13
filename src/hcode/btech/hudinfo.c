@@ -1153,7 +1153,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 		return;
 	}
 	
-	if( (cx < 0) || (cx > map->map_width) || (cy > map_height) || (cy < 0)) {
+	if( (cx < 0) || (cx > map->map_width) || (cy > map->map_height) || (cy < 0)) {
 		hudinfo_notify(d, msgclass, "E", "Out of range");
 		return;
 	}
