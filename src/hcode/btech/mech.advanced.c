@@ -1066,22 +1066,28 @@ void mech_explode(dbref player, void *data, char *buffer)
 	int time = mudconf.btech_explode_time;
 	int ammo = 1;
 	int argc;
+	int override = 0;
 
 	cch(MECH_USUALO);
+	override = (strstr(buffer, "override") != NULL) && Wizard(player);
 	argc = mech_parseattributes(buffer, args, 2);
 	DOCHECK(argc != 1, "Invalid number of arguments!");
 
 	/* Can't do any of the explosion routine if we're recycling! */
-	for(i = 0; i < NUM_SECTIONS; i++) {
-		if(!SectIsDestroyed(mech, i))
-			DOCHECK(SectHasBusyWeap(mech, i), "You have weapons recycling!");
-		DOCHECK(MechSections(mech)[i].recycle,
-				"You are still recovering from your last attack.");
+	if(!override) {
+		for(i = 0; i < NUM_SECTIONS; i++) {
+			if(!SectIsDestroyed(mech, i))
+				DOCHECK(SectHasBusyWeap(mech, i), "You have weapons recycling!");
+			DOCHECK(MechSections(mech)[i].recycle,
+					"You are still recovering from your last attack.");
+		}
 	}
 
 	if(!strcasecmp(buffer, "stop")) {
-		DOCHECK(!mudconf.btech_explode_stop,
-				"It's too late to turn back now!");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_stop,
+					"It's too late to turn back now!");
+		}
 		DOCHECK(!Exploding(mech),
 				"Your mech isn't undergoing a self-destruct sequence!");
 
@@ -1099,10 +1105,12 @@ void mech_explode(dbref player, void *data, char *buffer)
 		/*
 		   Find SOME ammo to explode ; if possible, we engage the 'boom' process
 		 */
-		DOCHECK(!mudconf.btech_explode_ammo,
-				"You can't bring yourself to do it!");
-		DOCHECK(MechStatus(mech) & EXPLODE_SAFE,
-			"That's not a possibility here.");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_ammo,
+					"You can't bring yourself to do it!");
+			DOCHECK(MechStatus(mech) & EXPLODE_SAFE,
+					"That's not a possibility here.");
+		}
 		i = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
 		DOCHECK(!i, "There is no 'damaging' ammo on your 'mech!");
 		/* Engage the boom-event */
@@ -1111,10 +1119,13 @@ void mech_explode(dbref player, void *data, char *buffer)
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "starts billowing smoke!");
 		time = time / 2;
+		if(override) time = 3;
 		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 	} else {
-		DOCHECK(!mudconf.btech_explode_reactor,
-				"You can't bring yourself to do it!");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_reactor,
+					"You can't bring yourself to do it!");
+		}
 		DOCHECK(MechType(mech) != CLASS_MECH,
 				"Only mechs can do the 'big boom' effect.");
 		DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
@@ -1122,6 +1133,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 				  ("#%d in #%d initiates the reactor explosion sequence.",
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "loses reactions containment!");
+		if(override) time = 3;
 		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 		ammo = 0;
 	}
