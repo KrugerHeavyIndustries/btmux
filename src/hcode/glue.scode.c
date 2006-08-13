@@ -2127,63 +2127,71 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
 	dbref mapnum;
 
 	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-	mapnum = match_thing(player, fargs[0]);
-	FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
-	map = getMap(mapnum);
-	FUNCHECK(!map, "#-1 INVALID MAP");
 
 	switch (nfargs) {
-	case 1:
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
+		case 1:
+			mapnum = match_thing(player, fargs[0]);
+			FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+			map = getMap(mapnum);
+			FUNCHECK(!map, "#-1 INVALID MAP");
+			for(loop = 0; loop < map->first_free; loop++) {
+				if(map->mechsOnMap[loop] < 0)
+					continue;
+				mech = getMech(map->mechsOnMap[loop]);
 
-			if(mech)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	case 4:
-		x = atof(fargs[1]);
-		y = atof(fargs[2]);
-		range = atof(fargs[3]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
-		FUNCHECK(range < 0, "#-1 INVALID RANGE");
-		MapCoordToRealCoord(x, y, &realX, &realY);
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
-			if(mech
-			   && FindXYRange(realX, realY, MechFX(mech),
-							  MechFY(mech)) <= range)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	case 5:
-		x = atof(fargs[1]);
-		y = atof(fargs[2]);
-		z = atof(fargs[3]);
-		range = atof(fargs[4]);
-		FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
-		FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
-		FUNCHECK(range < 0, "#-1 INVALID RANGE");
-		MapCoordToRealCoord(x, y, &realX, &realY);
-		for(loop = 0; loop < map->first_free; loop++) {
-			if(map->mechsOnMap[loop] < 0)
-				continue;
-			mech = getMech(map->mechsOnMap[loop]);
+				if(mech)
+					safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
+			}
+			break;
+		case 4:
+			mapnum = match_thing(player, fargs[0]);
+			FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+			map = getMap(mapnum);
+			FUNCHECK(!map, "#-1 INVALID MAP");
+			x = atof(fargs[1]);
+			y = atof(fargs[2]);
+			range = atof(fargs[3]);
+			FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
+			FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
+			FUNCHECK(range < 0, "#-1 INVALID RANGE");
+			MapCoordToRealCoord(x, y, &realX, &realY);
+			for(loop = 0; loop < map->first_free; loop++) {
+				if(map->mechsOnMap[loop] < 0)
+					continue;
+				mech = getMech(map->mechsOnMap[loop]);
+				if(mech
+						&& FindXYRange(realX, realY, MechFX(mech),
+							MechFY(mech)) <= range)
+					safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
+			}
+			break;
+		case 5:
+			mapnum = match_thing(player, fargs[0]);
+			FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+			map = getMap(mapnum);
+			FUNCHECK(!map, "#-1 INVALID MAP");
+			x = atof(fargs[1]);
+			y = atof(fargs[2]);
+			z = atof(fargs[3]);
+			range = atof(fargs[4]);
+			FUNCHECK(x < 0 || x > map->map_width, "#-1 INVALID X COORD");
+			FUNCHECK(y < 0 || y > map->map_height, "#-1 INVALID Y COORD");
+			FUNCHECK(range < 0, "#-1 INVALID RANGE");
+			MapCoordToRealCoord(x, y, &realX, &realY);
+			for(loop = 0; loop < map->first_free; loop++) {
+				if(map->mechsOnMap[loop] < 0)
+					continue;
+				mech = getMech(map->mechsOnMap[loop]);
 
-			if(mech
-			   && FindRange(realX, realY, z * ZSCALE, MechFX(mech),
+				if(mech
+						&& FindRange(realX, realY, z * ZSCALE, MechFX(mech),
 							MechFY(mech), MechFZ(mech)) <= range)
-				safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
-		}
-		break;
-	default:
-		safe_tprintf_str(buff, bufc, "#-1 INVALID ARGUMENTS");
-		break;
+					safe_tprintf_str(buff, bufc, "#%d ", map->mechsOnMap[loop]);
+			}
+			break;
+		default:
+			safe_tprintf_str(buff, bufc, "#-1 INVALID ARGUMENTS");
+			break;
 	}
 
 	return;

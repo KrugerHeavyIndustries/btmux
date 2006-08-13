@@ -2575,10 +2575,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 	case MOVE_VTOL:
 	case MOVE_FLY:
-
-		if(Landed(mech) && MechRTerrain(mech) != ROAD &&
+		
+		if((Landed(mech) && MechRTerrain(mech) != ROAD &&
 		   MechRTerrain(mech) != BRIDGE && MechRTerrain(mech) != GRASSLAND
-		   && MechRTerrain(mech) != BUILDING) {
+		   && MechRTerrain(mech) != BUILDING) ||
+		   (IsForest(MechRTerrain(mech)) && MechZ(mech) < (MechElevation(mech)+2))) {
 
 			mech_notify(mech, MECHALL,
 						"You go where no flying thing has ever gone before..");
