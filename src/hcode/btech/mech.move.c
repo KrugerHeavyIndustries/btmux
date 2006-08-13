@@ -317,7 +317,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 	   (MechCritStatus(mech) & SPEED_OK)) {
 
 		mspeed = MechRMaxSpeed(mech);
-#ifndef BT_MOVEMENT_MODES
+#if 0
 
 		/* Is masc and/or scharge on */
 		if((MechStatus(mech) & MASC_ENABLED) &&
@@ -349,6 +349,11 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 		if(!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING
 		   && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
 			mspeed += MP1;
+
+		if(InSpecial(mech) && InGravity(mech))
+			if((map = FindObjectsData(mech->mapindex)))
+				mspeed = mspeed * 100.0 / (float)MAX(50, MapGravity(map));
+
 #endif
 		return mspeed;
 	}
