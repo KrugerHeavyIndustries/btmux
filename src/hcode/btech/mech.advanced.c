@@ -1071,7 +1071,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	cch(MECH_USUALO);
 	override = (strstr(buffer, "override") != NULL) && Wizard(player);
 	argc = mech_parseattributes(buffer, args, 2);
-	DOCHECK(argc != 1, "Invalid number of arguments!");
+	DOCHECK(argc < 1, "Invalid number of arguments!");
 
 	/* Can't do any of the explosion routine if we're recycling! */
 	if(!override) {
