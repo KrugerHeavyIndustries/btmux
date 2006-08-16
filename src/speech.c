@@ -64,9 +64,7 @@ void do_think(dbref player, dbref cause, int key, char *message)
 	exec(buf, &bp, 0, player, cause, EV_FCHECK | EV_EVAL | EV_TOP, &str,
 		 (char **) NULL, 0);
 	output_length = strnlen(buf, LBUF_SIZE-1);
-	dprintk("strlen(buf) = %d, length = %d", strlen(buf), output_length);
 	buf[output_length] = '\0';
-	dprintk("strlen(buf) = %d, length = %d", strlen(buf), output_length);
 	notify(player, buf);
 }
 
