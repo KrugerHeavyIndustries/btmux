@@ -584,7 +584,6 @@ void auto_update_profile_event(AUTO *autopilot) {
 		return;
 	}
     
-    dprintk("aobrtion!");
 	/* Log Message */
 	print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
 
