@@ -348,10 +348,9 @@ static void sqlchild_finish_query(int fd, short events, void *arg)
 	}
 
 	close(aqt->fd);
-	dprintk("waiting on %d.", aqt->pid);
 	pchild = waitpid(aqt->pid, &status, WNOHANG);
-	if(pchild) {
-		dprintk("%d exited normally.", aqt->pid);
+	if(!pchild) {
+		dprintk("%d exited abnormally.", aqt->pid);
 	}
 	recent++;
 	if(recent_tail == NULL) {
