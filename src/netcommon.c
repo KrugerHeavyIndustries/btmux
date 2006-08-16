@@ -1557,7 +1557,6 @@ int do_command(DESC * d, char *command)
 
     if(*arg)
         *--arg = ' ';	
-    dprintk("cp %p d=%p fd %d", cp, d, d->descriptor);
     if(cp == NULL) {
         d->command_count++;
         if(d->output_prefix) {
