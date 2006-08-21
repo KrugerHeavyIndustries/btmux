@@ -157,22 +157,23 @@ typedef struct {
     short map_width;                    /* Width of map <MAPX  */
     short map_height;                   /* Height of map */
 
-    int temp;                          /* Temperature, in celsius degrees */
+    char temp;                          /* Temperature, in celsius degrees */
     unsigned char grav;                 /* Gravity, if any ; in 1/100 G's */
-    int cloudbase;
-    int mapvis;                        /* Visibility on the map, used as base 
+    short cloudbase;
+    char unused_char;
+    char mapvis;                        /* Visibility on the map, used as base 
                                            for most sensor types */
-    int maxvis;                       /* maximum visibility (usually mapvis * n) */
-    int maplight;
-    int winddir, windspeed;
+    short maxvis;                       /* maximum visibility (usually mapvis * n) */
+    char maplight;
+    short winddir, windspeed;
 
     /* Now, da wicked stuff */
     int flags;
 
     mapobj *mapobj[NUM_MAPOBJTYPES];
-    int cf, cfmax;
+    short cf, cfmax;
     dbref onmap;
-    int buildflag;
+    char buildflag;
 
     unsigned char first_free;           /* First free on da map */
     dbref *mechsOnMap;                  /* Mechs on the map */
