@@ -542,10 +542,7 @@ void map_update(dbref obj, void *data)
 					mech_notify(mech, MECHALL, changemsg);
 			}
 	}
-	if(map->moves) {
-		update_LOSinfo(obj, map);
-		map->moves = 0;
-	}
+	update_LOSinfo(obj, map);
 	/* Fire/Smoke are event-driven -> nothing related to them done here */
 }
 
