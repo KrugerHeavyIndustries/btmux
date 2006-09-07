@@ -484,7 +484,6 @@ void DamageMech(MECH * wounded,
 			if(Dumping(wounded) && ((hitloc == CTORSO) ||
 									(hitloc == LTORSO) ||
 									(hitloc == RTORSO)) && (cause >= 0))
-				if(Roll() <= 7)
 					tBlowDumpingAmmo = 1;
 		} else {
 			if(hitloc == FSIDE)
