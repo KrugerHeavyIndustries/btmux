@@ -202,7 +202,15 @@ void initiate_ood(dbref player, MECH * mech, char *buffer)
 	MechFZ(mech) = ZSCALE * MechZ(mech);
 	MarkForLOSUpdate(mech);
 	notify(player, "OOD initiated.");
-	if(FlyingT(mech)) {
+	if(Evading(mech)) {
+		MechStatus2(mech) &= ~EVADING;        
+	}
+
+	if(Sprinting(mech)) {
+		MechStatus2(mech) &= ~SPRINTING;
+	}
+
+        if(FlyingT(mech)) {
 		MechStatus(mech) &= ~LANDED;
 		MechDesiredSpeed(mech) = MechMaxSpeed(mech) / 2;
 		if(is_aero(mech))
