@@ -1329,7 +1329,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			// nail us for damage.
 		}						// end if() - Suit + Swarmed + Physical + Self Damage checks
 
-		if(AttackType == PA_KICK || AttackType == PA_CLUB ||
+/* Removed fall check for clubs -- Power_Shaper 09/25/06 */
+		if(AttackType == PA_KICK ||
 		   AttackType == PA_MACE) {
 			int failRoll = (AttackType == PA_KICK ? 0 : 2);
 
