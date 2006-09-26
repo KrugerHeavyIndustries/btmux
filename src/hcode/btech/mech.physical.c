@@ -1521,9 +1521,9 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
 }								// end PhysicalDamage()
 
 #define CHARGE_SECTIONS 6
-#define DFA_SECTIONS    4
+#define DFA_SECTIONS    6
+/* Rules make no distinction about Torso not needing recycled  We'll let Head slide for now */
 
-/* 4 if pure FASA */
 
 const int resect[CHARGE_SECTIONS] =
 	{ LARM, RARM, LLEG, RLEG, LTORSO, RTORSO };
