@@ -134,10 +134,10 @@ void mech_Rsetmapindex(dbref player, void *data, char *buffer)
 	if(mech->mapindex != -1) {
 		if(!(oldmap = ValidMap(player, mech->mapindex)))
 			return;
-		remove_mech_from_map(oldmap, mech);
 		TAGTarget(mech) = -1;
 		clearC3iNetwork(mech, 1);
 		clearC3Network(mech, 1);
+		remove_mech_from_map(oldmap, mech);
 	}
 
 	if(newindex == -1) {
