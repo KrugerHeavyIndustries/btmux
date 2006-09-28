@@ -261,6 +261,8 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 			 "The weapon system chirps: 'That weapon is still reloading!'");
 	DOCHECK0(weaptype == -4,
 			 "The weapon system chirps: 'That weapon is still recharging!'");
+        DOCHECK0(PartTempNuke(mech, section, critical) == FAIL_AMMOJAMMED,
+                          "The ammo feed mechanism for that weapon is jammed! Unable to change modes!");
 	DOCHECK0(GetPartFireMode(mech, section, critical) & OS_MODE,
 			 "One-shot weapons' mode cannot be altered!");
 	DOCHECK0(isWeapAmmoFeedLocked(mech, section, critical),
