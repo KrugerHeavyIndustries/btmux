@@ -290,7 +290,7 @@ static void sqlchild_finish_query(int fd, short events, void *arg)
 	char buffer[LBUF_SIZE];
 	buffer[0] = '\0';
 
-	dprintk("receiving response for query %d", aqt->serial);
+	/*dprintk("receiving response for query %d", aqt->serial); */
 
 	if(read(aqt->fd, &resp, sizeof(struct query_response)) < 0) {
 		log_perror("SQL", "FAIL", NULL, "sqlchild_finish_query");
@@ -350,7 +350,7 @@ static void sqlchild_finish_query(int fd, short events, void *arg)
 	close(aqt->fd);
 	pchild = waitpid(aqt->pid, &status, WNOHANG);
 	if(!pchild) {
-		dprintk("%d exited abnormally.", aqt->pid);
+	/*	dprintk("%d exited abnormally.", aqt->pid); */
 	}
 	recent++;
 	if(recent_tail == NULL) {
@@ -421,9 +421,9 @@ static void sqlchild_check_queue()
 		close(fds[1]);
 	}
 	
-	dprintk("waiting on sqlchild pid %d executing request %d", aqt->pid,
+/*	dprintk("waiting on sqlchild pid %d executing request %d", aqt->pid,
 			aqt->serial);
-
+*/
 	if(running)
 		aqt->next = running;
 	running = aqt;
@@ -586,7 +586,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	eptr = ptr + LBUF_SIZE;
 	*ptr = '\0';
 
-	dprintk("executing query %d.", aqt->serial);
+	/* dprintk("executing query %d.", aqt->serial); */
 
 	sqlchild_make_connection(aqt->slot);
 	if(!conn) {
