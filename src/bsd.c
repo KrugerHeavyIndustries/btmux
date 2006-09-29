@@ -461,8 +461,8 @@ void shutdownsock(DESC * d, int reason)
 	int i, num;
 	DESC *dtemp;
 
-    dprintk("shutdownsock called on %p %s(#%d) refcount %d", 
-        d, (d->player?Name(d->player):""), d->player, d->refcount);
+/*    dprintk("shutdownsock called on %p %s(#%d) refcount %d", 
+        d, (d->player?Name(d->player):""), d->player, d->refcount); */
 
     if(d->flags & DS_CONNECTED) {
 		if(d->outstanding_dnschild_query)
@@ -504,7 +504,7 @@ void shutdownsock(DESC * d, int reason)
 	}
     d->flags |= DS_DEAD;
     release_descriptor(d);
-    dprintk("shutdown.");
+   /* dprintk("shutdown."); */
 }
 
 void make_nonblocking(int s)
