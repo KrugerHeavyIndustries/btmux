@@ -69,14 +69,14 @@ void desc_addhash(DESC * d)
     bind_descriptor(d);
 
     hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
-    if(!hdesc) {
+/*    if(!hdesc) {
         dprintk("Creating new list root for '%s'(#%d) at %p.", 
-            Name(d->player), d->player, d);
+            Name(d->player), d->player, d); 
     } else {
         dprintk("Adding descriptor %p to list root at %p for '%s'(#%d).",
         d, hdesc, Name(d->player), d->player);
     }
-    
+*/  
     d->hashnext = hdesc;
     rb_insert(mudstate.desctree, (void *) d->player, d);
 }
@@ -86,9 +86,9 @@ void desc_delhash(DESC * d)
     char buffer2[4096];
     DESC *hdesc = NULL;
     char buffer[4096];
-    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player);
+/*    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player); */
     hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
-    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player);
+/*    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player); */
 
 
     if(!hdesc) {
@@ -100,17 +100,17 @@ void desc_delhash(DESC * d)
         return;
     }
 
-    dprintk("hdesc: %p, d: %p, hdesc->hashnext: %p, d->hashnext: %p", hdesc,
+  /*  dprintk("hdesc: %p, d: %p, hdesc->hashnext: %p, d->hashnext: %p", hdesc,
             d, hdesc->hashnext, d->hashnext);
-
+*/
     if(hdesc == d && hdesc->hashnext) {
-        dprintk("updating %d to use hashroot %p", d->player, d->hashnext);
+  /*      dprintk("updating %d to use hashroot %p", d->player, d->hashnext);*/
         rb_insert(mudstate.desctree, (void *) d->player, d->hashnext);
         d->hashnext = NULL;
         release_descriptor(d);
         return;
     } else if(hdesc == d) {
-        dprintk("removing %d table", d->player);
+/*        dprintk("removing %d table", d->player); */
         rb_delete(mudstate.desctree, (void *) d->player);
         release_descriptor(d);
         return;
