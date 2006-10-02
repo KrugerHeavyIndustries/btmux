@@ -641,17 +641,17 @@ void do_addcom(dbref player, dbref cause, int key, char *arg1, char *arg2)
 
 	strncpy(c->alias + 6 * where, arg1, 5);
 	c->alias[where * 6 + 5] = '\0';
-	c->channels[where] = strdup(channel);
+	c->channels[where] = ch->name;
 
 	do_joinchannel(player, ch);
 	do_setnewtitle(player, ch, title);
 
 	if(title[0])
 		notify_printf(player, "Channel %s added with alias %s and title %s.",
-					  channel, arg1, title);
+					  ch, arg1, title);
 	else
 		notify_printf(player, "Channel %s added with alias %s.",
-					  channel, arg1);
+					  ch, arg1);
 }
 
 static void do_setnewtitle(dbref player, struct channel *ch, char *title)
