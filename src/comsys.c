@@ -641,7 +641,7 @@ void do_addcom(dbref player, dbref cause, int key, char *arg1, char *arg2)
 
 	strncpy(c->alias + 6 * where, arg1, 5);
 	c->alias[where * 6 + 5] = '\0';
-	c->channels[where] = ch->name;
+	c->channels[where] = strdup(ch->name);
 
 	do_joinchannel(player, ch);
 	do_setnewtitle(player, ch, title);
