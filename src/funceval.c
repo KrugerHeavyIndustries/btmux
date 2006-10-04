@@ -163,25 +163,32 @@ void fun_clist(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 
-	for(thing = 0; thing < mudstate.db_top; thing++) {
-		if(!Good_obj(thing))
-			continue;
-
-		if((user = select_user(ch, thing))) {
-			if(len) {
-				sprintf(smbuf, " #%d", user->who);
-				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
-					safe_str(" #-1", buff, bufc);
-					return;
-				}
-				safe_str(smbuf, buff, bufc);
-				len += strlen(smbuf);
-			} else {
-				safe_tprintf_str(buff, bufc, "#%d", user->who);
-				len = strlen(buff);
-			}
+	for(ch = (struct channel *) hash_firstentry(&mudstate.channel_htab);
+                ch; ch = (struct channel *) hash_nextentry(&mudstate.channel_htab)) {
+		safe_tprintf_str(buff, bufc, "%s ", ch->name);
 		}
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 void fun_beep(char *buff, char **bufc, dbref player, dbref cause,
