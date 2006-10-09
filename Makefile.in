@@ -35,7 +35,6 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/commac.o      \
                  src/command.o     \
                  src/compat.o      \
-				 src/comstar.o	   \
                  src/comsys.o      \
                  src/conf.o        \
                  src/cque.o        \
