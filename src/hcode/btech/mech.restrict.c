@@ -101,6 +101,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 		z = atoi(args[2]);
 		MechZ(mech) = z;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+		MechElev(mech) = GetElev(mech_map, MechX(mech), MechY(mech));
 	}
 	clear_mech_from_LOS(mech);
 	notify_printf(player, "Pos changed to %d,%d,%d", x, y, z);
