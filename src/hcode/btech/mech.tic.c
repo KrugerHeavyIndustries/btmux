@@ -170,8 +170,8 @@ void firetic_sub(dbref player, MECH * mech, char *buffer)
 	weaps = 1;
 	ftflag = 1;
 	temp_args = args;
-	temp_argc = argc;
-	multi_weap_sel(mech, player, args[0], 0, firetic_sub_func);
+	temp_argc = argc;	
+        multi_weap_sel(mech, player, args[0], 2, firetic_sub_func);
 	ftflag = 0;
 }
 
