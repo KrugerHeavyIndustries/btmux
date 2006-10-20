@@ -1816,6 +1816,8 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 		MechStartFY(mech) = 0.0;
 		MechStartFZ(mech) = 0.0;
 		MechStatus(mech) |= LANDED;
+		if(MechMove(mech) == MOVE_VTOL)
+		     mech_notify(mech, MECH_ALL,"Your rotor has been destroyed!");
 		MechStatus(mech) |= FALLEN;
 		StopMoving(mech);
 	} else
