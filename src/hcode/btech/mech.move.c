@@ -1223,7 +1223,10 @@ void mech_jump(dbref player, void *data, char *buffer)
 	DOCHECK(MechX(mech) == mapx &&
 			MechY(mech) == mapy, "You're already in the target hex.");
 	sz = MechZ(mech);
-	tz = Elevation(mech_map, mapx, mapy);
+	if(GetRTerrain(mech_map, mapx, mapy) == ICE)
+		tz = 0;
+	else
+		tz = Elevation(mech_map, mapx, mapy);
 	jps = JumpSpeedMP(mech, mech_map);
 	DOCHECK(range > jps, "That target is out of range!");
 	if(MechType(mech) != CLASS_BSUIT && tempMech)
