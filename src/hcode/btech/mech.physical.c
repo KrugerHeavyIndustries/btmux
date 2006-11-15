@@ -871,6 +871,12 @@ void mech_charge(dbref player, void *data, char *buffer)
 			return;
 		}
 
+		if(MapNoFriendlyFire(mech_map) && (MechTeam(mech) == MechTeam(target))) {
+			mech_notify(mech, MECHALL, "You can't charge your own team!");
+			MechChargeTarget(mech) = -1;
+			return;
+		}
+
 		MechChargeTarget(mech) = MechTarget(mech);
 		mech_notify(mech, MECHALL, "Charge target set to default target.");
 		break;
@@ -900,6 +906,13 @@ void mech_charge(dbref player, void *data, char *buffer)
 			mech_notify(mech, MECHALL, "Invalid target data!");
 			return;
 		}
+
+		if(MapNoFriendlyFire(mech_map) && (MechTeam(mech) == MechTeam(target))) {
+			mech_notify(mech, MECHALL, "You can't charge your own team!");
+			MechChargeTarget(mech) = -1;
+			return;
+		}
+
 		// Don't allow charging mechwarriors.
 		if(MechType(target) == CLASS_MW) {
 			mech_notify(mech, MECHALL,
