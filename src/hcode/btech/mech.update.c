@@ -1554,6 +1554,9 @@ int recycle_weaponry(MECH * mech)
 		count = FindWeapons(mech, loop, weaptype, weapdata, crit);
 		for(i = 0; i < count; i++) {
 			if(WpnIsRecycling(mech, loop, crit[i])) {
+				/* Immediate recycle if its destroyed */
+				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED)
+					GetPartData(mech, loop, crit[i]) = 0;
 				if(diff >= GetPartData(mech, loop, crit[i])) {
 					GetPartData(mech, loop, crit[i]) = 0;
 					mech_printf(mech, MECHSTARTED,
