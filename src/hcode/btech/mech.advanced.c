@@ -710,43 +710,11 @@ void mech_inferno(dbref player, void *data, char *buffer)
 void mech_hotload(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	int wSection, wCritSlot, wWeapType;
-	int wWeapNum = 0;
-	int wcArgs = 0;
-	char *args[1];
-
-	cch(MECH_USUALO);
-
-	wcArgs = mech_parseattributes(buffer, args, 1);
-
-	DOCHECK(wcArgs < 1, "Please specify a weapon number.");
-	DOCHECK(Readnum(wWeapNum, args[0]), tprintf("Invalid value: %s",
-												args[0]));
-
-	wWeapType = FindWeaponNumberOnMech(mech, wWeapNum, &wSection, &wCritSlot);
-
-	DOCHECK(wWeapType == -1,
-			"The weapons system chirps: 'Illegal Weapon Number!'");
-	DOCHECK(wWeapType == -2,
-			"The weapons system chirps: 'That Weapon has been destroyed!'");
-	DOCHECK(wWeapType == -3,
-			"The weapon system chirps: 'That weapon is still reloading!'");
-	DOCHECK(wWeapType == -4,
-			"The weapon system chirps: 'That weapon is still recharging!'");
-	DOCHECK(!(MechWeapons[wWeapType].special & IDF),
-			"The weapon system chirps: 'That weapon can not be hotloaded!'");
-
-	if(GetPartFireMode(mech, wSection, wCritSlot) & HOTLOAD_MODE) {
-		mech_printf(mech, MECHALL,
-					"Hotloading for weapon %d has been toggled off.",
-					wWeapNum);
-		GetPartFireMode(mech, wSection, wCritSlot) &= ~HOTLOAD_MODE;
-	} else {
-		mech_printf(mech, MECHALL,
-					"Hotloading for weapon %d has been toggled on.",
-					wWeapNum);
-		GetPartFireMode(mech, wSection, wCritSlot) |= HOTLOAD_MODE;
-	}
+        cch(MECH_USUALMO);
+        mech_toggle_mode_sub(player, mech, buffer, 1, IDF, HOTLOAD_MODE, 1,
+                                                 "Hotloading for weapon %d has been toggled on.",
+                                                 "Hotloading for weapon %d has been toggled off.",
+                                                 "That weapon can not be hotloaded!");
 }
 
 void mech_cluster(dbref player, void *data, char *buffer)
