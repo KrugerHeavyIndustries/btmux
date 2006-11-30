@@ -961,7 +961,7 @@ static void mech_explode_event(MUXEVENT * e)
 	MECH *mech = (MECH *) e->data;
 	MAP *map;
 	int extra = (int) e->data2;
-	int i, j, damage;
+	int i, j, k, damage;
 	int z;
 	int dam;
 
@@ -993,6 +993,10 @@ static void mech_explode_event(MUXEVENT * e)
 			mech_notify(mech, MECHALL,
 						"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
 			z = MechZ(mech);
+			if(MechType(mech) == CLASS_BSUIT) {
+				for (k = 0; k < NUM_BSUIT_MEMBERS; k++)
+					DestroySection(mech,mech, -1, k);
+			}
 			DestroySection(mech, mech, -1, LTORSO);
 			DestroySection(mech, mech, -1, RTORSO);
 			DestroySection(mech, mech, -1, CTORSO);
