@@ -124,7 +124,7 @@ void check_stackpole(MECH * wounded, MECH * attacker)
 		int dam;
 
 		HexLOSBroadcast(map, MechX(wounded), MechY(wounded),
-						"%ch%crThe hit destroys last safety systems, "
+						"%ch%crThe hit destroys the last safety systems, "
 						"releasing the fusion reaction!%cn");
 
 		DestroySection(wounded, attacker, 0, CTORSO);
