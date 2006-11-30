@@ -1114,7 +1114,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 				isTooLow = 0;
 
 			// If it's a suit that's not on us, we can't physical it.
-			if(MechType(target) == CLASS_BSUIT && swarmingUs == 0) {
+			if(MechType(target) == CLASS_BSUIT && MechSwarmTarget(target) > 0) {
 				mech_printf(mech, MECHALL,
 							"You can't directly physical suits that are swarmed or mounted on another mech!");
 				return;
