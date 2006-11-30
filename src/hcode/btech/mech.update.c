@@ -1685,8 +1685,9 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 			le = lastelevation = 0;
 		}
 
-		if(MechZ(mech) < le)
+	/*	if(MechZ(mech) < le)
 			le = MechZ(mech);
+	*/
 	}
 
 	switch (MechMove(mech)) {
