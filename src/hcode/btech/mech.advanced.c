@@ -954,10 +954,7 @@ void mech_scharge(dbref player, void *data, char *buffer)
 	MECHEVENT(mech, EVENT_SCHARGE_FAIL, mech_scharge_event, 1, 0);
 }
 
-int doing_explode = 0;
-
-static void mech_explode_event(MUXEVENT * e)
-{
+static void mech_explode_event(MUXEVENT * e) {
 	MECH *mech = (MECH *) e->data;
 	MAP *map;
 	int extra = (int) e->data2;
@@ -972,16 +969,28 @@ static void mech_explode_event(MUXEVENT * e)
 		return;
 
 	if((--extra) % 256) {
-
 		mech_printf(mech, MECHALL,
-					"Self-destruction in %d second%s..", extra % 256,
-					extra > 1 ? "s" : "");
+				"Self-destruction in %d second%s..", extra % 256,
+				extra > 1 ? "s" : "");
 		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, extra);
-
 	} else {
-
 		SendDebug(tprintf("#%d explodes.", mech->mynum));
-		if(extra >= 256) {
+		if(MechType(mech) == CLASS_BSUIT) {
+			mech_notify(mech, MECHALL, "Your batttle suit triggers it's self-destruction sequence.. you faint.. (and die)");
+			MechLOSBroadcast(mech, "suddenly explodes!");
+			headhitmwdamage(mech, mech, 4);
+			for (k = 0; k < NUM_BSUIT_MEMBERS; k++)
+				DestroySection(mech,mech, -1, k);
+			MechZ(mech) += 6;
+		} else if(MechType(mech) != CLASS_MECH) {
+			mech_notify(mech, MECHALL, "Your life flashes before your eyes as your vehicle immolates itself... you faint.. (and die)");
+			MechLOSBroadcast(mech, "suddenly explodes!");
+			DestroySection(mech, mech, -1, 3); // This is the back side for vehicles
+			// and the aft for aero's.
+			headhitmwdamage(mech, mech, 4);
+			MechZ(mech) += 6;
+
+		} else if(extra >= 256) {
 			SendDebug(tprintf("#%d explodes [ammo]", mech->mynum));
 			mech_notify(mech, MECHALL, "All your ammo explodes!");
 			while ((damage = FindDestructiveAmmo(mech, &i, &j)))
@@ -989,44 +998,9 @@ static void mech_explode_event(MUXEVENT * e)
 		} else {
 			SendDebug(tprintf("#%d explodes [reactor]", mech->mynum));
 			MechLOSBroadcast(mech, "suddenly explodes!");
-			doing_explode = 1;
 			mech_notify(mech, MECHALL,
-						"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
-			z = MechZ(mech);
-			if(MechType(mech) == CLASS_BSUIT) {
-				for (k = 0; k < NUM_BSUIT_MEMBERS; k++)
-					DestroySection(mech,mech, -1, k);
-			}
-			DestroySection(mech, mech, -1, LTORSO);
-			DestroySection(mech, mech, -1, RTORSO);
-			DestroySection(mech, mech, -1, CTORSO);
-			DestroySection(mech, mech, -1, HEAD);
-			MechZ(mech) += 6;
-			doing_explode = 0;
-
-			if(mudconf.btech_explode_reactor > 1)
-				dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 15);
-			else
-				dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 10);
-
-			/* If the guy is on a map have it hit the hexes around it */
-			map = FindObjectsData(mech->mapindex);
-			if(map) {
-				blast_hit_hexesf(map, dam, 1, MAX(MechTons(mech) / 10,
-												  MechEngineSize(mech) / 25),
-								 MechFX(mech), MechFY(mech), MechFX(mech),
-								 MechFY(mech),
-								 "%ch%crYou bear full brunt of the blast!%cn",
-								 "is hit badly by the blast!",
-								 "%ch%cyYou receive some damage from the blast!%cn",
-								 "is hit by the blast!",
-								 mudconf.btech_explode_reactor > 1,
-								 mudconf.btech_explode_reactor > 1 ? 5 : 3, 5,
-								 1, 2);
-			}
-
-			MechZ(mech) = z;
-			headhitmwdamage(mech, mech, 4);
+					"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
+			reactor_explosion(mech, mech);
 		}
 	}
 }
@@ -1093,31 +1067,25 @@ void mech_explode(dbref player, void *data, char *buffer)
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "starts billowing smoke!");
 		time = time / 2;
-		if(override) time = 3;
-		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 	} else {
 		if(!override) {
 			DOCHECK(!mudconf.btech_explode_reactor,
 					"You can't bring yourself to do it!");
+			DOCHECK(MechType(mech) != CLASS_MECH,
+					"Only mechs can do the 'big boom' effect.");
+			DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
 		}
-		DOCHECK(MechType(mech) != CLASS_MECH,
-				"Only mechs can do the 'big boom' effect.");
-		DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
 		SendDebug(tprintf
 				  ("#%d in #%d initiates the reactor explosion sequence.",
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "loses reactions containment!");
-		if(override) time = 3;
-		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 		ammo = 0;
 	}
-	mech_notify(mech, MECHALL,
-				"Self-destruction sequence engaged ; please stand by.");
-	mech_printf(mech, MECHALL, "%s in %d seconds.",
-				ammo ? "The ammunition will explode" :
+	if(override) time = 3;
+	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
+	mech_notify(mech, MECHALL, "Self-destruction sequence engaged ; please stand by.");
+	mech_printf(mech, MECHALL, "%s in %d seconds.", ammo ? "The ammunition will explode" :
 				"The reactor will blow up", time);
-	/* Null out the pilot to disallow further commands */
-	MechPilot(mech) = -1;
 }
 
 static void mech_dig_event(MUXEVENT * e)
