@@ -1086,6 +1086,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	mech_notify(mech, MECHALL, "Self-destruction sequence engaged ; please stand by.");
 	mech_printf(mech, MECHALL, "%s in %d seconds.", ammo ? "The ammunition will explode" :
 				"The reactor will blow up", time);
+	MechPilot(mech) = -1; /* Pilot gives up control */
 }
 
 static void mech_dig_event(MUXEVENT * e)
