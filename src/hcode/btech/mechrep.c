@@ -1116,6 +1116,7 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 	
 	if(MechSections(mech)[section].criticals[critical].firemode & OS_MODE) {
 		notify(player,"Keeping One Shot Mode!");
+		MechSections(mech)[section].criticals[critical].ammomode = 0;
 	}
 	else
 	   if(!(MechSections(mech)[section].criticals[critical].firemode & HALFTON_MODE)) {

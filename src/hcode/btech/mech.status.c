@@ -1128,6 +1128,8 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 								   (wFireMode & OS_USED)) ||
 								  (wFireMode & ROCKET_FIRED)))
 				strcat(buffer, " (Empty)");
+				if(wFireMode & WILL_JETTISON_MODE)
+					strcat(buffer, " (backpack)");
 		}
 
 		if(PartIsBroken(mech, index, loop) && type != EMPTY &&
