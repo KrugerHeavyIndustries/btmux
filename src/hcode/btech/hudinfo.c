@@ -318,6 +318,8 @@ static char *hud_getammomode(MECH * mech, int mode)
 	static char amode[20];
 	char *p = amode;
 
+	if(mode & SGUIDED_MODE)
+		*p++ = 'G';
 	if(mode & SWARM1_MODE)
 		*p++ = '1';
 	if(mode & ARTEMIS_MODE)

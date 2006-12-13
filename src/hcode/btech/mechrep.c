@@ -1204,6 +1204,10 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 			case 'J':
 				MechSections(mech)[section].criticals[critical].firemode |= WILL_JETTISON_MODE;
 				break;
+			case 'G':
+			        MechSections(mech)[section].criticals[critical].ammomode |=
+				        SGUIDED_MODE;
+				break;
 			case '-':
 				MechSections(mech)[section].criticals[critical].ammomode = 0;
 				MechSections(mech)[section].criticals[critical].firemode = 0;

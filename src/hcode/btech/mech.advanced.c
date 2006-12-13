@@ -685,6 +685,17 @@ void mech_swarm(dbref player, void *data, char *buffer)
 						 "That weapon cannot be set to fire Swarm missiles!");
 }
 
+void mech_sguided(dbref player, void *data, char *buffer)
+{
+	MECH *mech = (MECH *) data;
+
+	cch(MECH_USUALMO);
+	mech_toggle_mode_sub(player, mech, buffer, 2, 0, SGUIDED_MODE, 0,
+						"Weapon %d has been set to fire Sguided missiles.",
+						"Weapon %d has been set to fire normal missiles",
+						"That weapon cannot be set to fire Sguided missiles!");
+}
+
 void mech_swarm1(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
