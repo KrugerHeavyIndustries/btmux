@@ -34,11 +34,7 @@
 #include "sqlchild.h"
 #endif
 
-extern void dispatch(void);
-extern char *silly_atr_get(dbref, int);
-
 struct event listen_sock_ev;
-
 #ifdef IPV6_SUPPORT
 struct event listen6_sock_ev;
 #endif
@@ -53,32 +49,97 @@ DESC *descriptor_list = NULL;
 
 void mux_release_socket();
 void make_nonblocking(int s);
-
+void accept_new_connection(int, short, void *);
 DESC *initializesock(int, struct sockaddr_storage *, int);
 DESC *new_connection(int);
 int process_input(DESC *);
 
-void accept_new_connection(int, short, void *);
+int desc_cmp(void *vleft, void *vright, void *token)
+{
+    dbref left = (dbref) vleft;
+    dbref right = (dbref) vright;
+
+    return (left - right);
+}
+
+void desc_addhash(DESC * d)
+{
+    DESC *hdesc;
+
+    bind_descriptor(d);
+
+    hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
+/*    if(!hdesc) {
+        dprintk("Creating new list root for '%s'(#%d) at %p.", 
+            Name(d->player), d->player, d); 
+    } else {
+        dprintk("Adding descriptor %p to list root at %p for '%s'(#%d).",
+        d, hdesc, Name(d->player), d->player);
+    }
+*/  
+    d->hashnext = hdesc;
+    rb_insert(mudstate.desctree, (void *) d->player, d);
+}
+
+void desc_delhash(DESC * d)
+{
+    char buffer2[4096];
+    DESC *hdesc = NULL;
+    char buffer[4096];
+/*    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player); */
+    hdesc = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
+/*    dprintk("removing descriptor %p from list root %p for '%s'(#%d).", d, hdesc, Name(d->player), d->player); */
+
+
+    if(!hdesc) {
+        snprintf(buffer, 4096,
+                 "desc_delhash: unable to find player(%d)'s descriptors from hashtable.\n",
+                 d->player);
+        log_text(buffer);
+        release_descriptor(d);
+        return;
+    }
+
+  /*  dprintk("hdesc: %p, d: %p, hdesc->hashnext: %p, d->hashnext: %p", hdesc,
+            d, hdesc->hashnext, d->hashnext);
+*/
+    if(hdesc == d && hdesc->hashnext) {
+  /*      dprintk("updating %d to use hashroot %p", d->player, d->hashnext);*/
+        rb_insert(mudstate.desctree, (void *) d->player, d->hashnext);
+        d->hashnext = NULL;
+        release_descriptor(d);
+        return;
+    } else if(hdesc == d) {
+/*        dprintk("removing %d table", d->player); */
+        rb_delete(mudstate.desctree, (void *) d->player);
+        release_descriptor(d);
+        return;
+    }
+
+    while(hdesc->hashnext != NULL) {
+        if(hdesc->hashnext == d) {
+            hdesc->hashnext = d->hashnext;
+            break;
+        }
+        hdesc = hdesc->hashnext;
+    }
+    d->hashnext = NULL;
+    release_descriptor(d);
+    return;
+}
 
 void bind_descriptor(DESC *d) {
     d->refcount++;
-#if 0
-    dprintk("%p bound, count %d", d, d->refcount);
-#endif
+    //dprintk("bound desciptor %p, refcount now %d", d, d->refcount);
 }
 
 void release_descriptor(DESC *d) {
     d->refcount--;
-#if 0
-    dprintk("%p released, count %d", d, d->refcount);
-#endif
+    //dprintk("descriptor %p released, refcount now %d", d, d->refcount);
     if(d->refcount == 0) {
         dprintk("%p destructing", d);
         freeqs(d);
 
-		/*
-		 * Is this desc still in interactive mode? 
-		 */
 		if(d->program_data != NULL) {
 			int num = 0;
             DESC *dtemp;
@@ -91,22 +152,49 @@ void release_descriptor(DESC *d) {
 				free(d->program_data);
 			}
 		}
+        clearstrings(d);
+        if(d->descriptor) {
+            fsync(d->descriptor);
+            event_del(&d->sock_ev);
+            shutdown(d->descriptor, 2);
+            close(d->descriptor);
+        }
+        d->descriptor = 0;
+        if(d->sock_buff)
+            bufferevent_free(d->sock_buff);
+        d->sock_buff = NULL;
+        
+/*        if(descriptor_list == d) {
+            descriptor_list = d->next;
+        } else {
+            if(!descriptor_list) {
+                dprintk("Oh sweet jesus, we have major braindamage.");
+                descriptor_list = d->next;
+            } else {
+                DESC *dtemp = descriptor_list;
+                while(dtemp->next != NULL) {
+                    if(dtemp->next == d) {
+                        dtemp->next = d->next;
+                        break;
+                    } else {
+                        dtemp = dtemp->next;
+                    }
+                }
+            }
+        }
 
-		free(d);
+        d->next = NULL;
+	*/
+	 if (d->prev)
+		     d->prev->next = d->next;
+	   else                          /* d was the first one! */
+		       descriptor_list = d->next;
+	     if (d->next)
+		         d->next->prev = d->prev;
+
+        ndescriptors--;
+        free(d);
     }
-}
-
-
-void set_lastsite(DESC * d, char *lastsite)
-{
-	char buf[LBUF_SIZE];
-
-	if(d->player) {
-		if(!lastsite)
-			lastsite = silly_atr_get(d->player, A_LASTSITE);
-		strcpy(buf, lastsite);
-		atr_add_raw(d->player, A_LASTSITE, buf);
-	}
 }
 
 void shutdown_services()
@@ -152,7 +240,7 @@ int bind_mux_socket(int port)
 		exit(4);
 	}
 	dprintk("connection socket raised and bound, %d", s);
-	listen(s, 5);
+	listen(s, 25);
 	return s;
 }
 
@@ -172,15 +260,16 @@ void mux_release_socket()
 int eradicate_broken_fd(int fd)
 {
 	struct stat statbuf;
-	DESC *d;
+	DESC *d, *dtemp;
 
-	DESC_ITER_ALL(d) {
+	DESC_SAFEITER_ALL(d, dtemp) {
 		if((fd && d->descriptor == fd) ||
 		   (!fd && fstat(d->descriptor, &statbuf) < 0)) {
 			/* An invalid player connection... eject, eject, eject. */
 			log_error(LOG_PROBLEMS, "ERR", "EBADF",
 					  "Broken descriptor %d for player #%d", d->descriptor,
 					  d->player);
+            close(d->descriptor);
 			shutdownsock(d, R_SOCKDIED);
 		}
 	}
@@ -204,15 +293,18 @@ int eradicate_broken_fd(int fd)
 void accept_client_input(int fd, short event, void *arg)
 {
 	DESC *connection = (DESC *) arg;
+	if(connection->descriptor != fd) return;
+
+    //dprintk("callback on fd %d DESC %p", fd, arg);
 
 	if(connection->flags & DS_AUTODARK) {
 		connection->flags &= ~DS_AUTODARK;
 		s_Flags(connection->player, Flags(connection->player) & ~DARK);
 	}
-
-	if(!process_input(connection)) {
-		shutdownsock(connection, R_SOCKDIED);
-	}
+    bind_descriptor(connection);
+	process_input(connection);
+    //dprintk("finish on fd %d DESC %p", fd, arg);
+    release_descriptor(connection);
 }
 
 void bsd_write_callback(struct bufferevent *bufev, void *arg)
@@ -260,8 +352,6 @@ void shovechars(int port)
 	queue_slice.tv_sec = 0;
 	queue_slice.tv_usec = mudconf.timeslice * 1000;
 
-	mudstate.debug_cmd = (char *) "< shovechars >";
-
 	dprintk("shovechars starting, sock is %d.", mux_bound_socket);
 #ifdef IPV6_SUPPORT
 	dprintk("shovechars starting, ipv6 sock is %d.", mux_bound_socket);
@@ -295,14 +385,12 @@ void shovechars(int port)
 void accept_new_connection(int sock, short event, void *arg)
 {
 	int newsock, addr_len, len;
-	char *buff, *buff1, *cmdsave;
+	char *buff, *buff1;
 	DESC *d;
 	struct sockaddr_storage addr;
 	char addrname[1024];
 	char addrport[32];
 
-	cmdsave = mudstate.debug_cmd;
-	mudstate.debug_cmd = (char *) "< new_connection >";
 
 	addr_len = sizeof(struct sockaddr);
 
@@ -330,7 +418,6 @@ void accept_new_connection(int sock, short event, void *arg)
 
 		d = initializesock(newsock, &addr, addr_len);
 	}
-	mudstate.debug_cmd = cmdsave;
 	return;
 }
 
@@ -374,12 +461,10 @@ void shutdownsock(DESC * d, int reason)
 	int i, num;
 	DESC *dtemp;
 
-	if((reason == R_LOGOUT) &&
-	   (site_check(&d->saddr, d->saddr_len,
-				   mudstate.access_list) == H_FORBIDDEN))
-		reason = R_QUIT;
+/*    dprintk("shutdownsock called on %p %s(#%d) refcount %d", 
+        d, (d->player?Name(d->player):""), d->player, d->refcount); */
 
-	if(d->flags & DS_CONNECTED) {
+    if(d->flags & DS_CONNECTED) {
 		if(d->outstanding_dnschild_query)
 			dnschild_kill(d->outstanding_dnschild_query);
 
@@ -392,6 +477,7 @@ void shutdownsock(DESC * d, int reason)
 		if(reason != R_LOGOUT) {
 			fcache_dump(d, FC_QUIT);
 		}
+
 		log_error(LOG_NET | LOG_LOGIN, "NET", "DISC",
 				  "[%d/%s] Logout by %s(#%d), <Reason: %s>",
 				  d->descriptor, d->addr, Name(d->player), d->player,
@@ -411,49 +497,14 @@ void shutdownsock(DESC * d, int reason)
 				  d->command_count, mudstate.now - d->connected_at,
 				  Location(d->player), Pennies(d->player), d->addr,
 				  disc_reasons[reason], Name(d->player));
-		announce_disconnect(d->player, d, disc_messages[reason]);
-	} else {
-		if(reason == R_LOGOUT) {
-			reason = R_QUIT;
-			log_error(LOG_SECURITY | LOG_NET, "NET", "DISC",
-					  "[%d/%s] Connection closed, never connected. <Reason: %s>",
-					  d->descriptor, d->addr, disc_reasons[reason]);
 
-		}
+        announce_disconnect(d->player, d, disc_messages[reason]);
+        desc_delhash(d);
+
 	}
-
-	clearstrings(d);
-	if(reason == R_LOGOUT) {
-		d->flags &= ~DS_CONNECTED;
-		d->connected_at = mudstate.now;
-		d->retries_left = mudconf.retry_limit;
-		d->command_count = 0;
-		d->timeout = mudconf.idle_timeout;
-		d->player = 0;
-		d->doing[0] = '\0';
-		d->hudkey[0] = '\0';
-		d->quota = mudconf.cmd_quota_max;
-		d->last_time = 0;
-		d->host_info =
-			site_check(&d->saddr, d->saddr_len, mudstate.access_list) |
-			site_check(&d->saddr, d->saddr_len, mudstate.suspect_list);
-		d->input_tot = d->input_size;
-		d->output_tot = 0;
-		welcome_user(d);
-	} else {
-		event_del(&d->sock_ev);
-		shutdown(d->descriptor, 2);
-		close(d->descriptor);
-		bufferevent_free(d->sock_buff);
-
-		*d->prev = d->next;
-		if(d->next)
-			d->next->prev = d->prev;
-        d->flags |= DS_DEAD;
-        release_descriptor(d);
-		
-		ndescriptors--;
-	}
+    d->flags |= DS_DEAD;
+    release_descriptor(d);
+   /* dprintk("shutdown."); */
 }
 
 void make_nonblocking(int s)
@@ -508,11 +559,8 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 	d->host_info =
 		site_check(saddr, saddr_len, mudstate.access_list) |
 		site_check(saddr, saddr_len, mudstate.suspect_list);
-	d->player = 0;				/*
-								 * be sure #0 isn't wizard.  Shouldn't be. 
-								 */
+	d->player = 0;			
 	d->chokes = 0;
-
 	d->addr[0] = '\0';
 	d->doing[0] = '\0';
 	d->hudkey[0] = '\0';
@@ -533,17 +581,17 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 	d->last_time = 0;
 	memcpy(&d->saddr, saddr, saddr_len);
 	d->saddr_len = saddr_len;
-    d->refcount = 1;
 
-	if(descriptor_list)
-		descriptor_list->prev = &d->next;
 	d->hashnext = NULL;
-	d->next = descriptor_list;
-	d->prev = &descriptor_list;
 	getnameinfo((struct sockaddr *) saddr, saddr_len, d->addr,
 				sizeof(d->addr), NULL, 0, NI_NUMERICHOST);
-	descriptor_list = d;
 
+	if (descriptor_list)
+		descriptor_list->prev = d;
+        d->next = descriptor_list;
+        d->prev = NULL;
+        descriptor_list = d;
+       
 	d->outstanding_dnschild_query = dnschild_request(d);
 
 	d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
@@ -551,23 +599,25 @@ DESC *initializesock(int s, struct sockaddr_storage *saddr, int saddr_len)
 								   NULL);
 	bufferevent_disable(d->sock_buff, EV_READ);
 	bufferevent_enable(d->sock_buff, EV_WRITE);
-	event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST,
-			  accept_client_input, d);
+	event_set(&d->sock_ev, d->descriptor, EV_READ | EV_PERSIST, 
+        accept_client_input, d);
 	event_add(&d->sock_ev, NULL);
-
+    bind_descriptor(d);
 	welcome_user(d);
 	return d;
 }
 
 int process_input(DESC * d)
 {
-	static char buf[LBUF_SIZE];
+	char buf[LBUF_SIZE];
 	int got, in, iter;
     char current;
-	char *cmdsave;
 
-	cmdsave = mudstate.debug_cmd;
-	mudstate.debug_cmd = (char *) "< process_input >";
+    if(d->flags & DS_DEAD) { 
+        dprintk("Bailing on process_input %p %d %s %d", 
+        d, d->descriptor, (d->player?Name(d->player):""), d->player);
+        return 0;
+    }
 
     memset(buf, 0, sizeof(buf));
 
@@ -578,8 +628,13 @@ int process_input(DESC * d)
 			return 1;
         else if(errno == EAGAIN)
             return 1;
-		else
-			return 0;
+		else {
+            dprintk("error %s (errno %d) read on fd %d descriptor %p %s(%d)\n",
+            strerror(errno), errno,
+                d->descriptor, d, (d->player?Name(d->player):""), d->player);
+            shutdownsock(d, R_SOCKDIED);
+            return 1;
+        }
 	}
 
     bind_descriptor(d);
@@ -592,9 +647,21 @@ int process_input(DESC * d)
 	for(iter = 0; iter < got; iter++) {
         current = buf[iter];
         if(current == '\n') {
-            run_command(d, (char *)d->input);
+            if(d->flags & DS_CONNECTED) {
+                //dprintk("authed as %s running command '%s' refcount %d descriptor %p fd %d", Name(d->player), d->input, d->refcount, d, d->descriptor);
+                run_command(d, (char *)d->input);
+            } else {
+                //dprintk("unauth running command '%s' refcount %d descriptor %p fd %d", d->input, d->refcount, 
+                //d, d->descriptor);
+                if(!do_unauth_command(d, d->input))  {
+                    dprintk("logout on %p fd %d, bailing.", d, d->descriptor);
+                    shutdownsock(d, R_QUIT);
+                    break;
+                }
+            }
             memset(d->input, 0, sizeof(d->input));
             d->input_tail = 0;
+            if(d->flags & DS_DEAD) break;
         } else if(current == '\b' || current == 0x7f) {
             if(current == 127) {
                 queue_string(d, "\b \b");
@@ -602,18 +669,20 @@ int process_input(DESC * d)
                 queue_string(d, " \b");
             }
             if(d->input_tail > 0) {
-                d->input[d->input_tail--] = '\0';
+                d->input[--d->input_tail] = '\0';
             }
+            d->input_size--;
         } else if(isascii(current) && isprint(current)) {
             if(d->input_tail >= sizeof(d->input)) {
                 continue;
             }
             d->input[d->input_tail++] = current;
+            d->input_size++;
         }
 	}
+    //dprintk("finished %p fd %d", d, d->descriptor);
 
     release_descriptor(d);
-	mudstate.debug_cmd = cmdsave;
 	return 1;
 }
 
@@ -635,13 +704,6 @@ void flush_sockets()
 			d->chokes = 0;
 		}
 		if(d->sock_buff && EVBUFFER_LENGTH(d->sock_buff->output)) {
-			dprintk("sock %d for user #%d output evbuffer misalign: %d, totallen: %d, off: %d, pending %d.",
-				 (int) d->descriptor, 
-                 (int) d->player,
-                 (int) d->sock_buff->output->misalign,
-				 (int) d->sock_buff->output->totallen,
-				 (int) d->sock_buff->output->off, 
-                 EVBUFFER_LENGTH(d->sock_buff->output));
 			evbuffer_write(d->sock_buff->output, d->descriptor);
 		}
 		fsync(d->descriptor);
@@ -654,7 +716,7 @@ void close_sockets(int emergency, char *message)
 
 	DESC_SAFEITER_ALL(d, dnext) {
 		if(emergency) {
-			WRITE(d->descriptor, message, strlen(message));
+			write(d->descriptor, message, strlen(message));
 			if(shutdown(d->descriptor, 2) < 0)
 				log_perror("NET", "FAIL", NULL, "shutdown");
 			dprintk("shutting down fd %d", d->descriptor);
@@ -665,6 +727,7 @@ void close_sockets(int emergency, char *message)
 			fsync(d->descriptor);
 			if(d->outstanding_dnschild_query)
 				dnschild_kill(d->outstanding_dnschild_query);
+            d->outstanding_dnschild_query = NULL;
 			event_loop(EVLOOP_ONCE);
 			event_del(&d->sock_ev);
 			bufferevent_free(d->sock_buff);
@@ -679,7 +742,6 @@ void close_sockets(int emergency, char *message)
 	event_del(&listen_sock_ev);
 }
 
-void emergency_shutdown(void)
-{
+void emergency_shutdown(void) {
 	close_sockets(1, (char *) "Going down - Bye.\n");
 }

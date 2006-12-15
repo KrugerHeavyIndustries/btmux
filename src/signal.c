@@ -84,11 +84,12 @@ void bind_signals()
     }
     dprintk("binding signals.");
     dperror(sigaction(SIGTERM, &saTERM, NULL) <0);
-	sigaction(SIGPIPE, &saPIPE, NULL);
+//	sigaction(SIGPIPE, &saPIPE, NULL);
 	sigaction(SIGUSR1, &saUSR1, NULL);
 	sigaction(SIGSEGV, &saSEGV, NULL);
 	sigaction(SIGBUS, &saBUS, NULL);
     signal(SIGCHLD, SIG_IGN);
+    signal(SIGPIPE, SIG_IGN);
     dprintk("done.");
 }
 

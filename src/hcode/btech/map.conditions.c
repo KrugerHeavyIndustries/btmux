@@ -112,54 +112,43 @@ void UpdateConditions(MECH * mech, MAP * map)
 		MechStatus(mech) |= UNDERVACUUM;
 }
 
-extern int doing_explode;
-
-void check_stackpole(MECH * wounded, MECH * attacker)
+void reactor_explosion(MECH * wounded, MECH * attacker)
 {
-	if(mudconf.btech_stackpole && !doing_explode &&
-	   (MechBoomStart(wounded) + MAX_BOOM_TIME) >= muxevent_tick &&
-	   Roll() >= BOOM_BTH && (Started(wounded) || Starting(wounded))) {
+	int z = MechZ(wounded);
+	MAP *map = getMap(wounded->mapindex);
+	dbref wounded_pilot = MechPilot(wounded);
+	int dam;
 
-		int z = MechZ(wounded);
-		MAP *map = getMap(wounded->mapindex);
-		dbref wounded_pilot = MechPilot(wounded);
-		int dam;
+	DestroySection(wounded, attacker, 0, CTORSO);
+	DestroySection(wounded, attacker, 0, LTORSO);
+	DestroySection(wounded, attacker, 0, RTORSO);
+	DestroySection(wounded, attacker, 0, LLEG);
+	DestroySection(wounded, attacker, 0, RLEG);
 
-		HexLOSBroadcast(map, MechX(wounded), MechY(wounded),
-						"%ch%crThe hit destroys last safety systems, "
-						"releasing the fusion reaction!%cn");
+	/* Need to autoeject before the explosion reaches the head */
+	if(!MapIsUnderground(map))
+		autoeject(wounded_pilot, wounded, 0);
 
-		DestroySection(wounded, attacker, 0, CTORSO);
-		DestroySection(wounded, attacker, 0, LTORSO);
-		DestroySection(wounded, attacker, 0, RTORSO);
-		DestroySection(wounded, attacker, 0, LLEG);
-		DestroySection(wounded, attacker, 0, RLEG);
+	DestroySection(wounded, attacker, 0, HEAD);
+	MechZ(wounded) += 6;
+	dam = MAX(MechTons(wounded) / 5, MechEngineSize(wounded) / 10);
 
-		/* Need to autoeject before the explosion reaches the head */
-		if(!MapIsUnderground(map))
-			autoeject(wounded_pilot, wounded, 0);
+	ScrambleInfraAndLiteAmp(wounded, 4, 0,
+			"The searing blast of heat burns out your sensors!",
+			"The blinding flash of light overloads your sensors!");
 
-		DestroySection(wounded, attacker, 0, HEAD);
-		MechZ(wounded) += 6;
-		dam = MAX(MechTons(wounded) / 5, MechEngineSize(wounded) / 10);
-
-		ScrambleInfraAndLiteAmp(wounded, 4, 0,
-								"The searing blast of heat burns out your sensors!",
-								"The blinding flash of light overloads your sensors!");
-
-		blast_hit_hexesf(map, dam, 3,
-						 MAX(MechTons(wounded) / 10,
-							 MechEngineSize(wounded) / 25),
-						 MechFX(wounded), MechFY(wounded),
-						 MechFX(wounded), MechFY(wounded),
-						 "%ch%crYou bear full brunt of the blast!%cn",
-						 "is hit badly by the blast!",
-						 "%ch%cyYou receive some damage from the blast!%cn",
-						 "is hit by the blast!",
-						 mudconf.btech_explode_reactor > 1, 3, 5, 1, 2);
-		MechZ(wounded) = z;
-		headhitmwdamage(wounded, attacker, 4);
-	}
+	blast_hit_hexesf(map, dam, 3,
+			MAX(MechTons(wounded) / 10,
+				MechEngineSize(wounded) / 25),
+			MechFX(wounded), MechFY(wounded),
+			MechFX(wounded), MechFY(wounded),
+			"%ch%crYou bear full brunt of the blast!%cn",
+			"is hit badly by the blast!",
+			"%ch%cyYou receive some damage from the blast!%cn",
+			"is hit by the blast!",
+			mudconf.btech_explode_reactor > 1, 3, 5, 1, 2);
+	MechZ(wounded) = z;
+	headhitmwdamage(wounded, attacker, 4);
 }
 
 void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
@@ -257,7 +246,21 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 								mech_notify(attacker, MECHALL,
 											"You destroy the engine!!");
 						}
-						check_stackpole(wounded, attacker);
+						//check_stackpole(wounded, attacker);
+
+						if(mudconf.btech_stackpole && 
+								(MechBoomStart(wounded) + MAX_BOOM_TIME) >= muxevent_tick &&
+								Roll() >= BOOM_BTH && (Started(wounded) || Starting(wounded))) {
+
+							HexLOSBroadcast(getMap(wounded->mapindex), MechX(wounded), MechY(wounded),
+									"%ch%crThe hit destroys the last safety systems, "
+									"releasing the fusion reaction!%cn");
+
+
+							reactor_explosion(wounded, attacker);	
+						}
+
+
 						DestroyMech(wounded, attacker, 1);
 					}
 					break;

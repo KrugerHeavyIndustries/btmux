@@ -18,6 +18,8 @@ void map_setconditions(dbref player, MAP * map, char *buffer);
 void UpdateConditions(MECH * mech, MAP * map);
 void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
     int IsDisable);
+void reactor_explosion(MECH *wounded, MECH *attacker);
+
 int BreachLoc(MECH * attacker, MECH * mech, int hitloc);
 int PossiblyBreach(MECH * attacker, MECH * mech, int hitloc);
 

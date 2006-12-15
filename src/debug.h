@@ -20,7 +20,7 @@
     time(&now); localtime_r(&now, &tm); gettimeofday(&tv, NULL); \
     fprintf(stderr, "%02d%02d%02d.%08d:%5d %s (%s:%d] '%s' failed with '%s'\n", \
             tm.tm_hour, tm.tm_min, tm.tm_sec, (int)tv.tv_usec, getpid(), __FUNCTION__, \
-            __FILE__, __LINE__, #x, strerror(errno)); abort(); } } while(0)
+            __FILE__, __LINE__, #x, strerror(errno));  } } while(0)
 
 
 /* DEBUG only error messages */

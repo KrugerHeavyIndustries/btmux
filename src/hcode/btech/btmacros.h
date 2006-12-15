@@ -408,8 +408,6 @@ do { MechSections(a)[b].config &= ~SECTION_BREACHED ; SetWCheck(a); } while (0)
 #define Starting(a)          muxevent_count_type_data(EVENT_STARTUP,(void *) a)
 #define Recovering(a)        muxevent_count_type_data(EVENT_RECOVERY,(void *) a)
 #define TakingOff(a)         muxevent_count_type_data(EVENT_TAKEOFF,(void *) a)
-#define NextRecycle(a)       muxevent_first_type_data(EVENT_RECYCLE,(void *) a)
-#define Recycling(a)         (NextRecycle(a) >= 0 ? 1 : 0)
 #define FlyingT(a)           (is_aero(a) || MechMove(a) == MOVE_VTOL)
 #define RollingT(a)          ((MechType(a) == CLASS_AERO) || (MechType(a) == CLASS_DS))
 #define MaybeMove(a) \
@@ -417,9 +415,9 @@ do { if (!Moving(a) && Started(a) && (!Fallen(mech) || MechType(a) == CLASS_MECH
    MECHEVENT(a,EVENT_MOVE,is_aero(a) ? aero_move_event : mech_move_event,\
 	     MOVE_TICK,0); } while (0)
 #define SetRecyclePart(a,b,c,d) \
-do { MaybeRecycle(a,d) ; SetPartData(a,b,c,d); } while (0)
+do { UpdateRecycling(a) ; SetPartData(a,b,c,d); } while (0)
 #define SetRecycleLimb(a,b,c) \
-do { MaybeRecycle(a,c) ; (a)->ud.sections[b].recycle=c; } while (0)
+do { UpdateRecycling(a) ; (a)->ud.sections[b].recycle=c; } while (0)
 #define UpdateRecycling(a) \
 do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_tick) \
     recycle_weaponry(a); } while (0)
@@ -495,7 +493,7 @@ MechStatus(a) &= ~LOCK_MODES
 #endif
 
 #define Startup(a)           \
-    do { MechStatus(a) |= STARTED;MechTurnDamage(a) = 0;MaybeRecycle(a,1); \
+    do { MechStatus(a) |= STARTED;MechTurnDamage(a) = 0;UpdateRecycling(a); \
     MechNumSeen(a)=0; StartSeeing(a); } while (0)
 
 #define Shutdown(a)          \

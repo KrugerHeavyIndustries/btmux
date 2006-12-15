@@ -107,7 +107,7 @@ struct descriptor_data {
     void *outstanding_dnschild_query;
     struct descriptor_data *hashnext;
     struct descriptor_data *next;
-    struct descriptor_data **prev;
+    struct descriptor_data *prev;
     struct event sock_ev;
     struct bufferevent *sock_buff;
 };

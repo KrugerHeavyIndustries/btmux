@@ -18,8 +18,14 @@
 #include "p.btechstats.h"
 #include "p.mech.sensor.h"
 #include "p.mech.partnames.h"
+#include "p.mech.combat.misc.h"
 
 #undef WEAPON_RECYCLE_DEBUG
+
+void mech_heartbeat(MECH *mech) {
+    UpdateRecycling(mech);
+    return;
+}
 
 static int factoral(int n)
 {
@@ -129,15 +135,6 @@ void mech_recovery_event(MUXEVENT * e)
 	}
 }
 
-void mech_recycle_event(MUXEVENT * e)
-{
-	MECH *mech = (MECH *) e->data;
-	int t;
-
-	if((t = recycle_weaponry(mech)) > 0)
-		MaybeRecycle(mech, t);
-}
-
 void ProlongUncon(MECH * mech, int len)
 {
 	int l;
@@ -152,31 +149,6 @@ void ProlongUncon(MECH * mech, int len)
 	l = muxevent_last_type_data(EVENT_RECOVERY, (void *) mech) + len;
 	muxevent_remove_type_data(EVENT_RECOVERY, (void *) mech);
 	MECHEVENT(mech, EVENT_RECOVERY, mech_recovery_event, l, 0);
-}
-
-void MaybeRecycle(MECH * mech, int wticks)
-{
-	int nr, dat;
-
-	if(!(Started(mech) && !Destroyed(mech)))
-		return;
-	nr = NextRecycle(mech);
-	UpdateRecycling(mech);
-	if(nr < 0)
-		MechLWRT(mech) = muxevent_tick;
-	if(nr < 0 || nr > ((wticks + 1))) {
-		dat = MAX(1, wticks);
-		MECHEVENT(mech, EVENT_RECYCLE, mech_recycle_event, dat, 0);
-#ifdef WEAPON_RECYCLE_DEBUG
-		SendDebug(tprintf("%6d Recycle event for #%d set in %ds.",
-						  muxevent_tick, mech->mynum, dat));
-#endif
-	}
-#ifdef WEAPON_RECYCLE_DEBUG
-	else
-		SendDebug(tprintf("%6d Recycle event for #%d exists at %d secs",
-						  muxevent_tick, mech->mynum, nr));
-#endif
 }
 
 struct foo {
@@ -395,7 +367,7 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
 	MECH *objMech = (MECH *) objEvent->data;	/* get the mech */
 	int wWeapNum = (int) objEvent->data2;	/* and now the weapon number */
 	int wSect, wSlot, wWeapStatus, wWeapIdx;
-	int ammoLoc, ammoCrit, ammoLeft;
+	int ammoLoc, ammoCrit,ammoLoc1, ammoCrit1;
 	int wRoll = 0;
 	int wRollNeeded = 0;
 
@@ -408,11 +380,8 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
 		return;
 
 	wWeapIdx = FindWeaponIndex(objMech, wWeapNum);
-	ammoLeft =
-		FindAmmoForWeapon_sub(objMech, wSect, wSlot, wWeapIdx, 0, &ammoLoc,
-							  &ammoCrit, 0, 0);
 
-	if(!ammoLeft) {
+	if(!FindAndCheckAmmo(objMech, wWeapIdx, wSect, wSlot, &ammoLoc, &ammoCrit, &ammoLoc1, &ammoCrit1, 0)) {
 		SetPartTempNuke(objMech, wSect, wSlot, 0);
 
 		mech_printf(objMech, MECHALL,
@@ -450,8 +419,8 @@ void mech_unjam_ammo_event(MUXEVENT * objEvent)
 				get_parts_long_name(I2Weapon(wWeapIdx), 0));
 	MechLOSBroadcast(objMech, "ejects a mangled shell!");
 
-	SetPartData(objMech, ammoLoc, ammoCrit, GetPartData(objMech, ammoLoc,
-														ammoCrit) - 1);
+	decrement_ammunition(objMech, wWeapNum, wSect, wSlot, ammoLoc, ammoCrit, ammoLoc1, ammoCrit1, 0);
+
 }
 
 void check_stagger_event(MUXEVENT * event)

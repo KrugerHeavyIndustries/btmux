@@ -484,7 +484,6 @@ void DamageMech(MECH * wounded,
 			if(Dumping(wounded) && ((hitloc == CTORSO) ||
 									(hitloc == LTORSO) ||
 									(hitloc == RTORSO)) && (cause >= 0))
-				if(Roll() <= 7)
 					tBlowDumpingAmmo = 1;
 		} else {
 			if(hitloc == FSIDE)
@@ -843,7 +842,8 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 				  ((hitloc == RARM || hitloc == LARM)
 				   && (MechIsQuad(wounded))));
 	dbref wounded_pilot = MechPilot(wounded);
-
+	MECH *ttarget;
+	
 	/* Prevent the rare occurance of a section getting destroyed twice */
 	if(SectIsDestroyed(wounded, hitloc)) {
 		fprintf(stderr, "Double-desting section %d on mech #%d\n",
@@ -868,7 +868,17 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* uncycle the section <in the case of an arm/leg that was kicking getting blown */
 	SetRecycleLimb(wounded, hitloc, 0);
-
+	
+	/* drop off what we were carrying, since we really can't pick it up with one arm */
+	if((hitloc == RARM || hitloc == LARM)) {
+		if(MechCarrying(wounded) > 0) {
+			if((ttarget = getMech(MechCarrying(wounded)))) {
+				mech_notify(ttarget, MECHALL, "Your tow lines go suddenly slack!");
+				mech_dropoff(GOD, wounded, "");
+			}
+		}
+	}
+		
 	/* Tell the attacker about it... */
 	if(attacker) {
 		ArmorStringFromIndex(hitloc, locname, MechType(wounded),
@@ -1085,6 +1095,7 @@ void mech_damage(dbref player, MECH * mech, char *buffer)
 	DOCHECK(Readnum(iscritical, args[3]), "Invalid iscritical flag!");
 	DOCHECK(damage <= 0 || damage > 1000, "Invalid damage!");
 	DOCHECK(clustersize <= 0, "Invalid cluster size!");
+	DOCHECK(clustersize > damage, "Invalid cluster size! (must be smaller than damage amount, but > 0)");
 	DOCHECK(MechType(mech) == CLASS_MW, "No MW killings!");
 	Missile_Hit(mech, mech, -1, -1, isrear, iscritical, 0, -1, -1,
 				clustersize, damage / clustersize, 1, 0, 0, 0);

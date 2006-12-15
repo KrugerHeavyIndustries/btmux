@@ -871,6 +871,12 @@ void mech_charge(dbref player, void *data, char *buffer)
 			return;
 		}
 
+		if(MapNoFriendlyFire(mech_map) && (MechTeam(mech) == MechTeam(target))) {
+			mech_notify(mech, MECHALL, "You can't charge your own team!");
+			MechChargeTarget(mech) = -1;
+			return;
+		}
+
 		MechChargeTarget(mech) = MechTarget(mech);
 		mech_notify(mech, MECHALL, "Charge target set to default target.");
 		break;
@@ -900,6 +906,13 @@ void mech_charge(dbref player, void *data, char *buffer)
 			mech_notify(mech, MECHALL, "Invalid target data!");
 			return;
 		}
+
+		if(MapNoFriendlyFire(mech_map) && (MechTeam(mech) == MechTeam(target))) {
+			mech_notify(mech, MECHALL, "You can't charge your own team!");
+			MechChargeTarget(mech) = -1;
+			return;
+		}
+
 		// Don't allow charging mechwarriors.
 		if(MechType(target) == CLASS_MW) {
 			mech_notify(mech, MECHALL,
@@ -1101,7 +1114,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 				isTooLow = 0;
 
 			// If it's a suit that's not on us, we can't physical it.
-			if(MechType(target) == CLASS_BSUIT && swarmingUs == 0) {
+			if(MechType(target) == CLASS_BSUIT && MechSwarmTarget(target) > 0) {
 				mech_printf(mech, MECHALL,
 							"You can't directly physical suits that are swarmed or mounted on another mech!");
 				return;
@@ -1329,7 +1342,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			// nail us for damage.
 		}						// end if() - Suit + Swarmed + Physical + Self Damage checks
 
-		if(AttackType == PA_KICK || AttackType == PA_CLUB ||
+/* Removed fall check for clubs -- Power_Shaper 09/25/06 */
+		if(AttackType == PA_KICK ||
 		   AttackType == PA_MACE) {
 			int failRoll = (AttackType == PA_KICK ? 0 : 2);
 
@@ -1520,9 +1534,9 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
 }								// end PhysicalDamage()
 
 #define CHARGE_SECTIONS 6
-#define DFA_SECTIONS    4
+#define DFA_SECTIONS    6
+/* Rules make no distinction about Torso not needing recycled  We'll let Head slide for now */
 
-/* 4 if pure FASA */
 
 const int resect[CHARGE_SECTIONS] =
 	{ LARM, RARM, LLEG, RLEG, LTORSO, RTORSO };

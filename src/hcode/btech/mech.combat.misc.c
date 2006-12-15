@@ -120,23 +120,6 @@ void decrement_ammunition(MECH * mech,
 	}
 }
 
-void mech_ammowarn_event(MUXEVENT * e)
-{
-	MECH *mech = (MECH *) e->data;
-	int data = (int) e->data2;
-	int sev = data / 65536;
-	int weapindx = data % 65536;
-
-	if(!Started(mech))
-		return;
-	if(weapindx < 0)
-		return;
-	mech_printf(mech, MECHALL,
-				"%sWARNING: Ammo for %s is running low.%%c",
-				sev ? "%ch%cr" : "%ch%cy",
-				get_parts_long_name(I2Weapon(weapindx), 0));
-}
-
 void ammo_expedinture_check(MECH * mech, int weapindx, int ns)
 {
 	int targ = I2Ammo(weapindx);
@@ -167,8 +150,10 @@ void ammo_expedinture_check(MECH * mech, int weapindx, int ns)
 	else
 		return;
 	/* Okay, we have case of warning here */
-	MECHEVENT(mech, EVENT_AMMOWARN, mech_ammowarn_event, 1,
-			  (sev * 65536 + weapindx));
+        if(Started(mech))
+		if ((sev * 65536 + weapindx) % 65536)
+		        mech_printf(mech, MECHALL,"%sWARNING: Ammo for %s is running low.%%c",sev? "%ch%cr" : "%ch%cy",
+					get_parts_long_name(I2Weapon(weapindx), 0));
 }
 
 void heat_effect(MECH * mech, MECH * tempMech, int heatdam, int fromInferno)
@@ -264,6 +249,9 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	int loop;
 	MAP *mech_map;
 	MECH *ttarget;
+	MECH *ctarget;
+
+	dbref a,b;
 
 	if(Destroyed(target)) {
 		return;
@@ -309,6 +297,16 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 			}
 		}
 	}
+
+	/* destroy contents if they are units and the containter is IC*/
+	SAFE_DOLIST(a,b,Contents(target->mynum))
+		if(IsMech(a) && In_Character(a)) {
+			ctarget = getMech(a);
+			mech_notify(ctarget, MECHALL, "Due to your transports destruction, your unit is destroyed!");
+			mech_udisembark(a, ctarget, "");
+			DestroyMech(ctarget,mech,0);
+		}
+	
 	/* shut it down */
 	if(mech) {
 		DestroyAndDump(target);

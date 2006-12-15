@@ -1554,6 +1554,9 @@ int recycle_weaponry(MECH * mech)
 		count = FindWeapons(mech, loop, weaptype, weapdata, crit);
 		for(i = 0; i < count; i++) {
 			if(WpnIsRecycling(mech, loop, crit[i])) {
+				/* Immediate recycle if its destroyed */
+				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED)
+					GetPartData(mech, loop, crit[i]) = 0;
 				if(diff >= GetPartData(mech, loop, crit[i])) {
 					GetPartData(mech, loop, crit[i]) = 0;
 					mech_printf(mech, MECHSTARTED,
@@ -1682,8 +1685,9 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 			le = lastelevation = 0;
 		}
 
-		if(MechZ(mech) < le)
+	/*	if(MechZ(mech) < le)
 			le = MechZ(mech);
+	*/
 	}
 
 	switch (MechMove(mech)) {
@@ -1911,7 +1915,6 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 										 WalkingSpeed(MMaxSpeed(mech)));
 #ifdef BT_MOVEMENT_MODES
 			if(MechStatus2(mech) & SPRINTING) {
-				MechStatus2(mech) &= ~SPRINTING;
 				MechLOSBroadcast(mech,
 								 "breaks out of its sprint as it enters water!");
 				mech_notify(mech, MECHALL,
@@ -2576,10 +2579,11 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 	case MOVE_VTOL:
 	case MOVE_FLY:
-
-		if(Landed(mech) && MechRTerrain(mech) != ROAD &&
+		
+		if((Landed(mech) && MechRTerrain(mech) != ROAD &&
 		   MechRTerrain(mech) != BRIDGE && MechRTerrain(mech) != GRASSLAND
-		   && MechRTerrain(mech) != BUILDING) {
+		   && MechRTerrain(mech) != BUILDING) ||
+		   (IsForest(MechRTerrain(mech)) && MechZ(mech) < (MechElevation(mech)+2))) {
 
 			mech_notify(mech, MECHALL,
 						"You go where no flying thing has ever gone before..");

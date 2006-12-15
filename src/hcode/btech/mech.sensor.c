@@ -472,7 +472,7 @@ void update_LOSinfo(dbref obj, MAP * map)
 		if(!Started(mech))
 			continue;
 		for(j = i + 1; j < map->first_free; j++)
-			if(map->mechflags[i] || map->mechflags[j]) {
+			if(1) {
 				target = getMech(map->mechsOnMap[j]);
 				if(!target)
 					continue;
@@ -514,7 +514,7 @@ void update_LOSinfo(dbref obj, MAP * map)
 		if(!Started(mech))
 			continue;
 		for(j = 0; j < i; j++)
-			if(map->mechflags[i] || map->mechflags[j]) {
+			if(1) {
 				target = getMech(map->mechsOnMap[j]);
 				if(!target)
 					continue;

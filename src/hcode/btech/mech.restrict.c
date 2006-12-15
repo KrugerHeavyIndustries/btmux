@@ -128,6 +128,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 		z = atoi(args[2]);
 		MechZ(mech) = z;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
 	}
 	clear_mech_from_LOS(mech);
 	notify_printf(player, "Pos changed to %d,%d,%d", x, y, z);
@@ -163,10 +164,10 @@ void mech_Rsetmapindex(dbref player, void *data, char *buffer)
     if (mech->mapindex != -1) {
         if (!(oldmap = ValidMap(player, mech->mapindex)))
             return;
-        remove_mech_from_map(oldmap, mech);
         TAGTarget(mech) = -1;
         clearC3iNetwork(mech, 1);
         clearC3Network(mech, 1);
+        remove_mech_from_map(oldmap, mech);
     }
 
     if (newindex == -1) {
@@ -269,7 +270,8 @@ void newfreemech(dbref key, void **data, int selector)
 	MAP *map;
 	AUTO *a;
 	int i;
-
+        command_node *temp;
+		
 
 
     switch (selector) {
@@ -294,7 +296,39 @@ void newfreemech(dbref key, void **data, int selector)
 			AUTO *a = (AUTO *) FindObjectsData(MechAuto(new));
 			if (a) {
 				auto_stop_pilot(a);
-				a->mymechnum = 0;
+				 /* Go through the list and remove any leftover nodes */
+                while (dllist_size(a->commands)) {
+
+                        /* Remove the first node on the list and get the data
+                         * from it */
+                        temp = (command_node *) dllist_remove(a->commands,
+                                                                                                  dllist_head(a->
+                                                                                                                          commands));
+
+                        /* Destroy the command node */
+                        auto_destroy_command_node(temp);
+
+                }
+
+                /* Destroy the list */
+                dllist_destroy_list(a->commands);
+                a->commands = NULL;
+
+                /* Destroy any astar path list thats on the AI */
+                auto_destroy_astar_path(a);
+
+                /* Destroy profile array */
+                for(i = 0; i < AUTO_PROFILE_MAX_SIZE; i++) {
+                        if(a->profile[i]) {
+                                rb_destroy(a->profile[i]);
+                        }
+                        a->profile[i] = NULL;
+                }
+
+                /* Destroy weaponlist */
+                auto_destroy_weaplist(a);
+
+				a->mymechnum = -1;
 			}
 			MechAuto(new) = -1;
 		}

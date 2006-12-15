@@ -442,7 +442,7 @@ void destroy_obj(dbref player, dbref obj)
 	}
 
 	atr_free(obj);
-	s_Name(obj, NULL);
+	s_Name(obj, "Garbage");
 	s_Flags(obj, (TYPE_GARBAGE | GOING));
 	s_Flags2(obj, 0);
 	s_Flags3(obj, 0);

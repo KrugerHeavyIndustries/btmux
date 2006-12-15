@@ -261,6 +261,8 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 			 "The weapon system chirps: 'That weapon is still reloading!'");
 	DOCHECK0(weaptype == -4,
 			 "The weapon system chirps: 'That weapon is still recharging!'");
+        DOCHECK0(PartTempNuke(mech, section, critical) == FAIL_AMMOJAMMED,
+                          "The ammo feed mechanism for that weapon is jammed! Unable to change modes!");
 	DOCHECK0(GetPartFireMode(mech, section, critical) & OS_MODE,
 			 "One-shot weapons' mode cannot be altered!");
 	DOCHECK0(isWeapAmmoFeedLocked(mech, section, critical),
@@ -683,6 +685,17 @@ void mech_swarm(dbref player, void *data, char *buffer)
 						 "That weapon cannot be set to fire Swarm missiles!");
 }
 
+void mech_sguided(dbref player, void *data, char *buffer)
+{
+	MECH *mech = (MECH *) data;
+
+	cch(MECH_USUALMO);
+	mech_toggle_mode_sub(player, mech, buffer, 2, 0, SGUIDED_MODE, 0,
+						"Weapon %d has been set to fire Sguided missiles.",
+						"Weapon %d has been set to fire normal missiles",
+						"That weapon cannot be set to fire Sguided missiles!");
+}
+
 void mech_swarm1(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
@@ -708,43 +721,11 @@ void mech_inferno(dbref player, void *data, char *buffer)
 void mech_hotload(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	int wSection, wCritSlot, wWeapType;
-	int wWeapNum = 0;
-	int wcArgs = 0;
-	char *args[1];
-
-	cch(MECH_USUALO);
-
-	wcArgs = mech_parseattributes(buffer, args, 1);
-
-	DOCHECK(wcArgs < 1, "Please specify a weapon number.");
-	DOCHECK(Readnum(wWeapNum, args[0]), tprintf("Invalid value: %s",
-												args[0]));
-
-	wWeapType = FindWeaponNumberOnMech(mech, wWeapNum, &wSection, &wCritSlot);
-
-	DOCHECK(wWeapType == -1,
-			"The weapons system chirps: 'Illegal Weapon Number!'");
-	DOCHECK(wWeapType == -2,
-			"The weapons system chirps: 'That Weapon has been destroyed!'");
-	DOCHECK(wWeapType == -3,
-			"The weapon system chirps: 'That weapon is still reloading!'");
-	DOCHECK(wWeapType == -4,
-			"The weapon system chirps: 'That weapon is still recharging!'");
-	DOCHECK(!(MechWeapons[wWeapType].special & IDF),
-			"The weapon system chirps: 'That weapon can not be hotloaded!'");
-
-	if(GetPartFireMode(mech, wSection, wCritSlot) & HOTLOAD_MODE) {
-		mech_printf(mech, MECHALL,
-					"Hotloading for weapon %d has been toggled off.",
-					wWeapNum);
-		GetPartFireMode(mech, wSection, wCritSlot) &= ~HOTLOAD_MODE;
-	} else {
-		mech_printf(mech, MECHALL,
-					"Hotloading for weapon %d has been toggled on.",
-					wWeapNum);
-		GetPartFireMode(mech, wSection, wCritSlot) |= HOTLOAD_MODE;
-	}
+        cch(MECH_USUALMO);
+        mech_toggle_mode_sub(player, mech, buffer, 1, IDF, HOTLOAD_MODE, 1,
+                                                 "Hotloading for weapon %d has been toggled on.",
+                                                 "Hotloading for weapon %d has been toggled off.",
+                                                 "That weapon can not be hotloaded!");
 }
 
 void mech_cluster(dbref player, void *data, char *buffer)
@@ -984,14 +965,11 @@ void mech_scharge(dbref player, void *data, char *buffer)
 	MECHEVENT(mech, EVENT_SCHARGE_FAIL, mech_scharge_event, 1, 0);
 }
 
-int doing_explode = 0;
-
-static void mech_explode_event(MUXEVENT * e)
-{
+static void mech_explode_event(MUXEVENT * e) {
 	MECH *mech = (MECH *) e->data;
 	MAP *map;
 	int extra = (int) e->data2;
-	int i, j, damage;
+	int i, j, k, damage;
 	int z;
 	int dam;
 
@@ -1002,16 +980,28 @@ static void mech_explode_event(MUXEVENT * e)
 		return;
 
 	if((--extra) % 256) {
-
 		mech_printf(mech, MECHALL,
-					"Self-destruction in %d second%s..", extra % 256,
-					extra > 1 ? "s" : "");
+				"Self-destruction in %d second%s..", extra % 256,
+				extra > 1 ? "s" : "");
 		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, extra);
-
 	} else {
-
 		SendDebug(tprintf("#%d explodes.", mech->mynum));
-		if(extra >= 256) {
+		if(MechType(mech) == CLASS_BSUIT) {
+			mech_notify(mech, MECHALL, "Your batttle suit triggers it's self-destruction sequence.. you faint.. (and die)");
+			MechLOSBroadcast(mech, "suddenly explodes!");
+			headhitmwdamage(mech, mech, 4);
+			for (k = 0; k < NUM_BSUIT_MEMBERS; k++)
+				DestroySection(mech,mech, -1, k);
+			MechZ(mech) += 6;
+		} else if(MechType(mech) != CLASS_MECH) {
+			mech_notify(mech, MECHALL, "Your life flashes before your eyes as your vehicle immolates itself... you faint.. (and die)");
+			MechLOSBroadcast(mech, "suddenly explodes!");
+			DestroySection(mech, mech, -1, 3); // This is the back side for vehicles
+			// and the aft for aero's.
+			headhitmwdamage(mech, mech, 4);
+			MechZ(mech) += 6;
+
+		} else if(extra >= 256) {
 			SendDebug(tprintf("#%d explodes [ammo]", mech->mynum));
 			mech_notify(mech, MECHALL, "All your ammo explodes!");
 			while ((damage = FindDestructiveAmmo(mech, &i, &j)))
@@ -1019,40 +1009,9 @@ static void mech_explode_event(MUXEVENT * e)
 		} else {
 			SendDebug(tprintf("#%d explodes [reactor]", mech->mynum));
 			MechLOSBroadcast(mech, "suddenly explodes!");
-			doing_explode = 1;
 			mech_notify(mech, MECHALL,
-						"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
-			z = MechZ(mech);
-			DestroySection(mech, mech, -1, LTORSO);
-			DestroySection(mech, mech, -1, RTORSO);
-			DestroySection(mech, mech, -1, CTORSO);
-			DestroySection(mech, mech, -1, HEAD);
-			MechZ(mech) += 6;
-			doing_explode = 0;
-
-			if(mudconf.btech_explode_reactor > 1)
-				dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 15);
-			else
-				dam = MAX(MechTons(mech) / 5, MechEngineSize(mech) / 10);
-
-			/* If the guy is on a map have it hit the hexes around it */
-			map = FindObjectsData(mech->mapindex);
-			if(map) {
-				blast_hit_hexesf(map, dam, 1, MAX(MechTons(mech) / 10,
-												  MechEngineSize(mech) / 25),
-								 MechFX(mech), MechFY(mech), MechFX(mech),
-								 MechFY(mech),
-								 "%ch%crYou bear full brunt of the blast!%cn",
-								 "is hit badly by the blast!",
-								 "%ch%cyYou receive some damage from the blast!%cn",
-								 "is hit by the blast!",
-								 mudconf.btech_explode_reactor > 1,
-								 mudconf.btech_explode_reactor > 1 ? 5 : 3, 5,
-								 1, 2);
-			}
-
-			MechZ(mech) = z;
-			headhitmwdamage(mech, mech, 4);
+					"Suddenly you feel great heat overcoming your senses.. you faint.. (and die)");
+			reactor_explosion(mech, mech);
 		}
 	}
 }
@@ -1066,22 +1025,28 @@ void mech_explode(dbref player, void *data, char *buffer)
 	int time = mudconf.btech_explode_time;
 	int ammo = 1;
 	int argc;
+	int override = 0;
 
 	cch(MECH_USUALO);
+	override = (strstr(buffer, "override") != NULL) && Wizard(player);
 	argc = mech_parseattributes(buffer, args, 2);
-	DOCHECK(argc != 1, "Invalid number of arguments!");
+	DOCHECK(argc < 1, "Invalid number of arguments!");
 
 	/* Can't do any of the explosion routine if we're recycling! */
-	for(i = 0; i < NUM_SECTIONS; i++) {
-		if(!SectIsDestroyed(mech, i))
-			DOCHECK(SectHasBusyWeap(mech, i), "You have weapons recycling!");
-		DOCHECK(MechSections(mech)[i].recycle,
-				"You are still recovering from your last attack.");
+	if(!override) {
+		for(i = 0; i < NUM_SECTIONS; i++) {
+			if(!SectIsDestroyed(mech, i))
+				DOCHECK(SectHasBusyWeap(mech, i), "You have weapons recycling!");
+			DOCHECK(MechSections(mech)[i].recycle,
+					"You are still recovering from your last attack.");
+		}
 	}
 
 	if(!strcasecmp(buffer, "stop")) {
-		DOCHECK(!mudconf.btech_explode_stop,
-				"It's too late to turn back now!");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_stop,
+					"It's too late to turn back now!");
+		}
 		DOCHECK(!Exploding(mech),
 				"Your mech isn't undergoing a self-destruct sequence!");
 
@@ -1099,10 +1064,12 @@ void mech_explode(dbref player, void *data, char *buffer)
 		/*
 		   Find SOME ammo to explode ; if possible, we engage the 'boom' process
 		 */
-		DOCHECK(!mudconf.btech_explode_ammo,
-				"You can't bring yourself to do it!");
-		DOCHECK(MechStatus(mech) & EXPLODE_SAFE,
-			"That's not a possibility here.");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_ammo,
+					"You can't bring yourself to do it!");
+			DOCHECK(MechStatus(mech) & EXPLODE_SAFE,
+					"That's not a possibility here.");
+		}
 		i = FindDestructiveAmmo(mech, &ammoloc, &ammocritnum);
 		DOCHECK(!i, "There is no 'damaging' ammo on your 'mech!");
 		/* Engage the boom-event */
@@ -1111,27 +1078,26 @@ void mech_explode(dbref player, void *data, char *buffer)
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "starts billowing smoke!");
 		time = time / 2;
-		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 	} else {
-		DOCHECK(!mudconf.btech_explode_reactor,
-				"You can't bring yourself to do it!");
-		DOCHECK(MechType(mech) != CLASS_MECH,
-				"Only mechs can do the 'big boom' effect.");
-		DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
+		if(!override) {
+			DOCHECK(!mudconf.btech_explode_reactor,
+					"You can't bring yourself to do it!");
+			DOCHECK(MechType(mech) != CLASS_MECH,
+					"Only mechs can do the 'big boom' effect.");
+			DOCHECK(MechSpecials(mech) & ICE_TECH, "You need a fusion reactor.");
+		}
 		SendDebug(tprintf
 				  ("#%d in #%d initiates the reactor explosion sequence.",
 				   player, mech->mynum));
 		MechLOSBroadcast(mech, "loses reactions containment!");
-		MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
 		ammo = 0;
 	}
-	mech_notify(mech, MECHALL,
-				"Self-destruction sequence engaged ; please stand by.");
-	mech_printf(mech, MECHALL, "%s in %d seconds.",
-				ammo ? "The ammunition will explode" :
+	if(override) time = 3;
+	MECHEVENT(mech, EVENT_EXPLODE, mech_explode_event, 1, time);
+	mech_notify(mech, MECHALL, "Self-destruction sequence engaged ; please stand by.");
+	mech_printf(mech, MECHALL, "%s in %d seconds.", ammo ? "The ammunition will explode" :
 				"The reactor will blow up", time);
-	/* Null out the pilot to disallow further commands */
-	MechPilot(mech) = -1;
+	MechPilot(mech) = -1; /* Pilot gives up control */
 }
 
 static void mech_dig_event(MUXEVENT * e)
@@ -1225,6 +1191,8 @@ static int mech_disableweap_func(MECH * mech, dbref player, int index,
 	weaptype = Weapon2I(GetPartType(mech, section, critical));
 	DOCHECK0(!(MechWeapons[weaptype].special & GAUSS),
 			 "You can only disable Gauss weapons.");
+	DOCHECK0(weaptype == -4,
+	                          "The weapon system chirps: 'That weapon is still recharging!'");
 
 	SetPartTempNuke(mech, section, critical, FAIL_DESTROYED);
 	mech_printf(mech, MECHALL, "You power down weapon %d.", index);

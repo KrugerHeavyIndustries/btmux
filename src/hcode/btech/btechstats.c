@@ -1353,6 +1353,8 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	char buf[MBUF_SIZE];
 	int damagemod;
 	float vrtmod;
+	int i;
+	int j = NUM_SECTIONS;
 
 	weapTypeMod = 1;
 
@@ -1361,6 +1363,13 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 						   multiplier, weapindx, bth);
 		return;
 	}
+
+	/* No XP for zero'd mechas */
+	for(i = 0; i < NUM_SECTIONS; i++)
+		j -= SectIsDestroyed(wounded, i);
+	
+	if( j < 1)
+		return;
 
 	/* Is attacker in character ie: not in simulator */
 	if(!In_Character(attacker->mynum))

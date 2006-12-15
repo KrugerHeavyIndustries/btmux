@@ -73,6 +73,7 @@ int eval_boolexp(dbref player, dbref thing, dbref from, BOOLEXP * b)
 
 		mudstate.lock_nest_lev++;
 		if(mudstate.lock_nest_lev >= mudconf.lock_nest_lim) {
+//            log_error(LOG_BUGS, "BUG", "LOCK", "
 			STARTLOG(LOG_BUGS, "BUG", "LOCK") {
 				log_name_and_loc(player);
 				log_text((char *) ": Lock exceeded recursion limit.");

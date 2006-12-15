@@ -54,7 +54,7 @@ void do_version(dbref player, dbref cause, int extra)
 	notify(player, mudstate.version);
 }
 
-char mux_version[] = PACKAGE_STRING "." MINOR_REVNUM
+char *mux_version = PACKAGE_STRING "." MINOR_REVNUM
 #ifdef HUDINFO_SUPPORT
     "+HUD"
 #endif

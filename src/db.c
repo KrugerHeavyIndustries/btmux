@@ -517,6 +517,7 @@ INLINE char *PureName(dbref thing)
 	int aflags;
 	char *buff;
 	static char *tbuff[LBUF_SIZE];
+	char new[LBUF_SIZE];
 
 	if(mudconf.cache_names) {
 		if(thing > mudstate.db_top || thing < 0) {
@@ -524,27 +525,32 @@ INLINE char *PureName(dbref thing)
 		}
 		if(!purenames[thing]) {
 			buff = atr_get(thing, A_NAME, &aowner, &aflags);
-			set_string(&purenames[thing], strip_ansi(buff));
+			strncpy(new, buff, LBUF_SIZE-1);
+			set_string(&purenames[thing], strip_ansi_r(new,buff,strlen(buff)));
 			free_lbuf(buff);
 		}
 		return purenames[thing];
 	}
 
 	atr_get_str((char *) tbuff, thing, A_NAME, &aowner, &aflags);
-	return (strip_ansi((char *) tbuff));
+	strncpy(new, (char *) tbuff,LBUF_SIZE-1);
+	return (strip_ansi_r(new,(char *) tbuff,strlen((char *) tbuff)));
 }
 
 INLINE void s_Name(dbref thing, char *s)
 {
+	char new[MBUF_SIZE];
 	/* Truncate the name if we have to */
 
+	strncpy(new,s,MBUF_SIZE-1);
 	if(s && (strlen(s) > MBUF_SIZE))
 		s[MBUF_SIZE] = '\0';
 
 	atr_add_raw(thing, A_NAME, (char *) s);
 
 	if(mudconf.cache_names) {
-		set_string(&purenames[thing], strip_ansi((char *) s));
+
+		set_string(&purenames[thing], strip_ansi_r(new,s,strlen(s)));
 	}
 }
 
@@ -976,7 +982,7 @@ int Commer(dbref thing)
  * * atr_encode: Encode an attribute string.
  */
 static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
-						int atr)
+						int atr, char *dest_buffer)
 {
 
 	/*
@@ -984,8 +990,11 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
 	 * * * * * * * just store the string. 
 	 */
 
-	if(((owner == Owner(thing)) || (owner == NOTHING)) && !flags)
-		return iattr;
+	if(((owner == Owner(thing)) || (owner == NOTHING)) && !flags) {
+        memset(dest_buffer, 0, LBUF_SIZE);
+        strncpy(dest_buffer, iattr, LBUF_SIZE-1);
+		return dest_buffer;
+    }
 
 	/*
 	 * Encode owner and flags into the attribute text 
@@ -993,7 +1002,9 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
 
 	if(owner == NOTHING)
 		owner = Owner(thing);
-	return tprintf("%c%d:%d:%s", ATR_INFO_CHAR, owner, flags, iattr);
+    memset(dest_buffer, 0, LBUF_SIZE);
+    snprintf(dest_buffer, LBUF_SIZE - 1, "%c%d:%d:%s", ATR_INFO_CHAR, owner, flags, iattr);
+    return dest_buffer;
 }
 
 /*
@@ -1269,11 +1280,12 @@ void atr_add_raw(dbref thing, int atr, char *buff)
 void atr_add(dbref thing, int atr, char *buff, dbref owner, int flags)
 {
 	char *tbuff;
+    char buffer[LBUF_SIZE];
 
 	if(!buff || !*buff) {
 		atr_clr(thing, atr);
 	} else {
-		tbuff = atr_encode(buff, thing, owner, flags, atr);
+		tbuff = atr_encode(buff, thing, owner, flags, atr, buffer);
 		atr_add_raw(thing, atr, tbuff);
 	}
 }
@@ -2084,7 +2096,9 @@ void dump_restart_db(void)
 	putref(f, mudstate.start_time);
 	putstring(f, mudstate.doing_hdr);
 	putref(f, mudstate.record_players);
-	DESC_ITER_ALL(d) {
+	for (d = descriptor_list ; d && d->next ; d = d->next);
+	for(; d != NULL ; d = d->prev) {
+		dprintk("d: %p dnext: %p dprev: %p", d, d->next, d->prev);
 		putref(f, d->descriptor);
 		putref(f, d->flags);
 		putref(f, d->connected_at);
@@ -2125,9 +2139,12 @@ void dump_restart_db_xdr(void)
     mmdb_write_uint32(mmdb, 1);
     mmdb_write_uint32(mmdb, version);
     mmdb_write_uint32(mmdb, mudstate.start_time);
-    mmdb_write_string(mmdb, mudstate.doing_hdr);
+   mmdb_write_string(mmdb, mudstate.doing_hdr);
 	mmdb_write_uint32(mmdb, mudstate.record_players);
-	DESC_ITER_ALL(d) {
+	    for (d = descriptor_list; d && d->next; d = d->next) ;
+	    
+	for (; d != NULL; d = d->prev) {
+		dprintk("XDR!! d: %p dnext: %p dprev: %p", d, d->next, d->prev);
 		mmdb_write_uint32(mmdb, d->descriptor);
 		mmdb_write_uint32(mmdb, d->flags);
 		mmdb_write_uint32(mmdb, d->connected_at);
@@ -2240,20 +2257,19 @@ void load_restart_db()
 		getpeername(d->descriptor, (struct sockaddr *) &d->saddr,
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
+        
 
-		if(descriptor_list) {
-			for(p = descriptor_list; p->next; p = p->next);
-			d->prev = &p->next;
-			p->next = d;
-			d->next = NULL;
-		} else {
-			d->next = descriptor_list;
-			d->prev = &descriptor_list;
-			descriptor_list = d;
-		}
-		d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
+
+	 if (descriptor_list)
+	         descriptor_list->prev = d;
+         d->next = descriptor_list;
+         d->prev = NULL;
+         descriptor_list = d;
+		   
+        d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
+
 		bufferevent_disable(d->sock_buff, EV_READ);
 		bufferevent_enable(d->sock_buff, EV_WRITE);
 
@@ -2344,17 +2360,16 @@ int load_restart_db_xdr()
 					(socklen_t *) & d->saddr_len);
 		d->outstanding_dnschild_query = dnschild_request(d);
 
-		if(descriptor_list) {
-			for(p = descriptor_list; p->next; p = p->next);
-			d->prev = &p->next;
-			p->next = d;
-			d->next = NULL;
-		} else {
-			d->next = descriptor_list;
-			d->prev = &descriptor_list;
-			descriptor_list = d;
-		}
-		d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
+
+
+
+	 if (descriptor_list)
+		 descriptor_list->prev = d;
+	 d->next = descriptor_list;
+	 d->prev = NULL;
+	 descriptor_list = d;
+			   
+        d->sock_buff = bufferevent_new(d->descriptor, bsd_write_callback,
 									   bsd_read_callback, bsd_error_callback,
 									   NULL);
 		bufferevent_disable(d->sock_buff, EV_READ);

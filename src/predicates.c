@@ -17,7 +17,7 @@
 #include "htab.h"
 
 extern dbref match_thing(dbref, char *);
-extern int do_command(DESC *, char *, int);
+extern int do_command(DESC *, char *);
 extern void dump_database(void);
 extern void dump_restart_db(void);
 
@@ -393,10 +393,11 @@ void giveto(dbref who, int pennies)
 int ok_name(const char *name)
 {
 	const char *cp;
+	char new[LBUF_SIZE];
 
 	/* Disallow pure ANSI names */
-
-	if(strlen(strip_ansi(name)) == 0)
+	strncpy(new, name, LBUF_SIZE-1);
+	if(strlen(strip_ansi_r(new,name,strlen(name))) == 0)
 		return 0;
 
 	/* Disallow leading spaces */
@@ -845,7 +846,7 @@ void handle_prog(DESC * d, char *message)
 	 */
 
 	if(*message == '|') {
-		do_command(d, message + 1, 1);
+		do_command(d, message + 1);
 		/* Use telnet protocol's GOAHEAD command to show prompt */
 		if(d->program_data != NULL)
 			queue_string(d, tprintf("%s>%s \377\371", ANSI_HILITE,
@@ -859,7 +860,7 @@ void handle_prog(DESC * d, char *message)
 	/* First, set 'all' to a descriptor we find for this player */
 
 	//all = (DESC *) nhashfind(d->player, &mudstate.desc_htab);
-	all = (DESC *) rb_find(mudstate.desctree, d->player);
+	all = (DESC *) rb_find(mudstate.desctree, (void *) d->player);
 
 	for(i = 0; i < MAX_GLOBAL_REGS; i++) {
 		free_lbuf(all->program_data->wait_regs[i]);

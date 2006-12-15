@@ -2126,15 +2126,14 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
     dllist_node *node;
 
     FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
-    mapnum = match_thing(player, fargs[0]);
-    FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
-    map = getMap(mapnum);
-    FUNCHECK(!map, "#-1 INVALID MAP");
 
     switch (nfargs) {
         case 1:
+            mapnum = match_thing(player, fargs[0]);
+            FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+            map = getMap(mapnum);
+            FUNCHECK(!map, "#-1 INVALID MAP");
             for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
-
                 if (!(mech = getMech((int) dllist_data(node))))
                     continue;
 
@@ -2142,6 +2141,10 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
             }
             break;
         case 4:
+            mapnum = match_thing(player, fargs[0]);
+            FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+            map = getMap(mapnum);
+            FUNCHECK(!map, "#-1 INVALID MAP");
             x = atof(fargs[1]);
             y = atof(fargs[2]);
             range = atof(fargs[3]);
@@ -2149,8 +2152,8 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
             FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
             FUNCHECK(range < 0, "#-1 INVALID RANGE");
             MapCoordToRealCoord(x, y, &realX, &realY);
-            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
                 if (!(mech = getMech((int) dllist_data(node))))
                     continue;
 
@@ -2159,6 +2162,10 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
             }
             break;
         case 5:
+            mapnum = match_thing(player, fargs[0]);
+            FUNCHECK(mapnum < 0, "#-1 INVALID MAP");
+            map = getMap(mapnum);
+            FUNCHECK(!map, "#-1 INVALID MAP");
             x = atof(fargs[1]);
             y = atof(fargs[2]);
             z = atof(fargs[3]);
@@ -2167,8 +2174,8 @@ void fun_btmapunits(char *buff, char **bufc, dbref player, dbref cause,
             FUNCHECK(y < 0 || y > map->height, "#-1 INVALID Y COORD");
             FUNCHECK(range < 0, "#-1 INVALID RANGE");
             MapCoordToRealCoord(x, y, &realX, &realY);
-            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
+            for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
                 if (!(mech = getMech((int) dllist_data(node))))
                     continue;
 

@@ -130,8 +130,8 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 	}
 
 	/* And now we look once more to make sure we aren't wasting our time */
-	if(((underwater) && !(t_underwater || t_bothworlds)) ||
-	   ((t_underwater) && !(underwater || bothworlds))) {
+	if(((underwater) && !(t_underwater)) ||
+	   ((t_underwater) && !(underwater))) {
 		return new_flag + MECHLOSFLAG_BLOCK;
 	}
 

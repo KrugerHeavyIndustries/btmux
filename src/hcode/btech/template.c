@@ -1258,7 +1258,7 @@ char *BuildBitString2(char *bitdescs[], char *bitdescs2[], int data,
 		bv = 1U << x;
 		if(data & bv) {
 			strcat(crit, bitdescs[x]);
-			strcat(crit, " ");
+			strcat(crit, "|");
 		}
 	}
 
@@ -1266,12 +1266,14 @@ char *BuildBitString2(char *bitdescs[], char *bitdescs2[], int data,
 		bv = 1U << x;
 		if(data2 & bv) {
 			strcat(crit, bitdescs2[x]);
-			strcat(crit, " ");
+			strcat(crit, "|");
 		}
 	}
 
-	if((x = strlen(crit)) > 0 && crit[x - 1] == ' ')
+	if((x = strlen(crit)) > 0 && crit[x - 1] == '|') {
 		crit[x - 1] = '\0';
+
+	}
 
 	return crit;
 }

@@ -767,7 +767,6 @@ void auto_radio_command_sensor(AUTO * autopilot, MECH * mech,
 
 	/* Let AI decide */
 	autopilot->flags &= ~AUTOPILOT_LSENS;
-	UpdateAutoSensor(autopilot, 0);
 	snprintf(mesg, LBUF_SIZE, "using my own judgement with sensors");
 	return;
 

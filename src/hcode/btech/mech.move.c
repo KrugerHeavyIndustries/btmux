@@ -317,7 +317,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 	   (MechCritStatus(mech) & SPEED_OK)) {
 
 		mspeed = MechRMaxSpeed(mech);
-#ifndef BT_MOVEMENT_MODES
+#if 0
 
 		/* Is masc and/or scharge on */
 		if((MechStatus(mech) & MASC_ENABLED) &&
@@ -349,6 +349,11 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 		if(!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING
 		   && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
 			mspeed += MP1;
+
+		if(InSpecial(mech) && InGravity(mech))
+			if((map = FindObjectsData(mech->mapindex)))
+				mspeed = mspeed * 100.0 / (float)MAX(50, MapGravity(map));
+
 #endif
 		return mspeed;
 	}
@@ -1214,7 +1219,10 @@ void mech_jump(dbref player, void *data, char *buffer)
 	DOCHECK(MechX(mech) == mapx &&
 			MechY(mech) == mapy, "You're already in the target hex.");
 	sz = MechZ(mech);
-	tz = Elevation(mech_map, mapx, mapy);
+	if(GetRTerrain(mech_map, mapx, mapy) == ICE)
+		tz = 0;
+	else
+		tz = Elevation(mech_map, mapx, mapy);
 	jps = JumpSpeedMP(mech, mech_map);
 	DOCHECK(range > jps, "That target is out of range!");
 	if(MechType(mech) != CLASS_BSUIT && tempMech)
@@ -1291,6 +1299,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(MechCarrying(mech) > 0, "You cannot sprint while towing!");
@@ -1341,6 +1350,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1396,6 +1406,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1438,6 +1449,7 @@ void mech_hulldown(dbref player, void *data, char *buffer)
 
 	cch(MECH_USUALO);
 
+        DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(!MechIsQuad(mech), "Only QUADs can hulldown.");
 	DOCHECK(Fallen(mech), "You can't hulldown from a FALLEN position");
 	DOCHECK(Jumping(mech), "You can't hulldown while jumping!");
@@ -1803,6 +1815,8 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 		MechStartFY(mech) = 0.0;
 		MechStartFZ(mech) = 0.0;
 		MechStatus(mech) |= LANDED;
+		if(MechMove(mech) == MOVE_VTOL)
+		     mech_notify(mech, MECHALL,"Your rotor has been destroyed!");
 		MechStatus(mech) |= FALLEN;
 		StopMoving(mech);
 	} else

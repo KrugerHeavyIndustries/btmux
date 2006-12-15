@@ -952,3 +952,14 @@ void auto_newautopilot(dbref key, void **data, int selector)
     }
 
 }
+
+// XXX: put in a header file
+extern unsigned int global_tick;
+
+void auto_heartbeat(AUTO *autopilot) {
+    if(!autopilot->mymech) return;
+    auto_sensor_event(autopilot);
+    if(autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
+        auto_update_profile_event(autopilot);
+    auto_gun_event(autopilot);
+}

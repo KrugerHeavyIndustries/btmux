@@ -56,15 +56,16 @@ static const char *admin_msg = "Admin: ";
 
 void do_think(dbref player, dbref cause, int key, char *message)
 {
-	char *str, *buf, *bp;
+	char *str, buf[LBUF_SIZE], *bp;
+	int output_length;
 
-	buf = bp = alloc_lbuf("do_think");
+	bp = buf;
 	str = message;
 	exec(buf, &bp, 0, player, cause, EV_FCHECK | EV_EVAL | EV_TOP, &str,
 		 (char **) NULL, 0);
-	*bp = '\0';
+	output_length = strnlen(buf, LBUF_SIZE-1);
+	buf[output_length] = '\0';
 	notify(player, buf);
-	free_lbuf(buf);
 }
 
 void do_say(dbref player, dbref cause, int key, char *message)

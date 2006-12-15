@@ -149,7 +149,7 @@ ECMD(mech_swarm);
 ECMD(mech_swarm1);
 ECMD(mech_dig);
 ECMD(mech_vector);
-
+ECMD(mech_sguided);
 ECMD(f_map_loadmap);
 
 ECMD(f_draw);
@@ -330,6 +330,7 @@ CommandsStruct mechcommands[] = {
 	mech_inferno},
     {0, "LBX <weapnum>", "Sets weapon to and from LBX Mode.", mech_lbx},
     {0, "NARC <weapnum>", "Sets weapon to and from NARC Mode.", mech_narc},
+    {0, "SGUIDED <weapnum", "Sets weapon to and from Sguide Mode", mech_sguided},
     {0, "STINGER <weaponum", "Sets weapon to and from Stinger Mode.", 
         mech_stinger},
     {0, "PRECISION <weapnum>",

@@ -14,13 +14,15 @@
 #include "match.h"
 #include "externs.h"
 #include "command.h"
+#include "attrs.h"
+#include "powers.h"
 
 extern void pool_reset(void);
 extern void do_second(void);
 extern void fork_and_dump(int key);
 extern unsigned int alarm(unsigned int seconds);
 extern void pcache_trim(void);
-extern void check_events(void);
+void check_events(void);
 
 void timer_callback(int fd, short event, void *arg);
 
@@ -50,6 +52,85 @@ void init_timer()
 #else
 #define DPSET(n)
 #endif
+
+void check_idle(void)
+{
+    DESC *d, *dnext;
+    time_t idletime;
+    
+    DESC_SAFEITER_ALL(d, dnext) {
+        if(d->flags & DS_CONNECTED) {
+            idletime = mudstate.now - d->last_time;
+            if((idletime > d->timeout) && !Can_Idle(d->player)) {
+                queue_string(d, "*** Inactivity Timeout ***\r\n");
+                shutdownsock(d, R_TIMEOUT);
+            } else if(mudconf.idle_wiz_dark &&
+                      (idletime > mudconf.idle_timeout) && Can_Idle(d->player)
+                      && !Dark(d->player)) {
+                s_Flags(d->player, Flags(d->player) | DARK);
+                d->flags |= DS_AUTODARK;
+            }   
+        } else {
+            idletime = mudstate.now - d->connected_at;
+            if(idletime > mudconf.conn_timeout) {
+                queue_string(d, "*** Login Timeout ***\r\n");
+                shutdownsock(d, R_TIMEOUT);
+            }   
+        }   
+    }   
+}   
+
+void check_events(void)
+{
+    struct tm *ltime;
+    dbref thing, parent;
+    int lev;
+    
+    ltime = localtime(&mudstate.now);
+    if((ltime->tm_hour == mudconf.events_daily_hour)
+       && !(mudstate.events_flag & ET_DAILY)) {
+        mudstate.events_flag = mudstate.events_flag | ET_DAILY;
+        DO_WHOLE_DB(thing) { 
+            if(Going(thing))
+                continue;
+                
+            ITER_PARENTS(thing, parent, lev) {
+                if(Flags2(thing) & HAS_DAILY) {
+                    did_it(Owner(thing), thing, 0, NULL, 0, NULL, A_DAILY,
+                           (char **) NULL, 0);
+                           
+                    break;
+                }   
+            }   
+        }   
+    }   
+    if(ltime->tm_hour != mudstate.events_lasthour) {
+        if(mudstate.events_lasthour >= 0) {
+            /* Run hourly maintenance */
+            DO_WHOLE_DB(thing) {
+                if(Going(thing))
+                    continue;
+                    
+                ITER_PARENTS(thing, parent, lev) {
+                    if(Flags2(thing) & HAS_HOURLY) {
+                        did_it(Owner(thing), thing, 0, NULL, 0, NULL,
+                               A_HOURLY, (char **) NULL, 0); 
+                               
+                        break;
+                    }   
+                }   
+            }   
+            
+        }
+        mudstate.events_lasthour = ltime->tm_hour;
+    }
+    if(ltime->tm_hour == 23) {  /*
+                                 * Nightly resetting 
+                                 */
+        mudstate.events_flag = 0;
+    }
+}
+
 
 void dispatch()
 {

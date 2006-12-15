@@ -455,9 +455,10 @@ void do_move(dbref player, dbref cause, int key, char *direction)
 			/*
 			 * tell all 
 			 */
-
-			notify_except(loc, player, player, tprintf("%s goes home.",
-													   Name(player)));
+            char buffer[MBUF_SIZE];
+            memset(buffer, 0, MBUF_SIZE);
+            snprintf(buffer, MBUF_SIZE-1, "%s goes home.", Name(player));
+			notify_except(loc, player, player, buffer);
 		}
 		/*
 		 * give the player the messages 

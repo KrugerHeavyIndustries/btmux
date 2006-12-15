@@ -1136,10 +1136,19 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 				return;
 	}
 	
+	if(MechSections(mech)[section].criticals[critical].firemode & OS_MODE) {
+		notify(player,"Keeping One Shot Mode!");
+		MechSections(mech)[section].criticals[critical].ammomode = 0;
+	}
+	else
 	   if(!(MechSections(mech)[section].criticals[critical].firemode & HALFTON_MODE)) {
+	  
                         MechSections(mech)[section].criticals[critical].firemode = 0;
                         MechSections(mech)[section].criticals[critical].ammomode = 0;
 	}
+
+
+
 
 	switch (toupper(args[1][0])) {
 			case 'W':
@@ -1213,6 +1222,13 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 			case 'U':
 				MechSections(mech)[section].criticals[critical].ammomode |=
 					AC_CASELESS_MODE;
+				break;
+			case 'J':
+				MechSections(mech)[section].criticals[critical].firemode |= WILL_JETTISON_MODE;
+				break;
+			case 'G':
+			        MechSections(mech)[section].criticals[critical].ammomode |=
+				        SGUIDED_MODE;
 				break;
 			case '-':
 				MechSections(mech)[section].criticals[critical].ammomode = 0;

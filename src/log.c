@@ -50,7 +50,7 @@ NAMETAB logoptions_nametab[] = {
 	{NULL, 0, 0, 0}
 };
 
-char *strip_ansi_r(char *dest, char *raw, size_t n)
+char *strip_ansi_r(char *dest, const char *raw, size_t n)
 {
 	char *p = (char *) raw;
 	char *q = dest;
@@ -70,35 +70,12 @@ char *strip_ansi_r(char *dest, char *raw, size_t n)
 	*q = '\0';
 	return dest;
 }
-char *strip_ansi(const char *raw)
-{
-	static char buf[LBUF_SIZE];
-	char *p = (char *) raw;
-	char *q = buf;
 
-	while (p && *p) {
-		if(*p == ESC_CHAR) {
-			/*
-			 * Start of ANSI code. Skip to end. 
-			 */
-			while (*p && !isalpha(*p))
-				p++;
-			if(*p)
-				p++;
-		} else
-			*q++ = *p++;
-	}
-	*q = '\0';
-	return buf;
-}
-
-char *normal_to_white(const char *raw)
-{
-	static char buf[LBUF_SIZE];
-	char *p = (char *) raw;
-	char *q = buf;
-
-	while (p && *p) {
+char *normal_to_white_r(char *dest, const char *raw, size_t n) {
+    char *p = (char *) raw;
+	char *q = dest;
+    
+	while (p && *p && ((q - dest) < n)) {
 		if(*p == ESC_CHAR) {
 			/*
 			 * Start of ANSI code. 
@@ -109,19 +86,18 @@ char *normal_to_white(const char *raw)
 			*q++ = *p++;		/*
 								 * [ character. 
 								 */
-			if(*p == '0') {		/*
-								 * ANSI_NORMAL 
-								 */
-				safe_str("0m", buf, &q);
-				safe_chr(ESC_CHAR, buf, &q);
-				safe_str("[37m", buf, &q);
+			if(*p == '0') {
+                if((q - dest + 7) < n) {
+                    memcpy(q, "0m\x1b[37m", 7);
+                    q += 7;
+                }
 				p += 2;
 			}
 		} else
 			*q++ = *p++;
 	}
 	*q = '\0';
-	return buf;
+	return dest;
 }
 
 /**
@@ -207,7 +183,9 @@ void log_perror(const char *primary, const char *secondary, const char *extra,
  */
 void log_text(char *text)
 {
-	fprintf(stderr, "%s", strip_ansi(text));
+	char new[LBUF_SIZE];
+	strncpy(new, text, LBUF_SIZE-1);
+	fprintf(stderr, "%s", strip_ansi_r(new,text,strlen(text)));
 }
 
 void log_error(int key, char *primary, char *secondary, char *format, ...)
@@ -275,19 +253,22 @@ void log_number(int num)
 void log_name(dbref target)
 {
 	char *tp;
+	char new[LBUF_SIZE];
 
 	if((mudconf.log_info & LOGOPT_FLAGS) != 0)
 		tp = unparse_object((dbref) GOD, target, 0);
 	else
 		tp = unparse_object_numonly(target);
-	fprintf(stderr, "%s", strip_ansi(tp));
+	strncpy(new, tp, LBUF_SIZE-1);
+	fprintf(stderr, "%s", strip_ansi_r(new,tp,strlen(tp)));
 	free_lbuf(tp);
 	if(((mudconf.log_info & LOGOPT_OWNER) != 0) && (target != Owner(target))) {
 		if((mudconf.log_info & LOGOPT_FLAGS) != 0)
 			tp = unparse_object((dbref) GOD, Owner(target), 0);
 		else
 			tp = unparse_object_numonly(Owner(target));
-		fprintf(stderr, "[%s]", strip_ansi(tp));
+		strncpy(new, tp, LBUF_SIZE-1);
+		fprintf(stderr, "[%s]", strip_ansi_r(new,tp,strlen(tp)));
 		free_lbuf(tp);
 	}
 	return;

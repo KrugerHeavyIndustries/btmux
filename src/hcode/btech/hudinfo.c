@@ -318,6 +318,8 @@ static char *hud_getammomode(MECH * mech, int mode)
 	static char amode[20];
 	char *p = amode;
 
+	if(mode & SGUIDED_MODE)
+		*p++ = 'G';
 	if(mode & SWARM1_MODE)
 		*p++ = '1';
 	if(mode & ARTEMIS_MODE)
@@ -904,6 +906,7 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 	mapobj *building;
 	float fx, fy, range;
 	int z, losflag, locked, bearing, weaponarc;
+	char new[LBUF_SIZE];
 
 	if(!map) {
 		hudinfo_notify(d, msgclass, "E", "You are on no map");
@@ -939,8 +942,10 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 		bearing = FindBearing(MechFX(mech), MechFY(mech), fx, fy);
 		weaponarc = InWeaponArc(mech, fx, fy);
 		building_name = silly_atr_get(building->obj, A_MECHNAME);
-		if(!building_name || !*building_name)
-			building_name = strip_ansi(Name(building->obj));
+		if(!building_name || !*building_name) {
+			strncpy(new, Name(building->obj), LBUF_SIZE-1);
+			building_name = strip_ansi_r(new,Name(building->obj),strlen(Name(building->obj)));
+		}
 
 		if(!building_name || !*building_name)
 			building_name = "-";
@@ -1148,6 +1153,11 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 		break;
 	default:
 		hudinfo_notify(d, msgclass, "E", "Invalid arguments");
+		return;
+	}
+	
+	if( (cx < 0) || (cx > map->width) || (cy > map->height) || (cy < 0)) {
+		hudinfo_notify(d, msgclass, "E", "Out of range");
 		return;
 	}
 

@@ -71,6 +71,8 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 		return " Stinger";
 	if(mode & AC_CASELESS_MODE)
 		return " Caseless";
+	if(mode & SGUIDED_MODE)
+		return " Sguided";
 	return "";
 }
 
@@ -116,6 +118,8 @@ char GetWeaponAmmoModeLetter_Model_Mode(int model, int mode)
 		return 'T';
 	if(mode & AC_CASELESS_MODE)
 		return 'U';
+	if(mode & SGUIDED_MODE)
+		return 'G';
 	return ' ';
 }
 

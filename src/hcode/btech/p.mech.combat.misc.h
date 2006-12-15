@@ -7,7 +7,6 @@
 void decrement_ammunition(MECH * mech, int weapindx, int section,
     int critical, int ammoLoc, int ammoCrit, int ammoLoc1, int ammoCrit1,
     int wGattlingShots);
-void mech_ammowarn_event(MUXEVENT * e);
 void ammo_expedinture_check(MECH * mech, int weapindx, int ns);
 void heat_effect(MECH * mech, MECH * tempMech, int heatdam,
     int fromInferno);

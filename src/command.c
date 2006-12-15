@@ -26,7 +26,6 @@
 
 extern void list_cf_access(dbref);
 extern void list_siteinfo(dbref);
-extern void logged_out(dbref, dbref, int, char *);
 #ifdef ARBITRARY_LOGFILES
 extern void logcache_init(void);
 void logcache_list(dbref player);
@@ -632,8 +631,7 @@ CMDENT command_table[] = {
 	 KILL_KILL, CS_TWO_ARG | CS_INTERP, do_kill},
 	{(char *) "leave", leave_sw, CA_LOCATION, 0, CS_NO_ARGS | CS_INTERP,
 	 do_leave},
-	{(char *) "look", look_sw, CA_LOCATION, LOOK_LOOK, CS_ONE_ARG | CS_INTERP,
-	 do_look},
+	{(char *) "look", look_sw, CA_LOCATION, LOOK_LOOK, CS_ONE_ARG | CS_INTERP, do_look},
 	{(char *) "news", NULL, 0, HELP_NEWS, CS_ONE_ARG, do_help},
 	{(char *) "page", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG | CS_INTERP, do_page},
 	{(char *) "pose", pose_sw, CA_LOCATION | CA_NO_SLAVE, SAY_POSE,
@@ -658,19 +656,7 @@ CMDENT command_table[] = {
 #endif
 	{(char *) PLUSHELP_COMMAND, NULL, 0, HELP_PLUSHELP, CS_ONE_ARG, do_help},
 	{(char *) "wiznews", NULL, CA_WIZARD, HELP_WIZNEWS, CS_ONE_ARG, do_help},
-	{(char *) "doing", NULL, CA_PUBLIC, CMD_DOING, CS_ONE_ARG, logged_out},
-	{(char *) "quit", NULL, CA_PUBLIC, CMD_QUIT, CS_NO_ARGS, logged_out},
-	{(char *) "logout", NULL, CA_PUBLIC, CMD_LOGOUT, CS_NO_ARGS, logged_out},
-	{(char *) "who", NULL, CA_PUBLIC, CMD_WHO, CS_ONE_ARG, logged_out},
-	{(char *) "session", NULL, CA_PUBLIC, CMD_SESSION, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "outputprefix", NULL, CA_PUBLIC, CMD_PREFIX, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "outputsuffix", NULL, CA_PUBLIC, CMD_SUFFIX, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "puebloclient", NULL, CA_PUBLIC, CMD_PUEBLOCLIENT, CS_ONE_ARG,
-	 logged_out},
-	{(char *) "\\", NULL, CA_NO_GUEST | CA_LOCATION | CF_DARK | CA_NO_SLAVE,
+    {(char *) "\\", NULL, CA_NO_GUEST | CA_LOCATION | CF_DARK | CA_NO_SLAVE,
 	 SAY_PREFIX, CS_ONE_ARG | CS_INTERP, do_say},
 	{(char *) "#", NULL, CA_NO_SLAVE | CA_GBL_INTERP | CF_DARK, 0,
 	 CS_ONE_ARG | CS_INTERP | CS_CMDARG, do_force_prefixed},
@@ -895,6 +881,7 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 	char *buf1, *buf2, tchar, *bp, *str, *buff, *s, *j, *new;
 	char *args[MAX_ARG];
 	int nargs, i, fail, interp, key, xkey, aflags;
+	int length;
 	int hasswitch = 0;
 	dbref aowner;
 	char *aargs[10];
@@ -1028,7 +1015,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 			str = arg;
 			exec(buf1, &bp, 0, player, cause, interp | EV_FCHECK | EV_TOP,
 				 &str, cargs, ncargs);
-			*bp = '\0';
+			length = strnlen(buf1, LBUF_SIZE-1);
+			buf1[length] = '\0';
 		} else
 			buf1 = parse_to(&arg, '\0', interp | EV_TOP);
 
@@ -1124,7 +1112,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 		str = buf2;
 		exec(buf1, &bp, 0, player, cause,
 			 EV_STRIP | EV_FCHECK | EV_EVAL | EV_TOP, &str, cargs, ncargs);
-		*bp = '\0';
+		length = strnlen(buf1, LBUF_SIZE-1);
+		buf1[length] ='\0';
 
 		if(cmdp->callseq & CS_ARGV) {
 
@@ -1167,7 +1156,8 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 				str = arg;
 				exec(buf2, &bp, 0, player, cause,
 					 interp | EV_FCHECK | EV_TOP, &str, cargs, ncargs);
-				*bp = '\0';
+				length = strnlen(buf2, LBUF_SIZE-1);
+				buf2[length] = '\0';
 			} else if(cmdp->callseq & CS_UNPARSE) {
 				buf2 = parse_to(&arg, '\0', interp | EV_TOP | EV_NO_COMPRESS);
 			} else {
@@ -1220,7 +1210,7 @@ void process_command(dbref player, dbref cause, int interactive,
 	char *macroout;
 	int macerr;
 	int eins = 1, null = 0;
-	DESC *d;
+	int length;
 
 	/*
 	 * Robustify player 
@@ -1234,15 +1224,8 @@ void process_command(dbref player, dbref cause, int interactive,
 	}
 
 	if(!Good_obj(player)) {
-		STARTLOG(LOG_BUGS, "CMD", "PLYR") {
-			lcbuf = alloc_mbuf("process_command.LOG.badplayer");
-			sprintf(lcbuf, "Bad player in process_command: %d", player);
-			log_text(lcbuf);
-			free_mbuf(lcbuf);
-			ENDLOG;
-		}
+        log_error(LOG_BUGS, "CMD", "PLYR", "Bad player in process_command: %d", player);
 		mudstate.debug_cmd = cmdsave;
-
 		goto exit;
 	}
 
@@ -1270,9 +1253,8 @@ void process_command(dbref player, dbref cause, int interactive,
 			free_lbuf(lcbuf);
 			ENDLOG;
 		}
-		send_channel("SuspectsLog",
-					 tprintf("%s (#%d) (in #%d) entered: %s", Name(player),
-							 player, Location(player), command));
+		send_channel("SuspectsLog", "%s (#%d) (in #%d) entered: %s", Name(player),
+							 player, Location(player), command);
 	} else {
 		STARTLOG(LOG_ALLCOMMANDS, "CMD", "ALL") {
 			log_name_and_loc(player);
@@ -1458,7 +1440,8 @@ void process_command(dbref player, dbref cause, int interactive,
 	str = command;
 	exec(lcbuf, &bp, 0, player, cause,
 		 EV_EVAL | EV_FCHECK | EV_STRIP | EV_TOP, &str, args, nargs);
-	*bp = '\0';
+	length = strnlen(lcbuf, LBUF_SIZE-1);
+	lcbuf[length] = '\0';
 	succ = 0;
 
 	/*
@@ -1608,7 +1591,7 @@ void process_command(dbref player, dbref cause, int interactive,
 		STARTLOG(LOG_BADCOMMANDS, "CMD", "BAD") {
 			log_name_and_loc(player);
 			lcbuf = alloc_lbuf("process_commands.LOG.badcmd");
-			sprintf(lcbuf, " entered: '%s'", command);
+			snprintf(lcbuf, LBUF_SIZE, " entered: '%s'", command);
 			log_text(lcbuf);
 			free_lbuf(lcbuf);
 			ENDLOG;

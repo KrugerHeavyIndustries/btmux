@@ -309,14 +309,8 @@ void do_link(dbref player, dbref cause, int key, char *what, char *where)
 		notify_quiet(player, "Permission denied.");
 		break;
 	default:
-		STARTLOG(LOG_BUGS, "BUG", "OTYPE") {
-			buff = alloc_mbuf("do_link.LOG.badtype");
-			sprintf(buff, "Strange object type: object #%d = %d", thing,
-					Typeof(thing));
-			log_text(buff);
-			free_mbuf(buff);
-			ENDLOG;
-		}
+        log_error(LOG_BUGS, "BUG", "OTYPE", "Strange object type: object #%d = %d", 
+            thing, Typeof(thing));
 	}
 }
 
@@ -807,13 +801,13 @@ void do_destroy(dbref player, dbref cause, int key, char *what)
 									 tprintf
 									 ("You will be rewarded shortly for %s(#%d).",
 									  Name(thing), thing));
-					if((Owner(thing) != player) && !Quiet(player)) {
+					if((Owner(thing) != player) && !Quiet(player)) 
 						notify_quiet(player,
 									 tprintf("Destroyed. #%d's %s(#%d)",
 											 Owner(thing), Name(thing),
 											 thing));
 						s_Going(thing);
-					}
+					
 				}
 			}
 		}

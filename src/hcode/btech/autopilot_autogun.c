@@ -150,14 +150,10 @@ int PrefVisSens(MECH * mech, MAP * map, int slite, MECH * target)
  * target and situation
  */
 /*! \todo {Improve this so it knows more about the terrain} */
-void auto_sensor_event(MUXEVENT * muxevent)
+void auto_sensor_event(AUTO *autopilot)
 {
-
-	AUTO *autopilot = (AUTO *) muxevent->data;
-	MECH *mech = (MECH *) autopilot->mymech;
 	MECH *target = NULL;
 	MAP *map;
-	int flag = (int) muxevent->data2;
 	char buf[16];
 	int wanted_s[2];
 	int rvis;
@@ -165,10 +161,22 @@ void auto_sensor_event(MUXEVENT * muxevent)
 	float trng;
 	int set = 0;
 
+	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
+		dprintk("mymechnum is bad!");
+		return;
+	}
+	if((autopilot->mynum > mudstate.db_top) || (autopilot->mynum < 0 )) {
+		dprintk("mynum is bad!");
+		return;
+	}
+			 
+	
+	MECH *mech = (MECH *) autopilot->mymech;
+	
 	/* Make sure its a MECH Xcode Object and the AI is
 	 * an AUTOPILOT Xcode Object */
         /* Basic checks */
-        if(!mech) {
+	if(!mech) {
                 dprintk("mech is bad!");
                 return;
         }
@@ -204,7 +212,7 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		Zombify(autopilot);
 		return;
 	}
-
+	
 	/* Get the target if there is one */
 	if(MechTarget(mech) > 0)
 		target = getMech(MechTarget(mech));
@@ -291,19 +299,12 @@ void auto_sensor_event(MUXEVENT * muxevent)
 		wanted_s[0] = BOUNDED(SENSOR_VIS, wanted_s[0], SENSOR_BHAP);
 		wanted_s[1] = BOUNDED(SENSOR_VIS, wanted_s[1], SENSOR_BHAP);
 
-		memset(buf, '\0', sizeof(char) * 16);
-		sprintf(buf, "%c  %c",
-				sensors[wanted_s[0]].matchletter[0],
-				sensors[wanted_s[1]].matchletter[0]);
-
-		mech_sensor(autopilot->mynum, mech, buf);
-
+		MechSensor(mech)[0] = wanted_s[0];
+		MechSensor(mech)[1] = wanted_s[1];
+		mech_notify(mech, MECHALL, "As your sensors change, your lock clears.");
+		MechTarget(mech) = -1;
+		MarkForLOSUpdate(mech);
 	}
-
-	if(!flag)
-		AUTOEVENT(autopilot, EVENT_AUTO_SENSOR, auto_sensor_event,
-				  AUTO_SENSOR_TICK, 0);
-
 }
 
 /*
@@ -539,10 +540,7 @@ int auto_calc_weapon_score(int weapon_db_number, int range)
  *
  * Every so often updates the profile for the AI's weapons
  */
-void auto_update_profile_event(MUXEVENT * muxevent)
-{
-
-	AUTO *autopilot = (AUTO *) muxevent->data;
+void auto_update_profile_event(AUTO *autopilot) {
 	MECH *mech = (MECH *) autopilot->mymech;
 
 	weapon_node *temp_weapon_node;
@@ -560,6 +558,17 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 	int weapon_number;
 
 	/* Basic checks */
+	/* some accounting checks. try to prevent some race stuff */
+
+	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 1 )) {
+		/* most commonly, the mech is a bad memory space.
+		 * lets not try to access it
+		 */
+		dprintk("ap mymechnum is bad");
+		StopGun(autopilot);
+		return;
+	}
+
 	if(!mech) {
 		dprintk("mech is bad!");
 		return;
@@ -575,7 +584,7 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 	if(Destroyed(mech)) {
 		return;
 	}
-
+    
 	/* Log Message */
 	print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
 
@@ -723,15 +732,6 @@ void auto_update_profile_event(MUXEVENT * muxevent)
 		weapon_number++;
 
 	}
-
-	/* Is this loop running somewhere else */
-	if(muxevent_count_type_data(EVENT_AUTO_PROFILE, (void *) autopilot)) {
-		muxevent_remove_type_data(EVENT_AUTO_PROFILE, (void *) autopilot);
-	}
-
-	/* Run this loop some time later incase we suffer damage */
-	AUTOEVENT(autopilot, EVENT_AUTO_PROFILE,
-			  auto_update_profile_event, AUTO_PROFILE_TICK, 0);
 
 	/* Log Message */
 	print_autogun_log(autopilot, "Finished Profiling");
@@ -903,10 +903,8 @@ int auto_calc_target_score(AUTO * autopilot, MECH * mech, MECH * target,
  * Loops through all the cons around it, scoring them and deciding
  * what to shoot and what weapons to shoot at it
  */
-void auto_gun_event(MUXEVENT * muxevent)
+void auto_gun_event(AUTO *autopilot)
 {
-
-	AUTO *autopilot = (AUTO *) muxevent->data;	/* The autopilot */
 	MECH *mech = (MECH *) autopilot->mymech;	/* Its Mech */
 	MAP *map;					/* The current Map */
 	MECH *target;				/* Our current target */
@@ -979,31 +977,14 @@ void auto_gun_event(MUXEVENT * muxevent)
 	/* Log it */
 	print_autogun_log(autopilot, "Autogun Event Started");
 
-	/* Check the profile - if it doesn't exist, calc it, then re-run autogun */
-	if(autopilot->weaplist == NULL) {
-		AUTOEVENT(autopilot, EVENT_AUTO_PROFILE, auto_update_profile_event, 1,
-				  0);
-
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
-
-		/* Log It */
+	/* check for a gun profile. */
+    if(autopilot->weaplist == NULL) {
 		print_autogun_log(autopilot, "Autogun Event Finished");
 		return;
 	}
 
 	/* OODing so don't shoot any guns */
 	if(OODing(mech)) {
-
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
-
 		/* Log It */
 		print_autogun_log(autopilot, "Autogun Event Finished");
 		return;
@@ -1145,14 +1126,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 			rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
 			rb_destroy(targets);
 
-			/* Make sure multiple instances of autogun aren't running */
-			if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-				muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-			}
-			AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event,
-					  AUTO_GUN_IDLE_TICK, 0);
-
-			/* Log It */
+            /* Log It */
 			print_autogun_log(autopilot, "Autogun in idle mode");
 			print_autogun_log(autopilot, "Autogun Event Finished");
 			return;
@@ -1238,13 +1212,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 		autopilot->target = -1;
 		autopilot->target_score = 0;
 
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
-
-		/* Log It */
+        /* Log It */
 		print_autogun_log(autopilot, "Autogun - No valid current targets");
 		print_autogun_log(autopilot, "Autogun Event Finished");
 		return;
@@ -1659,13 +1627,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 		autopilot->target = -1;
 		autopilot->target_score = 0;
 
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
-
-		/* Log It */
+        /* Log It */
 		print_autogun_log(autopilot, "Autogun - No valid current target");
 		print_autogun_log(autopilot, "Autogun Event Finished");
 		return;
@@ -1676,13 +1638,7 @@ void auto_gun_event(MUXEVENT * muxevent)
 		autopilot->target = -1;
 		autopilot->target_score = 0;
 
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
-
-		/* Log it */
+        /* Log it */
 		print_autogun_log(autopilot, "Autogun - Target Gone");
 		print_autogun_log(autopilot, "Autogun Event Finished");
 		return;
@@ -1704,11 +1660,6 @@ void auto_gun_event(MUXEVENT * muxevent)
 		autopilot->target = -1;
 		autopilot->target_score = 0;
 
-		/* Make sure multiple instances of autogun aren't running */
-		if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-			muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-		}
-		AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
 
 		/* Log it */
 		print_autogun_log(autopilot, "Autogun - Target out of range");
@@ -2268,15 +2219,9 @@ void auto_gun_event(MUXEVENT * muxevent)
 
 	/* Is chasetarget on */
 	/* Make sure multiple instances of autogun aren't running */
-	if(muxevent_count_type_data(EVENT_AUTOGUN, (void *) autopilot)) {
-		muxevent_remove_type_data(EVENT_AUTOGUN, (void *) autopilot);
-	}
-
-	AUTOEVENT(autopilot, EVENT_AUTOGUN, auto_gun_event, AUTO_GUN_TICK, 0);
 
 	/* Log it */
 	print_autogun_log(autopilot, "Autogun Event Finished");
 
 	/* The End */
-
 }

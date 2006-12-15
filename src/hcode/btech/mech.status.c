@@ -298,9 +298,9 @@ void PrintShortInfo(dbref player, MECH * mech)
 		sprintf(typespecific, " VSPD: %3.1f ", MechVerticalSpeed(mech));
 		break;
 	case CLASS_MECH:
-		sprintf(typespecific, " HT: %3d/%3d ",
+		sprintf(typespecific, " HT: %3d/%3d/%-3d ",
 				(int) (10. * MechPlusHeat(mech)),
-				(int) (10. * MechActiveNumsinks(mech)));
+				(int) (10. * MechActiveNumsinks(mech)), (int) (10. * MechMinusHeat(mech)));
 		break;
 	case CLASS_AERO:
 	case CLASS_DS:
@@ -1131,6 +1131,8 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 								   (wFireMode & OS_USED)) ||
 								  (wFireMode & ROCKET_FIRED)))
 				strcat(buffer, " (Empty)");
+				if(wFireMode & WILL_JETTISON_MODE)
+					strcat(buffer, " (backpack)");
 		}
 
 		if(PartIsBroken(mech, index, loop) && type != EMPTY &&

@@ -163,25 +163,32 @@ void fun_clist(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 
-	for(thing = 0; thing < mudstate.db_top; thing++) {
-		if(!Good_obj(thing))
-			continue;
-
-		if((user = select_user(ch, thing))) {
-			if(len) {
-				sprintf(smbuf, " #%d", user->who);
-				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
-					safe_str(" #-1", buff, bufc);
-					return;
-				}
-				safe_str(smbuf, buff, bufc);
-				len += strlen(smbuf);
-			} else {
-				safe_tprintf_str(buff, bufc, "#%d", user->who);
-				len = strlen(buff);
-			}
+	for(ch = (struct channel *) hash_firstentry(&mudstate.channel_htab);
+                ch; ch = (struct channel *) hash_nextentry(&mudstate.channel_htab)) {
+		safe_tprintf_str(buff, bufc, "%s ", ch->name);
 		}
-	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 void fun_beep(char *buff, char **bufc, dbref player, dbref cause,
@@ -855,7 +862,6 @@ void fun_squish(char *buff, char **bufc, dbref player, dbref cause,
 				char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	char *p, *q, *bp;
-
 	bp = alloc_lbuf("fun_squish");
 	StringCopy(bp, fargs[0]);
 	p = q = bp;
@@ -876,7 +882,10 @@ void fun_squish(char *buff, char **bufc, dbref player, dbref cause,
 void fun_stripansi(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
-	safe_str((char *) strip_ansi(fargs[0]), buff, bufc);
+	char new[LBUF_SIZE];
+
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	safe_str((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])), buff, bufc);
 }
 
 /*
@@ -931,6 +940,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 	char *p, *q;
 	int isansi = 0, rturn = 1;
 	char *curr, *objstring, *bp, *cp, sep, *str;
+	char new[MBUF_SIZE];
 
 	evarargs_preamble("COLUMNS", 3);
 
@@ -953,9 +963,10 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 
 	while (cp) {
 		objstring = split_token(&cp, sep);
+		strncpy(new, objstring, MBUF_SIZE-1);
 		ansinumber = number;
-		if(ansinumber > strlen((char *) strip_ansi(objstring)))
-			ansinumber = strlen((char *) strip_ansi(objstring));
+		if(ansinumber > strlen((char *) strip_ansi_r(new,objstring,strlen(objstring))))
+			ansinumber = strlen((char *) strip_ansi_r(new,objstring,strlen(objstring)));
 
 		p = objstring;
 		q = buf;
@@ -983,7 +994,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 		*q = '\0';
 		isansi = 0;
 
-		spaces = number - strlen((char *) strip_ansi(objstring));
+		spaces = number - strlen((char *) strip_ansi_r(new,objstring,strlen(objstring)));
 
 		/*
 		 * Sanitize number of spaces 
@@ -1186,10 +1197,12 @@ void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause,
 	char *p = (char *) fargs[0];
 	char *q = buf;
 	int isansi = 0;
-
+	char new[LBUF_SIZE];
+	
 	number = atoi(fargs[1]);
-	if(number > strlen((char *) strip_ansi(fargs[0])))
-		number = strlen((char *) strip_ansi(fargs[0]));
+	strncpy(new, fargs[0], LBUF_SIZE-1);
+	if(number > strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0]))))
+		number = strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0])));
 
 	if(number < 0) {
 		safe_str("#-1 OUT OF RANGE", buff, bufc);

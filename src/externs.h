@@ -51,6 +51,7 @@ int fetch_connect(dbref);
 void raw_broadcast(int, char *, ...);
 int desc_cmp(void *, void *, void *);
 void run_command(DESC *d, char *);
+int do_unauth_command(DESC *d, char *);
 
 /* From cque.c */
 int nfy_que(dbref, int, int, int);
@@ -72,8 +73,7 @@ void exec(char *, char **, int, dbref, dbref, int, char **, char *[], int);
 
 /* From game.c */
 void do_shutdown(dbref, dbref, int, char *);
-#define	notify(p,m)			notify_checked(p,p,m, \
-						MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
+#define	notify(p,m)			notify_checked(p,p,m, MSG_PUP_ALWAYS|MSG_ME_ALL|MSG_F_DOWN)
 #define	notify_quiet(p,m)		notify_checked(p,p,m, \
 						MSG_PUP_ALWAYS|MSG_ME)
 #define	notify_with_cause(p,c,m)	notify_checked(p,c,m, \
@@ -128,9 +128,8 @@ void helpindex_init(void);
 int cf_ntab_access(int *, char *, long, dbref, char *);
 
 /* From log.c */
-char *strip_ansi(const char *);
-char *strip_ansi_r(char *, char *, size_t);
-char *normal_to_white(const char *);
+char *strip_ansi_r(char *, const char *, size_t);
+char *normal_to_white_r(char *, const char *, size_t);
 int start_log(const char *, const char *);
 void end_log(void);
 void log_perror(const char *, const char *, const char *, const char *);

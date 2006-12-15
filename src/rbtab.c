@@ -19,7 +19,7 @@ struct string_dict_entry {
 
 static int hrbtab_compare(char *left, char *right, void *arg)
 {
-	return strcmp(left, right);
+	return strcasecmp(left, right);
 }
 
 void hashinit(RBTAB * htab, int size)

@@ -366,9 +366,11 @@
 #define AC10_CASELESS_AMMO	144
 #define AC20_CASELESS_AMMO	145
 #define LAC2_CASELESS_AMMO	146
-#define LAC5_CASELESS_AMMO	147																								    
+#define LAC5_CASELESS_AMMO	147
+#define AMMO_LRM_SGUIDED	148
+
 #ifdef BT_COMPLEXREPAIRS
-#define TON_SENSORS_FIRST       145
+#define TON_SENSORS_FIRST       149
 #define TON_SENSORS_LAST        (TON_SENSORS_FIRST + 9)
 
 #define TON_MYOMER_FIRST        (TON_SENSORS_LAST + 1)
@@ -635,10 +637,11 @@ struct critical_slot {
 #define AC_PRECISION_MODE       0x00010000  /* (P) autocannon firing precision rounds */
 #define STINGER_MODE            0x00020000  /* (T) AntiAir LRM */
 #define AC_CASELESS_MODE	0x00040000  /* (U) autocannon firing caseless rounds */
+#define SGUIDED_MODE		0x00080000  /* (G) LRM's loaded with Semi-Guided rounds (benefits only if unit is lit by 'TAG' */
 
 #define ARTILLERY_MODES		(CLUSTER_MODE|MINE_MODE|SMOKE_MODE)
 #define INARC_MODES		(INARC_EXPLO_MODE|INARC_HAYWIRE_MODE|INARC_ECM_MODE|INARC_NEMESIS_MODE)
-#define MISSILE_MODES		(ARTEMIS_MODE|NARC_MODE|INFERNO_MODE|SWARM_MODE|SWARM1_MODE|STINGER_MODE)
+#define MISSILE_MODES		(ARTEMIS_MODE|NARC_MODE|INFERNO_MODE|SWARM_MODE|SWARM1_MODE|STINGER_MODE|SGUIDED_MODE)
 #define AC_MODES		(AC_AP_MODE|AC_FLECHETTE_MODE|AC_INCENDIARY_MODE|AC_PRECISION_MODE|AC_CASELESS_MODE)
 #define AMMO_MODES		(LBX_MODE|AC_MODES|MISSILE_MODES|INARC_MODES|ARTILLERY_MODES)
 
@@ -1291,7 +1294,6 @@ extern struct missile_hit_table_struct MissileHitTable[];
 #define MINE_DROP	4	/* Someone drops to ground in the hex */
 
 extern void *FindObjectsData(dbref key);
-
 #ifndef ECMD
 #define ECMD(a) extern void a (dbref player, void *data, char *buffer)
 #endif
