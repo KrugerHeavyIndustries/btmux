@@ -2607,7 +2607,7 @@ void SetPartCost(int p, unsigned long long int cost)
 		cargocost[Cargo2I(p)] = cost;
 }
 
-#define COST_DEBUG      0
+#define COST_DEBUG      1 
 #if COST_DEBUG
 #define ADDPRICE(desc, add) \
     { SendDebug(tprintf("AddPrice - %s %d", desc, add)); \
@@ -2692,8 +2692,10 @@ unsigned long long int CalcFasaCost(MECH * mech)
 /* Actuators */
 						DoArmMath(RARM)
 						DoArmMath(LARM)
+						/*
 						DoLegMath(LLEG)
 						DoLegMath(RLEG)
+						*/
 /* Gyro */
 						i = MechEngineSize(mech);
 		if(i % 100)
@@ -2768,26 +2770,35 @@ unsigned long long int CalcFasaCost(MECH * mech)
 				ADDPRICE("JumpJets", MechTons(mech) * (i * i) * 200)
 
 /* Heat Sinks */
-					i = MechRealNumsinks(mech);
+			i = MechRealNumsinks(mech);
 			ii = (MechSpecials(mech) & DOUBLE_HEAT_TECH
 				  || MechSpecials(mech) & CLAN_TECH ? 6000 :
 				  MechSpecials2(mech) & COMPACT_HS_TECH ? 3000 : 2000);
-			if(!
-			   (MechSpecials(mech) & ICE_TECH
-				|| MechSpecials(mech) & DOUBLE_HEAT_TECH
+			/* If it's DHS or these other techs, take 10 sinks out for the 
+			 * actual # of sinks. */
+			if((MechSpecials(mech) & ICE_TECH || MechSpecials(mech) & DOUBLE_HEAT_TECH
 				|| MechSpecials(mech) & CLAN_TECH))
 				i = BOUNDED(0, i - 10, 500);
+
 			ADDPRICE("Heat Sinks", i * ii)
 
+#if COST_DEBUG
+			SendDebug(tprintf("Heat Sinks %d * Cost Per Sink %d", i, ii));
+#endif
+
 				ii = 0;
-			for(i = 0; i < NUM_SECTIONS; ++i)
+			for(i = 0; i < NUM_SECTIONS; ++i) {
 				ii += GetSectOArmor(mech, i);
-			i = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials(mech) &
+				ii += GetSectORArmor(mech, i);
+			}
+
+			i = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
+				 STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
 				 HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
 				 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
 				 10000);
 #if COST_DEBUG
-			SendDebug(tprintf("Armor Total %d - Armor Cost %d", ii, i));
+			SendDebug(tprintf("Armor Total %d * Armor Cost Per Point %d", ii, i));
 #endif
 			ADDPRICE("Armor", (i / 16) * ii)
 
@@ -2798,17 +2809,30 @@ unsigned long long int CalcFasaCost(MECH * mech)
 					if(IsActuator(part) || part == EMPTY)
 						continue;
 					if(IsSpecial(part))
+						/* These parts are handled above, don't count their crits */
 						switch (Special2I(part)) {
 						case LIFE_SUPPORT:
+							continue;
 						case SENSORS:
+							continue;
 						case COCKPIT:
+							continue;
 						case ENGINE:
+							continue;
 						case GYRO:
+							continue;
 						case HEAT_SINK:
+							continue;
 						case JUMP_JET:
+							continue;
 						case FERRO_FIBROUS:
+							continue;
 						case ENDO_STEEL:
+							continue;
 						case TRIPLE_STRENGTH_MYOMER:
+							continue;
+						case STEALTH_ARMOR:
+							continue;
 #if 0
 /* NULLTODO : Port any of these techs ASAP */
 						case HARDPOINT:
