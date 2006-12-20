@@ -2777,8 +2777,10 @@ unsigned long long int CalcFasaCost(MECH * mech)
 			/* If it's DHS or these other techs, take 10 sinks out for the 
 			 * actual # of sinks. */
 			if((MechSpecials(mech) & ICE_TECH || MechSpecials(mech) & DOUBLE_HEAT_TECH
-				|| MechSpecials(mech) & CLAN_TECH))
-				i = BOUNDED(0, i - 10, 500);
+				|| MechSpecials(mech) & CLAN_TECH)) {
+				/* We want to divide the heat dissipation by two if DHS */
+				i = BOUNDED(0, i - i/2, 500);
+			}
 
 			ADDPRICE("Heat Sinks", i * ii)
 
