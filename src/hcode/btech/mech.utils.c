@@ -2670,34 +2670,39 @@ unsigned long long int CalcFasaCost(MECH * mech)
 			ADDPRICE("TorsoCockpit", 750000)
 				else
 #endif
-			ADDPRICE("Cockpit", 200000)
+		ADDPRICE("Cockpit", 200000)
+
 /* Life Support */
-				ADDPRICE("LifeSupport", 50000)
+		ADDPRICE("LifeSupport", 50000)
+
 /* Sensors */
-				ADDPRICE("Sensors", (MechTons(mech) * 2000))
+		ADDPRICE("Sensors", (MechTons(mech) * 2000))
+
 /* Myomer stuffage */
-				if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
-				ADDPRICE("TripleMyomer", (MechTons(mech) * 16000))
-					else
-				ADDPRICE("Myomer", (MechTons(mech) * 2000))
+		if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
+			ADDPRICE("TripleMyomer", (MechTons(mech) * 16000))
+		else
+			ADDPRICE("Myomer", (MechTons(mech) * 2000))
+
 /* Internal Structure */
-					if(MechSpecials(mech) & ES_TECH
-					   || MechSpecials(mech) & COMPI_TECH)
-					ADDPRICE("ES/CO  Internal", (MechTons(mech) * 1600))
-						else
-				if(MechSpecials(mech) & REINFI_TECH)
-					ADDPRICE("RE Internal", (MechTons(mech) * 6400))
-						else
-					ADDPRICE("Internal", (MechTons(mech) * 400))
+		if(MechSpecials(mech) & ES_TECH
+			|| MechSpecials(mech) & COMPI_TECH)
+			ADDPRICE("ES/CO  Internal", (MechTons(mech) * 1600))
+		else
+			if(MechSpecials(mech) & REINFI_TECH)
+				ADDPRICE("RE Internal", (MechTons(mech) * 6400))
+		else
+			ADDPRICE("Internal", (MechTons(mech) * 400))
+
 /* Actuators */
-						DoArmMath(RARM)
-						DoArmMath(LARM)
-						/*
-						DoLegMath(LLEG)
-						DoLegMath(RLEG)
-						*/
+		DoArmMath(RARM)
+		DoArmMath(LARM)
+		/*
+		DoLegMath(LLEG)
+		DoLegMath(RLEG)
+		*/
 /* Gyro */
-						i = MechEngineSize(mech);
+		i = MechEngineSize(mech);
 		if(i % 100)
 			i += (100 - (MechEngineSize(mech) % 100));
 		i /= 100;
@@ -2705,208 +2710,206 @@ unsigned long long int CalcFasaCost(MECH * mech)
 /* NULLTODO : Port any of these techs ASAP */
 		if(MechSpecials2(mech) & XLGYRO_TECH)
 			ADDPRICE("XLGyro", i * 750000)
-				else
-		if(MechSpecials2(mech) & CGYRO_TECH)
-			ADDPRICE("Compact Gyro", i * 400000)
-				else
-		if(MechSpecials2(mech) & HDGYRO_TECH)
-			ADDPRICE("HD Gyro", i * 500000)
-				else
+		else
+			if(MechSpecials2(mech) & CGYRO_TECH)
+				ADDPRICE("Compact Gyro", i * 400000)
+		else
+			if(MechSpecials2(mech) & HDGYRO_TECH)
+				ADDPRICE("HD Gyro", i * 500000)
+		else
 			ADDPRICE("Gyro", i * 300000)
-			} else {
-			int pamp = 0, turret = 0;
-			for(i = 0; i < NUM_SECTIONS; i++)
-				for(ii = 0; ii < NUM_CRITICALS; ii++) {
-					if(!(part = GetPartType(mech, i, ii)))
-						continue;
-					if(!IsWeapon(part))
-						continue;
-					if(i == TURRET)
-						turret += crit_weight(mech, part);
-					if(IsEnergy(part))
-						pamp += crit_weight(mech, part);
-				}
+	} else {
+	/* Not a mech */
+		int pamp = 0, turret = 0;
+		for(i = 0; i < NUM_SECTIONS; i++)
+			for(ii = 0; ii < NUM_CRITICALS; ii++) {
+				if(!(part = GetPartType(mech, i, ii)))
+					continue;
+				if(!IsWeapon(part))
+					continue;
+				if(i == TURRET)
+					turret += crit_weight(mech, part);
+				if(IsEnergy(part))
+					pamp += crit_weight(mech, part);
+			}
 /* Internals */
-			ADDPRICE("TankInternals", MechTons(mech) * 10000)
+		ADDPRICE("TankInternals", MechTons(mech) * 10000)
 /* Control Components */
-				ADDPRICE("Control Components",
-						 (float) 10000 * (float) ((float) 0.05 *
-												  (float) MechTons(mech)))
+		ADDPRICE("Control Components",
+			(float) 10000 * (float) ((float) 0.05 *
+			(float) MechTons(mech)))
 /* Power Amp */
-				if(MechSpecials(mech) & ICE_TECH)
-				ADDPRICE("Power Amplifiers",
-						 20000 * (float) (((float) pamp / (float) 10) /
-										  (float) 1024))
+		if(MechSpecials(mech) & ICE_TECH)
+			ADDPRICE("Power Amplifiers",
+				20000 * (float) (((float) pamp / (float) 10) /
+				(float) 1024))
 /* Turret */
-					ADDPRICE("Turret",
-							 (float) 5000 *
-							 (float) (((float) turret / (float) 10) /
-									  (float) 1024))
+			ADDPRICE("Turret",
+				(float) 5000 *
+				(float) (((float) turret / (float) 10) /
+				(float) 1024))
 /* Lift/Dive Equip */
-					if(MechMove(mech) == MOVE_HOVER
-					   || MechMove(mech) == MOVE_FOIL
-					   || MechMove(mech) == MOVE_SUB)
-					ADDPRICE("Lift/Dive Equipment",
-							 (float) 20000 * (float) ((float) 0.1 *
-													  (float) MechTons(mech)))
-						if(MechMove(mech) == MOVE_VTOL)
-						ADDPRICE("VTOL Equipment",
-								 (float) 40000 * (float) ((float) 0.1 *
-														  (float)
-														  MechTons(mech)))
-						}
+		if(MechMove(mech) == MOVE_HOVER
+			|| MechMove(mech) == MOVE_FOIL
+			|| MechMove(mech) == MOVE_SUB)
+			ADDPRICE("Lift/Dive Equipment",
+				(float) 20000 * (float) ((float) 0.1 *
+				(float) MechTons(mech)))
+
+		if(MechMove(mech) == MOVE_VTOL)
+			ADDPRICE("VTOL Equipment",
+				 (float) 40000 * (float) ((float) 0.1 *
+				 (float) MechTons(mech)))
+	}
 /* Engine Math */
-						i = (MechSpecials(mech) & CE_TECH ? 10000 :
-							 MechSpecials(mech) & LE_TECH ? 15000 :
-							 MechSpecials(mech) & XL_TECH ? 20000 :
-							 MechSpecials(mech) & XXL_TECH ? 100000 :
-							 MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
-			ADDPRICE("Engine",
-					 ((i * MechEngineSize(mech) * MechTons(mech)) / 75))
+	i = (MechSpecials(mech) & CE_TECH ? 10000 :
+		MechSpecials(mech) & LE_TECH ? 15000 :
+		MechSpecials(mech) & XL_TECH ? 20000 :
+		MechSpecials(mech) & XXL_TECH ? 100000 :
+		MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
+
+		ADDPRICE("Engine",
+			((i * MechEngineSize(mech) * MechTons(mech)) / 75))
 
 /* Jump Jets */
-				i = MechJumpSpeed(mech) * MP_PER_KPH;
-			if(i > 0)
-				ADDPRICE("JumpJets", MechTons(mech) * (i * i) * 200)
+	i = MechJumpSpeed(mech) * MP_PER_KPH;
+		if(i > 0)
+			ADDPRICE("JumpJets", MechTons(mech) * (i * i) * 200)
 
 /* Heat Sinks */
-			i = MechRealNumsinks(mech);
-			ii = (MechSpecials(mech) & DOUBLE_HEAT_TECH
-				  || MechSpecials(mech) & CLAN_TECH ? 6000 :
-				  MechSpecials2(mech) & COMPACT_HS_TECH ? 3000 : 2000);
-			/* If it's DHS or these other techs, take 10 sinks out for the 
-			 * actual # of sinks. */
-			if((MechSpecials(mech) & ICE_TECH || MechSpecials(mech) & DOUBLE_HEAT_TECH
-				|| MechSpecials(mech) & CLAN_TECH)) {
-				/* We want to divide the heat dissipation by two if DHS */
-				i = BOUNDED(0, i - i/2, 500);
-			}
+	i = MechRealNumsinks(mech);
+	ii = (MechSpecials(mech) & DOUBLE_HEAT_TECH
+		|| MechSpecials(mech) & CLAN_TECH ? 6000 :
 
-			ADDPRICE("Heat Sinks", i * ii)
+	MechSpecials2(mech) & COMPACT_HS_TECH ? 3000 : 2000);
+
+	/* If it's DHS or these other techs, take 10 sinks out for the 
+	 * actual # of sinks. */
+	if((MechSpecials(mech) & ICE_TECH || MechSpecials(mech) & DOUBLE_HEAT_TECH
+		|| MechSpecials(mech) & CLAN_TECH)) {
+		/* We want to divide the heat dissipation by two if DHS */
+		i = BOUNDED(0, i - i/2, 500);
+	}
+
+	ADDPRICE("Heat Sinks", i * ii)
 
 #if COST_DEBUG
-			SendDebug(tprintf("Heat Sinks %d * Cost Per Sink %d", i, ii));
+	SendDebug(tprintf("Heat Sinks %d * Cost Per Sink %d", i, ii));
 #endif
 
-				ii = 0;
-			for(i = 0; i < NUM_SECTIONS; ++i) {
-				ii += GetSectOArmor(mech, i);
-				ii += GetSectORArmor(mech, i);
-			}
+	ii = 0;
+	for(i = 0; i < NUM_SECTIONS; ++i) {
+		ii += GetSectOArmor(mech, i);
+		ii += GetSectORArmor(mech, i);
+	}
 
-			i = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
-				 STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
-				 HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
-				 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
-				 10000);
+	i = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
+		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
+		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
+		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
+		 10000);
 #if COST_DEBUG
-			SendDebug(tprintf("Armor Total %d * Armor Cost Per Point %d", ii, i));
+	SendDebug(tprintf("Armor Total %d * Armor Cost Per Point %d", ii, i));
 #endif
-			ADDPRICE("Armor", (i / 16) * ii)
+	ADDPRICE("Armor", (i / 16) * ii)
 
 /* Parts */
-				for(i = 0; i < NUM_SECTIONS; i++)
-				for(ii = 0; ii < NUM_CRITICALS; ii++) {
-					part = GetPartType(mech, i, ii);
-					if(IsActuator(part) || part == EMPTY)
+	for(i = 0; i < NUM_SECTIONS; i++)
+		for(ii = 0; ii < NUM_CRITICALS; ii++) {
+			part = GetPartType(mech, i, ii);
+			if(IsActuator(part) || part == EMPTY)
+				continue;
+			if(IsSpecial(part))
+				/* These parts are handled above, don't count their crits */
+				switch (Special2I(part)) {
+					case LIFE_SUPPORT:
 						continue;
-					if(IsSpecial(part))
-						/* These parts are handled above, don't count their crits */
-						switch (Special2I(part)) {
-						case LIFE_SUPPORT:
-							continue;
-						case SENSORS:
-							continue;
-						case COCKPIT:
-							continue;
-						case ENGINE:
-							continue;
-						case GYRO:
-							continue;
-						case HEAT_SINK:
-							continue;
-						case JUMP_JET:
-							continue;
-						case FERRO_FIBROUS:
-							continue;
-						case ENDO_STEEL:
-							continue;
-						case TRIPLE_STRENGTH_MYOMER:
-							continue;
-						case STEALTH_ARMOR:
-							continue;
+					case SENSORS:
+						continue;
+					case COCKPIT:
+						continue;
+					case ENGINE:
+						continue;
+					case GYRO:
+						continue;
+					case HEAT_SINK:
+						continue;
+					case JUMP_JET:
+						continue;
+					case FERRO_FIBROUS:
+						continue;
+					case ENDO_STEEL:
+						continue;
+					case TRIPLE_STRENGTH_MYOMER:
+						continue;
+					case STEALTH_ARMOR:
+						continue;
 #if 0
 /* NULLTODO : Port any of these techs ASAP */
 						case HARDPOINT:
 							continue;
 #endif
-						default:
-							break;
-						}
-					if(IsAmmo(part)) {
-						part = FindAmmoType(mech, i, ii);
-						ADDPRICE(part_name(part, 0),
-								 GetPartCost(part) * GetPartData(mech, i,
+					default:
+						break;
+				}
+				if(IsAmmo(part)) {
+					part = FindAmmoType(mech, i, ii);
+					ADDPRICE(part_name(part, 0),
+						GetPartCost(part) * GetPartData(mech, i,
 																 ii));
-					} else {
-						ADDPRICE(part_name(part, 0), GetPartCost(part))
-					}
+				} else {
+					ADDPRICE(part_name(part, 0), GetPartCost(part))
 				}
-
-			if(MechType(mech) != CLASS_MECH) {
-				switch (MechMove(mech)) {
-				case MOVE_TRACK:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 100);
-					break;
-				case MOVE_WHEEL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 200);
-					break;
-				case MOVE_HOVER:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 50);
-					break;
-				case MOVE_VTOL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 30);
-					break;
-				case MOVE_HULL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 200);
-					break;
-				case MOVE_FOIL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 75);
-					break;
-				case MOVE_SUB:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 50);
-					break;
-				}
-			} else {
-				mod =
-					(float) 1 +
-					(float) ((float) MechTons(mech) / (float) 100);
 			}
+
+	if(MechType(mech) != CLASS_MECH) {
+		switch (MechMove(mech)) {
+			case MOVE_TRACK:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 100);
+				break;
+			case MOVE_WHEEL:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 200);
+				break;
+			case MOVE_HOVER:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 50);
+				break;
+			case MOVE_VTOL:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 30);
+				break;
+			case MOVE_HULL:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 200);
+				break;
+			case MOVE_FOIL:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 75);
+				break;
+			case MOVE_SUB:
+				mod = (float) 1 +
+					(float) ((float) MechTons(mech) / (float) 50);
+				break;
+		}
+	} else {
+		mod = (float) 1 +
+			(float) ((float) MechTons(mech) / (float) 100);
+	}
+
 #if COST_DEBUG
-			SendDebug(tprintf("Price Total - %lld Mod - %f", total, mod));
+	SendDebug(tprintf("Price Total - %lld Mod - %f", total, mod));
 #endif
 
-			return ((float) total * (float) mod);
-			}
+	return ((float) total * (float) mod);
+} /* End Function */
+
 #endif
 
 #ifdef BT_CALCULATE_BV
 
-		int FindAverageGunnery(MECH * mech) {
+int FindAverageGunnery(MECH * mech) {
 #if 1
 /* NULLTODO : Get the multiple skills for gunnery and such ported or working here so this is usefull again. */
 			return FindPilotGunnery(mech, 0);
