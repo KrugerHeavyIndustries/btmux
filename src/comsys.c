@@ -1629,7 +1629,7 @@ void do_chanlist(dbref player, dbref cause, int key)
 	for(ch = (struct channel *) hash_firstentry(&mudstate.channel_htab);
 		ch; ch = (struct channel *) hash_nextentry(&mudstate.channel_htab)) {
 		if(Comm_All(player) || (ch->type & CHANNEL_PUBLIC) ||
-		   ch->charge_who == player) {
+		   ch->charge_who == player || (do_test_access(player, CHANNEL_JOIN, ch))) {
 
 			atrstr = atr_pget(ch->chan_obj, A_DESC, &owner, &flags);
 			if((ch->chan_obj == NOTHING) || !*atrstr)
