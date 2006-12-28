@@ -59,6 +59,39 @@
 #define MP9		96.75		/* 9*MS_PER_MP   */
 #define DELTAFACING	1440.0
 
+/* New stuff for new real cord system */
+/*
+           Hex Diagram
+      /                    \ ____
+     |\                    /   |
+     | \                  /    |
+     |  \                /     r
+     |   \              /      |
+     |    \____________/ ______|_
+     |- h -|--- s ----|
+
+*/
+
+#define GAME_TURN   30                          /* 30 seconds per turn */
+#define MPS_PER_MP  2.986111                    /* 2.9861.. meters/sec per movement point - 
+                                                   see KPH_PER_MP */
+#define HEX_SIZE    (GAME_TURN * KPH_PER_MP)    /* Comes out 89.583330 meters - this is
+                                                   roughly the size of the hex from parallel
+                                                   edge to parallel edge in meters - based on
+                                                   values from FASA books */
+
+#define HEX_R_VALUE (HEX_SIZE * 0.5)            /* height / 2 = r */
+#define HEX_H_VALUE (HEX_R_VALUE * 0.577350)    /* r * tan(30) = h */
+#define HEX_S_VALUE (HEX_R_VALUE * 1.154700)    /* r / cos(30) = s */
+
+#define HEX_Y_SCALE HEX_SIZE                    /* Height is equal to hex_size (dist between two
+                                                   parallel sides */
+#define HEX_X_SCALE (HEX_R_VALUE * 2.309401)    /* Width = 2 * h + s = r * (2 * tan(30) +
+                                                   1 / cos(30)) */
+#define HEX_Z_SCALE (HEX_SIZE * 0.2)            /* 1 Z is equal 1/5 of Hex size */
+
+/* End of new real coord stuff */
+
 #define DEFAULT_FREQS	5
 #define FREQS		16
 

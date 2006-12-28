@@ -869,6 +869,154 @@ void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x, float *cart_y)
 }
 
 /*
+            Hex Diagram
+
+            See mech.h for 
+            how h, s and r
+            are calculated.
+
+      /                    \ ____
+     |\                    /   |
+     | \                  /    |
+     |  \                /     r
+     |   \              /      |
+     |    \____________/ ______|_
+     |- h -|--- s ----|
+
+    How we go from real coordinates to hex
+
+    We first figure out what column we are in by dividing
+    the real x value by (h + s).  Then divide the real y
+    value by ( 2 r 'aka hex height').  This gives us the
+    relative location.  Then we find were in the column
+    the unit is by finding the remainder of the first two
+    calculations.  Comparing those values to the slopes
+    of the hexes we can see if we need to subtract from
+    the relative hex location to get a final result.
+
+|          A       |          B       |           A      |
+-------------------|------------------|-------------------
+|XX                |  XX              |XX                |
+| XX               | XX y=-r/h*x+r    | XX               |
+|  XX              |XX                |  XX              |
+|   XX             |X                 |   XX             |
+|    XXXXXXXXXXXXXX|          B       |    XXXXXXXXXXXXXX|
+|   XX             |X                 |   XX             |
+|  XX              |XX                |  XX              |
+| XX               | XX y=r/h*x+r     | XX               |
+|XX        A       |  XX              |XX         A      |
+-------------------|------------------|-------------------
+|XX                |  XX              |XX                |
+| XX               | XX               | XX               |
+|  XX y=r/h*x      |XX                |  XX              |
+|   XX             |X                 |   XX             |
+|    XXXXXXXXXXXXXX|          B       |    XXXXXXXXXXXXXX|
+|   XX             |X                 |   XX             |
+|  XX y=-r/h*x+2r  |XX                |  XX              |
+| XX               | XX               | XX               |
+|XX        A       |  XX              |XX         A      |
+-------------------|------------------|-------------------
+|XX                |  XX              |XX                |
+| XX               | XX               | XX               |
+|  XX              |XX                |  XX              |
+|   XX             |X                 |   XX             |
+|    XXXXXXXXXXXXXX|          B       |    XXXXXXXXXXXXXX|
+|   XX             |X                 |   XX             |
+|  XX              |XX                |  XX              |
+| XX               | XX               | XX               |
+|XX        A       |  XX              |XX         A      |
+-------------------|------------------|-------------------
+
+*/ 
+/*
+ * Converts map hex coords (x, y) to real values (center of hex), see mech.h
+ * for info on hex diagram and what the defines are.  Add by 0.5 of the SCALE
+ * value to end up in dead center of hex.
+ */
+void MapCoordToActualCoord(int hex_x, int hex_y, double *real_x, double *real_y) {
+
+    /* Always the same */
+    *real_x = hex_x * (HEX_H_VALUE + HEX_S_VALUE) + HEX_X_SCALE * 0.5;
+
+    /* Odd or Even hex column */
+    if (hex_y % 2) {
+        /* Even Hex Column */
+        *real_y = hex_y * (HEX_Y_SCALE) + HEX_R_VALUE + HEX_Y_SCALE * 0.5;
+    } else {
+        /* Odd Hex Column */
+        *real_y = hex_y * (HEX_Y_SCALE) + HEX_Y_SCALE * 0.5;
+    }
+}
+
+/*
+ * Converts real coord to map hex coordinates.
+ */
+
+void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y) {
+
+    double section_x, section_y;
+    double section_pixel_x, section_pixel_y;
+
+    /* Find which main column and section we are in */
+    section_y = real_y / HEX_Y_SCALE;
+    section_x = real_x / (HEX_H_VALUE + HEX_S_VALUE);
+
+    /* Find where in the section we are */
+    section_pixel_y = fmod(real_y, HEX_Y_SCALE);
+    section_pixel_x = fmod(real_x, (HEX_H_VALUE + HEX_S_VALUE));
+
+    /* Our inital locations - alter these based on the pixel_x/y values */
+    /* might be able to remove the floor and just cast the float to int */
+    *hex_x = (int) floor(section_x);
+    *hex_y = (int) floor(section_y);
+
+    /* Depending on which column we are in
+     * we do something different. - see diagram above for more info */
+    if (*hex_x % 2) {
+
+        /* Column A (aka even column) */
+        /* Split the section into two pieces (bottom and top) and look
+            at them seperately */
+        if (section_pixel_y >= HEX_R_VALUE) {
+
+            /* Checking bottom section */
+            if (section_pixel_y < (2.0 * HEX_R_VALUE -
+                        HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+                /* Bottom left section */
+                *hex_x--;
+            }
+
+        } else if (section_pixel_y < HEX_R_VALUE) {
+
+            /* Checking top section */
+            if (section_pixel_y > (HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+                /* Top left section */
+                *hex_x--;
+            } else {
+                /* Top main section */
+                *hex_y--;
+            }
+        }
+
+    } else {
+
+        /* Column B (aka odd column) */
+        if (section_pixel_y < (HEX_R_VALUE - 
+                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+            /* In the top left section of the area */
+            *hex_x--;
+            *hex_y--;
+        } else if (section_pixel_y > (HEX_R_VALUE + 
+                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+            /* In the bottom left section of the area */
+            *hex_x--;
+        }
+        
+    }
+
+}
+
+/*
    Sketch a 'mech on a Navigate map. Done here since it fiddles directly
    with cartesian coords.
 
