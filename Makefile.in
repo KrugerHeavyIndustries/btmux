@@ -8,7 +8,8 @@ INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
 LIBS           = @LIBS@
 LDFLAGS		   = @LDFLAGS@
 
-VERSION_FLAGS  = -DMUX_BUILD_DATE="\"`date`\""              \
+VERSION_FLAGS  = -DSVN_REVISION="\"`svnversion .`\""	\
+                 -DMUX_BUILD_DATE="\"`date`\""              \
                  -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
 ifdef DEBUG
 VERSION_FLAGS += -DSVN_REVISION="\"`svnversion .`\"" -DMUX_BUILD_USER="\"`whoami`\"" -DMUX_BUILD_HOST="\"`hostname -f`\""
