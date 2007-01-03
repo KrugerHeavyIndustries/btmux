@@ -1,0 +1,39 @@
+BattletechMUX Credits
+---------------------
+BattletechMUX is maintained by a group of volunteers, all working towards the
+continued improvement of the codebase. Without any of the individuals listed
+below, the BTMux scene might be very different.
+
+The following individuals have made contributions of some sort towards the
+betterment of BattletechMUX. If we have omitted anyone, please let us know.
+
+Major Contributors
+------------------
+The following people have invested a substantial amount of time working on
+BattletechMUX in some way. Most of these have spent years with the project
+as it went through its many incarnations, and without any one of the
+below listed, a lot would be missing.
+
+* Guzzer and Crew  - Very early development, started one of the first big
+                     BT MU*s.
+* Fingon           - Lots of code work, much of it is still in the base
+                     today.
+* Kip              - Development lead while the codebase was being
+                     maintained by Battletech: 3030.
+* Focus            - Code contributions. 
+* Null/DJ          - Creator of the Exile branch, responsible for a lot
+                     of the merged functionality and was a driving force
+		     behind innovation in BTMux.
+* Kelvin McCorvin  - Current project lead.
+* Hagbard          - Current lead programmer. Lots of internal changes
+                     and optimizations.
+* Daniel MacGregor - Lots of assorted hardcode. New AI system.
+* Power_Shaper     - Lots of assorted hardcode.
+* Scotty           - Responsible for the writing of a vast amount of
+                     documentation.
+
+Contributors
+------------
+* NeverWhere         - Help files and documentation. 
+* Stringfellow Hawke - Template files.
+* Fitz               - Misc. code contributions, stagger code.

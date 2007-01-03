@@ -71,10 +71,14 @@ old tree re-licensed, but over the span of several years nothing was heard
 from him. 
 
 In late 2004 and early 2005, Null begins to port his changes to the Exile
-base to the open-sourced 3030 branch. His modifications, enhancements.
-and additions are now publicly available to all under this release which
-is maintained by the original Exile staff with the assistance of the
-public.
+base to the open-sourced 3030 branch. 
+
+The torch was then picked up and carried by a development team 
+headed up by Kelvin McCorvin, composed of many of the people in the 
+docs/CREDITS file. With Hag as lead programmer over a capable team of
+developers, the codebase has experienced much growth and improvement,
+leaving us where we are today. Make sure to see the docs/CREDITS file
+for a list of contributors and let us know if we left anyone out.
 
 S3: CREDITS
 -----------
@@ -84,8 +88,8 @@ other MUSEs, MUSHes and MUXes that inspired the MUX code, we cannot.
 Basically, it means anyone who worked on TinyMUSE, TinyMUSH and TinyMUX,
 both with and without battletech extentions, as well as those people who
 actually built and ran the Battletech MUSE, MUSH and MUX worlds out there.
-If you're one of them, and you want to be listed in a CREDITS file, let us
-know.
+If you're one of them, and you want to be listed in a docs/CREDITS file, 
+let us know.
 
 S4: LICENSE
 -----------
