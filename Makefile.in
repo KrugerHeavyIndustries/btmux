@@ -12,7 +12,7 @@ VERSION_FLAGS  = -DSVN_REVISION="\"`svnversion .`\""	\
                  -DMUX_BUILD_DATE="\"`date`\""              \
                  -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
 ifdef DEBUG
-VERSION_FLAGS += -DSVN_REVISION="\"`svnversion .`\"" -DMUX_BUILD_USER="\"`whoami`\"" -DMUX_BUILD_HOST="\"`hostname -f`\""
+VERSION_FLAGS += -DMUX_BUILD_USER="\"`whoami`\"" -DMUX_BUILD_HOST="\"`hostname -f`\""
 CFLAGS 	      += -g3 -DDEBUG
 OBJSUFFIX      = .debug
 else
@@ -185,11 +185,13 @@ ALLSRCS = $(ALLOBJS:.o=.c)
 
 TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX)
 
+.PHONY: debug install-debug mudflap release all install clean cleandep distclean
+
 debug:
-	@DEBUG=1 $(MAKE) $(MAKEFLAGS)all
+	@DEBUG=1 $(MAKE) all
 
 install-debug:
-	@DEBUG=1 $(MAKE) $(MAKEFLAGS)install
+	@DEBUG=1 $(MAKE) install
 
 mudflap:
 	$(CC) -g3 -DDEBUG -DSVN_REVISION="\"`svnversion .`\"" $(ALLFLAGS) $(VERSION_FLAGS) -fmudflap -o src/netmux.mudflap $(ALLSRCS) src/version.c $(LIBS) -lmudflap
@@ -236,7 +238,7 @@ clean:
 cleandep: clean
 	rm -f $(ALLOBJS:%.o=%.d)
 
-distclean: clean cleandep
+distclean: cleandep
 	$(MAKE) $(MAKEFLAGS)-f Makefile.dist clean
 
 mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
@@ -246,11 +248,9 @@ dbconvert src/dbconvert:
 	echo "dbconvert is no longer supported." && exit 1;
 
 $(ALLSRCS:%.c=%.d): %.d: %.c
-	$(CC) -MM -MF $@ -MT $(@:%.d=%$$\(OBJSUFFIX\).o) $(ALLFLAGS) $<
+	$(CC) -MM -MF $@ -MT "$@ $(@:%.d=%$$\(OBJSUFFIX\).o)" $(ALLFLAGS) $<
 
 $(ALLOBJS:.o=$(OBJSUFFIX).o): %$(OBJSUFFIX).o: %.c
 	$(CC) $(ALLFLAGS) -c $< -o $@
 
 -include $(ALLSRCS:%.c=%.d)
-
-.PHONY: clean protos
