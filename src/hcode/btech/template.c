@@ -1752,7 +1752,7 @@ int save_template(dbref player, MECH * mech, char *reference, char *filename)
 	x2 &=
 		~(STEALTH_ARMOR_TECH | NULLSIGSYS_TECH | ANGEL_ECM_TECH |
 		  HVY_FF_ARMOR_TECH | LT_FF_ARMOR_TECH | TAG_TECH | C3I_TECH |
-		  BLOODHOUND_PROBE_TECH);
+		  BLOODHOUND_PROBE_TECH | TCOMP_TECH);
 
 	if(x || x2)
 		fprintf(fp, "Specials         { %s }\n", BuildBitString2(specials,
@@ -1979,7 +1979,7 @@ void update_specials(MECH * mech)
 	MechSpecials2(mech) &=
 		~(STEALTH_ARMOR_TECH | NULLSIGSYS_TECH | ANGEL_ECM_TECH |
 		  HVY_FF_ARMOR_TECH | LT_FF_ARMOR_TECH | TAG_TECH | C3I_TECH |
-		  BLOODHOUND_PROBE_TECH);
+		  BLOODHOUND_PROBE_TECH | TCOMP_TECH);
 
 	MechInfantrySpecials(mech) &=
 		~(CS_PURIFIER_STEALTH_TECH | DC_KAGE_STEALTH_TECH |
@@ -2073,12 +2073,14 @@ void update_specials(MECH * mech)
 		SendError(tprintf
 				  ("#%d apparently is very weird: Compact engine AND XL/XXL?",
 				   mech->mynum));
-	if(tc_count)
+	if(tc_count) {
+		MechSpecials2(mech) |= TCOMP_TECH;
 		for(x = 0; x < NUM_SECTIONS; x++)
 			for(y = 0; y < CritsInLoc(mech, x); y++)
 				if(IsWeapon((t = GetPartType(mech, x, y))))
 					if(TCAble(t))
 						GetPartFireMode(mech, x, y) |= ON_TC;
+	}
 	if(masc_count >= MAX(1, (MechTons(mech) / (cl ? 25 : 20))))
 		MechSpecials(mech) |= MASC_TECH;
 #define ITech(var,cnt,spec) \
