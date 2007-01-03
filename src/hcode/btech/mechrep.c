@@ -1510,6 +1510,10 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		MechSpecials2(mech) |= BLOODHOUND_PROBE_TECH;
 		notify(player, "Bloodhound Active Probe added to 'Mech.");
 		break;
+	case TARGETING_COMPUTER:
+		MechSpecials2(mech) |= TCOMP_TECH;
+		notify(player, "Targeting Computer added to 'Mech.");
+		break;
 	}
 	notify(player, "Critical slot filled.");
 }

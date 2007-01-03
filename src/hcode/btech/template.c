@@ -1161,6 +1161,7 @@ char *specials2[] = {
 	"XLGyro_Tech",
 	"HDGyro_Tech",
 	"CompactGyro_Tech",
+	"TargComp_Tech",
 	NULL
 };
 
@@ -1172,6 +1173,7 @@ char *specialsabrev2[] = {
 	"CART",
 	"WPRF",
 	"XLGRYO", "HDGYRO", "CGYRO",
+	"TCOMP",
 	NULL
 };
 
