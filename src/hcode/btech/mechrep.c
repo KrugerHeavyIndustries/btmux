@@ -1337,6 +1337,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					AC_CASELESS_MODE;
 				break;
+			case 'G':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					SGUIDED_MODE;
+				break;
 			case '-':
 				MechSections(mech)[index].criticals[subsect].ammomode = 0;
 				MechSections(mech)[index].criticals[subsect].firemode = 0;
