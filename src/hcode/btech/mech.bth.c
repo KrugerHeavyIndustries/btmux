@@ -347,7 +347,8 @@ int FindNormalBTH(MECH * mech,
 		if(wAmmoMode & AC_PRECISION_MODE)
 			wTargMoveMod = MAX(wTargMoveMod -= 2, 0);
 
-		BTHADD("TargetMove", wTargMoveMod);
+		if(!((wAmmoMode & SGUIDED_MODE) && (MechTeam(getMech(TaggedBy(target))) == MechTeam(mech))))
+			BTHADD("TargetMove", wTargMoveMod);
 
 		/* Add in the terrain modifier */
 		if(indirectFire >= 1000) {
