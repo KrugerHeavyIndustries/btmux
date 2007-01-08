@@ -621,21 +621,6 @@ do {	 MechFX(to) = MechFX(from); \
 	  MechTerrain(to) = MechTerrain(from); \
 	  MechElev(to) = MechElev(from) + heightMod; MarkForLOSUpdate(to); MechFloods(to); } while (0)
 
-
-#define FindPunchLoc(mech,hitloc,arc,iscritical,isrear) \
- do { if (MechType(mech) != CLASS_MECH) \
-   hitloc = FindHitLocation(mech, arc, &iscritical, &isrear); \
- else \
-	hitloc = FindPunchLocation(arc); } while (0)
-
-#define FindKickLoc(mech,hitloc,arc,iscritical,isrear) \
- do { if (MechType(mech) != CLASS_MECH) \
-   hitloc = FindHitLocation(mech, arc, &iscritical, &isrear); \
- else \
-   hitloc = FindKickLocation(arc); } while (0)
-
-
-
 #define ValidCoordA(mech_map,newx,newy,msg) \
 DOCHECK(newx < 0 || newx >= mech_map->map_width || \
 	newy < 0 || newy >= mech_map->map_height, \

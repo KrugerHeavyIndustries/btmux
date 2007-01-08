@@ -18,82 +18,231 @@
 
 #define CHECK_ZERO_LOC(mech,a,b) ( GetSectInt(mech, a) > 0 ? a : b )
 
-int FindPunchLocation(int hitGroup)
-{
-	int roll = Number(1, 6);
+int FindPunchLocation(MECH *target, int hitGroup) {
 
-	switch (hitGroup) {
-	case LEFTSIDE:
-		switch (roll) {
-		case 1:
-		case 2:
-			return LTORSO;
-		case 3:
-			return CTORSO;
-		case 4:
-		case 5:
-			return LARM;
-		case 6:
-			return HEAD;
-		}
-	case BACK:
-	case FRONT:
-		switch (roll) {
-		case 1:
-			return LARM;
-		case 2:
-			return LTORSO;
-		case 3:
-			return CTORSO;
-		case 4:
-			return RTORSO;
-		case 5:
-			return RARM;
-		case 6:
-			return HEAD;
-		}
-		break;
+    int roll = Number(1, 6);
 
-	case RIGHTSIDE:
-		switch (roll) {
-		case 1:
-		case 2:
-			return RTORSO;
-		case 3:
-			return CTORSO;
-		case 4:
-		case 5:
-			return RARM;
-		case 6:
-			return HEAD;
-		}
-	}
-	return CTORSO;
+    /* New tables from Total Warfare - pg 147 (and back of book)
+     * - Dany 01/2007 */
+    if (MechIsQuad(target)) {
+
+        switch (hitGroup) {
+            case LEFTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                        return LTORSO; 
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                        /* Front Left Leg */
+                        return LARM; 
+                    case 5:
+                        /* Rear Left Leg */
+                        return LLEG;
+                    case 6:
+                        return HEAD;
+                }
+                break;
+
+            case RIGHTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                        return RTORSO;
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                        /* Front Right Leg */
+                        return RARM;
+                    case 5:
+                        /* Rear Right Leg */
+                        return RLEG;
+                    case 6:
+                        return HEAD;
+                }
+                break;
+
+            case BACK:
+            case FRONT:
+                switch (roll) {
+                    case 1:
+                        if (hitGroup == BACK) {
+                            /* Rear Left Leg */
+                            return LLEG;
+                        } else {
+                            /* Front Left Leg */
+                            return LARM;
+                        }
+                    case 2:
+                        return LTORSO;
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                        return RTORSO;
+                    case 5:
+                        if (hitGroup == BACK) {
+                            /* Rear Right Leg */
+                            return RLEG;
+                        } else {
+                            /* Front Right Leg */
+                            return RARM;
+                        }
+                    case 6:
+                        return HEAD;
+                }
+                break;
+        }
+
+    } else {
+
+        /* Biped Mech */
+        switch (hitGroup) {
+            case LEFTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                        return LTORSO;
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                    case 5:
+                        return LARM;
+                    case 6:
+                        return HEAD;
+                }
+                break;
+
+            case BACK:
+            case FRONT:
+                switch (roll) {
+                    case 1:
+                        return LARM;
+                    case 2:
+                        return LTORSO;
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                        return RTORSO;
+                    case 5:
+                        return RARM;
+                    case 6:
+                        return HEAD;
+                }
+                break;
+
+            case RIGHTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                        return RTORSO;
+                    case 3:
+                        return CTORSO;
+                    case 4:
+                    case 5:
+                        return RARM;
+                    case 6:
+                        return HEAD;
+                }
+                break;
+        }
+    }
+
+    /* Should never reach this point unless
+     * someone uses this function wrong */
+    return -1;
 }
 
-int FindKickLocation(int hitGroup)
-{
-	int roll = Number(1, 6);
+int FindKickLocation(MECH *target, int hitGroup) {
 
-	switch (hitGroup) {
-	case LEFTSIDE:
-		return LLEG;
-	case BACK:
-	case FRONT:
-		switch (roll) {
-		case 1:
-		case 2:
-		case 3:
-			return RLEG;
-		case 4:
-		case 5:
-		case 6:
-			return LLEG;
-		}
-	case RIGHTSIDE:
-		return RLEG;
-	}
-	return RLEG;
+    int roll = Number(1, 6);
+
+    /* New tables from Total Warfare for quads */
+    if (MechIsQuad(target)) {
+
+        switch (hitGroup) {
+            case LEFTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        /* Left Front Leg */
+                        return LARM;
+                    case 4:
+                    case 5:
+                    case 6:
+                        /* Left Rear Leg */
+                        return LLEG;
+                }
+                break;
+
+            case RIGHTSIDE:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        /* Right Front Leg */
+                        return RARM;
+                    case 4:
+                    case 5:
+                    case 6:
+                        /* Right Rear Leg */
+                        return RLEG;
+                }
+                break;
+
+            case BACK:
+            case FRONT:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        if (hitGroup == BACK) {
+                            /* Right Rear Leg */
+                            return RLEG;
+                        } else {
+                            /* Right Front Leg */
+                            return RARM;
+                        }
+                    case 4:
+                    case 5:
+                    case 6:
+                        if (hitGroup == BACK) {
+                            /* Left Rear Leg */
+                            return LLEG;
+                        } else {
+                            /* Left Front Leg */
+                            return LARM;
+                        }
+                }
+        }
+
+    } else {
+
+        switch (hitGroup) {
+            case LEFTSIDE:
+                return LLEG;
+            case BACK:
+            case FRONT:
+                switch (roll) {
+                    case 1:
+                    case 2:
+                    case 3:
+                        return RLEG;
+                    case 4:
+                    case 5:
+                    case 6:
+                        return LLEG;
+                }
+            case RIGHTSIDE:
+                return RLEG;
+        }
+    }
+
+    /* Should never get to this point but will include this
+     * as a safeguard.  Should probably have the value
+     * returned from this function checked anyways. */
+    return -1;
 }
 
 /*
@@ -101,28 +250,37 @@ int FindKickLocation(int hitGroup)
  * instead of doing damage to the head it stuns the pilot
  * and re-rolls the location
  */
-int ModifyHeadHit(int hitGroup, MECH * mech)
-{
-	int newloc = FindPunchLocation(hitGroup);
+int ModifyHeadHit(int hitGroup, MECH *mech) {
 
-	if(MechType(mech) != CLASS_MECH)
-		return newloc;
-	if(newloc != HEAD) {
-		mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
-		mech_notify(mech, MECHALL,
-					"The cockpit violently shakes from a grazing blow! "
-					"You are momentarily stunned!");
-		if(CrewStunning(mech))
-			StopCrewStunning(mech);
-		MechLOSBroadcast(mech,
-						 "significantly slows down and starts wobbling!");
-		MechCritStatus(mech) |= MECH_STUNNED;
-		if(MechSpeed(mech) > WalkingSpeed(MechMaxSpeed(mech)))
-			MechDesiredSpeed(mech) = WalkingSpeed(MechMaxSpeed(mech));
-		MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK,
-				  0);
-	}
-	return newloc;
+    int newloc = FindPunchLocation(mech, hitGroup);
+
+    if (MechType(mech) != CLASS_MECH) {
+        return newloc;
+    }
+
+    if (newloc != HEAD) {
+
+        mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
+        mech_notify(mech, MECHALL,
+                "The cockpit violently shakes from a grazing blow! "
+                "You are momentarily stunned!");
+
+        if (CrewStunning(mech)) {
+            StopCrewStunning(mech);
+        }
+
+        MechLOSBroadcast(mech,
+                "significantly slows down and starts wobbling!");
+
+        MechCritStatus(mech) |= MECH_STUNNED;
+
+        if (MechSpeed(mech) > WalkingSpeed(MechMaxSpeed(mech))) {
+            MechDesiredSpeed(mech) = WalkingSpeed(MechMaxSpeed(mech));
+        }
+
+        MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK, 0);
+    }
+    return newloc;
 }
 
 int get_bsuit_hitloc(MECH * mech)
@@ -2597,25 +2755,32 @@ int FindAreaHitGroup(MECH * mech, MECH * target)
 #endif
 }
 
-int FindTargetHitLoc(MECH * mech, MECH * target, int *isrear, int *iscritical)
-{
-	int hitGroup;
+int FindTargetHitLoc(MECH *mech, MECH *target, int *isrear, int *iscritical) {
 
-/*    *isrear = 0; */
-	*iscritical = 0;
-	hitGroup = FindAreaHitGroup(mech, target);
-	if(hitGroup == BACK)
-		*isrear = 1;
-	if(MechType(target) == CLASS_MECH && (MechStatus(target) & PARTIAL_COVER))
-		return FindPunchLocation(hitGroup);
-	if(MechType(mech) == CLASS_MW && MechType(target) == CLASS_MECH &&
-	   MechZ(mech) <= MechZ(target))
-		return FindKickLocation(hitGroup);
-	if(MechType(target) == CLASS_MECH &&
-	   ((MechType(mech) == CLASS_BSUIT &&
-		 MechSwarmTarget(mech) == target->mynum)))
-		return FindSwarmHitLocation(iscritical, isrear);
-	return FindHitLocation(target, hitGroup, iscritical, isrear);
+    int hitGroup;
+
+    *iscritical = 0;
+    hitGroup = FindAreaHitGroup(mech, target);
+
+    if (hitGroup == BACK) {
+        *isrear = 1;
+    }
+
+    if (MechType(target) == CLASS_MECH && (MechStatus(target) & PARTIAL_COVER)) {
+        return FindPunchLocation(target, hitGroup);
+    }
+
+    if (MechType(mech) == CLASS_MW && MechType(target) == CLASS_MECH &&
+            MechZ(mech) <= MechZ(target)) {
+        return FindKickLocation(target, hitGroup);
+    }
+
+    if (MechType(target) == CLASS_MECH && ((MechType(mech) == CLASS_BSUIT &&
+              MechSwarmTarget(mech) == target->mynum))) {
+        return FindSwarmHitLocation(iscritical, isrear);
+    }
+
+    return FindHitLocation(target, hitGroup, iscritical, isrear);
 }
 
 int findNARCHitLoc(MECH * mech, MECH * hitMech, int *tIsRearHit)
@@ -2737,7 +2902,7 @@ int FindTCHitLoc(MECH * mech, MECH * target, int *isrear, int *iscritical)
 			break;
 		}
 	if(MechType(target) == CLASS_MECH && (MechStatus(target) & PARTIAL_COVER))
-		return FindPunchLocation(hitGroup);
+		return FindPunchLocation(target, hitGroup);
 	return FindHitLocation(target, hitGroup, iscritical, isrear);
 }
 
@@ -2806,6 +2971,6 @@ int FindAimHitLoc(MECH * mech, MECH * target, int *isrear, int *iscritical)
 		}
 
 	if(MechType(target) == CLASS_MECH && (MechStatus(target) & PARTIAL_COVER))
-		return FindPunchLocation(hitGroup);
+		return FindPunchLocation(target, hitGroup);
 	return FindHitLocation(target, hitGroup, iscritical, isrear);
 }

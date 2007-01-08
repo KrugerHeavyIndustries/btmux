@@ -1954,10 +1954,18 @@ void cause_damage(MECH * att, MECH * mech, int dam, int table)
 			hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
 			break;
 		case PUNCH:
-			FindPunchLoc(mech, hitloc, hitGroup, iscrit, isrear);
+            if (MechType(mech) != CLASS_MECH) {
+                hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
+            } else {
+                hitloc = FindPunchLocation(mech, hitGroup);
+            }
 			break;
 		case KICK:
-			FindKickLoc(mech, hitloc, hitGroup, iscrit, isrear);
+            if (MechType(mech) != CLASS_MECH) {
+                hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
+            } else {
+                hitloc = FindKickLocation(mech, hitGroup);
+            }
 			break;
 		}
 		if(dam <= 0)

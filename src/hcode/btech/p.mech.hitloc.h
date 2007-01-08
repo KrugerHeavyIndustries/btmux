@@ -13,8 +13,8 @@
 #define _P_MECH_HITLOC_H
 
 /* mech.hitloc.c */
-int FindPunchLocation(int hitGroup);
-int FindKickLocation(int hitGroup);
+int FindPunchLocation(MECH *target, int hitGroup);
+int FindKickLocation(MECH *target, int hitGroup);
 int get_bsuit_hitloc(MECH * mech);
 int TransferTarget(MECH * mech, int hitloc);
 int FindSwarmHitLocation(int *iscritical, int *isrear);
