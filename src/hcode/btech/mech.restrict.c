@@ -114,12 +114,15 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 	MechLastY(mech) = y;
 	MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
 						&MechFY(mech));
+    MapCoordToActualCoord(MechX(mech), MechY(mech), &MechRealX(mech),
+            &MechRealY(mech));
 	MechTerrain(mech) = GetTerrain(mech_map, MechX(mech), MechY(mech));
 	MarkForLOSUpdate(mech);
 	if(argc == 2) {
 		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
 		MechZ(mech) = MechElev(mech) - 1;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+        MechRealZ(mech) = MechZ(mech) * HEX_Z_SCALE;
 		DropSetElevation(mech, 0);
 		z = MechZ(mech);
 		if(!Landed(mech) && FlyingT(mech))
@@ -128,6 +131,7 @@ void mech_Rsetxy(dbref player, void *data, char *buffer)
 		z = atoi(args[2]);
 		MechZ(mech) = z;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
+        MechRealZ(mech) = MechZ(mech) * HEX_Z_SCALE;
 		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
 	}
 	clear_mech_from_LOS(mech);

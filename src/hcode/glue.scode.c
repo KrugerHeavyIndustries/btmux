@@ -66,7 +66,7 @@ static MECH tmpm;
 static MAP tmpmap;
 static TURRET_T tmpturret;
 
-enum { TYPE_STRING, TYPE_CHAR, TYPE_SHORT, TYPE_INT, TYPE_FLOAT,
+enum { TYPE_STRING, TYPE_CHAR, TYPE_SHORT, TYPE_INT, TYPE_FLOAT, TYPE_DOUBLE,
 	TYPE_DBREF, TYPE_STRFUNC, TYPE_STRFUNC_S, TYPE_BV,
 	TYPE_STRFUNC_BD, TYPE_CBV, TYPE_CHAR_RO, TYPE_SHORT_RO, TYPE_INT_RO,
 	TYPE_FLOAT_RO, TYPE_DBREF_RO, TYPE_LAST_TYPE
@@ -74,8 +74,8 @@ enum { TYPE_STRING, TYPE_CHAR, TYPE_SHORT, TYPE_INT, TYPE_FLOAT,
 
 /* INDENT OFF */
 static int scode_in_out[TYPE_LAST_TYPE] =
-/* st ch sh in fl db sf sfs bv sfb cbv ro-ch ro-sh ro-in ro-fl ro-db*/
-{ 3, 3, 3, 3, 3, 3, 1, 2, 3, 3, 3, 1, 1, 1, 1, 1 };
+/* st ch sh in fl do db sf sfs bv sfb cbv ro-ch ro-sh ro-in ro-fl ro-db*/
+{ 3, 3, 3, 3, 3, 3, 3, 1, 2, 3, 3, 3, 1, 1, 1, 1, 1 };
 /* INDENT ON */
 
 #define Uglie(dat) ((void *) &dat((MECH *)0))
@@ -456,6 +456,9 @@ static GMV xcode_data[] = {
 	MeEntry("fx", MechFX, TYPE_FLOAT),
 	MeEntry("fy", MechFY, TYPE_FLOAT),
 	MeEntry("fz", MechFZ, TYPE_FLOAT),
+    MeEntry("realx", MechRealX, TYPE_DOUBLE),
+    MeEntry("realy", MechRealY, TYPE_DOUBLE),
+    MeEntry("realz", MechRealZ, TYPE_DOUBLE),
 	MeEntry("x", MechX, TYPE_SHORT),
 	MeEntry("y", MechY, TYPE_SHORT),
 	MeEntry("z", MechZ, TYPE_SHORT),
@@ -622,6 +625,9 @@ static char *RetrieveValue(void *data, int i)
 	case TYPE_CBV:
 		strcpy(buf, bv2text((int) *((char *) bar)));
 		break;
+    case TYPE_DOUBLE:
+        sprintf(buf, "%.4f", (double) *((double *) bar));
+        break;
 	}
 	return buf;
 }
@@ -729,6 +735,9 @@ void set_xcodestuff(dbref player, void *data, char *buffer)
 	case TYPE_FLOAT:
 		*((float *) bar) = atof(args[1]);
 		break;
+    case TYPE_DOUBLE:
+        *((double *) bar) = atof(args[1]);
+        break;
 	case TYPE_BV:
 		*((int *) bar) = text2bv(args[1]);
 		break;

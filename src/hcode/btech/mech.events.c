@@ -23,8 +23,41 @@
 #undef WEAPON_RECYCLE_DEBUG
 
 void mech_heartbeat(MECH *mech) {
-    UpdateRecycling(mech);
     return;
+}
+
+void new_mech_heartbeat(MECH *mech) {
+
+    MAP *map;
+
+    if (!(map = getMap(mech->mapindex))) {
+
+        if (MechCocoon(mech) > 0) {
+            MechCocoon(mech) = 0;
+        }
+
+        if (Jumping(mech)) {
+                mech_land(MechPilot(mech), (void *) mech, "");
+        }
+
+        if (Started(mech) || Starting(mech)) {
+            mech_shutdown(MechPilot(mech), (void *) mech, "");
+        }
+
+        if (mech->mapindex >= 0) {
+            mech->mapindex = -1;
+        }
+
+        return;
+    }
+
+    /* Update the mech */
+    UpdateHeading(mech);
+    UpdateSpeed(mech);
+    UpdateRecycling(mech);
+
+    /* move mech */
+    new_move_mech(mech, map);
 }
 
 static int factoral(int n)

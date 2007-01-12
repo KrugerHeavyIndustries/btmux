@@ -178,6 +178,14 @@ void FindComponents(float magnitude, int degrees, float *x, float *y)
 	*y = -(*y);					/* because y increases downwards */
 }
 
+void NewFindComponents(double magnitude, int degrees, double *x, double *y) {
+
+    /* We add 180 to the degree for the y value because going down in y
+     * gives us positive values */
+    *x = magnitude * sin((double) (TWOPIOVER360 * degrees));
+    *y = magnitude * cos((double) (TWOPIOVER360 * (degrees + 180)));
+}
+
 static int Leave_Hangar(MAP * map, MECH * mech)
 {
 	MECH *car = NULL;
@@ -309,6 +317,9 @@ void CheckEdgeOfMap(MECH * mech)
 	if(pinned) {
 		MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
 							&MechFY(mech));
+        MapCoordToActualCoord(MechX(mech), MechY(mech), &MechRealX(mech),
+                &MechRealY(mech));
+
 		if(pinned > 0) {
 			mech_notify(mech, MECHALL, "You cannot move off this map!");
 			if(Jumping(mech) && !is_aero(mech))
@@ -939,12 +950,14 @@ void MapCoordToActualCoord(int hex_x, int hex_y, double *real_x, double *real_y)
     *real_x = hex_x * (HEX_H_VALUE + HEX_S_VALUE) + HEX_X_SCALE * 0.5;
 
     /* Odd or Even hex column */
-    if (hex_y % 2) {
-        /* Even Hex Column */
-        *real_y = hex_y * (HEX_Y_SCALE) + HEX_R_VALUE + HEX_Y_SCALE * 0.5;
-    } else {
+    if (hex_x % 2) {
         /* Odd Hex Column */
         *real_y = hex_y * (HEX_Y_SCALE) + HEX_Y_SCALE * 0.5;
+    } else {
+        /* Even Hex Column */
+        /* Could just add by HEX_Y_SCALE (since HEX_R_VALUE == 0.5 * HEX_Y_SCALE) but
+         * this way it should be easily understood whats going on - I hope */
+        *real_y = hex_y * (HEX_Y_SCALE) + HEX_R_VALUE + HEX_Y_SCALE * 0.5;
     }
 }
 
@@ -957,6 +970,9 @@ void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y)
     double section_x, section_y;
     double section_pixel_x, section_pixel_y;
 
+    int hex_coord_x;
+    int hex_coord_y;
+
     /* Find which main column and section we are in */
     section_y = real_y / HEX_Y_SCALE;
     section_x = real_x / (HEX_H_VALUE + HEX_S_VALUE);
@@ -967,12 +983,26 @@ void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y)
 
     /* Our inital locations - alter these based on the pixel_x/y values */
     /* might be able to remove the floor and just cast the float to int */
-    *hex_x = (int) floor(section_x);
-    *hex_y = (int) floor(section_y);
+    hex_coord_x = (int) floor(section_x);
+    hex_coord_y = (int) floor(section_y);
 
     /* Depending on which column we are in
      * we do something different. - see diagram above for more info */
-    if (*hex_x % 2) {
+    if (hex_coord_x % 2) {
+
+        /* Column B (aka odd column) */
+        if (section_pixel_y < (HEX_R_VALUE - 
+                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+            /* In the top left section of the area */
+            hex_coord_x--;
+            hex_coord_y--;
+        } else if (section_pixel_y > (HEX_R_VALUE + 
+                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
+            /* In the bottom left section of the area */
+            hex_coord_x--;
+        }
+
+    } else {
 
         /* Column A (aka even column) */
         /* Split the section into two pieces (bottom and top) and look
@@ -983,36 +1013,25 @@ void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y)
             if (section_pixel_y < (2.0 * HEX_R_VALUE -
                         HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
                 /* Bottom left section */
-                *hex_x--;
+                hex_coord_x--;
             }
 
-        } else if (section_pixel_y < HEX_R_VALUE) {
+        } else { 
 
             /* Checking top section */
             if (section_pixel_y > (HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
                 /* Top left section */
-                *hex_x--;
+                hex_coord_x--;
             } else {
                 /* Top main section */
-                *hex_y--;
+                hex_coord_y--;
             }
         }
 
-    } else {
-
-        /* Column B (aka odd column) */
-        if (section_pixel_y < (HEX_R_VALUE - 
-                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
-            /* In the top left section of the area */
-            *hex_x--;
-            *hex_y--;
-        } else if (section_pixel_y > (HEX_R_VALUE + 
-                    HEX_R_VALUE / HEX_H_VALUE * section_pixel_x)) {
-            /* In the bottom left section of the area */
-            *hex_x--;
-        }
-        
     }
+
+    *hex_x = hex_coord_x;
+    *hex_y = hex_coord_y;
 
 }
 
@@ -1020,11 +1039,11 @@ void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y)
    Sketch a 'mech on a Navigate map. Done here since it fiddles directly
    with cartesian coords.
 
-   Navigate is 9 rows high, and a hex is exactly 1*SCALEMAP high, so each
-   row is FULL_Y/9 cartesian y-coords high.
+   Navigate is 9 rows high, and a hex is exactly HEX_Y_SCALE high, so each
+   row is HEX_Y_SCALE/9 cartesian y-coords high.
    
    Navigate is 21 hexes wide, at its widest point. This corresponds to the
-   hex width, which is 4 * ALPHA, so each column is 4*ALPHA/21 cartesian
+   hex width, which is HEX_X_SCALE, so each column is HEX_X_SCALE/21 cartesian
    x-coords wide.
 
    The actual navigate map starts two rows from the top and four columns
@@ -1032,24 +1051,24 @@ void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y)
 
  */
 
-#define NAV_ROW_HEIGHT (FULL_Y / 9.0)
-#define NAV_COLUMN_WIDTH (4 * ALPHA / 21.0)
+#define NAV_ROW_HEIGHT (HEX_Y_SCALE / 9.0)
+#define NAV_COLUMN_WIDTH (HEX_X_SCALE / 21.0)
 #define NAV_Y_OFFSET 2
 #define NAV_X_OFFSET 4
-#define NAV_MAX_HEIGHT 2+9+2
-#define NAV_MAX_WIDTH 4+21+2
+#define NAV_MAX_HEIGHT (2+9+2)
+#define NAV_MAX_WIDTH (4+21+2)
 
 void navigate_sketch_mechs(MECH * mech, MAP * map, int x, int y,
         char buff[NAVIGATE_LINES][MBUF_SIZE])
 {
-    float corner_fx, corner_fy, fx, fy;
+    double corner_fx, corner_fy, fx, fy;
     int row, column;
     MECH *other;
     dllist_node *node;
 
-    MapCoordToRealCoord(x, y, &corner_fx, &corner_fy);
-    corner_fx -= 2 * ALPHA;
-    corner_fy -= HALF_Y;
+    MapCoordToActualCoord(x, y, &corner_fx, &corner_fy);
+    corner_fx -= (HEX_X_SCALE * 0.5);
+    corner_fy -= (HEX_Y_SCALE * 0.5); 
 
     for (node = dllist_head(map->mechs); node; node = dllist_next(node)) {
 
@@ -1065,10 +1084,10 @@ void navigate_sketch_mechs(MECH * mech, MAP * map, int x, int y,
         if (!InLineOfSight(mech, other, x, y, 0.5))
             continue;
 
-        fx = MechFX(other) - corner_fx;
+        fx = MechRealX(other) - corner_fx;
         column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
 
-        fy = MechFY(other) - corner_fy;
+        fy = MechRealY(other) - corner_fy;
         row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
 
         if (column < 0 || column > NAV_MAX_WIDTH ||
@@ -1080,10 +1099,10 @@ void navigate_sketch_mechs(MECH * mech, MAP * map, int x, int y,
 
     /* Draw 'mech last so we always see it. */
 
-    fx = MechFX(mech) - corner_fx;
+    fx = MechRealX(mech) - corner_fx;
     column = fx / NAV_COLUMN_WIDTH + NAV_X_OFFSET;
 
-    fy = MechFY(mech) - corner_fy;
+    fy = MechRealY(mech) - corner_fy;
     row = fy / NAV_ROW_HEIGHT + NAV_Y_OFFSET;
 
     if (column < 0 || column > NAV_MAX_WIDTH ||

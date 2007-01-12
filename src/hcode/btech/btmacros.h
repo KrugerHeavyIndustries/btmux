@@ -120,6 +120,9 @@
 #define MechFX(a)		(a)->pd.fx
 #define MechFY(a)		(a)->pd.fy
 #define MechFZ(a)		(a)->pd.fz
+#define MechRealX(a)        (a)->pd.real_x
+#define MechRealY(a)        (a)->pd.real_y
+#define MechRealZ(a)        (a)->pd.real_z
 #define MechFacing(a)		(FSIM2SHO((a)->pd.facing))
 #define MechRFacing(a)	 	(a)->pd.facing
 #define SetRFacing(a,b)	 	MechRFacing(a) = (b)
@@ -410,10 +413,14 @@ do { MechSections(a)[b].config &= ~SECTION_BREACHED ; SetWCheck(a); } while (0)
 #define TakingOff(a)         muxevent_count_type_data(EVENT_TAKEOFF,(void *) a)
 #define FlyingT(a)           (is_aero(a) || MechMove(a) == MOVE_VTOL)
 #define RollingT(a)          ((MechType(a) == CLASS_AERO) || (MechType(a) == CLASS_DS))
+#if 0
 #define MaybeMove(a) \
 do { if (!Moving(a) && Started(a) && (!Fallen(mech) || MechType(a) == CLASS_MECH)) \
    MECHEVENT(a,EVENT_MOVE,is_aero(a) ? aero_move_event : mech_move_event,\
 	     MOVE_TICK,0); } while (0)
+#endif
+#define MaybeMove(a) do { } while(0)
+
 #define SetRecyclePart(a,b,c,d) \
 do { UpdateRecycling(a) ; SetPartData(a,b,c,d); } while (0)
 #define SetRecycleLimb(a,b,c) \

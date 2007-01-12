@@ -26,6 +26,7 @@ static struct timeval heartbeat_tv = { 1, 0 };
 static int heartbeat_running = 0;
 unsigned int global_tick = 0;
 extern Tree xcode_tree;
+extern rbtree xcode_rbtree;
 
 void GoThruTree(Tree tree, int (*func) (Node *));
 void heartbeat_run(int fd, short event, void *arg);
@@ -60,9 +61,30 @@ int heartbeat_dispatch(Node *node) {
     return 1;
 }
 
+/*
+ * New heartbeat function for the rbtree xcode tree
+ */
+int new_heartbeat_dispatch(void *key, void *data, int depth, void *arg) {
+
+    XcodeObject *xcode_object = (XcodeObject *) data;
+    MECH *mech;
+
+    /* Might want to add in debug code incase it tries
+     * to update the heartbeat of a bad obj */
+    switch (xcode_object->type) {
+        case GTYPE_MECH:
+            if ((mech = getMech((int) key))) {
+                new_mech_heartbeat(mech);
+            }
+            break;
+    }
+
+}
+
 void heartbeat_run(int fd, short event, void *arg) {
     evtimer_add(&heartbeat_ev, &heartbeat_tv);
     GoThruTree(xcode_tree, heartbeat_dispatch);
+    rb_walk(xcode_rbtree, WALK_INORDER, new_heartbeat_dispatch, NULL);
     global_tick++;
 }
 

@@ -152,6 +152,111 @@ int collision_check(MECH * mech, int mode, int le, int lt)
 
 void CheckNavalHeight(MECH * mech, int oz);
 
+/*
+ * Complete rewrite of move_mech that uses
+ * the new real coord system
+ */
+void new_move_mech(MECH *mech, MAP *map) {
+
+    MECH *target;
+
+    double newx, newy, deltax, deltay;
+    double xy_charge_distance, xscale;
+    double jump_position;
+
+    int x, y, update_z;
+    int last_z;
+    int old_mapindex;
+
+    char message_buffer[MBUF_SIZE];
+
+    /* Checks */
+
+    /* Is the unit on a valid spot on the map? */
+    if ((MechX(mech) < 0) || (MechX(mech) >= map->width) ||
+            (MechLastX(mech) < 0) || (MechLastX(mech) >= map->width) ||
+            (MechY(mech) < 0) || (MechY(mech) >= map->height) ||
+            (MechLastY(mech) < 0) || (MechLastY(mech) >= map->height)) {
+
+        mech_notify(mech, MECHALL,
+                "You are at an invalid map location! Map index reset!");
+
+        if (MechCocoon(mech) > 0) {
+            MechCocoon(mech) = 0;
+        }
+
+        if (Jumping(mech)) {
+            mech_land(MechPilot(mech), (void *) mech, "");
+        }
+
+        if (Started(mech) || Starting(mech)) {
+            mech_shutdown(MechPilot(mech), (void *) mech, "");
+        }
+
+        snprintf(message_buffer, MBUF_SIZE,
+                "move_mech:invalid map:Mech: %d Index: %d", mech->mynum,
+                 mech->mapindex);
+        SendError(message_buffer);
+
+        mech->mapindex = -1;
+        return;
+    }
+
+    /* Is the unit charging - and if so have they been charging to long */
+    if (mudconf.btech_newcharge && MechChargeTarget(mech) > 0) {
+        if (MechChargeTimer(mech)++ > CHARGE_TIMER_LIMIT) {
+            mech_notify(mech, MECHALL, "Charge timed out, charge reset.");
+            MechChargeTarget(mech) = -1;
+            MechChargeTimer(mech) = 0;
+            MechChargeDistance(mech) = 0;
+        }
+    }
+
+    /* Update floating position */
+
+    if (fabs(MechSpeed(mech)) > 0.0) {
+
+        /* Hack to make it a double till we update MechSpeed to a
+         * double */
+#ifndef BT_MOVEMENT_MODES
+        NewFindComponents((double) (KPH_TO_MPS * MechSpeed(mech) * MAPMOVEMOD(map)),
+                MechFacing(mech), &newx, &newy);
+#else
+        NewFindComponents((double) (KPH_TO_MPS * MechSpeed(mech) * MAPMOVEMOD(map)),
+                MechLateral(mech) + MechFacing(mech),
+                &newx, &newy);
+#endif
+
+        /* Since this should be updated once a second
+         * we basicly take the component in that dir
+         * of speed and multiply by 1 second (and since
+         * its already in m/s don't need to do anything */
+        MechRealX(mech) += newx;
+        MechRealY(mech) += newy;
+
+        /* Add calc for charging distance here */
+    }
+
+    /* Update hex position */
+    MechLastX(mech) = MechX(mech);
+    MechLastY(mech) = MechY(mech);
+    last_z = MechZ(mech);
+
+    ActualCoordToMapCoord(&MechX(mech), &MechY(mech), MechRealX(mech),
+            MechRealY(mech));
+
+    /* Store old mapindex incase we left the map */
+    old_mapindex = mech->mapindex;
+
+    CheckEdgeOfMap(mech);
+
+    /* Stack */
+
+    /* ICE */
+
+    /* Charge */
+}
+
 void move_mech(MECH * mech)
 {
 	float newx = 0.0, newy = 0.0, dax, day;

@@ -72,13 +72,16 @@
 
 */
 
-#define GAME_TURN   30                          /* 30 seconds per turn */
+#define GAME_TURN   60                          /* 60 seconds per turn */
 #define MPS_PER_MP  2.986111                    /* 2.9861.. meters/sec per movement point - 
                                                    see KPH_PER_MP */
-#define HEX_SIZE    (GAME_TURN * KPH_PER_MP)    /* Comes out 89.583330 meters - this is
-                                                   roughly the size of the hex from parallel
-                                                   edge to parallel edge in meters - based on
-                                                   values from FASA books */
+#define KPH_TO_MPS  0.277778                    /* 0.277778 m/s in 1 km/hr */
+                        
+#define HEX_SIZE    (GAME_TURN * MPS_PER_MP)    /* Assume it takes 1 MP per turn to cross a
+                                                   hex so, hex size comes out 179.16666 meters 
+                                                   - this is roughly the size of the hex from 
+                                                   parallel edge to parallel edge in meters 
+                                                   - based on values from FASA books */
 
 #define HEX_R_VALUE (HEX_SIZE * 0.5)            /* height / 2 = r */
 #define HEX_H_VALUE (HEX_R_VALUE * 0.577350)    /* r * tan(30) = h */
@@ -923,6 +926,7 @@ typedef struct {
     int x, y, z;                /* hex quantized x,y,z on the map in MP (hexes) */
     int last_x, last_y;         /* last hex entered */
     float fx, fy, fz;           /* exact x, y and z on the map */
+    double real_x, real_y, real_z;
     int team;                   /* Only for internal use */
     int unusable_arcs;          /* Horrid kludge for disallowing use of some arcs' guns */
     int stall;                  /* is this mech in a repair stall? */
