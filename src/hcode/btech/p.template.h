@@ -22,6 +22,8 @@ char *one_arg_delim(char *argument, char *first_arg);
 char *BuildBitString(char *bitdescs[], int data);
 char *BuildBitString2(char *bitdescs[], char *bitdescs2[], int data,
     int data2);
+char *BuildBitStringwdelim2(char *bitdescs[], char *bitdescs2[], int data,
+    int data2);
 char *BuildBitString3(char *bitdescs[], char *bitdescs2[],
     char *bitdescs3[], int data, int data2, int data3);
 char *my_shortform(char *buf);

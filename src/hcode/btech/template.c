@@ -1260,6 +1260,39 @@ char *BuildBitString2(char *bitdescs[], char *bitdescs2[], int data,
 		bv = 1U << x;
 		if(data & bv) {
 			strcat(crit, bitdescs[x]);
+			strcat(crit, " ");
+		}
+	}
+
+	for(x = 0; bitdescs2[x]; x++) {
+		bv = 1U << x;
+		if(data2 & bv) {
+			strcat(crit, bitdescs2[x]);
+			strcat(crit, " ");
+		}
+	}
+
+	if((x = strlen(crit)) > 0 && crit[x - 1] == ' ') {
+		crit[x - 1] = '\0';
+
+	}
+
+	return crit;
+}
+
+char *BuildBitStringwdelim2(char *bitdescs[], char *bitdescs2[], int data,
+					  int data2)
+{
+	static char crit[MAX_STRING_LENGTH];
+	int bv;
+	int x;
+
+	crit[0] = 0;
+
+	for(x = 0; bitdescs[x]; x++) {
+		bv = 1U << x;
+		if(data & bv) {
+			strcat(crit, bitdescs[x]);
 			strcat(crit, "|");
 		}
 	}
@@ -1500,7 +1533,7 @@ static int dump_item(FILE * fp, MECH * mech, int x, int y)
 		fprintf(fp, "    %s		  { %s - %s %s}\n", crit,
 				get_parts_vlong_name(GetPartType(mech, x, y), 0),
 				(wFireModes ||
-				 wAmmoModes) ? BuildBitString2(crit_fire_modes,
+				 wAmmoModes) ? BuildBitStringwdelim2(crit_fire_modes,
 											   crit_ammo_modes, wFireModes,
 											   wAmmoModes) : "-",
 				!mudconf.btech_parts ? "" : tprintf("%d ",
@@ -1512,7 +1545,7 @@ static int dump_item(FILE * fp, MECH * mech, int x, int y)
 				FullAmmo(mech, x, y),
 				(MechSections(mech)[x].criticals[y].firemode ||
 				 MechSections(mech)[x].criticals[y].
-				 ammomode) ? BuildBitString2(crit_fire_modes,
+				 ammomode) ? BuildBitStringwdelim2(crit_fire_modes,
 											 crit_ammo_modes,
 											 MechSections(mech)[x].
 											 criticals[y].firemode,

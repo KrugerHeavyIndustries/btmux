@@ -1529,7 +1529,7 @@ extern char *infantry_specials[];
 char *techstatus_func(MECH * mech)
 {
 	return (MechSpecials(mech) ||
-			MechSpecials2(mech)) ? BuildBitString2(specials, specials2,
+			MechSpecials2(mech)) ? BuildBitStringwdelim2(specials, specials2,
 												   MechSpecials(mech),
 												   MechSpecials2(mech)) : "";
 }
