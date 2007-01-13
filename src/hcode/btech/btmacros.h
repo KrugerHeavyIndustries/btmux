@@ -200,9 +200,15 @@
 #define MechSpeed(a)		(a)->rd.speed
 #define MechSpotter(a)	 	(a)->rd.spotter
 #define MechStall(a)		(a)->pd.stall
+
 #define MechStartFX(a)	 	(a)->rd.startfx
 #define MechStartFY(a)	 	(a)->rd.startfy
 #define MechStartFZ(a)	 	(a)->rd.startfz
+
+#define MechStartRealX(a)   (a)->rd.startrealx
+#define MechStartRealY(a)   (a)->rd.startrealy
+#define MechStartRealZ(a)   (a)->rd.startrealz
+
 #define MechStartSpin(a)	(a)->rd.sspin
 #define MechStatus(a)       (a)->rd.status
 /* Adding in Exile's status2 and removing 3030's specialsstatus */

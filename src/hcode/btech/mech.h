@@ -839,15 +839,8 @@ typedef struct {
     int num_seen;               /* Number of enemies seen */
     int lx, ly;
 
-
-
-
-
-
-
     dbref autopilot_num;        /* dbref of AI (if there is one) */
     dbref towed_by;             /* Who is towing us */
-
 
     float heat;                 /* Heat index */
     float weapheat;             /* Weapon heat factor-> see manifesto */
@@ -869,6 +862,9 @@ typedef struct {
     float speed;                /* Speed in KPH */
     float desired_speed;        /* Desired speed in KPH */
     float jumpspeed;            /* Jumping distance or current height in km */
+
+    double startrealx, startrealy;
+    double startrealz, endrealz;
 
     int critstatus;             /* see key below */
     int critstatus2;            /* Starting to fill up. More CritStatus */

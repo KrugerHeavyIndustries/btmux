@@ -1100,173 +1100,205 @@ void mech_thrash(dbref player, void *data, char *buffer)
     }
 }
 
-void mech_jump(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data;
-	MECH *tempMech = NULL;
-	MAP *mech_map;
-	char *args[3];
-	int argc;
-	int target;
-	char targetID[2];
-	int mapx, mapy;
-	int bearing;
-	float range = 0.0;
-	float realx, realy;
-	int sz, tz, jps;
+/*
+ * Handles initializing and starting the jump - the
+ * rest is handled in move_mech
+ */
+void mech_jump(dbref player, void *data, char *buffer) {
 
-	mech_map = getMap(mech->mapindex);
-	cch(MECH_USUALO);
+    MECH *mech = (MECH *) data;
+    MECH *target = NULL;
+    MAP *map;
+    char *args[3];
+    char targetID[2];
+    double range = 0.0;
+    double realx, realy;
+    int argc;
+    int mapx, mapy;
+    int bearing;
+    int sz, tz, jps;
+
+    if (!(common_checks(player, mech, MECH_USUALO))) {
+        return;
+    }
+
+    map = getMap(mech->mapindex);
+
 #ifdef BT_MOVEMENT_MODES
-	DOCHECK(MoveModeLock(mech), "Movement modes disallow jumping.");
+    DOCHECK(MoveModeLock(mech), "Movement modes disallow jumping.");
 #endif
-	DOCHECK(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_MW &&
-			MechType(mech) != CLASS_BSUIT &&
-			MechType(mech) != CLASS_VEH_GROUND, "This unit cannot jump.");
-	DOCHECK(MechCarrying(mech) > 0, "You can't jump while towing someone!");
-	DOCHECK((MechMaxSpeed(mech) - MMaxSpeed(mech)) > MP1,
-			"No, with this cargo you won't!");
-	DOCHECK(Fallen(mech), "You can't Jump from a FALLEN position");
-	DOCHECK(IsHulldown(mech), "You can't Jump while hulldown");
-	DOCHECK(ChangingHulldown(mech),
-			"You are busy changing your hulldown mode");
-	DOCHECK(Jumping(mech), "You're already jumping!");
-	DOCHECK(Stabilizing(mech),
-			"You haven't stabilized from your last jump yet.");
-	DOCHECK(Standing(mech), "You haven't finished standing up yet.");
-	DOCHECK(fabs(MechJumpSpeed(mech)) <= 0.0,
-			"This mech doesn't have jump jets!");
-	argc = mech_parseattributes(buffer, args, 3);
-	DOCHECK(Dumping(mech), "You can not jump while dumping ammo!");
-	DOCHECK(UnJammingAmmo(mech),
-			"You can not jump while unjamming your weapon!");
-	DOCHECK(RemovingPods(mech), "You are too busy removing iNARC pods!");
-	DOCHECK(MapIsUnderground(mech_map),
-			"Realize the ceiling in this grotto is a bit to low for that!");
-	DOCHECK(OODing(mech), "You can't jump while orbital dropping!");
+    DOCHECK(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_MW &&
+            MechType(mech) != CLASS_BSUIT &&
+            MechType(mech) != CLASS_VEH_GROUND, "This unit cannot jump.");
+    DOCHECK(MechCarrying(mech) > 0, "You can't jump while towing someone!");
+    DOCHECK((MechMaxSpeed(mech) - MMaxSpeed(mech)) > MP1,
+            "No, with this cargo you won't!");
+    DOCHECK(Fallen(mech), "You can't Jump from a FALLEN position");
+    DOCHECK(IsHulldown(mech), "You can't Jump while hulldown");
+    DOCHECK(ChangingHulldown(mech),
+            "You are busy changing your hulldown mode");
+    DOCHECK(Jumping(mech), "You're already jumping!");
+    DOCHECK(Stabilizing(mech),
+            "You haven't stabilized from your last jump yet.");
+    DOCHECK(Standing(mech), "You haven't finished standing up yet.");
+    DOCHECK(fabs(MechJumpSpeed(mech)) <= 0.0,
+            "This mech doesn't have jump jets!");
+    argc = mech_parseattributes(buffer, args, 3);
+    DOCHECK(Dumping(mech), "You can not jump while dumping ammo!");
+    DOCHECK(UnJammingAmmo(mech),
+            "You can not jump while unjamming your weapon!");
+    DOCHECK(RemovingPods(mech), "You are too busy removing iNARC pods!");
+    DOCHECK(MapIsUnderground(map),
+            "Realize the ceiling in this grotto is a bit to low for that!");
+    DOCHECK(OODing(mech), "You can't jump while orbital dropping!");
 
-	if(Staggering(mech)) {
-		mech_notify(mech, MECHALL,
-					"The damage inhibits your coordination...");
+    if (Staggering(mech)) {
+        mech_notify(mech, MECHALL,
+                "The damage inhibits your coordination...");
 
-		if(!MadePilotSkillRoll(mech, calcStaggerBTHMod(mech))) {
-			mech_notify(mech, MECHALL,
-						"... something you apparently can't handle!");
-			MechLOSBroadcast(mech,
-							 "engages jumpjets, rolls to the side and slams into the ground!");
-			MechFalls(mech, 1, 0);
-			return;
-		}
-	}
+        if (!MadePilotSkillRoll(mech, calcStaggerBTHMod(mech))) {
+            mech_notify(mech, MECHALL,
+                    "... something you apparently can't handle!");
+            MechLOSBroadcast(mech,
+                    "engages jumpjets, rolls to the side and slams into the ground!");
+            MechFalls(mech, 1, 0);
+            return;
+        }
+    }
 
-	if(doJettisonChecks(mech))
-		return;
+    if (doJettisonChecks(mech))
+        return;
 
-	DOCHECK(argc > 2, "Too many arguments to JUMP function!");
-	MechStatus(mech) &= ~DFA_ATTACK;	/* By default no DFA */
-	switch (argc) {
-	case 0:
-		/* DFA current target... */
+    DOCHECK(argc > 2, "Too many arguments to JUMP function!");
 
-		DOCHECK(MechType(mech) != CLASS_MECH,
-				"Only mechs can do Death From Above attacks!");
+    /* By default no DFA */
+    MechStatus(mech) &= ~DFA_ATTACK;
 
-		target = MechTarget(mech);
-		tempMech = getMech(target);
-		DOCHECK(!tempMech, "Invalid Target!");
-		range = FaMechRange(mech, tempMech);
-		DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
-							   MechY(tempMech), range),
-				"Target is not in line of sight!");
-		DOCHECK(MechType(tempMech) == CLASS_MW,
-				"Even you can't aim your jump well enough to squish that!");
-		mapx = MechX(tempMech);
-		mapy = MechY(tempMech);
-		MechDFATarget(mech) = MechTarget(mech);
-		break;
-	case 1:
-		/* Jump Target */
-		DOCHECK(MechType(mech) != CLASS_MECH,
-				"Only mechs can do Death From Above attacks!");
+    switch (argc) {
+        case 0:
+            /* DFA current target... */
 
-		targetID[0] = args[0][0];
-		targetID[1] = args[0][1];
-		target = FindTargetDBREFFromMapNumber(mech, targetID);
-		tempMech = getMech(target);
-		DOCHECK(!tempMech, "Target is not in line of sight!");
-		range = FaMechRange(mech, tempMech);
-		DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
-							   MechY(tempMech), range),
-				"Target is not in line of sight!");
-		DOCHECK(MechType(tempMech) == CLASS_MW,
-				"Even you can't aim your jump well enough to squish that!");
-		mapx = MechX(tempMech);
-		mapy = MechY(tempMech);
-		MechDFATarget(mech) = tempMech->mynum;
-		break;
-	case 2:
-		bearing = atoi(args[0]);
-		range = atof(args[1]);
-		FindXY(MechFX(mech), MechFY(mech), bearing, range, &realx, &realy);
+            DOCHECK(MechType(mech) != CLASS_MECH,
+                    "Only mechs can do Death From Above attacks!");
 
-		/* This is so we are jumping to the center of a hex */
-		/* and the bearing jives with the target hex */
-		RealCoordToMapCoord(&mapx, &mapy, realx, realy);
-		break;
-	}
-	DOCHECK(mapx >= mech_map->width || mapy >= mech_map->height ||
-			mapx < 0 || mapy < 0, "That would take you off the map!");
-	DOCHECK(MechX(mech) == mapx &&
-			MechY(mech) == mapy, "You're already in the target hex.");
-	sz = MechZ(mech);
-	if(GetRTerrain(mech_map, mapx, mapy) == ICE)
-		tz = 0;
-	else
-		tz = Elevation(mech_map, mapx, mapy);
-	jps = JumpSpeedMP(mech, mech_map);
-	DOCHECK(range > jps, "That target is out of range!");
-	if(MechType(mech) != CLASS_BSUIT && tempMech)
-		MechStatus(mech) |= DFA_ATTACK;
-	/*   MechJumpTop(mech) = BOUNDED(3, (jps - range) + 2, jps - 1); */
-	/* New idea: JumpTop = (JP + 1 - range / 3) - in another words,
-	   SDR jumping for 1 hexes has 8 + 1 = 9 hex elevation in mid-flight,
-	   SDR jumping for 8 hexes has 8 + 1 - 2 = 7 hex elevation in mid-flight,
-	   TDR jumping for 4 hexes has 4 + 1 - 1 = 4 hex elevation in mid-flight
+            target = getMech(MechTarget(mech));
+            DOCHECK(!target, "Invalid Target!");
 
-	   Come to think of it, the last SDR figure was ridiculous. New
-	   value: 2 * 1 + 2 = 4
-	 */
-	MechJumpTop(mech) = MIN(jps + 1 - range / 3, 2 * range + 2);
-	DOCHECK((tz - sz) > jps,
-			"That target's high for you to reach with a single jump!");
-	DOCHECK((sz - tz) > jps,
-			"That target's low for you to reach with a single jump!");
-	DOCHECK(sz < -1, "Glub glub glub.");
-	MapCoordToRealCoord(mapx, mapy, &realx, &realy);
-	bearing = FindBearing(MechFX(mech), MechFY(mech), realx, realy);
+            range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
+                    MechRealX(target), MechRealY(target), MechRealZ(target));
 
-	/* TAKE OFF! */
-	MechCocoon(mech) = 0;
-	MechJumpHeading(mech) = bearing;
-	MechStatus(mech) |= JUMPING;
-	MechStartFX(mech) = MechFX(mech);
-	MechStartFY(mech) = MechFY(mech);
-	MechStartFZ(mech) = MechFZ(mech);
-	MechJumpLength(mech) =
-		length_hypotenuse((double) (realx - MechStartFX(mech)),
-						  (double) (realy - MechStartFY(mech)));
-	MechGoingX(mech) = mapx;
-	MechGoingY(mech) = mapy;
-	MechEndFZ(mech) = ZSCALE * tz;
-	MechSpeed(mech) = 0.0;
-	if(MechStatus(mech) & DFA_ATTACK)
-		mech_notify(mech, MECHALL,
-					"You engage your jump jets for a Death From Above attack!");
-	else
-		mech_notify(mech, MECHALL, "You engage your jump jets.");
-	MechSwarmTarget(mech) = -1;
-	MechLOSBroadcast(mech, "engages jumpjets!");
-	MECHEVENT(mech, EVENT_JUMP, mech_jump_event, JUMP_TICK, 0);
+/* Turn this off for now
+            DOCHECK(!InLineOfSight(mech, target, MechX(target),
+                        MechY(target), range),
+                    "Target is not in line of sight!");
+*/
+            DOCHECK(MechType(target) == CLASS_MW,
+                    "Even you can't aim your jump well enough to squish that!");
+            mapx = MechX(target);
+            mapy = MechY(target);
+            MechDFATarget(mech) = MechTarget(mech);
+            break;
+
+        case 1:
+            /* Jump Target */
+            DOCHECK(MechType(mech) != CLASS_MECH,
+                    "Only mechs can do Death From Above attacks!");
+
+            targetID[0] = args[0][0];
+            targetID[1] = args[0][1];
+            target = getMech(FindTargetDBREFFromMapNumber(mech, targetID));
+
+            DOCHECK(!target, "Target is not in line of sight!");
+
+            range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
+                    MechRealX(target), MechRealY(target), MechRealZ(target));
+
+/* Disable this for now
+            DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
+                        MechY(tempMech), range),
+                    "Target is not in line of sight!");
+*/
+            DOCHECK(MechType(target) == CLASS_MW,
+                    "Even you can't aim your jump well enough to squish that!");
+            mapx = MechX(target);
+            mapy = MechY(target);
+            MechDFATarget(mech) = target->mynum;
+            break;
+
+        case 2:
+            bearing = atoi(args[0]);
+            range = atof(args[1]);
+            ActualFindXY(MechRealX(mech), MechRealY(mech), bearing, range,
+                    &realx, &realy);
+
+            /* This is so we are jumping to the center of a hex */
+            /* and the bearing jives with the target hex */
+            ActualCoordToMapCoord(&mapx, &mapy, realx, realy);
+            break;
+    }
+
+    DOCHECK((mapx >= map->width) || (mapy >= map->height) ||
+            (mapx < 0) || (mapy < 0), "That would take you off the map!");
+    DOCHECK(MechX(mech) == mapx &&
+            MechY(mech) == mapy, "You're already in the target hex.");
+
+    sz = MechZ(mech);
+    if (GetRTerrain(map, mapx, mapy) == ICE) {
+        tz = 0;
+    } else {
+        tz = Elevation(map, mapx, mapy);
+    }
+
+    jps = JumpSpeedMP(mech, map);
+    DOCHECK(range > jps, "That target is out of range!");
+
+    if (MechType(mech) != CLASS_BSUIT && target) {
+        MechStatus(mech) |= DFA_ATTACK;
+    }
+
+    /*   MechJumpTop(mech) = BOUNDED(3, (jps - range) + 2, jps - 1); */
+    /* New idea: JumpTop = (JP + 1 - range / 3) - in another words,
+       SDR jumping for 1 hexes has 8 + 1 = 9 hex elevation in mid-flight,
+       SDR jumping for 8 hexes has 8 + 1 - 2 = 7 hex elevation in mid-flight,
+       TDR jumping for 4 hexes has 4 + 1 - 1 = 4 hex elevation in mid-flight
+
+       Come to think of it, the last SDR figure was ridiculous. New
+       value: 2 * 1 + 2 = 4
+    */
+
+    MechJumpTop(mech) = MIN(jps + 1 - range / 3, 2 * range + 2);
+    DOCHECK((tz - sz) > jps,
+            "That target's high for you to reach with a single jump!");
+    DOCHECK((sz - tz) > jps,
+            "That target's low for you to reach with a single jump!");
+    DOCHECK(sz < -1, "Glub glub glub.");
+
+    MapCoordToActualCoord(mapx, mapy, &realx, &realy);
+    bearing = ActualFindBearing(MechRealX(mech), MechRealY(mech),
+            realx, realy);
+
+    /* TAKE OFF! */
+    MechCocoon(mech) = 0;
+    MechJumpHeading(mech) = bearing;
+    MechStatus(mech) |= JUMPING;
+    MechStartFX(mech) = MechFX(mech);
+    MechStartFY(mech) = MechFY(mech);
+    MechStartFZ(mech) = MechFZ(mech);
+    MechJumpLength(mech) =
+        length_hypotenuse((double) (realx - MechStartFX(mech)),
+                (double) (realy - MechStartFY(mech)));
+    MechGoingX(mech) = mapx;
+    MechGoingY(mech) = mapy;
+    MechEndFZ(mech) = ZSCALE * tz;
+    MechSpeed(mech) = 0.0;
+    if(MechStatus(mech) & DFA_ATTACK)
+        mech_notify(mech, MECHALL,
+                "You engage your jump jets for a Death From Above attack!");
+    else
+        mech_notify(mech, MECHALL, "You engage your jump jets.");
+    MechSwarmTarget(mech) = -1;
+    MechLOSBroadcast(mech, "engages jumpjets!");
+    MECHEVENT(mech, EVENT_JUMP, mech_jump_event, JUMP_TICK, 0);
 }
 
 static void mech_hulldown_event(MUXEVENT * e)

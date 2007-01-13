@@ -161,7 +161,7 @@ void new_move_mech(MECH *mech, MAP *map) {
     MECH *target;
 
     double newx, newy, deltax, deltay;
-    double xy_charge_distance, xscale;
+    double charge_distance;
     double jump_position;
 
     int x, y, update_z;
@@ -214,6 +214,27 @@ void new_move_mech(MECH *mech, MAP *map) {
 
     /* Update floating position */
 
+    if (Jumping(mech)) {
+
+        NewFindComponents((double) (KPH_TO_MPS * JumpSpeed(mech, map) *
+                    MAPMOVEMOD(map)), MechJumpHeading(mech),
+                &newx, &newy);
+        MechRealX(mech) += newx;
+        MechRealY(mech) += newy;
+
+        jump_position = sqrt(((MechRealX(mech) - MechStartRealX(mech)) * 
+                    (MechRealX(mech) - MechStartRealX(mech))) +
+                ((MechRealY(mech) - MechStartRealY(mech)) *
+                 (MechRealY(mech) - MechStartRealY(mech))));
+
+        if (mudconf.btech_newjump) {
+
+        } else {
+
+        }
+
+    }
+
     if (fabs(MechSpeed(mech)) > 0.0) {
 
         /* Hack to make it a double till we update MechSpeed to a
@@ -235,6 +256,10 @@ void new_move_mech(MECH *mech, MAP *map) {
         MechRealY(mech) += newy;
 
         /* Add calc for charging distance here */
+        if (MechChargeTarget(mech) > 0 && mudconf.btech_newcharge) {
+            charge_distance = sqrt((newx * newx) + (newy + newy));
+            MechChargeDistance(mech) += charge_distance;
+        }
     }
 
     /* Update hex position */

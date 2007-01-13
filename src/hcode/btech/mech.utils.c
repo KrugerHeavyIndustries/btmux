@@ -380,6 +380,29 @@ int FindBearing(float x0, float y0, float x1, float y1)
 	return AcceptableDegree(degrees - 90);
 }
 
+int ActualFindBearing(double x0, double y0, double x1, double y1) {
+
+    double deltax, deltay;
+    int bearing;
+
+    deltax = (x1 - x0);
+    deltay = (y1 - y0);
+
+    /* Inverse of deltay because +y goes in 180 direction, 
+     * also swap deltax and deltay for the atan2 function because
+     * +90/-90 degrees is OUR x-direction whereas with atan2's
+     * x-direction is 0/180 degrees */
+    bearing = (int) round(atan2(deltax, -1 * deltay) / TWOPIOVER360);
+
+    /* Since atan2 doesn't return values between +pi and -pi, but we
+     * need between 0 and 2pi */
+    if (bearing < 0) {
+        bearing = 360 + bearing;
+    }
+
+    return bearing;
+}
+
 int InWeaponArc(MECH * mech, float x, float y)
 {
 	int relat;
@@ -699,6 +722,20 @@ void FindXY(float x0, float y0, int bearing, float range, float *x1,
 	*x1 = x0 + sin((float) bearing * 6.283185307 / 360.0) * range * xscale;
 }
 
+/* Given an inital location in real coordinates and a bearing (in deg)
+ * and a range (in hexes) it calculates a new location in real coordinates */
+void ActualFindXY(double x0, double y0, int bearing, double range,
+        double *x1, double *y1) {
+
+    /* Multiply by HEX_SIZE to get it in meters (since thats what the
+     * real coord system uses.  Also add 180 to the degree for the y
+     * value because going down in y gives us positive values */
+    *x1 = x0 + (range * HEX_SIZE) * sin((double) (TWOPIOVER360 * bearing));
+    *y1 = y0 + (range * HEX_SIZE) * cos((double) (TWOPIOVER360 * 
+                (bearing + 180)));
+
+}
+
 float FindRange(float x0, float y0, float z0, float x1, float y1, float z1)
 {								/* range in hexes */
 	float xscale;
@@ -714,6 +751,21 @@ float FindRange(float x0, float y0, float z0, float x1, float y1, float z1)
 	return sqrt(XYrange * XYrange + Zrange * Zrange);
 }
 
+/* Returns range in hexes */
+double ActualFindRange(double x0, double y0, double z0, double x1, double y1, double z1) {
+
+    double range;
+
+    /* a^2 + b^2 + c^2 = d^2 */
+    range = sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1) +
+            (z0 - z1) * (z0 - z1));
+
+    /* Convert to Hexes */
+    range = range / HEX_SIZE;
+
+    return range;
+}
+
 float FindXYRange(float x0, float y0, float x1, float y1)
 {								/* range in hexes */
 	float xscale;
@@ -725,6 +777,20 @@ float FindXYRange(float x0, float y0, float x1, float y1)
 		sqrt(xscale * (x0 - x1) * (x0 - x1) + YSCALE2 * (y0 - y1) * (y0 -
 																	 y1));
 	return XYrange;
+}
+
+/* Returns range in the X-Y direction in hexes */
+double ActualFindXYRange(double x0, double y0, double x1, double y1) {
+
+    double range;
+
+    /* a^2 + b^2 = c^2 */
+    range = sqrt((x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1));
+
+    /* Convert to Hexes */
+    range = range / HEX_SIZE;
+
+    return range;
 }
 
 float FindHexRange(float x0, float y0, float x1, float y1)
@@ -1131,6 +1197,28 @@ int FindTargetXY(MECH * mech, float *x, float *y, float *z)
 		return 1;
 	}
 	return 0;
+}
+
+int ActualFindTargetXY(MECH *mech, double *x, double *y, double *z) {
+
+    MECH *target;
+
+    if ((target = getMech(MechTarget(mech)))) {
+
+        *x = MechRealX(target);
+        *y = MechRealX(target);
+        *z = MechRealX(target);
+        return 1;
+
+    } else if (MechTargX(mech) != -1 && MechTargY(mech) != -1) {
+
+        MapCoordToActualCoord(MechTargX(mech), MechTargY(mech), x, y);
+        *z = (double) (MechTargZ(mech) * HEX_Z_SCALE);
+        return 1;
+
+    }
+
+    return 0;
 }
 
 int global_silence = 0;

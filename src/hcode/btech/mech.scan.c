@@ -463,90 +463,109 @@ void PrintEnemyStatus(dbref player, MECH * mymech, MECH * mech,
 	}
 }
 
-void mech_bearing(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data, *tempMech;
-	MAP *mech_map;
-	char *args[4];
-	int argc;
-	int ix0, iy0;
-	float x0, y0;
-	int ix1, iy1;
-	float x1, y1, z1;
-	float temp;
-	char trash[20];
-	char buff[100];
+void mech_bearing(dbref player, void *data, char *buffer) {
 
-	x1 = y1 = -1;
+    MECH *mech = (MECH *) data, *target;
+    MAP *map;
 
-	cch(MECH_USUAL);
-	x0 = MechFX(mech);
-	y0 = MechFY(mech);
-	if(mech->mapindex != -1) {
-		mech_map = getMap(mech->mapindex);
-		argc = mech_parseattributes(buffer, args, 4);
-		if(argc == 0) {
-			/* Bearing to current target */
-			if(MechTarget(mech) != -1) {
-				tempMech = getMech(MechTarget(mech));
-				if(tempMech) {
-					if(!InLineOfSight(mech, tempMech, MechX(tempMech),
-									  MechY(tempMech), FaMechRange(mech,
-																   tempMech)))
-					{
-						notify(player, "Target is not in line of sight!");
-						return;
-					}
-				}
-			}
-			if(!FindTargetXY(mech, &x1, &y1, &z1)) {
-				notify(player, "There is no default target!");
-			} else {
-				strcpy(buff, "Bearing to default target is: ");
-			}
-		} else if(argc == 2) {
-			/* Bearing to X, Y */
-			ix1 = atoi(args[0]);
-			iy1 = atoi(args[1]);
-			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
-				 iy1 < mech_map->height)) {
-				notify(player, "Invalid map coordinates!");
-				x1 = y1 = -1.;
-			} else {
-				sprintf(buff, "Bearing to  %d,%d is: ", ix1, iy1);
-				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
-			}
-		} else if(argc == 4) {
-			ix0 = atoi(args[0]);
-			iy0 = atoi(args[1]);
-			ix1 = atoi(args[2]);
-			iy1 = atoi(args[3]);
+    double x0, y0, x1, y1, z1;
 
-			if(!(ix1 >= 0 && ix1 < mech_map->width && iy1 >= 0 &&
-				 y1 < mech_map->height && ix0 >= 0 &&
-				 ix0 <= mech_map->width && iy0 >= 0 &&
-				 iy0 < mech_map->height)) {
-				notify(player, "Invalid map coordinates!");
-				x1 = y1 = -1;
-			} else {
-				sprintf(buff, "Bearing to %d,%d from %d,%d is: ", ix1, iy1,
-						ix0, iy0);
-				MapCoordToRealCoord(ix0, iy0, &x0, &y0);
-				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
-			}
-		} else {
-			notify(player,
-				   "Invalid number of attributes to Bearing function!");
-		}
-		if(x1 != -1) {
-			temp = FindBearing(x0, y0, x1, y1);
-			sprintf(trash, "%.0f degrees.", temp);
-			strcat(buff, trash);
-			notify(player, buff);
-		}
-	} else {
-		notify(player, "You are not on a map!");
-	}
+    int ix0, iy0;
+    int ix1, iy1;
+    int bearing;
+
+    char *args[4];
+    int argc;
+
+    char trash[20];
+    char buff[100];
+
+    x1 = y1 = -1.0;
+
+    if (!(common_checks(player, mech, MECH_USUAL))) {
+        return;
+    }
+
+    x0 = MechRealX(mech);
+    y0 = MechRealY(mech);
+
+    if ((map = getMap(mech->mapindex))) {
+
+        argc = mech_parseattributes(buffer, args, 4);
+
+        if (argc == 0) {
+
+            /* Bearing to current target */
+            if ((target = getMech(MechTarget(mech)))) {
+                /* \todo Redo after figuring out LOS */
+                /*
+                   if (!InLineOfSight(mech, target, MechX(target),
+                   MechY(target), FaMechRange(mech, target)))
+                   {
+                   notify(player, "Target is not in line of sight!");
+                   return;
+                   }
+                   */
+            }
+
+            if (!ActualFindTargetXY(mech, &x1, &y1, &z1)) {
+                notify(player, "There is no default target!");
+            } else {
+                strcpy(buff, "Bearing to default target is: ");
+            }
+
+        } else if (argc == 2) {
+
+            /* Bearing to X, Y */
+            ix1 = atoi(args[0]);
+            iy1 = atoi(args[1]);
+            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
+                        iy1 < map->height)) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1.0;
+
+            } else {
+                sprintf(buff, "Bearing to  %d,%d is: ", ix1, iy1);
+                MapCoordToActualCoord(ix1, iy1, &x1, &y1);
+            }
+
+        } else if (argc == 4) {
+
+            ix0 = atoi(args[0]);
+            iy0 = atoi(args[1]);
+            ix1 = atoi(args[2]);
+            iy1 = atoi(args[3]);
+
+            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
+                        y1 < map->height && ix0 >= 0 &&
+                        ix0 <= map->width && iy0 >= 0 &&
+                        iy0 < map->height)) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1;
+            } else {
+                sprintf(buff, "Bearing to %d,%d from %d,%d is: ", ix1, iy1,
+                        ix0, iy0);
+                MapCoordToActualCoord(ix0, iy0, &x0, &y0);
+                MapCoordToActualCoord(ix1, iy1, &x1, &y1);
+            }
+
+        } else {
+            notify(player,
+                    "Invalid number of attributes to Bearing function!");
+        }
+
+        if (x1 != -1) {
+            bearing = ActualFindBearing(x0, y0, x1, y1);
+            sprintf(trash, "%d degrees.", bearing);
+            strcat(buff, trash);
+            notify(player, buff);
+        }
+
+    } else {
+        notify(player, "You are not on a map!");
+    }
 }
 
 void mech_range(dbref player, void *data, char *buffer)
