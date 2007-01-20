@@ -517,11 +517,13 @@ char *FindPilotingSkillName(MECH * mech)
 #define MECHSKILL_SPOTTING  2
 #define MECHSKILL_ARTILLERY 3
 #define NUM_MECHSKILLS      4
+
+// TODO: Replace this with a function.
 #define GENERIC_FIND_MECHSKILL(num,n) \
-if (Quiet(mech->mynum)) \
-{ str = silly_atr_get(mech->mynum, A_MECHSKILLS); \
-if (*str) if (sscanf (str, "%d %d %d %d", &i[0], &i[1], &i[2], &i[3]) > num) \
-return i[num] - n; }
+    if (Quiet(mech->mynum)) \
+        { str = silly_atr_get(mech->mynum, A_MECHSKILLS); \
+    if (*str) if (sscanf (str, "%d %d %d %d", &i[0], &i[1], &i[2], &i[3]) > num) \
+        return i[num] - n; }
 
 int FindPilotPiloting(MECH * mech)
 {
@@ -2671,7 +2673,8 @@ unsigned long long int CalcFasaCost(MECH * mech)
 
 	if(!
 	   (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_VEH_GROUND
-		|| MechType(mech) == CLASS_VEH_NAVAL || MechType(mech) == CLASS_VTOL)
+		|| MechType(mech) == CLASS_VEH_NAVAL || MechType(mech) == CLASS_VTOL
+		|| MechType(mech) == CLASS_BSUIT)
 	   || is_aero(mech) || IsDS(mech))
 		return 0;
 
@@ -2729,6 +2732,16 @@ unsigned long long int CalcFasaCost(MECH * mech)
 				CalcFasaCost_AddPrice(&total, "HD Gyro", (i * 500000));
 		else
 		   CalcFasaCost_AddPrice(&total, "Gyro", (i * 300000));
+	} else if (MechType(mech) == CLASS_BSUIT) {
+	/* ---------------------------------
+	 * BSuit Costs
+	 */
+    	if (MechSpecials(mech) & CLAN_TECH) {
+    	    CalcFasaCost_AddPrice(&total, "Clan Point", 3500000);
+    	} else {
+    	    CalcFasaCost_AddPrice(&total, "IS Squad", 2400000);
+    	}
+	
 	} else {
 	/* ---------------------------------
 	 * Vehicle Costs
@@ -2790,81 +2803,87 @@ unsigned long long int CalcFasaCost(MECH * mech)
 		}
 	} // end if (Vehicle Calcs)
 
-/* Engine Math 
- * (Engine Basecost * Engine Rating * Tonnage) / 75
+/* ----------------------------
+ * General Calculations
  */
-   int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
-		MechSpecials(mech) & LE_TECH ? 15000 :
-		MechSpecials(mech) & XL_TECH ? 20000 :
-		MechSpecials(mech) & XXL_TECH ? 100000 :
-		MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
-
-	int engine_price = (engine_basecost * MechEngineSize(mech) * 
-	   MechTons(mech)) / 75;
-	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
-
-/* Jump Jets 
- * Standard: Tonnage * (number of JJs^2) * 200
- * Improved: Tonnage * (number of JJs^2) * 500
- * Mechanical: Tonnage * (Jumping MP) * 150
- */
-	int num_jjs = MechJumpSpeed(mech) / MP_PER_KPH;
-	int jj_price = MechTons(mech) * (num_jjs * num_jjs) * 200;
-		if(num_jjs > 0)
-			CalcFasaCost_AddPrice(&total, "Jumpjets", jj_price);
-
-/* 
-   Heat Sinks 
-*/
-	int numsinks = MechRealNumsinks(mech);
-	
-	int sinkcost;
-	if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)
-	    sinkcost = 6000;
-	else if(MechSpecials2(mech) & COMPACT_HS_TECH)
-	    sinkcost = 3000;
-	else
-	    sinkcost = 2000;
-
-	if((MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)) {
-		/* We want to divide the heat dissipation by two if DHS */
-		numsinks = BOUNDED(0, numsinks/2, 500);
-	}
-
-   // For single heatsinks, we only charge for every heatsink over 10.
-   if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH
-      || MechSpecials2(mech) & COMPACT_HS_TECH)
-       CalcFasaCost_AddPrice(&total, "Heat Sinks", (numsinks * sinkcost));
-   else {
-       CalcFasaCost_AddPrice(&total, "Heat Sinks", 
-         (BOUNDED(0, numsinks - 10, 500) * sinkcost));
-   }
-
-   
-#if COST_DEBUG
-	SendDebug(tprintf("Heat Sinks: %d, Cost Per Sink: %d", numsinks, sinkcost));
-#endif
-
-/* Armor */
-	int total_armor = 0;
-	int armor_section = 0;
-	for(armor_section = 0; armor_section < NUM_SECTIONS; ++armor_section) {
-		total_armor += GetSectOArmor(mech, armor_section);
-		total_armor += GetSectORArmor(mech, armor_section);
-	}
-	int armor_tons = total_armor / 16;
-
-	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
-		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
-		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
-		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
-		 10000);
-#if COST_DEBUG
-	SendDebug(tprintf("Armor Tons %d(%d pts) * Armor Cost Per Point %d", 
-		armor_tons, total_armor, armor_cost_point));
-#endif
-	int armor_price = armor_tons * armor_cost_point;
-	CalcFasaCost_AddPrice(&total, "Armor", armor_price);
+ 
+if (MechType(mech) != CLASS_BSUIT) {
+    /* Engine Math 
+     * (Engine Basecost * Engine Rating * Tonnage) / 75
+     */
+       int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
+    		MechSpecials(mech) & LE_TECH ? 15000 :
+    		MechSpecials(mech) & XL_TECH ? 20000 :
+    		MechSpecials(mech) & XXL_TECH ? 100000 :
+    		MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
+    
+    	int engine_price = (engine_basecost * MechEngineSize(mech) * 
+    	   MechTons(mech)) / 75;
+    	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
+    
+    /* Jump Jets 
+     * Standard: Tonnage * (number of JJs^2) * 200
+     * Improved: Tonnage * (number of JJs^2) * 500
+     * Mechanical: Tonnage * (Jumping MP) * 150
+     */
+    	int num_jjs = MechJumpSpeed(mech) * MP_PER_KPH;
+    	int jj_price = MechTons(mech) * pow(num_jjs, 2) * 200.0;
+    	if (num_jjs > 0)
+    		CalcFasaCost_AddPrice(&total, "Jumpjets", jj_price);
+    
+    /* 
+       Heat Sinks 
+    */
+    	int numsinks = MechRealNumsinks(mech);
+    	
+    	int sinkcost;
+    	if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)
+    	    sinkcost = 6000;
+    	else if(MechSpecials2(mech) & COMPACT_HS_TECH)
+    	    sinkcost = 3000;
+    	else
+    	    sinkcost = 2000;
+    
+    	if((MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)) {
+    		/* We want to divide the heat dissipation by two if DHS */
+    		numsinks = BOUNDED(0, numsinks/2, 500);
+    	}
+    
+       // For single heatsinks, we only charge for every heatsink over 10.
+       if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH
+          || MechSpecials2(mech) & COMPACT_HS_TECH)
+           CalcFasaCost_AddPrice(&total, "Heat Sinks", (numsinks * sinkcost));
+       else {
+           CalcFasaCost_AddPrice(&total, "Heat Sinks", 
+             (BOUNDED(0, numsinks - 10, 500) * sinkcost));
+       }
+    
+       
+    #if COST_DEBUG
+    	SendDebug(tprintf("Heat Sinks: %d, Cost Per Sink: %d", numsinks, sinkcost));
+    #endif
+    
+    /* Armor */
+    	int total_armor = 0;
+    	int armor_section = 0;
+    	for(armor_section = 0; armor_section < NUM_SECTIONS; ++armor_section) {
+    		total_armor += GetSectOArmor(mech, armor_section);
+    		total_armor += GetSectORArmor(mech, armor_section);
+    	}
+    	int armor_tons = total_armor / 16;
+    
+    	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
+    		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
+    		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
+    		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
+    		 10000);
+    #if COST_DEBUG
+    	SendDebug(tprintf("Armor Tons %d(%d pts) * Armor Cost Per Point %d", 
+    		armor_tons, total_armor, armor_cost_point));
+    #endif
+    	int armor_price = armor_tons * armor_cost_point;
+    	CalcFasaCost_AddPrice(&total, "Armor", armor_price);
+} // End Non-BSuit General Calculations
 
 /* Parts */
 	for(i = 0; i < NUM_SECTIONS; i++)
@@ -2917,7 +2936,7 @@ unsigned long long int CalcFasaCost(MECH * mech)
 				}
 			}
 
-	if(MechType(mech) != CLASS_MECH) {
+	if(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_BSUIT) {
 		switch (MechMove(mech)) {
 			case MOVE_TRACK:
 				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 100);
@@ -2941,7 +2960,12 @@ unsigned long long int CalcFasaCost(MECH * mech)
 				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 50);
 				break;
 		}
+	} else if (MechType(mech) == CLASS_BSUIT) {
+	    // There's nothing in Maxtech about this, but we're going to knock the prices
+	    // down to be competitive with other unit types.
+	    mod = 0.75;
 	} else {
+	    // The standard mech modifier.
 		mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 100);
 	}
 
