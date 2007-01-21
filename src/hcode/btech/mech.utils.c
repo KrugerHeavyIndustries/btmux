@@ -2756,8 +2756,10 @@ unsigned long long int CalcFasaCost(MECH * mech)
 					continue;
 				if(i == TURRET)
 					turret += crit_weight(mech, part);
-				if(IsEnergy(part))
+				if(IsEnergy(part)) {
 					pamp += crit_weight(mech, part);
+					SendDebug(tprintf("PAmp Weight: %d", crit_weight(mech, part)));
+				}
 			}
 /* 
  * Internals 
@@ -2777,9 +2779,10 @@ unsigned long long int CalcFasaCost(MECH * mech)
  * 20,000 * Amplifier Tonnage
  */
 		if(MechSpecials(mech) & ICE_TECH) {
-			int power_amp =  20000 * (( pamp / 10) * 1024);
+			int power_amp =  20000 * ( pamp / 1024 ) / 10;
 			CalcFasaCost_AddPrice(&total, "Power Amplifiers", power_amp);
 		}
+		
 /* 
  * Turret 
  * Standard: 5,000 * Turret Tonnage
