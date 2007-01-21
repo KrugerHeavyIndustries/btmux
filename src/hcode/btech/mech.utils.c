@@ -2814,14 +2814,25 @@ if (MechType(mech) != CLASS_BSUIT) {
     /* Engine Math 
      * (Engine Basecost * Engine Rating * Tonnage) / 75
      */
-       int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
-    		MechSpecials(mech) & LE_TECH ? 15000 :
-    		MechSpecials(mech) & XL_TECH ? 20000 :
-    		MechSpecials(mech) & XXL_TECH ? 100000 :
-    		MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
-    
-    	int engine_price = (engine_basecost * MechEngineSize(mech) * 
-    	   MechTons(mech)) / 75;
+    int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
+        MechSpecials(mech) & LE_TECH ? 15000 :
+    	MechSpecials(mech) & XL_TECH ? 20000 :
+    	MechSpecials(mech) & XXL_TECH ? 100000 :
+    	MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
+    	    
+    int engine_size = MechEngineSize(mech);   
+        
+    if (MechMove(mech) == MOVE_WHEEL ||
+    	MechMove(mech) == MOVE_FOIL ||
+    	MechMove(mech) == MOVE_HOVER ||
+    	MechMove(mech) == MOVE_HULL || 
+    	MechMove(mech) == MOVE_SUB ||
+    	MechMove(mech) == MOVE_VTOL) {
+    	engine_size = engine_size - susp_factor(mech);
+    }
+    	   	    
+    	int engine_price = (engine_basecost * engine_size * MechTons(mech)) / 75;
+    	    
     	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
     
     /* Jump Jets 
@@ -2873,7 +2884,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     		total_armor += GetSectOArmor(mech, armor_section);
     		total_armor += GetSectORArmor(mech, armor_section);
     	}
-    	int armor_tons = total_armor / 16;
+    	float armor_tons = total_armor / 16.0;
     
     	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
     		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
@@ -2881,7 +2892,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
     		 10000);
     #if COST_DEBUG
-    	SendDebug(tprintf("Armor Tons %d(%d pts) * Armor Cost Per Point %d", 
+    	SendDebug(tprintf("Armor Tons %.1f(%d pts) * Armor Cost Per Point %d", 
     		armor_tons, total_armor, armor_cost_point));
     #endif
     	int armor_price = armor_tons * armor_cost_point;
