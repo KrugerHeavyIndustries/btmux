@@ -2854,7 +2854,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     
        // For single heatsinks, we only charge for every heatsink over 10.
        if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH
-          || MechSpecials2(mech) & COMPACT_HS_TECH)
+          || MechSpecials2(mech) & COMPACT_HS_TECH || MechSpecials(mech) & ICE_TECH)
            CalcFasaCost_AddPrice(&total, "Heat Sinks", (numsinks * sinkcost));
        else {
            CalcFasaCost_AddPrice(&total, "Heat Sinks", 
