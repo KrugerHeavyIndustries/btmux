@@ -2944,7 +2944,13 @@ if (MechType(mech) != CLASS_BSUIT) {
 					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
 					   ammo_part_cost);
 				} else {
-				   int indiv_part_cost = GetPartCost(part);
+				    //MechWeapons[weapindx].criticals
+				    
+				    int indiv_part_cost = GetPartCost(part);
+				    if (MechType(mech) != CLASS_MECH && IsWeapon(part)) {
+				        indiv_part_cost *= MechWeapons[part-1].criticals;
+				        //SendDebug(tprintf("Part#: %s(%d) Crits: %d", MechWeapons[part-1].name, part-1, MechWeapons[part-1].criticals));
+				    }
 					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
 					   indiv_part_cost);
 				}
