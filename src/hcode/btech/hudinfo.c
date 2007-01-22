@@ -220,7 +220,7 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 			MechFacing(mech), MechDesiredFacing(mech),
 			MechSpeed(mech), MechDesiredSpeed(mech),
 			(int) (10 * MechPlusHeat(mech)),
-			(int) (10. * MechActiveNumsinks(mech)),
+			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
 			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy);
 
