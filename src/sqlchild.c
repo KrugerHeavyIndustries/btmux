@@ -583,7 +583,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	time_t type_time;
 
 	ptr = output_buffer;
-	eptr = ptr + LBUF_SIZE;
+	eptr = ptr + (LBUF_SIZE - 1);
 	*ptr = '\0';
 
 	/* dprintk("executing query %d.", aqt->serial); */
@@ -623,7 +623,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	delim = NULL;
 
 	while (dbi_result_next_row(result)) {
-		if((eptr-ptr) < 10) {
+		if((eptr <= ptr) || ((eptr-ptr) < 10)) {
 			// XXX: quick hack. I should check my snprintf() return values.
 			sqlchild_child_abort_query(aqt, "result too long");
 			return;
