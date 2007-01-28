@@ -677,7 +677,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 					sqlchild_child_abort_query(aqt, "unknown type");
 					return;
 			}
-			if(eptr - ptr < 1) {
+			if((eptr - ptr) < 10) {
 				sqlchild_child_abort_query(aqt, "result too large");
 				return;
 			}
