@@ -632,6 +632,11 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 			ptr += snprintf(ptr, eptr - ptr, aqt->rdelim);
 		}
 		for(i = 1; i <= fields; i++) {
+			if((eptr <= ptr) || ((eptr-ptr) < 10)) {
+				// XXX: quick hack. I should check my snprintf() return values.
+				sqlchild_child_abort_query(aqt, "result too long");
+				return;
+			}
 			if(fields == i)
 				delim = "";
 			else
