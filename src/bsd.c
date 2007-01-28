@@ -225,6 +225,7 @@ int bind_mux_socket(int port)
 				  sizeof(opt)) < 0) {
 		log_perror("NET", "FAIL", NULL, "setsockopt");
 	}
+	
 	if(fcntl(s, F_SETFD, FD_CLOEXEC) < 0) {
 		log_perror("LOGCACHE", "FAIL", NULL,
 				   "fcntl(fd, F_SETFD, FD_CLOEXEC)");
@@ -348,7 +349,7 @@ void runqueues(int fd, short event, void *arg)
 
 void shovechars(int port)
 {
-
+	unsigned int flags;
 	queue_slice.tv_sec = 0;
 	queue_slice.tv_usec = mudconf.timeslice * 1000;
 
@@ -364,6 +365,8 @@ void shovechars(int port)
 			  accept_new_connection, NULL);
 	event_add(&listen_sock_ev, NULL);
 
+	flags = fcntl(2, F_GETFD, 0); 
+	dprintk("stderr is %x", flags);
 #ifdef IPV6_SUPPORT
 	if(mux_bound_socket6 < 0) {
 		mux_bound_socket6 = bind_mux6_socket(port);

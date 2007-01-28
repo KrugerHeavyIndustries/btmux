@@ -547,6 +547,7 @@ static void sqlchild_make_connection(char db_slot)
 		dbi_state = DBIS_EFAIL;
 		return;
 	}
+	dprintk("started.");
 	return;
 }
 
@@ -606,7 +607,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	}
 
 	if(dbi_conn_connect(conn) != 0) {
-		sqlchild_child_abort_query(aqt, "dbi_conn_connect failed");
+		sqlchild_child_abort_query_dbi(aqt, "dbi_conn_connect failed");
 		return;
 	}
 
@@ -689,7 +690,7 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 		}
 	}
 	*ptr++ = '\0';
-	resp.n_chars = eptr - ptr;
+	resp.n_chars = eptr - output_buffer;
 	eptr = ptr;
 	// XXX: handle failure
 	write(aqt->fd, &resp, sizeof(struct query_response));
