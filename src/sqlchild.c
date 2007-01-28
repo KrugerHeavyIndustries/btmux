@@ -623,6 +623,11 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 	delim = NULL;
 
 	while (dbi_result_next_row(result)) {
+		if((eptr-ptr) < 10) {
+			// XXX: quick hack. I should check my snprintf() return values.
+			sqlchild_child_abort_query(aqt, "result too long");
+			return;
+		}
 		if(delim != NULL) {
 			ptr += snprintf(ptr, eptr - ptr, aqt->rdelim);
 		}
