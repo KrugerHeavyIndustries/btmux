@@ -359,7 +359,7 @@ int ActualFindZBearing(double x0, double y0, double z0, double x1, double y1, do
 	if (hyp <= 0.0) {
 		return 0;
     }
-    opp = fabs(z1 - z0) / HEX_Z_SCALE;
+    opp = fabs(z1 - z0) / HEX_SIZE;
 	deg = (int) round(asin(opp / hyp) * (180.0 / PI));
 	return deg; 
 }
