@@ -337,6 +337,7 @@ void CheckEdgeOfMap(MECH * mech)
 		}
 	}
 }
+
 int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1)
 {
 	float hyp, opp, deg;
@@ -347,6 +348,20 @@ int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1)
 	opp = FindRange(0, 0, 0, 0, 0, fabsf(z1 - z0));
 	deg = asin(opp / hyp) * (180 / PI);
 	return ceilf(deg);
+}
+
+int ActualFindZBearing(double x0, double y0, double z0, double x1, double y1, double z1) {
+
+	double hyp, opp;
+    int deg;
+
+	hyp = FindRange(x0, y0, z0, x1, y1, z1);
+	if (hyp <= 0.0) {
+		return 0;
+    }
+    opp = fabs(z1 - z0) / HEX_Z_SCALE;
+	deg = (int) round(asin(opp / hyp) * (180.0 / PI));
+	return deg; 
 }
 
 int FindBearing(float x0, float y0, float x1, float y1)
@@ -394,7 +409,7 @@ int ActualFindBearing(double x0, double y0, double x1, double y1) {
      * x-direction is 0/180 degrees */
     bearing = (int) round(atan2(deltax, -1 * deltay) / TWOPIOVER360);
 
-    /* Since atan2 doesn't return values between +pi and -pi, but we
+    /* Since atan2 only returns values between +pi and -pi but we
      * need between 0 and 2pi */
     if (bearing < 0) {
         bearing = 360 + bearing;
@@ -779,7 +794,7 @@ float FindXYRange(float x0, float y0, float x1, float y1)
 	return XYrange;
 }
 
-/* Returns range in the X-Y direction in hexes */
+/* Returns range in only the X-Y plane in hexes */
 double ActualFindXYRange(double x0, double y0, double x1, double y1) {
 
     double range;
@@ -1206,8 +1221,8 @@ int ActualFindTargetXY(MECH *mech, double *x, double *y, double *z) {
     if ((target = getMech(MechTarget(mech)))) {
 
         *x = MechRealX(target);
-        *y = MechRealX(target);
-        *z = MechRealX(target);
+        *y = MechRealY(target);
+        *z = MechRealZ(target);
         return 1;
 
     } else if (MechTargX(mech) != -1 && MechTargY(mech) != -1) {

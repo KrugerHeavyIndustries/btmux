@@ -92,52 +92,71 @@ void clear_mech_from_LOS(MECH * mech)
     }
 }
 
-void mech_Rsetxy(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data;
-	MAP *mech_map = getMap(mech->mapindex);
-	char *args[3];
-	int x, y, z, argc;
+void mech_Rsetxy(dbref player, void *data, char *buffer) {
 
-	if(!CheckData(player, mech))
-		return;
-	cch(MECH_MAP);
-	argc = mech_parseattributes(buffer, args, 3);
-	DOCHECK(argc != 2 && argc != 3, "Invalid number of arguments to SETXY!");
-	x = atoi(args[0]);
-	y = atoi(args[1]);
-	DOCHECK(x >= mech_map->width || y >= mech_map->height || x < 0
-			|| y < 0, "Invalid coordinates!");
-	MechX(mech) = x;
-	MechLastX(mech) = x;
-	MechY(mech) = y;
-	MechLastY(mech) = y;
-	MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
-						&MechFY(mech));
+    MECH *mech = (MECH *) data;
+    MAP *map = getMap(mech->mapindex);
+    char *args[3];
+    int x, y, z, argc;
+
+    if (!common_checks(player, mech, MECH_MAP)) {
+        return;
+    }
+
+    argc = proper_parseattributes(buffer, args, 3);
+
+    if ((argc != 2) && (argc != 3)) {
+        notify(player, "Invalid number of arguments to SETXY!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    x = atoi(args[0]);
+    y = atoi(args[1]);
+
+    if ((x >= map->width) || (y >= map->height) || (x < 0) || (y < 0)) {
+        notify(player, "Invalid coordinates!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    MechX(mech) = x;
+    MechLastX(mech) = x;
+    MechY(mech) = y;
+    MechLastY(mech) = y;
+
+    MapCoordToRealCoord(MechX(mech), MechY(mech), &MechFX(mech),
+            &MechFY(mech));
     MapCoordToActualCoord(MechX(mech), MechY(mech), &MechRealX(mech),
             &MechRealY(mech));
-	MechTerrain(mech) = GetTerrain(mech_map, MechX(mech), MechY(mech));
-	MarkForLOSUpdate(mech);
-	if(argc == 2) {
-		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
-		MechZ(mech) = MechElev(mech) - 1;
-		MechFZ(mech) = ZSCALE * MechZ(mech);
+
+    MechTerrain(mech) = GetTerrain(map, MechX(mech), MechY(mech));
+
+    MarkForLOSUpdate(mech);
+
+    if (argc == 2) {
+        MechElev(mech) = GetElevation(map, MechX(mech), MechY(mech));
+        MechRealZ(mech) = MechElev(mech) * HEX_Z_SCALE;
+
+        MechZ(mech) = MechElev(mech) - 1;
+        MechFZ(mech) = ZSCALE * MechZ(mech);
+
+        DropSetElevation(mech, 0);
+        z = MechZ(mech);
+        if (!Landed(mech) && FlyingT(mech)) {
+            MechStatus(mech) |= LANDED;
+        }
+
+    } else {
+        z = atoi(args[2]);
+        MechZ(mech) = z;
+        MechFZ(mech) = ZSCALE * MechZ(mech);
         MechRealZ(mech) = MechZ(mech) * HEX_Z_SCALE;
-		DropSetElevation(mech, 0);
-		z = MechZ(mech);
-		if(!Landed(mech) && FlyingT(mech))
-			MechStatus(mech) |= LANDED;
-	} else {
-		z = atoi(args[2]);
-		MechZ(mech) = z;
-		MechFZ(mech) = ZSCALE * MechZ(mech);
-        MechRealZ(mech) = MechZ(mech) * HEX_Z_SCALE;
-		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
-	}
-	clear_mech_from_LOS(mech);
-	notify_printf(player, "Pos changed to %d,%d,%d", x, y, z);
-	SendLoc(tprintf("#%d set #%d's pos to %d,%d,%d.", player, mech->mynum,
-					x, y, z));
+        MechElev(mech) = GetElevation(map, MechX(mech), MechY(mech));
+    }
+    clear_mech_from_LOS(mech);
+    notify_printf(player, "Pos changed to %d,%d,%d", x, y, z);
+    proper_freearguments(args, argc);
 }
 
 /* Team/Map commands */

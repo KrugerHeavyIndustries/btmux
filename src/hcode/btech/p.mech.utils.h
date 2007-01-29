@@ -57,6 +57,20 @@ void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x,
 void navigate_sketch_mechs(MECH *mech, MAP *map, int x, int y,
     char buff[NAVIGATE_LINES][MBUF_SIZE]);
 int FindTargetXY(MECH * mech, float *x, float *y, float *z);
+
+/* New Real Coord functions - These will replace the orignal ones and
+ * then will be renamed just like the original ones but for now we keep them
+ * seperate to keep the mux semi-functional while we rewrite this stuff */
+void ActualFindXY(double x0, double y0, int bearing, double range, double *x1, double *y1);
+double ActualFindRange(double x0, double y0, double z0, double x1, double y1, double z1);
+double ActualFindXYRange(double x0, double y0, double x1, double y1);
+void MapCoordToActualCoord(int hex_x, int hex_y, double *real_x, double *real_y);
+void ActualCoordToMapCoord(int *hex_x, int *hex_y, double real_x, double real_y);
+int ActualFindBearing(double x0, double y0, double x1, double y1);
+int ActualFindZBearing(double x0, double y0, double z0, double x1, double y1, double z1);
+int ActualFindTargetXY(MECH *mech, double *x, double *y, double *z);
+/* End of new real coord functions */
+
 int FindWeapons_Advanced(MECH * mech, int index, unsigned char *weaparray,
     unsigned char *weapdataarray, int *critical, int whine);
 int FindAmmunition(MECH * mech, unsigned char *weaparray,

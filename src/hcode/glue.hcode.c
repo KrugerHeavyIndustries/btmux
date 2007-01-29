@@ -236,6 +236,20 @@ int proper_explodearguments(char *buffer, char **args, int max)
 	return count;
 }
 
+/*
+ * Small function to just clean up after proper_explodearguments
+ * and what not */
+void proper_freearguments(char **args, int maxargs) {
+
+    int i;
+
+    for (i = 0; i < maxargs; i++) {
+        if (args[i]) {
+            free(args[i]);
+        }
+    }
+}
+
 int mech_parseattributes(char *buffer, char **args, int maxargs)
 {
 	int count = 0;
