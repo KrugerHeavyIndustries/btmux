@@ -1414,7 +1414,8 @@ void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause,
 		safe_str("#-1 UNKNOWN ERROR", buff, bufc);
 		return;
 	}
-	if(nfargs > 2 && xlate(fargs[2]))
+/* For now, we're gonna ignore the third arg, and just clear mechs anyways*/
+/*	if(nfargs > 2 && xlate(fargs[2])) */
 		map_clearmechs(player, (void *) map, "");
 	safe_str("1", buff, bufc);
 }
