@@ -30,20 +30,25 @@
 #include "p.mech.utils.h"
 #include "autopilot.h"
 
-void mech_findcenter(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data;
-	float fx, fy;
-	int x, y;
+void mech_findcenter(dbref player, void *data, char *buffer) {
 
-	cch(MECH_USUAL);
-	x = MechX(mech);
-	y = MechY(mech);
-	MapCoordToRealCoord(x, y, &fx, &fy);
-	notify_printf(player, "Current hex: (%d,%d,%d)\tRange to center: %.2f\t"
-				  "Bearing to center: %d", x, y, MechZ(mech),
-				  FindHexRange(fx, fy, MechFX(mech), MechFY(mech)),
-				  FindBearing(MechFX(mech), MechFY(mech), fx, fy));
+    MECH *mech = (MECH *) data;
+    double fx, fy;
+    int x, y;
+
+    if (!common_checks(player, mech, MECH_USUAL)) {
+        return;
+    }
+
+    x = MechX(mech);
+    y = MechY(mech);
+
+    MapCoordToActualCoord(x, y, &fx, &fy);
+
+    notify_printf(player, "Current hex: (%d,%d,%d)\tRange to center: %.2f\t"
+            "Bearing to center: %d", x, y, MechZ(mech),
+            ActualFindXYRange(fx, fy, MechFX(mech), MechFY(mech)),
+            ActualFindBearing(MechFX(mech), MechFY(mech), fx, fy));
 }
 
 static int parse_tacargs(dbref player, MECH * mech, char **args, int argc,

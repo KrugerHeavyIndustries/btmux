@@ -250,6 +250,43 @@ void proper_freearguments(char **args, int maxargs) {
     }
 }
 
+/*
+ * Function to properly read a string and convert it into ints
+ * with error checking */
+int proper_parseint(char *string, int *integer) {
+
+    long value;
+    char *endptr;
+
+    errno = 0;
+    value = strtol(string, &endptr, 10);
+
+    switch (errno) {
+        case ERANGE:
+            /* Value outside of range */
+            return 0;
+            break;
+        case 0:
+            if (endptr == string) {
+                /* Nothing done */
+                return 0;
+            } else if (*endptr != '\0') {
+                /* string is not just numbers, so bad string */
+                return 0;
+            } else {
+                /* got a good value so set it */
+                *integer = (int) value;
+                return 1;
+            }
+            break;
+        default:
+            /* Bad errno - return */
+            return 0;
+            break;
+    }
+
+}
+
 int mech_parseattributes(char *buffer, char **args, int maxargs)
 {
 	int count = 0;

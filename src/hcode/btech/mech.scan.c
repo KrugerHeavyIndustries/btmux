@@ -230,85 +230,159 @@ void mech_scan(dbref player, void *data, char *buffer)
 		show_mines_in_hex(player, mech, range, mapx, mapy);
 }
 
-void mech_report(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data;
-	MAP *mech_map;
-	char *args[3];
-	int mapx = 0, mapy = 0;
-	char targetID[2];
-	dbref target;
-	int numargs;
-	MECH *tempMech = NULL;
-	float fx, fy, fz = 0.0;
-	float range = 0.0, enemyX, enemyY, enemyZ;
+void mech_report(dbref player, void *data, char *buffer) {
 
-	mech_map = getMap(mech->mapindex);
-	cch(MECH_USUAL);
-	numargs = mech_parseattributes(buffer, args, 3);
-	DOCHECK(numargs > 2, "Wrong number of arguments to report!");
-	DOCHECK(!MechScanRange(mech), "Your system seems to be inoperational.");
-	switch (numargs) {
-	case 1:
-		/* Scan Target */
-		targetID[0] = args[0][0];
-		targetID[1] = args[0][1];
-		target = FindTargetDBREFFromMapNumber(mech, targetID);
-		tempMech = getMech(target);
-		DOCHECK(!tempMech, "Target is not in line of sight!");
-		range = FaMechRange(mech, tempMech);
-		DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
-							   MechY(tempMech), range),
-				"Target is not in line of sight!");
-		DOCHECK(!InLineOfSight_NB(mech, tempMech, MechX(tempMech),
-								  MechY(tempMech), range),
-				"That target isn't seen well enough by the scanners for a report!");
-		break;
-	case 2:
-		/* report x, y */
-		mapx = atoi(args[0]);
-		mapy = atoi(args[1]);
-		MapCoordToRealCoord(mapx, mapy, &fx, &fy);
-		range =
-			FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), fx, fy, fz);
-		ValidCoordA(mech_map, mapx, mapy,
-					"Those coordinates are out of scanner range.");
-		DOCHECK((int) range > MechScanRange(mech),
-				"Those coordinates are out of scanner range.");
-		DOCHECK(!InLineOfSight(mech, tempMech, mapx, mapy, range),
-				"Coordinates are not in line of sight!");
-		DOCHECK(!InLineOfSight_NB(mech, tempMech, mapx, mapy, range),
-				"That target isn't seen well enough by the scanners for a report!");
-		fz = ZSCALE * Elevation(mech_map, mapx, mapy);
-		/* look for enemies in that hex... */
-		tempMech = find_mech_in_hex(mech, mech_map, mapx, mapy, 1);
-		DOCHECK(!tempMech, "No target found.");
-		break;
-	case 0:
-		/* report current target... */
-		target = MechTarget(mech);
-		tempMech = getMech(target);
-		if(tempMech) {
-			range = FaMechRange(mech, tempMech);
-			DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
-								   MechY(tempMech), range),
-					"Target is not in line of sight!");
-			DOCHECK(!InLineOfSight_NB(mech, tempMech, MechX(tempMech),
-									  MechY(tempMech), range),
-					"That target isn't seen well enough by the scanners for a report!");
-		} else {
-			DOCHECK(!FindTargetXY(mech, &enemyX, &enemyY, &enemyZ),
-					"No default target set!");
-			/* look for enemies in that hex... */
-			tempMech = find_mech_in_hex(mech, mech_map, mapx, mapy, 1);
-			DOCHECK(!tempMech, "You don't see a thing.");
-			DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
-								   MechY(tempMech), range),
-					"You don't see a thing.");
-		}
-	}
-	if(tempMech)
-		PrintReport(player, mech, tempMech, range);
+    MECH *mech = (MECH *) data;
+    MECH *target = NULL;
+    MAP *map;
+    dbref target_dbref;
+
+    int mapx, mapy;
+    int argc;
+
+    char *args[3];
+    char targetID[2];
+
+    double fx, fy, fz;
+    double enemyX, enemyY, enemyZ;
+    double range; 
+
+    if (!common_checks(player, mech, MECH_USUAL)) {
+        return;
+    }
+
+    map = getMap(mech->mapindex);
+
+    argc = proper_parseattributes(buffer, args, 3);
+
+    if (argc > 2) {
+        notify(player, "Wrong number of arguments to report!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    if (!MechScanRange(mech)) {
+        notify(player, "Your system seems to be inoperational.");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    switch (argc) {
+        case 1:
+            /* Scan Target */
+            targetID[0] = args[0][0];
+            targetID[1] = args[0][1];
+
+            if (!(target = getMech(FindTargetDBREFFromMapNumber(mech, targetID)))) {
+                notify(player, "Target is not in line of sight!");
+                proper_freearguments(args, argc);
+                return;
+            }
+
+            range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
+                    MechRealX(target), MechRealY(target), MechRealZ(target));
+/*
+ * Fix this later when we redo LOS 
+            DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
+                        MechY(tempMech), range),
+                    "Target is not in line of sight!");
+            DOCHECK(!InLineOfSight_NB(mech, tempMech, MechX(tempMech),
+                        MechY(tempMech), range),
+                    "That target isn't seen well enough by the scanners for a report!");
+*/
+            break;
+
+        case 2:
+            /* report x, y */
+            if (!proper_parseint(args[0], &mapx) ||
+                    !proper_parseint(args[1], &mapy)) {
+
+                notify(player, "Invalid map coordinates!");
+                proper_freearguments(args, argc);
+                return;
+
+            } else if (mapx < 0 || mapx >= map->width || 
+                    mapy < 0 || mapy >= map->height) {
+
+                notify(player, "Those coordinates are out of scanner range.");
+                proper_freearguments(args, argc);
+                return;
+            }
+
+            MapCoordToActualCoord(mapx, mapy, &fx, &fy);
+            fz = HEX_Z_SCALE * Elevation(map, mapx, mapy);
+
+            range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech), 
+                    fx, fy, fz);
+
+            if ((int) range > MechScanRange(mech)) {
+                notify(player, "Those coordinates are out of scanner range.");
+                proper_freearguments(args, argc);
+                return;
+            }
+/*
+ * Temporarly removing till I finish working on LOS 
+            DOCHECK(!InLineOfSight(mech, tempMech, mapx, mapy, range),
+                    "Coordinates are not in line of sight!");
+            DOCHECK(!InLineOfSight_NB(mech, tempMech, mapx, mapy, range),
+                    "That target isn't seen well enough by the scanners for a report!");
+ */
+            /* look for enemies in that hex... */
+            if (!(target = find_mech_in_hex(mech, map, mapx, mapy, 1))) {
+                notify(player, "No target found.");
+                proper_freearguments(args, argc);
+                return;
+            }
+
+            /* Recalc range now to target (could be different then range to hex */
+            range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
+                    MechRealX(target), MechRealY(target), MechRealZ(target));
+            break;
+
+        case 0:
+            /* report current target... */
+            if ((target = getMech(MechTarget(mech)))) {
+                range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
+                        MechRealX(target), MechRealY(target), MechRealZ(target));
+/*
+ * Turning this off till i finish LOS rewrite
+                DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
+                            MechY(tempMech), range),
+                        "Target is not in line of sight!");
+                DOCHECK(!InLineOfSight_NB(mech, tempMech, MechX(tempMech),
+                            MechY(tempMech), range),
+                        "That target isn't seen well enough by the scanners for a report!");
+*/
+            } else {
+
+                if (!ActualFindTargetXY(mech, &enemyX, &enemyY, &enemyZ)) {
+                    notify(player, "No default target set!");
+                    proper_freearguments(args, argc);
+                    return;
+                }
+
+                /* look for enemies in that hex... */
+                mapx = MechTargX(mech);
+                mapy = MechTargY(mech);
+                if (!(target = find_mech_in_hex(mech, map, mapx, mapy, 1))) {
+                    notify(player, "You don't see a thing.");
+                    proper_freearguments(args, argc);
+                    return;
+                }
+/*
+ * Again turning this off till i rewrite LOS 
+                DOCHECK(!InLineOfSight(mech, tempMech, MechX(tempMech),
+                            MechY(tempMech), range),
+                        "You don't see a thing.");
+*/
+            }
+    }
+
+    if (target) {
+        PrintReport(player, mech, target, range);
+    }
+
+    proper_freearguments(args, argc);
 }
 
 void ShowTurretFacing(dbref player, int spaces, MECH * mech)
@@ -516,10 +590,14 @@ void mech_bearing(dbref player, void *data, char *buffer) {
         } else if (argc == 2) {
 
             /* Bearing to X, Y */
-            ix1 = atoi(args[0]);
-            iy1 = atoi(args[1]);
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        iy1 < map->height)) {
+            if (!proper_parseint(args[0], &ix1) || 
+                    !proper_parseint(args[1], &iy1)) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1.0;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height) {
 
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1.0;
@@ -531,18 +609,22 @@ void mech_bearing(dbref player, void *data, char *buffer) {
 
         } else if (argc == 4) {
 
-            ix0 = atoi(args[0]);
-            iy0 = atoi(args[1]);
-            ix1 = atoi(args[2]);
-            iy1 = atoi(args[3]);
+            if (!proper_parseint(args[0], &ix0) ||
+                    !proper_parseint(args[1], &iy0) ||
+                    !proper_parseint(args[2], &ix1) ||
+                    !proper_parseint(args[3], &iy1)) {
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        y1 < map->height && ix0 >= 0 &&
-                        ix0 <= map->width && iy0 >= 0 &&
-                        iy0 < map->height)) {
+                x1 = y1 = -1.0;
+                notify(player, "Invalid map coordinates!");
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height || 
+                    ix0 < 0 || ix0 >= map->width || 
+                    iy0 < 0 || iy0 >= map->height) {
 
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1.0;
+
             } else {
                 snprintf(buff, MBUF_SIZE, "Bearing to %d,%d from %d,%d is: ", ix1, iy1,
                         ix0, iy0);
@@ -555,7 +637,7 @@ void mech_bearing(dbref player, void *data, char *buffer) {
                     "Invalid number of attributes to Bearing function!");
         }
 
-        if (x1 != -1) {
+        if (x1 != -1.0) {
             bearing = ActualFindBearing(x0, y0, x1, y1);
             snprintf(trash, 40, "%d degrees.", bearing);
 
@@ -636,16 +718,23 @@ void mech_range(dbref player, void *data, char *buffer) {
         } else if (argc == 2) {
 
             /* Range to X, Y */
-            ix1 = atoi(args[0]);
-            iy1 = atoi(args[1]);
+            if (!proper_parseint(args[0], &ix1) ||
+                    !proper_parseint(args[1], &iy1)) {
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        iy1 < map->height)) {
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1.0;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1.0;
+
             } else {
+
                 snprintf(buff, MBUF_SIZE, "Range to  %d,%d is: ", ix1, iy1);
                 MapCoordToActualCoord(ix1, iy1, &x1, &y1);
+
                 if (MapIsDark(map)) {
                     z1 = HEX_Z_SCALE * MechZ(mech);
                 } else {
@@ -656,15 +745,18 @@ void mech_range(dbref player, void *data, char *buffer) {
         } else if (argc == 4) {
 
             /* Range to X, Y from given X, Y */
-            ix0 = atoi(args[0]);
-            iy0 = atoi(args[1]);
-            ix1 = atoi(args[2]);
-            iy1 = atoi(args[3]);
+            if (!proper_parseint(args[0], &ix0) ||
+                    !proper_parseint(args[1], &iy0) ||
+                    !proper_parseint(args[2], &ix1) ||
+                    !proper_parseint(args[3], &iy1)) {
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        iy1 < map->height && ix0 >= 0 &&
-                        ix0 <= map->width && iy0 >= 0 &&
-                        iy0 < map->height)) {
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height || 
+                    ix0 < 0 || ix0 >= map->width || 
+                    iy0 < 0 || iy0 >= map->height) {
 
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1;
@@ -675,6 +767,7 @@ void mech_range(dbref player, void *data, char *buffer) {
                         ix0, iy0);
                 MapCoordToActualCoord(ix1, iy1, &x1, &y1);
                 MapCoordToActualCoord(ix0, iy0, &x0, &y0);
+
                 if (MapIsDark(map)) {
                     z1 = z0 = 0;
                 } else {
@@ -773,12 +866,18 @@ void mech_vector(dbref player, void *data, char *buffer) {
         } else if (argc == 2) {
 
             /* Range to X, Y */
-            ix1 = atoi(args[0]);
-            iy1 = atoi(args[1]);
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        iy1 < map->height)) {
+            if (!proper_parseint(args[0], &ix1) ||
+                    !proper_parseint(args[1], &iy1)) {
+
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1.0;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1.0;
+
             } else {
                 snprintf(buff, MBUF_SIZE, "Vector to  %d,%d is: ", ix1, iy1);
                 MapCoordToActualCoord(ix1, iy1, &x1, &y1);
@@ -788,14 +887,20 @@ void mech_vector(dbref player, void *data, char *buffer) {
         } else if (argc == 3) {
 
             iz0 = z0 / HEX_Z_SCALE;
-            ix1 = atoi(args[0]);
-            iy1 = atoi(args[1]);
-            iz1 = atoi(args[2]);
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        iy1 < map->height)) {
+            if (!proper_parseint(args[0], &ix1) ||
+                    !proper_parseint(args[1], &iy1) ||
+                    !proper_parseint(args[2], &iz1)) {
+
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1.0;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1.0;
+
             } else {
                 snprintf(buff, MBUF_SIZE, "Vector to  %d,%d,%d is: ", ix1, iy1, iz1);
                 MapCoordToActualCoord(ix1, iy1, &x1, &y1);
@@ -805,17 +910,22 @@ void mech_vector(dbref player, void *data, char *buffer) {
         } else if (argc == 4) {
 
             /* Range to X, Y from given X, Y */
-            ix0 = atoi(args[0]);
-            iy0 = atoi(args[1]);
-            ix1 = atoi(args[2]);
-            iy1 = atoi(args[3]);
+            if (!proper_parseint(args[0], &ix0) ||
+                    !proper_parseint(args[1], &iy0) ||
+                    !proper_parseint(args[2], &ix1) ||
+                    !proper_parseint(args[3], &iy1)) {
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        y1 < map->height && ix0 >= 0 &&
-                        ix0 <= map->width && iy0 >= 0 &&
-                        iy0 < map->height)) {
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height || 
+                    ix0 < 0 || ix0 >= map->width || 
+                    iy0 < 0 || iy0 >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1;
+
             } else {
                 snprintf(buff, MBUF_SIZE, "Vector to %d,%d from %d,%d is: ", ix1, iy1,
                         ix0, iy0);
@@ -827,19 +937,24 @@ void mech_vector(dbref player, void *data, char *buffer) {
 
         } else if (argc == 6) {
 
-            ix0 = atoi(args[0]);
-            iy0 = atoi(args[1]);
-            iz0 = atoi(args[2]);
-            ix1 = atoi(args[3]);
-            iy1 = atoi(args[4]);
-            iz1 = atoi(args[5]);
+            if (!proper_parseint(args[0], &ix0) ||
+                    !proper_parseint(args[1], &iy0) ||
+                    !proper_parseint(args[2], &iz0) ||
+                    !proper_parseint(args[3], &ix1) ||
+                    !proper_parseint(args[4], &iy1) ||
+                    !proper_parseint(args[5], &iz1)) {
 
-            if (!(ix1 >= 0 && ix1 < map->width && iy1 >= 0 &&
-                        y1 < map->height && ix0 >= 0 &&
-                        ix0 <= map->width && iy0 >= 0 &&
-                        iy0 < map->height)) {
                 notify(player, "Invalid map coordinates!");
                 x1 = y1 = -1;
+
+            } else if (ix1 < 0 || ix1 >= map->width || 
+                    iy1 < 0 || iy1 >= map->height || 
+                    ix0 < 0 || ix0 >= map->width || 
+                    iy0 < 0 || iy0 >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                x1 = y1 = -1;
+
             } else {
                 snprintf(buff, MBUF_SIZE, "Vector to %d,%d,%d from %d,%d,%d is: ", ix1,
                         iy1, iz1, ix0, iy0, iz0);
@@ -855,7 +970,7 @@ void mech_vector(dbref player, void *data, char *buffer) {
             x1 = y1 = -1;
         }
 
-        if (x1 != -1) {
+        if (x1 != -1.0) {
 
             /* range */
             actualrange = ActualFindRange(x0, y0, z0, x1, y1, z1);

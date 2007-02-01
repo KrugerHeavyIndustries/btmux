@@ -28,6 +28,7 @@ int mech_parseattributes(char *buffer, char **args, int maxargs);
 int proper_parseattributes(char *buffer, char **args, int max);
 int proper_explodearguments(char *buffer, char **args, int max);
 void proper_freearguments(char **args, int maxargs);
+int proper_parseint(char *string, int *integer);
 char *first_parseattribute(char *buffer);
 
 #endif				/* _P_GLUE_HCODE_H */

@@ -250,49 +250,80 @@ void mech_bootlegger(dbref player, void *data, char *buffer)
 	}
 }
 
-void mech_eta(dbref player, void *data, char *buffer)
-{
-	MECH *mech = (MECH *) data;
-	MAP *mech_map;
-	int argc, eta_x, eta_y;
-	float fx, fy, range;
-	int etahr, etamin;
-	char *args[3];
+void mech_eta(dbref player, void *data, char *buffer) {
 
-	cch(MECH_USUAL);
-	mech_map = getMap(mech->mapindex);
-	argc = mech_parseattributes(buffer, args, 2);
-	DOCHECK(argc == 1, "Invalid number of arguments!");
-	switch (argc) {
-	case 0:
-		DOCHECK(!(MechTargX(mech) >= 0 &&
-				  MechTarget(mech) < 0),
-				"You have invalid default target for ETA!");
-		eta_x = MechTargX(mech);
-		eta_y = MechTargY(mech);
-		break;
-	case 2:
-		eta_x = atoi(args[0]);
-		eta_y = atoi(args[1]);
-		break;
-	default:
-		notify(player, "Invalid arguments!");
-		return;
-	}
-	MapCoordToRealCoord(eta_x, eta_y, &fx, &fy);
-	range = FindRange(MechFX(mech), MechFY(mech), 0, fx, fy, 0);
-	if(fabs(MechSpeed(mech)) < 0.1)
-		mech_printf(mech, MECHALL,
-					"Range to hex (%d,%d) is %.1f.  ETA: Never, mech not moving.",
-					eta_x, eta_y, range);
-	else {
-		etamin = abs(range / (MechSpeed(mech) / KPH_PER_MP));
-		etahr = etamin / 60;
-		etamin = etamin % 60;
-		mech_printf(mech, MECHALL,
-					"Range to hex (%d,%d) is %.1f.  ETA: %.2d:%.2d.",
-					eta_x, eta_y, range, etahr, etamin);
-	}
+    MECH *mech = (MECH *) data;
+    MAP *map;
+
+    double fx, fy, range;
+
+    int eta, etahr, etamin;
+    int argc, eta_x, eta_y;
+
+    char *args[3];
+
+    if (!common_checks(player, mech, MECH_USUAL)) {
+        return;
+    }
+
+    map = getMap(mech->mapindex);
+
+    argc = proper_parseattributes(buffer, args, 2);
+
+    switch (argc) {
+        case 0:
+            if (!(MechTargX(mech) >= 0 && MechTarget(mech) < 0)) {
+                notify(player, "You have invalid default target for ETA!");
+                proper_freearguments(args, argc);
+                return;
+            }
+            eta_x = MechTargX(mech);
+            eta_y = MechTargY(mech);
+            break;
+
+        case 2:
+            if (!proper_parseint(args[0], &eta_x) ||
+                    !proper_parseint(args[1], &eta_y)) {
+
+                notify(player, "Invalid map coordinates!");
+                proper_freearguments(args, argc);
+                return;
+
+            } else if (eta_x < 0 || eta_x >= map->width ||
+                    eta_y < 0 || eta_y >= map->height) {
+
+                notify(player, "Invalid map coordinates!");
+                proper_freearguments(args, argc);
+                return;
+            }
+            break;
+
+        default:
+            notify(player, "Invalid arguments!");
+            proper_freearguments(args, argc);
+            return;
+    }
+
+    MapCoordToActualCoord(eta_x, eta_y, &fx, &fy);
+
+    range = ActualFindRange(MechRealX(mech), MechRealY(mech), 0, fx, fy, 0);
+
+    if (fabs(MechSpeed(mech)) < 0.1) {
+        mech_printf(mech, MECHALL,
+                "Range to hex (%d,%d) is %.1f.  ETA: Never, mech not moving.",
+                eta_x, eta_y, range);
+    } else {
+        /* ETA in seconds - convert range to meters and convert speed to
+         * Meters / Second, divide the two and you get seconds */
+        eta = (int) (range * HEX_SIZE) / (fabs(MechSpeed(mech)) * KPH_TO_MPS);
+        etahr = eta / 3600;
+        etamin = (eta % 3600) / 60;
+        mech_printf(mech, MECHALL,
+                "Range to hex (%d,%d) is %.1f.  ETA: %.2d:%.2d.",
+                eta_x, eta_y, range, etahr, etamin);
+    }
+
+    proper_freearguments(args, argc);
 }
 
 float MechCargoMaxSpeed(MECH * mech, float mspeed)
