@@ -728,42 +728,43 @@ float FindHexRange(float x0, float y0, float x1, float y1)
      - Focus, July 2002.
  */
 
-/* Convert floating-point cartesian coordinates into hex coordinates.
-
-   To do this, split the hex map into a repeatable region, which itself has
-   4 distinct regions, each part of a different hex. (See picture.) The hex
-   is normalized so that it is 1 unit high, and so is the repeatable region.
-   It works out that the repeatable region is exactly sqrt(3) wide, and can
-   be split up in six portions of each 1/6th sqrt(3), called 'alpha'. 
-   Section I is 2 alpha wide at the top and bottom, and 3 alpha in the
-   middle. Sections II and III are reversed, being 3 alpha at the top and
-   bottom of the region, and 2 alpha in the middle. Section IV is 1 alpha in
-   the middle and 0 at the top and bottom. The whole region encompasses
-   exactly two x-columns and one y-row. All calculations are now done in
-   'real' scale, to avoid rounding errors (isn't floating point arithmatic
-   fun ?)
-
-   Alpha also returns in the angle of the hexsides, that being 2*alpha
-   (flipped or rotated when necessary) making the calculations look
-   confusing. ANGLE_ALPHA is alpha (unscaled) for use in angle calculations.
-
-         ________________________
-        |        \              /|
-        |         \    III     / |
-        |          \          /  |
-        |           \________/ IV|
-        |    I      /        \   |
-        |          /   II     \  |
-        |         /            \ |
-        |________/______________\|
-
-   */
+/*
+ * Convert floating-point cartesian coordinates into hex coordinates.
+ *
+ * To do this, split the hex map into a repeatable region, which itself has
+ * 4 distinct regions, each part of a different hex. (See picture.) The hex
+ * is normalized so that it is 1 unit high, and so is the repeatable region.
+ * It works out that the repeatable region is exactly sqrt(3) wide, and can
+ * be split up in six portions of each 1/6th sqrt(3), called 'alpha'. 
+ * Section I is 2 alpha wide at the top and bottom, and 3 alpha in the
+ * middle. Sections II and III are reversed, being 4 alpha at the top and
+ * bottom of the region, and 2 alpha in the middle. Section IV is 1 alpha in
+ * the middle and 0 at the top and bottom. The whole region encompasses
+ * exactly two x-columns and one y-row. All calculations are now done in
+ * 'real' scale, to avoid rounding errors (isn't floating point arithmatic
+ * fun ?)
+ *
+ * Alpha also returns in the slope of the hexsides (2*alpha, flipped or rotated
+ * as necessary).  ANGLE_ALPHA is alpha (unscaled) for use in angle
+ * calculations.
+ *
+ *       ________________________
+ *      |        \              /|
+ *      |         \    III     / |
+ *      |          \          /  |
+ *      |           \________/ IV|
+ *      |    I      /        \   |
+ *      |          /   II     \  |
+ *      |         /            \ |
+ *      |________/______________\|
+ *
+ */
 
 /* Doubles for added accuracy; most calculations are doubles internally
    anyway, so we suffer little to no performance hit. */
 
-#define ALPHA 93.097730906827152	/* sqrt(3) * SCALEMAP */
-#define ROOT3 558.58638544096289	/* ROOT3 / 6 */
+#define ROOT3 558.58638544096289	/* sqrt(3) * SCALEMAP */
+#define ALPHA 93.097730906827152	/* ROOT3 / 6 */
 #define ANGLE_ALPHA 0.28867513459481287	/* sqrt(3) / 6 */
 #define FULL_Y (1 * SCALEMAP)
 #define HALF_Y (0.5 * FULL_Y)
@@ -844,28 +845,20 @@ void RealCoordToMapCoord(short *hex_x, short *hex_y, float cart_x,
 	*hex_y = y_count;
 }
 
-/* 
-   If hex_x is odd, it falls smack in the middle of area III, right at the
-   top edge of the repeatable box. Subtract one and multiply by one half
-   sqrt(3) (or 3 alpha) to get the repeatable box coordinate, then add 5
-   alpha for offset inside the box. The y coordinate is not modified.
-   
-   If hex_x is even, just multiply by 3 alpha to get the box coordinate, and
-   add 2 alpha for offset inside the box. The center is in the middle of the
-   box, so y is increased by half the box height.
-   
+/*
+ * Convert hex coordinates into centered floating-point cartesian coordinates.
+ *
+ * Properties of hex centers:
+ * 1) Spaced 3 ALPHA apart horizontally, starting from 2 ALPHA.
+ * 2) Spaced FULL_Y apart vertically.
+ * 3a) Even column centers (counting from 0) are vertically offset HALF_Y.
+ * 3b) Odd column centers (counting from 0) are not vertically offset.
  */
-
 void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x, float *cart_y)
 {
-
-	if(hex_x % 2) {
-		*cart_x = (hex_x - 1.0) * 3.0 * ALPHA + 5.0 * ALPHA;
-		*cart_y = hex_y * FULL_Y;
-	} else {
-		*cart_x = hex_x * 3.0 * ALPHA + 2.0 * ALPHA;
-		*cart_y = hex_y * FULL_Y + HALF_Y;
-	}
+	/* TODO: Can use some integer math if we're careful about overflow.  */
+	*cart_x = (2.f + 3.f * (float)hex_x) * ALPHA;
+	*cart_y = ((hex_x & 0x1) ? 0 : HALF_Y) + ((float)hex_y * FULL_Y);
 }
 
 /*
