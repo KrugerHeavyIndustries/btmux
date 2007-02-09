@@ -48,6 +48,10 @@ extern int cargoweight[];
 #include "failures.h"
 #endif
 
+/* TODO: We can use M_PI if exists, otherwise define something reasonable.  */
+#define DEG2RAD(d) ((float)(d) * (3.14159265f / 180.f))
+#define RAD2DEG(d) ((float)(d) * (180.f / 3.14159265f))
+
 extern dbref pilot_override;
 
 char *mechtypenames[CLASS_LAST + 1] = {
@@ -326,45 +330,42 @@ void CheckEdgeOfMap(MECH * mech)
 }
 int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1)
 {
-	float hyp, opp, deg;
+	float adj, opp, deg;
 
-	hyp = FindRange(x0, y0, z0, x1, y1, z1);
-	if(hyp <= 0.0)
-		return 0;
-	opp = FindRange(0, 0, 0, 0, 0, fabsf(z1 - z0));
-	deg = asin(opp / hyp) * (180 / PI);
+	adj = FindXYRange(x0, y0, x1, y1);
+	/*
+	 * XXX: Why can't opp be negative?  If z1 < z0, shouldn't Z-bearing
+	 * also be negative?  Also, why no range clamping on the value of deg?
+	 */
+	opp = (float)(1./SCALEMAP) * fabsf(z1 - z0);
+	/* TODO: Use atan2f(), if we've got it.  */
+	deg = RAD2DEG(atan2(opp, adj));
 	return ceilf(deg);
 }
 
 int FindBearing(float x0, float y0, float x1, float y1)
 {
-	float deltax, deltay;
-	float temp, rads;
+	const float dx = x1 - x0;
+	const float dy = y1 - y0;
+
+	float rads;
 	int degrees;
 
-	deltax = (x0 - x1);
-	deltay = (y0 - y1);
-	if(deltax == 0.0) {
-		/* Quick handling inserted here */
-		if(deltay > 0.0)
-			return 0;
-		else
-			return 180;
+	/*
+	 * atan2() doesn't need this check because we never actually divide by
+	 * dx, but we handle it specially for consistency with existing code.
+	 */
+	if (dx == 0.f) {
+		return (dy < 0.f) ? 0 : 180;
 	}
-	temp = deltay / deltax;
-	if(temp < 0.0)
-		temp = -temp;
-	rads = fatan(temp);
-	degrees = (int) (rads * 10.0 / TWOPIOVER360);
-	/* Round off degrees */
-	degrees = (degrees + 5) / 10;
-	if(deltax < 0.0 && deltay < 0.0)
-		degrees += 180;
-	else if(deltax < 0.0)
-		degrees = 180 - degrees;
-	else if(deltay < 0.0)
-		degrees = 360 - degrees;
-	return AcceptableDegree(degrees - 90);
+
+	/* TODO: Use atan2f(), if we've got it.  */
+	rads = (float)atan2(-dx, dy);
+
+	/* Round off degrees.  */
+	degrees = ((int)RAD2DEG(10.f * rads) + 5) / 10;
+
+	return AcceptableDegree(degrees + 180);
 }
 
 int InWeaponArc(MECH * mech, float x, float y)
@@ -674,48 +675,44 @@ int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
 	return 0;
 }
 
-void FindXY(float x0, float y0, int bearing, float range, float *x1,
-			float *y1)
+void FindXY(float x0, float y0, int bearing, float range, float *x1, float *y1)
 {
 	float xscale, correction;
 
+	/* XXX: Something to do with ranges with actual number of hexes? */
 	correction = (float) (bearing % 60) / 60.0;
 	if(correction > 0.5)
 		correction = 1.0 - correction;
 	correction = -correction * 2.0;	/* 0 - 1 correction */
 	xscale = (1.0 + XSCALE * correction) * SCALEMAP;
-	*y1 = y0 - cos((float) bearing * 6.283185307 / 360.0) * range * SCALEMAP;
-	*x1 = x0 + sin((float) bearing * 6.283185307 / 360.0) * range * xscale;
+
+	/* TODO: Use sinf()/cosf(), if we've got them.  */
+	*x1 = x0 + range * (float)sin(DEG2RAD(bearing)) * xscale;
+	*y1 = y0 - range * (float)cos(DEG2RAD(bearing)) * SCALEMAP;
 }
 
+/* Computes hex range between Cartesian (x0, y0, z0) and (x1, y1, z1).  */
 float FindRange(float x0, float y0, float z0, float x1, float y1, float z1)
-{								/* range in hexes */
-	float xscale;
-	float XYrange;
-	float Zrange;
+{
+	const float dx = x0 - x1;
+	const float dy = y0 - y1;
+	const float dz = z0 - z1;
 
-	xscale = 1.0 / SCALEMAP;
-	xscale = xscale * xscale;
-	XYrange =
-		sqrt(xscale * (x0 - x1) * (x0 - x1) + YSCALE2 * (y0 - y1) * (y0 -
-																	 y1));
-	Zrange = (z0 - z1) / SCALEMAP;
-	return sqrt(XYrange * XYrange + Zrange * Zrange);
+	/* TODO: Use sqrtf(), if we've got it.  */
+	return (float)(1./SCALEMAP) * (float)sqrt(dx * dx + dy * dy + dz * dz);
 }
 
+/* Computes hex range between Cartesian (x0, y0) and (x1, y1).  */
 float FindXYRange(float x0, float y0, float x1, float y1)
-{								/* range in hexes */
-	float xscale;
-	float XYrange;
+{
+	const float dx = x0 - x1;
+	const float dy = y0 - y1;
 
-	xscale = 1.0 / SCALEMAP;
-	xscale = xscale * xscale;
-	XYrange =
-		sqrt(xscale * (x0 - x1) * (x0 - x1) + YSCALE2 * (y0 - y1) * (y0 -
-																	 y1));
-	return XYrange;
+	/* TODO: Use sqrtf(), if we've got it.  */
+	return (float)(1./SCALEMAP) * (float)sqrt(dx * dx + dy * dy);
 }
 
+/* TODO: We could just make this a macro, right? Or substitute it away.  */
 float FindHexRange(float x0, float y0, float x1, float y1)
 {
 	return FindXYRange(x0, y0, x1, y1);
@@ -2028,11 +2025,18 @@ void mech_FillPartAmmo(MECH * mech, int loc, int pos)
 
 int AcceptableDegree(int d)
 {
-	while (d < 0)
-		d += 360;
-	while (d >= 360)
-		d -= 360;
-	return d;
+	/*
+	 * Silly billies, integer modulo (division) is still faster than loops.
+	 * And probably slightly faster than branches, too, but let's not worry
+	 * about that.
+	 */
+	if (d < 0) {
+		return (d % 360) + 360;
+	} else if (d >= 360) {
+		return (d % 360);
+	} else {
+		return d;
+	}
 }
 
 void MarkForLOSUpdate(MECH * mech)
