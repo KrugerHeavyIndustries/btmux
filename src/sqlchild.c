@@ -35,7 +35,6 @@
  * Correct handling of TEXT data type.
  */
 
-#define DEBUG_SQL
 #ifdef DEBUG_SQL
 #ifndef DEBUG
 #define DEBUG
@@ -629,34 +628,41 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 			sqlchild_child_abort_query(aqt, "result too long");
 			return;
 		}
+
 		if(delim != NULL) {
 			ptr += snprintf(ptr, eptr - ptr, aqt->rdelim);
 		}
+
 		for(i = 1; i <= fields; i++) {
 			if((eptr <= ptr) || ((eptr-ptr) < 10)) {
 				// XXX: quick hack. I should check my snprintf() return values.
 				sqlchild_child_abort_query(aqt, "result too long");
 				return;
 			}
+
 			if(fields == i)
 				delim = "";
 			else
 				delim = aqt->cdelim;
+
 			// XXX: handle error values form snprintf()
 			switch (dbi_result_get_field_type_idx(result, i)) {
 				case DBI_TYPE_INTEGER:
 					type_int = dbi_result_get_longlong_idx(result, i);
 					ptr += snprintf(ptr, eptr - ptr, "%lld%s", type_int, delim);
 					break;
+
 				case DBI_TYPE_DECIMAL:
 					type_fp = dbi_result_get_double_idx(result, i);
 					ptr += snprintf(ptr, eptr - ptr, "%f%s", type_fp, delim);
 					break;
+
 				case DBI_TYPE_STRING:
 					type_string = dbi_result_get_string_copy_idx(result, i);
 					ptr += snprintf(ptr, eptr - ptr, "%s%s", type_string, delim);
 					free(type_string);
 					break;
+
 				case DBI_TYPE_BINARY:
 					binary_length = dbi_result_get_field_length_idx(result, i);
 					if(binary_length) {
@@ -665,33 +671,39 @@ static void sqlchild_child_execute_query(struct query_state_t *aqt)
 							sqlchild_child_abort_query(aqt, "fucked.");
 							return;
 						}
-						binbuffer = sqlchild_sanitize_string(type_string,
-								binary_length);
+						binbuffer = sqlchild_sanitize_string(type_string, binary_length);
 						ptr += snprintf(ptr, eptr - ptr, "%s%s", binbuffer, delim);
 						free(binbuffer);
 					} else {
 						ptr += snprintf(ptr, eptr - ptr, "%s", delim);
 					}
+
 					break;
+
 				case DBI_TYPE_DATETIME:
 					type_time = dbi_result_get_datetime_idx(result, i);
 					localtime_r(&type_time, &tm);
 					asctime_r(&tm, time_buffer);
 					ptr += snprintf(ptr, eptr - ptr, "%s%s", time_buffer, delim);
 					break;
+
 				default:
 					sqlchild_child_abort_query(aqt, "unknown type");
 					return;
 			}
+
 			if((eptr - ptr) < 10) {
 				sqlchild_child_abort_query(aqt, "result too large");
 				return;
 			}
+
 		}
 	}
+
 	*ptr++ = '\0';
 	resp.n_chars = eptr - output_buffer;
 	eptr = ptr;
+	
 	// XXX: handle failure
 	write(aqt->fd, &resp, sizeof(struct query_response));
 	ptr = output_buffer;
