@@ -2137,7 +2137,7 @@ char *vtoldesc =
 
 char *bsuitdesc =
     "7 SQUAD STATUS\n"
-    "7  Member#      @01  @12  @23  @34  @45  @56  @67  @78\n"
+    "7   Member#      @01  @12  @23  @34  @45  @56  @67  @78\n"
     "7   Health      &:0 &:1 &:2 &:3 &:4 &:5 &:6 &:7\n"
     "7   Armor       &+0 &+1 &+2 &+3 &+4 &+5 &+6 &+7\n"
     "7\n0";
