@@ -863,8 +863,12 @@ typedef struct {
     float desired_speed;        /* Desired speed in KPH */
     float jumpspeed;            /* Jumping distance or current height in km */
 
-    double startrealx, startrealy;
-    double startrealz, endrealz;
+    /* To record start and stop locations for jump */
+    double realjumplength;
+    double startrealx;
+    double startrealy;
+    double startrealz;
+    double endrealz;
 
     int critstatus;             /* see key below */
     int critstatus2;            /* Starting to fill up. More CritStatus */

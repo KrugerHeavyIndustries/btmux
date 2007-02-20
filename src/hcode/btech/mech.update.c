@@ -153,8 +153,10 @@ int collision_check(MECH * mech, int mode, int le, int lt)
 void CheckNavalHeight(MECH * mech, int oz);
 
 /*
- * Complete rewrite of move_mech that uses
+ * Rewrite of move_mech that uses
  * the new real coord system
+ *
+ * Dany - 02/2007
  */
 void new_move_mech(MECH *mech, MAP *map) {
 
@@ -163,6 +165,9 @@ void new_move_mech(MECH *mech, MAP *map) {
     double newx, newy, deltax, deltay;
     double charge_distance;
     double jump_position;
+    double remaining_jump_distance;
+    double jump_relative_position;
+    double destination_x, destination_y;
 
     int x, y, update_z;
     int last_z;
@@ -216,26 +221,95 @@ void new_move_mech(MECH *mech, MAP *map) {
 
     if (Jumping(mech)) {
 
+        /* Flying through the air ! */
+
         NewFindComponents((double) (KPH_TO_MPS * JumpSpeed(mech, map) *
                     MAPMOVEMOD(map)), MechJumpHeading(mech),
                 &newx, &newy);
         MechRealX(mech) += newx;
         MechRealY(mech) += newy;
 
-        jump_position = sqrt(((MechRealX(mech) - MechStartRealX(mech)) * 
-                    (MechRealX(mech) - MechStartRealX(mech))) +
-                ((MechRealY(mech) - MechStartRealY(mech)) *
-                 (MechRealY(mech) - MechStartRealY(mech))));
+        jump_position = length_hypotenuse((MechRealX(mech) - MechStartRealX(mech)),
+                (MechRealY(mech) - MechStartRealY(mech)));
 
         if (mudconf.btech_newjump) {
 
+            remaining_jump_distance = MechRealJumpLength(mech) - jump_position;
+
+            if (remaining_jump_distance < 0.0) {
+                remaining_jump_distance = 0.0;
+            }
+
+            /* New flight path: Make a direct line from the origin to
+               destination, and imagine a 1-x^4 in relation to the 0 as
+               the line. y=1 = JumpTop offset, x=0 = middle of path,
+               x=-1 = beginning, x=1 = end */
+
+            /* Get relative x position for our jump */
+            jump_relative_position = (jump_position / MechRealJumpLength(mech) - 0.5) * 2.0;
+
+            /* The parobolas - gives a offset in Z units (5 Z = 1 Hex) */
+            if (MechJumpTop(mech) >= (1 + JumpSpeedMP(mech, map))) {
+                jump_relative_position = (1.0 - (jump_relative_position * 
+                            jump_relative_position)) * MechJumpTop(mech);
+            } else {
+                jump_relative_position = (1.0 - (jump_relative_position *
+                            jump_relative_position * jump_relative_position *
+                            jump_relative_position)) * MechJumpTop(mech);
+            }
+
+            /* Calc Mech's Z location using the relative position as well
+             * as a weighted height based on start and end positions */
+            MechRealZ(mech) = (remaining_jump_distance * MechStartRealZ(mech) +
+                    jump_position * MechEndRealZ(mech)) / MechRealJumpLength(mech) +
+                jump_relative_position * HEX_Z_SCALE;
+
         } else {
 
+            /* Old jumpcode not sure if it even works anymore - Dany */
+            MechRealZ(mech) = ((4.0 * JumpSpeedMP(mech, map) * HEX_Z_SCALE) /
+                    (MechRealJumpLength(mech) * MechRealJumpLength(mech))) *
+                jump_position * (MechRealJumpLength(mech) - jump_position) +
+                MechStartRealZ(mech) + jump_position * (MechEndRealZ(mech) -
+                        MechStartRealZ(mech)) / (MechRealJumpLength(mech) / HEX_SIZE);
         }
 
-    }
+        MechZ(mech) = (int) round(MechRealZ(mech) / HEX_Z_SCALE);
 
-    if (fabs(MechSpeed(mech)) > 0.0) {
+        /* Did we enter the target hex? */
+        if ((MechX(mech) == MechGoingX(mech)) &&
+                (MechY(mech) == MechGoingY(mech))) {
+
+            MapCoordToActualCoord(MechX(mech), MechY(mech), 
+                    &destination_x, &destination_y);
+
+            if (mudconf.btech_newjump) {
+                
+                /* Basicly check to see if we've jumped past
+                 * the center of the destination hex - if so land */
+                if (length_hypotenuse(destination_x - MechStartRealX(mech),
+                            destination_y - MechStartRealY(mech)) <=
+                        length_hypotenuse(MechRealX(mech) - MechStartRealX(mech),
+                            MechRealY(mech) - MechStartRealY(mech))) {
+
+                    LandMech(mech);
+                    MechRealX(mech) = destination_x;
+                    MechRealY(mech) = destination_y;
+                }
+
+            } else {
+
+                /* Old jump code would just auto land the unit once its
+                 * in the hex */
+                LandMech(mech);
+                MechRealX(mech) = destination_x;
+                MechRealY(mech) = destination_y;
+            }
+        }
+
+    } else if (fabs(MechSpeed(mech)) > 0.0) {
+
+        /* Ok not jumping but we're going somewhere */
 
         /* Hack to make it a double till we update MechSpeed to a
          * double */

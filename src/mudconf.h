@@ -153,6 +153,8 @@ struct confdata {
     int btech_perunit_xpmod;	/* Allow per unit xp modifications */
     int btech_newjump;          /* use the new (well old) jump code instead of the old (very old)
                                    jump code */
+    int btech_bridge_collision; /* Do we crash into a bridge if we land on it? */
+
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

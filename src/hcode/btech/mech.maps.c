@@ -47,8 +47,8 @@ void mech_findcenter(dbref player, void *data, char *buffer) {
 
     notify_printf(player, "Current hex: (%d,%d,%d)\tRange to center: %.2f\t"
             "Bearing to center: %d", x, y, MechZ(mech),
-            ActualFindXYRange(fx, fy, MechFX(mech), MechFY(mech)),
-            ActualFindBearing(MechFX(mech), MechFY(mech), fx, fy));
+            ActualFindXYRange(fx, fy, MechRealX(mech), MechRealY(mech)),
+            ActualFindBearing(MechRealX(mech), MechRealY(mech), fx, fy));
 }
 
 static int parse_tacargs(dbref player, MECH * mech, char **args, int argc,

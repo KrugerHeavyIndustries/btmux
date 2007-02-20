@@ -120,9 +120,11 @@
 #define MechFX(a)		(a)->pd.fx
 #define MechFY(a)		(a)->pd.fy
 #define MechFZ(a)		(a)->pd.fz
+
 #define MechRealX(a)        (a)->pd.real_x
 #define MechRealY(a)        (a)->pd.real_y
 #define MechRealZ(a)        (a)->pd.real_z
+
 #define MechFacing(a)		(FSIM2SHO((a)->pd.facing))
 #define MechRFacing(a)	 	(a)->pd.facing
 #define SetRFacing(a,b)	 	MechRFacing(a) = (b)
@@ -205,9 +207,11 @@
 #define MechStartFY(a)	 	(a)->rd.startfy
 #define MechStartFZ(a)	 	(a)->rd.startfz
 
+#define MechRealJumpLength(a)   (a)->rd.realjumplength
 #define MechStartRealX(a)   (a)->rd.startrealx
 #define MechStartRealY(a)   (a)->rd.startrealy
 #define MechStartRealZ(a)   (a)->rd.startrealz
+#define MechEndRealZ(a)     (a)->rd.endrealz
 
 #define MechStartSpin(a)	(a)->rd.sspin
 #define MechStatus(a)       (a)->rd.status

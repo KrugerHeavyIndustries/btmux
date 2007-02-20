@@ -1140,10 +1140,13 @@ void mech_jump(dbref player, void *data, char *buffer) {
     MECH *mech = (MECH *) data;
     MECH *target = NULL;
     MAP *map;
+
     char *args[3];
     char targetID[2];
+
     double range = 0.0;
     double realx, realy;
+
     int argc;
     int mapx, mapy;
     int bearing;
@@ -1174,7 +1177,6 @@ void mech_jump(dbref player, void *data, char *buffer) {
     DOCHECK(Standing(mech), "You haven't finished standing up yet.");
     DOCHECK(fabs(MechJumpSpeed(mech)) <= 0.0,
             "This mech doesn't have jump jets!");
-    argc = mech_parseattributes(buffer, args, 3);
     DOCHECK(Dumping(mech), "You can not jump while dumping ammo!");
     DOCHECK(UnJammingAmmo(mech),
             "You can not jump while unjamming your weapon!");
@@ -1200,20 +1202,31 @@ void mech_jump(dbref player, void *data, char *buffer) {
     if (doJettisonChecks(mech))
         return;
 
-    DOCHECK(argc > 2, "Too many arguments to JUMP function!");
-
     /* By default no DFA */
     MechStatus(mech) &= ~DFA_ATTACK;
+
+    argc = proper_explodearguments(buffer, args, 3);
+    if (argc > 2) {
+        notify(player, "Too many arguments to JUMP function!");
+        proper_freearguments(args, argc);
+        return;
+    }
 
     switch (argc) {
         case 0:
             /* DFA current target... */
 
-            DOCHECK(MechType(mech) != CLASS_MECH,
-                    "Only mechs can do Death From Above attacks!");
+            if (MechType(mech) != CLASS_MECH) {
+                notify(player, "Only mechs can do Death From Above attacks!");
+                proper_freearguments(args, argc);
+                return;
+            }
 
-            target = getMech(MechTarget(mech));
-            DOCHECK(!target, "Invalid Target!");
+            if (!(target = getMech(MechTarget(mech)))) {
+                notify(player, "Invalid Target!");
+                proper_freearguments(args, argc);
+                return;
+            }
 
             range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
                     MechRealX(target), MechRealY(target), MechRealZ(target));
@@ -1223,8 +1236,12 @@ void mech_jump(dbref player, void *data, char *buffer) {
                         MechY(target), range),
                     "Target is not in line of sight!");
 */
-            DOCHECK(MechType(target) == CLASS_MW,
-                    "Even you can't aim your jump well enough to squish that!");
+            if (MechType(target) == CLASS_MW) {
+                notify(player, "Even you can't aim your jump well enough to squish that!");
+                proper_freearguments(args, argc);
+                return;
+            }
+
             mapx = MechX(target);
             mapy = MechY(target);
             MechDFATarget(mech) = MechTarget(mech);
@@ -1232,14 +1249,20 @@ void mech_jump(dbref player, void *data, char *buffer) {
 
         case 1:
             /* Jump Target */
-            DOCHECK(MechType(mech) != CLASS_MECH,
-                    "Only mechs can do Death From Above attacks!");
+            if (MechType(mech) != CLASS_MECH) {
+                notify(player, "Only mechs can do Death From Above attacks!");
+                proper_freearguments(args, argc);
+                return;
+            }
 
             targetID[0] = args[0][0];
             targetID[1] = args[0][1];
-            target = getMech(FindTargetDBREFFromMapNumber(mech, targetID));
 
-            DOCHECK(!target, "Target is not in line of sight!");
+            if (!(target = getMech(FindTargetDBREFFromMapNumber(mech, targetID)))) {
+                notify(player, "Target is not in line of sight!");
+                proper_freearguments(args, argc);
+                return;
+            }
 
             range = ActualFindRange(MechRealX(mech), MechRealY(mech), MechRealZ(mech),
                     MechRealX(target), MechRealY(target), MechRealZ(target));
@@ -1249,29 +1272,58 @@ void mech_jump(dbref player, void *data, char *buffer) {
                         MechY(tempMech), range),
                     "Target is not in line of sight!");
 */
-            DOCHECK(MechType(target) == CLASS_MW,
-                    "Even you can't aim your jump well enough to squish that!");
+            if (MechType(target) == CLASS_MW) {
+                notify(player, "Even you can't aim your jump well enough to squish that!");
+                proper_freearguments(args, argc);
+                return;
+            }
+
             mapx = MechX(target);
             mapy = MechY(target);
             MechDFATarget(mech) = target->mynum;
             break;
 
         case 2:
-            bearing = atoi(args[0]);
-            range = atof(args[1]);
+            if (!proper_parseint(args[0], &bearing)) {
+                notify(player, "Invalid bearing");
+                proper_freearguments(args, argc);
+                return;
+            }
+
+            if (!proper_parsedouble(args[1], &range)) {
+                notify(player, "Invalid range");
+                proper_freearguments(args, argc);
+                return;
+            }
+
             ActualFindXY(MechRealX(mech), MechRealY(mech), bearing, range,
                     &realx, &realy);
 
             /* This is so we are jumping to the center of a hex */
             /* and the bearing jives with the target hex */
             ActualCoordToMapCoord(&mapx, &mapy, realx, realy);
+
+            /* Re calc bearing and range to center of target hex */
+            MapCoordToActualCoord(mapx, mapy, &realx, &realy);
+            bearing = ActualFindBearing(MechRealX(mech), MechRealY(mech),
+                    realx, realy);
+            range = ActualFindXYRange(MechRealX(mech), MechRealY(mech),
+                    realx, realy);
             break;
     }
 
-    DOCHECK((mapx >= map->width) || (mapy >= map->height) ||
-            (mapx < 0) || (mapy < 0), "That would take you off the map!");
-    DOCHECK(MechX(mech) == mapx &&
-            MechY(mech) == mapy, "You're already in the target hex.");
+    if ((mapx >= map->width) || (mapy >= map->height) ||
+            (mapx < 0) || (mapy < 0)) {
+        notify(player, "That would take you off the map!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    if (MechX(mech) == mapx && MechY(mech) == mapy) {
+        notify(player, "You're already in the target hex.");
+        proper_freearguments(args, argc);
+        return;
+    }
 
     sz = MechZ(mech);
     if (GetRTerrain(map, mapx, mapy) == ICE) {
@@ -1281,7 +1333,11 @@ void mech_jump(dbref player, void *data, char *buffer) {
     }
 
     jps = JumpSpeedMP(mech, map);
-    DOCHECK(range > jps, "That target is out of range!");
+    if (range > jps) {
+        notify(player, "That target is out of range!");
+        proper_freearguments(args, argc);
+        return;
+    }
 
     if (MechType(mech) != CLASS_BSUIT && target) {
         MechStatus(mech) |= DFA_ATTACK;
@@ -1298,11 +1354,23 @@ void mech_jump(dbref player, void *data, char *buffer) {
     */
 
     MechJumpTop(mech) = MIN(jps + 1 - range / 3, 2 * range + 2);
-    DOCHECK((tz - sz) > jps,
-            "That target's high for you to reach with a single jump!");
-    DOCHECK((sz - tz) > jps,
-            "That target's low for you to reach with a single jump!");
-    DOCHECK(sz < -1, "Glub glub glub.");
+    if ((tz - sz) > jps) {
+        notify(player, "That target's high for you to reach with a single jump!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    if ((sz - tz) > jps) {
+        notify(player, "That target's low for you to reach with a single jump!");
+        proper_freearguments(args, argc);
+        return;
+    }
+
+    if (sz < -1) {
+        notify(player, "Glub glub glub.");
+        proper_freearguments(args, argc);
+        return;
+    }
 
     MapCoordToActualCoord(mapx, mapy, &realx, &realy);
     bearing = ActualFindBearing(MechRealX(mech), MechRealY(mech),
@@ -1312,24 +1380,37 @@ void mech_jump(dbref player, void *data, char *buffer) {
     MechCocoon(mech) = 0;
     MechJumpHeading(mech) = bearing;
     MechStatus(mech) |= JUMPING;
+
     MechStartFX(mech) = MechFX(mech);
     MechStartFY(mech) = MechFY(mech);
     MechStartFZ(mech) = MechFZ(mech);
-    MechJumpLength(mech) =
-        length_hypotenuse((double) (realx - MechStartFX(mech)),
-                (double) (realy - MechStartFY(mech)));
+
+    MechStartRealX(mech) = MechRealX(mech);
+    MechStartRealY(mech) = MechRealY(mech);
+    MechStartRealZ(mech) = MechRealZ(mech);
+
+    MechRealJumpLength(mech) =
+        length_hypotenuse((realx - MechStartRealX(mech)),
+                (realy - MechStartRealY(mech)));
+
     MechGoingX(mech) = mapx;
     MechGoingY(mech) = mapy;
-    MechEndFZ(mech) = ZSCALE * tz;
+
+    MechEndRealZ(mech) = tz * HEX_Z_SCALE;
+
     MechSpeed(mech) = 0.0;
-    if(MechStatus(mech) & DFA_ATTACK)
+
+    if (MechStatus(mech) & DFA_ATTACK) {
         mech_notify(mech, MECHALL,
                 "You engage your jump jets for a Death From Above attack!");
-    else
+    } else {
         mech_notify(mech, MECHALL, "You engage your jump jets.");
+    }
+
     MechSwarmTarget(mech) = -1;
     MechLOSBroadcast(mech, "engages jumpjets!");
-    MECHEVENT(mech, EVENT_JUMP, mech_jump_event, JUMP_TICK, 0);
+
+    proper_freearguments(args, argc);
 }
 
 static void mech_hulldown_event(MUXEVENT * e)
@@ -1634,6 +1715,7 @@ void LandMech(MECH * mech)
 
 		/* Better reset the FZ */
 		MechElev(mech) = GetElevation(mech_map, MechX(mech), MechY(mech));
+        MechRealZ(mech) = MechElev(mech) * HEX_Z_SCALE;
 		MechZ(mech) = MechElev(mech) - 1;
 		MechFZ(mech) = ZSCALE * MechZ(mech);
 		DropSetElevation(mech, 1);

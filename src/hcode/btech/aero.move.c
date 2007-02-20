@@ -417,13 +417,13 @@ void aero_UpdateHeading(MECH * mech)
 		UpdateHeading(mech);
 }
 
-double length_hypotenuse(double x, double y)
-{
-	if(x < 0)
-		x = -x;
-	if(y < 0)
-		y = -y;
-	return sqrt(x * x + y * y);
+double length_hypotenuse(double x, double y) {
+
+    double length;
+
+    length = sqrt((x * x) + (y * y));
+
+    return length;
 }
 
 double my_sqrtm(double x, double y)

@@ -251,15 +251,15 @@ void proper_freearguments(char **args, int maxargs) {
 }
 
 /*
- * Function to properly read a string and convert it into ints
+ * Function to properly read a string and convert it into an int
  * with error checking */
-int proper_parseint(char *string, int *integer) {
+int proper_parseint(char *string, int *value) {
 
-    long value;
+    long temp;
     char *endptr;
 
     errno = 0;
-    value = strtol(string, &endptr, 10);
+    temp = strtol(string, &endptr, 10);
 
     switch (errno) {
         case ERANGE:
@@ -275,7 +275,7 @@ int proper_parseint(char *string, int *integer) {
                 return 0;
             } else {
                 /* got a good value so set it */
-                *integer = (int) value;
+                *value = (int) temp;
                 return 1;
             }
             break;
@@ -287,6 +287,42 @@ int proper_parseint(char *string, int *integer) {
 
 }
 
+/*
+ * Function to properly read a string and convert it into an double
+ * with error checking */
+int proper_parsedouble(char *string, double *value) {
+
+    double temp;
+    char *endptr;
+
+    errno = 0;
+    temp = strtod(string, &endptr);
+
+    switch (errno) {
+        case ERANGE:
+            /* Value outside of range */
+            return 0;
+            break;
+        case 0:
+            if (endptr == string) {
+                /* Nothing done */
+                return 0;
+            } else if (*endptr != '\0') {
+                /* string is not just numbers, so bad string */
+                return 0;
+            } else {
+                /* got a good value so set it */
+                *value = temp;
+                return 1;
+            }
+            break;
+        default:
+            /* Bad errno - return */
+            return 0;
+            break;
+    }
+
+}
 int mech_parseattributes(char *buffer, char **args, int maxargs)
 {
 	int count = 0;
