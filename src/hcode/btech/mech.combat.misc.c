@@ -302,7 +302,7 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	SAFE_DOLIST(a,b,Contents(target->mynum))
 		if(IsMech(a) && In_Character(a)) {
 			ctarget = getMech(a);
-			mech_notify(ctarget, MECHALL, "Due to your transports destruction, your unit is destroyed!");
+			mech_notify(ctarget, MECHALL, "Due to your transport's destruction, your unit has been destroyed!");
 			mech_udisembark(a, ctarget, "");
 			DestroyMech(ctarget,mech,0);
 		}
