@@ -1423,6 +1423,7 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 {
 	char *args[4];
+	char location[20];
 	int argc;
 	int index;
 	int itemcode;
@@ -1514,12 +1515,13 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		MechSpecials2(mech) |= BLOODHOUND_PROBE_TECH;
 		notify(player, "Bloodhound Active Probe added to 'Mech.");
 		break;
-	case TARGETING_COMPUTER:
+	case TARGETING_COMPUTER:	
 		MechSpecials2(mech) |= TCOMP_TECH;
 		notify(player, "Targeting Computer added to 'Mech.");
 		break;
-	}
-	notify(player, "Critical slot filled.");
+	}	
+	ArmorStringFromIndex(index, location, MechType(mech), MechMove(mech));
+	notify_printf(player, "Critical slot %s (%d) filled.", location, subsect+1);
 }
 
 extern char *specials[];
