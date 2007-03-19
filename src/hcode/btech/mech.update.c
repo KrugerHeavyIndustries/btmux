@@ -1555,7 +1555,7 @@ int recycle_weaponry(MECH * mech)
 		for(i = 0; i < count; i++) {
 			if(WpnIsRecycling(mech, loop, crit[i])) {
 				/* Immediate recycle if its destroyed */
-				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED)
+				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED && SectIsDestroyed(mech, loop))
 					GetPartData(mech, loop, crit[i]) = 0;
 				if(diff >= GetPartData(mech, loop, crit[i])) {
 					GetPartData(mech, loop, crit[i]) = 0;
