@@ -2057,7 +2057,11 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				if((Special2I(critType) == HAND_OR_FOOT_ACTUATOR) &&
 				   (MechSections(mech)[hitloc].specials & CARRYING_CLUB))
 					DropClub(mech);
-
+				if(MechCarrying(mech)) {
+					mech_notify(mech, MECHALL,"The hit causes your tow line to let go!");
+					MechLOSBroadcast(mech,"'s tow lines release and flap freely behind it!");
+					mech_dropoff(GOD, mech, "");
+				}		
 				NormalizeLocActuatorCrits(wounded, hitloc);
 			} else if(tLocIsLeg) {
 				mech_notify(wounded, MECHALL,
