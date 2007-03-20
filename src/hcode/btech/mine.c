@@ -271,12 +271,14 @@ void possibly_remove_mines(MECH * mech, int x, int y)
 
 	/* Ok, we're lazy and just decide that roll of <= 4 removes
 	   all traces of mines in the hex */
-	if(Roll() <= 4) {
+	/* For now, we are commenting this out. We need a better way to handle mines
+	 * Well, just trigger mines really. Frontiers uses them for Map triggers */
+/*	if(Roll() <= 4) {
 		if(mapobj_del(map, x, y, TYPE_MINE)) {
-			/* There _was_ something to clear.. no message, we're evil */
 			recalculate_minefields(map);
 		}
 	}
+*/
 }
 
 /* for now, just put the hexes themselves ; vibras should have larger radius */
