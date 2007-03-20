@@ -820,18 +820,16 @@ void mech_sendchannel(dbref player, void *data, char *buffer)
 	explode_mines(mech, mech->freq[chn]);
 }
 
-#define number(x,y) (rand()%(y-x+1)+x)
-
 static void do_scramble(char *buffo, int ch, int bth)
 {
 	int i;
 
 	for(i = 0; buffo[i]; i++) {
-		if(number(1, 100) > ch && Roll() < (bth + 5)) {
-			if(number(1, 2) == 1)
-				buffo[i] -= number(1, 10);
+		if(Number(1, 100) > ch && Roll() < (bth + 5)) {
+			if(Number(1, 2) == 1)
+				buffo[i] -= Number(1, 10);
 			else
-				buffo[i] += number(1, 10);
+				buffo[i] += Number(1, 10);
 		}
 		buffo[i] = (unsigned char) BOUNDED(33, buffo[i], 255);
 	}

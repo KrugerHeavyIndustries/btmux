@@ -279,7 +279,7 @@ int char_rolld6(int num)
 	int i, total = 0;
 
 	for(i = 0; i < num; i++)
-		total = total + (random() % 6) + 1;
+		total = total + Number(1, 6);
 	return (total);
 }
 

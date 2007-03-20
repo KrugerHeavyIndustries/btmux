@@ -50,15 +50,8 @@ if (a) { safe_tprintf_str(buff, bufc, b); return; }
 #endif
 
 /* Dice-rolling function used everywhere converted to a macro */
-/* Shift the random number to get rid of the usually not-very-random
-   lower order bits. Because Number() is used with a wide range of numbers,
-   as high as 5000 at least, we do a little dance to determine the amount
-   to shift */
-#define Number(a,b) ((a) + (random() >> ( \
-    ((b) - (a)) > 16777216 ? 0 : \
-    ((b) - (a)) > 65536 ? 8 : \
-    ((b) - (a)) > 4096 ? 16 : 20 \
-  )) % ((b)-(a)+1))
+/* And now converted back to a function.  */
+extern inline long int Number(long int, long int);
 
 #define skipws(name)     while (name && *name && isspace(*name)) name++
 #define readint(to,from) \

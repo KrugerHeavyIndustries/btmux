@@ -33,6 +33,7 @@
 #include "p.mech.los.h"
 #include "p.aero.bomb.h"
 #include "autopilot.h"
+#include "mt19937ar.h"
 
 #ifdef BT_ADVANCED_ECON
 #include "p.mech.tech.do.h"
@@ -66,7 +67,7 @@ const char *mechtypename(MECH * foo)
 int MNumber(MECH * mech, int low, int high)
 {
 	if((muxevent_tick / RANDOM_TICK) != MechLastRndU(mech)) {
-		MechRnd(mech) = random();
+		MechRnd(mech) = (int)genrand_int31();
 		MechLastRndU(mech) = muxevent_tick / RANDOM_TICK;
 	}
 	return (low + MechRnd(mech) % (high - low + 1));
@@ -854,8 +855,9 @@ void RealCoordToMapCoord(short *hex_x, short *hex_y, float cart_x,
 void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x, float *cart_y)
 {
 	/* TODO: Can use some integer math if we're careful about overflow.  */
+	/* Use % 2 for theoretical portability to non-2's-complement archs.  */
 	*cart_x = (2.f + 3.f * (float)hex_x) * ALPHA;
-	*cart_y = ((hex_x & 0x1) ? 0 : HALF_Y) + ((float)hex_y * FULL_Y);
+	*cart_y = ((hex_x % 2) ? 0 : HALF_Y) + ((float)hex_y * FULL_Y);
 }
 
 /*
