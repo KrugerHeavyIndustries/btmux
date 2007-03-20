@@ -679,7 +679,7 @@ void clear_hex(MECH * mech, int x, int y, int meant)
 		mech_printf(mech, MECHALL, "You clear %d,%d.", x, y);
 	} else {
 		MechLOSBroadcast(mech, tprintf("'s stray shot clears %d,%d!", x, y));
-		mech_printf(mech, MECHALL, "You accidentally clear the %d,%d!", x, y);
+		mech_printf(mech, MECHALL, "You accidentally clear %d,%d!", x, y);
 	}
 }
 
