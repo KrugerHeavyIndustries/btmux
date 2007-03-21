@@ -140,7 +140,7 @@ void cf_init(void)
 	mudconf.btech_glancing_blows = 1;
 	mudconf.btech_inferno_penalty = 0;
 	mudconf.btech_perunit_xpmod = 1;
-	mudconf.btech_tsm_tow_bonus = 0;
+	mudconf.btech_tsm_tow_bonus = 1;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
