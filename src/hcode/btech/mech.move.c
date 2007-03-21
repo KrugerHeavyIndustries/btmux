@@ -367,7 +367,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 				if(MechSpecials(mech) & SALVAGE_TECH)
 					lugged = lugged / 2;
 				if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-				   (MechHeat(mech) >= 9.))
+				   (MechHeat(mech) >= 9.) && mudconf.btech_tsm_tow_bonus) 
 					lugged = lugged / 2;
 
 				if(MechSpecials2(mech) & CARRIER_TECH)
