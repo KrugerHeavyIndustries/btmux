@@ -345,6 +345,15 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 											  && MechStatus2(mech) & SPRINTING
 											  ? 0.5 : 0.0));
 
+		if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) && (MechHeat(mech) >= 9.)) 
+			if((MechStatus2(mech) & SPRINTING)) {
+				if(mudconf.btech_tsm_sprint_bonus)
+					mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+				
+			} else {
+				mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+			}
+
 		/* if the player has speed demon give him his boost in speed */
 		if(!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING
 		   && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
@@ -834,8 +843,6 @@ void mech_speed(dbref player, void *data, char *buffer)
 
 	maxspeed = maxspeed > 0.0 ? maxspeed : 0.0;
 
-	if((MechHeat(mech) >= 9.) && (MechSpecials(mech) & TRIPLE_MYOMER_TECH))
-		maxspeed = ceil((rint((maxspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
 
 	/*   if (MechStatus(mech) & MASC_ENABLED) maxspeed = (4. / 3. ) * maxspeed; */
 	walkspeed = WalkingSpeed(maxspeed);

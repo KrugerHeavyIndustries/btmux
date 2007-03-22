@@ -152,6 +152,7 @@ struct confdata {
     int btech_inferno_penalty;    /* FASA Inferno Ammo penalty (+30 heat, ammo explode) */
     int btech_perunit_xpmod;	/* Allow per unit xp modifications */
     int btech_tsm_tow_bonus;    /* Give bonus to TSM units when towing, similiar to salvage tech (1=Yes, 0=No) */
+    int btech_tsm_sprint_bonus; /* 0= sprint and tsm don't stack 1= stack sprint and tsm */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif
