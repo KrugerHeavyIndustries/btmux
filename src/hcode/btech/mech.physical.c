@@ -1257,7 +1257,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	baseToHit += ((MechType(target) == CLASS_BSUIT) &&
 				  (AttackType == PA_KICK)) ? 3 : 0;
 
-#ifdef MOVEMENT_MODES
+#ifdef BT_MOVEMENT_MODES
 	// A dodging unit is +2, requires maneuvering_ace.
 	if(Dodging(target))
 		baseToHit += 2;
