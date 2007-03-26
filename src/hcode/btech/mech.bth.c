@@ -347,7 +347,18 @@ int FindNormalBTH(MECH * mech,
 		if(wAmmoMode & AC_PRECISION_MODE)
 			wTargMoveMod = MAX(wTargMoveMod -= 2, 0);
 
-		BTHADD("TargetMove", wTargMoveMod);
+		/* We ignore Movemod if the weapon is in sguided AND its tagged by a friendly TAG AND movemod > 0 */
+		if((wAmmoMode & SGUIDED_MODE) && TaggedBy(target)) {
+			if((MechTeam(getMech(TaggedBy(target))) == MechTeam(mech))) {
+				if(wTargMoveMod < 0)
+					BTHADD("TargetMove (SG Tag -MoveMod)", wTargMoveMod);
+			} else {
+				BTHADD("TargetMove (SG No Tag)", wTargMoveMod);
+			}
+		} else {
+			BTHADD("TargetMove", wTargMoveMod);
+		}
+
 
 		/* Add in the terrain modifier */
 		if(indirectFire >= 1000) {

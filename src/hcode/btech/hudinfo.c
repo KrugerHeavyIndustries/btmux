@@ -220,7 +220,7 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 			MechFacing(mech), MechDesiredFacing(mech),
 			MechSpeed(mech), MechDesiredSpeed(mech),
 			(int) (10 * MechPlusHeat(mech)),
-			(int) (10. * MechActiveNumsinks(mech)),
+			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
 			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy);
 
@@ -1171,8 +1171,18 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 	ex = MIN(map->width, cx + LRS_DISPLAY_WIDTH / 2);
 
 	if(lostactical || MapIsDark(map) || (MechType(mech) == CLASS_MW &&
-										 mudconf.btech_mw_losmap))
-		losmap = CalculateLOSMap(map, mech, sx, sy, ex - sx, ey - sy);
+										 mudconf.btech_mw_losmap)) {
+		/* If height = 1, ey = sy, and ey - sy = 0, which blows up.
+		 * What we want is empty (no map lines) output, like for the
+		 * regular tactical map.  A simple way to do that is just not
+		 * to calculate the LoS map at all.
+		 *
+		 * TODO: This should probably be fixed for real somehow.
+		 */
+		if (height > 1) {
+			losmap = CalculateLOSMap(map, mech, sx, sy, ex - sx, ey - sy);
+		}
+	}
 
 	if(!mudconf.hudinfo_show_mapinfo ||
 	   (mudconf.hudinfo_show_mapinfo == 1 && In_Character(map->mynum))) {

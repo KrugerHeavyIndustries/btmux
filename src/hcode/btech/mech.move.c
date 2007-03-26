@@ -376,6 +376,15 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 											  && MechStatus2(mech) & SPRINTING
 											  ? 0.5 : 0.0));
 
+		if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) && (MechHeat(mech) >= 9.)) 
+			if((MechStatus2(mech) & SPRINTING)) {
+				if(mudconf.btech_tsm_sprint_bonus)
+					mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+				
+			} else {
+				mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
+			}
+
 		/* if the player has speed demon give him his boost in speed */
 		if(!MoveModeChange(mech) && MechStatus2(mech) & SPRINTING
 		   && HasBoolAdvantage(MechPilot(mech), "speed_demon"))
@@ -398,7 +407,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 				if(MechSpecials(mech) & SALVAGE_TECH)
 					lugged = lugged / 2;
 				if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-				   (MechHeat(mech) >= 9.))
+				   (MechHeat(mech) >= 9.) && mudconf.btech_tsm_tow_bonus) 
 					lugged = lugged / 2;
 
 				if(MechSpecials2(mech) & CARRIER_TECH)
@@ -865,8 +874,6 @@ void mech_speed(dbref player, void *data, char *buffer)
 
 	maxspeed = maxspeed > 0.0 ? maxspeed : 0.0;
 
-	if((MechHeat(mech) >= 9.) && (MechSpecials(mech) & TRIPLE_MYOMER_TECH))
-		maxspeed = ceil((rint((maxspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
 
 	/*   if (MechStatus(mech) & MASC_ENABLED) maxspeed = (4. / 3. ) * maxspeed; */
 	walkspeed = WalkingSpeed(maxspeed);
@@ -2104,10 +2111,18 @@ void cause_damage(MECH * att, MECH * mech, int dam, int table)
 			hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
 			break;
 		case PUNCH:
-			FindPunchLoc(mech, hitloc, hitGroup, iscrit, isrear);
+            if (MechType(mech) != CLASS_MECH) {
+                hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
+            } else {
+                hitloc = FindPunchLocation(mech, hitGroup);
+            }
 			break;
 		case KICK:
-			FindKickLoc(mech, hitloc, hitGroup, iscrit, isrear);
+            if (MechType(mech) != CLASS_MECH) {
+                hitloc = FindHitLocation(mech, hitGroup, &iscrit, &isrear);
+            } else {
+                hitloc = FindKickLocation(mech, hitGroup);
+            }
 			break;
 		}
 		if(dam <= 0)

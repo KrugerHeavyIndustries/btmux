@@ -33,6 +33,7 @@
 #include "p.mech.los.h"
 #include "p.aero.bomb.h"
 #include "autopilot.h"
+#include "mt19937ar.h"
 
 #ifdef BT_ADVANCED_ECON
 #include "p.mech.tech.do.h"
@@ -48,6 +49,10 @@ extern int cargoweight[];
 #include "failures.h"
 #endif
 
+/* TODO: We can use M_PI if exists, otherwise define something reasonable.  */
+#define DEG2RAD(d) ((float)(d) * (3.14159265f / 180.f))
+#define RAD2DEG(d) ((float)(d) * (180.f / 3.14159265f))
+
 extern dbref pilot_override;
 
 char *mechtypenames[CLASS_LAST + 1] = {
@@ -62,7 +67,7 @@ const char *mechtypename(MECH * foo)
 int MNumber(MECH * mech, int low, int high)
 {
 	if((muxevent_tick / RANDOM_TICK) != MechLastRndU(mech)) {
-		MechRnd(mech) = random();
+		MechRnd(mech) = (int)genrand_int31();
 		MechLastRndU(mech) = muxevent_tick / RANDOM_TICK;
 	}
 	return (low + MechRnd(mech) % (high - low + 1));
@@ -340,13 +345,16 @@ void CheckEdgeOfMap(MECH * mech)
 
 int FindZBearing(float x0, float y0, float z0, float x1, float y1, float z1)
 {
-	float hyp, opp, deg;
+	float adj, opp, deg;
 
-	hyp = FindRange(x0, y0, z0, x1, y1, z1);
-	if(hyp <= 0.0)
-		return 0;
-	opp = FindRange(0, 0, 0, 0, 0, fabsf(z1 - z0));
-	deg = asin(opp / hyp) * (180 / PI);
+	adj = FindXYRange(x0, y0, x1, y1);
+	/*
+	 * XXX: Why can't opp be negative?  If z1 < z0, shouldn't Z-bearing
+	 * also be negative?  Also, why no range clamping on the value of deg?
+	 */
+	opp = (float)(1./SCALEMAP) * fabsf(z1 - z0);
+	/* TODO: Use atan2f(), if we've got it.  */
+	deg = RAD2DEG(atan2(opp, adj));
 	return ceilf(deg);
 }
 
@@ -366,33 +374,27 @@ int ActualFindZBearing(double x0, double y0, double z0, double x1, double y1, do
 
 int FindBearing(float x0, float y0, float x1, float y1)
 {
-	float deltax, deltay;
-	float temp, rads;
+	const float dx = x1 - x0;
+	const float dy = y1 - y0;
+
+	float rads;
 	int degrees;
 
-	deltax = (x0 - x1);
-	deltay = (y0 - y1);
-	if(deltax == 0.0) {
-		/* Quick handling inserted here */
-		if(deltay > 0.0)
-			return 0;
-		else
-			return 180;
+	/*
+	 * atan2() doesn't need this check because we never actually divide by
+	 * dx, but we handle it specially for consistency with existing code.
+	 */
+	if (dx == 0.f) {
+		return (dy < 0.f) ? 0 : 180;
 	}
-	temp = deltay / deltax;
-	if(temp < 0.0)
-		temp = -temp;
-	rads = fatan(temp);
-	degrees = (int) (rads * 10.0 / TWOPIOVER360);
-	/* Round off degrees */
-	degrees = (degrees + 5) / 10;
-	if(deltax < 0.0 && deltay < 0.0)
-		degrees += 180;
-	else if(deltax < 0.0)
-		degrees = 180 - degrees;
-	else if(deltay < 0.0)
-		degrees = 360 - degrees;
-	return AcceptableDegree(degrees - 90);
+
+	/* TODO: Use atan2f(), if we've got it.  */
+	rads = (float)atan2(-dx, dy);
+
+	/* Round off degrees.  */
+	degrees = ((int)RAD2DEG(10.f * rads) + 5) / 10;
+
+	return AcceptableDegree(degrees + 180);
 }
 
 int ActualFindBearing(double x0, double y0, double x1, double y1) {
@@ -568,11 +570,13 @@ char *FindPilotingSkillName(MECH * mech)
 #define MECHSKILL_SPOTTING  2
 #define MECHSKILL_ARTILLERY 3
 #define NUM_MECHSKILLS      4
+
+// TODO: Replace this with a function.
 #define GENERIC_FIND_MECHSKILL(num,n) \
-if (Quiet(mech->mynum)) \
-{ str = silly_atr_get(mech->mynum, A_MECHSKILLS); \
-if (*str) if (sscanf (str, "%d %d %d %d", &i[0], &i[1], &i[2], &i[3]) > num) \
-return i[num] - n; }
+    if (Quiet(mech->mynum)) \
+        { str = silly_atr_get(mech->mynum, A_MECHSKILLS); \
+    if (*str) if (sscanf (str, "%d %d %d %d", &i[0], &i[1], &i[2], &i[3]) > num) \
+        return i[num] - n; }
 
 int FindPilotPiloting(MECH * mech)
 {
@@ -723,18 +727,20 @@ int MadePilotSkillRoll_Advanced(MECH * mech, int mods, int succeedWhenFallen)
 	return 0;
 }
 
-void FindXY(float x0, float y0, int bearing, float range, float *x1,
-			float *y1)
+void FindXY(float x0, float y0, int bearing, float range, float *x1, float *y1)
 {
 	float xscale, correction;
 
+	/* XXX: Something to do with ranges with actual number of hexes? */
 	correction = (float) (bearing % 60) / 60.0;
 	if(correction > 0.5)
 		correction = 1.0 - correction;
 	correction = -correction * 2.0;	/* 0 - 1 correction */
 	xscale = (1.0 + XSCALE * correction) * SCALEMAP;
-	*y1 = y0 - cos((float) bearing * 6.283185307 / 360.0) * range * SCALEMAP;
-	*x1 = x0 + sin((float) bearing * 6.283185307 / 360.0) * range * xscale;
+
+	/* TODO: Use sinf()/cosf(), if we've got them.  */
+	*x1 = x0 + range * (float)sin(DEG2RAD(bearing)) * xscale;
+	*y1 = y0 - range * (float)cos(DEG2RAD(bearing)) * SCALEMAP;
 }
 
 /* Given an inital location in real coordinates and a bearing (in deg)
@@ -751,19 +757,15 @@ void ActualFindXY(double x0, double y0, int bearing, double range,
 
 }
 
+/* Computes hex range between Cartesian (x0, y0, z0) and (x1, y1, z1).  */
 float FindRange(float x0, float y0, float z0, float x1, float y1, float z1)
-{								/* range in hexes */
-	float xscale;
-	float XYrange;
-	float Zrange;
+{
+	const float dx = x0 - x1;
+	const float dy = y0 - y1;
+	const float dz = z0 - z1;
 
-	xscale = 1.0 / SCALEMAP;
-	xscale = xscale * xscale;
-	XYrange =
-		sqrt(xscale * (x0 - x1) * (x0 - x1) + YSCALE2 * (y0 - y1) * (y0 -
-																	 y1));
-	Zrange = (z0 - z1) / SCALEMAP;
-	return sqrt(XYrange * XYrange + Zrange * Zrange);
+	/* TODO: Use sqrtf(), if we've got it.  */
+	return (float)(1./SCALEMAP) * (float)sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 /* Returns range in hexes */
@@ -781,17 +783,14 @@ double ActualFindRange(double x0, double y0, double z0, double x1, double y1, do
     return range;
 }
 
+/* Computes hex range between Cartesian (x0, y0) and (x1, y1).  */
 float FindXYRange(float x0, float y0, float x1, float y1)
-{								/* range in hexes */
-	float xscale;
-	float XYrange;
+{
+	const float dx = x0 - x1;
+	const float dy = y0 - y1;
 
-	xscale = 1.0 / SCALEMAP;
-	xscale = xscale * xscale;
-	XYrange =
-		sqrt(xscale * (x0 - x1) * (x0 - x1) + YSCALE2 * (y0 - y1) * (y0 -
-																	 y1));
-	return XYrange;
+	/* TODO: Use sqrtf(), if we've got it.  */
+	return (float)(1./SCALEMAP) * (float)sqrt(dx * dx + dy * dy);
 }
 
 /* Returns range in only the X-Y plane in hexes */
@@ -808,6 +807,7 @@ double ActualFindXYRange(double x0, double y0, double x1, double y1) {
     return range;
 }
 
+/* TODO: We could just make this a macro, right? Or substitute it away.  */
 float FindHexRange(float x0, float y0, float x1, float y1)
 {
 	return FindXYRange(x0, y0, x1, y1);
@@ -820,42 +820,43 @@ float FindHexRange(float x0, float y0, float x1, float y1)
      - Focus, July 2002.
  */
 
-/* Convert floating-point cartesian coordinates into hex coordinates.
-
-   To do this, split the hex map into a repeatable region, which itself has
-   4 distinct regions, each part of a different hex. (See picture.) The hex
-   is normalized so that it is 1 unit high, and so is the repeatable region.
-   It works out that the repeatable region is exactly sqrt(3) wide, and can
-   be split up in six portions of each 1/6th sqrt(3), called 'alpha'. 
-   Section I is 2 alpha wide at the top and bottom, and 3 alpha in the
-   middle. Sections II and III are reversed, being 3 alpha at the top and
-   bottom of the region, and 2 alpha in the middle. Section IV is 1 alpha in
-   the middle and 0 at the top and bottom. The whole region encompasses
-   exactly two x-columns and one y-row. All calculations are now done in
-   'real' scale, to avoid rounding errors (isn't floating point arithmatic
-   fun ?)
-
-   Alpha also returns in the angle of the hexsides, that being 2*alpha
-   (flipped or rotated when necessary) making the calculations look
-   confusing. ANGLE_ALPHA is alpha (unscaled) for use in angle calculations.
-
-         ________________________
-        |        \              /|
-        |         \    III     / |
-        |          \          /  |
-        |           \________/ IV|
-        |    I      /        \   |
-        |          /   II     \  |
-        |         /            \ |
-        |________/______________\|
-
-   */
+/*
+ * Convert floating-point cartesian coordinates into hex coordinates.
+ *
+ * To do this, split the hex map into a repeatable region, which itself has
+ * 4 distinct regions, each part of a different hex. (See picture.) The hex
+ * is normalized so that it is 1 unit high, and so is the repeatable region.
+ * It works out that the repeatable region is exactly sqrt(3) wide, and can
+ * be split up in six portions of each 1/6th sqrt(3), called 'alpha'. 
+ * Section I is 2 alpha wide at the top and bottom, and 3 alpha in the
+ * middle. Sections II and III are reversed, being 4 alpha at the top and
+ * bottom of the region, and 2 alpha in the middle. Section IV is 1 alpha in
+ * the middle and 0 at the top and bottom. The whole region encompasses
+ * exactly two x-columns and one y-row. All calculations are now done in
+ * 'real' scale, to avoid rounding errors (isn't floating point arithmatic
+ * fun ?)
+ *
+ * Alpha also returns in the slope of the hexsides (2*alpha, flipped or rotated
+ * as necessary).  ANGLE_ALPHA is alpha (unscaled) for use in angle
+ * calculations.
+ *
+ *       ________________________
+ *      |        \              /|
+ *      |         \    III     / |
+ *      |          \          /  |
+ *      |           \________/ IV|
+ *      |    I      /        \   |
+ *      |          /   II     \  |
+ *      |         /            \ |
+ *      |________/______________\|
+ *
+ */
 
 /* Doubles for added accuracy; most calculations are doubles internally
    anyway, so we suffer little to no performance hit. */
 
-#define ALPHA 93.097730906827152	/* sqrt(3) * SCALEMAP */
-#define ROOT3 558.58638544096289	/* ROOT3 / 6 */
+#define ROOT3 558.58638544096289	/* sqrt(3) * SCALEMAP */
+#define ALPHA 93.097730906827152	/* ROOT3 / 6 */
 #define ANGLE_ALPHA 0.28867513459481287	/* sqrt(3) / 6 */
 #define FULL_Y (1 * SCALEMAP)
 #define HALF_Y (0.5 * FULL_Y)
@@ -936,28 +937,21 @@ void RealCoordToMapCoord(int *hex_x, int *hex_y, float cart_x,
 	*hex_y = y_count;
 }
 
-/* 
-   If hex_x is odd, it falls smack in the middle of area III, right at the
-   top edge of the repeatable box. Subtract one and multiply by one half
-   sqrt(3) (or 3 alpha) to get the repeatable box coordinate, then add 5
-   alpha for offset inside the box. The y coordinate is not modified.
-   
-   If hex_x is even, just multiply by 3 alpha to get the box coordinate, and
-   add 2 alpha for offset inside the box. The center is in the middle of the
-   box, so y is increased by half the box height.
-   
+/*
+ * Convert hex coordinates into centered floating-point cartesian coordinates.
+ *
+ * Properties of hex centers:
+ * 1) Spaced 3 ALPHA apart horizontally, starting from 2 ALPHA.
+ * 2) Spaced FULL_Y apart vertically.
+ * 3a) Even column centers (counting from 0) are vertically offset HALF_Y.
+ * 3b) Odd column centers (counting from 0) are not vertically offset.
  */
-
 void MapCoordToRealCoord(int hex_x, int hex_y, float *cart_x, float *cart_y)
 {
-
-	if(hex_x % 2) {
-		*cart_x = (hex_x - 1.0) * 3.0 * ALPHA + 5.0 * ALPHA;
-		*cart_y = hex_y * FULL_Y;
-	} else {
-		*cart_x = hex_x * 3.0 * ALPHA + 2.0 * ALPHA;
-		*cart_y = hex_y * FULL_Y + HALF_Y;
-	}
+	/* TODO: Can use some integer math if we're careful about overflow.  */
+	/* Use % 2 for theoretical portability to non-2's-complement archs.  */
+	*cart_x = (2.f + 3.f * (float)hex_x) * ALPHA;
+	*cart_y = ((hex_x % 2) ? 0 : HALF_Y) + ((float)hex_y * FULL_Y);
 }
 
 /*
@@ -2308,11 +2302,18 @@ void mech_FillPartAmmo(MECH * mech, int loc, int pos)
 
 int AcceptableDegree(int d)
 {
-	while (d < 0)
-		d += 360;
-	while (d >= 360)
-		d -= 360;
-	return d;
+	/*
+	 * Silly billies, integer modulo (division) is still faster than loops.
+	 * And probably slightly faster than branches, too, but let's not worry
+	 * about that.
+	 */
+	if (d < 0) {
+		return (d % 360) + 360;
+	} else if (d >= 360) {
+		return (d % 360);
+	} else {
+		return d;
+	}
 }
 
 void MarkForLOSUpdate(MECH * mech)
@@ -2893,47 +2894,63 @@ void SetPartCost(int p, unsigned long long int cost)
 		cargocost[Cargo2I(p)] = cost;
 }
 
-#define COST_DEBUG      0
-#if COST_DEBUG
-#define ADDPRICE(desc, add) \
-    { SendDebug(tprintf("AddPrice - %s %d", desc, add)); \
-    total += add; }
-#else
-#define ADDPRICE(desc, add) \
-    total += add;
-#endif
+#define COST_DEBUG 1
 
-#define DoArmMath(loc) \
-for (i = 0; i < NUM_CRITICALS; i++) { \
-    part = GetPartType(mech, loc, i); \
-    if (!IsActuator(part)) \
-        continue; \
-    else if (Special2I(part) == SHOULDER_OR_HIP || Special2I(part) == UPPER_ACTUATOR) \
-        ADDPRICE("Shoulder/Upper Actuator", (MechTons(mech) * 100)) \
-    else if (Special2I(part) == LOWER_ACTUATOR) \
-        ADDPRICE("LowerArm Actuator", (MechTons(mech) * 50)) \
-    else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR) \
-        ADDPRICE("Hand Actuator", (MechTons(mech) * 80)) \
+void CalcFasaCost_AddPrice(float * total, char * desc, float value) {
+   *total += value;
+   #if COST_DEBUG
+      SendDebug(tprintf("Addprice - %20s %.0f", desc, value));
+   #endif
+}
+    
+int MechNumHeatsinksInEngine(MECH * mech) {
+   // Heatsinks in Engine = Engine Rating / 25
+   return (MechEngineSize(mech) / 25);
+}
+
+void CalcFasaCost_DoArmMath(MECH * mech, int loc, float * total) {
+    int i = 0;
+    for (i = 0; i < NUM_CRITICALS; i++) {
+        int part = GetPartType(mech, loc, i);
+        if (!IsActuator(part))
+            continue;
+        else if (Special2I(part) == SHOULDER_OR_HIP)
+            continue;
+            // BMR Says don't count this.
+            //CalcFasaCost_AddPrice(total, "Shoulder Actuator", 0);
+        else if (Special2I(part) == UPPER_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Upper Actuator", (MechTons(mech) * 100));
+        else if (Special2I(part) == LOWER_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Lower Actuator", (MechTons(mech) * 50));
+        else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Hand Actuator", (MechTons(mech) * 80));        
     }
-
-#define DoLegMath(loc) \
-for (i = 0; i < NUM_CRITICALS; i++) { \
-    part = GetPartType(mech, loc, i); \
-    if (!IsActuator(part)) \
-        continue; \
-    else if (Special2I(part) == SHOULDER_OR_HIP || Special2I(part) == UPPER_ACTUATOR) \
-        ADDPRICE("Hip/Upper Actuator", (MechTons(mech) * 150)) \
-    else if (Special2I(part) == LOWER_ACTUATOR) \
-        ADDPRICE("LowerLeg Actuator", (MechTons(mech) * 80)) \
-    else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR) \
-        ADDPRICE("Foot Actuator", (MechTons(mech) * 120)) \
+}
+    
+void CalcFasaCost_DoLegMath(MECH * mech, int loc, float * total) {
+    int i = 0;
+    for (i = 0; i < NUM_CRITICALS; i++) {
+        int part = GetPartType(mech, loc, i);
+        if (!IsActuator(part))
+            continue;
+        else if (Special2I(part) == SHOULDER_OR_HIP || 
+           Special2I(part) == UPPER_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Hip Actuator", (MechTons(mech) * 150));
+        else if (Special2I(part) == LOWER_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Lower Actuator", (MechTons(mech) * 180));
+        else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "Foot Actuator", (MechTons(mech) * 120));        
     }
+}
 
-/* Some would say it's better for scode. I prolly would do. But since it's the FASA cals, let's put it in binary. Plus I'm lazy today */
+/* 
+ * Calculate the FASA cost of a unit as per an approximation of Maxtech
+ * construction/cost rules. 
+ */
 unsigned long long int CalcFasaCost(MECH * mech)
 {
 	int ii, i, part;
-	unsigned long long int total = 0;
+	float total = 0;
 	float mod = 1.0;
 
 	if(!mech)
@@ -2941,7 +2958,8 @@ unsigned long long int CalcFasaCost(MECH * mech)
 
 	if(!
 	   (MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_VEH_GROUND
-		|| MechType(mech) == CLASS_VEH_NAVAL || MechType(mech) == CLASS_VTOL)
+		|| MechType(mech) == CLASS_VEH_NAVAL || MechType(mech) == CLASS_VTOL
+		|| MechType(mech) == CLASS_BSUIT)
 	   || is_aero(mech) || IsDS(mech))
 		return 0;
 
@@ -2956,217 +2974,322 @@ unsigned long long int CalcFasaCost(MECH * mech)
 			ADDPRICE("TorsoCockpit", 750000)
 				else
 #endif
-			ADDPRICE("Cockpit", 200000)
+      CalcFasaCost_AddPrice(&total, "Cockpit", 200000);
+
 /* Life Support */
-				ADDPRICE("LifeSupport", 50000)
+      CalcFasaCost_AddPrice(&total, "LifeSupport", 50000);
+
 /* Sensors */
-				ADDPRICE("Sensors", (MechTons(mech) * 2000))
-/* Myomer stuffage */
-				if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
-				ADDPRICE("TripleMyomer", (MechTons(mech) * 16000))
-					else
-				ADDPRICE("Myomer", (MechTons(mech) * 2000))
+      CalcFasaCost_AddPrice(&total, "Sensors", (MechTons(mech) * 2000));
+
+/* Myomer */
+		if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
+			CalcFasaCost_AddPrice(&total, "TS Myomer", (MechTons(mech) * 16000));
+		else
+			CalcFasaCost_AddPrice(&total, "Myomer", (MechTons(mech) * 2000));
+
 /* Internal Structure */
-					if(MechSpecials(mech) & ES_TECH
-					   || MechSpecials(mech) & COMPI_TECH)
-					ADDPRICE("ES/CO  Internal", (MechTons(mech) * 1600))
-						else
-				if(MechSpecials(mech) & REINFI_TECH)
-					ADDPRICE("RE Internal", (MechTons(mech) * 6400))
-						else
-					ADDPRICE("Internal", (MechTons(mech) * 400))
+		if(MechSpecials(mech) & ES_TECH || MechSpecials(mech) & COMPI_TECH)
+			CalcFasaCost_AddPrice(&total, "ES/Co Internals", (MechTons(mech) * 1600));
+		else if(MechSpecials(mech) & REINFI_TECH)
+         CalcFasaCost_AddPrice(&total, "RE Internals", (MechTons(mech) * 6400));
+		else
+			CalcFasaCost_AddPrice(&total, "Internals", (MechTons(mech) * 400));
+
 /* Actuators */
-						DoArmMath(RARM)
-						DoArmMath(LARM)
-						DoLegMath(LLEG)
-						DoLegMath(RLEG)
+      CalcFasaCost_DoArmMath(mech, LARM, &total);
+      CalcFasaCost_DoArmMath(mech, RARM, &total);
+		/*
+      CalcFasaCost_DoLegMath(mech, LLEG, &total);
+      CalcFasaCost_DoLegMath(mech, RLEG, &total);
+		*/
 /* Gyro */
-						i = MechEngineSize(mech);
+		i = MechEngineSize(mech);
 		if(i % 100)
 			i += (100 - (MechEngineSize(mech) % 100));
 		i /= 100;
 
-/* NULLTODO : Port any of these techs ASAP */
 		if(MechSpecials2(mech) & XLGYRO_TECH)
-			ADDPRICE("XLGyro", i * 750000)
-				else
-		if(MechSpecials2(mech) & CGYRO_TECH)
-			ADDPRICE("Compact Gyro", i * 400000)
-				else
-		if(MechSpecials2(mech) & HDGYRO_TECH)
-			ADDPRICE("HD Gyro", i * 500000)
-				else
-			ADDPRICE("Gyro", i * 300000)
-			} else {
-			int pamp = 0, turret = 0;
-			for(i = 0; i < NUM_SECTIONS; i++)
-				for(ii = 0; ii < NUM_CRITICALS; ii++) {
-					if(!(part = GetPartType(mech, i, ii)))
-						continue;
-					if(!IsWeapon(part))
-						continue;
-					if(i == TURRET)
-						turret += crit_weight(mech, part);
-					if(IsEnergy(part))
-						pamp += crit_weight(mech, part);
+			CalcFasaCost_AddPrice(&total, "XL Gyro", (i * 750000));
+		else if(MechSpecials2(mech) & CGYRO_TECH)
+			   CalcFasaCost_AddPrice(&total, "Compact Gyro", (i * 400000));
+		else if(MechSpecials2(mech) & HDGYRO_TECH)
+				CalcFasaCost_AddPrice(&total, "HD Gyro", (i * 500000));
+		else
+		   CalcFasaCost_AddPrice(&total, "Gyro", (i * 300000));
+	} else if (MechType(mech) == CLASS_BSUIT) {
+	/* ---------------------------------
+	 * BSuit Costs
+	 */
+    	if (MechSpecials(mech) & CLAN_TECH) {
+    	    CalcFasaCost_AddPrice(&total, "Clan Point", 3500000);
+    	} else {
+    	    CalcFasaCost_AddPrice(&total, "IS Squad", 2400000);
+    	}
+	
+	} else {
+	/* ---------------------------------
+	 * Vehicle Costs
+	 */
+		int pamp = 0, turret = 0;
+
+		for(i = 0; i < NUM_SECTIONS; i++)
+			for(ii = 0; ii < NUM_CRITICALS; ii++) {
+				if(!(part = GetPartType(mech, i, ii)))
+					continue;
+				if(!IsWeapon(part))
+					continue;
+				if(i == TURRET)
+					turret += crit_weight(mech, part);
+				if(IsEnergy(part)) {
+					pamp += crit_weight(mech, part);
+					SendDebug(tprintf("PAmp Weight: %d", crit_weight(mech, part)));
 				}
-/* Internals */
-			ADDPRICE("TankInternals", MechTons(mech) * 10000)
-/* Control Components */
-				ADDPRICE("Control Components",
-						 (float) 10000 * (float) ((float) 0.05 *
-												  (float) MechTons(mech)))
-/* Power Amp */
-				if(MechSpecials(mech) & ICE_TECH)
-				ADDPRICE("Power Amplifiers",
-						 20000 * (float) (((float) pamp / (float) 10) /
-										  (float) 1024))
-/* Turret */
-					ADDPRICE("Turret",
-							 (float) 5000 *
-							 (float) (((float) turret / (float) 10) /
-									  (float) 1024))
-/* Lift/Dive Equip */
-					if(MechMove(mech) == MOVE_HOVER
-					   || MechMove(mech) == MOVE_FOIL
-					   || MechMove(mech) == MOVE_SUB)
-					ADDPRICE("Lift/Dive Equipment",
-							 (float) 20000 * (float) ((float) 0.1 *
-													  (float) MechTons(mech)))
-						if(MechMove(mech) == MOVE_VTOL)
-						ADDPRICE("VTOL Equipment",
-								 (float) 40000 * (float) ((float) 0.1 *
-														  (float)
-														  MechTons(mech)))
-						}
-/* Engine Math */
-						i = (MechSpecials(mech) & CE_TECH ? 10000 :
-							 MechSpecials(mech) & LE_TECH ? 15000 :
-							 MechSpecials(mech) & XL_TECH ? 20000 :
-							 MechSpecials(mech) & XXL_TECH ? 100000 :
-							 MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
-			ADDPRICE("Engine",
-					 ((i * MechEngineSize(mech) * MechTons(mech)) / 75))
+			}
+/* 
+ * Internals 
+ * 10,000 * Structure Tonnage
+ */
+		int internals = (float)MechTons(mech) * 1000;
+		CalcFasaCost_AddPrice(&total, "Internals", internals);
+/* 
+ * Control Components
+ * 10,000 * Control Tonnage 
+ * Control Tonnage = .05 * Tons
+ */
+		int control_eq = 10000 * 0.05 * MechTons(mech);
+		CalcFasaCost_AddPrice(&total, "Cockpit & Controls", control_eq);
+/* 
+ * Power Amp 
+ * 20,000 * Amplifier Tonnage
+ */
+		if(MechSpecials(mech) & ICE_TECH) {
+			int power_amp =  20000 * ( pamp / 1024 ) / 10;
+			CalcFasaCost_AddPrice(&total, "Power Amplifiers", power_amp);
+		}
+		
+/* 
+ * Turret 
+ * Standard: 5,000 * Turret Tonnage
+ */
+		int turret_price = 5000 * (turret / 10) / 1024;
+		CalcFasaCost_AddPrice(&total, "Turret", turret_price);
+/* 
+ * Lift/Dive Equip (Hovercraft, Hydrofoils, Submarines)
+ * 20,000 * Equipment Tonnage
+ */
+		if(MechMove(mech) == MOVE_HOVER
+			|| MechMove(mech) == MOVE_FOIL
+			|| MechMove(mech) == MOVE_SUB) {
+			float lift_dive = 20000 * (0.1 * MechTons(mech));
+			CalcFasaCost_AddPrice(&total, "Lift/Dive Equip", lift_dive);
+		}
 
-/* Jump Jets */
-				i = MechJumpSpeed(mech) * MP_PER_KPH;
-			if(i > 0)
-				ADDPRICE("JumpJets", MechTons(mech) * (i * i) * 200)
+		if(MechMove(mech) == MOVE_VTOL) {
+			float vtol_eq = 40000 * (0.1 * MechTons(mech));
+			CalcFasaCost_AddPrice(&total, "Rotor", vtol_eq);
+		}
+	} // end if (Vehicle Calcs)
 
-/* Heat Sinks */
-					i = MechRealNumsinks(mech);
-			ii = (MechSpecials(mech) & DOUBLE_HEAT_TECH
-				  || MechSpecials(mech) & CLAN_TECH ? 6000 :
-				  MechSpecials2(mech) & COMPACT_HS_TECH ? 3000 : 2000);
-			if(!
-			   (MechSpecials(mech) & ICE_TECH
-				|| MechSpecials(mech) & DOUBLE_HEAT_TECH
-				|| MechSpecials(mech) & CLAN_TECH))
-				i = BOUNDED(0, i - 10, 500);
-			ADDPRICE("Heat Sinks", i * ii)
-
-				ii = 0;
-			for(i = 0; i < NUM_SECTIONS; ++i)
-				ii += GetSectOArmor(mech, i);
-			i = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials(mech) &
-				 HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
-				 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
-				 10000);
-#if COST_DEBUG
-			SendDebug(tprintf("Armor Total %d - Armor Cost %d", ii, i));
-#endif
-			ADDPRICE("Armor", (i / 16) * ii)
+/* ----------------------------
+ * General Calculations
+ */
+ 
+if (MechType(mech) != CLASS_BSUIT) {
+    /* Engine Math 
+     * (Engine Basecost * Engine Rating * Tonnage) / 75
+     */
+    int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
+        MechSpecials(mech) & LE_TECH ? 15000 :
+    	MechSpecials(mech) & XL_TECH ? 20000 :
+    	MechSpecials(mech) & XXL_TECH ? 100000 :
+    	MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
+    	    
+    int engine_size = MechEngineSize(mech);   
+        
+    if (MechMove(mech) == MOVE_WHEEL ||
+    	MechMove(mech) == MOVE_FOIL ||
+    	MechMove(mech) == MOVE_HOVER ||
+    	MechMove(mech) == MOVE_HULL || 
+    	MechMove(mech) == MOVE_SUB ||
+    	MechMove(mech) == MOVE_VTOL) {
+    	engine_size = engine_size - susp_factor(mech);
+    }
+    	   	    
+    	int engine_price = (engine_basecost * engine_size * MechTons(mech)) / 75;
+    	    
+    	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
+    
+    /* Jump Jets 
+     * Standard: Tonnage * (number of JJs^2) * 200
+     * Improved: Tonnage * (number of JJs^2) * 500
+     * Mechanical: Tonnage * (Jumping MP) * 150
+     */
+    	int num_jjs = MechJumpSpeed(mech) * MP_PER_KPH;
+    	int jj_price = MechTons(mech) * pow(num_jjs, 2) * 200.0;
+    	if (num_jjs > 0)
+    		CalcFasaCost_AddPrice(&total, "Jumpjets", jj_price);
+    
+    /* 
+       Heat Sinks 
+    */
+    	int numsinks = MechRealNumsinks(mech);
+    	
+    	int sinkcost;
+    	if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)
+    	    sinkcost = 6000;
+    	else if(MechSpecials2(mech) & COMPACT_HS_TECH)
+    	    sinkcost = 3000;
+    	else
+    	    sinkcost = 2000;
+    
+    	if((MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH)) {
+    		/* We want to divide the heat dissipation by two if DHS */
+    		numsinks = BOUNDED(0, numsinks/2, 500);
+    	}
+    
+       // For single heatsinks, we only charge for every heatsink over 10.
+       if(MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH
+          || MechSpecials2(mech) & COMPACT_HS_TECH || MechSpecials(mech) & ICE_TECH)
+           CalcFasaCost_AddPrice(&total, "Heat Sinks", (numsinks * sinkcost));
+       else {
+           CalcFasaCost_AddPrice(&total, "Heat Sinks", 
+             (BOUNDED(0, numsinks - 10, 500) * sinkcost));
+       }
+    
+       
+    #if COST_DEBUG
+    	SendDebug(tprintf("Heat Sinks: %d, Cost Per Sink: %d", numsinks, sinkcost));
+    #endif
+    
+    /* Armor */
+    	int total_armor = 0;
+    	int armor_section = 0;
+    	for(armor_section = 0; armor_section < NUM_SECTIONS; ++armor_section) {
+    		total_armor += GetSectOArmor(mech, armor_section);
+    		total_armor += GetSectORArmor(mech, armor_section);
+    	}
+    	float armor_tons = total_armor / 16.0;
+    
+    	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
+    		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
+    		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
+    		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
+    		 10000);
+    #if COST_DEBUG
+    	SendDebug(tprintf("Armor Tons %.1f(%d pts) * Armor Cost Per Point %d", 
+    		armor_tons, total_armor, armor_cost_point));
+    #endif
+    	int armor_price = armor_tons * armor_cost_point;
+    	CalcFasaCost_AddPrice(&total, "Armor", armor_price);
+} // End Non-BSuit General Calculations
 
 /* Parts */
-				for(i = 0; i < NUM_SECTIONS; i++)
-				for(ii = 0; ii < NUM_CRITICALS; ii++) {
-					part = GetPartType(mech, i, ii);
-					if(IsActuator(part) || part == EMPTY)
+	for(i = 0; i < NUM_SECTIONS; i++)
+		for(ii = 0; ii < NUM_CRITICALS; ii++) {
+			part = GetPartType(mech, i, ii);
+			if(IsActuator(part) || part == EMPTY)
+				continue;
+			if(IsSpecial(part))
+				/* These parts are handled above, don't count their crits */
+				switch (Special2I(part)) {
+					case LIFE_SUPPORT:
 						continue;
-					if(IsSpecial(part))
-						switch (Special2I(part)) {
-						case LIFE_SUPPORT:
-						case SENSORS:
-						case COCKPIT:
-						case ENGINE:
-						case GYRO:
-						case HEAT_SINK:
-						case JUMP_JET:
-						case FERRO_FIBROUS:
-						case ENDO_STEEL:
-						case TRIPLE_STRENGTH_MYOMER:
+					case SENSORS:
+						continue;
+					case COCKPIT:
+						continue;
+					case ENGINE:
+						continue;
+					case GYRO:
+						continue;
+					case HEAT_SINK:
+						continue;
+					case JUMP_JET:
+						continue;
+					case FERRO_FIBROUS:
+						continue;
+					case ENDO_STEEL:
+						continue;
+					case TRIPLE_STRENGTH_MYOMER:
+						continue;
+					case STEALTH_ARMOR:
+						continue;
 #if 0
 /* NULLTODO : Port any of these techs ASAP */
 						case HARDPOINT:
 							continue;
 #endif
-						default:
-							break;
-						}
-					if(IsAmmo(part)) {
-						part = FindAmmoType(mech, i, ii);
-						ADDPRICE(part_name(part, 0),
-								 GetPartCost(part) * GetPartData(mech, i,
-																 ii));
-					} else {
-						ADDPRICE(part_name(part, 0), GetPartCost(part))
-					}
+					default:
+						break;
 				}
-
-			if(MechType(mech) != CLASS_MECH) {
-				switch (MechMove(mech)) {
-				case MOVE_TRACK:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 100);
-					break;
-				case MOVE_WHEEL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 200);
-					break;
-				case MOVE_HOVER:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 50);
-					break;
-				case MOVE_VTOL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 30);
-					break;
-				case MOVE_HULL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 200);
-					break;
-				case MOVE_FOIL:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 75);
-					break;
-				case MOVE_SUB:
-					mod =
-						(float) 1 +
-						(float) ((float) MechTons(mech) / (float) 50);
-					break;
+				if(IsAmmo(part)) {
+					part = FindAmmoType(mech, i, ii);
+					int ammo_part_cost = GetPartCost(part) * GetPartData(mech,i,ii);
+					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
+					   ammo_part_cost);
+				} else {
+				    //MechWeapons[weapindx].criticals
+				    
+				    int indiv_part_cost = GetPartCost(part);
+				    if (MechType(mech) != CLASS_MECH && IsWeapon(part)) {
+				        indiv_part_cost *= MechWeapons[part-1].criticals;
+				        //SendDebug(tprintf("Part#: %s(%d) Crits: %d", MechWeapons[part-1].name, part-1, MechWeapons[part-1].criticals));
+				    }
+					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
+					   indiv_part_cost);
 				}
-			} else {
-				mod =
-					(float) 1 +
-					(float) ((float) MechTons(mech) / (float) 100);
 			}
+
+	if(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_BSUIT) {
+		switch (MechMove(mech)) {
+			case MOVE_TRACK:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 100);
+				break;
+			case MOVE_WHEEL:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 200);
+				break;
+			case MOVE_HOVER:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 50);
+				break;
+			case MOVE_VTOL:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 30);
+				break;
+			case MOVE_HULL:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 200);
+				break;
+			case MOVE_FOIL:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 75);
+				break;
+			case MOVE_SUB:
+				mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 50);
+				break;
+		}
+	} else if (MechType(mech) == CLASS_BSUIT) {
+	    // There's nothing in Maxtech about this, but we're going to knock the prices
+	    // down to be competitive with other unit types.
+	    mod = 0.75;
+	} else {
+	    // The standard mech modifier.
+		mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 100);
+	}
+
+	if (MechIsOmniMech(mech)) {
+		SendDebug(tprintf("Mech is Omni, multiplying %lld by .25", total));
+		total *= .25;
+	}
+
 #if COST_DEBUG
-			SendDebug(tprintf("Price Total - %lld Mod - %f", total, mod));
+	SendDebug(tprintf("Price Total %.0f * Mod - %f = %.0f", total, mod, total*mod));
 #endif
 
-			return ((float) total * (float) mod);
-			}
+	return (total * mod);
+} /* End Function */
+
 #endif
 
 #ifdef BT_CALCULATE_BV
-
-		int FindAverageGunnery(MECH * mech) {
+int FindAverageGunnery(MECH * mech) {
 #if 1
 /* NULLTODO : Get the multiple skills for gunnery and such ported or working here so this is usefull again. */
 			return FindPilotGunnery(mech, 0);

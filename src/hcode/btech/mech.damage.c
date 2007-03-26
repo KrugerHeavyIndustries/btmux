@@ -801,7 +801,7 @@ void LoseWeapon(MECH * mech, int hitloc)
 
 	if(!i)
 		return;
-	a = random() % i + 1;
+	a = Number(1, i);
 	b = FindWeaponTypeNumInLoc(mech, hitloc, a);
 	if(b < 0)
 		return;

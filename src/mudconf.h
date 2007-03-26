@@ -154,7 +154,8 @@ struct confdata {
     int btech_newjump;          /* use the new (well old) jump code instead of the old (very old)
                                    jump code */
     int btech_bridge_collision; /* Do we crash into a bridge if we land on it? */
-
+    int btech_tsm_tow_bonus;    /* Give bonus to TSM units when towing, similiar to salvage tech (1=Yes, 0=No) */
+    int btech_tsm_sprint_bonus; /* 0= sprint and tsm don't stack 1= stack sprint and tsm */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

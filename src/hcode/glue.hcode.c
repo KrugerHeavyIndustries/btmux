@@ -143,6 +143,35 @@ char *first_parseattribute(char *buffer)
 
 }
 
+/*
+ * proper_parseattributes
+ *
+ * Split user input on whitespace delimeters, including '='.
+ *
+ *
+ * This function is designed to be used for commands of the nature
+ *
+ * COMMAND KEY=VALUE
+ *
+ * It expects the null terminated source character buffer as the firs
+ * argument, buffer.
+ *
+ * It will duplicate each, space, tab, or equal-sign delimeted field
+ * and assign a pointer to it in the string pointer array, args, in
+ * ascending order for up to max-1 fields.
+ *
+ * All remaining input, if any, will be duplicated and the address of
+ * duplicate string will be assigned as the last entry in args.
+ *
+ * For the above example, the result would be a set of strings with
+ * the contents:
+ *
+ * "COMMAND", "=", "KEY", "VALUE"
+ *
+ * NOTE: it is the caller's responsibility to free the duplicated
+ * strings.
+ */
+
 int proper_parseattributes(char *buffer, char **args, int max)
 {
 	int count = 0, iterator = 0, length;
@@ -213,6 +242,36 @@ int silly_parseattributes(char *buffer, char **args, int max)
 	}
 	return num_args;
 }
+
+/*
+ * proper_explodearguments
+ *
+ * Split user input on whitespace delimeters.
+ *
+ *
+ * This function is designed to be used for commands of the nature
+ *
+ * COMMAND VALUE1 VALUE2 VALUE3
+ *
+ * It expects the null terminated source character buffer as the firs
+ * argument, buffer.
+ *
+ * It will duplicate each space or tab delimeted field and assign a 
+ * pointer to it in the string pointer array, args, in ascending order 
+ * for up to max-1 fields.
+ *
+ * All remaining input, if any, will be duplicated and the address of
+ * duplicate string will be assigned as the last entry in args.
+ *
+ * For the above example, the result would be a set of strings with
+ * the contents:
+ *
+ * "COMMAND", "VALUE1", "VALUE2", "VALUE3"
+ *
+ * NOTE: it is the caller's responsibility to free the duplicated
+ * strings.
+ */
+
 
 int proper_explodearguments(char *buffer, char **args, int max)
 {

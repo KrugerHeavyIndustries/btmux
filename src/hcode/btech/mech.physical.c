@@ -426,9 +426,8 @@ void mech_club(dbref player, void *data, char *buffer)
 			  "You have weapons recycling on your arms.");
 
 	PhysicalAttack(mech, 5,
-				   (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) -
-					1 : 4) + 2 * MechSections(mech)[RARM].basetohit +
-				   2 * MechSections(mech)[LARM].basetohit, PA_CLUB, argc,
+				   (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 1 
+                    : 4), PA_CLUB, argc,
 				   args, mech_map, RARM);
 }								// end mech_club()
 
@@ -484,9 +483,6 @@ void mech_axe(dbref player, void *data, char *buffer)
 	// If not, assume a skill level of 4.
 	if(mudconf.btech_phys_use_pskill)
 		ltohit = rtohit = FindPilotPiloting(mech) - 1;
-
-	ltohit += MechSections(mech)[LARM].basetohit;
-	rtohit += MechSections(mech)[RARM].basetohit;
 
 	// Figure out which arm to use.
 	if(get_arm_args(&using, &argc, &args, mech, have_axe, "an axe")) {
@@ -555,9 +551,6 @@ void mech_saw(dbref player, void *data, char *buffer)
 	// If not, assume a skill level of 4.
 	if(mudconf.btech_phys_use_pskill)
 		ltohit = rtohit = FindPilotPiloting(mech) - 1;
-
-	ltohit += MechSections(mech)[LARM].basetohit;
-	rtohit += MechSections(mech)[RARM].basetohit;
 
 	// Figure out which arm to use.
 	if(get_arm_args(&using, &argc, &args, mech, have_saw, "a saw")) {
@@ -631,9 +624,6 @@ void mech_mace(dbref player, void *data, char *buffer)
 	if(mudconf.btech_phys_use_pskill)
 		ltohit = rtohit = FindPilotPiloting(mech) - 1;
 
-	ltohit += MechSections(mech)[LARM].basetohit;
-	rtohit += MechSections(mech)[RARM].basetohit;
-
 	// Figure out which arm to use.
 	if(get_arm_args(&using, &argc, &args, mech, have_mace, "a mace")) {
 		return;
@@ -702,15 +692,9 @@ void mech_sword(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 5);
 
 	// If btech_phys_use_pskill is defined, use the pilot's piloting skill,
-	// otherwise use a constant skill 3 for left hand, 2 for right.
-	//
-	// NOTE: This seems funky to have different skills for left/right when
-	// this define is off but not on.
+	// otherwise use a constant skill 3.
 	if(mudconf.btech_phys_use_pskill)
 		ltohit = rtohit = FindPilotPiloting(mech) - 2;
-
-	ltohit += MechSections(mech)[LARM].basetohit;
-	rtohit += MechSections(mech)[RARM].basetohit;
 
 	// Which arm(s) have sword crits?
 	if(get_arm_args(&using, &argc, &args, mech, have_sword, "a sword")) {
@@ -965,20 +949,55 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 		if(!phys_common_checks(mech))
 			return;
 
-#define Check(num,okval,mod) \
-  if (AttackType == PA_PUNCH) \
-    if (MechType(mech) == CLASS_MECH) \
-      if (PartIsNonfunctional(mech, sect, num) || \
-          GetPartType(mech, sect, num) != \
-          I2Special(okval)) \
-              baseToHit += mod;
+    /* BTH Adjustments for crits to limbs - seperate one for 
+     * club because it checks for both limbs */
+    if ((AttackType == PA_PUNCH) || (AttackType == PA_KICK) || 
+            (AttackType == PA_AXE) || (AttackType == PA_SWORD) ||
+            (AttackType == PA_MACE) || (AttackType == PA_SAW)) {
 
-	Check(1, UPPER_ACTUATOR, 2);
-	Check(2, LOWER_ACTUATOR, 2);
-	Check(3, HAND_OR_FOOT_ACTUATOR, 1);
+        if (PartIsNonfunctional(mech, sect, 1) ||
+                GetPartType(mech, sect, 1) != I2Special(UPPER_ACTUATOR)) {
+            baseToHit += 2;
+        }
 
-	// All weapons must be cycled in the target limb.
-	if(SectHasBusyWeap(mech, sect)) {
+        if (PartIsNonfunctional(mech, sect, 2) ||
+                GetPartType(mech, sect, 2) != I2Special(LOWER_ACTUATOR)) {
+            baseToHit += 2;
+        }
+
+        /* Hand/Foot crits only affect punch/kick since with the other attacks
+         * are not allowed if they're broken */
+        if ((AttackType == PA_PUNCH) || (AttackType == PA_KICK)) {
+                if (PartIsNonfunctional(mech, sect, 3) ||
+                    GetPartType(mech, sect, 3) != I2Special(HAND_OR_FOOT_ACTUATOR)) {
+                baseToHit += 1;
+                }
+        }
+
+    } else if (AttackType == PA_CLUB) {
+
+        /* Only check lower/upper acts since without shoulder or hand you can't
+         * club */
+        if (PartIsNonfunctional(mech, RARM, 1) ||
+                GetPartType(mech, sect, 1) != I2Special(UPPER_ACTUATOR)) {
+            baseToHit += 2;
+        }
+        if (PartIsNonfunctional(mech, RARM, 2) ||
+                GetPartType(mech, sect, 2) != I2Special(LOWER_ACTUATOR)) {
+            baseToHit += 2;
+        }
+        if (PartIsNonfunctional(mech, LARM, 1) ||
+                GetPartType(mech, sect, 1) != I2Special(UPPER_ACTUATOR)) {
+            baseToHit += 2;
+        }
+        if (PartIsNonfunctional(mech, LARM, 2) ||
+                GetPartType(mech, sect, 2) != I2Special(LOWER_ACTUATOR)) {
+            baseToHit += 2;
+        }
+    }
+
+    // All weapons must be cycled in the target limb.
+    if(SectHasBusyWeap(mech, sect)) {
 		ArmorStringFromIndex(sect, location, MechType(mech), MechMove(mech));
 		mech_printf(mech, MECHALL,
 					"You have weapons recycling on your %s.", location);
@@ -1101,6 +1120,13 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			// If it's a fallen mech, too low.
 			if(MechType(target) == CLASS_MECH && Fallen(target))
 				isTooLow = 1;
+
+            /* Target is to low to punch */
+            if ((MechType(target) == CLASS_MECH) && 
+                    (MechZ(mech) > MechZ(target)) && 
+                    (AttackType == PA_PUNCH)) {
+                isTooLow = 1;
+            }
 
 			// If it's not a mech, bsuit, or DS, too low.
 			if(MechType(target) != CLASS_MECH &&
@@ -1231,7 +1257,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	baseToHit += ((MechType(target) == CLASS_BSUIT) &&
 				  (AttackType == PA_KICK)) ? 3 : 0;
 
-#ifdef MOVEMENT_MODES
+#ifdef BT_MOVEMENT_MODES
 	// A dodging unit is +2, requires maneuvering_ace.
 	if(Dodging(target))
 		baseToHit += 2;
@@ -1256,6 +1282,19 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			  MechType(target) == CLASS_BSUIT &&
 			  MechSwarmTarget(target) > 0,
 			  "You can't hit a swarmed suit with that, try a hand-held weapon!");
+
+    // Terrain mods - Courtesy of RST
+    // Heavy & Light are from Total Warfare and
+    // Smoke from MaxTech old BMR 
+    // Check Smoke first since it can sit on top of other terrain
+    // Might want to check for Fire also at some point?
+    if (MechTerrain(target) == SMOKE) {
+        baseToHit += 2;
+    } else if (MechRTerrain(target) == HEAVY_FOREST) {
+        baseToHit += 2;
+    } else if (MechRTerrain(target) == LIGHT_FOREST) {
+        baseToHit += 1;
+    }
 
 	roll = Roll();
 
@@ -1396,142 +1435,177 @@ void PhysicalTrip(MECH * mech, MECH * target)
  * Damage the victim.
  */
 void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
-					int AttackType, int sect, int glance)
-{
-	int hitloc = 0, damage, hitgroup = 0, isrear, iscritical, i;
+        int AttackType, int sect, int glance) {
 
-	// If we're hitting with a sword, adjust damage differently from
-	// a typical physical.
-	if(AttackType == PA_SWORD)
-		damage = (MechTons(mech) + 5) / weightdmg + 1;
-	else if(AttackType == PA_SAW)
-		// Saws do a constant 7 damage due to their mechanical nature.
-		damage = 7;
-	else
-		damage = (MechTons(mech) + weightdmg / 2) / weightdmg;
+    int hitloc = 0, damage, hitgroup = 0, isrear, iscritical, i;
 
-	// Figure in TSM damage bonus.    
-	if((MechHeat(mech) >= 9.) && (MechSpecials(mech) & TRIPLE_MYOMER_TECH))
-		damage = damage * 2;
+    isrear = 0;
+    iscritical = 0;
 
-	// If we have melee_specialist, add a point of damage.    
-	if(HasBoolAdvantage(MechPilot(mech), "melee_specialist"))
-		damage++;
+    /* Two types of physical attack weapons - Those affected by TSM
+     * and those not - Right now just saw but can add more to the list via
+     * || (AttackType == PA_BLAH) */
+    if (AttackType == PA_SAW) {
 
-	switch (AttackType) {
-	case PA_PUNCH:
-		// If we have damaged/missing actuators, lose damage.
-		if(!OkayCritSectS(sect, 2, LOWER_ACTUATOR))
-			damage = damage / 2;
-		if(!OkayCritSectS(sect, 1, UPPER_ACTUATOR))
-			damage = damage / 2;
+        /* Saws do a constant 7 damage due to their mechanical nature. */
+        damage = 7;
 
-		hitgroup = FindAreaHitGroup(mech, target);
+    } else {
 
-		if(MechType(mech) == CLASS_MECH) {
-			// Hit locs for fallen units. Currently not even allowed
-			// but we'll leave it in, someone may want to enable it later.
-			// EXCEPTION: You may punch vehicles in same hex while proned.
-			if(Fallen(mech)) {
-				if((MechType(target) != CLASS_MECH) || (Fallen(target) &&
-														(MechElevation(mech)
-														 ==
-														 MechElevation
-														 (target))))
-					hitloc =
-						FindTargetHitLoc(mech, target, &isrear, &iscritical);
-				else if(!Fallen(target)
-						&& (MechElevation(mech) > MechElevation(target)))
-					hitloc = FindPunchLocation(hitgroup);
-				else if(MechElevation(mech) == MechElevation(target))
-					hitloc = FindKickLocation(hitgroup);
-			} else if(MechElevation(mech) < MechElevation(target)) {
-				if(Fallen(target) || MechType(target) != CLASS_MECH)
-					hitloc = FindTargetHitLoc(mech, target, &isrear,
-											  &iscritical);
-				else
-					hitloc = FindKickLocation(hitgroup);
-			} else
-				hitloc = FindPunchLocation(hitgroup);
-		} else {
-			isrear = hitgroup == REAR;
-			hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
-		}
-		break;
-		// End punch hitloc code.
-	case PA_SWORD:
-	case PA_AXE:
-	case PA_MACE:
-	case PA_CLUB:
-		hitgroup = FindAreaHitGroup(mech, target);
+        /* Sword attack uses an odd weapon damage amount */
+        if (AttackType == PA_SWORD) {
+            damage = (MechTons(mech) + 5) / weightdmg + 1;
+        } else {
+            damage = (MechTons(mech) + weightdmg / 2) / weightdmg;
+        }
 
-		if(MechType(mech) == CLASS_MECH) {
-			if(MechElevation(mech) < MechElevation(target)) {
-				if(Fallen(target) || MechType(target) != CLASS_MECH)
-					hitloc =
-						FindTargetHitLoc(mech, target, &isrear, &iscritical);
-				else
-					hitloc = FindKickLocation(hitgroup);
-			} else if(MechElevation(mech) > MechElevation(target)) {
-				hitloc = FindPunchLocation(hitgroup);
-			} else {
-				hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
-			}
-		} else {
-			isrear = hitgroup == REAR;
-			hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
-		}
-		break;
-		// End club hitloc code.
+        /* Calc in affect by TSM */
+        if ((MechHeat(mech) >= 9.) && (MechSpecials(mech) & TRIPLE_MYOMER_TECH)) {
+            damage = damage * 2;
+        }
 
-	case PA_KICK:
-		// Reduce damage if actuators are missing/damaged.
-		if(!OkayCritSectS(sect, 2, LOWER_ACTUATOR))
-			damage = damage / 2;
+    }
 
-		if(!OkayCritSectS(sect, 1, UPPER_ACTUATOR))
-			damage = damage / 2;
+    /* If we have melee_specialist, add a point of damage. */
+    if (HasBoolAdvantage(MechPilot(mech), "melee_specialist")) {
+        damage++;
+    }
 
-		if(Fallen(target) || MechType(target) != CLASS_MECH)
-			hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
-		else {
-			hitgroup = FindAreaHitGroup(mech, target);
+    switch (AttackType) {
+        case PA_PUNCH:
 
-			if(MechElevation(mech) > MechElevation(target))
-				hitloc = FindPunchLocation(hitgroup);
-			else {
-				hitloc = FindKickLocation(hitgroup);
+            if (!OkayCritSectS(sect, 2, LOWER_ACTUATOR)) {
+                damage = damage / 2;
+            }
 
-				if(!GetSectInt(target, hitloc) &&
-				   GetSectInt(target, (i = BOUNDED(0, 5 + (6 - hitloc),
-												   NUM_SECTIONS - 1))))
-					hitloc = i;
-			}
-		}
-		break;
-		// End kick hitloc code.
-	}							// end switch() - hitloc selection.
+            if (!OkayCritSectS(sect, 1, UPPER_ACTUATOR)) {
+                damage = damage / 2;
+            }
 
-	if(glance)
-		damage = (damage + 1) / 2;
-	// Damage the target.
-	MyDamageMech(target, mech, 1, MechPilot(mech), hitloc,
-				 (hitgroup == BACK) ? 1 : 0, 0, damage, 0);
+            hitgroup = FindAreaHitGroup(mech, target);
+            if (hitgroup == BACK) {
+                isrear = 1;
+            }
 
-	// If we've successfully hit a suit, knock him off.
-	if(MechType(target) == CLASS_BSUIT && MechSwarmTarget(target) > 0 &&
-	   AttackType != PA_KICK)
-		StopSwarming(target, 0);
+            if (MechType(mech) == CLASS_MECH) {
 
-	// If we kick our target (who is a mech), make a roll to see if he falls.
-	if(MechType(target) == CLASS_MECH && AttackType == PA_KICK)
-		if(!MadePilotSkillRoll(target, 0) && !Fallen(target)) {
-			mech_notify(target, MECHSTARTED,
-						"The kick knocks you to the ground!");
-			MechLOSBroadcast(target, "stumbles and falls down!");
-			MechFalls(target, 1, 0);
-		}
-}								// end PhysicalDamage()
+                if (Fallen(mech)) {
+
+                    /* Total Warfare page 151 - Prone mechs can only make
+                     * two types of physical attacks - Punching (with one arm)
+                     * vehicles in same hex and thrashing - But for now including
+                     * this. - Dany 01/2007 */
+                    if ((MechType(target) != CLASS_MECH) || (Fallen(target) &&
+                                (MechElevation(mech) == MechElevation (target)))) {
+                        hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+                    } else if (!Fallen(target) && 
+                            (MechElevation(mech) > MechElevation(target))) {
+                        hitloc = FindPunchLocation(target, hitgroup);
+                    } else if (MechElevation(mech) == MechElevation(target)) {
+                        hitloc = FindKickLocation(target, hitgroup);
+                    }
+
+                } else if (MechElevation(mech) < MechElevation(target)) {
+
+                    if (Fallen(target) || MechType(target) != CLASS_MECH) {
+                        hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+                    } else {
+                        hitloc = FindKickLocation(target, hitgroup);
+                    }
+
+                } else {
+                    hitloc = FindPunchLocation(target, hitgroup);
+                }
+
+            } else {
+                hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+            }
+
+            break;
+
+        case PA_SWORD:
+        case PA_AXE:
+        case PA_MACE:
+        case PA_CLUB:
+
+            hitgroup = FindAreaHitGroup(mech, target);
+            if (hitgroup == BACK) {
+                isrear = 1;
+            }
+
+            if (MechType(mech) == CLASS_MECH) {
+
+                if (MechElevation(mech) < MechElevation(target)) {
+
+                    if (Fallen(target) || MechType(target) != CLASS_MECH) {
+                        hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+                    } else {
+                        hitloc = FindKickLocation(target, hitgroup);
+                    }
+
+                } else if (MechElevation(mech) > MechElevation(target)) {
+                    hitloc = FindPunchLocation(target, hitgroup);
+                } else {
+                    hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+                }
+
+            } else {
+                hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+            }
+            break;
+
+        case PA_KICK:
+
+            if (!OkayCritSectS(sect, 2, LOWER_ACTUATOR))
+                damage = damage / 2;
+
+            if (!OkayCritSectS(sect, 1, UPPER_ACTUATOR))
+                damage = damage / 2;
+
+            if (Fallen(target) || MechType(target) != CLASS_MECH) {
+                hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
+            } else {
+
+                hitgroup = FindAreaHitGroup(mech, target);
+                if (hitgroup == BACK) {
+                    isrear = 1;
+                }
+
+                if (MechElevation(mech) > MechElevation(target)) {
+                    hitloc = FindPunchLocation(target, hitgroup);
+                } else {
+                    hitloc = FindKickLocation(target, hitgroup);
+                }
+            }
+            break;
+
+    }
+
+    if (glance) {
+        damage = (damage + 1) / 2;
+    }
+
+    // Damage the target.
+    MyDamageMech(target, mech, 1, MechPilot(mech), hitloc,
+            isrear, iscritical, damage, 0);
+
+    // If we've successfully hit a suit, knock him off.
+    if (MechType(target) == CLASS_BSUIT && MechSwarmTarget(target) > 0 &&
+            AttackType != PA_KICK) {
+        StopSwarming(target, 0);
+    }
+
+    // If we kick our target (who is a mech), make a roll to see if he falls.
+    if (MechType(target) == CLASS_MECH && AttackType == PA_KICK) {
+        if (!MadePilotSkillRoll(target, 0) && !Fallen(target)) {
+            mech_notify(target, MECHSTARTED,
+                    "The kick knocks you to the ground!");
+            MechLOSBroadcast(target, "stumbles and falls down!");
+            MechFalls(target, 1, 0);
+        }
+    }
+
+} // end PhysicalDamage()
 
 #define CHARGE_SECTIONS 6
 #define DFA_SECTIONS    6
@@ -1647,7 +1721,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 				hitloc =
 					FindHitLocation(target, hitGroup, &iscritical, &isrear);
 			else
-				hitloc = FindPunchLocation(hitGroup);
+				hitloc = FindPunchLocation(target, hitGroup);
 
 			MyDamageMech(target, mech, 1, MechPilot(mech), hitloc, isrear,
 						 iscritical, 5, 0);
@@ -1658,7 +1732,7 @@ int DeathFromAbove(MECH * mech, MECH * target)
 				hitloc =
 					FindHitLocation(target, hitGroup, &iscritical, &isrear);
 			else
-				hitloc = FindPunchLocation(hitGroup);
+				hitloc = FindPunchLocation(target, hitGroup);
 
 			MyDamageMech(target, mech, 1, MechPilot(mech), hitloc, isrear,
 						 iscritical, (target_damage % 5), 0);
@@ -1669,12 +1743,12 @@ int DeathFromAbove(MECH * mech, MECH * target)
 		spread = mech_damage / 5;
 
 		for(i = 0; i < spread; i++) {
-			hitloc = FindKickLocation(FRONT);
+			hitloc = FindKickLocation(mech, FRONT);
 			MyDamageMech2(mech, mech, 0, -1, hitloc, 0, 0, 5, 0);
 		}
 
 		if(mech_damage % 5) {
-			hitloc = FindKickLocation(FRONT);
+			hitloc = FindKickLocation(mech, FRONT);
 			MyDamageMech2(mech, mech, 0, -1, hitloc, 0, 0,
 						  (mech_damage % 5), 0);
 		}

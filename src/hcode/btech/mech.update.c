@@ -248,7 +248,7 @@ void new_move_mech(MECH *mech, MAP *map) {
             /* Get relative x position for our jump */
             jump_relative_position = (jump_position / MechRealJumpLength(mech) - 0.5) * 2.0;
 
-            /* The parobolas - gives a offset in Z units (5 Z = 1 Hex) */
+            /* The parabolas - gives a offset in Z units (5 Z = 1 Hex) */
             if (MechJumpTop(mech) >= (1 + JumpSpeedMP(mech, map))) {
                 jump_relative_position = (1.0 - (jump_relative_position * 
                             jump_relative_position)) * MechJumpTop(mech);
@@ -1759,7 +1759,7 @@ int recycle_weaponry(MECH * mech)
 		for(i = 0; i < count; i++) {
 			if(WpnIsRecycling(mech, loop, crit[i])) {
 				/* Immediate recycle if its destroyed */
-				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED)
+				if(PartTempNuke(mech, loop, crit[i]) == FAIL_DESTROYED && SectIsDestroyed(mech, loop))
 					GetPartData(mech, loop, crit[i]) = 0;
 				if(diff >= GetPartData(mech, loop, crit[i])) {
 					GetPartData(mech, loop, crit[i]) = 0;

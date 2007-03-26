@@ -474,7 +474,7 @@ TFUNC_LOC_VAL(fixarmor_fail)
 
 	if(tech_roll(player, mech, FIXARMOR_DIFFICULTY) >= 0)
 		tot += 50;
-	tot += random() % 40 + 5;
+	tot += Number(5, 44);
 	tot = (tot * should) / 100;
 	if(tot == 0)
 		tot = 1;
@@ -493,7 +493,7 @@ TFUNC_LOC_VAL(fixinternal_fail)
 
 	if(tech_roll(player, mech, FIXARMOR_DIFFICULTY) >= 0)
 		tot += 50;
-	tot += random() % 40 + 5;
+	tot += Number(5, 44);
 	tot = (tot * should) / 100;
 	if(tot == 0)
 		tot = 1;
@@ -516,7 +516,7 @@ TFUNC_LOC(reattach_fail)
 
 	if(tech_roll(player, mech, REATTACH_DIFFICULTY) >= 0)
 		return 0;
-	tot = random() % 90 + 5;
+	tot = Number(5, 94);
 	notify_printf(player,
 				  "Despite your disastrous failure, you recover %d%% of the materials.",
 				  tot);
@@ -544,7 +544,7 @@ TFUNC_LOC(replacesuit_fail)
 	if(tech_roll(player, mech, REATTACH_DIFFICULTY) >= 0)
 		return 0;
 
-	wRand = random() % 90 + 5;
+	wRand = Number(5, 94);
 	notify_printf(player,
 				  "Despite your disastrous failure, you recover %d%% of the materials.",
 				  wRand);
@@ -581,7 +581,7 @@ TFUNC_LOC_RESEAL(reseal_fail)
 
 	if(tech_roll(player, mech, RESEAL_DIFFICULTY) >= 0)
 		return 0;
-	tot = random() % 90 + 5;
+	tot = Number(5, 94);
 	notify_printf(player,
 				  "You don't manage to get all the water out and seal the section, though you recover %d%% of the materials.",
 				  tot);

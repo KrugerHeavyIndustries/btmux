@@ -625,7 +625,11 @@ CMDENT command_table[] = {
 	 CS_TWO_ARG | CS_INTERP, do_give},
 	{(char *) "goto", goto_sw, CA_LOCATION | CA_NO_SLAVE, 0,
 	 CS_ONE_ARG | CS_INTERP, do_move},
+#ifdef MOVE_HELP
+	{(char *) "muxhelp", NULL, 0, HELP_HELP, CS_ONE_ARG, do_help},
+#else
 	{(char *) "help", NULL, 0, HELP_HELP, CS_ONE_ARG, do_help},
+#endif
 	{(char *) "inventory", NULL, 0, LOOK_INVENTORY, CS_NO_ARGS, do_inventory},
 	{(char *) "kill", NULL, CA_WIZARD /*CA_NO_GUEST|CA_NO_SLAVE */ ,
 	 KILL_KILL, CS_TWO_ARG | CS_INTERP, do_kill},

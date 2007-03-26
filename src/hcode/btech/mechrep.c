@@ -1359,6 +1359,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					AC_CASELESS_MODE;
 				break;
+			case 'G':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					SGUIDED_MODE;
+				break;
 			case '-':
 				MechSections(mech)[index].criticals[subsect].ammomode = 0;
 				MechSections(mech)[index].criticals[subsect].firemode = 0;
@@ -1441,6 +1445,7 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 {
 	char *args[4];
+	char location[20];
 	int argc;
 	int index;
 	int itemcode;
@@ -1532,8 +1537,13 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		MechSpecials2(mech) |= BLOODHOUND_PROBE_TECH;
 		notify(player, "Bloodhound Active Probe added to 'Mech.");
 		break;
-	}
-	notify(player, "Critical slot filled.");
+	case TARGETING_COMPUTER:	
+		MechSpecials2(mech) |= TCOMP_TECH;
+		notify(player, "Targeting Computer added to 'Mech.");
+		break;
+	}	
+	ArmorStringFromIndex(index, location, MechType(mech), MechMove(mech));
+	notify_printf(player, "Critical slot %s (%d) filled.", location, subsect+1);
 }
 
 extern char *specials[];
@@ -1543,7 +1553,7 @@ extern char *infantry_specials[];
 char *techstatus_func(MECH * mech)
 {
 	return (MechSpecials(mech) ||
-			MechSpecials2(mech)) ? BuildBitString2(specials, specials2,
+			MechSpecials2(mech)) ? BuildBitStringwdelim2(specials, specials2,
 												   MechSpecials(mech),
 												   MechSpecials2(mech)) : "";
 }

@@ -35,6 +35,7 @@
 #include "p.mech.c3i.h"
 #include "p.mech.enhanced.criticals.h"
 #include "p.mech.ammodump.h"
+#include "mt19937ar.h"
 
 void correct_speed(MECH * mech)
 {
@@ -489,7 +490,7 @@ void JamMainWeapon(MECH * mech)
 			for(ii = 0; ii < count; ii++) {
 				if(!PartIsBroken(mech, loop, critical[ii])) {
 					/* tempcrit = GetWeaponCrits(mech, weaparray[ii]); */
-					tempcrit = rand();
+					tempcrit = (int)genrand_int31();
 					if(tempcrit > maxcrit) {
 						critfound = 1;
 						maxcrit = tempcrit;
@@ -1347,7 +1348,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 					int num)
 {
 	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
-	switch (random() % 6) {
+	switch (Number(0,5)) {
 	case 0:
 		/* Crew killed */
 		mech_notify(wounded, MECHALL, "Your cockpit is destroyed!");
@@ -1460,7 +1461,7 @@ void DestroyMainWeapon(MECH * mech)
 			for(ii = 0; ii < count; ii++) {
 				if(!PartIsBroken(mech, loop, critical[ii])) {
 					/* tempcrit = GetWeaponCrits(mech, weaparray[ii]); */
-					tempcrit = rand();
+					tempcrit = (int)genrand_int31();
 					if(tempcrit > maxcrit) {
 						critfound = 1;
 						maxcrit = tempcrit;
@@ -1489,7 +1490,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		return;
 
 	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
-	switch (random() % 6) {
+	switch (Number(0,5)) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
 		headhitmwdamage(wounded, attacker, 1);
@@ -1611,7 +1612,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 			break;
 		}
 	mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!%c");
-	switch (random() % 6) {
+	switch (Number(0,5)) {
 	case 0:
 		/* Crew stunned for one turn...treat like a head hit */
 		headhitmwdamage(wounded, attacker, 1);
@@ -2057,7 +2058,11 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				if((Special2I(critType) == HAND_OR_FOOT_ACTUATOR) &&
 				   (MechSections(mech)[hitloc].specials & CARRYING_CLUB))
 					DropClub(mech);
-
+				if(MechCarrying(mech)) {
+					mech_notify(mech, MECHALL,"The hit causes your tow line to let go!");
+					MechLOSBroadcast(mech,"'s tow lines release and flap freely behind it!");
+					mech_dropoff(GOD, mech, "");
+				}		
 				NormalizeLocActuatorCrits(wounded, hitloc);
 			} else if(tLocIsLeg) {
 				mech_notify(wounded, MECHALL,
@@ -2336,7 +2341,7 @@ void HandleCritical(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				return;
 		}
 
-		index = random() % count;
+		index = Number(0, count - 1);
 		critHit = critList[index];	/* This one should be linear */
 
 		critType = GetPartType(wounded, hitloc, critHit);

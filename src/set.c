@@ -776,11 +776,11 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
 			if(mudconf.have_specials)
 				handle_xcode(player, thing, have_xcode, Hardcode(thing));
 			if(!(key & SET_QUIET) && !Quiet(player) && !Quiet(thing)) {
-				FLAGENT *fp;
-				fp = find_flag(thing, flag);
-				notify_printf(player, "%s/%s - %s %s", Name(thing),
-							  attr->name, fp->flagname,
-							  clear ? "cleared." : "set.");
+                NAMETAB *nt;
+                nt = find_nametab_ent(player, indiv_attraccess_nametab, flag);
+                notify_printf(player, "%s/%s - %s %s", Name(thing),
+                              attr->name, nt->name,
+                              clear ? "cleared." : "set.");
 			}
 			could_hear = Hearer(thing);
 			handle_ears(thing, could_hear, Hearer(thing));

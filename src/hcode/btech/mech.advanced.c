@@ -30,6 +30,7 @@
 #include "p.mech.hitloc.h"
 #include "p.mech.enhanced.criticals.h"
 #include "p.mech.combat.misc.h"
+#include "mt19937ar.h"
 
 #define SILLY_TOGGLE_MACRO(neededspecial,setstatus,msgon,msgoff,donthave) \
 if (MechSpecials(mech) & (neededspecial)) \
@@ -1233,7 +1234,7 @@ int FindMainWeapon(MECH * mech, int (*callback) (MECH *, int, int, int, int))
 			for(ii = 0; ii < count; ii++) {
 				if(!PartIsBroken(mech, loop, critical[ii])) {
 					/* tempcrit = GetWeaponCrits(mech, weaparray[ii]); */
-					tempcrit = rand();
+					tempcrit = (int)genrand_int31();
 					if(tempcrit > maxcrit) {
 						critfound = 1;
 						maxcrit = tempcrit;
@@ -1759,7 +1760,7 @@ static struct mechpref_info {
 	{
 	MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety",
 			"MechWarrior Safeties flipped"}, {
-	MECHPREF_SLWARN, MECHPREF_FLAG_INVERTED, "SLWarn",
+	MECHPREF_SLWARN, 0, "SLWarn",
 			"The warning when lit by searchlight is now"}, {
 	MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall",
 			"Suicidal jumps off cliffs toggled"}, {

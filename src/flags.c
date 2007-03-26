@@ -508,6 +508,23 @@ FLAGENT *find_flag(dbref thing, char *flagname)
 	return (FLAGENT *) hashfind(flagname, &mudstate.flags_htab);
 }								/* end find_flag() */
 
+
+char *find_attribute_flag(int flag, NAMETAB *ntab) {
+
+    NAMETAB *nt;
+    char *flag_name;
+
+    flag_name = NULL;
+
+    for (nt = ntab; nt->name; nt++) {
+        if (flag == nt->flag) {
+            flag_name = strdup(nt->name);
+        }
+    }
+
+    return flag_name;
+}
+
 /**
  * Sets or clears a specified flag on an object. 
  * @param target Target object

@@ -394,7 +394,7 @@ void bsuit_swarm(dbref player, void *data, char *buffer)
 	/* See if we're 'swarming' or 'mounting' */
 	if(MechTeam(target) == MechTeam(mech)) {
 		/* Make sure this type of bsuit has the ability to mount */
-		if(!(MechInfantrySpecials(mech) & INF_SWARM_TECH)) {
+		if(!(MechInfantrySpecials(mech) & INF_MOUNT_TECH)) {
 			mech_notify(mech, MECHALL,
 						"These battlesuits are not capable of mounting mechs!");
 			return;

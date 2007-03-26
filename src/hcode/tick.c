@@ -78,7 +78,7 @@ int new_heartbeat_dispatch(void *key, void *data, int depth, void *arg) {
             }
             break;
     }
-
+    return 1;
 }
 
 void heartbeat_run(int fd, short event, void *arg) {
