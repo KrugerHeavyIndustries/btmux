@@ -695,6 +695,8 @@ void bsuit_hide(dbref player, void *data, char *buffer)
 	DOCHECK(MechMove(mech) == MOVE_VTOL
 			&& !Landed(mech), "You must be landed!");
 
+	DOCHECK(MechSwarmTarget(mech), "Hide where? Not while on that!");
+
 	terrain = GetRTerrain(map, MechX(mech), MechY(mech));
 
 	if(IsForest(terrain)) {
