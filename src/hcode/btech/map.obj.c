@@ -655,7 +655,7 @@ void map_add_block(dbref player, void *data, char *buffer)
 #define READINT(from,to) \
     DOCHECK(Readnum(to,from), "Invalid number!")
 	argc = mech_parseattributes(buffer, args, 4);
-	DOCHECK(argc < 2 || argc > 4, "Invalid arguments!");
+	DOCHECK(argc < 3 || argc > 4, "Invalid arguments!");
 	READINT(args[0], x);
 	READINT(args[1], y);
 	READINT(args[2], str);
