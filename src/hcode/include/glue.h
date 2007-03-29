@@ -800,6 +800,8 @@ CommandsStruct mechrepcommands[] = {
 	mechrep_Rsettacrange},
     {0, "SETSCANRANGE <NUM>", "@Sets the scan range of the mech.",
 	mechrep_Rsetscanrange},
+    {0, "SETRADIO <NUM>", "@Sets the radio level of the mech.",
+        mechrep_Rsetradio},
     {0, "SETRADIORANGE <NUM>", "@Sets the radio range of the mech.",
 	mechrep_Rsetradiorange},
     {0, "SETCARGOSPACE <VAL> <MAXTON>",
