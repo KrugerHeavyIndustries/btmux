@@ -2112,7 +2112,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		/* BTH for first unit */
 		mech_baseToHit = 5;
 		mech_baseToHit +=
-			FindPilotPiloting(mech) - FindSPilotPiloting(target);
+			FindPilotPiloting(mech) - FindPilotPiloting(target);
 
 		mech_baseToHit +=
 			(HasBoolAdvantage(MechPilot(mech), "melee_specialist") ?
@@ -2128,7 +2128,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		/* BTH for second unit */
 		targ_baseToHit = 5;
 		targ_baseToHit +=
-			FindPilotPiloting(target) - FindSPilotPiloting(mech);
+			FindPilotPiloting(target) - FindPilotPiloting(mech);
 
 		targ_baseToHit +=
 			(HasBoolAdvantage(MechPilot(target), "melee_specialist") ?
