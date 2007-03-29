@@ -29,7 +29,6 @@ void newfreemap(dbref key, void **data, int selector);
 int map_sizefun(void *data, int flag);
 void map_listmechs(dbref player, void *data, char *buffer);
 void clear_hex(MECH * mech, int x, int y, int meant);
-void map_pathfind(dbref player, void *data, char *buffer);
 void UpdateMechsTerrain(MAP * map, int x, int y, int t);
 
 #endif				/* _P_MAP_H */

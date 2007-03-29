@@ -685,35 +685,6 @@ void clear_hex(MECH * mech, int x, int y, int meant)
 
 MAP *spath_map;
 
-#define readval(f,t)  DOCHECK(readint(f, t), "Invalid argument!")
-
-void map_pathfind(dbref player, void *data, char *buffer)
-{
-	MAP *map = (MAP *) data;
-	char *args[6];
-	int argc;
-	int x1, y1, x2, y2;
-	time_t start_t;
-	int errper = -1;
-
-	if(!map)
-		return;
-	argc = mech_parseattributes(buffer, args, 6);
-	DOCHECK((argc < 4 || argc > 5), "Invalid arguments!");
-	readval(x1, args[0]);
-	readval(y1, args[1]);
-	readval(x2, args[2]);
-	readval(y2, args[3]);
-	if(argc > 4) {
-		readval(errper, args[4]);
-		errper = BOUNDED(0, errper, 1000);
-	}
-	spath_map = map;
-	start_t = time(NULL);
-}
-
-#undef readval
-
 void UpdateMechsTerrain(MAP * map, int x, int y, int t)
 {
 	MECH *mech;
