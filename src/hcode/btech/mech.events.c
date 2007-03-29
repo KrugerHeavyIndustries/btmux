@@ -193,8 +193,8 @@ void mech_lateral_event(MUXEVENT * e)
 	if(!mech || !Started(mech))
 		return;
 	mech_printf(mech, MECHALL,
-				"Lateral movement mode change to %s completed.",
-				lateral_modes[latmode].full);
+				"Lateral movement mode change to %s (%d offset) completed.",
+				lateral_modes[latmode].full, lateral_modes[latmode].ofs);
 	MechLateral(mech) = lateral_modes[latmode].ofs;
 #ifdef BT_MOVEMENT_MODES
 	if(MechMove(mech) != MOVE_QUAD) {

@@ -63,40 +63,44 @@ const char *LateralDesc(MECH * mech)
 
 void mech_lateral(dbref player, void *data, char *buffer)
 {
+
+/* Rule Reference: BMR Revised, Page 82 (Quad Lateral) */
+/* Rule Reference: MaxTech REvised, Page 46 (All Units w/ Maneuvering Ace) */
+/* Rule Reference: MaxTech Revised, Page 29 (VTOL/Hover Lateral) */
+/* Rule Reference: Total Warfare, Page 50 (Quad Lateral) */
+/* Rule Reference: Total Warfare, Page 67 (VTOL/Hover Lateral, though doesn't say intentional) */
+
 	MECH *mech = (MECH *) data;
 	int i;
 
 	cch(MECH_USUALO);
-#ifndef BT_MOVEMENT_MODES
-	DOCHECK(MechType(mech) != CLASS_MECH ||
-			!MechIsQuad(mech),
-			"Only quadrupeds can alter their lateral movement!");
-#else
-	DOCHECK(!((MechType(mech) == CLASS_MECH && MechIsQuad(mech)) ||
-			  (MechType(mech) == CLASS_VTOL) ||
-			  (MechMove(mech) == MOVE_HOVER)),
-			"You cannot alter your lateral movement!");
-#endif
-	DOCHECK(CountDestroyedLegs(mech) > 0,
-			"You need all four legs to use lateral movement!");
+
+	DOCHECK(!((MechIsQuad(mech) && (CountDestroyedLegs(mech) == 0)) ||
+		((MechType(mech) == CLASS_VTOL) || (MechType(mech) == MOVE_HOVER)) ||
+		((HasBoolAdvantage(player, "maneuvering_ace") && (MechPilot(mech) == player)))),"You cannot alter your lateral movement!");
+
 	skipws(buffer);
 
 	for(i = 0; lateral_modes[i].name; i++)
 		if(!strcasecmp(lateral_modes[i].name, buffer))
 			break;
 	DOCHECK(!lateral_modes[i].name, "Invalid mode!");
+
 	if(lateral_modes[i].ofs == MechLateral(mech)) {
 		DOCHECK(!ChangingLateral(mech), "You are going that way already!");
 		mech_notify(mech, MECHALL, "Lateral mode change aborted.");
 		StopLateral(mech);
 		return;
 	}
+
 	mech_printf(mech, MECHALL,
-				"Wanted lateral movement mode changed to %s.",
-				lateral_modes[i].full);
+				"Wanted lateral movement mode changed to %s (%d offset).",
+				lateral_modes[i].full, lateral_modes[i].ofs);
 	StopLateral(mech);
 	MECHEVENT(mech, EVENT_LATERAL, mech_lateral_event, LATERAL_TICK, i);
+
 }
+
 void mech_turnmode(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
