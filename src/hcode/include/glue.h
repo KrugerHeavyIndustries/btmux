@@ -197,7 +197,7 @@ CommandsStruct mechcommands[] = {
     {12, "THRUST [num]", "Shows/Changes the thrust to <NUM>.",
 	aero_thrust},
     {1, "LATERAL [fl|fr|rl|rr|-]",
-	    "Change your lateral movement mode (quad only). fl/fr/rl/rr = Directions, - = Disable lateral movement.",
+	    "Change your lateral movement mode (quad only/vtol/hover, or with Maneuvering_ace). fl/fr/rl/rr = Directions, - = Disable lateral movement.",
 	mech_lateral},
     {129, "STAND", "Stand up after a fall or dropping prone.", mech_stand},
     {1, "PRONE", "Force your 'mech to drop prone where it is.", mech_drop},
