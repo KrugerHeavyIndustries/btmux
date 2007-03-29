@@ -177,7 +177,7 @@ void aero_takeoff(dbref player, void *data, char *buffer)
 			"Only VTOL, Aerospace fighters and Dropships can take off.");
 	DOCHECK(!Landed(mech), "You haven't landed!");
 	if(Fallen(mech) || (MMaxSpeed(mech) <= MP1) ||
-	   (SectIsDestroyed(mech, ROTOR))) {
+	   ((SectIsDestroyed(mech, ROTOR)) && MechType(mech) == CLASS_VTOL)) {
 		DOCHECK(MechType(mech) == CLASS_VTOL, "The rotor's dead!");
 		notify(player, "The engines are dead!");
 		return;
