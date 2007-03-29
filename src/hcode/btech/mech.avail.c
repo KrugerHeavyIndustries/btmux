@@ -145,7 +145,7 @@ static void mech_list_maker(dbref player, int table, int types, int tons,
 	}
 }
 
-void debug_makemechs(dbref player, void *data, char *buffer)
+void debug_makemechsub(dbref player, void *data, char *buffer)
 {
 	char *args[7];
 	int argc;
