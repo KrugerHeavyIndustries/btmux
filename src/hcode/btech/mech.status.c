@@ -1631,154 +1631,51 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	}
 }
 
-/*
- * Picks the character to show for the armor location on enemy scans.
- */
-int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt)
-{
-	int a = -1;
-	int b = -1;
-	int c = -1;
-
-	if(flag & 256) {
-		// Aero SI
-		a = ((1 + (b = AeroSI(mech))) * 100) / (AeroSIOrig(mech) + 1);
-	} else if(flag & 2) {
-		if(SectIntsRepair(mech, loc))
-		c = 5;				/* Blue */
-		a = (((b = GetSectInt(mech, loc)) + 1) * 100) / (GetSectOInt(mech, loc) + 1);
-	} else if(flag & 4) {
-		if(SectRArmorRepair(mech, loc))
-		c = 5;				/* Blue */
-		a = ((1 + (b = GetSectRArmor(mech, loc))) * 100) / (GetSectORArmor(mech, loc) + 1);
-	} else {
-		if(SectArmorRepair(mech, loc))
-		c = 5;				/* Blue */
-		a = ((1 + (b = GetSectArmor(mech, loc))) * 100) / (GetSectOArmor(mech, loc) + 1);
-	}
-	
-	*opt = b;
-	// Blue (Character 5 in armordamltrstr)
-	if(c > 0)
-		return c;
-	// Yarr, we're breached.
-	if(!b)
-		return 4;
-	// Armor condition level characters.
-	if(a > 90)
-		return 0;
-	if(a > 70)
-		return 1;
-	if(a > 45)
-		return 2;
-	return 3;
-}
-
-/* bright green, dark green, bright yellow, dark red, black */
-static char *armordamcolorstr[] = { "%ch%cg", "%cg", "%ch%cy", "%cr", "%ch%cx", "%ch%cb" };
-/* Armor location character (enemy scan). Last on is for armor being repaired. */
-static char *armordamltrstr = "OoxX*?";
-
-char *PrintArmorDamageColor(MECH * mech, int loc, int flag)
-{
-	int a;
-
-	return armordamcolorstr[ArmorEvaluateSerious(mech, loc, flag, &a)];
-}
-
-char *PrintArmorDamageString(MECH * mech, int loc, int flag)
-{
-	int a;
-	static char foo[6];
-
-	// Zero out our armor string.
-	for(a = 0; a < 4; a++)
-		foo[a] = 0;
-	
-	// Put a single character representing the section's health in front of array.
-	foo[0] = armordamltrstr[ArmorEvaluateSerious(mech, loc, flag, &a)];
-	
-	if(flag & 1) {
-		if(flag & 8)
-			sprintf(foo, "%1d", (flag & 32) ? ((a + 9) / 10) : a);
-		else if(flag & 128)
-			sprintf(foo, "%3d", a);
-		else
-			sprintf(foo, "%2d", a);
-
-		if((flag & 16) && foo[0] == ' ')
-			foo[0] = '0';
-	} else
-		foo[1] = (flag & 8 ? 0 : foo[0]);
-	return foo;
-}
-
-char *ArmorKeyInfo(dbref player, int keyn, int owner)
-{
-	static char str[20];
-
-	if(owner) {
-		str[0] = 0;
-		return str;
-	}
-	if(keyn == 1) {
-		strcpy(str, "Key");
-		return str;
-	}
-	if(keyn > 6) {
-		strcpy(str, "   ");
-		return str;
-	}
-	sprintf(str, "%s%c%c%%c ", armordamcolorstr[6 - keyn],
-			armordamltrstr[6 - keyn], armordamltrstr[6 - keyn]);
-	return str;
-}
-
-/* Params: a = location, b = flag (0/1=owner, 2 = internal, 4 = rear, 8 = minifield), 16 = zero-padding, 32 = MW, 64 = show spaces if destroyed loc */
-
-char *show_armor(MECH * mech, int loc, int flag)
-{
-	static char foo[32];
-
-	if(flag & 256)
-		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, 0, flag), PrintArmorDamageString(mech, loc, flag));
-	else if(!GetSectInt(mech, loc) && !(flag & 64))
-		sprintf(foo, (flag & 32) ? " " : (flag & 128) ? "   " : "  ");
-	else
-		sprintf(foo, "%s%s%%c", PrintArmorDamageColor(mech, loc, flag),
-				PrintArmorDamageString(mech, loc, flag));
-	return foo;
-}
 
 /* Don't indent the entire next section -- it contains ASCII graphics */
 /* *INDENT-OFF* */
 
-/* Fancy idea.. :-) */
-
-/* Just get da desc from string, strtok'ed with \ns. */
-
-/* 1-6 at beginning of line = key */
-
-/* &SI| = SI (aeros/ds) */
-
-/* &+num = armor */
-
-/* &-num = rear armor  */
-
-/* && = & */
-
-/* &:num = internal */
-
-/* &(stuff = len 1 column */
-
-/* &)stuff = len 3 column (DSs) */
-
-/* @<num><char> Shown only if loc <num> is intact */
-
-/* !<num><num2><char> Shown only if loc <num> or loc <num2> is intact */
-
-/* 0 on empty line ends the script */
-
+/*
+ * Status descriptions are evaluated with the following language:
+ *
+ * 1-6 at beginning of line = armor status symbol key
+ *
+ * && = &
+ *
+ * &[<width>]<type><loc> = armor status symbol
+ *
+ *              <width> = optional column width
+ *
+ *              <type>:
+ *              + = external (front)
+ *              - = external (rear)
+ *              : = internal
+ *
+ *              <loc> = location number
+ *
+ * TODO: Provide a way to group characters together, which is what we usually
+ * want to do, rather than forcing us to @<loc> every <char>.
+ *
+ * @<loc><char> = Show <char> only if location number <loc> is intact
+ *
+ * !<loc1><loc2><char> = Show <char> only if location number <loc1> or <loc2> 
+ *                       is intact
+ *
+ * TODO: Use the same escape character for everything.  Or provide a way to
+ * escape @ and ! characters. (&@ and &!, probably.)
+ *
+ * TODO: Because of custom status descriptions, we can't just change this
+ * language willy-nilly.  Power Shaper said it was OK, though, so I got rid of
+ * some backward compatibility code.  Done properly, it's just a few lines here
+ * and there to check and activate flags.
+ *
+ * Old            New          Description
+ * ------------- ------------- ------------------------------------
+ * &(<type><loc> &1<type><loc> One digit column for mechwarriors.
+ * &)<type><loc> &3<type><loc> Three digit column for dropships.
+ * &S<?><?>      &:0           Aero structural integrity.
+ * \n0                         End of script.
+ */
 
 #ifdef WEIGHTVARIABLE_STATUS
 
@@ -1791,15 +1688,14 @@ char *show_armor(MECH * mech, int loc, int flag)
        / /  \ \               /  \                / /  \ \
       (99|  |99)             /    \              (99|  |99)
 */
-
-char *lightmechdesc =
+static const char *const lightmechdesc =
     "7         FRONT                REAR                INTERNAL\n"
     "1          @7_@7_                   @7_@7_                    @7_@7_\n"
     "2       @2_@2_@7(&+7@7)@3_@3_             @2_@2_@7(@7*@7*@7)@3_@3_              @2_@2_@7(&:7@7)@3_@3_\n"
     "3      @2/&+2!24|&+4!43|&+3@3\\           @2/&-2!24|&-4!34|&-3@3\\            @2/&:2!24|&:4!34|&:3@3\\\n"
     "4     @0(&+0!05/@2-@4\\@4/@3-!16\\&+1@1)         @0(    @4\\@4/    @1)          @0(&:0!05/@2-@4\\@4/@3-!16\\&:1@1)\n"
     "5       @5/ @5/  @6\\ @6\\               @5/  @6\\                @5/ @5/  @6\\ @6\\\n"
-    "6      @5(&+5@5|  @6|&+6@6)             @5/    @6\\              @5(&:5@5|  @6|&:6@6)\n0";
+    "6      @5(&+5@5|  @6|&+6@6)             @5/    @6\\              @5(&:5@5|  @6|&:6@6)";
 
 /*
  Heavy Bipedal Battlemech
@@ -1812,14 +1708,14 @@ char *lightmechdesc =
 
 */
 
-char *heavymechdesc =
+static const char *const heavymechdesc =
     "7         FRONT                REAR                INTERNAL\n"
     "1          @7_@7_                   @7_@7_                    @7_@7_\n"
     "2       @2_@2_@7(&+7@7)@3_@3_             @2_@2_@7(@7*@7*@7)@3_@3_              @2_@2_@7(&:7@7)@3_@3_\n"
     "3      @2/&+2!24|&+4!43|&+3@3\\           @2/&-2!24|&-4!34|&-3@3\\            @2/&:2!24|&:4!34|&:3@3\\\n"
     "4     @0(&+0!05/@4|@4=@4=@4|!16\\&+1@1)         @0(   !54|@4=@4=!64|   @1)          @0(&:0!05/@4|@4=@4=@4|!16\\&:1@1)\n"
     "5       @5/  @5/@6\\  @6\\               @5/  @6\\                @5/  @5/@6\\  @6\\\n"
-    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)\n0";
+    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)";
 
 /*
  Medium Bipedal Battlemech
@@ -1831,7 +1727,7 @@ char *heavymechdesc =
       (99|  |99)             /    \              (99|  |99)
 
 */
-char *mediummechdesc =
+static const char *const mediummechdesc =
 
     "7         FRONT                REAR                INTERNAL\n"
     "1          @7_@7_                   @7_@7_                    @7_@7_\n"
@@ -1839,7 +1735,7 @@ char *mediummechdesc =
     "3      @2/&+2!24|&+4!43|&+3@3\\           @2/&-2!24|&-4!34|&-3@3\\            @2/&:2!24|&:4!34|&:3@3\\\n"
     "4     @0(&+0!05/@4\\@4_@4_@4/!16\\&+1@1)         @0(   @4\\@4_@4_@4/   @1)          @0(&:0!05/@4\\@4_@4_@4/!16\\&:1@1)\n"
     "5       @5/ @5/  @6\\ @6\\               @5/  @6\\                @5/ @5/  @6\\ @6\\\n"
-    "6      @5(&+5@5|  @6|&+6@6)             @5/    @6\\              @5(&:5@5|  @6|&:6@6)\n0";
+    "6      @5(&+5@5|  @6|&+6@6)             @5/    @6\\              @5(&:5@5|  @6|&:6@6)";
 
 /*
  Assault Bipedal Battlemech
@@ -1852,15 +1748,14 @@ char *mediummechdesc =
 
 */
 
-char *assaultmechdesc =
+static const char *const assaultmechdesc =
     "7         FRONT                REAR                INTERNAL\n"
     "1          @7_@7_                   @7_@7_                    @7_@7_\n"
     "2       @2_@2_@7[&+7@7]@3_@3_             @2_@2_@7[@7*@7*@7]@3_@3_              @2_@2_@7[&:7@7]@3_@3_\n"
     "3      @2/&+2!24|&+4!43|&+3@3\\           @2/&-2!24|&-4!34|&-3@3\\            @2/&:2!24|&:4!34|&:3@3\\\n"
     "4     @0(&+0@2|@4|@4=@4=@4|@3|&+1@1)         @0(   @4|@4|@4|@4|   @1)          @0(&:0@2|@4|@4=@4=@4|@3|&:1@1)\n"
     "5       @5/ @4\\@4|@4|@4/ @6\\               @4\\@4|@4|@4/                @5/ @4\\@4|@4|@4/ @6\\\n"
-    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)\n0";
-
+    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)";
 
 #else /* WEIGHTVARIABLE_STATUS */
 
@@ -1873,13 +1768,13 @@ char *assaultmechdesc =
       (99/  \99)             /    \              (99/  \99)
 */
 
-char *mechdesc =
+static const char *const mechdesc =
     "1         FRONT                REAR                INTERNAL\n"
     "2         @7(&+7@7)                 @7(@7*@7*@7)                  @7(&:7@7)\n"
     "3      @2/&+2!24|&+4!43|&+3@3\\           @2/&-2!24|&-4!34|&-3@3\\            @2/&:2!24|&:4!34|&:3@3\\\n"
     "4     @0(&+0!05/ !54|!64| !16\\&+1@1)         @0(   !54|  !64|   @1)          @0(&:0!05/ !54|!64| !16\\&:1@1)\n"
     "5       @5/  @5/@6\\  @6\\               @5/  @6\\                @5/  @5/@6\\  @6\\\n"
-    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)\n0";
+    "6      @5(&+5@5/  @6\\&+6@6)             @5/    @6\\              @5(&:5@5/  @6\\&:6@6)";
 
 #endif /* WEIGHTVARIABLE_STATUS */
 
@@ -1894,14 +1789,14 @@ char *mechdesc =
     /_/__\    /__\_\                         /_/__\    /__\_\
 */
 
-char *quaddesc =
+static const char *const quaddesc =
     "7         FRONT                REAR                INTERNAL\n"
     "1           @7_@7_@7_                                      @7_@7_@7_\n"
     "2   @5_@5_@5_  @2_@2_@7/&+7 @7\\@3_  @6_@6_@6_                       @5_@5_@5_  @2_@2_@7/&:7 @7\\@3_  @6_@6_@6_\n"
     "3  @5( &+5@5\\@2(&+2!24|&+4!43|&+3@3)@6/&+6 @6)     @2(&-2!24|&-4!43|&-3@3)      @5( &:5@5\\@2(&:2!24|&:4!43|&:3@3)@6/&:6 @6)\n"
     "4   @5\\ @5\\!05(&+0@0/    @1\\&+1!16)@6/ @6/                       @5\\ @5\\!05(&:0@0/    @1\\&:1!16)@6/ @6/\n"
     "5    @5\\ @5\\@0|@0|      @1|@1|@6/ @6/                         @5\\ @5\\@0|@0|      @1|@1|@6/ @6/\n"
-    "6    @5/@5_!05/@0_@0_@0\\    @1/@1_@1_!16\\@6_@6\\                         @5/@5_!05/@0_@0_@0\\    @1/@1_@1_!16\\@6_@6\\\n0";
+    "6    @5/@5_!05/@0_@0_@0\\    @1/@1_@1_!16\\@6_@6\\                         @5/@5_!05/@0_@0_@0\\    @1/@1_@1_!16\\@6_@6\\";
 
 /*
   MechWarrior
@@ -1911,11 +1806,11 @@ char *quaddesc =
                      (9/ \9)
 */
 
-char *mwdesc =
-    "1                       @7(&:7@7)\n"
-    "2                     @2/&:2@4|&:4@4|&:3@3\\\n"
-    "6                    @0(&:0@0/ @4_ @1\\&:1@1)\n"
-    "7                     @5(&:5@5/ @6\\&:6@6)\n0";
+static const char *const mwdesc =
+    "1                       @7(&1:7@7)\n"
+    "2                     @2/&1:2@4|&1:4@4|&1:3@3\\\n"
+    "6                    @0(&1:0@0/ @4_ @1\\&1:1@1)\n"
+    "7                     @5(&1:5@5/ @6\\&1:6@6)";
 
 
 /*
@@ -1932,7 +1827,7 @@ char *mwdesc =
          `~~~~'                    `~~~~' 
 */
 
-char *shipdesc =
+static const char *const shipdesc =
     "7         FRONT                    INTERNAL\n"
     "1         @2.@2/&+2@2\\@2.                    @2.@2/&:2@2\\@2. \n"
     "2        @2|@2'@4.@4-@4-@4.@2`@2|                  @2|@2'@4.@4-@4-@4.@2`@2|\n"
@@ -1941,8 +1836,7 @@ char *shipdesc =
     "5        @0|&+0@0>@1<&+1@1|                  @0|&:0@0>@1<&:1@1|  \n"
     "7        @0|!03.!03/!03|!13|!13\\!13.@1|                  @0|!03.!03/!03|!13|!13\\!13.@1|  \n"
     "7        @0|@3| &+3 @3|@1|                  @0|@3| &:3 @3|@1|  \n"
-    "7         !03`@3~@3~@3~@3~!13'                    !03`@3~@3~@3~@3~!13' \n"
-    "0";
+    "7         !03`@3~@3~@3~@3~!13'                    !03`@3~@3~@3~@3~!13'";
 
 /*
   Hydrofoil vehicle:
@@ -1956,7 +1850,7 @@ char *shipdesc =
         `~~~~'                     `~~~~'
 */
 
-char *foildesc =
+static const char *const foildesc =
     "7         FRONT                    INTERNAL\n"
     "7         @2.@2/@2\\@2.                       @2.@2/@2\\@2.\n"
     "1      @2_@2_@2_@2|&+2@2|@2_@2_@2_                 @2_@2_@2_@2|&:2@2|@2_@2_@2_\n"
@@ -1964,8 +1858,7 @@ char *foildesc =
     "3        !04|@4|&+4@4|!14|                     !04|@4|&:4@4|!14| \n"
     "4     @0_@0_@0|&+0!01:!01:&+1@1|@1_@1_               @0_@0_@0|&:0!01:!01:&:1@1|@1_@1_\n"
     "5     @0-@0-@0_@0|!03'&+3!13`@1|@1_@1-@1-               @0-@0-@0_@0|!03'&:3!13`@1|@1_@1-@1-\n"
-    "7        !03`@3~@3~@3~@3~!13'                     !03`@3~@3~@3~@3~!13'\n"
-    "0";
+    "7        !03`@3~@3~@3~@3~!13'                     !03`@3~@3~@3~@3~!13'";
 
 /*
   Submarine vehicle:
@@ -1980,7 +1873,7 @@ char *foildesc =
        =|99|=                     =|99|=    
 */
 
-char *subdesc =
+static const char *const subdesc =
     "7        FRONT                     INTERNAL\n"
     "1         @2-@2-                         @2-@2-      \n"
     "1       @2=@2|&+2@2|@2=                     @2=@2|&:2@2|@2=    \n"
@@ -1988,8 +1881,7 @@ char *subdesc =
     "1      @0| @4|&+4@4| @1|                   @0| @4|&:4@4| @1|   \n"
     "1      @0|&+0@0|@1|&+1@1|                   @0|&:0@0|@1|&:1@1|   \n"
     "1       @0\\!03|@3-@3-!13|@1/                     @0\\!03|@3-@3-!13|@1/    \n"
-    "1       !03=@3|&+3@3|!13=                     !03=@3|&:3@3|!13=    \n"
-    "0";
+    "1       !03=@3|&+3@3|!13=                     !03=@3|&:3@3|!13=";
 
 /*
   Aero
@@ -2003,15 +1895,15 @@ char *subdesc =
              '===='
  */
 
-char *aerodesc =
+static const char *const aerodesc =
     "7              @0/@0^@0^@0\\\n"
     "1            @1/@1|@0`&+0@0'@2|@2\\\n"
     "2     @1|     @1|@1_@1|.--.@2|@2_@2|     @2|\n"
-    "3     @1|      @1/@1||&SI|||@2\\      @2|\n"
+    "3     @1|      @1/@1||&:0||@2\\      @2|\n"
     "4     @1|    @1/@1'@1.@1-@3|@3-@3-@3|@2-@2.@2`@2\\    @2|\n"
     "5     @1|@1-@1-@1-'&+1@1| @3|&+3@3| @2|&+2`---@2|\n"
     "6     @1`@1-@1-@1_@1_@1_@1_@1_\\||||/@2_@2_@2_@2_@2_@2-@2-'\n"
-    "7             @1'===='\n0";
+    "7             @1'===='";
 
 /*
   Spheroid Dropship
@@ -2025,15 +1917,15 @@ char *aerodesc =
           ~~~~~~~
 */
 
-char *spher_ds_desc =
+static const char *const spher_ds_desc =
     "7          FRONT\n"
     "1          @1_@1_@1_@1_@1_@1_@1_\n"
-    "2         @1/!15`!15.&)+5!05,!05'@0\\\n"
-    "3        @1|&)+1@1|@1~@0|&)+0@0|\n"
+    "2         @1/!15`!15.&3+5!05,!05'@0\\\n"
+    "3        @1|&3+1@1|@1~@0|&3+0@0|\n"
     "4        !12|  !12|   !03|  !03|\n"
-    "5        @2|&)+2@2|@4_@3|&)+3@3|\n"
-    "6         @2\\!24,!24'&)+4!34`!34.@3/\n"
-    "7          @4~@4~@4~@4~@4~@4~@4~\n0";
+    "5        @2|&3+2@2|@4_@3|&3+3@3|\n"
+    "6         @2\\!24,!24'&3+4!34`!34.@3/\n"
+    "7          @4~@4~@4~@4~@4~@4~@4~";
 
 /*
   Aerodine Dropship
@@ -2047,7 +1939,7 @@ char *spher_ds_desc =
    `|`_\~~/_`|' 
 */
 
-char *aerod_ds_desc =
+static const char *const aerod_ds_desc =
     "7           .--.\n"
     "1         ,`.&+5.'.\n"
     "2         |.|__|.|\n"
@@ -2055,7 +1947,7 @@ char *aerod_ds_desc =
     "4        | |:  :| |\n"
     "5       |'&+1|--|&+0`|\n"
     "6       |  .'&+4`.  |\n"
-    "7       `|`_\\~~/_`|'\n0";
+    "7       `|`_\\~~/_`|'";
 
 /*
   Vehicle (with turret):
@@ -2068,14 +1960,14 @@ char *aerod_ds_desc =
           ~~~~~~                                ~~~~~~
 */
 
-char *vehdesc =
+static const char *const vehdesc =
     "1          FRONT                                INTERNAL\n"
     "2         @0,@0`!02.&+2!12,@1'@1.                              @0,@0`!02.&:2!12,@1'@1.\n"
     "3        @0|  !02|@4_@4_!12|  @1|                            @0|  !02|@4_@4_!12|  @1|\n"
     "4        @0|  @4|&+4@4|  @1|                            @0|  @4|&:4@4|  @1|\n"
     "5        @0|&+0@4|@4~@4~@4|&+1@1|                            @0|&:0@4|@4~@4~@4|&:1@1|\n"
     "6         @0\\!03,!03'&+3!13`!13.@1/                              @0\\!03,!03'&:3!13`!13.@1/\n"
-    "7          @3~@3~@3~@3~@3~@3~                                @3~@3~@3~@3~@3~@3~\n0";
+    "7          @3~@3~@3~@3~@3~@3~                                @3~@3~@3~@3~@3~@3~";
 
 /*
   Vehicle (no turret, by design)
@@ -2088,14 +1980,14 @@ char *vehdesc =
           ~~~~~~                                ~~~~~~
 */
 
-char *veh_not_desc =
+static const char *const veh_not_desc =
     "1          FRONT                                INTERNAL\n"
     "2         @0,@0`!02.&+2!12,@1'@1.                              @0,@0`!02.&:2!12,@1'@1.\n"
     "3        @0|  !02|@2_@2_!12|  @1|                            @0|  !02|@2_@2_!12|  @1|\n"
     "4        @0|  @0|  @1|  @1|                            @0|  @0|  @1|  @1|\n"
     "5        @0|&+0@0|!01~!01~@1|&+1@1|                            @0|&:0@0|!01~!01~@1|&:1@1|\n"
     "6         @0\\!03,!03'&+3!13`!13.@1/                              @0\\!03,!03'&:3!13`!13.@1/\n"
-    "7          @3~@3~@3~@3~@3~@3~                                @3~@3~@3~@3~@3~@3~\n0";
+    "7          @3~@3~@3~@3~@3~@3~                                @3~@3~@3~@3~@3~@3~";
 
 /*
   VTOL
@@ -2112,7 +2004,7 @@ char *veh_not_desc =
 */
 
 
-char *vtoldesc =
+static const char *const vtoldesc =
     "7        FRONT                               INTERNAL\n"
     "7     @5.   @2.@2.   @5.                            @5.   @2.@2.   @5.   \n"
     "1     @5\\@5\\ @2`@2_@2_@2` @5/@5/                            @5\\@5\\ @2`@2_@2_@2` @5/@5/   \n"
@@ -2122,188 +2014,649 @@ char *vtoldesc =
     "5    @0*@0-@0-@0|@5/@5/ @5\\@5\\@1-@1-@1*                          @0*@0-@0-@0|@5/@5/ @5\\@5\\@1-@1-@1*  \n"
     "6       @5/@5/&+3 @5\\@5\\                               @5/@5/&:3 @5\\@5\\    \n"
     "7      @5/@5/@3\\@3_@3_@3/ @5\\@5\\                             @5/@5/@3\\@3_@3_@3/ @5\\@5\\   \n"
-    "7      @5~       @5~                             @5~       @5~   \n0";
+    "7      @5~       @5~                             @5~       @5~";
 
 /* 
  Battlesuit
 
  SQUAD STATUS
-  Member#      1  2  3  4  5
+  Member#       1  2  3  4  5
    Health      99 99 99 99 99
    Armor       99 99 99 99 99
 
 */
 
 
-char *bsuitdesc =
+static const char *const bsuitdesc =
     "7 SQUAD STATUS\n"
     "7   Member#      @01  @12  @23  @34  @45  @56  @67  @78\n"
     "7   Health      &:0 &:1 &:2 &:3 &:4 &:5 &:6 &:7\n"
-    "7   Armor       &+0 &+1 &+2 &+3 &+4 &+5 &+6 &+7\n"
-    "7\n0";
+    "7   Armor       &+0 &+1 &+2 &+3 &+4 &+5 &+6 &+7";
 
 /* *INDENT-ON* */
+
+/*
+ * Picks the character to show for the armor location on enemy scans.
+ *
+ * mech: mech
+ * loc: armor location
+ * flag: ARMOR_FRONT, ARMOR_INTERNAL, or ARMOR_REAR
+ * ret_armor_value: return value pointer for remaining armor points
+ *
+ * For aero structural integrity, use loc 0 and flag ARMOR_INTERNAL.
+ *
+ * Returns the "armor level", a value from 0 to 5 indicating the qualitative
+ * condition of the armor:
+ *
+ * 0 - >90%
+ * 1 - >75%
+ * 2 - >45%
+ * 3 - >0%
+ * 4 - 0% (breached)
+ * 5 - under repair
+ */
+int
+ArmorEvaluateSerious(MECH *mech, int loc, int flag, int *ret_armor_value)
+{
+	int armor_value;
+	int armor_percent, armor_denom;
+	int repair_flag = 0;
+
+	/*
+	 * TODO: What happens when a custom template plugs in bogus values?
+	 * Make sure to check for aeros, too!
+	 */
+	switch (flag & ARMOR_TYPE_MASK) {
+	case ARMOR_FRONT:
+		/* Front armor.  */
+		armor_value = GetSectArmor(mech, loc);
+		armor_denom = GetSectOArmor(mech, loc);
+
+		if (SectArmorRepair(mech, loc))
+			repair_flag = 1;
+		break;
+
+	case ARMOR_INTERNAL:
+		if (MechType(mech) == CLASS_AERO && loc == 0) {
+			/* Aero SI.  loc doesn't actually matter, but we check
+			 * it in case we want to use other locs later. */
+			armor_value = AeroSI(mech);
+			armor_denom = AeroSIOrig(mech);
+		} else {
+			/* Internal armor.  */
+			armor_value = GetSectInt(mech, loc);
+			armor_denom = GetSectOInt(mech, loc);
+
+			if (SectIntsRepair(mech, loc))
+				repair_flag = 1;
+		}
+		break;
+
+	case ARMOR_REAR:
+		/* Rear armor.  */
+		armor_value = GetSectRArmor(mech, loc);
+		armor_denom = GetSectORArmor(mech, loc);
+
+		if (SectRArmorRepair(mech, loc))
+			repair_flag = 1;
+		break;
+
+	default:
+		/* FIXME: We were given a bad flag.  Panic! */
+		armor_value = -1; /* XXX: hack to make problems obvious */
+		repair_flag = 1; /* XXX: hack selecting ? (repairing) */
+		break;
+	}
+
+	if (ret_armor_value) {
+		*ret_armor_value = armor_value;
+	}
+
+	if (repair_flag) {
+		/* Under repair.  */
+		return ARMOR_LEVEL_REPAIRING;
+	} else if (!armor_value) {
+		/* Breached.  */
+		return ARMOR_LEVEL_OPEN;
+	} else {
+		/* Armor condition level.  */
+		armor_percent = (armor_value + 1) * 100 / (armor_denom + 1);
+
+		if (armor_percent <= 45) {
+			return ARMOR_LEVEL_CRITICAL;
+		} else if (armor_percent <= 70) {
+			return ARMOR_LEVEL_LOW;
+		} else if (armor_percent <= 90) {
+			return ARMOR_LEVEL_GOOD;
+		} else {
+			return ARMOR_LEVEL_GREAT;
+		}
+	}
+}
+
+/* bright green, dark green, bright yellow, dark red, black */
+static const char *const armordamcolorstr[] = {
+	"%ch%cg",
+	"%cg",
+	"%ch%cy",
+	"%cr",
+	"%ch%cx",
+	"%ch%cb"
+};
+
+/* Armor location character (enemy scan). Last one is for armor under repair. */
+static const char armordamltrstr[] = "OoxX*?";
+
+/*
+ * XXX: memcpy/memset() are technically only standard as of C99, so strictly we
+ * should autoconf-ize this with portability wrappers.  They're pretty common
+ * these days, though.
+ */
+static char *
+PrintArmorDamageString(const int armor_level, int armor_value,
+                       const int flag, const int width)
+{
+	/* This array has to be at least as large as the maximum possible
+	 * width (+ 1), which is defined in show_armor().  */
+	static char armor_string[23 + 1];
+	char *asp;
+
+	char armor_buf[23 + 1];
+
+	if (flag & ARMOR_FLAG_DIVIDE_10) {
+		/* Divide by 10 (rounded up).  Used for mechwarriors.  */
+		armor_value = (armor_value + 9) / 10;
+	}
+
+	if (flag & ARMOR_FLAG_OWNED) {
+		int armor_len;
+
+		/* TODO: snprintf() is a C99-ism, please autoconf-ize.  */
+		/* XXX: Aeros 0-filled spaces.  That's silly.  */
+		snprintf(armor_buf, sizeof(armor_buf), "%d", armor_value);
+
+		/* XXX: Return values aren't standardized until C99.  */
+		armor_len = strlen(armor_buf);
+
+		/* Fixed width.  Some sprintf()s have a $*d extension that we
+		 * aren't going to use.  */
+		asp = armor_string;
+
+		if (armor_len < width) {
+			/* Right justify.  */
+			memset(asp, ' ', width - armor_len);
+			asp += width - armor_len;
+
+			memcpy(asp, armor_buf, armor_len);
+			asp += armor_len;
+		} else {
+			/* Right truncate.  */
+			memcpy(asp, armor_buf + (armor_len - width), width);
+			asp += width;
+		}
+	} else {
+		/* Use adversarial (scan) fill characters.  */
+		memset(armor_string, armordamltrstr[armor_level], width);
+	}
+
+	armor_string[width] = '\0';
+
+	return armor_string;
+}
+
+/*
+ * TODO: Probably better to make this a substitution.  That would allow the key
+ * width to match the actual width on the status display, too; right now, it's
+ * always two characters, regardless of width.
+ */
+static char *
+ArmorKeyInfo(dbref player, int line_key, int owner)
+{
+	static char str[6 + 3 + 2 + 1];
+
+	if (owner) {
+		/* Only show key on scans.  */
+		str[0] = '\0';
+	} else if (line_key == 1) {
+		/* Line 1 = "Key".  */
+		strcpy(str, "Key");
+	} else if (line_key > 6) {
+		/* Line >6 = empty.  */
+		strcpy(str, "   ");
+	} else {
+		/* Line 2-6 = armor level symbols.  */
+		/* XXX: Probably safe from buffer overflows.  */
+		sprintf(str, "%s%c%c %%c", armordamcolorstr[6 - line_key],
+		        armordamltrstr[6 - line_key],
+		        armordamltrstr[6 - line_key]);
+	}
+
+	return str;
+}
+
+/*
+ * XXX: memcpy/memset() are technically only standard as of C99, so strictly we
+ * should autoconf-ize this with portability wrappers.  They're pretty common
+ * these days, though.
+ */
+static char *
+show_armor(MECH *mech, const int loc, const int flag, int width)
+{
+	/* XXX: color_string must be 6 chars or less.  */ 
+	static char fieldbuf[6 + 23 + 2 + 1];
+
+	char *fbp = fieldbuf;
+
+	const char *color_string;
+	const char *armor_string;
+
+	int armor_level, armor_value;
+
+	/* Sanity check arguments.  */
+	if (width > sizeof(fieldbuf) - 6 - 2 - 1) {
+		width = sizeof(fieldbuf) - 6 - 2 - 1;
+	}
+
+	/* Get armor status.  */
+	armor_level = ArmorEvaluateSerious(mech, loc, flag, &armor_value);
+
+	/* Get strings.  */
+	if (!(flag & ARMOR_FLAG_SHOW_DEST) && !GetSectInt(mech, loc)) {
+		/* Blank field. (Destroyed section.) */
+		memset(fieldbuf, ' ', width);
+		fieldbuf[width] = '\0';
+		return fieldbuf;
+	} else {
+		color_string = armordamcolorstr[armor_level];
+		armor_string = PrintArmorDamageString(armor_level, armor_value,
+		                                      flag, width);
+	}
+
+	/* XXX: sprintf() should be safe here.  Emphasis on "should".  */
+	sprintf(fieldbuf, "%s%s%%c", color_string, armor_string);
+
+	return fieldbuf;
+}
 
 /* See if the 'mech has a 'custom' template (@mechstatus attr)
  * if so, exec() it to evaluate color/newlines.
  */
-static int get_statustemplate_attr(dbref player, MECH * mech, char *result)
+static int
+get_statustemplate_attr(dbref player, MECH *mech, char *result)
 {
-	char *buf, *bufc, *statattr = silly_atr_get(mech->mynum, A_MECHSTATUS);
+	char *resultc, *statattr = silly_atr_get(mech->mynum, A_MECHSTATUS);
 
-	if(!statattr || !*statattr)
+	if (!statattr || !*statattr)
 		return 0;
-	buf = bufc = alloc_lbuf("mech status");
-	exec(buf, &bufc, 0, player, mech->mynum,
-		 EV_STRIP_AROUND | EV_NO_COMPRESS | EV_NO_LOCATION | EV_NOFCHECK |
-		 EV_NOTRACE | EV_FIGNORE, &statattr, NULL, 0);
+
 	/* this is safe because tmpbuf is larger than LBUF_SIZE */
-	strcpy(result, buf);
-	strcat(result, "\n0");
-	free_lbuf(buf);
+	resultc = result;
+
+	exec(result, &resultc, 0, player, mech->mynum,
+	     EV_STRIP_AROUND | EV_NO_COMPRESS | EV_NO_LOCATION | EV_NOFCHECK
+	     | EV_NOTRACE | EV_FIGNORE, &statattr, NULL, 0);
+
 	return 1;
 }
 
-void PrintArmorStatus(dbref player, MECH * mech, int owner)
-{
-	char tmpbuf[8192];
-	char *p, *q, *r;
-	char destbuf[8192];
-	int flag;
-	int gflag = 0;
-	int odd = 0;
+/* BTS = BattleTech status. */
+typedef enum {
+	BTS_START_OF_LINE, /* start state */
 
-	/* All we need is proper source for stuff */
-	if(!get_statustemplate_attr(player, mech, tmpbuf)) {
+	BTS_NORMAL, /* normal input */
+
+	BTS_SUBSTITUTE_ARMOR, /* armor status substitution */
+	BTS_CONDITIONAL_1, /* unary conditional  */
+	BTS_CONDITIONAL_2 /* binary conditional */
+} BTS_State;
+
+void
+PrintArmorStatus(dbref player, MECH *mech, int owner)
+{
+	const char *srcbuf, *sbp, *saved_sbp;
+
+	char destbuf[LBUF_SIZE], *dbp;
+
+	BTS_State current_state = BTS_START_OF_LINE;
+	int tmp_value1, tmp_value2;
+	int flag;
+
+	char tmpbuf[8192];
+
+	/* Select status template.  */
+	switch (MechType(mech)) {
+	case CLASS_MW:
+		/* TODO: Should probably make this user-selectable by adding
+		 * some more formatting flags.  */
+		flag = ARMOR_FLAG_DIVIDE_10;
+		break;
+
+	case CLASS_AERO:
+	case CLASS_DS:
+		flag = ARMOR_FLAG_SHOW_DEST;
+		break;
+
+	default:
+		flag = 0;
+		break;
+	}
+
+	if (get_statustemplate_attr(player, mech, tmpbuf)) {
+		/* Use custom template.  */
+		srcbuf = tmpbuf;
+	} else {
+		/* Use standard template.  */
 		switch (MechType(mech)) {
 		case CLASS_MW:
-			strcpy(tmpbuf, mwdesc);
-			gflag |= 8 | 32;
+			srcbuf = mwdesc;
 			break;
+
 		case CLASS_MECH:
-			if(MechIsQuad(mech))
-				strcpy(tmpbuf, quaddesc);
+			if (MechIsQuad(mech)) {
+				srcbuf = quaddesc;
+			} else {
 #ifdef WEIGHTVARIABLE_STATUS
-			else {
-				if(MechTons(mech) <= 35)
-					strcpy(tmpbuf, lightmechdesc);
-				else if(MechTons(mech) > 35 && MechTons(mech) <= 55)
-					strcpy(tmpbuf, mediummechdesc);
-				else if(MechTons(mech) > 55 && MechTons(mech) <= 75)
-					strcpy(tmpbuf, heavymechdesc);
-				else if(MechTons(mech) > 75)
-					strcpy(tmpbuf, assaultmechdesc);
+				if (MechTons(mech) <= 35)
+					srcbuf = lightmechdesc;
+				else if (MechTons(mech) <= 55)
+					srcbuf = mediummechdesc;
+				else if (MechTons(mech) <= 75)
+					srcbuf = heavymechdesc;
 				else
-					strcpy(tmpbuf, heavymechdesc);
-			}
+					srcbuf = assaultmechdesc;
 #else /* WEIGHTVARIABLE_STATUS */
-			else
-				strcpy(tmpbuf, mechdesc);
+				srcbuf = mechdesc;
 #endif /* WEIGHTVARIABLE_STATUS */
+			}
 			break;
+
 		case CLASS_BSUIT:
-			strcpy(tmpbuf, bsuitdesc);
+			srcbuf = bsuitdesc;
 			break;
+
 		case CLASS_VTOL:
-			strcpy(tmpbuf, vtoldesc);
+			srcbuf = vtoldesc;
 			break;
+
 		case CLASS_AERO:
-			gflag |= 16;
-			strcpy(tmpbuf, aerodesc);
+			srcbuf = aerodesc;
 			break;
+
 		case CLASS_DS:
-			strcpy(tmpbuf, aerod_ds_desc);
-			gflag |= 64;
+			srcbuf = aerod_ds_desc;
 			break;
+
 		case CLASS_SPHEROID_DS:
-			strcpy(tmpbuf, spher_ds_desc);
+			srcbuf = spher_ds_desc;
 			break;
+
 		case CLASS_VEH_GROUND:
-			if(GetSectOInt(mech, TURRET))
-				strcpy(tmpbuf, vehdesc);
+			if (GetSectOInt(mech, TURRET))
+				srcbuf = vehdesc;
 			else
-				strcpy(tmpbuf, veh_not_desc);
+				srcbuf = veh_not_desc;
 			break;
+
 		case CLASS_VEH_NAVAL:
-			if(MechMove(mech) == MOVE_FOIL)
-				strcpy(tmpbuf, foildesc);
-			else if(MechMove(mech) == MOVE_HULL)
-				strcpy(tmpbuf, shipdesc);
+			if (MechMove(mech) == MOVE_FOIL)
+				srcbuf = foildesc;
+			else if (MechMove(mech) == MOVE_HULL)
+				srcbuf = shipdesc;
 			else
-				strcpy(tmpbuf, subdesc);
+				srcbuf = subdesc;
 			break;
+
 		default:
-			strcpy(tmpbuf,
-				   " This 'toy' is of unknown type. It has yet to be templated\n for status.\n0");
+			srcbuf = " This 'toy' is of unknown type. It has yet to be templated\n for status.";
 			break;
 		}
 	}
-	p = strtok(tmpbuf, "\n");
-	while (p && *p != '0') {
-		if(*p >= '1' && *p <= '7')
-			strcpy(destbuf, ArmorKeyInfo(player, (int) *p - '0', owner));
-		else
-			destbuf[0] = 0;
-		r = &destbuf[strlen(destbuf)];
-		for(q = p + 1; *q; q++)
-			if(*q == '@' && isdigit(*(q + 1))) {
-				q++;
-				if(GetSectInt(mech, (int) (*q - '0')))
-					*r++ = *(q + 1);
-				else
-					*r++ = ' ';
-				q++;
-			} else if(*q == '!' && isdigit(*(q + 1)) && isdigit(*(q + 2))) {
-				q++;
-				if(GetSectInt(mech, (int) (*q - '0')) ||
-				   GetSectInt(mech, (int) (*(q + 1) - '0')))
-					*r++ = *(q + 2);
-				else
-					*r++ = ' ';
-				q++;
-				q++;
-			} else if(*q == '&' && (*(q + 1) == '+' || *(q + 1) == '-' ||
-									*(q + 1) == ':' || *(q + 1) == '(' ||
-									*(q + 1) == ')' || *(q + 1) == 'S')) {
-				if(*(q + 1) == '(') {
-					gflag |= 8;
-					q++;
-					odd = 1;
-				}
-				if(*(q + 1) == ')') {
-					gflag |= 128;
-					q++;
-					odd = 1;
-				}
-				if(*(q + 1) == 'S') {
-					gflag |= 256;
-					q++;
-					odd = 1;
-				}
-				/* Geez, we got armor token to distribute here. */
-				flag = owner;
-				q++;
-				switch (*q) {
-				case '-':
-					flag += 2;
+
+	/* Perform substitution on template.  */
+	dbp = destbuf;
+
+	saved_sbp = srcbuf;
+#define COMMIT_SAVED_SBP() \
+	/* TODO: It's fine to make this a real function.  */ \
+	do { \
+		const int maxlen = sizeof(destbuf) - 1; \
+		const int dstlen = dbp - destbuf; \
+		\
+		int srclen = sbp - saved_sbp; \
+		\
+		if (dstlen < maxlen) { \
+			if (dstlen + srclen > maxlen) \
+				srclen = maxlen - dstlen; \
+			\
+			memcpy(dbp, saved_sbp, srclen); \
+			dbp += srclen; \
+		} \
+		\
+		saved_sbp = sbp; \
+	} while (0)
+
+	for (sbp = srcbuf; *sbp; sbp++) {
+#define SAFE_CHR_DBP(c) \
+	do { \
+		if ((dbp - destbuf) < (sizeof(destbuf) - 1)) \
+			*dbp++ = (c); \
+	} while (0)
+
+#define ASCII_ATOI(c) \
+	/* TODO: This is dependent on the way ASCII encodes digits.  */ \
+	((c) - '0')
+
+		BTS_State next_state = current_state;
+
+		/* Dispatch on current state.  */
+		switch (current_state) {
+		case BTS_START_OF_LINE: /* start of line */
+			/*
+			 * XXX: Portability note: Depends on a specific way of
+			 * encoding the digits from 0 to 7.
+			 */
+			if (*sbp >= '1' && *sbp <= '7') {
+				COMMIT_SAVED_SBP();
+				saved_sbp = sbp + 1;
+
+				safe_str(ArmorKeyInfo(player, ASCII_ATOI(*sbp),
+				                      owner),
+				         destbuf, &dbp);
+			}
+
+			next_state = BTS_NORMAL;
+			break;
+
+		case BTS_NORMAL: /* normal characters */
+			switch (*sbp) {
+			case '&':
+				COMMIT_SAVED_SBP();
+				next_state = BTS_SUBSTITUTE_ARMOR;
+				break;
+
+			case '@':
+				COMMIT_SAVED_SBP();
+				next_state = BTS_CONDITIONAL_1;
+				break;
+
+			case '!':
+				COMMIT_SAVED_SBP();
+				next_state = BTS_CONDITIONAL_2;
+				break;
+			}
+			break;
+
+		case BTS_SUBSTITUTE_ARMOR: /* armor status substitution */
+			switch (sbp - saved_sbp) {
+				int tmp_flag;
+
+			case 1: /* optional width digit or type flag */
+				switch (*sbp) {
+				case '&':
+					saved_sbp = sbp + 1;
+					next_state = BTS_NORMAL;
+
+					SAFE_CHR_DBP('&');
+					break;
+
+				case '+':
 				case ':':
-					flag += 2;
+				case '-':
+					tmp_value1 = *sbp;
+					break;
+
+				default:
+					if (isdigit(*sbp)) {
+						tmp_value1 = *sbp;
+					} else {
+						next_state = BTS_NORMAL;
+					}
 					break;
 				}
-				strcpy(r, show_armor(mech, (int) (*(q + 1) - '0'),
-									 flag | gflag));
-				r += strlen(r);
-				if(odd) {
-					gflag = 0;
-					odd = 0;
+				break;
+
+			case 2: /* location or type flag */
+				if (isdigit(tmp_value1)) {
+					/* Expect type code.  */
+					switch (*sbp) {
+					case '+':
+					case '-':
+					case ':':
+						tmp_value2 = *sbp;
+						break;
+
+					default:
+						next_state = BTS_NORMAL;
+						break;
+					}
+
+					tmp_value1 = ASCII_ATOI(tmp_value1);
+					break;
+				} else {
+					/* Expect section number.  */
+					tmp_value2 = tmp_value1;
+					tmp_value1 = 2;
 				}
-				q++;
-			} else
-				*r++ = *q;
-		*r = 0;
-		notify(player, destbuf);
-		p = strtok(NULL, "\n");
+			case 3: /* location */
+				/* Expect section number.  */
+				tmp_flag = flag;
+
+				tmp_flag |= owner ? ARMOR_FLAG_OWNED : 0;
+
+				switch (tmp_value2) {
+				case '+':
+					tmp_flag |= ARMOR_FRONT;
+					break;
+
+				case ':':
+					tmp_flag |= ARMOR_INTERNAL;
+					break;
+
+				case '-':
+					tmp_flag |= ARMOR_REAR;
+					break;
+
+				default:
+					break;
+				}
+
+				/* FIXME: Ponder semantics of gflag.  */
+				safe_str(show_armor(mech, ASCII_ATOI(*sbp),
+				                    tmp_flag, tmp_value1),
+				         destbuf, &dbp);
+
+				saved_sbp = sbp + 1;
+				next_state = BTS_NORMAL;
+				break;
+
+			default: /* XXX: should never happen */
+				break;
+			}
+			break;
+
+		case BTS_CONDITIONAL_1: /* '@' unary conditional */
+			switch (sbp - saved_sbp) {
+			case 1: /* get critical section */
+				if (isdigit(*sbp)) {
+					tmp_value1 = ASCII_ATOI(*sbp);
+				} else {
+					next_state = BTS_NORMAL;
+				}
+				break;
+
+			case 2: /* copy conditional character */
+				saved_sbp = sbp + 1;
+				next_state = BTS_NORMAL;
+
+				if (GetSectInt(mech, tmp_value1)) {
+					SAFE_CHR_DBP(*sbp);
+				} else {
+					SAFE_CHR_DBP(' ');
+				}
+				break;
+
+			default: /* XXX: should never happen */
+				break;
+			}
+			break;
+
+		case BTS_CONDITIONAL_2: /* '!' binary conditional */
+			switch (sbp - saved_sbp) {
+			case 1: /* get first critical section */
+				if (isdigit(*sbp)) {
+					tmp_value1 = ASCII_ATOI(*sbp);
+				} else {
+					next_state = BTS_NORMAL;
+				}
+				break;
+
+			case 2: /* get second critical section */
+				if (isdigit(*sbp)) {
+					tmp_value2 = ASCII_ATOI(*sbp);
+				} else {
+					next_state = BTS_NORMAL;
+				}
+				break;
+
+			case 3: /* copy conditional character */
+				saved_sbp = sbp + 1;
+				next_state = BTS_NORMAL;
+
+				if (GetSectInt(mech, tmp_value1)
+				    || GetSectInt(mech, tmp_value2)) {
+					SAFE_CHR_DBP(*sbp);
+				} else {
+					SAFE_CHR_DBP(' ');
+				}
+				break;
+
+			default: /* XXX: should never happen */
+				break;
+			}
+			break;
+
+		default: /* XXX: should never happen */
+			break;
+		}
+
+		/* Common logic.  */
+		if (*sbp == '\n') {
+			current_state = BTS_START_OF_LINE;
+		} else {
+			current_state = next_state;
+		}
+#undef ASCII_ATOI
+#undef SAFE_CHR_DBP
 	}
+
+	/* Finish up.  */
+	COMMIT_SAVED_SBP();
+#undef COMMIT_SAVED_SBP
+
+	/* Send formatted status.  */
+	*dbp = '\0';
+
+	notify(player, destbuf);
 }
 
 /*

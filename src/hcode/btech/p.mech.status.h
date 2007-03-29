@@ -14,6 +14,30 @@
 #ifndef _P_MECH_STATUS_H
 #define _P_MECH_STATUS_H
 
+/*
+ * Armor status flags for ArmorEvaluateSerious().
+ *
+ * TODO: Can probably coalesce some of these with other subsystems.
+ */
+#define ARMOR_TYPE_MASK		0x07
+#define ARMOR_FRONT		0x00 /* front armor */
+#define ARMOR_INTERNAL		0x01 /* internal armor */
+#define ARMOR_REAR		0x02 /* rear armor */
+
+#define ARMOR_FLAG_OWNED	0x10 /* armor status by owner */
+#define ARMOR_FLAG_SHOW_DEST	0x20 /* show destroyed sections */
+#define ARMOR_FLAG_DIVIDE_10	0x40 /* divide displayed value by 10 */
+
+/*
+ * Armor levels returned by ArmorEvaluateSerious().
+ */
+#define ARMOR_LEVEL_GREAT	0
+#define ARMOR_LEVEL_GOOD	1
+#define ARMOR_LEVEL_LOW		2
+#define ARMOR_LEVEL_CRITICAL	3
+#define ARMOR_LEVEL_OPEN	4
+#define ARMOR_LEVEL_REPAIRING	5
+
 /* mech.status.c */
 void DisplayTarget(dbref player, MECH * mech);
 void show_miscbrands(MECH * mech, dbref player);
@@ -35,10 +59,6 @@ void CriticalStatus(dbref player, MECH * mech, int index);
 char *evaluate_ammo_amount(int now, int max);
 void PrintWeaponStatus(MECH * mech, dbref player);
 int ArmorEvaluateSerious(MECH * mech, int loc, int flag, int *opt);
-char *PrintArmorDamageColor(MECH * mech, int loc, int flag);
-char *PrintArmorDamageString(MECH * mech, int loc, int flag);
-char *ArmorKeyInfo(dbref player, int keyn, int owner);
-char *show_armor(MECH * mech, int loc, int flag);
 void PrintArmorStatus(dbref player, MECH * mech, int owner);
 int hasPhysical(MECH * objMech, int wLoc, int wPhysType);
 int canUsePhysical(MECH * objMech, int wLoc, int wPhysType);

@@ -959,23 +959,21 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 
 };
 
-static char hud_damstr[] = "OoxX*?";
+static const char hud_damstr[] = "OoxX*?";
 static char hud_damagechar(MECH * mech, int sect, int type)
 {
-	int dummy;
-
 	switch (type) {
 	case 1:
 		if(GetSectOArmor(mech, sect))
-			return hud_damstr[ArmorEvaluateSerious(mech, sect, 1, &dummy)];
+			return hud_damstr[ArmorEvaluateSerious(mech, sect, ARMOR_FRONT, NULL)];
 		return '-';
 	case 2:
 		if(GetSectOInt(mech, sect))
-			return hud_damstr[ArmorEvaluateSerious(mech, sect, 2, &dummy)];
+			return hud_damstr[ArmorEvaluateSerious(mech, sect, ARMOR_INTERNAL, NULL)];
 		return '-';
 	case 4:
 		if(GetSectORArmor(mech, sect))
-			return hud_damstr[ArmorEvaluateSerious(mech, sect, 4, &dummy)];
+			return hud_damstr[ArmorEvaluateSerious(mech, sect, ARMOR_REAR, NULL)];
 		return '-';
 	}
 	return '?';
