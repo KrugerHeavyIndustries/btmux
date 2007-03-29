@@ -886,7 +886,7 @@ CommandsStruct turretcommands[] = {
     {0, NULL, NULL, NULL}
 };
 
-ECMD(debug_makemechs);
+ECMD(debug_makemechsub);
 ECMD(debug_memory);
 ECMD(debug_setvrt);
 ECMD(debug_setxplevel);
@@ -898,9 +898,9 @@ CommandsStruct debugcommands[] = {
 	debug_memory},
     {0, "SAVEDB", "@Saves the SpecialObject DB", debug_savedb},
     {0,
-	    "MAKEMECHS <FACTION> <TONS> [<TYPES> [<OPT_TONNAGE> [<MAX_VARIATION>]]]",
+	    "MAKEMECHSUB <FACTION> <TONS> [<TYPES> [<OPT_TONNAGE> [<MAX_VARIATION>]]]",
 	    "@Makes list of 'mechs of <faction> with max tonnage of <tons>, and optimum tonnage for each mech <opt_tonnage> (optional)",
-	debug_makemechs},
+	debug_makemechsub},
     {0, "LISTFORMS", "@Shows forms", ListForms},
 
     {0, "SETVRT <WEAPON> <NUM>",

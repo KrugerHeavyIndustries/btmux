@@ -13,8 +13,8 @@
 #define _P_MECH_AVAIL_H
 
 /* mech.avail.c */
-void debug_makemechs(dbref player, void *data, char *buffer);
-void fun_btmakemechs(char *buff, char **bufc, dbref player, dbref cause,
+void debug_makemechsub(dbref player, void *data, char *buffer);
+void fun_btmakemechsub(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 
 #endif				/* _P_MECH_AVAIL_H */

@@ -177,7 +177,7 @@ void debug_makemechs(dbref player, void *data, char *buffer)
 #define FUNCHECK(a,b) \
 if (a) { safe_tprintf_str(buff, bufc, b); return; }
 
-void fun_btmakemechs(char *buff, char **bufc, dbref player, dbref cause,
+void fun_btmakemechsub(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	/* fargs[0] = faction 
