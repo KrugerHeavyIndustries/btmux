@@ -1417,6 +1417,8 @@ void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause,
 /* For now, we're gonna ignore the third arg, and just clear mechs anyways*/
 /*	if(nfargs > 2 && xlate(fargs[2])) */
 		map_clearmechs(player, (void *) map, "");
+/* Brain deadness. Clear the mapobjs too!!! */
+		 del_mapobjs(map);
 	safe_str("1", buff, bufc);
 }
 

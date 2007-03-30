@@ -361,6 +361,7 @@ void map_loadmap(dbref player, void *data, char *buffer)
 	if(player != 1) {
 		notify(player, "Clearing Mechs off Newly Loaded Map");
 		map_clearmechs(player, data, "");
+		del_mapobjs(map);
 	}
 }
 
