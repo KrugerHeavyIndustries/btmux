@@ -2080,7 +2080,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		/* Not able to do any damage */
 		if(target_damage <= 0) {
 			mech_notify(mech, MECHPILOT,
-						"Your target pulls away from you and you are unable to charge it.");
+						"Your target unit will not sustain any damage. Charge aborted!");
 			mech_charge = 0;
 		}
 
@@ -2105,7 +2105,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		/* Not able to do any damage */
 		if(mech_damage <= 0) {
 			mech_notify(target, MECHPILOT,
-						"Your target pulls away from you and you are unable to charge it.");
+						"Your unit won't sustain any dmage. Charge aborted!");
 			target_charge = 0;
 		}
 
