@@ -392,21 +392,21 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 		ADDENTRY("Cockpit", 3 * 1024);
 	PLOC(CTORSO)
 		/* Store the base-line gyro weight */
-		gyro_calc = (MechEngineSize(mech) / 100.0) * 1024;
+		gyro_calc = (MechEngineSize(mech) / 100.0);
 
 	/* Figure out what kind of gyro we have and adjust weight accordingly */
 	if(MechSpecials2(mech) & XLGYRO_TECH) {
 		/* XL Gyro is 1/2 normal gyro weight. */
-		ADDENTRY("Gyro (XL)", (int) ceil(gyro_calc * 0.5));
+		ADDENTRY("Gyro (XL)", (int) ceil(gyro_calc * 0.5) * 1024 );
 	} else if(MechSpecials2(mech) & HDGYRO_TECH) {
 		/* Hardened Gyro is 2x normal gyro weight. */
-		ADDENTRY("Gyro (Hardened)", (int) ceil(gyro_calc * 2));
+		ADDENTRY("Gyro (Hardened)", (int) ceil(gyro_calc * 2) * 1024 );
 	} else if(MechSpecials2(mech) & CGYRO_TECH) {
 		/* Compact Gyro is 1.5x normal gyro weight. */
-		ADDENTRY("Gyro (Compact)", (int) ceil(gyro_calc * 1.5));
+		ADDENTRY("Gyro (Compact)", (int) ceil(gyro_calc * 1.5) * 1024);
 	} else {
 		/* Standard Gyro. */
-		ADDENTRY("Gyro", (int) ceil(gyro_calc));
+		ADDENTRY("Gyro", (int) ceil(gyro_calc) * 1024 );
 	}
 
 	ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
