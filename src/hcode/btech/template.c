@@ -2639,7 +2639,7 @@ int load_template(dbref player, MECH * mech, char *filename)
 	y = MechTons(mech) * 1024;
 	/* While we're at it, lets report those that are overweight */
 	if((x - y) > 40)
-		if(MechType(mech) != CLASS_BSUIT || MechMove(mech) != MOVE_NONE)
+		if(MechType(mech) != CLASS_BSUIT && MechMove(mech) != MOVE_NONE)
 			SendError(tprintf
 				  ("Error in %s template: %.1f tons of 'stuff', yet %d ton frame.",
 				   MechType_Ref(mech), x / 1024.0, y / 1024));
