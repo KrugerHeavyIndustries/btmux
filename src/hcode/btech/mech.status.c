@@ -2642,6 +2642,20 @@ PrintArmorStatus(dbref player, MECH *mech, int owner)
 		/* Common logic.  */
 		if (*sbp == '\n') {
 			current_state = BTS_START_OF_LINE;
+
+			/*
+			 * MUX expects \r\n for line endings in buffers.
+			 * PennMUSH, where this code was originally developed,
+			 * expects \n, and converts to \r\n as needed.
+			 *
+			 * FIXME: This is sorta a hack.  We don't really want
+			 * to be dealing with line ending issues in individual
+			 * functions, but more extensive changes would be
+			 * disruptive.
+			 */
+			COMMIT_SAVED_SBP();
+			SAFE_CHR_DBP('\r');
+			/* \n written later.  */
 		} else {
 			current_state = next_state;
 		}
