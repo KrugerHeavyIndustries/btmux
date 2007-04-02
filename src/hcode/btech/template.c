@@ -2638,7 +2638,8 @@ int load_template(dbref player, MECH * mech, char *filename)
 	x = mech_weight_sub(GOD, mech, 0);
 	y = MechTons(mech) * 1024;
 	if(abs(x - y) > 40)
-		SendError(tprintf
+		if(MechType(mech) != CLASS_BSUIT)
+			SendError(tprintf
 				  ("Error in %s template: %.1f tons of 'stuff', yet %d ton frame.",
 				   MechType_Ref(mech), x / 1024.0, y / 1024));
 	update_oweight(mech, x);
