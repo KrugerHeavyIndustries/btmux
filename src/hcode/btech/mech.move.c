@@ -941,7 +941,7 @@ void mech_speed(dbref player, void *data, char *buffer)
 		}
 		MechTankCritStatus(mech) &= ~DUG_IN;
 	}
-	mech_printf(mech, MECHALL, "Desired speed changed to %d KPH",
+	mech_printf(mech, MECHALL, "Desired speed changed to %d KPH.",
 				(int) newspeed);
 }
 
