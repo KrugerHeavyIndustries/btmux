@@ -2611,6 +2611,64 @@ static void fun_lcon(char *buff, char **bufc, dbref player, dbref cause,
 		safe_str("#-1", buff, bufc);
 }
 
+/* fun_lplayers: Return a list of players in an object  (Connected or not) */
+
+static void fun_lplayers(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	dbref thing, it;
+	char *tbuf;
+	int first = 1;
+
+	it = match_thing(player, fargs[0]);
+	if((it != NOTHING) && (Has_contents(it)) && (Examinable(player, it) || (Location(player) == it) || (it == cause))) {
+		
+		tbuf = alloc_sbuf("fun_lplayers");
+		DOLIST(thing, Contents(it)) {
+			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing)) {
+				if(!first) 
+					sprintf(tbuf, " #%d", thing);
+				else {
+					sprintf(tbuf, "#%d", thing);
+					first = 0;
+				}
+				safe_str(tbuf, buff, bufc);
+			}
+		}
+		free_sbuf(tbuf);
+	} else
+		safe_str("#-1", buff, bufc);
+}
+
+/* fun_lvplayers: Return of list of connected players in an object */
+
+static void fun_lvplayers(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	dbref thing, it;
+	char *tbuf;
+	int first = 1;
+	
+	it = match_thing(player, fargs[0]);
+	if((it != NOTHING ) && (Has_contents(it)) && (Examinable(player, it) || (Location(player) == it) || (it == cause))) {
+
+		tbuf = alloc_sbuf("fun_lvplayers");
+		DOLIST(thing, Contents(it)) {
+			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing) && Connected(thing)) {
+				if(!first)
+					sprintf(tbuf, " #%d", thing);
+				else {
+					sprintf(tbuf, "#%d", thing);
+					first = 0;
+				}
+				safe_str(tbuf, buff, bufc);
+			}
+		}
+		free_sbuf(tbuf);
+	} else
+		safe_str("#-1", buff, bufc);
+}
+
 /*
  * ---------------------------------------------------------------------------
  * * fun_lexits: Return a list of exits.
@@ -5668,10 +5726,12 @@ FUN flist[] = {
 	{"LOG", fun_log, 1, 0, CA_PUBLIC},
 #ifdef ARBITRARY_LOGFILES
 	{"LOGF", fun_logf, 2, 0, CA_WIZARD},
-#endif
+#endif	
+	{"LPLAYERS", fun_lplayers, 1, 0, CA_PUBLIC},
 	{"LSTACK", fun_lstack, 0, FN_VARARGS, CA_PUBLIC},
 	{"LT", fun_lt, 2, 0, CA_PUBLIC},
 	{"LTE", fun_lte, 2, 0, CA_PUBLIC},
+	{"LVPLAYERS", fun_lvplayers, 1, 0 , CA_PUBLIC},
 	{"LWHO", fun_lwho, 0, 0, CA_BUILDER},
 	{"MAIL", fun_mail, 0, FN_VARARGS, CA_PUBLIC},
 	{"MAILFROM", fun_mailfrom, 0, FN_VARARGS, CA_PUBLIC},
