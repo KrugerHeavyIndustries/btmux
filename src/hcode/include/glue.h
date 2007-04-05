@@ -207,7 +207,7 @@ CommandsStruct mechcommands[] = {
 	    "Jump on default target / given target / bearing + range.",
 	mech_jump},
     {1, "HULLDOWN [- | STOP]",
-	    "ALlows a QUAD to go hull down behind a hill to gain better protection.",
+	    "Allows a QUAD to go hull down behind a hill to gain better protection.",
 	mech_hulldown},
     {0, "ENTERBASE [N|W|S|E]",
 	    "Enters base/hangar/whatnever from selected dir.",

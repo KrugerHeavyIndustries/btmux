@@ -65,7 +65,7 @@ void mech_lateral(dbref player, void *data, char *buffer)
 {
 
 /* Rule Reference: BMR Revised, Page 82 (Quad Lateral) */
-/* Rule Reference: MaxTech REvised, Page 46 (All Units w/ Maneuvering Ace) */
+/* Rule Reference: MaxTech Revised, Page 46 (All Units w/ Maneuvering Ace) */
 /* Rule Reference: MaxTech Revised, Page 29 (VTOL/Hover Lateral) */
 /* Rule Reference: Total Warfare, Page 50 (Quad Lateral) */
 /* Rule Reference: Total Warfare, Page 67 (VTOL/Hover Lateral, though doesn't say intentional) */
