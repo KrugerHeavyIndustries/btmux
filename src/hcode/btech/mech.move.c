@@ -1346,7 +1346,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 						(i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
 			return;
 		}
-		mech_notify(mech, MECHALL, "You begin the process of sprinting.....");
+		mech_notify(mech, MECHALL, "You begin the process of sprinting...");
 		MECHEVENT(mech, EVENT_MOVEMODE, mech_movemode_event,
 				  (MechType(mech) == CLASS_BSUIT
 				   || MechType(mech) == CLASS_MW) ? TURN / 2 : TURN, d);
@@ -1402,7 +1402,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 						(i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
 			return;
 		}
-		mech_notify(mech, MECHALL, "You begin the process of evading.....");
+		mech_notify(mech, MECHALL, "You begin the process of evading...");
 		MECHEVENT(mech, EVENT_MOVEMODE, mech_movemode_event,
 				  (MechType(mech) == CLASS_BSUIT
 				   || MechType(mech) == CLASS_MW) ? TURN / 2 : TURN, d);
@@ -1446,7 +1446,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
 						(i == 1 ? "weapons" : i == 2 ? "limbs" : "error"));
 			return;
 		}
-		mech_notify(mech, MECHALL, "You begin the process of dodging.....");
+		mech_notify(mech, MECHALL, "You begin the process of dodging...");
 		MECHEVENT(mech, EVENT_MOVEMODE, mech_movemode_event, 1, d);
 	} else {
 		mech_notify(mech, MECHALL,
