@@ -1077,7 +1077,8 @@ char *center_string(char *c, int len)
 	return buf;
 }
 
-static void help_color_initialize(char *from, char *to)
+static void
+help_color_initialize(const char *from, char *to)
 {
 	int i;
 	char buf[LBUF_SIZE];
@@ -1104,55 +1105,66 @@ static void help_color_initialize(char *from, char *to)
 #define MLen CM_TWO
 #endif
 
-static char *do_ugly_things(coolmenu ** d, char *msg, int len, int initial)
+static char *
+do_ugly_things(coolmenu **d, char *msg, int len, int initial)
 {
 	coolmenu *c = *d;
+	size_t msg_len;
 	char *e;
-	int i;
 	char buf[LBUF_SIZE];
-	char msg2[LBUF_SIZE];
 
-	strcpy(msg2, msg);
+	/* XXX: Not entirely sure what this is for.  */
 #ifndef ONE_LINE_TEXTS
-	if(!msg) {
+	if (!msg) {
 		sim(" ", MLen);
 		*d = c;
 		return NULL;
 	}
 #endif
-	if(strlen(msg) < len) {
-		if(initial) {
-			if(initial > 0)
-				help_color_initialize(msg, buf);
-			else {
-				for(i = 0; i < -initial; i++)
-					buf[i] = ' ';
-				strcpy(&buf[i], msg);
-			}
-			sim(buf, MLen);
-		} else
-			sim(msg, MLen);
-		*d = c;
-		return NULL;
+
+	/*
+	 * Split off at last space on a line, taking into account initial
+	 * indentation, etc.  Help messages are strings of words, separated by
+	 * at most one space, with no word longer than len.
+	 *
+	 * All of these assumptions are necessary for this code to be safe.
+	 * Basically, the code needs to finding the breaking space.
+	 *
+	 * FIXME: All of this code really needs more cleanup and fixing.
+	 */
+	msg_len = strlen(msg);
+
+	if (msg_len <= len) {
+		/* Line fits, don't split anything.  */
+		e = msg + msg_len;
+	} else {
+		/* Split at last space on line.  */
+		for (e = msg + len - 1; *e != ' '; e--)
+			;
 	}
-	for(e = msg2 + len - 1; *e != ' '; e--);
-	*e = 0;
-	if(initial) {
-		if(initial > 0)
-			help_color_initialize(msg2, buf);
-		else {
-			for(i = 0; i < -initial; i++)
-				buf[i] = ' ';
-			strcpy(&buf[i], msg2);
-		}
-		sim(buf, MLen);
-	} else
-		sim(msg2, MLen);
-	*e = ' ';
+
+	if (initial > 0) {
+		/* Colorize header line.  */
+		help_color_initialize(msg, buf);
+	} else if (initial < 0) {
+		/* Write indented line.  */
+		memset(buf, ' ', -initial);
+		memcpy(buf - initial, msg, e - msg);
+		buf[(e - msg) - initial] = '\0';
+	} else {
+		/* Write unindented line.  */
+		memcpy(buf, msg, e - msg);
+		buf[e - msg] = '\0';
+	}
+
+	sim(buf, MLen);
+
+	/* Move pointer to start of next line.  */
+	if (*e == ' ')
+		e++;
+
 	*d = c;
-	if(*(e + 1))
-		return msg + (e - msg2) + 1;
-	return NULL;
+	return *e ? e : NULL;
 }
 
 #define Len(s) ((!s || !*s) ? 0 : strlen(s))
