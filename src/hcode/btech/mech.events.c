@@ -518,7 +518,7 @@ void mech_movemode_event(MUXEVENT * e)
 			MechStatus2(mech) &= ~DODGING;
 			if(i & MODE_DG_USED)
 				mech_notify(mech, MECHALL,
-							"You're dodge maneuver has been used and you are no longer braced for physicals.");
+							"Your dodge maneuver has been used and you are no longer braced for physicals.");
 			else
 				mech_notify(mech, MECHALL,
 							"You loosen up your stance and no longer dodge physicals.");
