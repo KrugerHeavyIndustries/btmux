@@ -1150,8 +1150,8 @@ static char *do_ugly_things(coolmenu ** d, char *msg, int len, int initial)
 		sim(msg2, MLen);
 	*e = ' ';
 	*d = c;
-	if((*e + 1))
-		return e + 1;
+	if(*(e + 1))
+		return msg + (e - msg2) + 1;
 	return NULL;
 }
 
