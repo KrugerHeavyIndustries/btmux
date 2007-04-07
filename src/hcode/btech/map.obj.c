@@ -661,6 +661,11 @@ void map_add_block(dbref player, void *data, char *buffer)
 	READINT(args[2], str);
 	if(argc == 4)
 		READINT(args[3], team);
+
+        DOCHECK(!((x >= 0) && (x < map->map_width) && (y >= 0) &&
+	                          (y < map->map_height)), "X,Y out of range!");
+
+
 	bzero(&foo, sizeof(mapobj));
 	foo.x = x;
 	foo.y = y;
