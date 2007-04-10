@@ -549,7 +549,6 @@ INLINE void s_Name(dbref thing, char *s)
 	atr_add_raw(thing, A_NAME, (char *) s);
 
 	if(mudconf.cache_names) {
-
 		set_string(&purenames[thing], strip_ansi_r(new,s,strlen(s)));
 	}
 }
@@ -1017,6 +1016,7 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 {
 	char *cp;
 	int neg;
+	int attrOwner, attrFlags;
 
 	/*
 	 * See if the first char of the attribute is the special character 
@@ -1034,25 +1034,27 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 		 * Get the attribute owner 
 		 */
 
-		*owner = 0;
+		attrOwner = 0;
 		neg = 0;
 		if(*cp == '-') {
 			neg = 1;
 			cp++;
 		}
 		while (isdigit(*cp)) {
-			*owner = (*owner * 10) + (*cp++ - '0');
+			attrOwner = (attrOwner * 10) + (*cp++ - '0');
 		}
 		if(neg)
-			*owner = 0 - *owner;
+			attrOwner = 0 - attrOwner;
 
 		/*
 		 * If delimiter is not ':', just return attribute 
 		 */
 
 		if(*cp++ != ':') {
-			*owner = Owner(thing);
-			*flags = 0;
+			if(owner)
+				*owner = Owner(thing);
+			if(flags)
+				*flags = 0;
 			if(oattr) {
 				StringCopy(oattr, iattr);
 			}
@@ -1072,8 +1074,10 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 		 */
 
 		if(*cp++ != ':') {
-			*owner = Owner(thing);
-			*flags = 0;
+			if(owner)
+				*owner = Owner(thing);
+			if(flags)
+				*flags = 0;
 			if(oattr) {
 				StringCopy(oattr, iattr);
 			}
@@ -1082,10 +1086,9 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 		 * Get the attribute text 
 		 */
 
-		if(oattr) {
+		if(oattr) 
 			StringCopy(oattr, cp);
-		}
-		if(*owner == NOTHING)
+		if(attrOwner == NOTHING && owner)
 			*owner = Owner(thing);
 	} else {
 
@@ -1093,11 +1096,12 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 		 * Not the special character, return normal info 
 		 */
 
-		*owner = Owner(thing);
-		*flags = 0;
-		if(oattr) {
+		if(owner)
+			*owner = Owner(thing);
+		if(flags)
+			*flags = 0;
+		if(oattr) 
 			StringCopy(oattr, iattr);
-		}
 	}
 }
 
@@ -1365,8 +1369,10 @@ char *atr_get_str(char *s, dbref thing, int atr, dbref * owner, int *flags)
 
 	buff = atr_get_raw(thing, atr);
 	if(!buff) {
-		*owner = Owner(thing);
-		*flags = 0;
+		if(owner)
+			*owner = Owner(thing);
+		if(flags)
+			*flags = 0;
 		*s = '\0';
 	} else {
 		atr_decode(buff, s, thing, owner, flags, atr);

@@ -38,23 +38,19 @@ FATAL("ERROR WRITING FILE (%s): NOT ENOUGH WRITTEN(?!?)\n", msg);
 if (!(var = (typ *) calloc(sizeof (typ), count))) \
 { fprintf(stderr, "Error mallocating!\n"); exit(1); }
 
-static int NodeCompare(Node * a, Node * b)
-{
+static int NodeCompare(Node * a, Node * b) {
     if (a->key < b->key)
 	return -1;
     return (a->key > b->key);
 }
 
-static void NodeDelete(Node * a)
-{
+static void NodeDelete(Node * a) {
     if (a->data)
 	free((void *) a->data);
     free((void *) a);
 }
 
-void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size,
-    void *data)
-{
+void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size, void *data) {
     Node *foo;
 
     if (!tree)
@@ -67,16 +63,14 @@ void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size,
     tree_add(tree, NodeCompare, foo, NodeDelete);
 }
 
-Node *FindNode(Tree tree, muxkey_t key)
-{
+Node *FindNode(Tree tree, muxkey_t key) {
     Node foo;
 
     foo.key = key;
     return tree_srch(&tree, NodeCompare, &foo);
 }
 
-void DeleteEntry(Tree * tree, muxkey_t key)
-{
+void DeleteEntry(Tree * tree, muxkey_t key) {
     Node foo;
 
     if (FindNode(*tree, key)) {
@@ -89,8 +83,7 @@ static FILE *tree_file;
 
 static int nodesave_count;
 
-static int NodeSave(Node * n)
-{
+static int NodeSave(Node * n) {
     TSAVE(&n->key, sizeof(n->key), "key");
     TSAVE(&n->type, sizeof(n->type), "type");
     TSAVE(&n->size, sizeof(n->size), "size");
@@ -100,8 +93,7 @@ static int NodeSave(Node * n)
     return 1;
 }
 
-int SaveTree(FILE * f, Tree tree)
-{
+int SaveTree(FILE * f, Tree tree) {
     muxkey_t key;
 
     nodesave_count = 0;
@@ -112,8 +104,7 @@ int SaveTree(FILE * f, Tree tree)
     return nodesave_count;
 }
 
-static void MyLoadTree(FILE * f, Tree * tree, int (*sizefunc)(int))
-{
+static void MyLoadTree(FILE * f, Tree * tree, int (*sizefunc)(int)) {
     muxkey_t key;
     dtype_t type;
     dsize_t osize;
@@ -152,23 +143,20 @@ static void MyLoadTree(FILE * f, Tree * tree, int (*sizefunc)(int))
 
 
 /* This is a _MONSTER_ :P */
-void ClearTree(Tree * tree)
-{
+void ClearTree(Tree * tree) {
     tree_mung(tree, NodeDelete);
 }
 
-void LoadTree(FILE * f, Tree * tree, int (*sizefunc)(int))
-{
+void LoadTree(FILE * f, Tree * tree, int (*sizefunc)(int)) {
     ClearTree(tree);
     MyLoadTree(f, tree, sizefunc);
 }
 
-void UpdateTree(FILE * f, Tree * tree, int(*sizefunc)(int))
-{
+void UpdateTree(FILE * f, Tree * tree, int(*sizefunc)(int)) {
     MyLoadTree(f, tree, sizefunc);
 }
 
-void GoThruTree(Tree tree, int (*func) (Node *))
-{
+void GoThruTree(Tree tree, int (*func) (Node *)) {
     tree_trav(&tree, func);
 }
+

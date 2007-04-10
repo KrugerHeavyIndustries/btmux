@@ -270,8 +270,10 @@ int eradicate_broken_fd(int fd)
 			log_error(LOG_PROBLEMS, "ERR", "EBADF",
 					  "Broken descriptor %d for player #%d", d->descriptor,
 					  d->player);
+			event_del(&d->sock_ev);
             close(d->descriptor);
 			shutdownsock(d, R_SOCKDIED);
+			release_descriptor(d);
 		}
 	}
 	if(mux_bound_socket != -1 && fstat(mux_bound_socket, &statbuf) < 0) {
@@ -303,7 +305,9 @@ void accept_client_input(int fd, short event, void *arg)
 		s_Flags(connection->player, Flags(connection->player) & ~DARK);
 	}
     bind_descriptor(connection);
-	process_input(connection);
+	if(!process_input(connection)) {
+		eradicate_broken_fd(fd);
+	}
     //dprintk("finish on fd %d DESC %p", fd, arg);
     release_descriptor(connection);
 }

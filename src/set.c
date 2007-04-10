@@ -1455,8 +1455,14 @@ void do_wipe(dbref player, dbref cause, int key, char *it)
 void do_trigger(dbref player, dbref cause, int key, char *object,
 				char *argv[], int nargs)
 {
-	dbref thing;
-	int attrib;
+	dbref thing, attrOwner;
+	int attrib, attrFlags;
+	char objectName[MBUF_SIZE];
+	char attributeName[MBUF_SIZE];
+	ATTR *attribute;
+
+	memset(objectName, 0, MBUF_SIZE);
+	memset(attributeName, 0, MBUF_SIZE);
 
 	if(!parse_attrib(player, object, &thing, &attrib) || (attrib == NOTHING)) {
 		notify_quiet(player, "No match.");
@@ -1466,13 +1472,25 @@ void do_trigger(dbref player, dbref cause, int key, char *object,
 		notify_quiet(player, "Permission denied.");
 		return;
 	}
+
+	atr_get_str(objectName, thing, A_NAME, &attrOwner, &attrFlags);
+
+	attribute = atr_num(attrib);
+
+	if(!attribute) {
+		dprintk("braindamage, missing ATTR structure for dbref #%d, attr %d.", thing,
+				attrib);
+	} else {
+		strncpy(attributeName, attribute->name, MBUF_SIZE-1);
+	}
+
 	did_it(player, thing, 0, NULL, 0, NULL, attrib, argv, nargs);
 
 	/*
 	 * XXX be more descriptive as to what was triggered? 
 	 */
 	if(!(key & TRIG_QUIET) && !Quiet(player))
-		notify_quiet(player, "Triggered.");
+		notify_printf(player, "%s/%s - Triggered.", objectName, attributeName);
 
 }
 

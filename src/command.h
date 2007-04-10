@@ -11,167 +11,148 @@
 
 #include "db.h"
 
-
-#define CMD_NO_ARG(name) \
-    extern void name(dbref, dbref, int)
-#define CMD_ONE_ARG(name) \
-    extern void name(dbref, dbref, int, char *)
-#define CMD_ONE_ARG_CMDARG(name) \
-    extern void name(dbref, dbref, int, char *, char *[], int)
-#define CMD_TWO_ARG(name) \
-    extern void name(dbref, dbref, int, char *, char *)
-#define CMD_TWO_ARG_CMDARG(name) \
-    extern void name(dbref, dbref, int, char *, char *, char*[], int)
-#define CMD_TWO_ARG_ARGV(name) \
-    extern void name(dbref, dbref, int, char *, char *[], int)
-#define CMD_TWO_ARG_ARGV_CMDARG(name) \
-    extern void name(dbref, dbref, int, char *, char *[], int, char*[], int)
-
-/* Command function handlers */
-
-
 /* from comsys.c */
 
-CMD_TWO_ARG(do_cemit);		/* channel emit */
-CMD_TWO_ARG(do_chboot);		/* channel boot */
-CMD_TWO_ARG(do_editchannel);	/* edit a channel */
-CMD_ONE_ARG(do_checkchannel);	/* check a channel */
-CMD_ONE_ARG(do_createchannel);	/* create a channel */
-CMD_ONE_ARG(do_destroychannel);	/* destroy a channel */
-CMD_TWO_ARG(do_edituser);	/* edit a channel user */
-CMD_NO_ARG(do_chanlist);	/* gives a channel listing */
-CMD_ONE_ARG(do_chanstatus);	/* gives channelstatus */
-CMD_TWO_ARG(do_chopen);		/* opens a channel */
-CMD_ONE_ARG(do_channelwho);	/* who's on a channel */
-CMD_TWO_ARG(do_addcom);		/* adds a comalias */
-CMD_ONE_ARG(do_allcom);		/* on, off, who, all aliases */
-CMD_NO_ARG(do_comlist);		/* channel who by alias */
-CMD_TWO_ARG(do_comtitle);	/* sets a title on a channel */
-CMD_NO_ARG(do_clearcom);	/* clears all comaliases */
-CMD_ONE_ARG(do_delcom);		/* deletes a comalias */
-CMD_TWO_ARG(do_tapcom);		/* taps a channel */
+void do_cemit(dbref, dbref, int, char *, char *);		/* channel emit */
+void do_chboot(dbref, dbref, int, char *, char *);		/* channel boot */
+void do_editchannel(dbref, dbref, int, char *, char *);	/* edit a channel */
+void do_checkchannel(dbref, dbref, int, char *);	/* check a channel */
+void do_createchannel(dbref, dbref, int, char *);	/* create a channel */
+void do_destroychannel(dbref, dbref, int, char *);	/* destroy a channel */
+void do_edituser(dbref, dbref, int, char *, char *);	/* edit a channel user */
+void do_chanlist(dbref, dbref, int);	/* gives a channel listing */
+void do_chanstatus(dbref, dbref, int, char *);	/* gives channelstatus */
+void do_chopen(dbref, dbref, int, char *, char *);		/* opens a channel */
+void do_channelwho(dbref, dbref, int, char *);	/* who's on a channel */
+void do_addcom(dbref, dbref, int, char *, char *);		/* adds a comalias */
+void do_allcom(dbref, dbref, int, char *);		/* on, off, who, all aliases */
+void do_comlist(dbref, dbref, int);		/* channel who by alias */
+void do_comtitle(dbref, dbref, int, char *, char *);	/* sets a title on a channel */
+void do_clearcom(dbref, dbref, int);	/* clears all comaliases */
+void do_delcom(dbref, dbref, int, char *);		/* deletes a comalias */
+void do_tapcom(dbref, dbref, int, char *, char *);		/* taps a channel */
 
 /* from mail.c */
 
-CMD_TWO_ARG(do_mail);		/* mail command */
-CMD_TWO_ARG(do_malias);		/* mail alias command */
-CMD_ONE_ARG(do_prepend);
-CMD_ONE_ARG(do_postpend);
+void do_mail(dbref, dbref, int, char *, char *);		/* mail command */
+void do_malias(dbref, dbref, int, char *, char *);		/* mail alias command */
+void do_prepend(dbref, dbref, int, char *);
+void do_postpend(dbref, dbref, int, char *);
 
-CMD_TWO_ARG(do_admin);		/* Change config parameters */
-CMD_TWO_ARG(do_alias);		/* Change the alias of something */
-CMD_TWO_ARG(do_attribute);	/* Manage user-named attributes */
-CMD_ONE_ARG(do_boot);		/* Force-disconnect a player */
-CMD_TWO_ARG(do_chown);		/* Change object or attribute owner */
-CMD_TWO_ARG(do_chownall);	/* Give away all of someone's objs */
-CMD_TWO_ARG(do_chzone);		/* Change an object's zone. */
-CMD_TWO_ARG(do_clone);		/* Create a copy of an object */
-CMD_NO_ARG(do_comment);		/* Ignore argument and do nothing */
-CMD_TWO_ARG_ARGV(do_cpattr);	/* Copy attributes */
-CMD_TWO_ARG(do_create);		/* Create a new object */
-CMD_ONE_ARG(do_cut);		/* Truncate contents or exits list */
-CMD_NO_ARG(do_dbck);		/* Consistency check */
-CMD_TWO_ARG(do_decomp);		/* Reproduce commands to recrete obj */
-CMD_ONE_ARG(do_destroy);	/* Destroy an object */
-CMD_TWO_ARG_ARGV(do_dig);	/* Dig a new room */
-CMD_ONE_ARG(do_doing);		/* Set doing string in WHO report */
-CMD_TWO_ARG_CMDARG(do_dolist);	/* Iterate command on list members */
-CMD_ONE_ARG(do_drop);		/* Drop an object */
-CMD_NO_ARG(do_dump);		/* Dump the database */
-CMD_TWO_ARG_ARGV(do_edit);	/* Edit one or more attributes */
-CMD_ONE_ARG(do_enter);		/* Enter an object */
-CMD_ONE_ARG(do_entrances);	/* List exits and links to loc */
-CMD_ONE_ARG(do_examine);	/* Examine an object */
-CMD_ONE_ARG(do_find);		/* Search for name in database */
-CMD_TWO_ARG(do_fixdb);		/* Database repair functions */
-CMD_TWO_ARG_CMDARG(do_force);	/* Force someone to do something */
-CMD_ONE_ARG_CMDARG(do_force_prefixed);	/* #<num> <cmd> variant of FORCE */
-CMD_TWO_ARG(do_function);	/* Make iser-def global function */
-CMD_ONE_ARG(do_get);		/* Get an object */
-CMD_TWO_ARG(do_give);		/* Give something away */
-CMD_ONE_ARG(do_global);		/* Enable/disable global flags */
-CMD_ONE_ARG(do_halt);		/* Remove commands from the queue */
-CMD_ONE_ARG(do_help);		/* Print info from help files */
-CMD_ONE_ARG(do_history);	/* View various history info */
-CMD_NO_ARG(do_multis);		/* View multiplayers (possibly) */
-CMD_NO_ARG(do_inventory);	/* Print what I am carrying */
-CMD_TWO_ARG(do_prog);		/* Interactive input */
-CMD_ONE_ARG(do_quitprog);	/* Quits @prog */
-CMD_TWO_ARG(do_kill);		/* Kill something */
-CMD_ONE_ARG(do_last);		/* Get recent login info */
-CMD_NO_ARG(do_leave);		/* Leave the current object */
-CMD_TWO_ARG(do_link);		/* Set home, dropto, or dest */
-CMD_ONE_ARG(do_list);		/* List contents of internal tables */
-CMD_ONE_ARG(do_list_file);	/* List contents of message files */
-CMD_TWO_ARG(do_lock);		/* Set a lock on an object */
-CMD_ONE_ARG(do_look);		/* Look here or at something */
-CMD_ONE_ARG(do_motd);		/* Set/list MOTD messages */
-CMD_ONE_ARG(do_move);		/* Move about using exits */
-CMD_TWO_ARG_ARGV(do_mvattr);	/* Move attributes on object */
-CMD_TWO_ARG(do_mudwho);		/* WHO for inter-mud page/who suppt */
-CMD_TWO_ARG(do_name);		/* Change the name of something */
-CMD_TWO_ARG(do_newpassword);	/* Change passwords */
-CMD_TWO_ARG(do_notify);		/* Notify or drain semaphore */
-CMD_TWO_ARG_ARGV(do_open);	/* Open an exit */
-CMD_TWO_ARG(do_page);		/* Send message to faraway player */
-CMD_TWO_ARG(do_parent);		/* Set parent field */
-CMD_TWO_ARG(do_password);	/* Change my password */
-CMD_TWO_ARG(do_pcreate);	/* Create new characters */
-CMD_TWO_ARG(do_pemit);		/* Messages to specific player */
-CMD_ONE_ARG(do_poor);		/* Reduce wealth of all players */
-CMD_TWO_ARG(do_power);		/* Sets powers */
-CMD_ONE_ARG(do_ps);		/* List contents of queue */
-CMD_ONE_ARG(do_queue);		/* Force queue processing */
-CMD_TWO_ARG(do_quota);		/* Set or display quotas */
-CMD_NO_ARG(do_readcache);	/* Reread text file cache */
-CMD_NO_ARG(do_restart);		/* Restart the game. */
-CMD_ONE_ARG(do_say);		/* Messages to all */
-CMD_NO_ARG(do_score);		/* Display my wealth */
-CMD_ONE_ARG(do_search);		/* Search for objs matching criteria */
-CMD_TWO_ARG(do_set);		/* Set flags or attributes */
-CMD_TWO_ARG(do_setattr);	/* Set object attribute */
-CMD_TWO_ARG(do_setvattr);	/* Set variable attribute */
-CMD_ONE_ARG(do_shutdown);	/* Stop the game */
-CMD_ONE_ARG(do_stats);		/* Display object type breakdown */
-CMD_ONE_ARG(do_sweep);		/* Check for listeners */
-CMD_TWO_ARG_ARGV_CMDARG(do_switch);	/* Execute cmd based on match */
-CMD_TWO_ARG(do_teleport);	/* Teleport elsewhere */
-CMD_ONE_ARG(do_think);		/* Think command */
-CMD_ONE_ARG(do_timewarp);	/* Warp various timers */
-CMD_TWO_ARG(do_toad);		/* Turn a tinyjerk into a tinytoad */
-CMD_TWO_ARG_ARGV(do_trigger);	/* Trigger an attribute */
-CMD_ONE_ARG(do_unlock);		/* Remove a lock from an object */
-CMD_ONE_ARG(do_unlink);		/* Unlink exit or remove dropto */
-CMD_ONE_ARG(do_use);		/* Use object */
-CMD_NO_ARG(do_version);		/* List MUX version number */
-CMD_TWO_ARG_ARGV(do_verb);	/* Execute a user-created verb */
-CMD_TWO_ARG_CMDARG(do_wait);	/* Perform command after a wait */
-CMD_ONE_ARG(do_wipe);		/* Mass-remove attrs from obj */
-CMD_NO_ARG(do_dbclean);		/* Remove stale vattr entries */
-CMD_TWO_ARG(do_addcommand);	/* Add or replace a global command */
-CMD_TWO_ARG(do_delcommand);	/* Delete an added global command */
-CMD_ONE_ARG(do_listcommands);	/* List added global commands */
+void do_admin(dbref, dbref, int, char *, char *);		/* Change config parameters */
+void do_alias(dbref, dbref, int, char *, char *);		/* Change the alias of something */
+void do_attribute(dbref, dbref, int, char *, char *);	/* Manage user-named attributes */
+void do_boot(dbref, dbref, int, char *);		/* Force-disconnect a player */
+void do_chown(dbref, dbref, int, char *, char *);		/* Change object or attribute owner */
+void do_chownall(dbref, dbref, int, char *, char *);	/* Give away all of someone's objs */
+void do_chzone(dbref, dbref, int, char *, char *);		/* Change an object's zone. */
+void do_clone(dbref, dbref, int, char *, char *);		/* Create a copy of an object */
+void do_comment(dbref, dbref, int);		/* Ignore argument and do nothing */
+void do_cpattr(dbref, dbref, int, char *, char *[], int);	/* Copy attributes */
+void do_create(dbref, dbref, int, char *, char *);		/* Create a new object */
+void do_cut(dbref, dbref, int, char *);		/* Truncate contents or exits list */
+void do_dbck(dbref, dbref, int);		/* Consistency check */
+void do_decomp(dbref, dbref, int, char *, char *);		/* Reproduce commands to recrete obj */
+void do_destroy(dbref, dbref, int, char *);	/* Destroy an object */
+void do_dig(dbref, dbref, int, char *, char *[], int);	/* Dig a new room */
+void do_doing(dbref, dbref, int, char *);		/* Set doing string in WHO report */
+void do_dolist(dbref, dbref, int, char *, char *, char *[], int);	/* Iterate command on list members */
+void do_drop(dbref, dbref, int, char *);		/* Drop an object */
+void do_dump(dbref, dbref, int);		/* Dump the database */
+void do_edit(dbref, dbref, int, char *, char *[], int);	/* Edit one or more attributes */
+void do_enter(dbref, dbref, int, char *);		/* Enter an object */
+void do_entrances(dbref, dbref, int, char *);	/* List exits and links to loc */
+void do_examine(dbref, dbref, int, char *);	/* Examine an object */
+void do_find(dbref, dbref, int, char *);		/* Search for name in database */
+void do_fixdb(dbref, dbref, int, char *, char *);		/* Database repair functions */
+void do_force(dbref, dbref, int, char *, char *, char *[], int);	/* Force someone to do something */
+void do_force_prefixed(dbref, dbref, int, char *, char *[], int);	/* #<num> <cmd> variant of FORCE */
+void do_function(dbref, dbref, int, char *, char *);	/* Make iser-def global function */
+void do_get(dbref, dbref, int, char *);		/* Get an object */
+void do_give(dbref, dbref, int, char *, char *);		/* Give something away */
+void do_global(dbref, dbref, int, char *);		/* Enable/disable global flags */
+void do_halt(dbref, dbref, int, char *);		/* Remove commands from the queue */
+void do_help(dbref, dbref, int, char *);		/* Print info from help files */
+void do_history(dbref, dbref, int, char *);	/* View various history info */
+void do_multis(dbref, dbref, int);
+void do_inventory(dbref, dbref, int);	/* Print what I am carrying */
+void do_prog(dbref, dbref, int, char *, char *);		/* Interactive input */
+void do_quitprog(dbref, dbref, int, char *);	/* Quits @prog */
+void do_kill(dbref, dbref, int, char *, char *);		/* Kill something */
+void do_last(dbref, dbref, int, char *);		/* Get recent login info */
+void do_leave(dbref, dbref, int);		/* Leave the current object */
+void do_link(dbref, dbref, int, char *, char *);		/* Set home, dropto, or dest */
+void do_list(dbref, dbref, int, char *);		/* List contents of internal tables */
+void do_list_file(dbref, dbref, int, char *);	/* List contents of message files */
+void do_lock(dbref, dbref, int, char *, char *);		/* Set a lock on an object */
+void do_look(dbref, dbref, int, char *);		/* Look here or at something */
+void do_motd(dbref, dbref, int, char *);		/* Set/list MOTD messages */
+void do_move(dbref, dbref, int, char *);		/* Move about using exits */
+void do_mvattr(dbref, dbref, int, char *, char *[], int);	/* Move attributes on object */
+void do_mudwho(dbref, dbref, int, char *, char *);		/* WHO for inter-mud page/who suppt */
+void do_name(dbref, dbref, int, char *, char *);		/* Change the name of something */
+void do_newpassword(dbref, dbref, int, char *, char *);	/* Change passwords */
+void do_notify(dbref, dbref, int, char *, char *);		/* Notify or drain semaphore */
+void do_open(dbref, dbref, int, char *, char *[], int);	/* Open an exit */
+void do_page(dbref, dbref, int, char *, char *);		/* Send message to faraway player */
+void do_parent(dbref, dbref, int, char *, char *);		/* Set parent field */
+void do_password(dbref, dbref, int, char *, char *);	/* Change my password */
+void do_pcreate(dbref, dbref, int, char *, char *);	/* Create new characters */
+void do_pemit(dbref, dbref, int, char *, char *);		/* Messages to specific player */
+void do_poor(dbref, dbref, int, char *);		/* Reduce wealth of all players */
+void do_power(dbref, dbref, int, char *, char *);		/* Sets powers */
+void do_ps(dbref, dbref, int, char *);		/* List contents of queue */
+void do_queue(dbref, dbref, int, char *);		/* Force queue processing */
+void do_quota(dbref, dbref, int, char *, char *);		/* Set or display quotas */
+void do_readcache(dbref, dbref, int);	/* Reread text file cache */
+void do_restart(dbref, dbref, int);		/* Restart the game. */
+void do_say(dbref, dbref, int, char *);		/* Messages to all */
+void do_score(dbref, dbref, int);		/* Display my wealth */
+void do_search(dbref, dbref, int, char *);		/* Search for objs matching criteria */
+void do_set(dbref, dbref, int, char *, char *);		/* Set flags or attributes */
+void do_setattr(dbref, dbref, int, char *, char *);	/* Set object attribute */
+void do_setvattr(dbref, dbref, int, char *, char *);	/* Set variable attribute */
+void do_shutdown(dbref, dbref, int, char *);	/* Stop the game */
+void do_stats(dbref, dbref, int, char *);		/* Display object type breakdown */
+void do_sweep(dbref, dbref, int, char *);		/* Check for listeners */
+void do_switch(dbref, dbref, int, char *, char *[], int, char *[], int);	/* Execute cmd based on match */
+void do_teleport(dbref, dbref, int, char *, char *);	/* Teleport elsewhere */
+void do_think(dbref, dbref, int, char *);		/* Think command */
+void do_timewarp(dbref, dbref, int, char *);	/* Warp various timers */
+void do_toad(dbref, dbref, int, char *, char *);		/* Turn a tinyjerk into a tinytoad */
+void do_trigger(dbref, dbref, int, char *, char *[], int);	/* Trigger an attribute */
+void do_unlock(dbref, dbref, int, char *);		/* Remove a lock from an object */
+void do_unlink(dbref, dbref, int, char *);		/* Unlink exit or remove dropto */
+void do_use(dbref, dbref, int, char *);		/* Use object */
+void do_version(dbref, dbref, int);		/* List MUX version number */
+void do_verb(dbref, dbref, int, char *, char *[], int);	/* Execute a user-created verb */
+void do_wait(dbref, dbref, int, char *, char *, char *[], int);	/* Perform command after a wait */
+void do_wipe(dbref, dbref, int, char *);		/* Mass-remove attrs from obj */
+void do_dbclean(dbref, dbref, int);		/* Remove stale vattr entries */
+void do_addcommand(dbref, dbref, int, char *, char *);	/* Add or replace a global command */
+void do_delcommand(dbref, dbref, int, char *, char *);	/* Delete an added global command */
+void do_listcommands(dbref, dbref, int, char *);	/* List added global commands */
 #ifdef SQL_SUPPORT
-CMD_TWO_ARG(do_query);		/* Trigger an externalized query */
+void do_query(dbref, dbref, int, char *, char *);		/* Trigger an externalized query */
 #endif
 /* from log.c */
 #ifdef ARBITRARY_LOGFILES
-CMD_TWO_ARG(do_log);		/* Log to arbitrary logfile in 'logs' */
+void do_log(dbref, dbref, int, char *, char *);		/* Log to arbitrary logfile in 'logs' */
 #endif
 
 /* Mecha stuff */
-CMD_TWO_ARG(do_show);
-CMD_ONE_ARG(do_charclear);
-CMD_NO_ARG(do_show_stat);
+void do_show(dbref, dbref, int, char *, char *);
+void do_charclear(dbref, dbref, int, char *);
+void do_show_stat(dbref, dbref, int);
 
 #ifdef HUDINFO_SUPPORT
-CMD_ONE_ARG(fake_hudinfo);
+void fake_hudinfo(dbref, dbref, int, char *);
 #endif
 
 #ifdef USE_PYTHON
 
 /* From python.c */
-CMD_ONE_ARG(do_python);
+void do_python(dbref, dbref, int, char *);
 #endif
 
 typedef struct cmdentry CMDENT;
@@ -237,7 +218,7 @@ struct addedentry {
 #define CA_PLAYER	0x40000000	/* Invoker must be a player */
 #define CF_DARK		0x80000000	/* Command doesn't show up in list */
 
-extern int check_access(dbref, int);
-extern void process_command(dbref, dbref, int, char *, char *[], int);
+int check_access(dbref, int);
+void process_command(dbref, dbref, int, char *, char *[], int);
 
 #endif
