@@ -926,7 +926,7 @@ static void mech_scharge_event(MUXEVENT * e)
 				} else if(MechEngineHeat(mech) < 15) {
 					MechEngineHeat(mech) = 15;
 					mech_notify(mech, MECHALL, "Your engine is destroyed!!");
-					DestroyMech(mech, mech, 1);
+					DestroyMech(mech, mech, 1, KILL_TYPE_NORMAL);
 				}
 				count--;
 			}

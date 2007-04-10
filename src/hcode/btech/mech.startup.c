@@ -168,7 +168,7 @@ static void mech_startup_event(MUXEVENT * e)
 				MechLOSBroadcast(mech,"emits some bubbles and flails their arms around as they sink to the bottom.");
 			else
 				MechLOSBroadcast(mech,"emits some bubbles as its engines are flooded.");
-			DestroyMech(mech, mech, 0);
+			DestroyMech(mech, mech, 0, KILL_TYPE_FLOOD);
 			return;
 
 		}

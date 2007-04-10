@@ -2501,19 +2501,56 @@ int FindAndCheckAmmo(MECH * mech,
 	return 1;
 }
 
-void ChannelEmitKill(MECH * mech, MECH * attacker)
+void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason)
 {
-	if(!attacker)
+	if (!attacker)
 		attacker = mech;
 
-	SendDebug(tprintf("#%d has been killed by #%d", mech->mynum,
-					  attacker->mynum));
-	if(IsDS(mech))
-		SendDSInfo(tprintf("#%d has been killed by #%d", mech->mynum,
-						   attacker->mynum));
-	if(mech->mynum > 0 && attacker->mynum > 0)
-		did_it(attacker->mynum, mech->mynum, 0, NULL, 0, NULL, A_AMECHDEST,
-			   (char **) NULL, 0);
+	if (reason) {
+		SendDebug(tprintf("#%d has been killed by #%d (%s)",
+		                  mech->mynum, attacker->mynum, reason));
+	} else {
+		SendDebug(tprintf("#%d has been killed by #%d",
+		                  mech->mynum, attacker->mynum));
+	}
+
+	if (IsDS(mech)) {
+		if (reason) {
+			SendDSInfo(tprintf("#%d has been killed by #%d (%s)",
+			                   mech->mynum, attacker->mynum,
+			                   reason));
+		} else {
+			SendDSInfo(tprintf("#%d has been killed by #%d",
+			                   mech->mynum, attacker->mynum));
+		}
+	}
+
+	/* Trigger AMECHDEST.  */
+	if (Good_obj(mech->mynum) && Good_obj(attacker->mynum)) {
+		char *reason_copy = NULL;
+
+		char *args[1] = { NULL };
+		int nargs = 0;
+
+		if (reason) {
+			reason_copy = alloc_lbuf("bt.reason");
+
+			if (reason_copy) {
+				/* Safe because reason is a KILL_TYPE_*. */
+				strcpy(reason_copy, reason);
+
+				args[0] = reason_copy;
+				nargs = 1;
+			}
+		}
+
+		did_it(attacker->mynum, mech->mynum,
+		       0, NULL, 0, NULL, A_AMECHDEST, args, nargs);
+
+		if (reason_copy) {
+			free_lbuf(reason_copy);
+		}
+	}
 }
 
 #define NUM_NEIGHBORS	6

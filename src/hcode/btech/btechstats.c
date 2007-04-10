@@ -933,7 +933,7 @@ int handlemwconc(MECH * mech, int initial)
 							"You are killed from personal injuries!!");
 				MechPilot(mech) = -1;
 				Destroy(mech);
-				ChannelEmitKill(mech, mech);
+				ChannelEmitKill(mech, mech, KILL_TYPE_PILOT);
 				MechSpeed(mech) = 0.;
 				MechDesiredSpeed(mech) = 0.;
 				return 0;
@@ -1014,7 +1014,7 @@ void headhitmwdamage(MECH * mech, MECH * attacker, int dam)
 			char_sbruise(s, playerBLD * 10);
 			store_stats(player, s, VALUES_HEALTH);
 			if(!Destroyed(mech)) {
-				DestroyMech(mech, attacker, 1);
+				DestroyMech(mech, attacker, 1, KILL_TYPE_PILOT);
 			}
 			KillMechContentsIfIC(mech->mynum);
 			return;
@@ -1057,7 +1057,7 @@ void mwlethaldam(MECH * mech, MECH * attacker, int dam)
 		char_sbruise(s, lethaldam);
 		store_stats(player, s, VALUES_HEALTH);
 		if(!Destroyed(mech)) {
-			DestroyMech(mech, attacker, 1);
+			DestroyMech(mech, attacker, 1, KILL_TYPE_PILOT);
 		}
 		KillMechContentsIfIC(mech->mynum);
 		return;

@@ -885,7 +885,7 @@ void DoVehicleFuelTankCrit(MECH * objMech, MECH * objAttacker)
 	MechFZ(objMech) = ZSCALE * MechZ(objMech);
 	MechSpeed(objMech) = 0.0;
 	MechVerticalSpeed(objMech) = 0.0;
-	DestroyMech(objMech, objAttacker, 0);
+	DestroyMech(objMech, objAttacker, 0, KILL_TYPE_NORMAL);
 	explode_unit(objMech, objAttacker);
 }
 
@@ -948,7 +948,7 @@ void DoVehicleCrewKilledCrit(MECH * objMech, MECH * objAttacker)
 
 	mech_notify(objMech, MECHALL,
 				"%ch%crThe shot ricochets around the crew compartment, instantly killing everyone!%cn");
-	DestroyMech(objMech, objAttacker, 0);
+	DestroyMech(objMech, objAttacker, 0, KILL_TYPE_PILOT);
 	KillMechContentsIfIC(objMech->mynum);
 
 	if(MechSpeed(objMech) != 0.0)
@@ -1359,7 +1359,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 		if(!Destroyed(wounded)) {
-			DestroyMech(wounded, attacker, 1);
+			DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
 		}
 		KillMechContentsIfIC(wounded->mynum);
 		break;
@@ -1405,7 +1405,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 		if(!Destroyed(wounded)) {
-			DestroyMech(wounded, attacker, 1);
+			DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
 		}
 		KillMechContentsIfIC(wounded->mynum);
 		break;
@@ -1419,7 +1419,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
 		MechVerticalSpeed(wounded) = 0.0;
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1430,7 +1430,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
 		MechVerticalSpeed(wounded) = 0.0;
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		if(!(MechSections(wounded)[BSIDE].config & CASE_TECH))
 			explode_unit(wounded, attacker);
 		else
@@ -1510,7 +1510,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		/* Crew Killed */
 		mech_notify(wounded, MECHALL,
 					"Your armor is pierced and you are killed instantly!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_PILOT);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 4:
@@ -1519,7 +1519,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1527,7 +1527,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		if(!(MechSections(wounded)[BSIDE].config & CASE_TECH))
 			explode_unit(wounded, attacker);
 		else
@@ -1632,7 +1632,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		/* Crew Killed */
 		mech_notify(wounded, MECHALL,
 					"Your armor is pierced and you are killed instantly!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_PILOT);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 4:
@@ -1641,7 +1641,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1649,7 +1649,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
-		DestroyMech(wounded, attacker, 0);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 		explode_unit(wounded, attacker);
 		break;
 	}
@@ -1849,7 +1849,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 						"Your cockpit is destroyed, your blood boils, and your body is fried! %cyYou're dead!%cn");
 			if(!Destroyed(wounded)) {
 				Destroy(wounded);
-				ChannelEmitKill(wounded, attacker);
+				ChannelEmitKill(wounded, attacker, KILL_TYPE_PILOT);
 			}
 
 			if(LOS && attacker)
@@ -1928,7 +1928,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				   !(MechStatus(wounded) & DESTROYED) && attacker)
 					mech_notify(attacker, MECHALL,
 								"You destroy the engine!");
-				DestroyMech(wounded, attacker, 1);
+				DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 			}
 			break;
 		case TARGETING_COMPUTER:

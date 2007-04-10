@@ -163,7 +163,7 @@ static void char_eject(dbref player, MECH * mech)
 		DestroyPart(mech, HEAD, 2);
 	}
 	if(!Destroyed(mech)) {
-		DestroyMech(mech, mech, 0);
+		DestroyMech(mech, mech, 0, KILL_TYPE_EJECT);
 	}
 }
 

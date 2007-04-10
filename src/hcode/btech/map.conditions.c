@@ -259,7 +259,10 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 						}
 
 
-						DestroyMech(wounded, attacker, 1);
+						DestroyMech(wounded, attacker, 1,
+						            (wounded == attacker)
+						            ? KILL_TYPE_SELF_DESTRUCT
+						            : KILL_TYPE_NORMAL);
 					}
 					break;
 				case TARGETING_COMPUTER:
@@ -276,7 +279,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 	if(breach)
 		if(MechType(wounded) == CLASS_VEH_GROUND ||
 		   MechType(wounded) == CLASS_VEH_NAVAL)
-			DestroyMech(wounded, attacker, 0);
+			DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
 	if(MechType(wounded) == CLASS_MECH || MechType(wounded) == CLASS_MW) {
 		if(breach && hitloc == HEAD) {
 			if(InVacuum(wounded))
@@ -286,7 +289,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 							"Water floods into your cockpit!");
 
 			KillMechContentsIfIC(wounded->mynum);
-			DestroyMech(wounded, attacker, 0);
+			DestroyMech(wounded, attacker, 0, KILL_TYPE_FLOOD);
 			return;
 		}
 		if(!MechIsQuad(wounded))

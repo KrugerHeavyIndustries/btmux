@@ -609,7 +609,7 @@ void DamageMech(MECH * wounded,
 								  "shoots %s from the sky!");
 			}
 			DestroyMech(wounded, attacker, !(!Landed(wounded) &&
-											 Started(wounded)));
+											 Started(wounded)), KILL_TYPE_NORMAL);
 		}
 		return;
 	}
@@ -668,7 +668,7 @@ void DamageMech(MECH * wounded,
 						   isrear, iscritical, intDamage, -2, cause, bth,
 						   wWeapIndx, wAmmoMode, tIgnoreSwarmers);
 			else {
-				DestroyMech(wounded, attacker, 1);
+				DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 				return;
 			}
 		}
@@ -705,7 +705,7 @@ void DamageMech(MECH * wounded,
 								   -2, cause, bth, wWeapIndx, wAmmoMode,
 								   tIgnoreSwarmers);
 				} else {
-					DestroyMech(wounded, attacker, 1);
+					DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 					return;
 				}
 			}
@@ -902,7 +902,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 		if(CountBSuitMembers(wounded) > 0)
 			goto skip_nuke;
 		else if(!Destroyed(wounded))
-			DestroyMech(wounded, attacker, 1);
+			DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 	} else {
 		for(i = 0; i < NUM_SECTIONS; i++)
 			if(GetSectOInt(wounded, i) && GetSectInt(wounded, i))
@@ -946,7 +946,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 			DestroySection(wounded, attacker, LOS, RARM);
 		else if(hitloc == CTORSO || hitloc == HEAD) {
 			if(!Destroyed(wounded))
-				DestroyMech(wounded, attacker, 1);
+				DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 			/* If it's the head or a MW's CT, kill the contents if IC */
 			if(hitloc == HEAD || ((MechType(wounded) == CLASS_MW) &&
 								  (hitloc == CTORSO))) {
@@ -969,11 +969,12 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* If we're an aero... */
 	if(is_aero(wounded)) {
+		/* FIXME: Could this be the invincible aero bug? */
 		/* Aero handling is trivial ; No destruction whatsoever, for now. */
 		/* With one exception.. */
 		if(hitloc == COCKPIT && MechType(wounded) == CLASS_AERO) {
 			if(!Destroyed(wounded))
-				DestroyMech(wounded, attacker, 1);
+				DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
 			for(j = 0; j < FREQS; j++) {
 				wounded->freq[j] = 0;
 				wounded->freqmodes[j] = 0;
@@ -1011,7 +1012,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	if(tKillMech) {
 		if(!Destroyed(wounded))
-			DestroyMech(wounded, attacker, 1);
+			DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 	}
 }
 

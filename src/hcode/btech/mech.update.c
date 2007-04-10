@@ -50,7 +50,7 @@ int fiery_death(MECH * mech)
 		if(MechType(mech) == CLASS_MW) {
 			mech_notify(mech, MECHALL, "You feel a tad bit too warm..");
 			mech_notify(mech, MECHALL, "You faint.");
-			DestroyMech(mech, mech, 0);
+			DestroyMech(mech, mech, 0, KILL_TYPE_HEAT);
 			return 1;
 		}
 
@@ -787,7 +787,7 @@ void CheckVTOLHeight(MECH * mech)
 		mech_notify(mech, MECHALL, "You crash your vehicle into the water!");
 		mech_notify(mech, MECHALL, "Water pours into the cockpit....glub glub!");
 		MechLOSBroadcast(mech, "splashes into the water!");
-		DestroyMech(mech, mech, 0);
+		DestroyMech(mech, mech, 0, KILL_TYPE_FLOOD);
 		return;
 	}
 
@@ -2015,7 +2015,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 					mech_notify(mech, MECHALL,
 								"You drive into the water and your vehicle becomes inoperable.");
 					Destroy(mech);
-					ChannelEmitKill(mech, mech);
+					ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
 				}
 
 				return;
@@ -2084,7 +2084,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				mech_notify(mech, MECHALL,
 							"You drive into the water and your vehicle becomes inoperable.");
 				Destroy(mech);
-				ChannelEmitKill(mech, mech);
+				ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
 				return;
 			}
 			move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
@@ -2208,7 +2208,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 					mech_notify(mech, MECHALL,
 								"You drive into the water and your vehicle becomes inoperable.");
 					Destroy(mech);
-					ChannelEmitKill(mech, mech);
+					ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
 				}
 
 				return;
@@ -2277,7 +2277,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 				mech_notify(mech, MECHALL,
 							"You drive into the water and your vehicle becomes inoperable.");
 				Destroy(mech);
-				ChannelEmitKill(mech, mech);
+				ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
 				return;
 			}
 			move_unit_back(mech, deltax, deltay, lastelevation, ot, le);

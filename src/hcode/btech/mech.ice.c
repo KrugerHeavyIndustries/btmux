@@ -45,7 +45,7 @@ static void swim_except(MAP * map, MECH * mech, int x, int y, char *msg,
 				MechLOSBroadcast(t,
 								 "fizzles and pops as water renders it inoperable.");
 				Destroy(t);
-				ChannelEmitKill(t, t);
+				ChannelEmitKill(t, t, KILL_TYPE_FLOOD);
 			}
 		}
 	}
@@ -84,7 +84,7 @@ void drop_thru_ice(MECH * mech)
 		MechLOSBroadcast(mech,
 						 "fizzles and pops as water renders it inoperable.");
 		Destroy(mech);
-		ChannelEmitKill(mech, mech);
+		ChannelEmitKill(mech, mech, KILL_TYPE_ICE);
 	}
 }
 

@@ -175,7 +175,7 @@ void heat_effect(MECH * mech, MECH * tempMech, int heatdam, int fromInferno)
 				mech_notify(tempMech, MECHALL,
 							"The heat's too much for your vehicle! It blows up!");
 				Destroy(tempMech);
-				ChannelEmitKill(tempMech, mech);
+				ChannelEmitKill(tempMech, mech, KILL_TYPE_HEAT);
 				explode_unit(tempMech, mech ? mech : tempMech);
 			}
 		}
@@ -244,7 +244,7 @@ char BOOM[BOOMLENGTH][80] = {
 	"----------------------------------------------------------------------------"
 };
 
-void DestroyMech(MECH * target, MECH * mech, int bc)
+void DestroyMech(MECH * target, MECH * mech, int bc, const char *reason)
 {
 	int loop;
 	MAP *mech_map;
@@ -258,9 +258,9 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 	}
 	//global_kill_cheat = 1;
 	if(mech && target)
-		ChannelEmitKill(target, mech);
+		ChannelEmitKill(target, mech, reason);
 	else
-		ChannelEmitKill(target, target);
+		ChannelEmitKill(target, target, reason);
 	if(mech) {
 		if(bc) {
 			if(mech != target) {
@@ -304,7 +304,7 @@ void DestroyMech(MECH * target, MECH * mech, int bc)
 			ctarget = getMech(a);
 			mech_notify(ctarget, MECHALL, "Due to your transport's destruction, your unit has been destroyed!");
 			mech_udisembark(a, ctarget, "");
-			DestroyMech(ctarget,mech,0);
+			DestroyMech(ctarget,mech,0, KILL_TYPE_NORMAL);
 		}
 	
 	/* shut it down */

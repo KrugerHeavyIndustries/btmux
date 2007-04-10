@@ -10,7 +10,18 @@ int MNumber(MECH * mech, int low, int high);
 char *MechIDS(MECH * mech, int islower);
 char *MyToUpper(char *string);
 void MarkForLOSUpdate(MECH * mech);
-void ChannelEmitKill(MECH * mech, MECH * attacker);
+
+/* Self-inflicted kill types. (But flood might be accidental/intentional.) */
+#define KILL_TYPE_SELF_DESTRUCT "SELF-DESTRUCT"
+#define KILL_TYPE_EJECT "EJECT"
+#define KILL_TYPE_FLOOD "FLOOD" /* includes vacuum */
+/* Accidental kill types. (But ice/heat might be intentional.) */
+#define KILL_TYPE_ICE "FLOOD ICE"
+#define KILL_TYPE_HEAT "HEAT"
+/* Intentional kill types.  */
+#define KILL_TYPE_NORMAL "DESTROYED" /* all other kills; includes carrier destruction */
+#define KILL_TYPE_PILOT "PILOT"
+void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason);
 
 MAP *ValidMap(dbref player, dbref map);
 dbref FindMechOnMap(MAP *map, char *mechid);

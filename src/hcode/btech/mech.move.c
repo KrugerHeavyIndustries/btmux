@@ -1761,7 +1761,7 @@ void MechFloods(MECH * mech)
 						 "and sinks to the bottom.");
 
 		KillMechContentsIfIC(mech->mynum);
-		DestroyMech(mech, mech, 0);
+		DestroyMech(mech, mech, 0, KILL_TYPE_FLOOD);
 		return;
 	}
 
