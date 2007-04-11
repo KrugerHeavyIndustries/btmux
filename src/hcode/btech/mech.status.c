@@ -953,45 +953,39 @@ char *armorstatus_func(MECH * mech, char *arg)
 
 char *weaponstatus_func(MECH * mech, char *arg)
 {
-	static char buffer[MBUF_SIZE];
-	int count, sect, loopsect, i, type, totalcount = 0;
-	unsigned char weaparray[MAX_WEAPS_SECTION];
-	unsigned char weapdata[MAX_WEAPS_SECTION];
-	int criticals[MAX_WEAPS_SECTION];
+   static char buffer[MBUF_SIZE];
+   int count, sect, loopsect, i, type, totalcount = 0;
+   unsigned char weaparray[MAX_WEAPS_SECTION];
+   unsigned char weapdata[MAX_WEAPS_SECTION];
+   int criticals[MAX_WEAPS_SECTION];
 
-	if(!arg)
-		sect = -1;
-	else if(!*arg)
-		return "#-1 INVALID SECTION";
-	else if((sect = ArmorSectionFromString(MechType(mech),
-										   MechMove(mech), arg)) == -1
-			|| !GetSectOInt(mech, sect))
-		return "#-1 INVALID SECTION";
+   if(!arg)
+      sect = -1;
+   else if(!*arg)
+      return "#-1 INVALID SECTION";
+   else if((sect = ArmorSectionFromString(MechType(mech),
+      MechMove(mech), arg)) == -1 || !GetSectOInt(mech, sect))
+      return "#-1 INVALID SECTION";
 
-	buffer[0] = '\0';
-	for((sect == -1) ? (loopsect = 0) : (loopsect = sect);
-		(sect == -1) ? (loopsect < NUM_SECTIONS) : (loopsect < sect + 1);
-		loopsect++) {
-		count = FindWeapons(mech, loopsect, weaparray, weapdata, criticals);
-		for(i = 0; i < count; i++, totalcount++) {
-			if(buffer[0])
-				sprintf(buffer, "%s,", buffer);
-			type = Weapon2I(GetPartType(mech, loopsect, criticals[i]));
-			sprintf(buffer, "%s%d|%s|%d|%d|%d|%d|%d|%d", buffer,
-					totalcount, get_parts_long_name(I2Weapon(type),
-													GetPartBrand(mech,
-																 loopsect,
-																 criticals
-																 [i])),
-					GetWeaponCrits(mech, type), GetPartBrand(mech, loopsect,
-															 criticals[i]),
-					MechWeapons[type].vrt, weapdata[i],
-					MechWeapons[type].type, PartIsNonfunctional(mech,
-																loopsect,
-																criticals[i])
-					? 2 : PartTempNuke(mech, loopsect, criticals[i]) ? 1 : 0);
-		}
-	}
+   buffer[0] = '\0';
+   for((sect == -1) ? (loopsect = 0) : (loopsect = sect);
+      (sect == -1) ? (loopsect < NUM_SECTIONS) : (loopsect < sect + 1);
+      loopsect++) {
+      count = FindWeapons(mech, loopsect, weaparray, weapdata, criticals);
+      for(i = 0; i < count; i++, totalcount++) {
+            if(buffer[0])
+               sprintf(buffer, "%s,", buffer);
+               type = Weapon2I(GetPartType(mech, loopsect, criticals[i]));
+               sprintf(buffer, "%s%d|%s|%d|%d|%d|%d|%d|%d", buffer,
+                  totalcount, get_parts_long_name(I2Weapon(type),
+                  GetPartBrand(mech, loopsect, criticals[i])),
+                  GetWeaponCrits(mech, type), GetPartBrand(mech, loopsect,
+                  criticals[i]), MechWeapons[type].vrt, weapdata[i],
+                  MechWeapons[type].type, PartIsNonfunctional(mech, loopsect,
+                  criticals[i]) ? 2 : PartTempNuke(mech, loopsect,
+                  criticals[i]) ? 1 : 0);
+      }
+   }
 	return buffer;
 }
 
