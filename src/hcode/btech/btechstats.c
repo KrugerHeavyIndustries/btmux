@@ -931,9 +931,13 @@ int handlemwconc(MECH * mech, int initial)
 			if(MechPilotStatus(mech) > 5) {
 				mech_notify(mech, MECHPILOT,
 							"You are killed from personal injuries!!");
+
+				// This is here to avoid multi-triggers of AMECHDEST.
+				if(!Destroyed(mech))
+					ChannelEmitKill(mech, mech, KILL_TYPE_PILOT);
+
 				MechPilot(mech) = -1;
 				Destroy(mech);
-				ChannelEmitKill(mech, mech, KILL_TYPE_PILOT);
 				MechSpeed(mech) = 0.;
 				MechDesiredSpeed(mech) = 0.;
 				return 0;
