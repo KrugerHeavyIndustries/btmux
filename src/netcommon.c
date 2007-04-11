@@ -1519,7 +1519,22 @@ int do_command(DESC * d, char *command)
 
 	cmdsave = mudstate.debug_cmd;
 	mudstate.debug_cmd = (char *) "< do_command >";
-	d->last_time = mudstate.now;
+
+    /* The IDLE command is used to keep players behind badly configured NATs
+       alive. This does not increment command count or idle time and is a
+       good alternative to a lot of the current anti-disconnectors out there
+       client-side. As mentioned in the HUDINFO comment below, this should
+       have no noticable affect on even semi-modern hardware.
+    */
+    if(!strcasecmp(command, "IDLE") && d->flags & DS_CONNECTED) {
+        mudstate.curr_player = d->player;
+        mudstate.curr_enactor = d->player;
+        mudstate.debug_cmd = "idle";
+        mudstate.debug_cmd = cmdsave;
+        return 1;
+    }
+
+    d->last_time = mudstate.now;
 
 	/*
 	 * Split off the command from the arguments 

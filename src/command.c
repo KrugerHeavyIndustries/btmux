@@ -678,6 +678,7 @@ CMDENT command_table[] = {
 #ifdef SQL_SUPPORT
 	{(char *) "@query", query_sw, CA_WIZARD, 0, CS_TWO_ARG, do_query},
 #endif
+    {(char *) "IDLE", NULL, 0, 0, CS_NO_ARGS, NULL},
 	{(char *) NULL, NULL, 0, 0, 0, NULL}
 };
 
