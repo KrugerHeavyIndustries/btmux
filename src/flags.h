@@ -12,15 +12,15 @@
 #define FLAG_WORD3   0x2  /* 3rd word of flags. */
 
 /* Object types */
-#define	TYPE_ROOM    0x0
-#define	TYPE_THING   0x1
-#define	TYPE_EXIT    0x2
-#define	TYPE_PLAYER  0x3
+#define TYPE_ROOM    0x0
+#define TYPE_THING   0x1
+#define TYPE_EXIT    0x2
+#define TYPE_PLAYER  0x3
 
 /* Empty */
-#define	TYPE_GARBAGE 0x5
-#define	NOTYPE       0x7
-#define	TYPE_MASK    0x7
+#define TYPE_GARBAGE 0x5
+#define NOTYPE       0x7
+#define TYPE_MASK    0x7
 
 /* First word of flags */
 #define SEETHRU      0x00000008  /* Can see through to the other side */
