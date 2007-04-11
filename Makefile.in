@@ -127,7 +127,6 @@ BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
                  src/hcode/btech/map.obj.o                  \
                  src/hcode/btech/mech.advanced.o            \
                  src/hcode/btech/mech.ammodump.o            \
-                 src/hcode/btech/mech.avail.o               \
                  src/hcode/btech/mech.bth.o                 \
                  src/hcode/btech/mech.build.o               \
                  src/hcode/btech/mech.c3.misc.o             \

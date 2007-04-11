@@ -38,7 +38,6 @@ extern void cf_log_notfound(dbref player, char *cmd,
 
 extern void fun_btdesignex();
 extern void fun_btgetcharvalue();
-extern void fun_btmakemechsub();
 extern void fun_btmapelev();
 extern void fun_btmapterr();
 extern void fun_btsetcharvalue();
@@ -5590,7 +5589,6 @@ FUN flist[] = {
 	{"BTLOADMAP", fun_btloadmap, 2, FN_VARARGS, CA_WIZARD},
 	{"BTLOADMECH", fun_btloadmech, 2, 0, CA_WIZARD},
 	{"BTLOSM2M", fun_btlosm2m, 2, 0, CA_WIZARD},
-	{"BTMAKEMECHSSUB", fun_btmakemechsub, 0, FN_VARARGS, CA_WIZARD},
 	{"BTMAKEPILOTROLL", fun_btmakepilotroll, 3, 0, CA_WIZARD},
 	{"BTMAPELEV", fun_btmapelev, 3, 0, CA_WIZARD},
 	{"BTMAPEMIT", fun_btmapemit, 0, FN_VARARGS, CA_WIZARD},
