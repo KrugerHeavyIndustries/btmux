@@ -1138,7 +1138,6 @@ NAMETAB logout_cmdtable[] = {
 	{(char *) "QUIT", 4, CA_PUBLIC, CMD_QUIT},
 	{(char *) "SESSION", 7, CA_PUBLIC, CMD_SESSION},
 	{(char *) "WHO", 3, CA_PUBLIC, CMD_WHO},
-	{(char *) "PUEBLOCLIENT", 12, CA_PUBLIC, CMD_PUEBLOCLIENT},
 	{NULL, 0, 0, 0}
 };
 
