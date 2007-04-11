@@ -54,14 +54,14 @@
 #define TERSE        0x80000000  /* Only show room name on look */
 
 /* Second word of flags */
-#define	KEY          0x00000001  /* No puppets */
-#define	ABODE        0x00000002  /* May @set home here */
-#define	FLOATING     0x00000004  /* Inhibit Floating room.. msgs */
-#define	UNFINDABLE   0x00000008  /* Cant loc() from afar */
-#define	PARENT_OK    0x00000010  /* Others may @parent to me */
-#define	LIGHT        0x00000020  /* Visible in dark places */
-#define	HAS_LISTEN   0x00000040  /* Internal: LISTEN attr set */
-#define	HAS_FWDLIST  0x00000080  /* Internal: FORWARDLIST attr set */
+#define KEY          0x00000001  /* No puppets */
+#define ABODE        0x00000002  /* May @set home here */
+#define FLOATING     0x00000004  /* Inhibit Floating room.. msgs */
+#define UNFINDABLE   0x00000008  /* Cant loc() from afar */
+#define PARENT_OK    0x00000010  /* Others may @parent to me */
+#define LIGHT        0x00000020  /* Visible in dark places */
+#define HAS_LISTEN   0x00000040  /* Internal: LISTEN attr set */
+#define HAS_FWDLIST  0x00000080  /* Internal: FORWARDLIST attr set */
 #define AUDITORIUM   0x00000100  /* Should we check the SpeechLock? */
 #define ANSI         0x00000200
 #define HEAD_FLAG    0x00000400
