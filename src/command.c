@@ -631,8 +631,6 @@ CMDENT command_table[] = {
 	{(char *) "help", NULL, 0, HELP_HELP, CS_ONE_ARG, do_help},
 #endif
 	{(char *) "inventory", NULL, 0, LOOK_INVENTORY, CS_NO_ARGS, do_inventory},
-	{(char *) "kill", NULL, CA_WIZARD /*CA_NO_GUEST|CA_NO_SLAVE */ ,
-	 KILL_KILL, CS_TWO_ARG | CS_INTERP, do_kill},
 	{(char *) "leave", leave_sw, CA_LOCATION, 0, CS_NO_ARGS | CS_INTERP,
 	 do_leave},
 	{(char *) "look", look_sw, CA_LOCATION, LOOK_LOOK, CS_ONE_ARG | CS_INTERP, do_look},
@@ -642,8 +640,6 @@ CMDENT command_table[] = {
 	 CS_ONE_ARG | CS_INTERP, do_say},
 	{(char *) "say", NULL, CA_LOCATION | CA_NO_SLAVE, SAY_SAY,
 	 CS_ONE_ARG | CS_INTERP, do_say},	
-	{(char *) "slay", NULL, CA_WIZARD, KILL_SLAY, CS_TWO_ARG | CS_INTERP,
-	 do_kill},
 	{(char *) "think", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG, do_think},
 	{(char *) "use", NULL, CA_NO_SLAVE | CA_GBL_INTERP, 0,
 	 CS_ONE_ARG | CS_INTERP, do_use},
