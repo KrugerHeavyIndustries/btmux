@@ -4,7 +4,7 @@ CC             = @CC@
 MAKEDEPEND     = @CC@ -MM
 CFLAGS         = -Wall -Wno-unused --std=gnu99
 CPPFLAGS	   = @CPPFLAGS@	
-INCLUDES       = -Iinclude -Isrc -Isrc/hcode/include -Isrc/hcode/btech
+INCLUDES       = -Iinclude -Isrc -Ibtech/src/include -Ibtech/src/btech
 LIBS           = @LIBS@
 LDFLAGS		   = @LDFLAGS@
 
@@ -86,97 +86,97 @@ MUX_OBJECTS    = src/boolexp.o     \
                  src/wild.o        \
                  src/wiz.o         \
 
-HCODE_OBJECTS =  src/hcode/coolmenu.o        \
-                 src/hcode/debug.o           \
-                 src/hcode/events.o          \
-                 src/hcode/glue.hcode.o      \
-                 src/hcode/glue.o            \
-                 src/hcode/glue.scode.o      \
-                 src/hcode/mech.lostracer.o  \
-                 src/hcode/mechfile.o        \
-                 src/hcode/spath.o           \
-				 src/hcode/tick.o			 \
-				 src/hcode/mt19937ar.o			 \
+HCODE_OBJECTS =  btech/src/coolmenu.o        \
+                 btech/src/debug.o           \
+                 btech/src/events.o          \
+                 btech/src/glue.hcode.o      \
+                 btech/src/glue.o            \
+                 btech/src/glue.scode.o      \
+                 btech/src/mech.lostracer.o  \
+                 btech/src/mechfile.o        \
+                 btech/src/spath.o           \
+				 btech/src/tick.o			 \
+				 btech/src/mt19937ar.o			 \
 
-BTECH_OBJECTS  = src/hcode/btech/aero.bomb.o                \
-                 src/hcode/btech/aero.move.o                \
-                 src/hcode/btech/artillery.o                \
-                 src/hcode/btech/autopilot_ai.o             \
-                 src/hcode/btech/autopilot_autogun.o        \
-                 src/hcode/btech/autopilot_commands.o       \
-                 src/hcode/btech/autopilot_core.o           \
-                 src/hcode/btech/autopilot_radio.o          \
-                 src/hcode/btech/bsuit.o                    \
-                 src/hcode/btech/btech.o                    \
-                 src/hcode/btech/btechstats.o               \
-                 src/hcode/btech/btspath.o                  \
-                 src/hcode/btech/crit.o                     \
-                 src/hcode/btech/ds.bay.o                   \
-                 src/hcode/btech/ds.turret.o                \
-                 src/hcode/btech/econ.o                     \
-                 src/hcode/btech/econ_cmds.o                \
-                 src/hcode/btech/eject.o                    \
-                 src/hcode/btech/failures.o                 \
-                 src/hcode/btech/hudinfo.o                  \
-                 src/hcode/btech/map.bits.o                 \
-                 src/hcode/btech/map.coding.o               \
-                 src/hcode/btech/map.conditions.o           \
-                 src/hcode/btech/map.dynamic.o              \
-                 src/hcode/btech/map.los.o                  \
-                 src/hcode/btech/map.o                      \
-                 src/hcode/btech/map.obj.o                  \
-                 src/hcode/btech/mech.advanced.o            \
-                 src/hcode/btech/mech.ammodump.o            \
-                 src/hcode/btech/mech.bth.o                 \
-                 src/hcode/btech/mech.build.o               \
-                 src/hcode/btech/mech.c3.misc.o             \
-                 src/hcode/btech/mech.c3.o                  \
-                 src/hcode/btech/mech.c3i.o                 \
-                 src/hcode/btech/mech.combat.misc.o         \
-                 src/hcode/btech/mech.combat.missile.o      \
-                 src/hcode/btech/mech.combat.o              \
-                 src/hcode/btech/mech.consistency.o         \
-                 src/hcode/btech/mech.contacts.o            \
-                 src/hcode/btech/mech.damage.o              \
-                 src/hcode/btech/mech.ecm.o                 \
-                 src/hcode/btech/mech.enhanced.criticals.o  \
-                 src/hcode/btech/mech.events.o              \
-                 src/hcode/btech/mech.fire.o                \
-                 src/hcode/btech/mech.hitloc.o              \
-                 src/hcode/btech/mech.ice.o                 \
-                 src/hcode/btech/mech.lite.o                \
-                 src/hcode/btech/mech.los.o                 \
-                 src/hcode/btech/mech.maps.o                \
-                 src/hcode/btech/mech.mechref_ident.o       \
-                 src/hcode/btech/mech.move.o                \
-                 src/hcode/btech/mech.notify.o              \
-                 src/hcode/btech/mech.ood.o                 \
-                 src/hcode/btech/mech.partnames.o           \
-                 src/hcode/btech/mech.physical.o            \
-                 src/hcode/btech/mech.pickup.o              \
-                 src/hcode/btech/mech.restrict.o            \
-                 src/hcode/btech/mech.scan.o                \
-                 src/hcode/btech/mech.sensor.functions.o    \
-                 src/hcode/btech/mech.sensor.o              \
-                 src/hcode/btech/mech.spot.o                \
-                 src/hcode/btech/mech.startup.o             \
-                 src/hcode/btech/mech.stat.o                \
-                 src/hcode/btech/mech.status.o              \
-                 src/hcode/btech/mech.tag.o                 \
-                 src/hcode/btech/mech.tech.commands.o       \
-                 src/hcode/btech/mech.tech.damages.o        \
-                 src/hcode/btech/mech.tech.do.o             \
-                 src/hcode/btech/mech.tech.events.o         \
-                 src/hcode/btech/mech.tech.o                \
-                 src/hcode/btech/mech.tech.repairs.o        \
-                 src/hcode/btech/mech.tech.saverepair.o     \
-                 src/hcode/btech/mech.tic.o                 \
-                 src/hcode/btech/mech.update.o              \
-                 src/hcode/btech/mech.utils.o               \
-                 src/hcode/btech/mechrep.o                  \
-                 src/hcode/btech/mine.o                     \
-                 src/hcode/btech/pcombat.o                  \
-                 src/hcode/btech/template.o                 \
+BTECH_OBJECTS  = btech/src/btech/aero.bomb.o                \
+                 btech/src/btech/aero.move.o                \
+                 btech/src/btech/artillery.o                \
+                 btech/src/btech/autopilot_ai.o             \
+                 btech/src/btech/autopilot_autogun.o        \
+                 btech/src/btech/autopilot_commands.o       \
+                 btech/src/btech/autopilot_core.o           \
+                 btech/src/btech/autopilot_radio.o          \
+                 btech/src/btech/bsuit.o                    \
+                 btech/src/btech/btech.o                    \
+                 btech/src/btech/btechstats.o               \
+                 btech/src/btech/btspath.o                  \
+                 btech/src/btech/crit.o                     \
+                 btech/src/btech/ds.bay.o                   \
+                 btech/src/btech/ds.turret.o                \
+                 btech/src/btech/econ.o                     \
+                 btech/src/btech/econ_cmds.o                \
+                 btech/src/btech/eject.o                    \
+                 btech/src/btech/failures.o                 \
+                 btech/src/btech/hudinfo.o                  \
+                 btech/src/btech/map.bits.o                 \
+                 btech/src/btech/map.coding.o               \
+                 btech/src/btech/map.conditions.o           \
+                 btech/src/btech/map.dynamic.o              \
+                 btech/src/btech/map.los.o                  \
+                 btech/src/btech/map.o                      \
+                 btech/src/btech/map.obj.o                  \
+                 btech/src/btech/mech.advanced.o            \
+                 btech/src/btech/mech.ammodump.o            \
+                 btech/src/btech/mech.bth.o                 \
+                 btech/src/btech/mech.build.o               \
+                 btech/src/btech/mech.c3.misc.o             \
+                 btech/src/btech/mech.c3.o                  \
+                 btech/src/btech/mech.c3i.o                 \
+                 btech/src/btech/mech.combat.misc.o         \
+                 btech/src/btech/mech.combat.missile.o      \
+                 btech/src/btech/mech.combat.o              \
+                 btech/src/btech/mech.consistency.o         \
+                 btech/src/btech/mech.contacts.o            \
+                 btech/src/btech/mech.damage.o              \
+                 btech/src/btech/mech.ecm.o                 \
+                 btech/src/btech/mech.enhanced.criticals.o  \
+                 btech/src/btech/mech.events.o              \
+                 btech/src/btech/mech.fire.o                \
+                 btech/src/btech/mech.hitloc.o              \
+                 btech/src/btech/mech.ice.o                 \
+                 btech/src/btech/mech.lite.o                \
+                 btech/src/btech/mech.los.o                 \
+                 btech/src/btech/mech.maps.o                \
+                 btech/src/btech/mech.mechref_ident.o       \
+                 btech/src/btech/mech.move.o                \
+                 btech/src/btech/mech.notify.o              \
+                 btech/src/btech/mech.ood.o                 \
+                 btech/src/btech/mech.partnames.o           \
+                 btech/src/btech/mech.physical.o            \
+                 btech/src/btech/mech.pickup.o              \
+                 btech/src/btech/mech.restrict.o            \
+                 btech/src/btech/mech.scan.o                \
+                 btech/src/btech/mech.sensor.functions.o    \
+                 btech/src/btech/mech.sensor.o              \
+                 btech/src/btech/mech.spot.o                \
+                 btech/src/btech/mech.startup.o             \
+                 btech/src/btech/mech.stat.o                \
+                 btech/src/btech/mech.status.o              \
+                 btech/src/btech/mech.tag.o                 \
+                 btech/src/btech/mech.tech.commands.o       \
+                 btech/src/btech/mech.tech.damages.o        \
+                 btech/src/btech/mech.tech.do.o             \
+                 btech/src/btech/mech.tech.events.o         \
+                 btech/src/btech/mech.tech.o                \
+                 btech/src/btech/mech.tech.repairs.o        \
+                 btech/src/btech/mech.tech.saverepair.o     \
+                 btech/src/btech/mech.tic.o                 \
+                 btech/src/btech/mech.update.o              \
+                 btech/src/btech/mech.utils.o               \
+                 btech/src/btech/mechrep.o                  \
+                 btech/src/btech/mine.o                     \
+                 btech/src/btech/pcombat.o                  \
+                 btech/src/btech/template.o                 \
 
 ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) \
           $(MUX_OBJECTS) $(HCODE_OBJECTS) $(BTECH_OBJECTS)
@@ -185,7 +185,7 @@ ALLSRCS = $(ALLOBJS:.o=.c)
 
 TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX)
 
-.PHONY: debug install-debug mudflap release all install clean cleandep distclean
+.PHONY: debug install-debug mudflap release all install clean cleandep distclean maintainer-clean
 
 debug:
 	@DEBUG=1 $(MAKE) all
@@ -198,9 +198,17 @@ mudflap:
 
 release all: Makefile $(TARGETS)
 
-Makefile: Makefile.dist configure.in Makefile.in
-	$(MAKE) $(MAKEFLAGS)-f Makefile.dist clean
-	exec $(MAKE) $(MAKEFLAGS)-f Makefile.dist
+configure src/autoconf.h.in: configure.in
+	autoreconf
+
+config.status: configure
+	./config.status --recheck
+
+Makefile: Makefile.in config.status
+	./config.status --file=Makefile
+
+src/autoconf.h: src/autoconf.h.in config.status
+	./config.status --file=src/autoconf.h
 
 # Install copies the 'game' directory to game.run, after trying to get all
 # files from svn. If the svn command fails, we don't really care.
@@ -239,7 +247,11 @@ cleandep: clean
 	rm -f $(ALLOBJS:%.o=%.d)
 
 distclean: cleandep
-	$(MAKE) $(MAKEFLAGS)-f Makefile.dist clean
+	-rm -f config.log config.cache config.status Makefile src/autoconf.h
+	-rm -f buildnum.data
+
+maintainer-clean: distclean
+	-rm -rf autom4te.cache configure
 
 mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
 	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
