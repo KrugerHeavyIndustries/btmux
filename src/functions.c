@@ -50,6 +50,7 @@ extern void fun_btdamages();
 extern void fun_btcritstatus();
 extern void fun_btarmorstatus();
 extern void fun_btsetarmorstatus();
+extern void fun_btweapons(); /* AAA */
 extern void fun_btweaponstatus();
 extern void fun_btthreshold();
 extern void fun_btdamagemech();
@@ -5622,6 +5623,7 @@ FUN flist[] = {
 	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD},
 	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER},
 	{"BTUNITFIXABLE", fun_btunitfixable, 1, 0, CA_WIZARD},
+/*AAA*/	{"BTWEAPONS", fun_btweapons, 1, 0, CA_WIZARD},
 	{"BTWEAPONSTATUS", fun_btweaponstatus, 0, FN_VARARGS, CA_WIZARD},
 	{"BTWEAPONSTATUS_REF", fun_btweaponstatus_ref, 0, FN_VARARGS, CA_WIZARD},
 	{"BTWEAPSTAT", fun_btweapstat, 2, 0, CA_WIZARD},

@@ -15,6 +15,8 @@
 
 struct weapon_struct MechWeapons[] = {
 
+/* Clan Normal AC's. Couldn't find a reference for these anywhere. -- 02/13/07 Power_Shaper */
+/*
     {"CL.AC/10", VRT_CL_AC10, TAMMO, 3, 10, 0, 5, 10, 15, 0, -1, -1, -1, 6,
 	10, 1100, -1, CLAT | RFAC, 124},
     {"CL.AC/2", VRT_CL_AC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1, -1, 1,
@@ -22,9 +24,11 @@ struct weapon_struct MechWeapons[] = {
     {"CL.AC/20", VRT_CL_AC20, TAMMO, 7, 20, 0, 3, 6, 9, 0, -1, -1, -1, 9,
 	5, 1300, -1, CLAT | RFAC, 178},
     {"CL.AC/5", VRT_CL_AC5, TAMMO, 1, 5, 3, 6, 12, 18, 0, -1, -1, -1, 3,
-	20, 700, -1, CLAT | RFAC, 70},
+	20, 700, -1, CLAT | RFAC, 70}, 
+*/
+
     {"CL.A-Pod", VRT_CL_APOD, TBEAM, 0, 0, 0, 1, 1, 1, 0, -1, -1, -1, 1, 0,
-	50, -1, CLAT | A_POD, 1},
+	50, -1, CLAT | A_POD, 1,1500,0,0},
     {"CL.Anti-MissileSystem", VRT_CL_AMS, TMISSILE, 1, 2, 0, 1, 1, 1, 0,
 	-1, -1, -1, 1, 24, 50, -1, CLAT | AMS, 63},
     {"CL.ArrowIVSystem", VRT_CL_ARROWIV, TARTILLERY, 10, 20, 0, 0, 0, 6, 0,
@@ -71,50 +75,10 @@ struct weapon_struct MechWeapons[] = {
 	-1, 8, 5, 1200, -1, ULTRA | CLAT, 337},
     {"CL.UltraAC/5", VRT_CL_UAC5, TAMMO, 1, 5, 0, 7, 14, 21, 0, -1, -1, -1,
 	3, 20, 700, -1, ULTRA | CLAT, 123},
-    {"IS.AC/10", VRT_IS_AC10, TAMMO, 3, 10, 0, 5, 10, 15, 0, -1, -1, -1, 7,
-	10, 1200, -1, RFAC, 124},
-    {"IS.AC/2", VRT_IS_AC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1, -1, 1,
-	45, 600, -1, RFAC, 37},
-    {"IS.AC/20", VRT_IS_AC20, TAMMO, 7, 20, 0, 3, 6, 9, 0, -1, -1, -1, 10,
-	5, 1400, -1, RFAC, 178},
-    {"IS.AC/5", VRT_IS_AC5, TAMMO, 1, 5, 3, 6, 12, 18, 0, -1, -1, -1, 4,
-	20, 800, -1, RFAC, 70},
-    {"IS.Anti-MissileSystem", VRT_IS_AMS, TMISSILE, 1, 2, 0, 1, 1, 1, 0,
-	-1, -1, -1, 1, 12, 50, -1, AMS, 32},
-    {"IS.ArrowIVSystem", VRT_IS_ARROWIV, TARTILLERY, 10, 20, 0, 0, 0, 5, 0,
-	-1, -1, -1, 15, 5, 1500, -1, IDF | DAR, 171},
-    {"IS.GaussRifle", VRT_IS_GR, TAMMO, 1, 15, 2, 7, 15, 22, 0, -1, -1, -1,
-	7, 8, 1500, 20, GAUSS, 321},
-    {"IS.LB10-XAC", VRT_IS_LBX10, TAMMO, 2, 10, 0, 6, 12, 18, 0, -1, -1,
-	-1, 6, 10, 1100, -1, LBX, 148},
-    {"IS.LRM-10", VRT_IS_LRM10, TMISSILE, 4, 1, 6, 7, 14, 21, 0, -1, -1,
-	-1, 2, 12, 500, -1, IDF, 90},
-    {"IS.LRM-15", VRT_IS_LRM15, TMISSILE, 5, 1, 6, 7, 14, 21, 0, -1, -1,
-	-1, 3, 8, 700, -1, IDF, 136},
-    {"IS.LRM-20", VRT_IS_LRM20, TMISSILE, 6, 1, 6, 7, 14, 21, 0, -1, -1,
-	-1, 5, 6, 1000, -1, IDF, 181},
-    {"IS.LRM-5", VRT_IS_LRM5, TMISSILE, 2, 1, 6, 7, 14, 21, 0, -1, -1, -1,
-	1, 24, 200, -1, IDF, 45},
+
     {"IS.LongTom", VRT_IS_LONGTOM, TARTILLERY, 20, 20, 0, 0, 0, 20, 0, -1,
 	-1, -1, 30, 5, 3000, -1, IDF | DAR, 171},
-    {"IS.MachineGun", VRT_IS_MG, TAMMO, 0, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
-	200, 50, -1, GMG, 5},
-    {"IS.NarcBeacon", VRT_IS_NARC, TMISSILE, 1, 4, 0, 3, 6, 9, 0, -1, -1,
-	-1, 2, 6, 300, -1, NARC, 30},
-    {"IS.SRM-2", VRT_IS_SRM2, TMISSILE, 2, 2, 0, 3, 6, 9, 0, -1, -1, -1, 1,
-	50, 100, -1, NONE, 21},
-    {"IS.SRM-4", VRT_IS_SRM4, TMISSILE, 3, 2, 0, 3, 6, 9, 0, -1, -1, -1, 1,
-	25, 200, -1, NONE, 39},
-    {"IS.SRM-6", VRT_IS_SRM6, TMISSILE, 4, 2, 0, 3, 6, 9, 0, -1, -1, -1, 2,
-	15, 300, -1, NONE, 59},
-    {"IS.Sniper", VRT_IS_SNIPER, TARTILLERY, 10, 10, 0, 0, 0, 12, 0, -1,
-	-1, -1, 20, 10, 2000, -1, IDF | DAR, 86},
-    {"IS.StreakSRM-2", VRT_IS_SSRM2, TMISSILE, 2, 2, 0, 3, 6, 9, 0, -1, -1,
-	-1, 1, 50, 150, -1, STREAK | NOSPA, 30},
-    {"IS.Thumper", VRT_IS_THUMPER, TARTILLERY, 6, 5, 0, 0, 0, 14, 0, -1,
-	-1, -1, 15, 20, 1500, -1, IDF | DAR, 40},
-    {"IS.UltraAC/5", VRT_IS_UAC5, TAMMO, 1, 5, 2, 6, 13, 20, 0, -1, -1, -1,
-	5, 20, 900, -1, ULTRA, 113},
+
     {"PC.Blazer", VRT_PC_BLAZER, TAMMO, 0, 32, 0, 24, 48, 72, 0, -1, -1,
 	-1, 1, 30, 0, -1, PC_HEAT, 1},
     {"PC.Crossbow", VRT_PC_BLAZER, TAMMO, 0, 9, 0, 9, 18, 27, 0, -1, -1,
@@ -170,18 +134,6 @@ struct weapon_struct MechWeapons[] = {
 	-1, 1, 25, 200, -1, DFM | NOSPA, 1000},
     {"IS.SR_DFM-6", VRT_IS_SR_DFM6, TMISSILE, 4, 3, 0, 2, 4, 6, 0, -1, -1,
 	-1, 2, 15, 300, -1, DFM | NOSPA, 1000},
-    {"IS.StreakSRM-4", VRT_IS_SSRM4, TMISSILE, 3, 2, 0, 3, 6, 9, -1, -1,
-	-1, 9, 1, 25, 300, -1, STREAK | NOSPA, 59},
-    {"IS.StreakSRM-6", VRT_IS_SSRM6, TMISSILE, 4, 2, 0, 3, 6, 9, -1, -1,
-	-1, 9, 2, 15, 450, -1, STREAK | NOSPA, 89},
-    {"IS.Thunderbolt-5", VRT_IS_TBOLT5, TMISSILE, 3, 5, 5, 6, 12, 18, 0,
-	-1, -1, -1, 1, 12, 300, -1, IDF | NOSPA, 1000},
-    {"IS.Thunderbolt-10", VRT_IS_TBOLT10, TMISSILE, 5, 10, 5, 6, 12, 18, 0,
-	-1, -1, -1, 2, 6, 600, -1, IDF | NOSPA, 1000},
-    {"IS.Thunderbolt-15", VRT_IS_TBOLT15, TMISSILE, 7, 15, 5, 6, 12, 18, 0,
-	-1, -1, -1, 3, 4, 800, -1, IDF | NOSPA, 1000},
-    {"IS.Thunderbolt-20", VRT_IS_TBOLT20, TMISSILE, 8, 20, 5, 6, 12, 18, 0,
-	-1, -1, -1, 5, 3, 1100, -1, IDF | NOSPA, 1000},
     {"IS.CaselessAC/2", VRT_IS_CAC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1,
 	-1, 1, 67, 600, -1, NOSPA | CASELESS, 1000},
     {"IS.CaselessAC/5", VRT_IS_CAC5, TAMMO, 1, 5, 3, 6, 12, 18, 0, -1, -1,
@@ -196,29 +148,6 @@ struct weapon_struct MechWeapons[] = {
 	5, 15, 1200, -1, NOSPA | HYPER, 1000},
     {"IS.HyperAC/10", VRT_IS_HAC10, TAMMO, 7, 10, 0, 6, 12, 20, 0, -1, -1,
 	-1, 6, 8, 1400, -1, NOSPA | HYPER, 1000},
-    {"IS.LB2-XAC", VRT_IS_LBX2, TAMMO, 1, 2, 4, 9, 18, 27, 0, -1, -1, -1,
-	4, 45, 600, -1, LBX, 42},
-    {"IS.LB5-XAC", VRT_IS_LBX5, TAMMO, 1, 5, 3, 7, 14, 21, 0, -1, -1, -1,
-	5, 20, 800, -1, LBX, 83},
-    {"IS.LB20-XAC", VRT_IS_LBX20, TAMMO, 6, 20, 0, 4, 8, 12, 0, -1, -1, -1,
-	11, 5, 1400, -1, LBX, 237},
-    {"IS.UltraAC/2", VRT_IS_UAC2, TAMMO, 1, 2, 4, 8, 17, 25, 0, -1, -1, -1,
-	3, 45, 700, -1, ULTRA, 56},
-    {"IS.UltraAC/10", VRT_IS_UAC10, TAMMO, 4, 10, 0, 6, 12, 18, 0, -1, -1,
-	-1, 7, 10, 1300, -1, ULTRA, 253},
-    {"IS.UltraAC/20", VRT_IS_UAC20, TAMMO, 8, 20, 0, 3, 7, 10, 0, -1, -1,
-	-1, 10, 5, 1500, -1, ULTRA, 282},
-
-/* DCMS stuff */
-
-    {"IS.MRM-10", VRT_IS_MRM10, TMISSILE, 4, 1, 0, 3, 8, 15, 0, -1, -1, -1,
-	2, 24, 300, -1, MRM, 56},
-    {"IS.MRM-20", VRT_IS_MRM20, TMISSILE, 6, 1, 0, 3, 8, 15, 0, -1, -1, -1,
-	3, 12, 700, -1, MRM, 112},
-    {"IS.MRM-30", VRT_IS_MRM30, TMISSILE, 10, 1, 0, 3, 8, 15, 0, -1, -1,
-	-1, 5, 8, 1000, -1, MRM, 168},
-    {"IS.MRM-40", VRT_IS_MRM40, TMISSILE, 12, 1, 0, 3, 8, 15, 0, -1, -1,
-	-1, 7, 6, 1200, -1, MRM, 224},
 
 /* .. normal cont'd ; energy weapons .. */
 
@@ -246,26 +175,180 @@ struct weapon_struct MechWeapons[] = {
 	0, 50, -1, CLAT, 9},
     {"CL.SmallPulseLaser", VRT_CL_SPL, TBEAM, 2, 3, 0, 2, 4, 6, 0, 1, 2, 4,
 	1, 0, 100, -1, PULSE | CLAT, 24},
-    {"IS.ERLargeLaser", VRT_IS_ERLL, TBEAM, 12, 8, 0, 7, 14, 19, 0, 3, 5,
-	12, 2, 0, 500, -1, NONE, 163},
-    {"IS.ERPPC", VRT_IS_ERPPC, TBEAM, 15, 10, 0, 7, 14, 23, 0, 4, 10, 16,
-	3, 0, 700, -1, NONE, 229},
-    {"IS.Flamer", VRT_IS_FLAMER, TBEAM, 3, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
-	0, 100, -1, CHEAT, 6},
-    {"IS.LargeLaser", VRT_IS_LL, TBEAM, 8, 8, 0, 5, 10, 15, 0, 3, 6, 9, 2,
-	0, 500, -1, NONE, 124},
-    {"IS.LargePulseLaser", VRT_IS_LPL, TBEAM, 10, 9, 0, 3, 7, 10, 0, 2, 5,
-	7, 2, 0, 700, -1, PULSE, 119},
-    {"IS.MediumLaser", VRT_IS_ML, TBEAM, 3, 5, 0, 3, 6, 9, 0, 2, 4, 6, 1,
-	0, 100, -1, NONE, 46},
-    {"IS.MediumPulseLaser", VRT_IS_MPL, TBEAM, 4, 6, 0, 2, 4, 6, 0, 2, 3,
-	4, 1, 0, 200, -1, PULSE, 48},
+
+/* IS Level 1 Energy Weapons -- Verified 02/13/07 -- Power_Shaper */
     {"IS.PPC", VRT_IS_PPC, TBEAM, 10, 10, 3, 6, 12, 18, 3, 4, 7, 10, 3, 0,
-	700, -1, NONE, 176},
+        700, -1, NONE, 176, 200000, 0, 0},
+    {"IS.LargeLaser", VRT_IS_LL, TBEAM, 8, 8, 0, 5, 10, 15, 0, 3, 6, 9, 2,
+        0, 500, -1, NONE, 124, 100000, 0, 0},
+    {"IS.MediumLaser", VRT_IS_ML, TBEAM, 3, 5, 0, 3, 6, 9, 0, 2, 4, 6, 1,
+        0, 100, -1, NONE, 46, 40000, 0, 0},
     {"IS.SmallLaser", VRT_IS_SL, TBEAM, 1, 3, 0, 1, 2, 3, 0, 1, 2, -1, 1,
-	0, 50, -1, NONE, 9},
+        0, 50, -1, NONE, 9, 11250, 0, 0},
+    {"IS.Flamer", VRT_IS_FLAMER, TBEAM, 3, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
+    	0, 100, -1, CHEAT, 6, 7500, 0},
+
+/* IS Level 2 Energy Weapons -- Verified 02/13/07 -- Power_Shaper */
+    {"IS.ERPPC", VRT_IS_ERPPC, TBEAM, 15, 10, 0, 7, 14, 23, 0, 4, 10, 16,
+        3, 0, 700, -1, NONE, 229, 300000, 0, 0},
+    {"IS.ERLargeLaser", VRT_IS_ERLL, TBEAM, 12, 8, 0, 7, 14, 19, 0, 3, 5,
+        12, 2, 0, 500, -1, NONE, 163, 200000, 0, 0},
+    {"IS.ERMediumLaser", VRT_IS_ERML, TBEAM, 5, 5, 0, 4, 8, 12, 0, 3, 5, 8,
+        1, 0, 100, -1, NONE, 62, 80000, 0, 0},
+    {"IS.ERSmallLaser", VRT_IS_ERSL, TBEAM, 2, 3, 0, 2, 4, 5, 0, 1, 2, 3,
+        1, 0, 50, -1, NONE, 17, 11250, 0, 0},
+    {"IS.LargePulseLaser", VRT_IS_LPL, TBEAM, 10, 9, 0, 3, 7, 10, 0, 2, 5,
+        7, 2, 0, 700, -1, PULSE, 119, 175000, 0, 0},
+    {"IS.MediumPulseLaser", VRT_IS_MPL, TBEAM, 4, 6, 0, 2, 4, 6, 0, 2, 3,
+        4, 1, 0, 200, -1, PULSE, 48, 60000, 0, 0},
     {"IS.SmallPulseLaser", VRT_IS_SPL, TBEAM, 2, 3, 0, 1, 2, 3, 0, 1, 2,
-	-1, 1, 0, 100, -1, PULSE, 12},
+        -1, 1, 0, 100, -1, PULSE, 12, 16000, 0, 0},
+
+/* IS Level 3 Energy Weapons -- Verified 02/13/07 -- Power_Shaper */
+    {"IS.X-LargePulseLaser", VRT_IS_XLPL, TBEAM, 14, 9, 0, 5, 10, 15, 0, 3,
+        6, 9, 2, 0, 700, -1, PULSE, 178, 275000, 0, 0},
+    {"IS.X-MediumPulseLaser", VRT_IS_XMPL, TBEAM, 6, 6, 0, 3, 6, 9, 0, 2,
+        4, 6, 1, 0, 200, -1, PULSE, 71, 110000, 0, 0},
+    {"IS.X-SmallPulseLaser", VRT_IS_XSPL, TBEAM, 3, 3, 0, 2, 4, 5, 0, -1,
+        -1, -1, 1, 0, 100, -1, PULSE, 21, 31000, 0, 0},
+/* Missing PPC/ERPPC Capacitors */
+
+/* IS Level 1 Ballistic Weapons -- Verified 02/13/07 -- Power_Shaper */
+    {"IS.AC/2", VRT_IS_AC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1, -1, 1,
+        45, 600, -1, RFAC, 37, 75000, 5, 1000},
+    {"IS.AC/5", VRT_IS_AC5, TAMMO, 1, 5, 3, 6, 12, 18, 0, -1, -1, -1, 4,
+        20, 800, -1, RFAC, 70, 125000, 9, 4500},
+    {"IS.AC/10", VRT_IS_AC10, TAMMO, 3, 10, 0, 5, 10, 15, 0, -1, -1, -1, 7,
+        10, 1200, -1, RFAC, 124, 200000, 15, 6000},
+    {"IS.AC/20", VRT_IS_AC20, TAMMO, 7, 20, 0, 3, 6, 9, 0, -1, -1, -1, 10,
+        5, 1400, -1, RFAC | SPLIT_CRITS, 178, 300000, 20, 10000},
+    {"IS.VehicleFlamer", VRT_IS_VFLAMER, TAMMO, 3, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
+        20, 50, -1, CHEAT, 5, 7500, 1, 1000},
+    {"IS.MachineGun", VRT_IS_MG, TAMMO, 0, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
+        200, 50, -1, GMG, 5, 5000, 1, 1000},
+
+/* IS Level 2 Ballistic Weapons -- Verified 02/13/07 -- Power_Shaper */
+    {"IS.Anti-MissileSystem", VRT_IS_AMS, TMISSILE, 1, 2, 0, 1, 1, 1, 0,
+        -1, -1, -1, 1, 12, 50, -1, AMS, 32, 100000, 11, 2000},
+    {"IS.GaussRifle", VRT_IS_GR, TAMMO, 1, 15, 2, 7, 15, 22, 0, -1, -1, -1,
+        7, 8, 1500, 20, GAUSS, 321, 300000, 37, 20000},
+    {"IS.LightGaussRifle", VRT_IS_LGR, TAMMO, 1, 8, 3, 8, 17, 25, 0, -1,
+        -1, -1, 5, 16, 1200, 16, GAUSS, 159, 275000, 20, 20000},
+    {"IS.HeavyGaussRifle", VRT_IS_HGR, TAMMO, 2, 25, 4, 6, 13, 20, 0, -1,
+        -1, -1, 11, 4, 1800, 25, GAUSS | HVYGAUSS | SPLIT_CRITS, 346, 500000, 43, 20000},
+    {"IS.LB2-XAC", VRT_IS_LBX2, TAMMO, 1, 2, 4, 9, 18, 27, 0, -1, -1, -1,
+        4, 45, 600, -1, LBX, 42, 150000, 5, 2000},
+    {"IS.LB5-XAC", VRT_IS_LBX5, TAMMO, 1, 5, 3, 7, 14, 21, 0, -1, -1, -1,
+        5, 20, 800, -1, LBX, 83, 250000, 10, 9000},
+    {"IS.LB10-XAC", VRT_IS_LBX10, TAMMO, 2, 10, 0, 6, 12, 18, 0, -1, -1,
+        -1, 6, 10, 1100, -1, LBX, 148, 400000, 19, 12000},
+    {"IS.LB20-XAC", VRT_IS_LBX20, TAMMO, 6, 20, 0, 4, 8, 12, 0, -1, -1, -1,
+        11, 5, 1400, -1, LBX | SPLIT_CRITS, 237, 600000, 27, 20000},
+    {"IS.RotaryAC/2", VRT_IS_RAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1,
+        -1, 3, 45, 800, -1, RAC, 118, 175000, 15, 3000},
+    {"IS.RotaryAC/5", VRT_IS_RAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1,
+        -1, 6, 20, 1000, -1, RAC, 247, 275000, 31, 12000},
+    {"IS.UltraAC/2", VRT_IS_UAC2, TAMMO, 1, 2, 4, 8, 17, 25, 0, -1, -1, -1,
+        3, 45, 700, -1, ULTRA, 56, 120000, 7, 1000},
+    {"IS.UltraAC/5", VRT_IS_UAC5, TAMMO, 1, 5, 2, 6, 13, 20, 0, -1, -1, -1,
+        5, 20, 900, -1, ULTRA, 113, 200000, 14, 9000},
+    {"IS.UltraAC/10", VRT_IS_UAC10, TAMMO, 4, 10, 0, 6, 12, 18, 0, -1, -1,
+        -1, 7, 10, 1300, -1, ULTRA, 253, 320000, 29, 1200},
+    {"IS.UltraAC/20", VRT_IS_UAC20, TAMMO, 8, 20, 0, 3, 7, 10, 0, -1, -1,
+        -1, 10, 5, 1500, -1, ULTRA | SPLIT_CRITS, 282, 480000, 32, 20000},
+    {"IS.ArrowIVSystem", VRT_IS_ARROWIV, TARTILLERY, 10, 20, 0, 0, 0, 5, 0,
+        -1, -1, -1, 15, 5, 1500, -1, IDF | DAR, 171, 450000, 11, 1000},
+    {"IS.Sniper", VRT_IS_SNIPER, TARTILLERY, 10, 10, 0, 0, 0, 12, 0, -1,
+        -1, -1, 20, 10, 2000, -1, IDF | DAR, 86, 300000, 5, 6000},
+    {"IS.Thumper", VRT_IS_THUMPER, TARTILLERY, 6, 5, 0, 0, 0, 14, 0, -1,
+        -1, -1, 15, 20, 1500, -1, IDF | DAR, 40, 187500, 3, 4500},
+
+/* IS Level 3 Ballistic Weapons -- Verified 02/13/07 -- Power_Shaper */
+/*NAME, VRT, TYPE, HEAT, DAMAGE, MIN, SR, MR, LR, WMIN, WSR, WMR, WLR, CRITS, AMMO, WT, EXP DAMAGE, SPEC, WBV, WCOST, ABV, ACOST */
+    {"IS.HeavyFlamer", VRT_IS_HFLAMER, TAMMO, 5, 4, 0, 2, 4, 6, 0, -1, -1,
+        -1, 1, 10, 100, -1, CHEAT, 20, 20000, 3, 2000},
+    {"IS.LightAC/2", VRT_IS_LAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1, -1,
+        1, 45, 400, -1, RFAC, 30, 100000, 3, 2000},
+    {"IS.LightAC/5", VRT_IS_LAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1, -1,
+        1, 20, 400, -1, RFAC, 62, 150000, 5, 5000},
+    {"IS.LongTomCannon", VRT_IS_LONGTOMC, TARTILLERY, 20, 20, 4, 6, 13, 20, 0, -1, -1,
+        -1, 15, 5, 2000, -1, IDF | DAR, 348, 650000, 48, 20000},
+    {"IS.SniperCannon", VRT_IS_SNIPERC, TARTILLERY, 10, 10, 2, 4, 8, 12, 0, -1, -1, -1,
+        10, 10, 1500, -1, IDF | DAR, 115, 475000, 16, 15000},
+    {"IS.ThumperCannon", VRT_IS_THUMPERC, TARTILLERY, 6, 5, 3, 4, 9, 14, 0, -1, -1, -1,
+        7, 20, 1000, -1, IDF | DAR, 58, 200000, 7, 10000},
+    {"IS.HeavyMachineGun", VRT_IS_HMG, TAMMO, 0, 2, 0, 2, 4, 6, 0, -1, -1,
+            -1, 1, 100, 100, -1, GMG, 6, 7500, 1, 1000},
+
+/* IS Level 1 Missile Weapons */
+    {"IS.LRM-5", VRT_IS_LRM5, TMISSILE, 2, 1, 6, 7, 14, 21, 0, -1, -1, -1,
+        1, 24, 200, -1, IDF, 45, 30000, 6, 30000},
+    {"IS.LRM-10", VRT_IS_LRM10, TMISSILE, 4, 1, 6, 7, 14, 21, 0, -1, -1, -1,
+        2, 12, 500, -1, IDF, 90, 100000, 11, 30000},
+    {"IS.LRM-15", VRT_IS_LRM15, TMISSILE, 5, 1, 6, 7, 14, 21, 0, -1, -1, -1,
+        3, 8, 700, -1, IDF, 136, 175000, 17, 30000},
+    {"IS.LRM-20", VRT_IS_LRM20, TMISSILE, 6, 1, 6, 7, 14, 21, 0, -1, -1, -1,
+        5, 6, 1000, -1, IDF, 181, 250000, 23, 30000},
+    {"IS.SRM-2", VRT_IS_SRM2, TMISSILE, 2, 2, 0, 3, 6, 9, 0, -1, -1, -1, 1,
+        50, 100, -1, NONE, 21, 10000, 3, 27000},
+    {"IS.SRM-4", VRT_IS_SRM4, TMISSILE, 3, 2, 0, 3, 6, 9, 0, -1, -1, -1, 1,
+        25, 200, -1, NONE, 39, 60000, 5, 27000},
+    {"IS.SRM-6", VRT_IS_SRM6, TMISSILE, 4, 2, 0, 3, 6, 9, 0, -1, -1, -1, 2,
+        15, 300, -1, NONE, 59, 80000, 7, 27000},
+     
+/* All LRM/SRM have OS versions. BV/5, Cbill/2, WT+.5
+ * LR Torp 5
+ * LR Torp 10
+ * LR Torp 15
+ * LR Torp 20
+ * SR Torp 2
+ * SR Torp 4
+ * SR Torp 6
+ */
+
+/* IS Level 2 Missile Weapons */
+    {"IS.MRM-10", VRT_IS_MRM10, TMISSILE, 4, 1, 0, 3, 8, 15, 0, -1, -1, -1,
+        2, 24, 300, -1, MRM, 56, 50000, 7, 5000},
+    {"IS.MRM-20", VRT_IS_MRM20, TMISSILE, 6, 1, 0, 3, 8, 15, 0, -1, -1, -1,
+        3, 12, 700, -1, MRM, 112, 125000, 14, 5000},
+    {"IS.MRM-30", VRT_IS_MRM30, TMISSILE, 10, 1, 0, 3, 8, 15, 0, -1, -1,
+        -1, 5, 8, 1000, -1, MRM, 168, 225000, 21, 5000},
+    {"IS.MRM-40", VRT_IS_MRM40, TMISSILE, 12, 1, 0, 3, 8, 15, 0, -1, -1,
+        -1, 7, 6, 1200, -1, MRM, 224, 350000, 28, 5000},
+    {"IS.NarcBeacon", VRT_IS_NARC, TMISSILE, 1, 4, 0, 3, 6, 9, 0, -1, -1,
+        -1, 2, 6, 300, -1, NARC, 30, 100000, 0, 6000},
+    {"IS.iNarcBeacon", VRT_IS_INARC, TMISSILE, 1, 6, 0, 4, 9, 15, 0, -1,
+        -1, -1, 3, 4, 500, -1, INARC, 75, 250000, 0, 7500},
+    {"IS.StreakSRM-2", VRT_IS_SSRM2, TMISSILE, 2, 2, 0, 3, 6, 9, 0, -1, -1,
+        -1, 1, 50, 150, -1, STREAK | NOSPA, 30, 15000, 4, 54000},
+    {"IS.StreakSRM-4", VRT_IS_SSRM4, TMISSILE, 3, 2, 0, 3, 6, 9, -1, -1,
+        -1, -1, 1, 25, 300, -1, STREAK | NOSPA, 59, 90000, 7, 54000},
+    {"IS.StreakSRM-6", VRT_IS_SSRM6, TMISSILE, 4, 2, 0, 3, 6, 9, -1, -1,
+        -1, -1, 2, 15, 450, -1, STREAK | NOSPA, 89, 120000, 11, 54000},
+    {"IS.RL-10", VRT_IS_RL10, TMISSILE, 3, 1, 0, 5, 11, 18, 0, -1, -1, -1,
+        1, 0, 50, -1, ROCKET | IDF, 18, 15000, 0, 0},
+    {"IS.RL-15", VRT_IS_RL15, TMISSILE, 4, 1, 0, 4, 9, 15, 0, -1, -1, -1,
+        2, 0, 100, -1, ROCKET | IDF, 23, 30000, 0, 0},
+    {"IS.RL-20", VRT_IS_RL20, TMISSILE, 5, 1, 0, 3, 7, 12, 0, -1, -1, -1,
+        3, 0, 150, -1, ROCKET | IDF, 24, 45000, 0, 0},
+
+
+/* MRM OS Versions
+ * Streak OS Versions
+ */
+
+/* IS Level 3 Missile Weapons */
+    {"IS.Thunderbolt-5", VRT_IS_TBOLT5, TMISSILE, 3, 5, 5, 6, 12, 18, 0,
+        -1, -1, -1, 1, 12, 300, -1, IDF | NOSPA, 64, 50000, 8, 50000},
+    {"IS.Thunderbolt-10", VRT_IS_TBOLT10, TMISSILE, 5, 10, 5, 6, 12, 18, 0,
+        -1, -1, -1, 2, 6, 700, -1, IDF | NOSPA, 127, 175000, 16, 50000},
+    {"IS.Thunderbolt-15", VRT_IS_TBOLT15, TMISSILE, 7, 15, 5, 6, 12, 18, 0,
+        -1, -1, -1, 3, 4, 1100, -1, IDF | NOSPA, 229, 325000, 26, 50000},
+    {"IS.Thunderbolt-20", VRT_IS_TBOLT20, TMISSILE, 8, 20, 5, 6, 12, 18, 0,
+        -1, -1, -1, 5, 3, 1500, -1, IDF | NOSPA, 305, 450000, 35, 50000},
+						 
+/* All minus Thunderbolt and Torps, Improved OS vers
+ */
 
 /* pc weapons without ammo */
 
@@ -274,31 +357,8 @@ struct weapon_struct MechWeapons[] = {
     {"PC.Vibroblade", VRT_PC_VIBROBLADE, THAND, 0, 7, 0, 1, 1, 1, 0, -1,
 	-1, -1, 1, 0, 0, -1, PC_SHAR, 1},
 
-/* FWL FM stuff */
-
-    {"IS.ERMediumLaser", VRT_IS_ERML, TBEAM, 5, 5, 0, 4, 8, 12, 0, 3, 5, 8,
-	1, 0, 100, -1, NONE, 62},
-    {"IS.ERSmallLaser", VRT_IS_ERSL, TBEAM, 2, 3, 0, 2, 4, 5, 0, 1, 2, 3,
-	1, 0, 50, -1, NONE, 17},
-    {"IS.LightGaussRifle", VRT_IS_LGR, TAMMO, 1, 8, 3, 8, 17, 25, 0, -1,
-	-1, -1, 5, 16, 1200, 16, GAUSS, 159},
 
 /* MaxMunch stuff */
-
-    {"IS.X-LargePulseLaser", VRT_IS_XLPL, TBEAM, 14, 9, 0, 5, 10, 15, 0, 3,
-	6, 9, 2, 0, 700, -1, PULSE, 178},
-    {"IS.X-MediumPulseLaser", VRT_IS_XMPL, TBEAM, 6, 6, 0, 3, 6, 9, 0, 2,
-	4, 6, 1, 0, 200, -1, PULSE, 71},
-    {"IS.X-SmallPulseLaser", VRT_IS_XSPL, TBEAM, 3, 3, 0, 2, 4, 5, 0, -1,
-	-1, -1, 1, 0, 100, -1, PULSE, 21},
-    {"IS.HeavyFlamer", VRT_IS_HFLAMER, TBEAM, 5, 4, 0, 2, 4, 6, 0, -1, -1,
-	-1, 1, 0, 100, -1, CHEAT, 20},
-    {"IS.HeavyMachineGun", VRT_IS_HMG, TAMMO, 0, 2, 0, 2, 4, 6, 0, -1, -1,
-	-1, 1, 100, 100, -1, GMG, 6},
-    {"IS.LightAC/2", VRT_IS_LAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1, -1,
-	1, 45, 400, -1, RFAC, 30},
-    {"IS.LightAC/5", VRT_IS_LAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1, -1,
-	1, 20, 400, -1, RFAC, 62},
     {"CL.ERLargePulseLaser", VRT_CL_ERLPL, TBEAM, 13, 10, 0, 7, 15, 23, 0,
 	4, 10, 16, 3, 0, 600, -1, PULSE | CLAT, 271},
     {"CL.ERMediumPulseLaser", VRT_CL_ERMPL, TBEAM, 6, 7, 0, 5, 9, 14, 0, 3,
@@ -323,26 +383,10 @@ struct weapon_struct MechWeapons[] = {
 	-1, 1, 0, 50, -1, CLAT | HVYW, 15},
 
     /* new FM stuff */
-    {"IS.iNarcBeacon", VRT_IS_INARC, TMISSILE, 1, 6, 0, 4, 9, 15, 0, -1,
-	-1, -1, 3, 4, 500, -1, INARC, 75},
-    {"IS.RotaryAC/2", VRT_IS_RAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1,
-	-1, 3, 45, 800, -1, RAC, 118},
-    {"IS.RotaryAC/5", VRT_IS_RAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1,
-	-1, 6, 20, 1000, -1, RAC, 247},
-    {"IS.HeavyGaussRifle", VRT_IS_HGR, TAMMO, 2, 25, 4, 6, 13, 20, 0, -1,
-	-1, -1, 11, 4, 1800, 25, GAUSS | HVYGAUSS, 346},
     {"IS.MagshotGaussRifle", VRT_IS_MGR, TAMMO, 0, 2, 0, 3, 6, 9, 0, -1,
 	-1, -1, 1, 20, 50, 5, GAUSS, 10},
-
     {"CL.MicroPulseLaser", VRT_CL_MICROPL, TBEAM, 1, 3, 0, 1, 2, 3, 0, 1,
 	2, 2, 1, 0, 50, -1, PULSE | CLAT, 12},
-
-    {"IS.RL-10", VRT_IS_RL10, TMISSILE, 3, 1, 0, 5, 11, 18, 0, -1, -1, -1,
-	1, 0, 50, -1, ROCKET | IDF, 18},
-    {"IS.RL-15", VRT_IS_RL15, TMISSILE, 4, 1, 0, 4, 9, 15, 0, -1, -1, -1,
-	2, 0, 100, -1, ROCKET | IDF, 23},
-    {"IS.RL-20", VRT_IS_RL20, TMISSILE, 5, 1, 0, 3, 7, 12, 0, -1, -1, -1,
-	3, 0, 150, -1, ROCKET | IDF, 24},
 
     /* Exile Munch Weapons */
     {"IS.CoolantGun", VRT_IS_COOLANTGUN, TAMMO, 0, 3, 0, 1, 2, 3, 0, -1, -1,
@@ -351,8 +395,6 @@ struct weapon_struct MechWeapons[] = {
     -1, 2, 10, 150, -1, NONE, 30},
 
     /* Missing TL2 and TL3 Weapons */
-    {"IS.VehicleFlamer", VRT_IS_VFLAMER, TAMMO, 3, 2, 0, 1, 2, 3, 0, -1, -1, -1, 1,
-    20, 50, -1, CHEAT, 4},
     {"IS.VehicleHeavyFlamer", VRT_IS_VHFLAMER, TAMMO, 5, 4, 0, 2, 4, 6, 0, -1, -1,
     -1, 1, 20, 100, -1, CHEAT, 20},
     {"CL.ERMicroLaser", VRT_CL_ERMICRO, TBEAM, 1, 3, 0, 1, 2, 4, 0, 1,
@@ -367,12 +409,6 @@ struct weapon_struct MechWeapons[] = {
     -1, 10, 5, 1600, -1, CLAT | RAC, 400},
     {"CL.PlasmaRifle", VRT_CL_PLASMA, TBEAM, 15, 10, 0, 7, 14, 22, 0, 4, 10, 16,
     2, 0, 600, -1, CLAT, 400},
-    {"IS.LongTomCannon", VRT_IS_LONGTOMC, TARTILLERY, 20, 20, 5, 10, 20, .5, 0, -1,
-    -1, -1, 12, 5, 2000, -1, IDF | DAR, 171},
-    {"IS.SniperCannon", VRT_IS_SNIPERC, TARTILLERY, 10, 10, 0, 5, 7, .3, 0, -1,
-    -1, -1, 10, 10, 1500, -1, IDF | DAR, 86},
-    {"IS.ThumperCannon", VRT_IS_THUMPERC, TARTILLERY, 6, 5, 0, 7, 9, .4, 0, -1,
-    -1, -1, 7, 20, 1000, -1, IDF | DAR, 40},
     {"CL.LaserAMS", VRT_CL_LASERAMS, TBEAM, 1, 2, 0, 1, 1, 1, 0,
     -1, -1, -1, 1, 24, 50, -1, CLAT | AMS, 105},
     {"IS.LaserAMS", VRT_IS_LASERAMS, TBEAM, 12, 2, 0, 1, 1, 1, 0,
@@ -407,6 +443,10 @@ struct weapon_struct MechWeapons[] = {
     {NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, NONE, 1}
 
 };
+
+/* Prep work for unifying cluster hit tables */
+#define CLUSTER_HIT_2  {1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2} 
+#define CLUSTER_HIT_10 {3, 3, 4, 6, 6, 6, 6, 8, 8, 10, 10}
 
 struct missile_hit_table_struct MissileHitTable[] = {
     {"CL.LB10-XAC", 0, {3, 3, 4, 6, 6, 6, 6, 8, 8, 10, 10}},

@@ -2650,7 +2650,7 @@ void SetPartCost(int p, unsigned long long int cost)
 void CalcFasaCost_AddPrice(float * total, char * desc, float value) {
    *total += value;
    #if COST_DEBUG
-      SendDebug(tprintf("Addprice - %20s %.0f", desc, value));
+      SendDebug(tprintf("Addprice - %25s %8.0f", desc, value));
    #endif
 }
     
@@ -2670,11 +2670,11 @@ void CalcFasaCost_DoArmMath(MECH * mech, int loc, float * total) {
             // BMR Says don't count this.
             //CalcFasaCost_AddPrice(total, "Shoulder Actuator", 0);
         else if (Special2I(part) == UPPER_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Upper Actuator", (MechTons(mech) * 100));
+            CalcFasaCost_AddPrice(total, "ARM Upper Actuator", (MechTons(mech) * 100));
         else if (Special2I(part) == LOWER_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Lower Actuator", (MechTons(mech) * 50));
+            CalcFasaCost_AddPrice(total, "ARM Lower Actuator", (MechTons(mech) * 50));
         else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Hand Actuator", (MechTons(mech) * 80));        
+            CalcFasaCost_AddPrice(total, "ARM Hand Actuator", (MechTons(mech) * 80));        
     }
 }
     
@@ -2684,13 +2684,15 @@ void CalcFasaCost_DoLegMath(MECH * mech, int loc, float * total) {
         int part = GetPartType(mech, loc, i);
         if (!IsActuator(part))
             continue;
-        else if (Special2I(part) == SHOULDER_OR_HIP || 
-           Special2I(part) == UPPER_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Hip Actuator", (MechTons(mech) * 150));
+        else if (Special2I(part) == SHOULDER_OR_HIP)
+		continue;
+		// BMR Says don't count the Hip 
+	else if (Special2I(part) == UPPER_ACTUATOR)
+            CalcFasaCost_AddPrice(total, "LEG Upper Actuator", (MechTons(mech) * 150));
         else if (Special2I(part) == LOWER_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Lower Actuator", (MechTons(mech) * 180));
+            CalcFasaCost_AddPrice(total, "LEG Lower Actuator", (MechTons(mech) * 80));
         else if (Special2I(part) == HAND_OR_FOOT_ACTUATOR)
-            CalcFasaCost_AddPrice(total, "Foot Actuator", (MechTons(mech) * 120));        
+            CalcFasaCost_AddPrice(total, "LEG Actuator", (MechTons(mech) * 120));        
     }
 }
 
@@ -2703,7 +2705,18 @@ unsigned long long int CalcFasaCost(MECH * mech)
 	int ii, i, part;
 	float total = 0;
 	float mod = 1.0;
-
+	int count, ammoweapcount;
+        unsigned char weaparray[MAX_WEAPS_SECTION];
+        unsigned char weapdata[MAX_WEAPS_SECTION];
+        int critical[MAX_WEAPS_SECTION];
+        unsigned char ammoweap[8 * MAX_WEAPS_SECTION];
+	unsigned short ammo[8 * MAX_WEAPS_SECTION];
+	unsigned short ammomax[8 * MAX_WEAPS_SECTION];
+	unsigned int modearray[8 * MAX_WEAPS_SECTION];
+	int temp;
+	int engine_size = 0;
+	int has_sword = 0;
+	
 	if(!mech)
 		return -1;
 
@@ -2715,6 +2728,16 @@ unsigned long long int CalcFasaCost(MECH * mech)
 		return 0;
 
 	if(MechType(mech) == CLASS_MECH) {
+
+/* Start MECH Internal Structure Skeleton ( Tech Manual (p278) MaxTech (p87) ) */
+		if(MechSpecials(mech) & ES_TECH || MechSpecials(mech) & COMPI_TECH)
+			CalcFasaCost_AddPrice(&total, "ES/Co Internals", (MechTons(mech) * 1600));
+		else if(MechSpecials(mech) & REINFI_TECH)
+			CalcFasaCost_AddPrice(&total, "RE Internals", (MechTons(mech) * 6400));
+		else
+			CalcFasaCost_AddPrice(&total, "Std Internals", (MechTons(mech) * 400));
+/* End MECH Internal Structure Skeleton */
+
 /* Cockpit */
 #if 0
 /* NULLTODO : Port any of these techs ASAP */
@@ -2724,36 +2747,32 @@ unsigned long long int CalcFasaCost(MECH * mech)
 		if(MechSpecials2(mech) & TORSOCOCKPIT_TECH)
 			ADDPRICE("TorsoCockpit", 750000)
 				else
+				EI is 400000 (Clan Tech)
 #endif
       CalcFasaCost_AddPrice(&total, "Cockpit", 200000);
 
-/* Life Support */
-      CalcFasaCost_AddPrice(&total, "LifeSupport", 50000);
+/* Start MECH Life Support ( Tech Manual (p278) ) */
+	      CalcFasaCost_AddPrice(&total, "LifeSupport", 50000);
+/* End MECH Life Support */
 
 /* Sensors */
-      CalcFasaCost_AddPrice(&total, "Sensors", (MechTons(mech) * 2000));
+/* TODO: Add variable range and multi-trac II */
+	      CalcFasaCost_AddPrice(&total, "Sensors", (MechTons(mech) * 2000));
 
-/* Myomer */
+/* Start MECH Musculatre (Myomer) ( Tech Manual (p278) )*/
 		if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
 			CalcFasaCost_AddPrice(&total, "TS Myomer", (MechTons(mech) * 16000));
 		else
 			CalcFasaCost_AddPrice(&total, "Myomer", (MechTons(mech) * 2000));
-
-/* Internal Structure */
-		if(MechSpecials(mech) & ES_TECH || MechSpecials(mech) & COMPI_TECH)
-			CalcFasaCost_AddPrice(&total, "ES/Co Internals", (MechTons(mech) * 1600));
-		else if(MechSpecials(mech) & REINFI_TECH)
-         CalcFasaCost_AddPrice(&total, "RE Internals", (MechTons(mech) * 6400));
-		else
-			CalcFasaCost_AddPrice(&total, "Internals", (MechTons(mech) * 400));
+/* End MECH Musculatre (Myomer) */
 
 /* Actuators */
       CalcFasaCost_DoArmMath(mech, LARM, &total);
       CalcFasaCost_DoArmMath(mech, RARM, &total);
-		/*
+		
       CalcFasaCost_DoLegMath(mech, LLEG, &total);
       CalcFasaCost_DoLegMath(mech, RLEG, &total);
-		*/
+		
 /* Gyro */
 		i = MechEngineSize(mech);
 		if(i % 100)
@@ -2761,13 +2780,14 @@ unsigned long long int CalcFasaCost(MECH * mech)
 		i /= 100;
 
 		if(MechSpecials2(mech) & XLGYRO_TECH)
-			CalcFasaCost_AddPrice(&total, "XL Gyro", (i * 750000));
+			CalcFasaCost_AddPrice(&total, "XL Gyro", (i * 0.5 * 750000));
 		else if(MechSpecials2(mech) & CGYRO_TECH)
-			   CalcFasaCost_AddPrice(&total, "Compact Gyro", (i * 400000));
+			   CalcFasaCost_AddPrice(&total, "Compact Gyro", (i * 1.5 * 400000));
 		else if(MechSpecials2(mech) & HDGYRO_TECH)
-				CalcFasaCost_AddPrice(&total, "HD Gyro", (i * 500000));
+				CalcFasaCost_AddPrice(&total, "HD Gyro", (i * 2 * 500000));
 		else
 		   CalcFasaCost_AddPrice(&total, "Gyro", (i * 300000));
+
 	} else if (MechType(mech) == CLASS_BSUIT) {
 	/* ---------------------------------
 	 * BSuit Costs
@@ -2856,7 +2876,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     	MechSpecials(mech) & XXL_TECH ? 100000 :
     	MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
     	    
-    int engine_size = MechEngineSize(mech);   
+    engine_size = MechEngineSize(mech);   
         
     if (MechMove(mech) == MOVE_WHEEL ||
     	MechMove(mech) == MOVE_FOIL ||
@@ -2866,8 +2886,8 @@ if (MechType(mech) != CLASS_BSUIT) {
     	MechMove(mech) == MOVE_VTOL) {
     	engine_size = engine_size - susp_factor(mech);
     }
-    	   	    
-    	int engine_price = (engine_basecost * engine_size * MechTons(mech)) / 75;
+    	/* Don't forget to Round up! */ 
+    	int engine_price = ceil((engine_basecost * engine_size * MechTons(mech)) / 75.0);
     	    
     	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
     
@@ -2915,13 +2935,26 @@ if (MechType(mech) != CLASS_BSUIT) {
     
     /* Armor */
     	int total_armor = 0;
+	int orig_armor = 0;
     	int armor_section = 0;
     	for(armor_section = 0; armor_section < NUM_SECTIONS; ++armor_section) {
     		total_armor += GetSectOArmor(mech, armor_section);
     		total_armor += GetSectORArmor(mech, armor_section);
     	}
-    	float armor_tons = total_armor / 16.0;
-    
+
+	orig_armor = total_armor;
+
+	if(MechSpecials(mech) & FF_TECH)
+	    total_armor = total_armor * 50 / ((MechSpecials(mech) & CLAN_TECH) ? 60 : 56);
+	else if(MechSpecials2(mech) & HVY_FF_ARMOR_TECH)
+	    total_armor = total_armor * 50 / 62;
+	else if(MechSpecials2(mech) & LT_FF_ARMOR_TECH)
+	    total_armor = total_armor * 50 / 53;
+
+	/* Come on. Really. We don't do .1 of armor. Round this !!! */
+	float armor_tons = round_to_halfton( total_armor * 1024 / 16 );
+	armor_tons = armor_tons / 1024;
+
     	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
     		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
     		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
@@ -2929,13 +2962,53 @@ if (MechType(mech) != CLASS_BSUIT) {
     		 10000);
     #if COST_DEBUG
     	SendDebug(tprintf("Armor Tons %.1f(%d pts) * Armor Cost Per Point %d", 
-    		armor_tons, total_armor, armor_cost_point));
+    		armor_tons, orig_armor, armor_cost_point));
     #endif
     	int armor_price = armor_tons * armor_cost_point;
     	CalcFasaCost_AddPrice(&total, "Armor", armor_price);
 } // End Non-BSuit General Calculations
 
+
+/* Weapons. */
+/* While it might not make much sense to do this twice, we need to go through all the sections */
+/* and handle weapons first, than we'll handle parts */
+
+	for(i = 0; i < NUM_SECTIONS; i++) {
+		count = FindWeapons(mech, i, weaparray, weapdata, critical);
+		if(count <= 0)
+			/* No weapons */
+			continue;
+
+		for (ii = 0; ii < count; ii++ ) {
+			CalcFasaCost_AddPrice(&total, MechWeapons[weaparray[ii]].name, MechWeapons[weaparray[ii]].cost);
+		}
+
+	}
+
+/* Ammo */
+        
+	ammoweapcount = FindAmmunition(mech, ammoweap, ammo, ammomax, modearray, 0);
+
+	if(ammoweapcount > 0 ) {
+		SendDebug("Ammo");
+		for (i = 0; i < ammoweapcount; i++) {
+		/* ArtemisIV ammo is X2 */
+		/* Interesting way to handle half_tons */
+			if (ammomax[i] < MechWeapons[ammoweap[i]].ammoperton )
+  			    CalcFasaCost_AddPrice(&total, MechWeapons[ammoweap[i]].name, MechWeapons[ammoweap[i]].ammo_cost / 
+				      (MechWeapons[ammoweap[i]].ammoperton / ammomax[i]));
+			else
+		    	    CalcFasaCost_AddPrice(&total, MechWeapons[ammoweap[i]].name,
+				MechWeapons[ammoweap[i]].ammo_cost * (ammomax[i] / MechWeapons[ammoweap[i]].ammoperton )
+				* ((modearray[i] & ARTEMIS_MODE) ? 2 : 1));
+		}
+	}
+
+
 /* Parts */
+
+	int masc_count = 0;
+	int bloodhound_count = 0;
 	for(i = 0; i < NUM_SECTIONS; i++)
 		for(ii = 0; ii < NUM_CRITICALS; ii++) {
 			part = GetPartType(mech, i, ii);
@@ -2960,13 +3033,61 @@ if (MechType(mech) != CLASS_BSUIT) {
 						continue;
 					case FERRO_FIBROUS:
 						continue;
+					case LT_FERRO_FIBROUS:
+						continue;
 					case ENDO_STEEL:
 						continue;
 					case TRIPLE_STRENGTH_MYOMER:
 						continue;
 					case STEALTH_ARMOR:
 						continue;
-#if 0
+					case MASC:
+						masc_count++;
+						continue;
+					case SWORD:
+						has_sword = 1;
+						continue;
+					case CASE:
+						CalcFasaCost_AddPrice(&total, "Int Case", 50000);
+						continue;
+					case CASEII:
+						CalcFasaCost_AddPrice(&total, "Int CaseII", 175000);
+						continue;
+					case AXE:
+						CalcFasaCost_AddPrice(&total, "Int Axe", 5000);
+						continue;
+					case BEAGLE_PROBE:
+						CalcFasaCost_AddPrice(&total, "BAP", 100000);
+						continue;
+					case BLOODHOUND_PROBE:
+						bloodhound_count++;
+						continue;
+					case ARTEMIS_IV:
+						CalcFasaCost_AddPrice(&total, "ArtemisIV FCS", 100000);
+						continue;
+					case ANGELECM:
+						CalcFasaCost_AddPrice(&total, "Angel ECM", 375000);
+						continue;
+					case C3_MASTER:
+						CalcFasaCost_AddPrice(&total, "C3M", 300000);
+						continue;
+					case C3_SLAVE:
+						CalcFasaCost_AddPrice(&total, "C3S", 250000);
+						continue;
+					case C3I:
+						CalcFasaCost_AddPrice(&total, "C3I", 375000);
+						continue;
+					case ECM:
+						CalcFasaCost_AddPrice(&total, "ECM", 100000);
+						continue;
+					case TAG:
+						CalcFasaCost_AddPrice(&total, "TAG", 50000);
+						continue;
+					case TARGETING_COMPUTER:
+						CalcFasaCost_AddPrice(&total, "TargComp", 10000);
+						continue;
+
+#if 0	
 /* NULLTODO : Port any of these techs ASAP */
 						case HARDPOINT:
 							continue;
@@ -2974,23 +3095,32 @@ if (MechType(mech) != CLASS_BSUIT) {
 					default:
 						break;
 				}
-				if(IsAmmo(part)) {
-					part = FindAmmoType(mech, i, ii);
-					int ammo_part_cost = GetPartCost(part) * GetPartData(mech,i,ii);
-					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
-					   ammo_part_cost);
-				} else {
-				    //MechWeapons[weapindx].criticals
-				    
-				    int indiv_part_cost = GetPartCost(part);
-				    if (MechType(mech) != CLASS_MECH && IsWeapon(part)) {
-				        indiv_part_cost *= MechWeapons[part-1].criticals;
-				        //SendDebug(tprintf("Part#: %s(%d) Crits: %d", MechWeapons[part-1].name, part-1, MechWeapons[part-1].criticals));
-				    }
-					CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), 
-					   indiv_part_cost);
-				}
-			}
+				if(IsAmmo(part)) 
+					continue;
+				if(IsWeapon(part))
+					continue;
+
+                                int indiv_part_cost = GetPartCost(part);
+                                if (MechType(mech) != CLASS_MECH && IsWeapon(part)) {
+                                    indiv_part_cost *= MechWeapons[part-1].criticals;
+                                    //SendDebug(tprintf("Part#: %s(%d) Crits: %d", MechWeapons[part-1].name, part-1, MechWeapons[part-1].criticals));
+                                }
+                                    CalcFasaCost_AddPrice(&total, (char*)part_name(part, 0), indiv_part_cost);
+
+		}
+		/* We have to account for some other stuff that doesn't divide equally here */
+		if(bloodhound_count / 3)
+			CalcFasaCost_AddPrice(&total, "Bloodhound", 500000 * (bloodhound_count / 3));
+		if(masc_count)
+			CalcFasaCost_AddPrice(&total, "MASC", masc_count * engine_size * 1000);
+		if(has_sword) {
+		/* Sword Cost is Tonnage of sword * 10000. Sword Tonnage is 1/20th of Mech Tonnage, rounded up to nearest halfton */
+	             float sword_tons = round_to_halfton( MechTons(mech) * 1024 / 20 );
+                     sword_tons = sword_tons / 1024; 
+		     CalcFasaCost_AddPrice(&total, "Sword", sword_tons * 10000);
+
+		 }
+
 
 	if(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_BSUIT) {
 		switch (MechMove(mech)) {
