@@ -1166,7 +1166,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	unsigned short ammo[8 * MAX_WEAPS_SECTION];
 	unsigned short ammomax[8 * MAX_WEAPS_SECTION];
 	unsigned int modearray[8 * MAX_WEAPS_SECTION];
-	char tmpbuf[MBUF_SIZE];
+	char tmpbuf[LBUF_SIZE];
 	int count, ammoweapcount;
 	int loop;
 	int ii, i = 0;
