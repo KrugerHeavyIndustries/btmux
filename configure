@@ -576,6 +576,7 @@ PACKAGE_VERSION='0.6'
 PACKAGE_STRING='BtOnline-BTechMux 0.6'
 PACKAGE_BUGREPORT=''
 
+ac_default_prefix=`pwd`/game.run
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -1753,6 +1754,8 @@ fi
 ac_config_guess="$SHELL $ac_aux_dir/config.guess"  # Please don't use this var.
 ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
+
+
 
 
 ac_config_headers="$ac_config_headers autoconf.h"

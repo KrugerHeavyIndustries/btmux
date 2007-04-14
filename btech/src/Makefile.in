@@ -204,9 +204,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @BTPR_MUX1_TRUE@BTPR_INCLUDE = -I$(top_srcdir)/../include -I$(top_srcdir)/../src
 @BTPR_PENN_TRUE@BTPR_INCLUDE = -I$(btpr_dir)/penn/include -I$(btpr_dir)/include
+@BTPR_PENN_TRUE@BTPR_LFLAGS = -Wl,-Bsymbolic
 @BTPR_PENN_TRUE@BTPR_LIBS = ../libbtpr.la
 AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech
-AM_LDFLAGS = -Wl,-Bsymbolic
+AM_LDFLAGS = $(BPTR_LFLAGS)
 lib_LTLIBRARIES = libbtech.la
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \

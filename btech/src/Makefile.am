@@ -4,11 +4,12 @@ endif
 
 if BTPR_PENN
 BTPR_INCLUDE = -I$(btpr_dir)/penn/include -I$(btpr_dir)/include
+BTPR_LFLAGS = -Wl,-Bsymbolic
 BTPR_LIBS = ../libbtpr.la
 endif
 
 AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech
-AM_LDFLAGS = -Wl,-Bsymbolic
+AM_LDFLAGS = $(BPTR_LFLAGS)
 
 lib_LTLIBRARIES = libbtech.la
 

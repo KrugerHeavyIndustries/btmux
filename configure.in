@@ -2,8 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.53)
+
 AC_INIT([BtOnline-BTechMux], [0.6])
 AC_CONFIG_AUX_DIR([confutil])
+AC_PREFIX_DEFAULT([`pwd`/game.run])
+
 AC_CONFIG_HEADERS([autoconf.h])
 
 # Checks for programs.

@@ -1,28 +1,37 @@
 #!/usr/bin/$(MAKE) $(MAKEFLAGS)-f
 
+prefix = @prefix@
+
 CC             = @CC@
 MAKEDEPEND     = @CC@ -MM
 CFLAGS         = -Wall -Wno-unused --std=gnu99
 CPPFLAGS       = @CPPFLAGS@
-INCLUDES       = -Iinclude -Isrc -Ibtech/src/include -Ibtech/src/btech
-LIBS           = btech/dst/lib/libbtech.so.0 @LIBS@
-LDFLAGS        = @LDFLAGS@
+INCLUDES       = -I. -Iinclude -Isrc -Ibtech/src/include -Ibtech/src/btech
+LIBS           = ${prefix}/lib/libbtech.so.0 @LIBS@
+LDFLAGS        = @LDFLAGS@ -Wl,-rpath,${prefix}/lib
+
 
 VERSION_FLAGS  = -DSVN_REVISION="\"`svnversion .`\"" \
                  -DMUX_BUILD_DATE="\"`date`\"" \
                  -DMUX_BUILD_NUM="\"`sh src/buildnum.sh`\""
+
 ifdef DEBUG
 VERSION_FLAGS += -DMUX_BUILD_USER="\"`whoami`\"" -DMUX_BUILD_HOST="\"`hostname -f`\""
-CFLAGS        += -g3 -DDEBUG
+CFLAGS        += -g3
+CPPFLAGS      += -DDEBUG
 OBJSUFFIX      = .debug
 else
 CFLAGS        += -g -O3
 OBJSUFFIX      =
 endif
 
-BUILDFLAGS     = 
 
-ALLFLAGS       = $(CFLAGS) $(INCLUDES) $(CPPFLAGS) $(LDFLAGS) $(BUILDFLAGS)
+COMMON_FLAGS   = $(CFLAGS)
+DEPEND_FLAGS   = $(COMPILE_FLAGS)
+COMPILE_FLAGS  = $(COMMON_FLAGS) $(INCLUDES) $(CPPFLAGS)
+LINK_FLAGS     = $(COMMON_FLAGS) $(LDFLAGS)
+ALLFLAGS       = $(COMMON_FLAGS) $(INCLUDES) $(CPPFLAGS) $(LDFLAGS)
+
 
 MISC_OBJECTS   = misc/myfifo.o
 
@@ -90,65 +99,97 @@ ALLOBJS = $(MISC_OBJECTS) $(EVENT_OBJECTS) $(TREE_OBJECTS) $(MUX_OBJECTS)
 
 ALLSRCS = $(ALLOBJS:.o=.c)
 
+
 TARGETS = src/netmux$(OBJSUFFIX) src/mkindx$(OBJSUFFIX)
 
-.PHONY: debug install-debug mudflap release all install clean cleandep distclean maintainer-clean btech
 
-debug:
-	@DEBUG=1 $(MAKE) all
+.PHONY: all install all-common install-common install-btech install-mkdir
+.PHONY: debug install-debug release install-release
+.PHONY: mudflap clean cleandep distclean maintainer-clean
 
-install-debug:
-	@DEBUG=1 $(MAKE) install
 
-mudflap:
-	$(CC) -g3 -DDEBUG -DSVN_REVISION="\"`svnversion .`\"" $(ALLFLAGS) $(VERSION_FLAGS) -fmudflap -o src/netmux.mudflap $(ALLSRCS) src/version.c $(LIBS) -lmudflap
+all: debug
 
-release all: Makefile btech $(TARGETS)
+install: install-debug
 
-configure src/autoconf.h.in: configure.in
-	autoreconf
+all-common: Makefile autoconf.h $(TARGETS)
 
-config.status: configure
-	./config.status --recheck
 
 Makefile: Makefile.in config.status
 	./config.status --file=Makefile
 
-src/autoconf.h: src/autoconf.h.in config.status
-	./config.status --file=src/autoconf.h
+autoconf.h: autoconf.h.in config.status
+	./config.status --file=autoconf.h
 
-btech:
+config.status: configure
+	./config.status --recheck
+
+configure: configure.in
+	autoreconf
+
+
+debug:
+	@DEBUG=1 $(MAKE) all-common
+
+install-debug:
+	@DEBUG=1 $(MAKE) install-common
+
+release: all-common
+
+install-release: install-common
+
+
+mudflap:
+	$(CC) -g3 -DDEBUG -DSVN_REVISION="\"`svnversion .`\"" $(ALLFLAGS) $(VERSION_FLAGS) -fmudflap -o src/netmux.mudflap $(ALLSRCS) src/version.c $(LIBS) -lmudflap
+
+
+install-common: $(TARGETS)
+	cp $(TARGETS) game.run/bin
+
+install-btech: install-mkdir
 	$(MAKE) -C btech install
 
 # Install copies the 'game' directory to game.run, after trying to get all
 # files from svn. If the svn command fails, we don't really care.
-install: $(TARGETS)
-	if [ ! -d game ]; then \
-            echo No game directory, attempting to download one from the Subversion repository.; \
-            svn co https://svn.sourceforge.net/svnroot/btonline-btech/game/trunk game; \
-            svn co https://svn.sourceforge.net/svnroot/btonline-btech/maps/trunk game/maps; \
-            svn co https://svn.sourceforge.net/svnroot/btonline-btech/text/trunk game/text; \
-            svn co https://svn.sourceforge.net/svnroot/btonline-btech/mechs/trunk game/mechs; \
+SVNROOT=https://svn.sourceforge.net/svnroot/btonline-btech
+install-mkdir:
+	@if [ ! -d game ]; then \
+            echo "No game directory, attempting to download one from the Subversion repository."; \
+            echo "Getting game directory..."; \
+            svn co $(SVNROOT)/game/trunk game; \
+            echo "Getting maps..."; \
+            svn co $(SVNROOT)/maps/trunk game/maps; \
+            echo "Getting text files..."; \
+            svn co $(SVNROOT)/text/trunk game/text; \
+            echo "Getting mech templates..."; \
+            svn co $(SVNROOT)/mechs/trunk game/mechs; \
         fi
-	if [ ! -d game ]; then \
-	    echo No game directory. Please acquire one from http://sourceforge.net/projects/btonline-btech.; \
+	@if [ ! -d game ]; then \
+	    echo "No game directory. Please acquire one from http://sourceforge.net/projects/btonline-btech."; \
 	    exit 1; \
 	fi
-	if [ ! -d game.run ]; then \
+	@if [ ! -d game.run ]; then \
 	    cp -pPR game game.run || exit 1; \
 	    chmod -R u+w game.run || exit 1; \
 	fi
-	if [ ! -d game.run/bin ]; then \
-	    mkdir game.run/bin/; \
+	@if [ ! -d game.run/bin ]; then \
+	    mkdir game.run/bin; \
 	fi
-	mv -f $(TARGETS) game.run/bin/
 
 update:
-	svn update;
+	svn update
 
-netmux$(OBJSUFFIX) src/netmux$(OBJSUFFIX): $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version.c src/buildnum.sh
-	$(CC) $(ALLFLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version$(OBJSUFFIX).o
-	$(CC) $(ALLFLAGS) -o src/netmux$(OBJSUFFIX) $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version$(OBJSUFFIX).o $(LIBS)
+
+netmux$(OBJSUFFIX) src/netmux$(OBJSUFFIX): $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version.c src/buildnum.sh install-btech
+	$(CC) $(COMPILE_FLAGS) $(VERSION_FLAGS) -c src/version.c -o src/version$(OBJSUFFIX).o
+	$(CC) $(LINK_FLAGS) -o src/netmux$(OBJSUFFIX) $(ALLOBJS:.o=$(OBJSUFFIX).o) src/version$(OBJSUFFIX).o $(LIBS)
+
+mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
+	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
+
+dbconvert src/dbconvert:
+	@echo "dbconvert is no longer supported." && exit 1
+
 
 clean:
 	rm -f $(ALLOBJS) $(ALLOBJS:.o=.debug.o) src/version.debug.o src/version.o $(TARGETS) $(TARGETS:=.debug) .depend
@@ -163,16 +204,11 @@ distclean: cleandep
 maintainer-clean: distclean
 	-rm -rf autom4te.cache configure
 
-mkindx$(OBJSUFFIX) src/mkindx$(OBJSUFFIX): src/mkindx.c
-	$(CC) $(ALLFLAGS) -o src/mkindx$(OBJSUFFIX) src/mkindx.c
-
-dbconvert src/dbconvert:
-	echo "dbconvert is no longer supported." && exit 1;
 
 $(ALLSRCS:%.c=%.d): %.d: %.c
-	$(CC) -MM -MF $@ -MT "$@ $(@:%.d=%$$\(OBJSUFFIX\).o)" $(ALLFLAGS) $<
+	$(CC) -MM -MF $@ -MT "$@ $(@:%.d=%$$\(OBJSUFFIX\).o)" $(DEPEND_FLAGS) $<
 
 $(ALLOBJS:.o=$(OBJSUFFIX).o): %$(OBJSUFFIX).o: %.c
-	$(CC) $(ALLFLAGS) -c $< -o $@
+	$(CC) $(COMPILE_FLAGS) -c $< -o $@
 
 -include $(ALLSRCS:%.c=%.d)

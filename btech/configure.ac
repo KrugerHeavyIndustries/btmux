@@ -6,7 +6,6 @@ AC_PREREQ([2.50])
 
 AC_INIT([BattleTech Extensions], [0.6])
 AC_CONFIG_AUX_DIR([confutil])
-AC_PREFIX_DEFAULT([`pwd`/dst])
 
 AM_INIT_AUTOMAKE([1.9])
 AM_CONFIG_HEADER([autoconf.h])
