@@ -160,11 +160,11 @@ void auto_sensor_event(AUTO *autopilot)
 	float trng;
 	int set = 0;
 
-	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 0 )) {
+	if (!Good_obj(autopilot->mymechnum)) {
 		dprintk("mymechnum is bad!");
 		return;
 	}
-	if((autopilot->mynum > mudstate.db_top) || (autopilot->mynum < 0 )) {
+	if (!Good_obj(autopilot->mynum)) {
 		dprintk("mynum is bad!");
 		return;
 	}
@@ -559,7 +559,7 @@ void auto_update_profile_event(AUTO *autopilot) {
 	/* Basic checks */
 	/* some accounting checks. try to prevent some race stuff */
 
-	if((autopilot->mymechnum > mudstate.db_top) || (autopilot->mymechnum < 1 )) {
+	if (!Good_obj(autopilot->mymechnum)) {
 		/* most commonly, the mech is a bad memory space.
 		 * lets not try to access it
 		 */
