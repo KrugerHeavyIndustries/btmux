@@ -677,8 +677,7 @@ CMDENT command_table[] = {
 	 CS_ONE_ARG | CS_LEADIN, do_prepend},
 #ifdef SQL_SUPPORT
 	{(char *) "@query", query_sw, CA_WIZARD, 0, CS_TWO_ARG, do_query},
-#endif
-    {(char *) "IDLE", NULL, 0, 0, CS_NO_ARGS, NULL},
+#endif 
 	{(char *) NULL, NULL, 0, 0, 0, NULL}
 };
 
