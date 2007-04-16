@@ -39,7 +39,7 @@ static ASN1_Length ASN1_MAX_LENGTH_OCTETS;
 /*
  * Initializes global runtime constants.
  */
-static int
+static void
 asn1_init(void)
 {
 	static int asn1_was_initialized = 0;
@@ -60,6 +60,8 @@ asn1_init(void)
 	}
 
 	ASN1_MAX_LENGTH_OCTETS = ii;
+
+	assert(ASN1_MAX_LENGTH_OCTETS <= 0x7F); /* exceeding would be silly */
 }
 
 /*
@@ -141,8 +143,6 @@ asn1_free_decoder(ASN1_Decoder_State *state)
 int
 asn1_decode_tlv(ASN1_Decoder_State *state)
 {
-	const ASN1_Octet *contents;
-
 	/* Parse value.  */
 	switch (state->parser_state) {
 	case ASN1_DECODE_TAG:
@@ -176,8 +176,8 @@ asn1_decode_tlv(ASN1_Decoder_State *state)
 	/* Present value.  */
 	asn1_trim_buffer(&state->buffer);
 
-	contents = state->buffer.buffer + state->buffer.cursor;
-	state->current_field.contents = contents;
+	state->current_field.contents = asn1_get_buffer_contents(&state->buffer);
+	state->buffer.cursor += state->current_field.length;
 	return 1;
 }
 
@@ -276,15 +276,33 @@ asn1_write_length(ASN1_Encoder_State *state)
 		/* Use long form (8.1.3.5).  */
 		ASN1_Length ii;
 
-		for (ii = 8 * (ASN1_MAX_LENGTH_OCTETS - 1); ii >= 0; ii -= 8) {
-			const ASN1_Octet tmp_octet = (length >> ii) & 0xFF;
+		for (ii = 1; ii < ASN1_MAX_LENGTH_OCTETS; ii++) {
+			if (!(length >> (8 * ii))) {
+				/* Remaining octets are 0.  */
+				break;
+			}
+		}
+
+		if (!asn1_write_octet(&state->buffer, 0x80 | (ASN1_Octet)ii)) {
+			SET_ERROR(state, ASN1_ERROR_OOB);
+			return 0;
+		}
+
+		ii = 8 * ii;
+
+		do {
+			ASN1_Octet tmp_octet;
+
+			ii -= 8;
+
+			tmp_octet = (length >> ii) & 0xFF;
 
 			if (!asn1_write_octet(&state->buffer,
 			                      (ASN1_Octet)tmp_octet)) {
 				SET_ERROR(state, ASN1_ERROR_OOB);
 				return 0;
 			}
-		}
+		} while (ii > 0);
 	} else {
 		/* Use short form (8.1.3.4).  */
 		if (!asn1_write_octet(&state->buffer, (ASN1_Octet)length)) {
@@ -346,7 +364,6 @@ asn1_read_length(ASN1_Decoder_State *state)
 	} else {
 		/* Use the short form.  */
 		length = tmp_octet;
-		NEXT_OCTET(state->buffer);
 	}
 
 	state->current_field.length = length;
@@ -411,7 +428,7 @@ asn1_free_buffer(ASN1_Buffer *buffer)
 static int
 asn1_grow_buffer(ASN1_Buffer *buffer, ASN1_Length length)
 {
-	char *new_buffer;
+	ASN1_Octet *new_buffer;
 
 	ASN1_Length new_length;
 	size_t new_size, tmp_new_size;
@@ -441,7 +458,7 @@ asn1_grow_buffer(ASN1_Buffer *buffer, ASN1_Length length)
 	new_size = tmp_new_size;
 
 	/* Allocate buffer.  */
-	new_buffer = (char *)realloc(buffer->buffer, new_size);
+	new_buffer = (ASN1_Octet *)realloc(buffer->buffer, new_size);
 	if (!new_buffer) {
 		return 0;
 	}
@@ -528,4 +545,25 @@ asn1_write_octets(ASN1_Buffer *buffer,
 	       length * sizeof(ASN1_Octet));
 	buffer->length += length;
 	return 1;
+}
+
+/*
+ * Return a pointer to reserved buffer space.  The caller can use this pointer
+ * to directly write the specified amount of data into the buffer.  Any other
+ * calls may invalidate the pointer.
+ *
+ * Returns NULL on errors.
+ */
+ASN1_Octet *
+asn1_write_reserve(ASN1_Buffer *buffer, ASN1_Length length)
+{
+	ASN1_Octet *write_ptr;
+
+	if (!asn1_grow_buffer(buffer, length)) {
+		return NULL;
+	}
+
+	write_ptr = buffer->buffer + buffer->length;
+	buffer->length += length;
+	return write_ptr;
 }

@@ -81,6 +81,7 @@ ASN1_Length asn1_get_buffer_length(const ASN1_Buffer *);
 
 int asn1_write_octet(ASN1_Buffer *, ASN1_Octet);
 int asn1_write_octets(ASN1_Buffer *, ASN1_Length, const ASN1_Octet *);
+ASN1_Octet *asn1_write_reserve(ASN1_Buffer *, ASN1_Length);
 
 
 /* Error codes.  */
