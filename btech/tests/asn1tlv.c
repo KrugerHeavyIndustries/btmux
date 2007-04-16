@@ -7,9 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fi/asn1der.h"
+#include "fi/asn1tlv.h"
 
-#define TEST_FILE "asn1der.test"
+#define TEST_FILE "asn1tlv.test"
 
 static void
 die(const char *cause)

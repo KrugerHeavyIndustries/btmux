@@ -31,8 +31,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = asn1der$(EXEEXT)
-TESTS = asn1der$(EXEEXT)
+check_PROGRAMS = asn1tlv$(EXEEXT)
+TESTS = asn1tlv$(EXEEXT)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -42,9 +42,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
-am_asn1der_OBJECTS = asn1der.$(OBJEXT)
-asn1der_OBJECTS = $(am_asn1der_OBJECTS)
-asn1der_DEPENDENCIES = ../src/asn1der.lo
+am_asn1tlv_OBJECTS = asn1tlv.$(OBJEXT)
+asn1tlv_OBJECTS = $(am_asn1tlv_OBJECTS)
+asn1tlv_DEPENDENCIES = ../src/asn1tlv.lo
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
 am__depfiles_maybe = depfiles
@@ -57,8 +57,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(asn1der_SOURCES)
-DIST_SOURCES = $(asn1der_SOURCES)
+SOURCES = $(asn1tlv_SOURCES)
+DIST_SOURCES = $(asn1tlv_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -172,8 +172,8 @@ top_srcdir = @top_srcdir@
 @BTPR_PENN_TRUE@BTPR_INCLUDE = -I$(top_srcdir)/btpr/penn/include -I$(top_srcdir)/btpr/include
 @BTPR_PENN_TRUE@MAYBE_BTPR = btpr
 AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(top_srcdir)/src/include -I$(top_srcdir)/src
-asn1der_SOURCES = asn1der.c
-asn1der_LDADD = ../src/asn1der.lo
+asn1tlv_SOURCES = asn1tlv.c
+asn1tlv_LDADD = ../src/asn1tlv.lo
 all: all-am
 
 .SUFFIXES:
@@ -214,9 +214,9 @@ clean-checkPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-asn1der$(EXEEXT): $(asn1der_OBJECTS) $(asn1der_DEPENDENCIES) 
-	@rm -f asn1der$(EXEEXT)
-	$(LINK) $(asn1der_OBJECTS) $(asn1der_LDADD) $(LIBS)
+asn1tlv$(EXEEXT): $(asn1tlv_OBJECTS) $(asn1tlv_DEPENDENCIES) 
+	@rm -f asn1tlv$(EXEEXT)
+	$(LINK) $(asn1tlv_OBJECTS) $(asn1tlv_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -224,7 +224,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asn1der.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asn1tlv.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

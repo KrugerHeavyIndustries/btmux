@@ -9,9 +9,9 @@ endif
 
 AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(top_srcdir)/src/include -I$(top_srcdir)/src
 
-check_PROGRAMS = asn1der
+check_PROGRAMS = asn1tlv
 
-TESTS = asn1der
+TESTS = asn1tlv
 
-asn1der_SOURCES = asn1der.c
-asn1der_LDADD = ../src/asn1der.lo
+asn1tlv_SOURCES = asn1tlv.c
+asn1tlv_LDADD = ../src/asn1tlv.lo

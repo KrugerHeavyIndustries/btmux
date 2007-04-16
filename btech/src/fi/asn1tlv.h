@@ -1,14 +1,15 @@
 /*
- * ASN.1 DER encoder/decoder, sufficient for encoding BTech databases as Fast
- * Infoset documents.  See ITU X.690 for the full specification of ASN.1 DER,
- * and ITU X.680 for the full specification of ASN.1.
+ * ASN.1 DER tag-length-value encoder/decoder, sufficient for encoding BTech
+ * databases as Fast Infoset documents.  See ITU X.690 for the full
+ * specification of ASN.1 DER, and ITU X.680 for the full specification of
+ * ASN.1.
  *
  * This implementation is tightly coupled to our Fast Infoset implementation,
  * and should not be used as a general-purpose ASN.1 implementation.
  */
 
-#ifndef BTECH_ASN1DER_H
-#define BTECH_ASN1DER_H
+#ifndef BTECH_ASN1TLV_H
+#define BTECH_ASN1TLV_H
 
 #include <stddef.h>
 
@@ -136,4 +137,4 @@ void asn1_free_decoder(ASN1_Decoder_State *);
 
 int asn1_decode_tlv(ASN1_Decoder_State *);
 
-#endif /* !BTECH_ASN1DER_H */
+#endif /* !BTECH_ASN1TLV_H */
