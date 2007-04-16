@@ -13,7 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -32,9 +31,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = pqtest$(EXEEXT)
-TESTS = pqtest$(EXEEXT)
-subdir = btpr
+check_PROGRAMS = asn1der$(EXEEXT)
+TESTS = asn1der$(EXEEXT)
+subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -43,16 +42,9 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
-libbtpr_la_LIBADD =
-am_libbtpr_la_OBJECTS = event.lo mux_tree.lo tree.lo comsys.lo conf.lo \
-	db.lo dllist.lo eval.lo game.lo flags.lo functions.lo log.lo \
-	move.lo netcommon.lo player.lo powers.lo pqueue.lo \
-	predicates.lo rbtab.lo rbtree.lo stringutil.lo wild.lo
-libbtpr_la_OBJECTS = $(am_libbtpr_la_OBJECTS)
-am_pqtest_OBJECTS = pqtest.$(OBJEXT)
-pqtest_OBJECTS = $(am_pqtest_OBJECTS)
-pqtest_DEPENDENCIES = libbtpr.la
+am_asn1der_OBJECTS = asn1der.$(OBJEXT)
+asn1der_OBJECTS = $(am_asn1der_OBJECTS)
+asn1der_DEPENDENCIES = ../src/asn1der.lo
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
 am__depfiles_maybe = depfiles
@@ -65,8 +57,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libbtpr_la_SOURCES) $(pqtest_SOURCES)
-DIST_SOURCES = $(libbtpr_la_SOURCES) $(pqtest_SOURCES)
+SOURCES = $(asn1der_SOURCES)
+DIST_SOURCES = $(asn1der_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -176,25 +168,12 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-@BTPR_PENN_TRUE@MAYBE_PENN = -I$(srcdir)/penn/include
-AM_CPPFLAGS = $(MAYBE_PENN) -I$(srcdir)/include
-noinst_LTLIBRARIES = libbtpr.la
-libbtpr_la_SOURCES = event.c mux_tree.c tree.c \
-	comsys.c conf.c db.c dllist.c eval.c game.c flags.c functions.c log.c \
-	move.c netcommon.c player.c powers.c pqueue.c predicates.c rbtab.c \
-	rbtree.c stringutil.c wild.c \
-	pqueue.h vixie.h include/alloc.h include/ansi.h include/attrs.h \
-	include/copyright.h include/db.h include/config.h include/create.h \
-	include/dllist.h include/externs.h include/flags.h include/htab.h \
-	include/p.mux_tree.h include/debug.h include/mudconf.h \
-	include/muxevent.h include/mux_tree.h include/powers.h \
-	include/p.event.h include/p.functions.h include/rbtree.h \
-	include/tree.h include/interface.h \
-	penn/btpr_alloc.h penn/btpr_db.h penn/btpr_interface.h \
-	penn/btpr_mudconf.h
-
-pqtest_SOURCES = tests/pqtest.c
-pqtest_LDADD = libbtpr.la
+@BTPR_MUX1_TRUE@BTPR_INCLUDE = -I$(top_srcdir)/../include -I$(top_srcdir)/../src
+@BTPR_PENN_TRUE@BTPR_INCLUDE = -I$(top_srcdir)/btpr/penn/include -I$(top_srcdir)/btpr/include
+@BTPR_PENN_TRUE@MAYBE_BTPR = btpr
+AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(top_srcdir)/src/include -I$(top_srcdir)/src
+asn1der_SOURCES = asn1der.c
+asn1der_LDADD = ../src/asn1der.lo
 all: all-am
 
 .SUFFIXES:
@@ -208,9 +187,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  btpr/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  btpr/Makefile
+	  $(AUTOMAKE) --gnu  tests/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -229,26 +208,15 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-libbtpr.la: $(libbtpr_la_OBJECTS) $(libbtpr_la_DEPENDENCIES) 
-	$(LINK)  $(libbtpr_la_OBJECTS) $(libbtpr_la_LIBADD) $(LIBS)
-
 clean-checkPROGRAMS:
 	@list='$(check_PROGRAMS)'; for p in $$list; do \
 	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-pqtest$(EXEEXT): $(pqtest_OBJECTS) $(pqtest_DEPENDENCIES) 
-	@rm -f pqtest$(EXEEXT)
-	$(LINK) $(pqtest_OBJECTS) $(pqtest_LDADD) $(LIBS)
+asn1der$(EXEEXT): $(asn1der_OBJECTS) $(asn1der_DEPENDENCIES) 
+	@rm -f asn1der$(EXEEXT)
+	$(LINK) $(asn1der_OBJECTS) $(asn1der_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -256,29 +224,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/comsys.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/conf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/db.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dllist.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/event.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flags.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/functions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/game.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/move.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mux_tree.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netcommon.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/player.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/powers.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pqtest.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pqueue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/predicates.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbtab.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbtree.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringutil.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tree.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wild.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asn1der.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -300,20 +246,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
-
-pqtest.o: tests/pqtest.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pqtest.o -MD -MP -MF $(DEPDIR)/pqtest.Tpo -c -o pqtest.o `test -f 'tests/pqtest.c' || echo '$(srcdir)/'`tests/pqtest.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/pqtest.Tpo $(DEPDIR)/pqtest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/pqtest.c' object='pqtest.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pqtest.o `test -f 'tests/pqtest.c' || echo '$(srcdir)/'`tests/pqtest.c
-
-pqtest.obj: tests/pqtest.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT pqtest.obj -MD -MP -MF $(DEPDIR)/pqtest.Tpo -c -o pqtest.obj `if test -f 'tests/pqtest.c'; then $(CYGPATH_W) 'tests/pqtest.c'; else $(CYGPATH_W) '$(srcdir)/tests/pqtest.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/pqtest.Tpo $(DEPDIR)/pqtest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/pqtest.c' object='pqtest.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o pqtest.obj `if test -f 'tests/pqtest.c'; then $(CYGPATH_W) 'tests/pqtest.c'; else $(CYGPATH_W) '$(srcdir)/tests/pqtest.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -472,7 +404,7 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile
 installdirs:
 install: install-am
 install-exec: install-exec-am
@@ -501,7 +433,7 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-noinstLTLIBRARIES mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -560,15 +492,15 @@ uninstall-am:
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
-	clean-checkPROGRAMS clean-generic clean-libtool \
-	clean-noinstLTLIBRARIES ctags distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	clean-checkPROGRAMS clean-generic clean-libtool ctags \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am

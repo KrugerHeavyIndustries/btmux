@@ -167,37 +167,6 @@ AC_ARG_ENABLE([bt-mwfreqs],
     ]
 )
 
-AC_MSG_CHECKING([whether to enable enhanced logging])
-AC_ARG_ENABLE([enhanced-logging],
-    AS_HELP_STRING([--disable-enhanced-logging],
-                   [Disable support for arbitrary server logs [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_MSG_RESULT([yes])
-                AC_DEFINE([ARBITRARY_LOGFILES], [1], [Should Enhanced Logging be enabled])
-                logcache='                 src/logcache.o    \';
-                AC_SUBST([LOGCACHE], [${logcache}])
-               ;;
-            no)
-                logcache='                                   \';
-                AC_SUBST([LOGCACHE], [${logcache}])
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for enhanced-logging option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([ARBITRARY_LOGFILES], [1], [Should Enhanced Logging be enabled])
-        logcache='                 src/logcache.o    \';
-        AC_SUBST([LOGCACHE], [${logcache}])
-    ]
-)
-
 AC_MSG_CHECKING([whether to enable complex repairs])
 AC_ARG_ENABLE([bt-complexrepairs],
     AS_HELP_STRING([--enable-bt-complexrepairs],
@@ -344,5 +313,5 @@ AC_CHECK_FUNCS([bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getru
 # Generate output files #
 #########################
 
-AC_CONFIG_FILES([Makefile btpr/Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile btpr/Makefile src/Makefile tests/Makefile])
 AC_OUTPUT

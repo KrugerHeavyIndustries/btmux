@@ -1,8 +1,5 @@
 /* autoconf.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Should Enhanced Logging be enabled */
-#undef ARBITRARY_LOGFILES
-
 /* Should the advanced econ system be enabled */
 #undef BT_ADVANCED_ECON
 

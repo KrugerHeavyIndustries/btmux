@@ -67,107 +67,6 @@ AC_ARG_ENABLE([bt-advanced-econ],
     ]
 )
 
-AC_MSG_CHECKING([Should we enable MW3-like stats and skills [[default=yes]]])
-AC_ARG_ENABLE([bt-mw3stats],
-    AS_HELP_STRING([--disable-bt-mw3stats],
-                   [Disable MW3-like stats and skills [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([BT_EXILE_MW3STATS], [1], [Should MW3-like stats and skills be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-mw3stats option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_EXILE_MW3STATS], [1], [Should MW3-like stats and skills be enabled])
-    ]
-)
-
-AC_MSG_CHECKING([Should we enable advanced movement modes [[default=yes]]])
-AC_ARG_ENABLE([bt-movement-modes],
-    AS_HELP_STRING([--disable-bt-movement-modes],
-                   [Disable advanced movement modes [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should the advanced movement modes be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-movement-modes option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should the advanced movement modes be enabled])
-    ]
-)
-
-AC_MSG_CHECKING([Should we scale BTH on infrared with increasing heat? [[default=yes]]])
-AC_ARG_ENABLE([bt-scaled-infrared],
-    AS_HELP_STRING([--disable-bt-scaled-infrared],
-                   [Disable scaled infrared [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes)
-                AC_DEFINE([BT_MOVEMENT_MODES], [1], [Should heat-scaled infrared be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-scaled-infrared option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([BT_SCALED_INFRARED], [1], [Should heat-scaled infrared be enabled])
-    ]
-)
-
-
-AC_MSG_CHECKING([Should we copy freqs to MW on disembark [[default=yes]]])
-AC_ARG_ENABLE([bt-mwfreqs],
-    AS_HELP_STRING([--disable-bt-mwfreqs],
-                   [Disable MW freq copying [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-mwfreqs option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
-    ]
-)
-
 AC_MSG_CHECKING([Should we enable enhanced logging [[default=yes]]])
 AC_ARG_ENABLE([enhanced-logging],
     AS_HELP_STRING([--disable-enhanced-logging],
@@ -215,30 +114,6 @@ AC_ARG_ENABLE([bt-complexrepairs],
                 ;;
             *)
                 AC_MSG_ERROR(bad value "${enableval}" for bt-complexrepairs option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([no])
-    ]
-)
-
-AC_MSG_CHECKING([Should we allow mech overspeeding [[default=no]]])
-AC_ARG_ENABLE([bt-overspeeding],
-    AS_HELP_STRING([--enable-bt-overspeeding],
-                   [Enable mech overspeeding [[default=disabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([WEIGHT_OVERSPEEDING], [1], [Should mech overspeeding be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-overspeeding option)
                 ;;
         esac
     ],

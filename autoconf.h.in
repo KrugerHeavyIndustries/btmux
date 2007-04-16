@@ -9,23 +9,11 @@
 /* Should complex repairs be enabled */
 #undef BT_COMPLEXREPAIRS
 
-/* Should MW3-like stats and skills be enabled */
-#undef BT_EXILE_MW3STATS
-
 /* Should the freetechtime code be enabled */
 #undef BT_FREETECHTIME
 
-/* Should heat-scaled infrared be enabled */
-#undef BT_MOVEMENT_MODES
-
-/* Should heat-scaled infrared be enabled */
-#undef BT_SCALED_INFRARED
-
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 #undef CLOSEDIR_VOID
-
-/* Should copying freqs to MWs be enabled */
-#undef COPY_CHANS_ON_EJECT
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
@@ -367,9 +355,6 @@
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
-
-/* Should mech overspeeding be enabled */
-#undef WEIGHT_OVERSPEEDING
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX

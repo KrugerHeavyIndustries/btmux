@@ -75,7 +75,8 @@ am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
 	mech.tech.commands.lo mech.tech.damages.lo mech.tech.do.lo \
 	mech.tech.events.lo mech.tech.lo mech.tech.repairs.lo \
 	mech.tech.saverepair.lo mech.tic.lo mech.update.lo \
-	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo
+	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo \
+	asn1der.lo
 libbtech_la_OBJECTS = $(am_libbtech_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
@@ -133,7 +134,6 @@ LIBOBJS =
 LIBS = -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
-LOGCACHE =                  src/logcache.o    \
 LTLIBOBJS = 
 MAKEINFO = ${SHELL} /home/kahmy/working/jds/btmux-libized/btech/confutil/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
@@ -278,7 +278,8 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.tech.repairs.h btech/p.mech.tech.saverepair.h \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
-	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h
+	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h \
+	fi/asn1der.c fi/asn1der.h
 
 libbtech_la_LIBADD = $(BTPR_LIBS)
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \
@@ -362,6 +363,7 @@ distclean-compile:
 include ./$(DEPDIR)/aero.bomb.Plo
 include ./$(DEPDIR)/aero.move.Plo
 include ./$(DEPDIR)/artillery.Plo
+include ./$(DEPDIR)/asn1der.Plo
 include ./$(DEPDIR)/autopilot_ai.Plo
 include ./$(DEPDIR)/autopilot_autogun.Plo
 include ./$(DEPDIR)/autopilot_commands.Plo
@@ -1023,6 +1025,13 @@ template.lo: btech/template.c
 #	source='btech/template.c' object='template.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
 #	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o template.lo `test -f 'btech/template.c' || echo '$(srcdir)/'`btech/template.c
+
+asn1der.lo: fi/asn1der.c
+	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT asn1der.lo -MD -MP -MF $(DEPDIR)/asn1der.Tpo -c -o asn1der.lo `test -f 'fi/asn1der.c' || echo '$(srcdir)/'`fi/asn1der.c
+	mv -f $(DEPDIR)/asn1der.Tpo $(DEPDIR)/asn1der.Plo
+#	source='fi/asn1der.c' object='asn1der.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o asn1der.lo `test -f 'fi/asn1der.c' || echo '$(srcdir)/'`fi/asn1der.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
