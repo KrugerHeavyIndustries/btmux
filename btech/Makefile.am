@@ -7,4 +7,4 @@ if BTPR_PENN
 MAYBE_BTPR = btpr
 endif
 
-SUBDIRS = $(MAYBE_BTPR) src tests
+SUBDIRS = $(MAYBE_BTPR) btfi src

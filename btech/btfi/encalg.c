@@ -1,8 +1,8 @@
 #include "autoconf.h"
 
-#include "fi-stream.h"
+#include "stream.h"
 
-#include "fi-encalg.h"
+#include "encalg.h"
 
 
 /*

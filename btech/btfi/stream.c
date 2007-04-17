@@ -11,7 +11,7 @@
 
 #include <assert.h>
 
-#include "fi-stream.h"
+#include "stream.h"
 
 
 /*

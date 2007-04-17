@@ -11,10 +11,10 @@
 
 #include <assert.h>
 
-#include "fi-common.h"
-#include "fi-encalg.h"
+#include "common.h"
+#include "encalg.h"
 
-#include "fi-vocab.h"
+#include "vocab.h"
 
 
 /*

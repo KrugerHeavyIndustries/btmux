@@ -6,8 +6,8 @@
 #ifndef BTECH_FI_ENCALG_H
 #define BTECH_FI_ENCALG_H
 
-#include "fi-common.h"
-#include "fi-stream.h"
+#include "common.h"
+#include "stream.h"
 
 typedef struct {
 	int (*encode)(FI_OctetStream *dst, const void *src);

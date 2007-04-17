@@ -11,7 +11,7 @@
 
 #include <stddef.h>
 
-#include "fi-common.h"
+#include "common.h"
 
 /* Octet stream.  */
 typedef struct FI_tag_OctetStream FI_OctetStream;

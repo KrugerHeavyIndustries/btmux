@@ -5,8 +5,8 @@
 #ifndef BTECH_FI_VOCAB_H
 #define BTECH_FI_VOCAB_H
 
-#include "fi-common.h"
-#include "fi-encalg.h"
+#include "common.h"
+#include "encalg.h"
 
 /* Sections 6.5 and 6.10: Vocabulary table indexes range from 1 to 2^20.  */
 typedef unsigned long FI_VocabIndex;

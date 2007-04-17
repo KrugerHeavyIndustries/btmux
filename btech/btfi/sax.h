@@ -9,7 +9,7 @@
 #ifndef BTECH_FI_SAX_H
 #define BTECH_FI_SAX_H
 
-#include "fi-common.h"
+#include "common.h"
 
 typedef struct FI_tag_ContentHandler FI_ContentHandler;
 

@@ -313,5 +313,5 @@ AC_CHECK_FUNCS([bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getru
 # Generate output files #
 #########################
 
-AC_CONFIG_FILES([Makefile btpr/Makefile src/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile btpr/Makefile btfi/Makefile src/Makefile])
 AC_OUTPUT

@@ -4,7 +4,7 @@
 
 #include "autoconf.h"
 
-#include "fi-common.h"
+#include "common.h"
 
 
 /* Some constant error strings.  */

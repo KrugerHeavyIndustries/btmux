@@ -5,10 +5,11 @@ endif
 if BTPR_PENN
 BTPR_INCLUDE = -I$(btpr_dir)/penn/include -I$(btpr_dir)/include
 BTPR_LFLAGS = -Wl,-Bsymbolic
-BTPR_LIBS = ../libbtpr.la
+BTPR_LIBS = ../btpr/libbtpr.la
 endif
 
-AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech
+AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
+	-I$(srcdir)/btfi
 AM_LDFLAGS = $(BPTR_LFLAGS)
 
 lib_LTLIBRARIES = libbtech.la
@@ -82,11 +83,8 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.tech.repairs.h btech/p.mech.tech.saverepair.h \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
-	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h \
-	fi/fi-sax.c fi/fi-sax.h \
-	fi/fi-vocab.c fi/fi-encalg.c fi/fi-stream.c fi/fi-common.c \
-	fi/fi-vocab.h fi/fi-encalg.h fi/fi-stream.h fi/fi-common.h
-libbtech_la_LIBADD = $(BTPR_LIBS)
+	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h
+libbtech_la_LIBADD = $(BTPR_LIBS) ../btfi/libbtfi.la
 
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \
 	include/coolmenu_interface2.h include/coolmenu_interface.h \

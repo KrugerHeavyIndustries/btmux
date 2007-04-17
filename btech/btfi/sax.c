@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "fi-common.h"
+#include "common.h"
 
-#include "fi-sax.h"
+#include "sax.h"
 
 
 /*

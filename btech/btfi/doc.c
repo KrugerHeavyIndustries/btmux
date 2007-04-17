@@ -15,7 +15,7 @@
 
 #include "autoconf.h"
 
-#include "fi-doc.h"
+#include "doc.h"
 
 /* Section 5.5: Fast Infoset numbers bits from 1 (MSB) to 8 (LSB).  */
 #define BIT_1 0x80
