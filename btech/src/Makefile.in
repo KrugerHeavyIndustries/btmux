@@ -76,7 +76,7 @@ am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
 	mech.tech.events.lo mech.tech.lo mech.tech.repairs.lo \
 	mech.tech.saverepair.lo mech.tic.lo mech.update.lo \
 	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo \
-	asn1type.lo asn1tlv.lo
+	fi-stream.lo
 libbtech_la_OBJECTS = $(am_libbtech_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
@@ -279,7 +279,7 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
 	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h \
-	fi/asn1type.c fi/asn1tlv.c fi/asn1type.h fi/asn1tlv.h
+	fi/fi-stream.c fi/fi-stream.h
 
 libbtech_la_LIBADD = $(BTPR_LIBS)
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \
@@ -363,8 +363,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aero.bomb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aero.move.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/artillery.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asn1tlv.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/asn1type.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/autopilot_ai.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/autopilot_autogun.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/autopilot_commands.Plo@am__quote@
@@ -384,6 +382,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eject.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/events.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/failures.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-stream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.hcode.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.scode.Plo@am__quote@
@@ -1027,19 +1026,12 @@ template.lo: btech/template.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o template.lo `test -f 'btech/template.c' || echo '$(srcdir)/'`btech/template.c
 
-asn1type.lo: fi/asn1type.c
-@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT asn1type.lo -MD -MP -MF $(DEPDIR)/asn1type.Tpo -c -o asn1type.lo `test -f 'fi/asn1type.c' || echo '$(srcdir)/'`fi/asn1type.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/asn1type.Tpo $(DEPDIR)/asn1type.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/asn1type.c' object='asn1type.lo' libtool=yes @AMDEPBACKSLASH@
+fi-stream.lo: fi/fi-stream.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-stream.lo -MD -MP -MF $(DEPDIR)/fi-stream.Tpo -c -o fi-stream.lo `test -f 'fi/fi-stream.c' || echo '$(srcdir)/'`fi/fi-stream.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-stream.Tpo $(DEPDIR)/fi-stream.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-stream.c' object='fi-stream.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o asn1type.lo `test -f 'fi/asn1type.c' || echo '$(srcdir)/'`fi/asn1type.c
-
-asn1tlv.lo: fi/asn1tlv.c
-@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT asn1tlv.lo -MD -MP -MF $(DEPDIR)/asn1tlv.Tpo -c -o asn1tlv.lo `test -f 'fi/asn1tlv.c' || echo '$(srcdir)/'`fi/asn1tlv.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/asn1tlv.Tpo $(DEPDIR)/asn1tlv.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/asn1tlv.c' object='asn1tlv.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o asn1tlv.lo `test -f 'fi/asn1tlv.c' || echo '$(srcdir)/'`fi/asn1tlv.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-stream.lo `test -f 'fi/fi-stream.c' || echo '$(srcdir)/'`fi/fi-stream.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
