@@ -76,7 +76,7 @@ am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
 	mech.tech.events.lo mech.tech.lo mech.tech.repairs.lo \
 	mech.tech.saverepair.lo mech.tic.lo mech.update.lo \
 	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo \
-	fi-stream.lo
+	fi-sax.lo fi-vocab.lo fi-encalg.lo fi-stream.lo fi-common.lo
 libbtech_la_OBJECTS = $(am_libbtech_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
@@ -279,7 +279,9 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
 	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h \
-	fi/fi-stream.c fi/fi-stream.h
+	fi/fi-sax.c fi/fi-sax.h \
+	fi/fi-vocab.c fi/fi-encalg.c fi/fi-stream.c fi/fi-common.c \
+	fi/fi-vocab.h fi/fi-encalg.h fi/fi-stream.h fi/fi-common.h
 
 libbtech_la_LIBADD = $(BTPR_LIBS)
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \
@@ -382,7 +384,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eject.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/events.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/failures.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-common.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-encalg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-sax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-stream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fi-vocab.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.hcode.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/glue.scode.Plo@am__quote@
@@ -1026,12 +1032,40 @@ template.lo: btech/template.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o template.lo `test -f 'btech/template.c' || echo '$(srcdir)/'`btech/template.c
 
+fi-sax.lo: fi/fi-sax.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-sax.lo -MD -MP -MF $(DEPDIR)/fi-sax.Tpo -c -o fi-sax.lo `test -f 'fi/fi-sax.c' || echo '$(srcdir)/'`fi/fi-sax.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-sax.Tpo $(DEPDIR)/fi-sax.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-sax.c' object='fi-sax.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-sax.lo `test -f 'fi/fi-sax.c' || echo '$(srcdir)/'`fi/fi-sax.c
+
+fi-vocab.lo: fi/fi-vocab.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-vocab.lo -MD -MP -MF $(DEPDIR)/fi-vocab.Tpo -c -o fi-vocab.lo `test -f 'fi/fi-vocab.c' || echo '$(srcdir)/'`fi/fi-vocab.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-vocab.Tpo $(DEPDIR)/fi-vocab.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-vocab.c' object='fi-vocab.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-vocab.lo `test -f 'fi/fi-vocab.c' || echo '$(srcdir)/'`fi/fi-vocab.c
+
+fi-encalg.lo: fi/fi-encalg.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-encalg.lo -MD -MP -MF $(DEPDIR)/fi-encalg.Tpo -c -o fi-encalg.lo `test -f 'fi/fi-encalg.c' || echo '$(srcdir)/'`fi/fi-encalg.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-encalg.Tpo $(DEPDIR)/fi-encalg.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-encalg.c' object='fi-encalg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-encalg.lo `test -f 'fi/fi-encalg.c' || echo '$(srcdir)/'`fi/fi-encalg.c
+
 fi-stream.lo: fi/fi-stream.c
 @am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-stream.lo -MD -MP -MF $(DEPDIR)/fi-stream.Tpo -c -o fi-stream.lo `test -f 'fi/fi-stream.c' || echo '$(srcdir)/'`fi/fi-stream.c
 @am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-stream.Tpo $(DEPDIR)/fi-stream.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-stream.c' object='fi-stream.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-stream.lo `test -f 'fi/fi-stream.c' || echo '$(srcdir)/'`fi/fi-stream.c
+
+fi-common.lo: fi/fi-common.c
+@am__fastdepCC_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT fi-common.lo -MD -MP -MF $(DEPDIR)/fi-common.Tpo -c -o fi-common.lo `test -f 'fi/fi-common.c' || echo '$(srcdir)/'`fi/fi-common.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/fi-common.Tpo $(DEPDIR)/fi-common.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='fi/fi-common.c' object='fi-common.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fi-common.lo `test -f 'fi/fi-common.c' || echo '$(srcdir)/'`fi/fi-common.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

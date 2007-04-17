@@ -11,11 +11,7 @@
 
 #include <stddef.h>
 
-/* Octet type.  Must contain at least 8 bits.  */
-typedef unsigned char FI_Octet;
-
-/* Length type.  Must have a range of at least 0 to 2^32 - 1.  */
-typedef unsigned long FI_Length;
+#include "fi-common.h"
 
 /* Octet stream.  */
 typedef struct FI_tag_OctetStream FI_OctetStream;
@@ -29,19 +25,6 @@ FI_Length fi_try_read_stream(FI_OctetStream *stream, FI_Length length,
 FI_Octet *fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length);
 
 /* Error handling.  */
-
-/* TODO: Move this to a common module.  */
-typedef enum {
-	FI_ERROR_NONE,			/* No error */
-	FI_ERROR_OOM,			/* Out of memory */
-	FI_ERROR_EOS			/* End of stream */
-} FI_ErrorCode;
-
-typedef struct {
-	FI_ErrorCode error_code;	/* error code */
-	const char *error_string;	/* descriptive string; read-only */
-} FI_ErrorInfo;
-
 const FI_ErrorInfo *fi_get_stream_error(const FI_OctetStream *stream);
 void fi_clear_stream_error(FI_OctetStream *stream);
 

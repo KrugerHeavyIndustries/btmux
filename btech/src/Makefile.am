@@ -83,7 +83,9 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
 	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h \
-	fi/fi-stream.c fi/fi-stream.h
+	fi/fi-sax.c fi/fi-sax.h \
+	fi/fi-vocab.c fi/fi-encalg.c fi/fi-stream.c fi/fi-common.c \
+	fi/fi-vocab.h fi/fi-encalg.h fi/fi-stream.h fi/fi-common.h
 libbtech_la_LIBADD = $(BTPR_LIBS)
 
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \

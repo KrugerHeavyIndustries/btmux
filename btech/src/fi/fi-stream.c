@@ -18,17 +18,10 @@
  * Common definitions.
  */
 
-/* TODO: Error strings/codes need to move to a separate module.  */
-static const char *const error_strings[] = {
-	"No error",
-	"Out of memory",
-	"End of stream"
-};
-
 #define SET_ERROR(stream, code) \
 	do { \
 		(stream)->error_info.error_code = (code); \
-		(stream)->error_info.error_string = error_strings[(code)]; \
+		(stream)->error_info.error_string = fi_error_strings[(code)]; \
 	} while (0)
 
 struct FI_tag_OctetStream {
@@ -66,6 +59,8 @@ fi_create_stream(size_t initial_size)
 	new_stream->length = 0;
 	new_stream->cursor = 0;
 
+	FI_CLEAR_ERROR(new_stream->error_info);
+
 	/* XXX: initial_size is only a suggestion, so we can't fail.  */
 	grow_buffer(new_stream, initial_size);
 
@@ -96,8 +91,7 @@ fi_get_stream_error(const FI_OctetStream *stream)
 void
 fi_clear_stream_error(FI_OctetStream *stream)
 {
-	stream->error_info.error_code = FI_ERROR_NONE;
-	stream->error_info.error_string = NULL;
+	FI_CLEAR_ERROR(stream->error_info);
 }
 
 
