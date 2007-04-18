@@ -11,5 +11,8 @@
 const char *const fi_error_strings[] = {
 	"No error",
 	"Out of memory",
-	"End of stream"
+	"End of stream",
+	"File not found",
+	"Invalid argument",
+	"Check errno"
 }; /* fi_error_strings */

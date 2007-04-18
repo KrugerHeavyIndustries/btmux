@@ -18,12 +18,6 @@
  * Common definitions.
  */
 
-#define SET_ERROR(stream, code) \
-	do { \
-		(stream)->error_info.error_code = (code); \
-		(stream)->error_info.error_string = fi_error_strings[(code)]; \
-	} while (0)
-
 struct FI_tag_OctetStream {
 	size_t size;			/* allocated size */
 	FI_Octet *buffer;		/* allocated buffer */
@@ -120,7 +114,7 @@ fi_try_read_stream(FI_OctetStream *stream, FI_Length length,
 	remaining_length = stream->length - stream->cursor;
 
 	if (remaining_length < length) {
-		SET_ERROR(stream, FI_ERROR_EOS);
+		FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
 		return length - remaining_length;
 	}
 
@@ -145,6 +139,7 @@ fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length)
 	FI_Octet *write_ptr;
 
 	if (!grow_buffer(stream, length)) {
+		FI_SET_ERROR(stream->error_info, FI_ERROR_OOM);
 		return NULL;
 	}
 
