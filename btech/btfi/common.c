@@ -14,5 +14,6 @@ const char *const fi_error_strings[] = {
 	"End of stream",
 	"File not found",
 	"Invalid argument",
-	"Check errno"
+	"Check errno",
+	"Caught BTech::FI::Exception"
 }; /* fi_error_strings */

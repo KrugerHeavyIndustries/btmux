@@ -15,7 +15,102 @@
 
 #include "autoconf.h"
 
+#include "stream.h"
+
 #include "Document.hh"
+
+
+namespace BTech {
+namespace FI {
+
+namespace {
+
+bool write_header(FI_OctetStream *) throw ();
+bool write_trailer(FI_OctetStream *) throw ();
+
+} // anonymous namespace
+
+void
+Document::start() throw ()
+{
+	start_flag = true;
+	stop_flag = false;
+}
+
+void
+Document::stop() throw ()
+{
+	start_flag = false;
+	stop_flag = true;
+}
+
+void
+Document::write(FI_OctetStream *stream) throw (Exception)
+{
+	if (start_flag) {
+		if (!write_header(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+	} else if (stop_flag) {
+		if (!write_trailer(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+	} else {
+		throw IllegalStateException ();
+	}
+}
+
+void
+Document::read(FI_OctetStream *stream) throw (Exception)
+{	
+	if (start_flag) {
+	} else if (stop_flag) {
+	} else {
+		throw IllegalStateException ();
+	}
+
+	throw UnsupportedOperationException ();
+}
+
+
+//
+// Document serialization subroutines.
+//
+
+namespace {
+
+bool
+write_header(FI_OctetStream *stream) throw ()
+{
+	// Reserve space.
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
+	if (!w_buf) {
+		return false;
+	}
+
+	// Serialize document header.
+	w_buf[0] = 0xE0;
+	w_buf[1] = 0x00;
+
+	return true;
+}
+
+bool
+write_trailer(FI_OctetStream *stream) throw ()
+{
+	// Reserve space.
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
+	if (!w_buf) {
+		return false;
+	}
+
+	// Serialize document trailer.
+	w_buf[0] = 0xF0;
+
+	return true;
+}
 
 /* Section 5.5: Fast Infoset numbers bits from 1 (MSB) to 8 (LSB).  */
 #define BIT_1 0x80
@@ -151,3 +246,8 @@ static FI_Octet const fi_version[] = { 0x00, 0x01 };
 //1 -- 64: 0x00 -- 0x3F
 //65 -- 320: 0x40 -- 0x40 0xFF
 //321 -- 2^32: 0x60 0xFF 0xFF 0xFE 0xBF -- 0x60 0xFF 0xFF 0xFE 0xBF
+
+} // anonymous namespace
+
+} // namespace FI
+} // namespace BTech

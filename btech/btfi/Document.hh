@@ -6,14 +6,28 @@
 #ifndef BTECH_FI_DOCUMENT_HH
 #define BTECH_FI_DOCUMENT_HH
 
+#include "stream.h"
+
 namespace BTech {
 namespace FI {
 
-class Document {
+class Document : public Serializable {
 public:
-	Document () {}
+	Document () : start_flag(false), stop_flag(false) {}
 	~Document () {}
 
+	// Next write()/read() will be document header.
+	void start () throw ();
+
+	// Next write()/read() will be document trailer.
+	void stop () throw ();
+
+	void write (FI_OctetStream *stream) throw (Exception);
+	void read (FI_OctetStream *stream) throw (Exception);
+
+private:
+	bool start_flag;
+	bool stop_flag;
 }; // class Document
 
 } // namespace FI

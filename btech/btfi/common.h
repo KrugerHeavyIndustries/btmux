@@ -32,7 +32,8 @@ typedef enum {
 	FI_ERROR_EOS,			/* End of stream */
 	FI_ERROR_NOFILE,		/* File not found */
 	FI_ERROR_INVAL,			/* Invalid argument */
-	FI_ERROR_ERRNO			/* Check errno */
+	FI_ERROR_ERRNO,			/* Check errno */
+	FI_ERROR_EXCEPTION		/* Caught Exception */
 } FI_ErrorCode;
 
 typedef struct {
@@ -50,6 +51,12 @@ typedef struct {
 	do { \
 		(ei).error_code = (ec); \
 		(ei).error_string = fi_error_strings[(ec)]; \
+	} while (0)
+
+#define FI_COPY_ERROR(lhs,rhs) \
+	do { \
+		(lhs).error_code = (rhs).error_code; \
+		(lhs).error_stirng = (rhs).error_string; \
 	} while (0)
 
 extern const char *const fi_error_strings[];
@@ -137,6 +144,9 @@ class IndexOutOfBoundsException : public Exception {
 
 class InvalidArgumentException : public Exception {
 }; // InvalidArgumentException
+
+class IllegalStateException : public Exception {
+}; // IllegalStateException
 
 class UnsupportedOperationException : public Exception {
 }; // UnsupportedOperationException

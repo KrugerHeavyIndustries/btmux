@@ -50,8 +50,7 @@ fi_create_stream(size_t initial_size)
 	new_stream->size = 0;
 	new_stream->buffer = NULL;
 
-	new_stream->length = 0;
-	new_stream->cursor = 0;
+	fi_clear_stream(new_stream);
 
 	FI_CLEAR_ERROR(new_stream->error_info);
 
@@ -93,17 +92,44 @@ fi_clear_stream_error(FI_OctetStream *stream)
  * Stream operations.
  */
 
+/* Clear stream buffer.  */
+void
+fi_clear_stream(FI_OctetStream *stream)
+{
+	stream->length = 0;
+	stream->cursor = 0;
+}
+
+/*
+ * Behaves like fi_try_read_stream(), except always reads all available octets.
+ */
+FI_Length
+fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr)
+{
+	const FI_Length length = stream->length - stream->cursor;
+
+	if (buffer_ptr) {
+		*buffer_ptr = stream->buffer + stream->cursor;
+	}
+
+	shrink_buffer(stream);
+
+	stream->cursor += length;
+	return length;
+}
+
 /*
  * Attempt to read a specific number of octets from the stream.  If successful,
- * returns 0, and advances the stream cursor.  If unsuccessful, returns the
- * number of needed octets, and does NOT advance the stream cursor.  In both
- * cases, buffer_ptr (if non-NULL) will be set to point to the read octets.
+ * returns length, and advances the stream cursor.  If unsuccessful, returns
+ * the actual number of read octets, and does NOT advance the stream cursor.
+ * In both cases, buffer_ptr (if non-NULL) will be set to point to the read
+ * octets.
  *
  * Any existing buffer pointers may be invalidated.
  */
 FI_Length
-fi_try_read_stream(FI_OctetStream *stream, FI_Length length,
-                         const FI_Octet **buffer_ptr)
+fi_try_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr,
+                   FI_Length length)
 {
 	FI_Length remaining_length;
 
@@ -115,13 +141,13 @@ fi_try_read_stream(FI_OctetStream *stream, FI_Length length,
 
 	if (remaining_length < length) {
 		FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
-		return length - remaining_length;
+		return remaining_length;
 	}
 
 	shrink_buffer(stream);
 
 	stream->cursor += length;
-	return 0;
+	return length;
 }
 
 /*
