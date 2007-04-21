@@ -1,20 +1,20 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+####################
+# Autoconf options #
+####################
 
-AC_PREREQ(2.53)
+AC_PREREQ([2.50])
 
-AC_INIT([BtOnline-BTechMux], [0.6])
+AC_INIT([BattleTech MUX], [0.6])
 AC_CONFIG_AUX_DIR([confutil])
 AC_PREFIX_DEFAULT([`pwd`/game.run])
 
-AC_CONFIG_HEADERS([autoconf.h])
+AM_INIT_AUTOMAKE([1.9])
+AM_CONFIG_HEADER([autoconf.h])
 
-# Checks for programs.
-AC_PROG_AWK
-AC_PROG_CC
-AC_PROG_CPP
-AC_ISC_POSIX
-AC_MINIX
+
+#########################
+# Configuration options #
+#########################
 
 # Check the various enable code sections
 AC_MSG_CHECKING([Should we enable support for graphical HUDs [[default=yes]]])
@@ -77,12 +77,8 @@ AC_ARG_ENABLE([enhanced-logging],
             yes) 
                 AC_MSG_RESULT([yes])
                 AC_DEFINE([ARBITRARY_LOGFILES], [1], [Should Enhanced Logging be enabled])
-                logcache='                 src/logcache.o    \';
-                AC_SUBST([LOGCACHE], [${logcache}])
                ;;
             no)
-                logcache='                                   \';
-                AC_SUBST([LOGCACHE], [${logcache}])
                 AC_MSG_RESULT([no])
                 ;;
             *)
@@ -93,10 +89,11 @@ AC_ARG_ENABLE([enhanced-logging],
     [
         AC_MSG_RESULT([yes])
         AC_DEFINE([ARBITRARY_LOGFILES], [1], [Should Enhanced Logging be enabled])
-        logcache='                 src/logcache.o    \';
-        AC_SUBST([LOGCACHE], [${logcache}])
+	enable_enhanced_logging="yes"
     ]
 )
+
+AM_CONDITIONAL([MUX_LOGCACHE], [test x"${enable_enhanced_logging}" = x"yes"])
 
 AC_MSG_CHECKING([Should we enable the code for complex repairs [[default=no]]])
 AC_ARG_ENABLE([bt-complexrepairs],
@@ -160,15 +157,11 @@ AC_ARG_ENABLE([sql-support],
                 if test "$ac_cv_header_dbi_dbi_h" = "yes" && 
                         test "$ac_cv_lib_dbi_dbi_conn_new" = "yes" ; then
                     AC_DEFINE([SQL_SUPPORT], [1], [Should SQL Support be enabled])
-                    sqlchild='                 src/sqlchild.o    \';
-                    AC_SUBST([SQLCHILD], [${sqlchild}])
                 else
                     AC_MSG_ERROR([Was unable to locate ldbi])
                 fi
                 ;;
             no)
-                sqlchild='                                   \';
-                AC_SUBST([SQLCHILD], [${sqlchild}])
                 AC_MSG_RESULT([no])
                 ;;
             *)
@@ -177,11 +170,11 @@ AC_ARG_ENABLE([sql-support],
         esac
     ],
     [
-        sqlchild='                                   \';
-        AC_SUBST([SQLCHILD], [${sqlchild}])
         AC_MSG_RESULT([no])
     ]
 )
+
+AM_CONDITIONAL([MUX_SQLCHILD], [test x"${enable_sql_support}" = x"yes"])
 
 AC_MSG_CHECKING([Should we rename the 'help' command to 'muxhelp' [[default=no]]])
 AC_ARG_ENABLE([rename-help],
@@ -207,7 +200,21 @@ AC_ARG_ENABLE([rename-help],
     ]
 )
 
-# Checks for libraries.
+#######################
+# Configuration tests #
+#######################
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_LIBTOOL
+
+AC_PROG_AWK
+
+dnl
+dnl TODO: Review all of our configuration tests for necessity.
+dnl
+
+dnl Checks for libraries.
 AC_CHECK_LIB(bsd, main)
 AC_CHECK_LIB(crypt, crypt)
 AC_CHECK_LIB(m, tan)
@@ -216,7 +223,7 @@ AC_CHECK_LIB(event, event_init, [],
     AC_MSG_ERROR([Was unable to locate libevent])
 )
 
-# Checks for header files.
+dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -272,6 +279,10 @@ if test "$ac_cv_func_gethostbyaddr" = "yes"; then
 fi
 
 
+#########################
+# Generate output files #
+#########################
+
 AC_CONFIG_SUBDIRS([btech])
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT

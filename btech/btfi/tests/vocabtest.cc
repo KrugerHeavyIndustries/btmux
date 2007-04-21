@@ -94,7 +94,7 @@ run_test()
 	} catch (const UnsupportedOperationException& e) {
 	}
 
-	test_max<CharString>(ra_vt1, "hello world");
+	test_max<CharString>(ra_vt1, "..");
 
 	//
 	// Test encoding algorithm tables.
@@ -200,7 +200,7 @@ run_test()
 	} catch (const InvalidArgumentException& e) {
 	}
 
-	test_max<CharString>(ds_vt1, "hello world");
+	test_max<CharString>(ds_vt1, ".");
 
 	//
 	// Test dynamic name tables.

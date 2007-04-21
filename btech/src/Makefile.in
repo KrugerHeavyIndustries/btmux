@@ -77,6 +77,9 @@ am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
 	mech.tech.saverepair.lo mech.tic.lo mech.update.lo \
 	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo
 libbtech_la_OBJECTS = $(am_libbtech_la_OBJECTS)
+libbtech_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libbtech_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
 am__depfiles_maybe = depfiles
@@ -210,6 +213,7 @@ AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
 
 AM_LDFLAGS = $(BPTR_LFLAGS)
 lib_LTLIBRARIES = libbtech.la
+libbtech_la_LDFLAGS = -static
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
 	btech/aero.bomb.c btech/aero.move.c btech/artillery.c \
@@ -352,7 +356,7 @@ clean-libLTLIBRARIES:
 	  rm -f "$${dir}/so_locations"; \
 	done
 libbtech.la: $(libbtech_la_OBJECTS) $(libbtech_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libbtech_la_OBJECTS) $(libbtech_la_LIBADD) $(LIBS)
+	$(libbtech_la_LINK) -rpath $(libdir) $(libbtech_la_OBJECTS) $(libbtech_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

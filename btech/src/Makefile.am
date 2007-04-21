@@ -14,6 +14,8 @@ AM_LDFLAGS = $(BPTR_LFLAGS)
 
 lib_LTLIBRARIES = libbtech.la
 
+libbtech_la_LDFLAGS = -static
+
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
 	btech/aero.bomb.c btech/aero.move.c btech/artillery.c \
@@ -84,6 +86,7 @@ libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	btech/p.mech.update.h btech/p.mech.utils.h btech/p.mine.h \
 	btech/p.pcombat.h btech/p.template.h btech/turret.h \
 	btech/weapons.fasa.h btech/weapons.h btech/weapons.vrt.h
+
 libbtech_la_LIBADD = $(BTPR_LIBS) ../btfi/libbtfi.la
 
 noinst_HEADERS = include/btconfig.h include/coolmenu.h \
