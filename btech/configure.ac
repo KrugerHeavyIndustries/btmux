@@ -4,7 +4,7 @@
 
 AC_PREREQ([2.50])
 
-AC_INIT([BattleTech Extensions], [0.6])
+AC_INIT([BattleTech Extensions], [0.7])
 AC_CONFIG_AUX_DIR([confutil])
 
 AM_INIT_AUTOMAKE([1.9])

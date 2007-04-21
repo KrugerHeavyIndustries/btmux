@@ -4,7 +4,7 @@
 
 AC_PREREQ([2.50])
 
-AC_INIT([BattleTech MUX], [0.6])
+AC_INIT([BattleTech MUX], [0.7])
 AC_CONFIG_AUX_DIR([confutil])
 AC_PREFIX_DEFAULT([`pwd`/game.run])
 
