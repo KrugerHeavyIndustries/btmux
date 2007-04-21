@@ -982,6 +982,29 @@ void fun_btarmorstatus(char *buff, char **bufc, dbref player, dbref cause,
 	safe_tprintf_str(buff, bufc, infostr ? infostr : "#-1 ERROR");
 }
 
+void fun_btweapons(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	/* fargs[0] = id of mech
+	 */
+	
+	dbref it;
+	MECH *mech;
+	it = match_thing(player, fargs[0]);
+
+	int i;
+
+	FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
+	FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
+	FUNCHECK(!(mech = FindObjectsData(it)), "#-1");
+
+	for(i = 0; i < NUM_SECTIONS; i++)
+	{
+		notify_printf(player, "Sec: %d", i);	
+	}
+}
+
+
 void fun_btweaponstatus(char *buff, char **bufc, dbref player, dbref cause,
 						char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

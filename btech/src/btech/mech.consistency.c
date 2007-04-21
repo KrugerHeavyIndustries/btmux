@@ -201,7 +201,7 @@ int susp_factor(MECH * mech)
 	return 0;
 }
 
-static int round_to_halfton(int weight)
+extern int round_to_halfton(int weight)
 {
 	int over = weight % 512;
 	if(!over)

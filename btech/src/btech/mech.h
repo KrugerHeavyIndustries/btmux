@@ -483,6 +483,9 @@ struct weapon_struct {
     short explosiondamage;	/* Damage done when exploding (GR/LGR/HGR) */
     long special;
     int battlevalue;
+    int cost;
+    int ammo_bv;
+    int ammo_cost;
 };
 
 /* special weapon effects */
@@ -516,6 +519,7 @@ struct weapon_struct {
 #define RAC		0x04000000	/* Rotary AC */
 #define HVYGAUSS	0x08000000	/* Heavy Gauss */
 #define ROCKET		0x10000000	/* Rocket launchers. +1 to hit, one shot wonders */
+#define SPLIT_CRITS     0x20000000	/* Certain weapons can split crits. Mark them appropriately */
 
 #define PCOMBAT		(PC_HEAT|PC_IMPA|PC_SHAR)
 
