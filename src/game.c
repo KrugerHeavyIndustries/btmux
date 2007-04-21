@@ -1242,7 +1242,7 @@ static void process_preload(void)
 	free_lbuf(tstr);
 }
 
-int main(int argc, char *argv[])
+int real_main(int argc, char *argv[])
 {
 	int mindb;
 

@@ -11,6 +11,8 @@
 #include "externs.h"
 #include "patchlevel.h"
 
+#include "version.h"
+
 /*
  * 7 years of btech patches.
  */
