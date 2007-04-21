@@ -44,6 +44,7 @@ void myfifo_trav_r_xdr(myfifo ** foo, struct mmdb_t *mmdb, void (*func) ())
 void mmdb_write_object(struct mmdb_t *mmdb, dbref object)
 {
 	ATRLIST *atrlist;
+	int ii;
 
 	mmdb_write_uint(mmdb, object);
 	mmdb_write_opaque(mmdb, Name(object), strlen(Name(object)) + 1);
@@ -63,9 +64,9 @@ void mmdb_write_object(struct mmdb_t *mmdb, dbref object)
 	mmdb_write_uint(mmdb, Powers2(object));
 	mmdb_write_uint(mmdb, db[object].at_count);
 	atrlist = db[object].ahead;
-	for(int i = 0; i < db[object].at_count; i++) {
-		mmdb_write_opaque(mmdb, atrlist[i].data, atrlist[i].size);
-		mmdb_write_uint(mmdb, atrlist[i].number);
+	for (ii = 0; ii < db[object].at_count; ii++) {
+		mmdb_write_opaque(mmdb, atrlist[ii].data, atrlist[ii].size);
+		mmdb_write_uint(mmdb, atrlist[ii].number);
 	}
 }
 
@@ -230,7 +231,7 @@ int mmdb_db_read(char *filename)
 	struct timeval tv;
 	rbtree vattr_htab = mudstate.vattr_name_htab.tree;
 	char buffer[4096];
-	int np, j, k, len;
+	int np, ii, j, k, len;
 	struct commac *c;
 	struct channel *ch;
 	struct comuser *user;
@@ -259,7 +260,7 @@ int mmdb_db_read(char *filename)
 	vattr_count = mmdb_read_uint32(mmdb);
 	anum_extend(vattr_count);
 	dprintk("reading in %d vattrs", vattr_count);
-	for(int i = 0; i < vattr_count; i++) {
+	for (ii = 0; ii < vattr_count; ii++) {
 		vattr_len = mmdb_read_uint32(mmdb);
 		mmdb_read(mmdb, buffer, vattr_len);
 		vattr_number = mmdb_read_uint32(mmdb);
@@ -271,7 +272,7 @@ int mmdb_db_read(char *filename)
 	object_count = mmdb_read_uint32(mmdb);
 	db_grow(object_count);
 	dprintk("reading in %d objects", object_count);
-	for(int i = 0; i < object_count; i++) {
+	for (ii = 0; ii < object_count; ii++) {
 		object = mmdb_read_uint32(mmdb);
 		vattr_len = mmdb_read_uint32(mmdb);
 		mmdb_read(mmdb, buffer, vattr_len);
@@ -291,7 +292,7 @@ int mmdb_db_read(char *filename)
 		s_Powers(object, mmdb_read_uint32(mmdb));
 		s_Powers2(object, mmdb_read_uint32(mmdb));
 		vattr_count = mmdb_read_uint32(mmdb);
-		for(int j = 0; j < vattr_count; j++) {
+		for (j = 0; j < vattr_count; j++) {
 			vattr_len = mmdb_read_uint32(mmdb);
 			mmdb_read(mmdb, buffer, vattr_len);
 			vattr_number = mmdb_read_uint32(mmdb);

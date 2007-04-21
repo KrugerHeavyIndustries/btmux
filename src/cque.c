@@ -183,6 +183,8 @@ static void wakeup_wait_que(int fd, short event, void *arg)
 }
 
 static int dump_bqe(struct mmdb_t *mmdb, BQUE *bqe) {
+    int ii;
+
     if(bqe == NULL) {
         mmdb_write_uint32(mmdb, 0);
         return 1;
@@ -196,12 +198,12 @@ static int dump_bqe(struct mmdb_t *mmdb, BQUE *bqe) {
     mmdb_write_string(mmdb, bqe->text);
     mmdb_write_string(mmdb, bqe->comm);
     mmdb_write_uint32(mmdb, NUM_ENV_VARS);
-    for(int i = 0; i < NUM_ENV_VARS; i++) {
-        mmdb_write_string(mmdb, bqe->env[i]);
+    for (ii = 0; ii < NUM_ENV_VARS; ii++) {
+        mmdb_write_string(mmdb, bqe->env[ii]);
     }
     mmdb_write_uint32(mmdb, NUM_ENV_VARS);
-    for(int i = 0; i < NUM_ENV_VARS; i++) {
-        mmdb_write_string(mmdb, bqe->scr[i]);
+    for (ii = 0; ii < NUM_ENV_VARS; ii++) {
+        mmdb_write_string(mmdb, bqe->scr[ii]);
     }
     mmdb_write_uint32(mmdb, bqe->nargs);
     dump_bqe(mmdb, bqe->next);
@@ -230,7 +232,7 @@ void cque_dump_restart(struct mmdb_t *mmdb) {
 }
 
 static void load_bqe(struct mmdb_t *mmdb) {
-    int exists, count;
+    int exists, count, ii;
     struct timeval tv;
     BQUE *tmp;
     exists = mmdb_read_uint32(mmdb);
@@ -251,18 +253,18 @@ static void load_bqe(struct mmdb_t *mmdb) {
     count = mmdb_read_uint32(mmdb);
     if(count != NUM_ENV_VARS)
         printk("brain damage, count(%d) != NUM_ENV_VARS(%d)", count, NUM_ENV_VARS);
-    for(int i = 0; i < count; i++) {
-        if(i < NUM_ENV_VARS)
-            tmp->env[i] = mmdb_read_string(mmdb);
+    for (ii = 0; ii < count; ii++) {
+        if (ii < NUM_ENV_VARS)
+            tmp->env[ii] = mmdb_read_string(mmdb);
         else 
             free(mmdb_read_string(mmdb));
     }
     count = mmdb_read_uint32(mmdb);
     if(count != NUM_ENV_VARS)
         printk("brain damage, count(%d) != NUM_ENV_VARS(%d)", count, NUM_ENV_VARS);
-    for(int i = 0; i < count; i++) {
-        if(i < NUM_ENV_VARS)
-            tmp->scr[i] = mmdb_read_string(mmdb);
+    for (ii = 0; ii < count; ii++) {
+        if (ii < NUM_ENV_VARS)
+            tmp->scr[ii] = mmdb_read_string(mmdb);
         else 
             free(mmdb_read_string(mmdb));
     }
@@ -281,9 +283,9 @@ static void load_objqe(struct mmdb_t *mmdb) {
     
     
 void cque_load_restart(struct mmdb_t *mmdb) {
-    int count;
+    int count, ii;
     count = mmdb_read_uint32(mmdb);
-    for(int i = 0; i < count; i++) {
+    for (ii = 0; ii < count; ii++) {
         load_objqe(mmdb);
     }
     load_bqe(mmdb); // wait q

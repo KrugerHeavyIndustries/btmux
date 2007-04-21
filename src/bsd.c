@@ -146,8 +146,9 @@ void release_descriptor(DESC *d) {
 			DESC_ITER_PLAYER(d->player, dtemp) num++;
 
 			if(num == 0) {
-				for(int i = 0; i < MAX_GLOBAL_REGS; i++) {
-					free_lbuf(d->program_data->wait_regs[i]);
+				int ii;
+				for (ii = 0; ii < MAX_GLOBAL_REGS; ii++) {
+					free_lbuf(d->program_data->wait_regs[ii]);
 				}
 				free(d->program_data);
 			}
