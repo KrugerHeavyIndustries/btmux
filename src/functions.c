@@ -36,6 +36,7 @@ extern void cf_log_notfound(dbref player, char *cmd,
  * Function definitions from funceval.c 
  */
 
+extern void fun_btlag();
 extern void fun_btdesignex();
 extern void fun_btgetcharvalue();
 extern void fun_btmapelev();
@@ -979,15 +980,6 @@ static void fun_convuptime(char *buff, char **bufc, dbref player, dbref cause,
 
 	safe_str(uptimestring, buff, bufc);
 	free_sbuf(uptimestring);
-}
-
-static void fun_lag(char *buff, char **bufc, dbref player, dbref cause,
-					char *fargs[], int nfargs, char *cargs[], int ncargs)
-{
-	char buf[256];
-
-	sprintf(buf, "%d", game_lag());
-	safe_str(buf, buff, bufc);
 }
 
 /**
@@ -5585,7 +5577,7 @@ FUN flist[] = {
 	{"BTHEXINBLZ", fun_bthexinblz, 3, 0, CA_WIZARD},
 	{"BTHEXLOS", fun_bthexlos, 3, 0, CA_WIZARD},
 	{"BTID2DB", fun_btid2db, 2, 0, CA_WIZARD},
-	{"BTLAG", fun_lag, 0, 0, CA_WIZARD},
+	{"BTLAG", fun_btlag, 0, 0, CA_WIZARD},
 	{"BTLISTBLZ", fun_btlistblz, 1, 0, CA_WIZARD},
 	{"BTLOADMAP", fun_btloadmap, 2, FN_VARARGS, CA_WIZARD},
 	{"BTLOADMECH", fun_btloadmech, 2, 0, CA_WIZARD},

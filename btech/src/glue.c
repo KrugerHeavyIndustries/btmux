@@ -584,7 +584,7 @@ void LoadSpecialObjects(void)
 	}
 	/* Loop through the entire database, and if it has the special */
 	/* object flag, add it to our linked list. */
-	for(i = 0; i < mudstate.db_top; i++)
+	DO_WHOLE_DB(i)
 		if(Hardcode(i) && !Going(i) && !Halted(i)) {
 			type = WhichSpecialS(i);
 			if(type >= 0) {

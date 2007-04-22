@@ -54,6 +54,8 @@ char *mechref_path(char *id);
 char *setarmorstatus_func(MECH * mech, char *sectstr, char *typestr,
 						  char *valuestr);
 
+extern int game_lag(void); /* fun_btlag() */
+
 typedef struct {
 	int gtype;
 	char *name;
@@ -2476,4 +2478,14 @@ void fun_bthexinblz(char *buff, char **bufc, dbref player, dbref cause,
 		}
 	}
 	safe_tprintf_str(buff, bufc, "%d", bl);
+}
+
+void
+fun_btlag(char *buff, char **bufc, dbref player, dbref cause,
+          char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	char buf[256];
+
+	sprintf(buf, "%d", game_lag());
+	safe_str(buf, buff, bufc);
 }

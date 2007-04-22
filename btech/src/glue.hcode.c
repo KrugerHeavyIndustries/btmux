@@ -23,24 +23,6 @@
 #include "macros.h"
 #include "p.glue.h"
 
-void set_attr_internal(dbref player, dbref thing, int attrnum,
-					   char *attrtext, int key);
-
-int bt_get_attr(char *tbuf, int obj, char *name)
-{
-	ATTR *a;
-	int ao, af;
-
-	if(!name)
-		return 0;
-	if(!(a = atr_str(name)))
-		return 0;
-	atr_get_str(tbuf, obj, a->number, &ao, &af);
-	if(*tbuf)
-		return 1;
-	return 0;
-}
-
 char *silly_atr_get(int id, int flag)
 {
 	int i, j;
@@ -56,17 +38,6 @@ char *silly_atr_get(int id, int flag)
 void silly_atr_set(int id, int flag, char *dat)
 {
 	atr_add_raw(id, flag, dat);
-}
-
-void bt_set_attr(dbref obj, char *attri, char *value)
-{
-	int attr;
-
-	ATTR *atr;
-
-	atr = atr_str(attri);
-	attr = atr ? atr->number : mkattr(attri);
-	set_attr_internal(GOD, obj, attr, value, SET_QUIET);
 }
 
 void KillText(char **mapt)

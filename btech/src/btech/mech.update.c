@@ -1498,29 +1498,23 @@ void UpdateHeat(MECH * mech)
 	if(MechHeat(mech) >= 19) {
 		if(inheat < 19) {
 			mech_notify(mech, MECHALL,
-						"%ch%cr=====================================");
-			mech_notify(mech, MECHALL,
-						"Your Excess Heat indicator turns RED!");
-			mech_notify(mech, MECHALL,
-						"=====================================%c");
+			"%ch%cr=====================================\n"
+			      "Your Excess Heat indicator turns RED!\n"
+			      "=====================================%c");
 		}
 	} else if(MechHeat(mech) >= 14) {
 		if(inheat >= 19 || inheat < 14) {
 			mech_notify(mech, MECHALL,
-						"%ch%cy=======================================");
-			mech_notify(mech, MECHALL,
-						"Your Excess Heat indicator turns YELLOW");
-			mech_notify(mech, MECHALL,
-						"=======================================%c");
+			"%ch%cy=======================================\n"
+			      "Your Excess Heat indicator turns YELLOW\n"
+			      "=======================================%c");
 		}
 	} else {
 		if(inheat >= 14) {
 			mech_notify(mech, MECHALL,
-						"%cg======================================");
-			mech_notify(mech, MECHALL,
-						"Your Excess Heat indicator turns GREEN");
-			mech_notify(mech, MECHALL,
-						"======================================%c");
+			"%cg======================================\n"
+			   "Your Excess Heat indicator turns GREEN\n"
+			   "======================================%c");
 		}
 	}
 	HandleOverheat(mech);
@@ -1698,16 +1692,6 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 			if(MechRTerrain(mech) == WATER)
 				return;
-
-#define MOVE_BACK \
-                MechFX(mech) -= deltax;\
-                MechFY(mech) -= deltay;\
-                MechX(mech) = MechLastX(mech);\
-                MechY(mech) = MechLastY(mech);\
-                MechZ(mech) = lastelevation;\
-                MechFZ(mech) = MechZ(mech) * ZSCALE;\
-                MechTerrain(mech) = ot;\
-                MechElev(mech) = le;
 
 			/* Did we hit something while jumping */
 			if(collision_check(mech, JUMP, 0, 0)) {

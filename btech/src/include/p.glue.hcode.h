@@ -13,10 +13,8 @@
 #define _P_GLUE_HCODE_H
 
 /* glue.hcode.c */
-int bt_get_attr(char *tbuf, int obj, char *name);
 char *silly_atr_get(int id, int flag);
 void silly_atr_set(int id, int flag, char *dat);
-void bt_set_attr(dbref obj, char *attri, char *value);
 void KillText(char **mapt);
 void ShowText(char **mapt, dbref player);
 float FBOUNDED(float min, float val, float max);
