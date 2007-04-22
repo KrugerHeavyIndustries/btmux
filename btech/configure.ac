@@ -251,15 +251,17 @@ AC_MSG_CHECKING([which BTPR layer to use])
 case "${ac_cv_use_btpr}" in
 mux1)
         AC_MSG_RESULT([using TinyMUX 1.x])
+        AC_DEFINE([BTPR_MUX1], [], [Use TinyMUX 1.x BTPR layer])
         ;;
 penn)   AC_MSG_RESULT([using PennMUSH])
+        AC_DEFINE([BTPR_PENN], [], [Use PennMUSH BTPR layer])
         ;;
 *)
         AC_MSG_ERROR([bad argument to --with-btpr: ${ac_cv_use_btpr}])
         ;;
 esac
 
-AC_SUBST([btpr_dir], [${top_srcdir}/btpr])
+AC_SUBST([btpr_dir], ["\$(top_srcdir)/btpr"])
 AM_CONDITIONAL([BTPR_MUX1], [test ${ac_cv_use_btpr} = mux1])
 AM_CONDITIONAL([BTPR_PENN], [test ${ac_cv_use_btpr} = penn])
 

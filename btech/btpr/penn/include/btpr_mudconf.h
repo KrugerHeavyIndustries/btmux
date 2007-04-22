@@ -82,6 +82,8 @@ typedef struct statedata STATEDATA;
 struct statedata {
     time_t now;			/* What time is it now? */
     time_t restart_time;	/* When was MUX (re-)started */
+
+    char *debug_cmd;		/* FIXME: Just a dummy variable, for now */
 }; /* struct statedata */
 
 extern STATEDATA mudstate;

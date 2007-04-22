@@ -1,20 +1,17 @@
+AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
+	-I$(srcdir)/btfi
+
 if BTPR_MUX1
 BTPR_INCLUDE = -I$(top_srcdir)/../include -I$(top_srcdir)/../src
 endif
 
 if BTPR_PENN
+AM_LDFLAGS = -Wl,-Bsymbolic
 BTPR_INCLUDE = -I$(btpr_dir)/penn/include -I$(btpr_dir)/include
-BTPR_LFLAGS = -Wl,-Bsymbolic
 BTPR_LIBS = ../btpr/libbtpr.la
 endif
 
-AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
-	-I$(srcdir)/btfi
-AM_LDFLAGS = $(BPTR_LFLAGS)
-
 lib_LTLIBRARIES = libbtech.la
-
-libbtech_la_LDFLAGS = -static
 
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
 	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \

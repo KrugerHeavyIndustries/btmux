@@ -45,7 +45,12 @@
 
 #include "glue_types.h"
 
+/* FIXME: Another ugly #ifdef.  Abstract this! */
+#ifndef BTPR_PENN
 #define Have_MechPower(a,b) (((Powers2((Owner(a))) & (b)) || Wizard(Owner(a))) && Inherits((a)))
+#else /* BTPR_PENN */
+#define Have_MechPower(a,b) ((Wizard(Owner(a)) || btpr_has_power2(Owner(a), (b))) && Inherits((a)))
+#endif /* BTPR_PENN */
 
 typedef struct CommandsStruct {
     int flag;

@@ -1,5 +1,11 @@
 /* autoconf.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Use TinyMUX 1.x BTPR layer */
+#undef BTPR_MUX1
+
+/* Use PennMUSH BTPR layer */
+#undef BTPR_PENN
+
 /* Should the advanced econ system be enabled */
 #undef BT_ADVANCED_ECON
 
