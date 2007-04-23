@@ -40,16 +40,17 @@
 #include "coolmenu.h"
 #include "p.bsuit.h"
 #include "glue.h"
-#include "mux_tree.h"
+#include "rbtree.h"
 #include "powers.h"
 #include "ansi.h"
 #include "coolmenu.h"
 #include "mycool.h"
-#include "p.mux_tree.h"
 #include "p.mechfile.h"
 #include "p.mech.stat.h"
 #include "p.mech.partnames.h"
 #include "debug.h"
+
+#include "xcode_io.h"
 
 /* Prototypes */
 
@@ -63,39 +64,50 @@ void CreateNewSpecialObject(dbref player, dbref key);
 void DisposeSpecialObject(dbref player, dbref key);
 void list_hashstat(dbref player, const char *tab_name, HASHTAB * htab);
 void raw_notify(dbref player, const char *msg);
-void AddEntry(Tree * tree, muxkey_t key, dtype_t type, dsize_t size,
-			  void *data);
-void DeleteEntry(Tree * tree, muxkey_t key);
-int SaveTree(FILE * f, Tree tree);
-void UpdateTree(FILE * f, Tree * tree, int (*sizefunc) (int));
-void GoThruTree(Tree tree, int (*func) (Node *));
 
 /*************PERSONAL PROTOS*****************/
 void *NewSpecialObject(int id, int type);
 void *FindObjectsData(dbref key);
-static Node *FindObjectsNode(dbref key);
 static void DoSpecialObjectHelp(dbref player, char *type, int id, int loc,
-								int powerneeded, int objid, char *arg);
+                                int powerneeded, int objid, char *arg);
 void initialize_colorize();
 
 #ifndef FAST_WHICHSPECIAL
 
 #define WhichSpecialS WhichSpecial
-#define WhichType(node) WhichSpecial(NodeKey(node))
 int WhichSpecial(dbref key);
 
 #else
 
-#define WhichType(node) NodeType(node)
 int WhichSpecial(dbref key);
 static int WhichSpecialS(dbref key);
 
 #endif
 
+rbtree xcode_tree = NULL;
+
+static int
+compare_dbrefs(void *key1, void *key2, void *token)
+{
+	const dbref key1_val = (dbref)key1;
+	const dbref key2_val = (dbref)key2;
+
+	return key1_val - key2_val;
+}
+
+static void
+init_xcode_tree(void)
+{
+	xcode_tree = rb_init(compare_dbrefs, NULL);
+	if (!xcode_tree) {
+		/* TODO: We could handle this more gracefully... */
+		exit(EXIT_FAILURE);
+	}
+}
+
 /*********************************************/
 
 HASHTAB SpecialCommandHash[NUM_SPECIAL_OBJECTS];
-Tree xcode_tree = NULL;
 extern int map_sizefun();
 
 static int Can_Use_Command(MECH * mech, int cmdflag)
@@ -122,8 +134,9 @@ static int Can_Use_Command(MECH * mech, int cmdflag)
 
 int HandledCommand_sub(dbref player, dbref location, char *command)
 {
+	XCODE *xcode_obj = NULL;
+
 	struct SpecialObjectStruct *typeOfObject;
-	Node *n = NULL;
 	int type;
 	CommandsStruct *cmd;
 	HASHTAB *damnedhash;
@@ -131,8 +144,8 @@ int HandledCommand_sub(dbref player, dbref location, char *command)
 	int ishelp;
 
 	type = WhichSpecial(location);
-	if(type < 0 || (SpecialObjects[type].datasize > 0 &&
-					!(n = FindNode(xcode_tree, location)))) {
+	if (type < 0 || (SpecialObjects[type].datasize > 0
+	    && !(xcode_obj = rb_find(xcode_tree, (void *)location)))) {
 		if(type >= 0 || !Hardcode(location) || Zombie(location))
 			return 0;
 		if((type = WhichSpecialS(location)) >= 0) {
@@ -158,13 +171,13 @@ int HandledCommand_sub(dbref player, dbref location, char *command)
 		*tmpc = ' ';
 	if(cmd && (type != GTYPE_MECH || (type == GTYPE_MECH &&
 									  Can_Use_Command(((MECH *)
-													   (NodeData(n))),
+													   xcode_obj),
 													  cmd->flag)))) {
 #define SKIPSTUFF(a) while (*a && *a != ' ') a++;while (*a == ' ') a++
 		if(cmd->helpmsg[0] != '@' ||
 		   Have_MechPower(Owner(player), typeOfObject->power_needed)) {
 			SKIPSTUFF(command);
-			cmd->func(player, !n ? NULL : NodeData(n), command);
+			cmd->func(player, xcode_obj, command);
 		} else
 			notify(player, "Sorry, that command is restricted!");
 		return 1;
@@ -208,105 +221,123 @@ int HandledCommand(dbref player, dbref loc, char *command)
 void InitSpecialHash(int which);
 void initialize_partname_tables();
 
-static MECH *global_kludge_mech;
 int global_specials = NUM_SPECIAL_OBJECTS;
 
-static int remove_from_all_maps_func(Node * tmp)
+static int
+remove_from_all_maps_func(void *key, void *data, int depth, void *arg)
 {
-	if(WhichType(tmp) == GTYPE_MAP) {
+	XCODE *const xcode_obj = data;
+	MECH *const mech = arg;
+
+	if (xcode_obj->type == GTYPE_MAP) {
 		MAP *map;
 		int i;
 
-		if(!(map = getMap(NodeKey(tmp))))
+		if(!(map = getMap((dbref)key)))
 			return 1;
 		for(i = 0; i < map->first_free; i++)
-			if(map->mechsOnMap[i] == global_kludge_mech->mynum)
+			if(map->mechsOnMap[i] == mech->mynum)
 				map->mechsOnMap[i] = -1;
 	}
 	return 1;
 }
 
-void mech_remove_from_all_maps(MECH * mech)
+void
+mech_remove_from_all_maps(MECH *mech)
 {
-	global_kludge_mech = mech;
-	GoThruTree(xcode_tree, remove_from_all_maps_func);
+	rb_walk(xcode_tree, WALK_PREORDER, remove_from_all_maps_func, mech);
 }
 
 static dbref except_map = -1;
 
-static int remove_from_all_maps_except_func(Node * tmp)
+static int
+remove_from_all_maps_except_func(void *key, void *data, int depth, void *arg)
 {
-	if(WhichType(tmp) == GTYPE_MAP) {
+	dbref key_val = (dbref)key;
+	XCODE *const xcode_obj = data;
+	MECH *const mech = arg;
+
+	if (xcode_obj->type == GTYPE_MAP) {
 		int i;
 		MAP *map;
 
-		if(NodeKey(tmp) == except_map)
+		if (key_val == except_map)
 			return 1;
-		if(!(map = getMap(NodeKey(tmp))))
+		if(!(map = getMap(key_val)))
 			return 1;
 		for(i = 0; i < map->first_free; i++)
-			if(map->mechsOnMap[i] == global_kludge_mech->mynum)
+			if(map->mechsOnMap[i] == mech->mynum)
 				map->mechsOnMap[i] = -1;
 	}
 	return 1;
 }
-void mech_remove_from_all_maps_except(MECH * mech, int num)
+
+void
+mech_remove_from_all_maps_except(MECH *mech, int num)
 {
-	global_kludge_mech = mech;
+	/* TODO: Put the mech and the except_map into a structure for arg.  */
 	except_map = num;
-	GoThruTree(xcode_tree, remove_from_all_maps_except_func);
+	rb_walk(xcode_tree, WALK_PREORDER,
+	        remove_from_all_maps_except_func, mech);
 	except_map = -1;
 }
 
-static int load_update2(Node * tmp)
+static int
+load_update2(void *key, void *data, int depth, void *arg)
 {
-	int i = WhichType(tmp);;
+	XCODE *const xcode_obj = data;
 
-	if(i == GTYPE_MECH)
-		mech_map_consistency_check(NodeData(tmp));
+	if (xcode_obj->type == GTYPE_MECH)
+		mech_map_consistency_check((void *)xcode_obj);
 	return 1;
 }
 
-static int load_update4(Node * tmp)
+static int
+load_update4(void *key, void *data, int depth, void *arg)
 {
-	MECH *mech;
-	MAP *map;
+	XCODE *const xcode_obj = data;
 
-	if(WhichType(tmp) == GTYPE_MECH) {
-		mech = NodeData(tmp);
-		if(!(map = getMap(mech->mapindex))) {
+	if (xcode_obj->type == GTYPE_MECH) {
+		MECH *const mech = (MECH *)xcode_obj;
+		MAP *map;
+
+		if (!(map = getMap(mech->mapindex))) {
 			/* Ugly kludge */
-			if((map = getMap(Location(mech->mynum))))
+			if ((map = getMap(Location(mech->mynum))))
 				mech_Rsetmapindex(GOD, mech, tprintf("%d",
-													 Location(mech->mynum)));
-			if(!(map = getMap(mech->mapindex)))
+				                  Location(mech->mynum)));
+			if (!(map = getMap(mech->mapindex)))
 				return 1;
 		}
-		if(!Started(mech))
+
+		if (!Started(mech))
 			return 1;
 		StartSeeing(mech);
 		UpdateRecycling(mech);
 		MaybeMove(mech);
-
 	}
 	return 1;
 }
 
-static int load_update3(Node * tmp)
+static int
+load_update3(void *key, void *data, int depth, void *arg)
 {
-	int i = WhichType(tmp);
+	XCODE *const xcode_obj = data;
 
-	if(i == GTYPE_MAP) {
-		eliminate_empties((MAP *) NodeData(tmp));
-		recalculate_minefields((MAP *) NodeData(tmp));
+	if (xcode_obj->type == GTYPE_MAP) {
+		eliminate_empties((MAP *)xcode_obj);
+		recalculate_minefields((MAP *)xcode_obj);
 	}
 	return 1;
 }
 
-static FILE *global_file_kludge;
-
-static int load_update1(Node * tmp)
+static int
+load_update1(void *key, void *data, int depth, void *arg)
 {
+	const dbref key_val = (dbref)key;
+	XCODE *const xcode_obj = data;
+	FILE *const f = arg;
+
 	MAP *map;
 	int doh;
 	char mapbuffer[MBUF_SIZE];
@@ -314,9 +345,9 @@ static int load_update1(Node * tmp)
 	int i;
 	int ctemp;
 
-	switch ((i = WhichType(tmp))) {
+	switch (xcode_obj->type) {
 	case GTYPE_MAP:
-		map = (MAP *) NodeData(tmp);
+		map = (MAP *)xcode_obj;
 		bzero(map->mapobj, sizeof(map->mapobj));
 		map->map = NULL;
 		strcpy(mapbuffer, map->mapname);
@@ -324,14 +355,14 @@ static int load_update1(Node * tmp)
 		if(strcmp(map->mapname, "Default Map"))
 			map_loadmap(1, map, mapbuffer);
 		if(!strcmp(map->mapname, "Default Map") || !map->map)
-			initialize_map_empty(map, NodeKey(tmp));
-		if(!feof(global_file_kludge)) {
-			load_mapdynamic(global_file_kludge, map);
-			if(!feof(global_file_kludge))
+			initialize_map_empty(map, key_val);
+		if(!feof(f)) {
+			load_mapdynamic(f, map);
+			if(!feof(f))
 				if(doh)
-					load_mapobjs(global_file_kludge, map);
+					load_mapobjs(f, map);
 		}
-		if(feof(global_file_kludge)) {
+		if(feof(f)) {
 			map->first_free = 0;
 			map->mechflags = NULL;
 			map->mechsOnMap = NULL;
@@ -339,8 +370,9 @@ static int load_update1(Node * tmp)
 		}
 		debug_fixmap(GOD, map, NULL);
 		break;
+
 	case GTYPE_MECH:
-		mech = (MECH *) NodeData(tmp);
+		mech = (MECH *)xcode_obj;
 		if(!(FlyingT(mech) && !Landed(mech))) {
 			MechDesiredSpeed(mech) = 0;
 			MechSpeed(mech) = 0;
@@ -381,19 +413,19 @@ static int load_update1(Node * tmp)
 /*
  * Read in autopilot data
  */
-static int load_autopilot_data(Node * tmp)
+static int
+load_autopilot_data(void *key, void *data, int depth, void *arg)
 {
+	XCODE *const xcode_obj = data;
 
-	AUTO *autopilot;
-	int i;
+	if (xcode_obj->type == GTYPE_AUTO) {
+		AUTO *const autopilot = (AUTO *)xcode_obj;
 
-	if(WhichType(tmp) == GTYPE_AUTO) {
-
-		autopilot = (AUTO *) NodeData(tmp);
+		int i;
 
 		/* Save the AI Command List */
-		/* auto_load_commands(global_file_kludge, autopilot); */
-        autopilot->commands = dllist_create_list();
+		/* auto_load_commands(f, autopilot); */
+		autopilot->commands = dllist_create_list();
 
 		/* Reset the Astar Path */
 		autopilot->astar_path = NULL;
@@ -407,8 +439,7 @@ static int load_autopilot_data(Node * tmp)
 		}
 
 		/* Check to see if the AI is in a mech */
-	    /* Need to make this better, check if its got a target whatnot */
-
+		/* Need to make this better, check if its got a target whatnot */
 
 		if(!autopilot->mymechnum ||
 		   !(autopilot->mymech = getMech(autopilot->mymechnum))) {
@@ -417,17 +448,16 @@ static int load_autopilot_data(Node * tmp)
 			if(Gunning(autopilot))
 				DoStartGun(autopilot);
 		}
-
-
 	}
 
 	return 1;
 
 }
 
-static int get_specialobjectsize(int type)
+static size_t
+get_specialobjectsize(GlueType type)
 {
-	if(type < 0 || type >= NUM_SPECIAL_OBJECTS)
+	if (type < 0 || type >= NUM_SPECIAL_OBJECTS)
 		return -1;
 	return SpecialObjects[type].datasize;
 }
@@ -498,67 +528,80 @@ static void load_econdb()
 
 void heartbeat_init();
 
-static void load_xcode()
+static void
+load_xcode(void)
 {
 	FILE *f;
 	byte xcode_version;
 	int filemode;
 
 	initialize_colorize();
+
 	fprintf(stderr, "LOADING: %s\n", mudconf.hcode_db);
+
 	f = my_open_file(mudconf.hcode_db, "r", &filemode);
-	if(!f) {
+	if (!f) {
 		fprintf(stderr, "ERROR: %s not found.\n", mudconf.hcode_db);
 		return;
 	}
+
 	fread(&xcode_version, 1, 1, f);
-	if(xcode_version != XCODE_VERSION) {
+	if (xcode_version != XCODE_VERSION) {
 		fprintf(stderr,
-				"LOADING: %s (skipped xcodetree - version difference: %d vs %d)\n",
-				mudconf.hcode_db, (int) xcode_version, (int) XCODE_VERSION);
+		        "LOADING: %s (skipped xcodetree - version difference: %d vs %d)\n",
+		         mudconf.hcode_db, (int)xcode_version, (int)XCODE_VERSION);
 		return;
 	}
-	UpdateTree(f, &xcode_tree, get_specialobjectsize);
-	global_file_kludge = f;
-	GoThruTree(xcode_tree, load_update1);
-	GoThruTree(xcode_tree, load_update2);
-	GoThruTree(xcode_tree, load_update3);
-	GoThruTree(xcode_tree, load_update4);
+
+	if (load_xcode_tree(f, get_specialobjectsize) < 0) {
+		/* TODO: We could be more graceful about this... */
+		exit(EXIT_FAILURE);
+	}
+
+	rb_walk(xcode_tree, WALK_PREORDER, load_update1, f);
+	rb_walk(xcode_tree, WALK_PREORDER, load_update2, f);
+	rb_walk(xcode_tree, WALK_PREORDER, load_update3, f);
+	rb_walk(xcode_tree, WALK_PREORDER, load_update4, f);
 
 	/* Read in autopilot data */
-	GoThruTree(xcode_tree, load_autopilot_data);
+	rb_walk(xcode_tree, WALK_PREORDER, load_autopilot_data, NULL);
 
-	if(!feof(f))
+	if (!feof(f))
 		loadrepairs(f);
 
 	my_close_file(f, &filemode);
+
 	fprintf(stderr, "LOADING: %s (done)\n", mudconf.hcode_db);
+
 #ifdef BT_ADVANCED_ECON
 	load_econdb();
 #endif
-    heartbeat_init();
+
+	heartbeat_init();
 }
 
 static int zappable_node;
 
-static int zap_check(Node * n)
+static int
+zap_check(void *key, void *data, int depth, void *arg)
 {
-	if(zappable_node >= 0)
+	if (zappable_node >= 0)
 		return 0;
-	if(!Hardcode(NodeKey(n))) {
-		zappable_node = NodeKey(n);
+	if (!Hardcode((dbref)key)) {
+		zappable_node = (dbref)key;
 		return 0;
 	}
 	return 1;
 }
 
-void zap_unneccessary_hcode()
+void
+zap_unneccessary_hcode(void)
 {
-	while (1) {
+	for (;;) {
 		zappable_node = -1;
-		GoThruTree(xcode_tree, zap_check);
+		rb_walk(xcode_tree, WALK_PREORDER, zap_check, NULL);
 		if(zappable_node >= 0)
-			DeleteEntry(&xcode_tree, zappable_node);
+			rb_delete(xcode_tree, (void *)zappable_node);
 		else
 			break;
 	}
@@ -570,6 +613,8 @@ void LoadSpecialObjects(void)
 	int id, brand;
 	int type;
 	void *tmpdat;
+
+	init_xcode_tree();
 
 	muxevent_initialize();
 	muxevent_count_initialize();
@@ -605,19 +650,21 @@ void LoadSpecialObjects(void)
 	zap_unneccessary_hcode();
 }
 
-static FILE *global_file_kludge;
-
-static int save_maps_func(Node * tmp)
+static int
+save_maps_func(void *key, void *data, int depth, void *arg)
 {
-	MAP *map;
+	XCODE *const xcode_obj = data;
+	FILE *const f = arg;
 
-	if(WhichType(tmp) == GTYPE_MAP) {
+	if (xcode_obj->type == GTYPE_MAP) {
+		MAP *const map = (MAP *)xcode_obj;
+
 		/* Write mapobjs, if neccessary */
-		map = (MAP *) NodeData(tmp);
-		save_mapdynamic(global_file_kludge, map);
+		save_mapdynamic(f, map);
 		if(map->flags & MAPFLAG_MAPO)
-			save_mapobjs(global_file_kludge, map);
+			save_mapobjs(f, map);
 	}
+
 	return 1;
 }
 
@@ -628,25 +675,25 @@ static int save_maps_func(Node * tmp)
  * or the Astar path if there is one
  *
  */
-static int save_autopilot_data(Node * tmp)
+#if 0
+static int
+save_autopilot_data(void *key, void *data, int depth, void *arg)
 {
+	XCODE *const xcode_obj = tmp;
+	FILE *const f = arg;
 
-	AUTO *a;
-
-	if(WhichType(tmp) == GTYPE_AUTO) {
-
-		a = (AUTO *) NodeData(tmp);
+	if(xcode_obj->type == GTYPE_AUTO) {
+		AUTO *const a = (AUTO *)xcode_obj;
 
 		/* Save the AI Command List */
-		auto_save_commands(global_file_kludge, a);
+		auto_save_commands(f, a);
 
 		/* Save the AI Astar Path */
-
 	}
 
 	return 1;
-
 }
+#endif /* not used yet? */
 
 void ChangeSpecialObjects(int i)
 {
@@ -744,7 +791,8 @@ static void save_econdb(char *target, int i)
 }
 #endif
 
-void SaveSpecialObjects(int i)
+void
+SaveSpecialObjects(int i)
 {
 	FILE *f;
 	int filemode, count;
@@ -762,53 +810,65 @@ void SaveSpecialObjects(int i)
 		sprintf(target, "%s.tmp", mudconf.hcode_db);
 		break;
 	}
+
 	f = my_open_file(target, "w", &filemode);
 	if(!f) {
 		log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
 		SendDB("ERROR occured during opening of new hcode-savefile.");
 		return;
 	}
+
 	fwrite(&xcode_version, 1, 1, f);
-	count = SaveTree(f, xcode_tree);
-	global_file_kludge = f;
+
+	count = save_xcode_tree(f);
+	if (count < 0) {
+		/* TODO: We could be more graceful about this... */
+		exit(EXIT_FAILURE);
+	}
+
 	/* Then, check each xcode thing for stuff */
-	GoThruTree(xcode_tree, save_maps_func);
+	rb_walk(xcode_tree, WALK_PREORDER, save_maps_func, f);
 
 	/* Save autopilot data */
 	/* GoThruTree(xcode_tree, save_autopilot_data); */
 
 	saverepairs(f);
+
 	my_close_file(f, &filemode);
-	if(i == DUMP_RESTART || i == DUMP_NORMAL) {
-		if(rename(mudconf.hcode_db, tprintf("%s.prev", mudconf.hcode_db))
-		   < 0) {
+
+	if (i == DUMP_RESTART || i == DUMP_NORMAL) {
+		if (rename(mudconf.hcode_db,
+		           tprintf("%s.prev", mudconf.hcode_db)) < 0) {
 			log_perror("SAV", "FAIL", "Renaming old hcode-save file ",
-					   target);
+			           target);
 			SendDB("ERROR occured during renaming of old hcode save-file.");
 		}
-		if(rename(target, mudconf.hcode_db) < 0) {
+
+		if (rename(target, mudconf.hcode_db) < 0) {
 			log_perror("SAV", "FAIL", "Renaming new hcode-save file ",
-					   target);
+			           target);
 			SendDB("ERROR occured during renaming of new hcode save-file.");
 		}
 	}
-	if(count)
+
+	if (count > 0)
 		SendDB(tprintf("Hcode saved. %d xcode entries dumped.", count));
+
 #ifdef BT_ADVANCED_ECON
 	save_econdb(target, i);
 #endif
 }
 
-static int UpdateSpecialObject_func(Node * tmp)
+static int
+UpdateSpecialObject_func(void *key, void *data, int depth, void *arg)
 {
-	int i;
+	XCODE *const xcode_obj = data;
 
-	i = WhichType(tmp);
-	if(!SpecialObjects[i].updateTime)
+	if(!SpecialObjects[xcode_obj->type].updateTime)
 		return 1;
-	if((mudstate.now % SpecialObjects[i].updateTime))
+	if((mudstate.now % SpecialObjects[xcode_obj->type].updateTime))
 		return 1;
-	SpecialObjects[i].updatefunc(NodeKey(tmp), NodeData(tmp));
+	SpecialObjects[xcode_obj->type].updatefunc((dbref)key, xcode_obj);
 	return 1;
 }
 
@@ -817,9 +877,11 @@ static int UpdateSpecialObject_func(Node * tmp)
 /* Note the new handling for calls being done at <1second intervals,
    or possibly at >1second intervals */
 
-static time_t lastrun = 0;
-void UpdateSpecialObjects(void)
+void
+UpdateSpecialObjects(void)
 {
+	static time_t lastrun = 0;
+
 	char *cmdsave;
 	int i;
 	int times = lastrun ? (mudstate.now - lastrun) : 1;
@@ -831,31 +893,38 @@ void UpdateSpecialObjects(void)
 	for(i = 0; i < times; i++) {
 		muxevent_run();
 		mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
-		GoThruTree(xcode_tree, UpdateSpecialObject_func);
+		rb_walk(xcode_tree, WALK_PREORDER,
+		        UpdateSpecialObject_func, NULL);
 	}
 	lastrun = mudstate.now;
 	mudstate.debug_cmd = cmdsave;
 }
 
-void *NewSpecialObject(int id, int type)
+void *
+NewSpecialObject(int id, int type)
 {
-	void *foo;
+	XCODE *xcode_obj;
+
 	int i;
-	dbref *t;
 
 	if(SpecialObjects[type].datasize) {
-		Create(foo, char, (i = SpecialObjects[type].datasize));
+		Create(xcode_obj, char, (i = SpecialObjects[type].datasize));
 
-		t = (dbref *) foo;
-		*t = id;
+		/* FIXME: Didn't assign id in xcode_obj (formerly foo).  */
 		if(SpecialObjects[type].allocfreefunc)
-			SpecialObjects[type].allocfreefunc(id, &(foo), SPECIAL_ALLOC);
-		AddEntry(&xcode_tree, id, type, i, foo);
+			SpecialObjects[type].allocfreefunc(id, &xcode_obj, SPECIAL_ALLOC);
+
+		xcode_obj->type = type;
+		xcode_obj->size = i;
+
+		rb_insert(xcode_tree, (void *)id, xcode_obj);
 	}
-	return foo;
+
+	return xcode_obj;
 }
 
-void CreateNewSpecialObject(dbref player, dbref key)
+void
+CreateNewSpecialObject(dbref player, dbref key)
 {
 	void *new;
 	struct SpecialObjectStruct *typeOfObject;
@@ -892,13 +961,15 @@ void CreateNewSpecialObject(dbref player, dbref key)
 	}
 }
 
-void DisposeSpecialObject(dbref player, dbref key)
+void
+DisposeSpecialObject(dbref player, dbref key)
 {
-	Node *tmp;
+	XCODE *xcode_obj;
+
 	int i;
 	struct SpecialObjectStruct *typeOfObject;
 
-	tmp = FindNode(xcode_tree, key);
+	xcode_obj = rb_find(xcode_tree, (void *)key);
 
 	i = WhichSpecialS(key);
 	if(i < 0) {
@@ -914,15 +985,14 @@ void DisposeSpecialObject(dbref player, dbref key)
 			   "Semi-critical error has occured. For some reason the object's data differs\nfrom the data on the object. Please contact a wizard about this.");
 		i = WhichSpecial(key);
 	}
-	if(tmp) {
-		void *t = NodeData(tmp);
-
+	if(xcode_obj) {
+		/* FIXME: The semantics of this with the new encapsulated XCODE
+		 * type haven't been thought through yet.  */
 		if(typeOfObject->allocfreefunc)
-			typeOfObject->allocfreefunc(key, &NodeData(tmp), SPECIAL_FREE);
-		NodeData(tmp) = NULL;
-		DeleteEntry(&xcode_tree, key);	
-		muxevent_remove_data(t);
-		free(t);
+			typeOfObject->allocfreefunc(key, &xcode_obj, SPECIAL_FREE);
+		rb_delete(xcode_tree, (void *)key);
+		muxevent_remove_data(xcode_obj);
+		free(xcode_obj);
 	} else if(typeOfObject->datasize > 0) {
 		notify(player, "This object is not in the special object DBASE.");
 		notify(player, "Please contact a wizard about this bug. ");
@@ -991,25 +1061,25 @@ void DumpMaps(dbref player)
 
 /***************** INTERNAL ROUTINES *************/
 #ifdef FAST_WHICHSPECIAL
-int WhichSpecial(dbref key)
+int
+WhichSpecial(dbref key)
 {
-	Node *n;
+	XCODE *xcode_obj;
 
 	if(!Good_obj(key))
 		return -1;
 	if(!Hardcode(key))
 		return -1;
-	if(!(n = FindObjectsNode(key)))
+	if(!(xcode_obj = rb_find(xcode_tree, (void *)key)))
 		return -1;
-	return NodeType(n);
+	return xcode_obj->type;
 }
 
-#endif
-
-#ifdef FAST_WHICHSPECIAL
-static int WhichSpecialS(dbref key)
+static int
+WhichSpecialS(dbref key)
 #else
-int WhichSpecial(dbref key)
+int
+WhichSpecial(dbref key)
 #endif
 {
 	int i;
@@ -1046,22 +1116,9 @@ int IsMap(dbref num)
 }
 
 /*** Support routines ***/
-static Node *FindObjectsNode(dbref key)
-{
-	Node *tmp;
-
-	if((tmp = FindNode(xcode_tree, (int) key)))
-		return tmp;
-	return NULL;
-}
-
 void *FindObjectsData(dbref key)
 {
-	Node *tmp;
-
-	if((tmp = FindObjectsNode(key)))
-		return NodeData(tmp);
-	return NULL;
+	return rb_find(xcode_tree, (void *)key);
 }
 
 char *center_string(char *c, int len)
@@ -1533,26 +1590,26 @@ void ResetSpecialObjects()
 
 MAP *getMap(dbref d)
 {
-	Node *tmp;
+	XCODE *xcode_obj;
 
-	if(!(tmp = FindObjectsNode(d)))
+	if(!(xcode_obj = rb_find(xcode_tree, (void *)d)))
 		return NULL;
-	if(NodeType(tmp) != GTYPE_MAP)
+	if(xcode_obj->type != GTYPE_MAP)
 		return NULL;
-	return (MAP *) NodeData(tmp);
+	return (MAP *)xcode_obj;
 }
 
 MECH *getMech(dbref d)
 {
-	Node *tmp;
+	XCODE *xcode_obj;
 
 	if(!(Good_obj(d)))
 		return NULL;
 	if(!(Hardcode(d)))
 		return NULL;
-	if(!(tmp = FindObjectsNode(d)))
+	if(!(xcode_obj = rb_find(xcode_tree, (void *)d)))
 		return NULL;
-	if(NodeType(tmp) != GTYPE_MECH)
+	if(xcode_obj->type != GTYPE_MECH)
 		return NULL;
-	return (MECH *) NodeData(tmp);
+	return (MECH *)xcode_obj;
 }

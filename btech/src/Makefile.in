@@ -54,28 +54,29 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libbtech_la_DEPENDENCIES = $(BTPR_LIBS) ../btfi/libbtfi.la
 am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
-	glue.lo glue.scode.lo mech.lostracer.lo mechfile.lo spath.lo \
-	tick.lo mt19937ar.lo aero.bomb.lo aero.move.lo artillery.lo \
-	autopilot_ai.lo autopilot_autogun.lo autopilot_commands.lo \
-	autopilot_core.lo autopilot_radio.lo bsuit.lo btech.lo \
-	btechstats.lo btspath.lo crit.lo ds.bay.lo ds.turret.lo \
-	econ.lo econ_cmds.lo eject.lo failures.lo hudinfo.lo \
-	map.bits.lo map.coding.lo map.conditions.lo map.dynamic.lo \
-	map.los.lo map.lo map.obj.lo mech.advanced.lo mech.ammodump.lo \
-	mech.bth.lo mech.build.lo mech.c3.misc.lo mech.c3.lo \
-	mech.c3i.lo mech.combat.misc.lo mech.combat.missile.lo \
-	mech.combat.lo mech.consistency.lo mech.contacts.lo \
-	mech.damage.lo mech.ecm.lo mech.enhanced.criticals.lo \
-	mech.events.lo mech.fire.lo mech.hitloc.lo mech.ice.lo \
-	mech.lite.lo mech.los.lo mech.maps.lo mech.mechref_ident.lo \
-	mech.move.lo mech.notify.lo mech.ood.lo mech.partnames.lo \
-	mech.physical.lo mech.pickup.lo mech.restrict.lo mech.scan.lo \
-	mech.sensor.functions.lo mech.sensor.lo mech.spot.lo \
-	mech.startup.lo mech.stat.lo mech.status.lo mech.tag.lo \
-	mech.tech.commands.lo mech.tech.damages.lo mech.tech.do.lo \
-	mech.tech.events.lo mech.tech.lo mech.tech.repairs.lo \
-	mech.tech.saverepair.lo mech.tic.lo mech.update.lo \
-	mech.utils.lo mechrep.lo mine.lo pcombat.lo template.lo
+	glue.lo glue.scode.lo xcode_io.lo mech.lostracer.lo \
+	mechfile.lo spath.lo tick.lo mt19937ar.lo aero.bomb.lo \
+	aero.move.lo artillery.lo autopilot_ai.lo autopilot_autogun.lo \
+	autopilot_commands.lo autopilot_core.lo autopilot_radio.lo \
+	bsuit.lo btech.lo btechstats.lo btspath.lo crit.lo ds.bay.lo \
+	ds.turret.lo econ.lo econ_cmds.lo eject.lo failures.lo \
+	hudinfo.lo map.bits.lo map.coding.lo map.conditions.lo \
+	map.dynamic.lo map.los.lo map.lo map.obj.lo mech.advanced.lo \
+	mech.ammodump.lo mech.bth.lo mech.build.lo mech.c3.misc.lo \
+	mech.c3.lo mech.c3i.lo mech.combat.misc.lo \
+	mech.combat.missile.lo mech.combat.lo mech.consistency.lo \
+	mech.contacts.lo mech.damage.lo mech.ecm.lo \
+	mech.enhanced.criticals.lo mech.events.lo mech.fire.lo \
+	mech.hitloc.lo mech.ice.lo mech.lite.lo mech.los.lo \
+	mech.maps.lo mech.mechref_ident.lo mech.move.lo mech.notify.lo \
+	mech.ood.lo mech.partnames.lo mech.physical.lo mech.pickup.lo \
+	mech.restrict.lo mech.scan.lo mech.sensor.functions.lo \
+	mech.sensor.lo mech.spot.lo mech.startup.lo mech.stat.lo \
+	mech.status.lo mech.tag.lo mech.tech.commands.lo \
+	mech.tech.damages.lo mech.tech.do.lo mech.tech.events.lo \
+	mech.tech.lo mech.tech.repairs.lo mech.tech.saverepair.lo \
+	mech.tic.lo mech.update.lo mech.utils.lo mechrep.lo mine.lo \
+	pcombat.lo template.lo
 libbtech_la_OBJECTS = $(am_libbtech_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(top_builddir)@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/confutil/depcomp
@@ -210,7 +211,8 @@ AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
 @BTPR_PENN_TRUE@BTPR_LIBS = ../btpr/libbtpr.la
 lib_LTLIBRARIES = libbtech.la
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
-	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
+	glue.scode.c xcode_io.c xcode_io.h \
+	mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
 	btech/aero.bomb.c btech/aero.move.c btech/artillery.c \
 	btech/autopilot_ai.c btech/autopilot_autogun.c \
 	btech/autopilot_commands.c btech/autopilot_core.c \
@@ -449,6 +451,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/template.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tick.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xcode_io.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

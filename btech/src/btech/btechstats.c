@@ -20,7 +20,6 @@
 #define BTECHSTATS_C
 #include "btmacros.h"
 #include "btechstats.h"
-#include "mux_tree.h"
 #include "htab.h"
 #include "create.h"
 #include "muxevent.h"
@@ -37,7 +36,6 @@
 #include "p.mech.tag.h"
 #include "p.functions.h"
 
-Tree skill_tree = NULL;
 extern dbref pilot_override;
 
 dbref cached_target_char = -1;

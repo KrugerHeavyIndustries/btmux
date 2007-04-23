@@ -20,6 +20,8 @@
 #include "mech.events.h"
 #include "dllist.h"
 
+#include "glue_types.h"
+
 #define AUTOPILOT_MEMORY        100     /* Number of command slots available to AI */
 #define AUTOPILOT_MAX_ARGS      5       /* Max number of arguments for a given AI Command
                                            Includes the command as the first argument */
@@ -221,6 +223,8 @@ typedef struct profile_node_t {
  * The Autopilot Structure
  */
 typedef struct {
+    XCODE xcode;                    /* XCODE base class field */
+
     dbref mynum;                    /* The AI's dbref number */
     MECH *mymech;                   /* The AI's unit */
     int mapindex;                   /* The map the AI is currently on */

@@ -14,7 +14,8 @@ endif
 lib_LTLIBRARIES = libbtech.la
 
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
-	glue.scode.c mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
+	glue.scode.c xcode_io.c xcode_io.h \
+	mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
 	btech/aero.bomb.c btech/aero.move.c btech/artillery.c \
 	btech/autopilot_ai.c btech/autopilot_autogun.c \
 	btech/autopilot_commands.c btech/autopilot_core.c \

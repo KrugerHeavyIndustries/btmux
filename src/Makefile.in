@@ -51,35 +51,33 @@ am_mkindx_OBJECTS = mkindx.$(OBJEXT)
 mkindx_OBJECTS = $(am_mkindx_OBJECTS)
 mkindx_LDADD = $(LDADD)
 am__netmux_SOURCES_DIST = dummy.cc ../misc/myfifo.c ../event/event.c \
-	../tree/mux_tree.c ../tree/tree.c boolexp.c bsd.c commac.c \
-	command.c compat.c comsys.c conf.c cque.c create.c db.c \
-	db_xml.c db_xdr.c db_rw.c dllist.c dnschild.c eval.c file_c.c \
-	flags.c funceval.c functions.c game.c help.c log.c look.c \
-	macro.c mail.c match.c mguests.c move.c mmdb.c nametab.c \
-	netcommon.c nrbtab.c object.c player.c player_c.c powers.c \
-	predicates.c python.c rbtree.c rbtab.c rob.c set.c signal.c \
-	speech.c stringutil.c timer.c unparse.c vattr.c walkdb.c \
-	wild.c wiz.c version.c logcache.c sqlchild.c
+	boolexp.c bsd.c commac.c command.c compat.c comsys.c conf.c \
+	cque.c create.c db.c db_xml.c db_xdr.c db_rw.c dllist.c \
+	dnschild.c eval.c file_c.c flags.c funceval.c functions.c \
+	game.c help.c log.c look.c macro.c mail.c match.c mguests.c \
+	move.c mmdb.c nametab.c netcommon.c nrbtab.c object.c player.c \
+	player_c.c powers.c predicates.c python.c rbtree.c rbtab.c \
+	rob.c set.c signal.c speech.c stringutil.c timer.c unparse.c \
+	vattr.c walkdb.c wild.c wiz.c version.c logcache.c sqlchild.c
 @MUX_LOGCACHE_TRUE@am__objects_1 = logcache.$(OBJEXT)
 @MUX_SQLCHILD_TRUE@am__objects_2 = sqlchild.$(OBJEXT)
 am_netmux_OBJECTS = dummy.$(OBJEXT) myfifo.$(OBJEXT) event.$(OBJEXT) \
-	mux_tree.$(OBJEXT) tree.$(OBJEXT) boolexp.$(OBJEXT) \
-	bsd.$(OBJEXT) commac.$(OBJEXT) command.$(OBJEXT) \
-	compat.$(OBJEXT) comsys.$(OBJEXT) conf.$(OBJEXT) \
-	cque.$(OBJEXT) create.$(OBJEXT) db.$(OBJEXT) db_xml.$(OBJEXT) \
-	db_xdr.$(OBJEXT) db_rw.$(OBJEXT) dllist.$(OBJEXT) \
-	dnschild.$(OBJEXT) eval.$(OBJEXT) file_c.$(OBJEXT) \
-	flags.$(OBJEXT) funceval.$(OBJEXT) functions.$(OBJEXT) \
-	game.$(OBJEXT) help.$(OBJEXT) log.$(OBJEXT) look.$(OBJEXT) \
-	macro.$(OBJEXT) mail.$(OBJEXT) match.$(OBJEXT) \
-	mguests.$(OBJEXT) move.$(OBJEXT) mmdb.$(OBJEXT) \
-	nametab.$(OBJEXT) netcommon.$(OBJEXT) nrbtab.$(OBJEXT) \
-	object.$(OBJEXT) player.$(OBJEXT) player_c.$(OBJEXT) \
-	powers.$(OBJEXT) predicates.$(OBJEXT) python.$(OBJEXT) \
-	rbtree.$(OBJEXT) rbtab.$(OBJEXT) rob.$(OBJEXT) set.$(OBJEXT) \
-	signal.$(OBJEXT) speech.$(OBJEXT) stringutil.$(OBJEXT) \
-	timer.$(OBJEXT) unparse.$(OBJEXT) vattr.$(OBJEXT) \
-	walkdb.$(OBJEXT) wild.$(OBJEXT) wiz.$(OBJEXT) \
+	boolexp.$(OBJEXT) bsd.$(OBJEXT) commac.$(OBJEXT) \
+	command.$(OBJEXT) compat.$(OBJEXT) comsys.$(OBJEXT) \
+	conf.$(OBJEXT) cque.$(OBJEXT) create.$(OBJEXT) db.$(OBJEXT) \
+	db_xml.$(OBJEXT) db_xdr.$(OBJEXT) db_rw.$(OBJEXT) \
+	dllist.$(OBJEXT) dnschild.$(OBJEXT) eval.$(OBJEXT) \
+	file_c.$(OBJEXT) flags.$(OBJEXT) funceval.$(OBJEXT) \
+	functions.$(OBJEXT) game.$(OBJEXT) help.$(OBJEXT) \
+	log.$(OBJEXT) look.$(OBJEXT) macro.$(OBJEXT) mail.$(OBJEXT) \
+	match.$(OBJEXT) mguests.$(OBJEXT) move.$(OBJEXT) \
+	mmdb.$(OBJEXT) nametab.$(OBJEXT) netcommon.$(OBJEXT) \
+	nrbtab.$(OBJEXT) object.$(OBJEXT) player.$(OBJEXT) \
+	player_c.$(OBJEXT) powers.$(OBJEXT) predicates.$(OBJEXT) \
+	python.$(OBJEXT) rbtree.$(OBJEXT) rbtab.$(OBJEXT) \
+	rob.$(OBJEXT) set.$(OBJEXT) signal.$(OBJEXT) speech.$(OBJEXT) \
+	stringutil.$(OBJEXT) timer.$(OBJEXT) unparse.$(OBJEXT) \
+	vattr.$(OBJEXT) walkdb.$(OBJEXT) wild.$(OBJEXT) wiz.$(OBJEXT) \
 	version.$(OBJEXT) $(am__objects_1) $(am__objects_2)
 netmux_OBJECTS = $(am_netmux_OBJECTS)
 netmux_DEPENDENCIES = ../btech/src/libbtech.la
@@ -222,17 +220,16 @@ AM_CPPFLAGS = -I$(top_srcdir)/include \
 
 
 # TODO: Need to list all the headers for the dist target.
-netmux_SOURCES = dummy.cc ../misc/myfifo.c ../event/event.c \
-	../tree/mux_tree.c ../tree/tree.c boolexp.c bsd.c commac.c \
-	command.c compat.c comsys.c conf.c cque.c create.c db.c \
-	db_xml.c db_xdr.c db_rw.c dllist.c dnschild.c eval.c file_c.c \
-	flags.c funceval.c functions.c game.c help.c log.c look.c \
-	macro.c mail.c match.c mguests.c move.c mmdb.c nametab.c \
-	netcommon.c nrbtab.c object.c player.c player_c.c powers.c \
-	predicates.c python.c rbtree.c rbtab.c rob.c set.c signal.c \
-	speech.c stringutil.c timer.c unparse.c vattr.c walkdb.c \
-	wild.c wiz.c $(netmux_OPTIONAL) version.c $(am__append_1) \
-	$(am__append_2)
+netmux_SOURCES = dummy.cc ../misc/myfifo.c ../event/event.c boolexp.c \
+	bsd.c commac.c command.c compat.c comsys.c conf.c cque.c \
+	create.c db.c db_xml.c db_xdr.c db_rw.c dllist.c dnschild.c \
+	eval.c file_c.c flags.c funceval.c functions.c game.c help.c \
+	log.c look.c macro.c mail.c match.c mguests.c move.c mmdb.c \
+	nametab.c netcommon.c nrbtab.c object.c player.c player_c.c \
+	powers.c predicates.c python.c rbtree.c rbtab.c rob.c set.c \
+	signal.c speech.c stringutil.c timer.c unparse.c vattr.c \
+	walkdb.c wild.c wiz.c $(netmux_OPTIONAL) version.c \
+	$(am__append_1) $(am__append_2)
 netmux_LDADD = ../btech/src/libbtech.la
 
 # TODO: Need to list all the headers for the dist target.
@@ -349,7 +346,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mkindx.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mmdb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/move.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mux_tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/myfifo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nametab.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netcommon.Po@am__quote@
@@ -369,7 +365,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sqlchild.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringutil.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unparse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vattr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
@@ -425,34 +420,6 @@ event.obj: ../event/event.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../event/event.c' object='event.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o event.obj `if test -f '../event/event.c'; then $(CYGPATH_W) '../event/event.c'; else $(CYGPATH_W) '$(srcdir)/../event/event.c'; fi`
-
-mux_tree.o: ../tree/mux_tree.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mux_tree.o -MD -MP -MF $(DEPDIR)/mux_tree.Tpo -c -o mux_tree.o `test -f '../tree/mux_tree.c' || echo '$(srcdir)/'`../tree/mux_tree.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/mux_tree.Tpo $(DEPDIR)/mux_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../tree/mux_tree.c' object='mux_tree.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mux_tree.o `test -f '../tree/mux_tree.c' || echo '$(srcdir)/'`../tree/mux_tree.c
-
-mux_tree.obj: ../tree/mux_tree.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT mux_tree.obj -MD -MP -MF $(DEPDIR)/mux_tree.Tpo -c -o mux_tree.obj `if test -f '../tree/mux_tree.c'; then $(CYGPATH_W) '../tree/mux_tree.c'; else $(CYGPATH_W) '$(srcdir)/../tree/mux_tree.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/mux_tree.Tpo $(DEPDIR)/mux_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../tree/mux_tree.c' object='mux_tree.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mux_tree.obj `if test -f '../tree/mux_tree.c'; then $(CYGPATH_W) '../tree/mux_tree.c'; else $(CYGPATH_W) '$(srcdir)/../tree/mux_tree.c'; fi`
-
-tree.o: ../tree/tree.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tree.o -MD -MP -MF $(DEPDIR)/tree.Tpo -c -o tree.o `test -f '../tree/tree.c' || echo '$(srcdir)/'`../tree/tree.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/tree.Tpo $(DEPDIR)/tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../tree/tree.c' object='tree.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tree.o `test -f '../tree/tree.c' || echo '$(srcdir)/'`../tree/tree.c
-
-tree.obj: ../tree/tree.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tree.obj -MD -MP -MF $(DEPDIR)/tree.Tpo -c -o tree.obj `if test -f '../tree/tree.c'; then $(CYGPATH_W) '../tree/tree.c'; else $(CYGPATH_W) '$(srcdir)/../tree/tree.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/tree.Tpo $(DEPDIR)/tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='../tree/tree.c' object='tree.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tree.obj `if test -f '../tree/tree.c'; then $(CYGPATH_W) '../tree/tree.c'; else $(CYGPATH_W) '$(srcdir)/../tree/tree.c'; fi`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

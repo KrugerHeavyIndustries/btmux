@@ -13,13 +13,10 @@
 #include "muxevent.h"
 #include "mech.h"
 #include "create.h"
-#include "mux_tree.h"
-#include "p.mux_tree.h"
+#include "rbtree.h"
 #include "p.map.obj.h"
 #include "p.mech.startup.h"
 #include "p.mech.partnames.h"
-
-void GoThruTree(Tree tree, int (*func) (Node *));
 
 void debug_list(dbref player, void *data, char *buffer)
 {
@@ -55,20 +52,24 @@ static int *smallest;
 static int *largest;
 static int *total;
 static dbref cheat_player;
-extern Tree xcode_tree;
+extern rbtree xcode_tree;
 extern int global_specials;
 extern SpecialObjectStruct SpecialObjects[];
 
-static int debug_check_stuff(Node * tmp)
+static int
+debug_check_stuff(void *key, void *data, int depth, void *arg)
 {
-	int osize, size, t;
+	const dbref key_val = (dbref)key;
+	XCODE *const xcode_obj = data;
+
+	int osize, size;
 	MAP *map;
 
-	t = NodeType(tmp);
-	osize = size = SpecialObjects[t].datasize;
-	switch (t) {
+	osize = size = SpecialObjects[xcode_obj->type].datasize;
+
+	switch (xcode_obj->type) {
 	case GTYPE_MAP:
-		map = (MAP *) NodeData(tmp);
+		map = (MAP *)xcode_obj;
 		if(map->map) {
 			size += sizeof(map->map[0][0]) * map->map_width * map->map_height;
 			size += bit_size(map);
@@ -76,16 +77,22 @@ static int debug_check_stuff(Node * tmp)
 			size += mech_size(map);
 		}
 		break;
+
+	default:
+		break;
 	}
-	if(smallest[t] < 0 || size < smallest[t])
-		smallest[t] = size;
-	if(largest[t] < 0 || size > largest[t])
-		largest[t] = size;
-	total[t] += size;
-	number[t]++;
+
+	if(smallest[xcode_obj->type] < 0 || size < smallest[xcode_obj->type])
+		smallest[xcode_obj->type] = size;
+	if(largest[xcode_obj->type] < 0 || size > largest[xcode_obj->type])
+		largest[xcode_obj->type] = size;
+	total[xcode_obj->type] += size;
+	number[xcode_obj->type]++;
+
 	if(cheat_player > 0 && osize != size)
-		notify_printf(cheat_player, "#%d: %s (%d bytes)", NodeKey(tmp),
-					  SpecialObjects[t].type, size);
+		notify_printf(cheat_player, "#%d: %s (%d bytes)", key_val,
+		              SpecialObjects[xcode_obj->type].type, size);
+
 	return 1;
 }
 
@@ -110,7 +117,7 @@ void debug_memory(dbref player, void *data, char *buffer)
 		cheat_player = player;
 	else
 		cheat_player = -1;
-	GoThruTree(xcode_tree, debug_check_stuff);
+	rb_walk(xcode_tree, WALK_PREORDER, debug_check_stuff, NULL);
 	for(i = 0; i < global_specials; i++) {
 		if(number[i]) {
 			if(smallest[i] == largest[i])
@@ -135,20 +142,21 @@ void debug_memory(dbref player, void *data, char *buffer)
 
 void ShutDownMap(dbref player, dbref mapnumber)
 {
+	XCODE *xcode_obj;
+
 	MAP *map;
 	MECH *mech;
 	int j;
-	Node *tmp;
 
-	tmp = FindNode(xcode_tree, mapnumber);
-	if(tmp) {
-		map = (MAP *) NodeData(tmp);
+	xcode_obj = rb_find(xcode_tree, (void *)mapnumber);
+	if (xcode_obj) {
+		map = (MAP *)xcode_obj;
 		for(j = 0; j < map->first_free; j++)
 			if(map->mechsOnMap[j] != -1) {
 				mech = getMech(map->mechsOnMap[j]);
 				if(mech) {
 					notify_printf(player,
-								  "Shutting down Mech #%d and restting map index to -1....",
+								  "Shutting down Mech #%d and resetting map index to -1....",
 								  map->mechsOnMap[j]);
 					mech_shutdown(GOD, (void *) mech, "");
 					MechLastX(mech) = 0;

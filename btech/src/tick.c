@@ -21,7 +21,7 @@
 #include <event.h>
 #endif /* !BTPR_PENN */
 #include "glue_types.h"
-#include "mux_tree.h"
+#include "rbtree.h"
 #include "mech.h"
 #include "autopilot.h"
 #include "debug.h"
@@ -32,9 +32,8 @@ static struct event heartbeat_ev;
 static struct timeval heartbeat_tv = { 1, 0 };
 static int heartbeat_running = 0;
 unsigned int global_tick = 0;
-extern Tree xcode_tree;
+extern rbtree xcode_tree;
 
-void GoThruTree(Tree tree, int (*func) (Node *));
 void heartbeat_run(int fd, short event, void *arg);
 
 void heartbeat_init() {
@@ -59,23 +58,32 @@ void heartbeat_stop() {
 void mech_heartbeat(MECH *);
 void auto_heartbeat(AUTO *);
 
-int heartbeat_dispatch(Node *node) {
-    switch(NodeType(node)) {
-        case GTYPE_MECH:
-            mech_heartbeat((MECH *)NodeData(node));
-            break;
-        case GTYPE_AUTO:
-            auto_heartbeat((AUTO *)NodeData(node));
-            break;
-    }
-    return 1;
+static int
+heartbeat_dispatch(void *key, void *data, int depth, void *arg)
+{
+	XCODE *const xcode_obj = data;
+
+	switch (xcode_obj->type) {
+	case GTYPE_MECH:
+		mech_heartbeat((MECH *)xcode_obj);
+		break;
+
+	case GTYPE_AUTO:
+		auto_heartbeat((AUTO *)xcode_obj);
+		break;
+
+	default:
+		break;
+	}
+
+	return 1;
 }
 
 void heartbeat_run(int fd, short event, void *arg) {
 #ifndef BTPR_PENN
     evtimer_add(&heartbeat_ev, &heartbeat_tv);
 #endif /* !BTPR_PENN */
-    GoThruTree(xcode_tree, heartbeat_dispatch);
+    rb_walk(xcode_tree, WALK_PREORDER, heartbeat_dispatch, NULL);
     global_tick++;
 }
 

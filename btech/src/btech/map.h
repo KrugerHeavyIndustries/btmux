@@ -15,6 +15,8 @@
 #ifndef _MAP_H
 #define _MAP_H
 
+#include "glue_types.h"
+
 /*
    map.h
    Structure definitions and what not for the maps for the mechs.
@@ -150,6 +152,8 @@ typedef struct mapobj_struct {
 					   (elevation propably) */
 
 typedef struct {
+    XCODE xcode;                        /* XCODE base class field */
+
     dbref mynum;                        /* My dbref */
     unsigned char **map;                /* The map */
     char mapname[MAP_NAME_SIZE + 1];

@@ -24,6 +24,8 @@
 #include "btconfig.h"
 #include "mymath.h"
 
+#include "glue_types.h"
+
 #define NUM_ITEMS	1024
 #define NUM_ITEMS_M	512
 #define NUM_BAYS	4
@@ -908,6 +910,8 @@ typedef struct {
 } mech_sd;
 
 typedef struct {
+    XCODE xcode;		/* XCODE base class field */
+
     char ID[2];			/* Only for internal use */
     char brief;			/* toggle brievity */
     char chantitle[FREQS][CHTITLELEN + 1];	/* Channel titles */
@@ -1310,7 +1314,6 @@ extern void *FindObjectsData(dbref key);
 #include "p.glue.hcode.h"
 #include "map.h"
 #include "map.coding.h"
-#include "glue.h"
 #include "p.glue.h"
 #include "mech.notify.h"
 

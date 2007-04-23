@@ -17,7 +17,7 @@ bin_PROGRAMS = netmux mkindx
 
 # TODO: Need to list all the headers for the dist target.
 netmux_SOURCES = dummy.cc \
-	../misc/myfifo.c ../event/event.c ../tree/mux_tree.c ../tree/tree.c \
+	../misc/myfifo.c ../event/event.c \
 	boolexp.c bsd.c commac.c command.c compat.c comsys.c conf.c cque.c \
 	create.c db.c db_xml.c db_xdr.c db_rw.c dllist.c dnschild.c eval.c \
 	file_c.c flags.c funceval.c functions.c game.c help.c log.c look.c \
