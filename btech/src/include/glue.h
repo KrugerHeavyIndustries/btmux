@@ -28,7 +28,7 @@
 #define SAVE 1
 #define LOAD 2
 
-#define XCODE_VERSION 2
+#define XCODE_MAGIC 0x334D5442 /* v3 DB format */
 
 #define SPECIAL_FREE 0
 #define SPECIAL_ALLOC 1

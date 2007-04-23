@@ -550,7 +550,7 @@ static void
 load_xcode(void)
 {
 	FILE *f;
-	byte xcode_version;
+	int xcode_version;
 	int filemode;
 
 	initialize_colorize();
@@ -563,11 +563,11 @@ load_xcode(void)
 		return;
 	}
 
-	fread(&xcode_version, 1, 1, f);
-	if (xcode_version != XCODE_VERSION) {
+	fread(&xcode_version, sizeof(xcode_version), 1, f);
+	if (xcode_version != XCODE_MAGIC) {
 		fprintf(stderr,
-		        "LOADING: %s (skipped xcodetree - version difference: %d vs %d)\n",
-		         mudconf.hcode_db, (int)xcode_version, (int)XCODE_VERSION);
+		        "LOADING: %s (skipped xcodetree - version difference: 0x%08X vs 0x%08X)\n",
+		         mudconf.hcode_db, xcode_version, XCODE_MAGIC);
 		return;
 	}
 
@@ -814,7 +814,7 @@ SaveSpecialObjects(int i)
 {
 	FILE *f;
 	int filemode, count;
-	byte xcode_version = XCODE_VERSION;
+	int xcode_version = XCODE_MAGIC;
 	char target[LBUF_SIZE];
 
 	switch (i) {
@@ -836,7 +836,7 @@ SaveSpecialObjects(int i)
 		return;
 	}
 
-	fwrite(&xcode_version, 1, 1, f);
+	fwrite(&xcode_version, sizeof(xcode_version), 1, f);
 
 	count = save_xcode_tree(f);
 	if (count < 0) {
