@@ -83,7 +83,7 @@ void heartbeat_run(int fd, short event, void *arg) {
 #ifndef BTPR_PENN
     evtimer_add(&heartbeat_ev, &heartbeat_tv);
 #endif /* !BTPR_PENN */
-    rb_walk(xcode_tree, WALK_PREORDER, heartbeat_dispatch, NULL);
+    rb_walk(xcode_tree, WALK_INORDER, heartbeat_dispatch, NULL);
     global_tick++;
 }
 

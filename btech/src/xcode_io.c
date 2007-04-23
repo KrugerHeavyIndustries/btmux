@@ -1,6 +1,8 @@
 /*
  * The database format is as follows:
  *
+ * XCODE_MAGIC
+ *
  * 1st record:
  * 	dbref key
  * 	GlueType type
@@ -12,6 +14,8 @@
  *
  * last record:
  * 	dbref key = -1
+ *
+ * <non-XCODE records>
  *
  * Each record holds a single XCODE object.
  *
@@ -168,7 +172,7 @@ save_xcode_tree(FILE *f)
 	state.write_count = 0;
 
 	/* Dump XCODE objects.  */
-	rb_walk(xcode_tree, WALK_PREORDER, save_node_walker, &state);
+	rb_walk(xcode_tree, WALK_INORDER, save_node_walker, &state);
 	if (state.write_count < 0) {
 		/* A write failed.  */
 		return -1;

@@ -117,7 +117,7 @@ void debug_memory(dbref player, void *data, char *buffer)
 		cheat_player = player;
 	else
 		cheat_player = -1;
-	rb_walk(xcode_tree, WALK_PREORDER, debug_check_stuff, NULL);
+	rb_walk(xcode_tree, WALK_INORDER, debug_check_stuff, NULL);
 	for(i = 0; i < global_specials; i++) {
 		if(number[i]) {
 			if(smallest[i] == largest[i])

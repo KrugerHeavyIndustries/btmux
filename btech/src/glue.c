@@ -263,7 +263,7 @@ remove_from_all_maps_func(void *key, void *data, int depth, void *arg)
 void
 mech_remove_from_all_maps(MECH *mech)
 {
-	rb_walk(xcode_tree, WALK_PREORDER, remove_from_all_maps_func, mech);
+	rb_walk(xcode_tree, WALK_INORDER, remove_from_all_maps_func, mech);
 }
 
 static dbref except_map = -1;
@@ -295,7 +295,7 @@ mech_remove_from_all_maps_except(MECH *mech, int num)
 {
 	/* TODO: Put the mech and the except_map into a structure for arg.  */
 	except_map = num;
-	rb_walk(xcode_tree, WALK_PREORDER,
+	rb_walk(xcode_tree, WALK_INORDER,
 	        remove_from_all_maps_except_func, mech);
 	except_map = -1;
 }
@@ -366,7 +366,7 @@ load_update1(void *key, void *data, int depth, void *arg)
 	switch (xcode_obj->type) {
 	case GTYPE_MAP:
 		map = (MAP *)xcode_obj;
-		bzero(map->mapobj, sizeof(map->mapobj));
+		memset(map->mapobj, 0, sizeof(map->mapobj));
 		map->map = NULL;
 		strcpy(mapbuffer, map->mapname);
 		doh = (map->flags & MAPFLAG_MAPO);
@@ -576,13 +576,13 @@ load_xcode(void)
 		exit(EXIT_FAILURE);
 	}
 
-	rb_walk(xcode_tree, WALK_PREORDER, load_update1, f);
-	rb_walk(xcode_tree, WALK_PREORDER, load_update2, f);
-	rb_walk(xcode_tree, WALK_PREORDER, load_update3, f);
-	rb_walk(xcode_tree, WALK_PREORDER, load_update4, f);
+	rb_walk(xcode_tree, WALK_INORDER, load_update1, f);
+	rb_walk(xcode_tree, WALK_INORDER, load_update2, NULL);
+	rb_walk(xcode_tree, WALK_INORDER, load_update3, NULL);
+	rb_walk(xcode_tree, WALK_INORDER, load_update4, NULL);
 
 	/* Read in autopilot data */
-	rb_walk(xcode_tree, WALK_PREORDER, load_autopilot_data, NULL);
+	rb_walk(xcode_tree, WALK_INORDER, load_autopilot_data, NULL);
 
 	if (!feof(f))
 		loadrepairs(f);
@@ -617,7 +617,7 @@ zap_unneccessary_hcode(void)
 {
 	for (;;) {
 		zappable_node = -1;
-		rb_walk(xcode_tree, WALK_PREORDER, zap_check, NULL);
+		rb_walk(xcode_tree, WALK_INORDER, zap_check, NULL);
 		if(zappable_node >= 0)
 			rb_delete(xcode_tree, (void *)zappable_node);
 		else
@@ -845,7 +845,7 @@ SaveSpecialObjects(int i)
 	}
 
 	/* Then, check each xcode thing for stuff */
-	rb_walk(xcode_tree, WALK_PREORDER, save_maps_func, f);
+	rb_walk(xcode_tree, WALK_INORDER, save_maps_func, f);
 
 	/* Save autopilot data */
 	/* GoThruTree(xcode_tree, save_autopilot_data); */
@@ -911,7 +911,7 @@ UpdateSpecialObjects(void)
 	for(i = 0; i < times; i++) {
 		muxevent_run();
 		mudstate.debug_cmd = (char *) "< Generic hcode update handler>";
-		rb_walk(xcode_tree, WALK_PREORDER,
+		rb_walk(xcode_tree, WALK_INORDER,
 		        UpdateSpecialObject_func, NULL);
 	}
 	lastrun = mudstate.now;

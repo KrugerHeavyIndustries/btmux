@@ -15,6 +15,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 
 #include "create.h"
 #include "mech.h"
@@ -24,8 +27,6 @@
 #include "p.mech.utils.h"
 #include "p.map.conditions.h"
 
-#define DYNAMIC_MAGIC 42
-
 /* Code for saving / loading / setting / unsetting the dynamic pieces
    of map structure:
    - mechsOnMap
@@ -33,63 +34,132 @@
    - mechflags
    */
 
-#define CHELO(a,b,c,d) if (!(ugly_kludge++)) { \
-    if ((tmp=fread(a,b,c,d)) != c) { fprintf (stderr, "Error loading mapdynamic for #%d - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); return; } } else { if ((tmp=fread(a,b,c,d)) != c) { fprintf (stderr, "Error loading mapdynamic for #%d - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); } }
-#define CHESA(a,b,c,d) if ((tmp=fwrite(a,b,c,d)) != c) { fprintf (stderr, "Error writing mapdynamic for #%d - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); }
+
+/*
+ * Dynamic map save/restore.
+ */
 
-static int ugly_kludge = 0;		/* Nonfatal for _first_ */
+static const int DYNAMIC_MAGIC = 0x67134269;
 
-void load_mapdynamic(FILE * f, MAP * map)
+static int
+do_read(FILE *f, void *buf, size_t size, size_t count, int map_id)
 {
-	int count = map->first_free;
-	int i, tmp;
-	unsigned char tmpb;
+	if (fread(buf, size, count, f) != count) {
+		fprintf(stderr, "load_mapdynamic(): while reading #%d: %s\n",
+		        map_id, strerror(errno));
+		return 0;
+	}
 
-	if(count > 0) {
+	return 1;
+}
+
+static int
+do_write(FILE *f, const void *buf, size_t size, size_t count, int map_id)
+{
+	if (fwrite(buf, size, count, f) != count) {
+		fprintf(stderr, "save_mapdynamic(): while writing #%d: %s\n",
+		        map_id, strerror(errno));
+		return 0;
+	}
+
+	return 1;
+}
+
+void
+load_mapdynamic(FILE *f, MAP *map)
+{
+	const int id = map->mynum;
+	const int count = map->first_free;
+
+	int i, magic;
+
+	if (count > 0) {
 		Create(map->mechsOnMap, dbref, count);
 
-		CHELO(map->mechsOnMap, sizeof(map->mechsOnMap[0]), count, f);
+		if (!do_read(f, map->mechsOnMap, sizeof(map->mechsOnMap[0]),
+		             count, id)) {
+			/* TODO: Could handle this more gracefully... */
+			exit(EXIT_FAILURE);
+		}
+
 		Create(map->mechflags, char, count);
 
-		CHELO(map->mechflags, sizeof(map->mechflags[0]), count, f);
+		if (!do_read(f, map->mechflags, sizeof(map->mechflags[0]),
+		             count, id)) {
+			/* TODO: Could handle this more gracefully... */
+			exit(EXIT_FAILURE);
+		}
+
+		/* Read count X count LOSinfo array.  */
 		Create(map->LOSinfo, unsigned short *, count);
 
-		for(i = 0; i < count; i++) {
+		for (i = 0; i < count; i++) {
 			Create(map->LOSinfo[i], unsigned short, count);
 
-			CHELO(map->LOSinfo[i], sizeof(map->LOSinfo[i][0]), count, f);
+			if (!do_read(f, map->LOSinfo[i],
+			             sizeof(map->LOSinfo[i][0]), count, id)) {
+				/* TODO: Could handle this more gracefully... */
+				exit(EXIT_FAILURE);
+			}
 		}
 	} else {
 		map->mechsOnMap = NULL;
 		map->mechflags = NULL;
 		map->LOSinfo = NULL;
 	}
-	CHELO(&tmpb, 1, 1, f);
-	if(tmpb != DYNAMIC_MAGIC) {
-		fprintf(stderr, "Error reading data for obj #%d (%d != %d)!\n",
-				map->mynum, tmpb, DYNAMIC_MAGIC);
-		fflush(stderr);
-		exit(1);
+
+	/* Check magic.  */
+	if (!do_read(f, &magic, sizeof(magic), 1, id)) {
+		/* TODO: Could handle this more gracefully... */
+		exit(EXIT_FAILURE);
+	}
+
+	if (magic != DYNAMIC_MAGIC) {
+		fprintf(stderr, "load_mapdynamic(): while reading #%d: Magic number mismatch (0x%08X != 0x%08X)\n",
+		        id, magic, DYNAMIC_MAGIC);
+		exit(EXIT_FAILURE);
 	}
 }
 
-#define outbyte(a) tmpb=(a);CHESA(&tmpb, 1, 1, f);
-
-void save_mapdynamic(FILE * f, MAP * map)
+void
+save_mapdynamic(FILE *f, MAP *map)
 {
-	int count = map->first_free;
-	int i, tmp;
-	unsigned char tmpb;
+	const int id = map->mynum;
+	const int count = map->first_free;
 
-	if(count > 0) {
-		CHESA(map->mechsOnMap, sizeof(map->mechsOnMap[0]), count, f);
-		CHESA(map->mechflags, sizeof(map->mechflags[0]), count, f);
-		for(i = 0; i < count; i++)
-			CHESA(map->LOSinfo[i], sizeof(map->LOSinfo[i][0]), count, f);
+	int i;
+
+	if (count > 0) {
+		if (!do_write(f, map->mechsOnMap, sizeof(map->mechsOnMap[0]),
+		              count, id)) {
+			/* TODO: Could handle this more gracefully... */
+			exit(EXIT_FAILURE);
+		}
+
+		if (!do_write(f, map->mechflags, sizeof(map->mechflags[0]),
+		              count, id)) {
+			/* TODO: Could handle this more gracefully... */
+			exit(EXIT_FAILURE);
+		}
+
+		/* Write count X count LOSinfo array.  */
+		for (i = 0; i < count; i++) {
+			if (!do_write(f, map->LOSinfo[i],
+			              sizeof(map->LOSinfo[i][0]), count, id)) {
+				/* TODO: Could handle this more gracefully... */
+				exit(EXIT_FAILURE);
+			}
+		}
 	}
-	outbyte(DYNAMIC_MAGIC);
+
+	/* Write magic.  */
+	if (!do_write(f, &DYNAMIC_MAGIC, sizeof(DYNAMIC_MAGIC), 1, id)) {
+		/* TODO: Could handle this more gracefully... */
+		exit(EXIT_FAILURE);
+	}
 }
 
+
 void mech_map_consistency_check(MECH * mech)
 {
 	MAP *map = getMap(mech->mapindex);
