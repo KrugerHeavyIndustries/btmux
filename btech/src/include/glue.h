@@ -924,35 +924,6 @@ CommandsStruct sscommands[] = {
     {0, NULL, NULL, NULL}
 };
 
-#define LINEB(txt,cmd,str,func,upd,updfunc,power) \
-{ txt, cmd, str, func, upd, updfunc, power }
-#define LINE(txt,cmd,str,func,upd,updfunc,power) \
-LINEB(txt,cmd,sizeof(str),func,upd,updfunc,power)
-
-/* Own init func, no update func */
-#define LINE_NU(txt,cmd,str,fu,power) \
-LINE(txt,cmd,str,fu,0,NULL,power)
-
-/* No data, no update */
-#define LINE_ND(txt,cmd,power) \
-LINEB(txt,cmd,0,NULL,0,NULL,power)
-
-/* Just data, no special init, no update func */
-#define LINE_NFS(txt,cmd,t,power) \
-LINEB(txt,cmd,sizeof(t),NULL,0,NULL,power)
-
-SpecialObjectStruct SpecialObjects[] = {
-    LINE("MECH", mechcommands, MECH, newfreemech, HEAT_TICK, mech_update, POW_MECH),
-    LINE_ND("DEBUG", debugcommands, POW_SECURITY),
-    LINE_NU("MECHREP", mechrepcommands, struct mechrep_data, newfreemechrep, POW_MECHREP),
-    LINE("MAP", mapcommands, MAP, newfreemap, LOS_TICK, map_update, POW_MAP),
-    LINE_NU("AUTOPILOT", autopilotcommands, AUTO, auto_newautopilot, POW_SECURITY),
-    LINE_NU("TURRET", turretcommands, TURRET_T, newturret, POW_SECURITY),
-};
-
-#define NUM_SPECIAL_OBJECTS \
-   ((sizeof(SpecialObjects))/(sizeof(struct SpecialObjectStruct)))
-
 #undef HEADER
 
 

@@ -889,6 +889,7 @@ void auto_newautopilot(dbref key, void **data, int selector)
 
 	switch (selector) {
 	case SPECIAL_ALLOC:
+		autopilot->mynum = key;
 
 		/* Allocate the command list */
 		autopilot->commands = dllist_create_list();

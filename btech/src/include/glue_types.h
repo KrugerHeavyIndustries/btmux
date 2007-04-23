@@ -33,8 +33,8 @@ typedef enum {
  * field of this type, called 'xcode' by convention.
  */
 typedef struct {
-	GlueType type;	/* XCODE object type */
-	size_t size;	/* object size */
+	GlueType type;		/* XCODE object type */
+	size_t size;		/* object size */
 } XCODE;
 
 #endif /* !GLUE_TYPES_H */

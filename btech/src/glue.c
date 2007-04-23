@@ -52,6 +52,24 @@
 
 #include "xcode_io.h"
 
+/* Special object parameters.  */
+SpecialObjectStruct SpecialObjects[] = {
+	{ "MECH", mechcommands, sizeof(MECH), newfreemech,
+	  HEAT_TICK, mech_update, POW_MECH },
+	{ "DEBUG", debugcommands, 0, NULL, 0, NULL, POW_SECURITY },
+	{ "MECHREP", mechrepcommands, sizeof(MECHREP),
+	  newfreemechrep, 0, NULL, POW_MECHREP },
+	{ "MAP", mapcommands, sizeof(MAP), newfreemap,
+	  LOS_TICK, map_update, POW_MAP },
+	{ "AUTOPILOT", autopilotcommands, sizeof(AUTO), auto_newautopilot,
+	  0, NULL, POW_SECURITY },
+	{ "TURRET", turretcommands, sizeof(TURRET_T), newturret,
+	  0, NULL, POW_SECURITY }
+};
+
+#define NUM_SPECIAL_OBJECTS \
+	(sizeof(SpecialObjects) / sizeof(SpecialObjectStruct))
+
 /* Prototypes */
 
 /*************CALLABLE PROTOS*****************/
@@ -910,12 +928,11 @@ NewSpecialObject(int id, int type)
 	if(SpecialObjects[type].datasize) {
 		Create(xcode_obj, char, (i = SpecialObjects[type].datasize));
 
-		/* FIXME: Didn't assign id in xcode_obj (formerly foo).  */
-		if(SpecialObjects[type].allocfreefunc)
-			SpecialObjects[type].allocfreefunc(id, &xcode_obj, SPECIAL_ALLOC);
-
 		xcode_obj->type = type;
 		xcode_obj->size = i;
+
+		if(SpecialObjects[type].allocfreefunc)
+			SpecialObjects[type].allocfreefunc(id, &xcode_obj, SPECIAL_ALLOC);
 
 		rb_insert(xcode_tree, (void *)id, xcode_obj);
 	}
@@ -986,8 +1003,6 @@ DisposeSpecialObject(dbref player, dbref key)
 		i = WhichSpecial(key);
 	}
 	if(xcode_obj) {
-		/* FIXME: The semantics of this with the new encapsulated XCODE
-		 * type haven't been thought through yet.  */
 		if(typeOfObject->allocfreefunc)
 			typeOfObject->allocfreefunc(key, &xcode_obj, SPECIAL_FREE);
 		rb_delete(xcode_tree, (void *)key);
@@ -1185,7 +1200,7 @@ do_ugly_things(coolmenu **d, char *msg, int len, int initial)
 	 * at most one space, with no word longer than len.
 	 *
 	 * All of these assumptions are necessary for this code to be safe.
-	 * Basically, the code needs to finding the breaking space.
+	 * Basically, the code needs to find the breaking space.
 	 *
 	 * FIXME: All of this code really needs more cleanup and fixing.
 	 */

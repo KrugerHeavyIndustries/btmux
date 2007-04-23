@@ -13,16 +13,20 @@
  *
  */
 
+#include "glue_types.h"
+
 #include "mech.h"
 
 #ifndef _MECHREP_H
 #define _MECHREP_H
 
 /* This is the silly structure that I use for the repair stuff */
-struct mechrep_data {
+typedef struct mechrep_data {
+    XCODE xcode;			/* XCODE base class field */
+ 
     dbref mynum;
     dbref current_target;
-};
+} MECHREP;
 
 /* Mech repair/type commands */
 ECMD(mechrep_Raddspecial);

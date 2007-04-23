@@ -17,9 +17,12 @@
 #ifndef TURRET_H
 #define TURRET_H
 
+#include "glue_types.h"
+
 #include "mech.h"
 
 typedef struct {
+    XCODE xcode;		/* XCODE base class field */
     dbref mynum;
 
     int arcs;			/* arc_override */

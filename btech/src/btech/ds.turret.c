@@ -232,10 +232,10 @@ void newturret(dbref key, void **data, int selector)
 
 	switch (selector) {
 	case SPECIAL_ALLOC:
+		new->mynum = key;
 		new->target = -1;
 		new->targx = -1;
 		new->targy = -1;
-		new->mynum = key;
 		break;
 	}
 }
