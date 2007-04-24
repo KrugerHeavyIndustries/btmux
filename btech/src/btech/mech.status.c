@@ -1174,7 +1174,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	char weapbuff[120];
 	char tempbuff[160];
 	char location[80];
-	char astrAmmoSpacer[52];
+	char astrAmmoSpacer[MBUF_SIZE]; /* mem is cheap. over allocate */
 	int running_sum = 0;
 	short ammo_mode;
 
