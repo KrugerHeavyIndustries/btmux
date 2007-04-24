@@ -1595,7 +1595,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	if(running_sum < ammoweapcount) {
 		while (running_sum < ammoweapcount) {
 			strcpy(astrAmmoSpacer,
-				   "                                                 || ");
+				   "                                                  || ");
 			ammo_mode =
 				GetWeaponAmmoModeLetter_Model_Mode(ammoweap[running_sum],
 												   modearray[running_sum]);

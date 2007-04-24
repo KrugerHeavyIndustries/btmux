@@ -5,9 +5,15 @@
 
 #include "map.h"
 
-typedef int /* unsigned char */ MagicType;
+/*#define OLD_DYNAMIC*/
 
-static const MagicType DYNAMIC_MAGIC = 0x67134269 /* 42 */;
+#ifdef OLD_DYNAMIC
+typedef unsigned char MagicType;
+static const MagicType DYNAMIC_MAGIC = 42;
+#else /* !OLD_DYNAMIC */
+typedef int MagicType;
+static const MagicType DYNAMIC_MAGIC = 0x67134269;
+#endif /* !OLD_DYNAMIC */
 
 static void
 die(const char *reason)
@@ -133,7 +139,11 @@ main(int argc, char *argv[])
 			die("fread(DYNAMIC_MAGIC)");
 
 		if (magic != DYNAMIC_MAGIC) {
+#ifdef OLD_DYNAMIC
+			fprintf(stderr, "magic mismatch: %d\n", magic);
+#else /* !OLD_DYNAMIC */
 			fprintf(stderr, "magic mismatch: 0x%08X\n", magic);
+#endif /* !OLD_DYNAMIC */
 			exit(EXIT_FAILURE);
 		}
 	}

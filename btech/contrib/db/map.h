@@ -1,6 +1,3 @@
-#ifndef MAP_H
-#define MAP_H
-
 #define MAP_NAME_SIZE 30
 #define NUM_MAPOBJTYPES 10
 
@@ -65,5 +62,3 @@ typedef struct {
 	short movemod;
 	int sensorflags;
 } MAP;
-
-#endif /* !MAP_H */
