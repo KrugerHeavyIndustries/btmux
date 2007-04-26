@@ -27,6 +27,9 @@ struct FI_tag_OctetStream {
 
 	FI_ErrorInfo error_info;	/* error information */
 
+	FI_Octet bits;			/* partial octet bits */
+	int num_bits;			/* number of partial octet bits */
+
 	void *app_data;			/* application-specific data */
 }; /* FI_OctetStream */
 
@@ -74,28 +77,6 @@ fi_destroy_stream(FI_OctetStream *stream)
 	free(stream);
 }
 
-
-/*
- * Error handling.
- */
-
-const FI_ErrorInfo *
-fi_get_stream_error(const FI_OctetStream *stream)
-{
-	return &stream->error_info;
-}
-
-void
-fi_clear_stream_error(FI_OctetStream *stream)
-{
-	FI_CLEAR_ERROR(stream->error_info);
-}
-
-
-/*
- * Stream operations.
- */
-
 /* Get/set app_data pointer.  */
 void *
 fi_get_stream_data(const FI_OctetStream *stream)
@@ -115,7 +96,32 @@ fi_clear_stream(FI_OctetStream *stream)
 {
 	stream->length = 0;
 	stream->cursor = 0;
+
+	stream->bits = 0;
+	stream->num_bits = 0;
 }
+
+
+/*
+ * Error handling.
+ */
+
+const FI_ErrorInfo *
+fi_get_stream_error(const FI_OctetStream *stream)
+{
+	return &stream->error_info;
+}
+
+void
+fi_clear_stream_error(FI_OctetStream *stream)
+{
+	FI_CLEAR_ERROR(stream->error_info);
+}
+
+
+/*
+ * Octet-oriented stream operations.
+ */
 
 /*
  * Behaves like fi_try_read_stream(), except always reads all available octets.
@@ -189,6 +195,106 @@ fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length)
 	write_ptr = stream->buffer + stream->length;
 	stream->length += length;
 	return write_ptr;
+}
+
+
+/*
+ * Bit-oriented stream operations.
+ */
+
+/* Returns the number of bits (ranging from 0 to 7) in the bit accumulator.  */
+int
+fi_get_stream_num_bits(const FI_OctetStream *stream)
+{
+	return stream->num_bits;
+}
+
+/* Returns the contents of the bit accumulator.  The value is only meaningful
+ * for the first fi_get_stream_num_bits() bits (counting from MSB).  */
+FI_Octet
+fi_get_stream_bits(const FI_OctetStream *stream)
+{
+	return stream->bits;
+}
+
+/*
+ * Clear the bit accumulator, writing its value out to the stream.  Any missing
+ * bits will be padded out with 0's.
+ */
+int
+fi_flush_stream_bits(FI_OctetStream *stream)
+{
+	FI_Octet *write_ptr;
+
+	/* Write octet.  */
+	write_ptr = fi_get_stream_write_buffer(stream, 1);
+	if (!write_ptr) {
+		/* XXX: Error set by fi_get_stream_write_buffer.  */
+		return 0;
+	}
+
+	write_ptr[0] = stream->bits; /* bits should already be padded */
+
+	stream->bits = 0;
+	stream->num_bits = 0;
+	return 1;
+}
+
+/*
+ * Writes some number of bits (up to 8) to the stream.  These bits will be
+ * combined with any previously written bits to form a complete octet, which
+ * will then be written out to the stream as a unit.  Any remaining bits will
+ * accumulate until the next fi_write_stream_bits() operation.
+ *
+ * Octet-oriented stream operations will ignore any accumulated, uncommitted
+ * bits.  It is the responsibility of the calling application to check the
+ * value of fi_get_stream_num_bits(), and pad out to a full octet. (The
+ * convenience function fi_flush_stream_bits() will pad out with 0's.)
+ *
+ * Bits are numbered from 1 (MSB) to 8 (LSB).  The FI_BIT_# macros have been
+ * provided to make creating bit strings easier.
+ *
+ * This function should not be used for writing long sequences of bits, but
+ * instead is intended for writing a final, partial octet at the end of a
+ * longer, multi-octet write operation, as a prelude to further processing.
+ *
+ * Returns 0 on errors.
+ */
+int
+fi_write_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits)
+{
+	FI_Octet *write_ptr;
+
+	FI_Octet next_octet;
+	int total_bits;
+
+	if (num_bits < 1 || num_bits > 8) {
+		FI_SET_ERROR(stream->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
+	/* Try to fill an octet.  */
+	next_octet = stream->bits | (bits >> stream->num_bits);
+	total_bits = stream->num_bits + num_bits;
+
+	if (total_bits < 8) {
+		stream->bits = next_octet;
+		stream->num_bits = total_bits;
+		return 1;
+	}
+
+	/* Write octet.  */
+	write_ptr = fi_get_stream_write_buffer(stream, 1);
+	if (!write_ptr) {
+		/* XXX: Error set by fi_get_stream_write_buffer.  */
+		return 0;
+	}
+
+	write_ptr[0] = next_octet;
+
+	stream->bits = bits << (8 - stream->num_bits);
+	stream->num_bits = total_bits - 8;
+	return 1;
 }
 
 

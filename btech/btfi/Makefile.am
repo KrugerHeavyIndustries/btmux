@@ -1,8 +1,10 @@
 noinst_LTLIBRARIES = libbtfi.la
 
 libbtfi_la_SOURCES = sax.cc sax.h \
-	Document.cc vocab.cc encalg.c stream.c common.c \
-	Document.hh vocab.hh encalg.h stream.h common.h
+	Document.cc Element.cc Attributes.cc \
+	Document.hh Element.hh Attributes.hh \
+	vocab.cc encalg.c stream.c common.c \
+	vocab.hh encalg.h stream.h common.h
 
 check_PROGRAMS = saxtest vocabtest
 

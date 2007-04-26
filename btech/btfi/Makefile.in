@@ -45,8 +45,8 @@ CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libbtfi_la_LIBADD =
-am_libbtfi_la_OBJECTS = sax.lo Document.lo vocab.lo encalg.lo \
-	stream.lo common.lo
+am_libbtfi_la_OBJECTS = sax.lo Document.lo Element.lo Attributes.lo \
+	vocab.lo encalg.lo stream.lo common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
 am_saxtest_OBJECTS = dummy.$(OBJEXT) saxtest.$(OBJEXT)
 saxtest_OBJECTS = $(am_saxtest_OBJECTS)
@@ -190,8 +190,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libbtfi.la
 libbtfi_la_SOURCES = sax.cc sax.h \
-	Document.cc vocab.cc encalg.c stream.c common.c \
-	Document.hh vocab.hh encalg.h stream.h common.h
+	Document.cc Element.cc Attributes.cc \
+	Document.hh Element.hh Attributes.hh \
+	vocab.cc encalg.c stream.c common.c \
+	vocab.hh encalg.h stream.h common.h
 
 saxtest_SOURCES = tests/dummy.cc tests/saxtest.c
 saxtest_LDADD = libbtfi.la
@@ -261,7 +263,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Attributes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Document.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Element.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encalg.Plo@am__quote@

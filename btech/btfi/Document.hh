@@ -9,12 +9,14 @@
 #include "stream.h"
 #include "vocab.hh"
 
+#include "Element.hh"
+
 namespace BTech {
 namespace FI {
 
 class Document : public Serializable {
 public:
-	Document ();
+	Document () : start_flag (false), stop_flag (false) {}
 	~Document () {}
 
 	// Next write()/read() will be document header.
@@ -29,6 +31,8 @@ public:
 private:
 	bool start_flag;
 	bool stop_flag;
+
+	void writeInit () throw (Exception);
 
 	// Fast Infoset vocabulary tables.
 	RA_VocabTable restricted_alphabets;
@@ -45,6 +49,9 @@ private:
 
 	DN_VocabTable element_name_surrogates;
 	DN_VocabTable attribute_name_surrogates;
+
+	// Cached vocabulary indexes.
+	VocabIndex NAMESPACE_IDX;
 }; // class Document
 
 } // namespace FI

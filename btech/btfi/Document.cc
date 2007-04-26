@@ -23,7 +23,7 @@
  *         content-character-chunks, and other-strings are not written, but
  *         must be processed. (Some may be ignorable?)
  * 7.2.21: prefixes not written, must be processed. (Ignorable?)
- * 7.2.23: namespace-names not written, must be processed. (Ignorable?)
+ * 7.2.23: namespace-names contains our namespace name.
  * 7.2.24: [notations] unsupported.
  * 7.2.25: [unparsed entities] unsupported.
  * 7.2.26: [character encoding scheme] must not be set (UTF-8).
@@ -46,23 +46,19 @@ namespace FI {
 
 namespace {
 
+const char *const NAMESPACE = "http://btonline-btech.sourceforge.net";
+
 bool write_header(FI_OctetStream *) throw ();
 bool write_trailer(FI_OctetStream *) throw ();
 
 } // anonymous namespace
-
-Document::Document()
-: start_flag(false), stop_flag(false)
-{
-	prefixes.add("xml"); // 7.2.21
-	namespace_names.add("http://www.w3.org/XML/1998/namespace"); // 7.2.22
-}
 
 void
 Document::start() throw ()
 {
 	start_flag = true;
 	stop_flag = false;
+
 }
 
 void
@@ -76,6 +72,8 @@ void
 Document::write(FI_OctetStream *stream) throw (Exception)
 {
 	if (start_flag) {
+		writeInit();
+
 		if (!write_header(stream)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
@@ -102,6 +100,34 @@ Document::read(FI_OctetStream *stream) throw (Exception)
 	throw UnsupportedOperationException ();
 }
 
+void
+Document::writeInit() throw (Exception)
+{
+	/*
+	 * Initialize vocabulary tables.
+	 */
+
+	prefixes.clear();
+	namespace_names.clear();
+
+	// Fast Infoset built-ins.
+	prefixes.add("xml"); // 7.2.21
+	namespace_names.add("http://www.w3.org/XML/1998/namespace"); // 7.2.22
+
+	// Our namespace.  Since this will be the default namespace in
+	// documents we create, we don't need (or want) to define a prefix.
+	// TODO: We may want to point this at a document.
+	NAMESPACE_IDX = namespace_names.add(NAMESPACE);
+	if (NAMESPACE_IDX == FI_VOCAB_INDEX_NULL) {
+		throw IllegalStateException ();
+	}
+
+	/*
+	 * Initialize XML information set properties.
+	 */
+
+}
+
 
 //
 // Document serialization subroutines.
@@ -113,14 +139,23 @@ bool
 write_header(FI_OctetStream *stream) throw ()
 {
 	// Reserve space.
-	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 4);
 	if (!w_buf) {
 		return false;
 	}
 
 	// Serialize document header.
-	w_buf[0] = 0xE0;
+	// 11100000 00000000 (C.1.3a: identification)
+	w_buf[0] = FI_BIT_1 | FI_BIT_2 | FI_BIT_3;
 	w_buf[1] = 0x00;
+	// 00000000 00000001 (C.1.3b: version number)
+	w_buf[2] = 0x00;
+	w_buf[3] = FI_BIT_8;
+
+	// 0 (C.1.3c: padding)
+	if (!fi_write_stream_bits(stream, 1, 0)) {
+		return false;
+	}
 
 	return true;
 }
@@ -128,27 +163,31 @@ write_header(FI_OctetStream *stream) throw ()
 bool
 write_trailer(FI_OctetStream *stream) throw ()
 {
-	// Reserve space.
-	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
-	if (!w_buf) {
-		return false;
-	}
-
 	// Serialize document trailer.
-	w_buf[0] = 0xF0;
+	switch (fi_get_stream_num_bits(stream)) {
+	case 0:
+		// C.1.3: Ended on the 8th bit of an octet.
+		break;
+
+	case 4:
+		// C.1.3: Ended on the 4th bit of an octet.
+		if (!fi_flush_stream_bits(stream)) {
+			return false;
+		}
+		break;
+
+	default:
+		// FIXME: For debugging only.
+		if (!fi_write_stream_bits(stream,
+		                          8 - fi_get_stream_num_bits(stream),
+		                          0xFF)) {
+			return false;
+		}
+		break;
+	}
 
 	return true;
 }
-
-/* Section 5.5: Fast Infoset numbers bits from 1 (MSB) to 8 (LSB).  */
-#define BIT_1 0x80
-#define BIT_2 0x40
-#define BIT_3 0x20
-#define BIT_4 0x10
-#define BIT_5 0x08
-#define BIT_6 0x04
-#define BIT_7 0x02
-#define BIT_8 0x01
 
 typedef struct {
 	FI_Length length;

@@ -39,9 +39,6 @@ struct FI_tag_Generator {
 	FI_OctetStream *buffer;
 
 	Document *document;
-
-	int partial_bit;			// partial octet bit #
-	FI_Octet partial_octet;			// partial octet
 }; // FI_Generator
 
 namespace {
@@ -77,8 +74,6 @@ fi_create_generator(void)
 		// Yay, auto_ptr magic.
 		return NULL;
 	}
-
-	fi_set_stream_data(new_gen->buffer, new_gen.get());
 
 	new_gen->document = new_doc.release();
 	return new_gen.release();
