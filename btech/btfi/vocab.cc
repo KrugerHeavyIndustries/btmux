@@ -28,9 +28,11 @@ namespace {
 const CharString NUMERIC_ALPHABET ("0123456789-+.e ");
 const CharString DATE_AND_TIME_ALPHABET ("012345789-:TZ ");
 
-const int LAST_BUILTIN_ALPHABET = FI_RA_DATE_AND_TIME;
-
 } // anonymous namespace
+
+const VocabIndex RA_VocabTable::MAX = 256; // 7.2.18
+const VocabIndex RA_VocabTable::LAST_BUILTIN = FI_RA_DATE_AND_TIME;
+const VocabIndex RA_VocabTable::FIRST_ADDED = 16; // 7.2.19
 
 void
 RA_VocabTable::clear() throw ()
@@ -47,9 +49,9 @@ RA_VocabTable::add(const_entry_ref entry) throw (Exception)
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = LAST_BUILTIN_ALPHABET + alphabets.size() + 1;
+	VocabIndex nextIndex = FIRST_ADDED + alphabets.size();
 
-	if (nextIndex > FI_VOCAB_INDEX_MAX) {
+	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
@@ -71,11 +73,27 @@ RA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 		// Fall back to look-up table.
 		if (idx <= FI_VOCAB_INDEX_NULL) {
 			throw IndexOutOfBoundsException ();
-		} else if (idx > (LAST_BUILTIN_ALPHABET + alphabets.size())) {
+		} else if (idx < FIRST_ADDED) {
+			throw InvalidArgumentException ();
+		}
+
+		idx -= FIRST_ADDED;
+
+		if (idx >= alphabets.size()) {
 			throw IndexOutOfBoundsException ();
 		}
 
-		return alphabets[idx - LAST_BUILTIN_ALPHABET - 1];
+		return alphabets[idx];
+	}
+}
+
+VocabIndex
+RA_VocabTable::size() const
+{
+	if (alphabets.empty()) {
+		return LAST_BUILTIN;
+	} else {
+		return FIRST_ADDED + alphabets.size() - 1;
 	}
 }
 
@@ -87,6 +105,8 @@ RA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
  *
  * Entries in this table (for non-built-in algorithms) are identified by URI.
  * We're not going to support external algorithms for the foreseeable future.
+ *
+ * Encoding algorithms 1-31 are reserved for standard use (7.2.20).
  */
 
 namespace {
@@ -103,6 +123,10 @@ const FI_EncodingAlgorithm *ea_uuid_ptr = &fi_ea_uuid;
 const FI_EncodingAlgorithm *ea_cdata_ptr = &fi_ea_cdata;
 
 } // anonymous namespace
+
+const VocabIndex EA_VocabTable::MAX = 256; // 7.2.18
+const VocabIndex EA_VocabTable::LAST_BUILTIN = FI_EA_CDATA;
+const VocabIndex EA_VocabTable::FIRST_ADDED = 32; // 7.2.20
 
 void
 EA_VocabTable::clear() throw ()
@@ -150,6 +174,12 @@ EA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 	}
 }
 
+VocabIndex
+EA_VocabTable::size() const
+{
+	return LAST_BUILTIN;
+}
+
 
 /*
  * 8.4: Dynamic strings: Character strings.  Dynamic.  Each document has 8:
@@ -172,6 +202,8 @@ const CharString EMPTY_STRING ("");
 
 } // anonymous namespace
 
+const VocabIndex DS_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
+
 void
 DS_VocabTable::clear() throw ()
 {
@@ -186,9 +218,9 @@ DS_VocabTable::add(const_entry_ref entry) throw (Exception)
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = strings.size() + 1;
+	VocabIndex nextIndex = size() + 1;
 
-	if (nextIndex > FI_VOCAB_INDEX_MAX) {
+	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
@@ -202,7 +234,7 @@ DS_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 {
 	if (idx == FI_VOCAB_INDEX_NULL) {
 		return EMPTY_STRING;
-	} else if (idx < FI_VOCAB_INDEX_NULL || idx > strings.size()) {
+	} else if (idx < FI_VOCAB_INDEX_NULL || idx > size()) {
 		throw IndexOutOfBoundsException ();
 	}
 
@@ -239,6 +271,8 @@ DS_VocabTable::find(const_entry_ref entry) const throw (Exception)
  * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
  */
 
+const VocabIndex DN_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
+
 void
 DN_VocabTable::clear() throw ()
 {
@@ -253,9 +287,9 @@ DN_VocabTable::add(const_entry_ref entry) throw (Exception)
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = names.size() + 1;
+	VocabIndex nextIndex = size() + 1;
 
-	if (nextIndex > FI_VOCAB_INDEX_MAX) {
+	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
@@ -267,7 +301,7 @@ DN_VocabTable::add(const_entry_ref entry) throw (Exception)
 DN_VocabTable::const_entry_ref
 DN_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 {
-	if (idx <= FI_VOCAB_INDEX_NULL || idx > names.size()) {
+	if (idx <= FI_VOCAB_INDEX_NULL || idx > size()) {
 		throw IndexOutOfBoundsException ();
 	}
 

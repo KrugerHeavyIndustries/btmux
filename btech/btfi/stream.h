@@ -24,6 +24,9 @@ FI_OctetStream *fi_create_stream(size_t initial_size);
 void fi_destroy_stream(FI_OctetStream *stream);
 
 /* Stream operations.  */
+void *fi_get_stream_data(const FI_OctetStream *stream);
+void fi_set_stream_data(FI_OctetStream *stream, void *app_data);
+
 void fi_clear_stream(FI_OctetStream *stream);
 
 FI_Length fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr);
@@ -45,7 +48,11 @@ namespace FI {
 // Pure abstract base class (interface) for objects supporting serialization
 // via an FI_OctetStream.
 class Serializable {
+protected:
+	virtual ~Serializable () {}
+
 public:
+
 	virtual void write (FI_OctetStream *stream) throw (Exception) = 0;
 	virtual void read (FI_OctetStream *stream) throw (Exception) = 0;
 }; // class Serializable

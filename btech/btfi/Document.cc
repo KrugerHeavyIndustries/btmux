@@ -11,9 +11,30 @@
  * However, to ensure backward compatibility, all valid Fast Infoset bitstreams
  * may be decoded, although possibly with the loss of information contained in
  * types beyond the basic three of Document, Element, and Attribute.
+ *
+ * Implementation restrictions:
+ * 7.2.4: restricted-alphabets not written, must be processed.
+ * 7.2.5: encoding-algorithms not written, error on read.
+ * 7.2.7: additional-data not written, ignored on read.
+ * 7.2.13: external-vocabulary not written, error on read.
+ * 7.2.16: local-names contains all our identifier strings, while
+ *         element-name-surrogates and attribute-name-surrogates contain all
+ *         our name surrogates.  other-ncnames, other-uris, attribute-values,
+ *         content-character-chunks, and other-strings are not written, but
+ *         must be processed. (Some may be ignorable?)
+ * 7.2.21: prefixes not written, must be processed. (Ignorable?)
+ * 7.2.23: namespace-names not written, must be processed. (Ignorable?)
+ * 7.2.24: [notations] unsupported.
+ * 7.2.25: [unparsed entities] unsupported.
+ * 7.2.26: [character encoding scheme] must not be set (UTF-8).
+ * 7.2.27: [standalone] must not be set (???).
+ * 7.2.28: [version] must not be set (???).
+ * 7.2.29: [children] must only include the root element, [document element].
  */
 
 #include "autoconf.h"
+
+#include <string>
 
 #include "stream.h"
 
@@ -29,6 +50,13 @@ bool write_header(FI_OctetStream *) throw ();
 bool write_trailer(FI_OctetStream *) throw ();
 
 } // anonymous namespace
+
+Document::Document()
+: start_flag(false), stop_flag(false)
+{
+	prefixes.add("xml"); // 7.2.21
+	namespace_names.add("http://www.w3.org/XML/1998/namespace"); // 7.2.22
+}
 
 void
 Document::start() throw ()
@@ -121,9 +149,6 @@ write_trailer(FI_OctetStream *stream) throw ()
 #define BIT_6 0x04
 #define BIT_7 0x02
 #define BIT_8 0x01
-
-typedef unsigned char FI_Octet;
-typedef unsigned long FI_Length;
 
 typedef struct {
 	FI_Length length;

@@ -39,6 +39,8 @@ public:
 	                         throw (Exception) {
 		throw UnsupportedOperationException ();
 	}
+
+	virtual VocabIndex size () const = 0;
 }; // class VocabTable
 
 //
@@ -46,6 +48,10 @@ public:
 //
 class RA_VocabTable : public VocabTable<CharString> {
 public:
+	static const VocabIndex MAX; // maximum index
+	static const VocabIndex LAST_BUILTIN; // last built-in alphabet index
+	static const VocabIndex FIRST_ADDED; // first added alphabet index
+
 	RA_VocabTable () {}
 	~RA_VocabTable () {}
 
@@ -53,6 +59,8 @@ public:
 
 	VocabIndex add (const_entry_ref entry) throw (Exception);
 	const_entry_ref operator[] (VocabIndex idx) const throw (Exception);
+
+	VocabIndex size () const;
 
 private:
 	typedef std::vector<entry_type> alphabet_table_type;
@@ -65,12 +73,18 @@ private:
 //
 class EA_VocabTable : public VocabTable<const FI_EncodingAlgorithm *> {
 public:
+	static const VocabIndex MAX; // maximum index
+	static const VocabIndex LAST_BUILTIN; // last built-in algorithm index
+	static const VocabIndex FIRST_ADDED; // first added algorithm index
+
 	EA_VocabTable () {}
 	~EA_VocabTable () {}
 
 	void clear () throw ();
 
 	const_entry_ref operator[] (VocabIndex idx) const throw (Exception);
+
+	VocabIndex size () const;
 
 private:
 }; // class EA_VocabTable
@@ -80,6 +94,8 @@ private:
 //
 class DS_VocabTable : public VocabTable<CharString> {
 public:
+	static const VocabIndex MAX; // maximum index
+
 	DS_VocabTable () {}
 	~DS_VocabTable () {}
 
@@ -88,6 +104,10 @@ public:
 	VocabIndex add (const_entry_ref entry) throw (Exception);
 	const_entry_ref operator[] (VocabIndex idx) const throw (Exception);
 	VocabIndex find (const_entry_ref entry) const throw (Exception);
+
+	VocabIndex size () const {
+		return strings.size();
+	}
 
 private:
 	typedef std::vector<entry_type> string_table_type;
@@ -102,6 +122,8 @@ private:
 //
 class DN_VocabTable : public VocabTable<FI_NameSurrogate> {
 public:
+	static const VocabIndex MAX; // maximum index
+
 	DN_VocabTable () {}
 	~DN_VocabTable () {}
 
@@ -110,6 +132,10 @@ public:
 	VocabIndex add (const_entry_ref entry) throw (Exception);
 	const_entry_ref operator[] (VocabIndex idx) const throw (Exception);
 	VocabIndex find (const_entry_ref entry) const throw (Exception);
+
+	VocabIndex size () const {
+		return names.size();
+	}
 
 private:
 	typedef std::vector<entry_type> name_table_type;

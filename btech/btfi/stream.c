@@ -26,6 +26,8 @@ struct FI_tag_OctetStream {
 	FI_Length cursor;		/* read cursor */
 
 	FI_ErrorInfo error_info;	/* error information */
+
+	void *app_data;			/* application-specific data */
 }; /* FI_OctetStream */
 
 static int grow_buffer(FI_OctetStream *, FI_Length);
@@ -53,6 +55,8 @@ fi_create_stream(size_t initial_size)
 	fi_clear_stream(new_stream);
 
 	FI_CLEAR_ERROR(new_stream->error_info);
+
+	new_stream->app_data = NULL;
 
 	/* XXX: initial_size is only a suggestion, so we can't fail.  */
 	grow_buffer(new_stream, initial_size);
@@ -91,6 +95,19 @@ fi_clear_stream_error(FI_OctetStream *stream)
 /*
  * Stream operations.
  */
+
+/* Get/set app_data pointer.  */
+void *
+fi_get_stream_data(const FI_OctetStream *stream)
+{
+	return stream->app_data;
+}
+
+void
+fi_set_stream_data(FI_OctetStream *stream, void *app_data)
+{
+	stream->app_data = app_data;
+}
 
 /* Clear stream buffer.  */
 void

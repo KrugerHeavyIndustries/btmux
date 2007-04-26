@@ -20,17 +20,19 @@ die(const char *cause, const char *reason) throw (int)
 	throw 1;
 }
 
-template<typename T>
+template<typename T, typename U>
 void
-test_max(VocabTable<T>& table, const T& entry)
+test_max(T& table, const U& entry)
 {
-	for (VocabIndex ii = table.add(entry); ii < FI_VOCAB_INDEX_MAX; ii++) {
-		if (table.add(entry) != (ii + 1)) {
+	for (VocabIndex ii = table.add(entry); ii < T::MAX; ii++) {
+		if (table.add(entry) != (ii + 1)
+		    || table.size() != (ii + 1)) {
 			die("VocabTable<T>::add", "Index out of order");
 		}
 	}
 
-	if (table.add(entry) != FI_VOCAB_INDEX_NULL) {
+	if (table.add(entry) != FI_VOCAB_INDEX_NULL
+	    || table.size() != T::MAX) {
 		die("VocabTable<T>::add", "Didn't clamp at maximum index");
 	}
 
@@ -56,7 +58,7 @@ run_test()
 	idx1 = ra_vt1.add("hello world");
 	idx2 = ra_vt2.add("how now brown cow");
 
-	if (idx1 != 3 || idx2 != 3) {
+	if (idx1 != 16 || idx2 != 16) {
 		die("RA_VocabTable::add(CharString)",
 		    "Incorrect indexes assigned");
 	}
@@ -86,6 +88,14 @@ run_test()
 	}
 
 	try {
+		ra_vt2[4];
+
+		die("RA_VocabTable[VocabIndex]",
+		    "Didn't throw InvalidArgumentException");
+	} catch (const InvalidArgumentException& e) {
+	}
+
+	try {
 		ra_vt1.find("hello world");
 		ra_vt2.find("how now brown cow");
 
@@ -94,7 +104,7 @@ run_test()
 	} catch (const UnsupportedOperationException& e) {
 	}
 
-	test_max<CharString>(ra_vt1, "..");
+	test_max(ra_vt1, "..");
 
 	//
 	// Test encoding algorithm tables.
@@ -141,7 +151,7 @@ run_test()
 	}
 
 	// XXX: test_max() doesn't make sense when we can't add().
-	//test_max(ea_vt1);
+	//test_max(ea_vt1, 256);
 
 	//
 	// Test dynamic string tables.
@@ -200,7 +210,7 @@ run_test()
 	} catch (const InvalidArgumentException& e) {
 	}
 
-	test_max<CharString>(ds_vt1, ".");
+	test_max(ds_vt1, ".");
 
 	//
 	// Test dynamic name tables.

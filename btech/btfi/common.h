@@ -69,7 +69,6 @@ extern const char *const fi_error_strings[];
 typedef unsigned long VocabIndex;
 
 #define FI_VOCAB_INDEX_NULL 0
-#define FI_VOCAB_INDEX_MAX FI_ONE_MEG
 
 /* Convenience constants for built-in restricted alphabets.  */
 typedef enum {

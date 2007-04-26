@@ -29,7 +29,7 @@ using namespace BTech::FI;
 
 #define DEFAULT_BUFFER_SIZE 8192 // good as any; generally 2 pages/16 sectors
 
-// This must stay POD (plain old data) in order for offsetof() to be correct.
+// This must stay POD (plain old data) in order for offsetof() to be valid.
 struct FI_tag_Generator {
 	FI_ErrorInfo error_info;
 
@@ -39,6 +39,9 @@ struct FI_tag_Generator {
 	FI_OctetStream *buffer;
 
 	Document *document;
+
+	int partial_bit;			// partial octet bit #
+	FI_Octet partial_octet;			// partial octet
 }; // FI_Generator
 
 namespace {
@@ -74,6 +77,8 @@ fi_create_generator(void)
 		// Yay, auto_ptr magic.
 		return NULL;
 	}
+
+	fi_set_stream_data(new_gen->buffer, new_gen.get());
 
 	new_gen->document = new_doc.release();
 	return new_gen.release();

@@ -7,13 +7,14 @@
 #define BTECH_FI_DOCUMENT_HH
 
 #include "stream.h"
+#include "vocab.hh"
 
 namespace BTech {
 namespace FI {
 
 class Document : public Serializable {
 public:
-	Document () : start_flag(false), stop_flag(false) {}
+	Document ();
 	~Document () {}
 
 	// Next write()/read() will be document header.
@@ -28,6 +29,22 @@ public:
 private:
 	bool start_flag;
 	bool stop_flag;
+
+	// Fast Infoset vocabulary tables.
+	RA_VocabTable restricted_alphabets;
+	EA_VocabTable encoding_algorithms;
+
+	DS_VocabTable prefixes;
+	DS_VocabTable namespace_names;
+	DS_VocabTable local_names;
+	DS_VocabTable other_ncnames;
+	DS_VocabTable other_uris;
+	DS_VocabTable attribute_values;
+	DS_VocabTable content_character_chunks;
+	DS_VocabTable other_strings;
+
+	DN_VocabTable element_name_surrogates;
+	DN_VocabTable attribute_name_surrogates;
 }; // class Document
 
 } // namespace FI
