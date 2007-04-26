@@ -21,6 +21,7 @@ typedef struct {
     int rolls[11];
     int hitrolls[11];
     int critrolls[11];
+    int hitstats[12][3];
     int totrolls;
     int tothrolls;
     int totcrolls;

@@ -39,6 +39,9 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 {
 	int i;
 	float f1, f2;
+	int hitstatstotal;
+	float hitavg, missavg, glanceavg;
+	int totalhitrolls[3] = {0,0,0};
 
 	if(!rollstat.totrolls) {
 		notify(player, "No rolls to show statistics for!");
@@ -46,14 +49,44 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 	}
 	for(i = 0; i < 11; i++) {
 		if(i == 0) {
-			notify(player, "#   Rolls  Optimal% Present% Diff. in 1000");
+			notify(player, "#    Rolls Optimal% Present% Diff. in 1000");
 		}
 		f1 = (float) chances[i] * 100.0 / 36.0;
 		f2 = (float) rollstat.rolls[i] * 100.0 / rollstat.totrolls;
-		notify_printf(player, "%-3d %6d %8.3f %8.3f %.3f", i + 2,
+		notify_printf(player, "%-3d %6d %8.3f %8.3f %13.3f", i + 2,
 					  rollstat.rolls[i], f1, f2, 10.0 * f2 - 10.0 * f1);
 	}
 	notify_printf(player, "Total rolls: %d", rollstat.totrolls);
+
+	if(Wizard(player)) {
+	for(i = 0; i < 11; i++) {
+		if(i == 0) {
+			notify(player, "\nWeapon Fire Stats\nBTH   #Misses              #Hits           #Glances              Total");
+		}
+		hitavg = missavg = glanceavg = 0.0;
+		hitstatstotal = rollstat.hitstats[i][0] + rollstat.hitstats[i][1] + rollstat.hitstats[i][2];
+		totalhitrolls[3] += hitstatstotal;
+		totalhitrolls[0] += rollstat.hitstats[i][0];
+		totalhitrolls[1] += rollstat.hitstats[i][1];
+		totalhitrolls[2] += rollstat.hitstats[i][2];
+		if(hitstatstotal) {
+			missavg   = ( (float) rollstat.hitstats[i][0] / (float) hitstatstotal) * 100.0;
+			hitavg    = ( (float) rollstat.hitstats[i][1] / (float) hitstatstotal) * 100.0;
+			glanceavg = ( (float) rollstat.hitstats[i][2] / (float) hitstatstotal) * 100.0;
+		}
+		notify_printf(player,"%3d  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d",
+			i+2, rollstat.hitstats[i][0],missavg,rollstat.hitstats[i][1],hitavg,rollstat.hitstats[i][2],glanceavg,hitstatstotal);
+	}
+	hitavg = missavg = glanceavg = 0.0;
+	if(totalhitrolls[3]) {
+		missavg   = ( (float) totalhitrolls[0] / (float) totalhitrolls[3]) * 100.0;
+		hitavg    = ( (float) totalhitrolls[1] / (float) totalhitrolls[3]) * 100.0;
+		glanceavg = ( (float) totalhitrolls[2] / (float) totalhitrolls[3]) * 100.0;
+	}
+	notify_printf(player,"ALL  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d", 
+		totalhitrolls[0], missavg, totalhitrolls[1], hitavg, totalhitrolls[2], glanceavg, totalhitrolls[3]);
+	
+	}
 }
 
 /*
