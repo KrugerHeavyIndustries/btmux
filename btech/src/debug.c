@@ -17,6 +17,7 @@
 #include "p.map.obj.h"
 #include "p.mech.startup.h"
 #include "p.mech.partnames.h"
+#include "autopilot.h"
 
 void debug_list(dbref player, void *data, char *buffer)
 {
@@ -89,9 +90,9 @@ debug_check_stuff(void *key, void *data, int depth, void *arg)
 	total[xcode_obj->type] += size;
 	number[xcode_obj->type]++;
 
-	if(cheat_player > 0 && osize != size)
-		notify_printf(cheat_player, "#%d: %s (%d bytes)", key_val,
-		              SpecialObjects[xcode_obj->type].type, size);
+	if(cheat_player > 0)
+		notify_printf(cheat_player, "#%5d: %10s %5d", key_val,
+		              SpecialObjects[xcode_obj->type].type, xcode_obj->type == GTYPE_AUTO ? ((AUTO *)xcode_obj)->mymechnum : 0 );
 
 	return 1;
 }
