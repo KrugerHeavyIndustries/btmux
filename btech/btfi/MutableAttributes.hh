@@ -8,7 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "common.h"
+#include "Name.hh"
+#include "Value.hh"
 
 #include "Attributes.hh"
 
@@ -17,7 +18,7 @@ namespace FI {
 
 class MutableAttributes : public Attributes {
 private:
-	typedef std::pair<FI_Name,FI_Value> AttributePair;
+	typedef std::pair<Name,Value> NameValue;
 
 public:
 	// Clear all attributes from this set.
@@ -28,7 +29,8 @@ public:
 	// Add an attribute to this set.
 	bool add (const FI_Name *name, const FI_Value *value)
 	         throw (Exception) {
-		attributes.push_back(AttributePair (*name, *value));
+		attributes.push_back(NameValue (Name::getName(name),
+		                                Value::getValue(value)));
 		return true;
 	}
 
@@ -45,7 +47,7 @@ public:
 			return 0;
 		}
 
-		return &attributes[idx].first;
+		return attributes[idx].first.getProxy();
 	}
 
 	const FI_Value *getValue (int idx) const throw () {
@@ -53,11 +55,11 @@ public:
 			return 0;
 		}
 
-		return &attributes[idx].second;
+		return attributes[idx].second.getProxy();
 	}
 
 private:
-	std::vector<AttributePair> attributes;
+	std::vector<NameValue> attributes;
 }; // class MutableAttributes
 
 } // namespace FI

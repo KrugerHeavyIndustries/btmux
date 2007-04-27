@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "sax.h"
 
@@ -28,28 +29,35 @@ die_gen(const char *cause)
 	exit(EXIT_FAILURE);
 }
 
+static FI_Name *e_name, *a_name;
+static FI_Value *a_value;
 static FI_Attributes *attributes;
 
 static void
 start_element(FI_VocabIndex name, ...)
 {
-	va_list ap;
+	FI_VocabIndex a_idx;
 
-	FI_Name e_name, a_name;
-	FI_Value a_value;
+	va_list ap;
 
 	/* Collect attribute values.  */
 	fi_clear_attributes(attributes);
 
-	//a_name.type = FI_NAME_SURROGATE;
-	//a_name.as.surrogate.prefix_idx = FI_VOCAB_INDEX_NULL;
-	//a_name.as.surrogate.namespace_idx = 2; /* FIXME: get namespace index */
-
 	va_start(ap, name);
 
-	while (0) { //(a_name.as.surrogate.local_idx = va_arg(ap, FI_VocabIndex))) {
-		//a_value = va_arg(ap, const char *)
-		if (!fi_add_attribute(attributes, &a_name, &a_value)) {
+	while ((a_idx = va_arg(ap, FI_VocabIndex)) != FI_VOCAB_INDEX_NULL) {
+		const char *const a_buf = va_arg(ap, const char *);
+
+		if (!fi_set_name(a_name, FI_NAME_AS_INDEX, &a_idx)) {
+			die("fi_set_name");
+		}
+
+		if (!fi_set_value(a_value,
+		                  FI_VALUE_AS_OCTETS, strlen(a_buf), a_buf)) {
+			die("fi_set_value");
+		}
+
+		if (!fi_add_attribute(attributes, a_name, a_value)) {
 			die("fi_add_attribute");
 		}
 	}
@@ -57,12 +65,11 @@ start_element(FI_VocabIndex name, ...)
 	va_end(ap);
 
 	/* Begin element.  */
-	//e_name.type = FI_NAME_SURROGATE;
-	//e_name.as.surrogate.prefix_idx = FI_VOCAB_INDEX_NULL;
-	//e_name.as.surrogate.namespace_idx = 2; /* FIXME: get namespace index */
-	//e_name.as.surrogate.local_idx = name;
+	if (!fi_set_name(e_name, FI_NAME_AS_INDEX, &name)) {
+		die("fi_set_name");
+	}
 
-	if (!handler->startElement(handler, &e_name, attributes)) {
+	if (!handler->startElement(handler, e_name, attributes)) {
 		die_gen("generate::startElement");
 	}
 }
@@ -70,15 +77,12 @@ start_element(FI_VocabIndex name, ...)
 static void
 end_element(FI_VocabIndex name)
 {
-	FI_Name e_name;
-
 	/* End element.  */
-	//e_name.type = FI_NAME_SURROGATE;
-	//e_name.as.surrogate.prefix_idx = FI_VOCAB_INDEX_NULL;
-	//e_name.as.surrogate.namespace_idx = 2; /* FIXME: get namespace index */
-	//e_name.as.surrogate.local_idx = name;
+	if (!fi_set_name(e_name, FI_NAME_AS_INDEX, &name)) {
+		die("fi_set_name");
+	}
 
-	if (!handler->endElement(handler, &e_name)) {
+	if (!handler->endElement(handler, e_name)) {
 		die_gen("generate::endElement");
 	}
 }
@@ -92,6 +96,17 @@ write_test(void)
 	gen = fi_create_generator();
 	if (!gen) {
 		die("fi_create_generator");
+	}
+
+	e_name = fi_create_name();
+	a_name = fi_create_name();
+	if (!e_name || !a_name) {
+		die("fi_create_name");
+	}
+
+	a_value = fi_create_value();
+	if (!a_value) {
+		die("fi_create_value");
 	}
 
 	attributes = fi_create_attributes();
@@ -161,6 +176,9 @@ write_test(void)
 
 	/* Clean up.  */
 	fi_destroy_attributes(attributes);
+	fi_destroy_value(a_value);
+	fi_destroy_name(a_name);
+	fi_destroy_name(e_name);
 	fi_destroy_generator(gen);
 }
 

@@ -9,21 +9,14 @@
 #ifndef BTECH_FI_SAX_H
 #define BTECH_FI_SAX_H
 
+#include <stddef.h>
+
 #include "common.h"
+#include "generic.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-/*
- * Generic types.
- */
-
-typedef struct {
-} FI_Name;
-
-typedef struct {
-} FI_Value;
 
 /*
  * Attributes.
