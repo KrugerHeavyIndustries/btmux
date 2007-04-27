@@ -88,7 +88,7 @@ RA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 }
 
 VocabIndex
-RA_VocabTable::size() const
+RA_VocabTable::size() const throw ()
 {
 	if (alphabets.empty()) {
 		return LAST_BUILTIN;
@@ -175,7 +175,7 @@ EA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 }
 
 VocabIndex
-EA_VocabTable::size() const
+EA_VocabTable::size() const throw ()
 {
 	return LAST_BUILTIN;
 }

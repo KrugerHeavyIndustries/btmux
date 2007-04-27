@@ -34,6 +34,7 @@
 
 #include "autoconf.h"
 
+#include <cstring>
 #include <string>
 
 #include "stream.h"
@@ -50,6 +51,9 @@ const char *const NAMESPACE = "http://btonline-btech.sourceforge.net";
 
 bool write_header(FI_OctetStream *) throw ();
 bool write_trailer(FI_OctetStream *) throw ();
+
+bool write_ds_table(FI_OctetStream *, const DS_VocabTable&) throw ();
+bool write_dn_table(FI_OctetStream *, const DN_VocabTable&) throw ();
 
 } // anonymous namespace
 
@@ -72,9 +76,14 @@ void
 Document::write(FI_OctetStream *stream) throw (Exception)
 {
 	if (start_flag) {
-		writeInit();
+		initWrite();
 
 		if (!write_header(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+
+		if (!writeVocab(stream)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
@@ -101,7 +110,7 @@ Document::read(FI_OctetStream *stream) throw (Exception)
 }
 
 void
-Document::writeInit() throw (Exception)
+Document::initWrite() throw (Exception)
 {
 	/*
 	 * Initialize vocabulary tables.
@@ -122,10 +131,47 @@ Document::writeInit() throw (Exception)
 		throw IllegalStateException ();
 	}
 
-	/*
-	 * Initialize XML information set properties.
-	 */
+	// TODO: Add initial names.
+}
 
+bool
+Document::writeVocab(FI_OctetStream *stream) throw ()
+{
+	// Write padding (C.2.5: 000).
+	// Write optional component presence flags (C.2.5.1: 00001 ?00000??).
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
+	if (!w_buf) {
+		return false;
+	}
+
+	w_buf[0] = FI_BIT_8 /* namespace-names present */;
+	w_buf[1] = (local_names.size() ? FI_BIT_1 : 0)
+	           | (element_name_surrogates.size() ? FI_BIT_7 : 0)
+	           | (attribute_name_surrogates.size() ? FI_BIT_8 : 0);
+
+	// Write namespace-names (C.2.5.3).
+	if (!write_ds_table(stream, namespace_names)) {
+		return false;
+	}
+
+	// Write local-names (C.2.5.3)?
+	if (local_names.size() && !write_ds_table(stream, local_names)) {
+		return false;
+	}
+
+	// Write element-name-surrogates (C.2.5.5)?
+	if (element_name_surrogates.size()
+	    && !write_dn_table(stream, element_name_surrogates)) {
+		return false;
+	}
+
+	// Write attribute-name-surrogates (C.2.5.5)?
+	if (attribute_name_surrogates.size()
+	    && !write_dn_table(stream, attribute_name_surrogates)) {
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -135,27 +181,60 @@ Document::writeInit() throw (Exception)
 
 namespace {
 
+// Subsubroutine prototypes.
+bool write_name_surrogate(FI_OctetStream *, const FI_NameSurrogate&) throw ();
+bool write_length_sequence_of(FI_OctetStream *, FI_Length) throw ();
+bool write_non_empty_string_bit_2(FI_OctetStream *, const CharString&) throw ();
+bool write_non_zero_uint20_bit_2(FI_OctetStream *, FI_UInt20) throw ();
+
+const char *
+get_xml_decl(int version, int standalone)
+{
+	static const char *const xml_decl[] = {
+		"<?xml encoding='finf'?>",
+		"<?xml encoding='finf' standalone='no'?>",
+		"<?xml encoding='finf' standalone='yes'?>",
+		"<?xml version='1.0' encoding='finf'?>",
+		"<?xml version='1.0' encoding='finf' standalone='no'?>",
+		"<?xml version='1.0' encoding='finf' standalone='yes'?>",
+		"<?xml version='1.1' encoding='finf'?>",
+		"<?xml version='1.1' encoding='finf' standalone='no'?>",
+		"<?xml version='1.1' encoding='finf' standalone='yes'?>"
+	};
+
+	return xml_decl[3 * version + standalone];
+}
+
 bool
 write_header(FI_OctetStream *stream) throw ()
 {
+	// Decide which XML declaration to use.
+	const char *xml_decl = get_xml_decl(0 /* no version */,
+	                                    0 /* no standalone */);
+
+	size_t xml_decl_len = strlen(xml_decl);
+
 	// Reserve space.
-	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 4);
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, xml_decl_len + 5);
 	if (!w_buf) {
 		return false;
 	}
 
-	// Serialize document header.
-	// 11100000 00000000 (C.1.3a: identification)
+	// Write XML declaration.
+	memcpy(w_buf, xml_decl, xml_decl_len);
+	w_buf += xml_decl_len;
+
+	// Write identification (12.6: 11100000 00000000).
 	w_buf[0] = FI_BIT_1 | FI_BIT_2 | FI_BIT_3;
 	w_buf[1] = 0x00;
-	// 00000000 00000001 (C.1.3b: version number)
+
+	// Write Fast Infoset version number (12.7: 00000000 00000001).
 	w_buf[2] = 0x00;
 	w_buf[3] = FI_BIT_8;
 
-	// 0 (C.1.3c: padding)
-	if (!fi_write_stream_bits(stream, 1, 0)) {
-		return false;
-	}
+	// Write padding (12.8: 0).
+	// Write optional component presence flags (C.2.3: 0100000).
+	w_buf[4] = FI_BIT_3 /* initial-vocabulary present */;
 
 	return true;
 }
@@ -163,15 +242,26 @@ write_header(FI_OctetStream *stream) throw ()
 bool
 write_trailer(FI_OctetStream *stream) throw ()
 {
+	FI_Octet *w_buf;
+
 	// Serialize document trailer.
 	switch (fi_get_stream_num_bits(stream)) {
 	case 0:
-		// C.1.3: Ended on the 8th bit of an octet.
+		// Write termination (C.2.12: 1111).
+		// 12.11: Ended on the 4th bit of an octet.
+		w_buf = fi_get_stream_write_buffer(stream, 1);
+		if (!w_buf) {
+			return false;
+		}
+
+		w_buf[0] = FI_BIT_1 | FI_BIT_2 | FI_BIT_3 | FI_BIT_4;
 		break;
 
 	case 4:
-		// C.1.3: Ended on the 4th bit of an octet.
-		if (!fi_flush_stream_bits(stream)) {
+		// Write termination (C.2.12: 1111).
+		// 12.11: Ended on the 8th bit of an octet.
+		if (!fi_write_stream_bits(stream, 4, FI_BIT_1 | FI_BIT_2
+		                                     | FI_BIT_3 | FI_BIT_4)) {
 			return false;
 		}
 		break;
@@ -189,127 +279,273 @@ write_trailer(FI_OctetStream *stream) throw ()
 	return true;
 }
 
-typedef struct {
-	FI_Length length;
-	FI_Octet *octets;
-} FI_OctetString;
-
-typedef enum {
-	FI_BOOLEAN_NULL,
-	FI_BOOLEAN_FALSE,
-	FI_BOOLEAN_TRUE
-} FI_Boolean;
-
-typedef FI_OctetString FI_URI;
-
-typedef struct {
-	FI_URI id;
-	FI_OctetString data;
-} FI_AdditionalDatum;
-
-typedef struct {
-	FI_Length length;
-	FI_AdditionalDatum datum;
-} FI_AdditionalData;
-
-typedef enum {
-	FI_VERSION_NULL,
-	FI_VERSION_1_0,
-	FI_VERSION_1_1
-} FI_Version;
-
-typedef struct {
-	FI_AdditionalData additional_data;
-
-	/* Additional data.  */
-	/* Initial vocabulary.  */
-	/* Notations.  */
-	/* Unparsed entities.  */
-	/* Character encoding scheme.  */
-	FI_Boolean standalone;
-	FI_Version version;
-
-	/* Children.  */
-} FI_Document;
-
-
-/*
- * Subroutines for the optional XML declaration, conforming to section 12.3.
- */
-
-static const char *const xml_decl[] = {
-	"<?xml encoding='finf'?>",
-	"<?xml encoding='finf' standalone='no'?>",
-	"<?xml encoding='finf' standalone='yes'?>",
-	"<?xml version='1.0' encoding='finf'?>",
-	"<?xml version='1.0' encoding='finf' standalone='no'?>",
-	"<?xml version='1.0' encoding='finf' standalone='yes'?>",
-	"<?xml version='1.1' encoding='finf'?>",
-	"<?xml version='1.1' encoding='finf' standalone='no'?>",
-	"<?xml version='1.1' encoding='finf' standalone='yes'?>"
-};
-
-#define GET_XML_DECL(v,s) (xml_decl[3 * (v) + (s)])
-
-static int
-fi_write_xml_decl()
+// C.2.5.3: Identifier string vocabulary tables.
+bool
+write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab) throw ()
 {
+	// Write string count (C.21).
+	if (!write_length_sequence_of(stream,
+	                              vocab.size() - vocab.last_builtin)) {
+		return false;
+	}
+
+	// Write items.
+	for (VocabIndex ii = vocab.first_added; ii <= vocab.size(); ii++) {
+		// Write item padding (C.2.5.3: 0).
+		if (!fi_write_stream_bits(stream, 1, 0)) {
+			return false;
+		}
+
+		// Write item (C.22).
+		if (!write_non_empty_string_bit_2(stream, vocab[ii])) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
-static int
-fi_read_xml_decl()
+// C.2.5.5: Name surrogate vocabulary tables.
+bool
+write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab) throw ()
 {
+	// Write name surrogate count (C.21).
+	if (!write_length_sequence_of(stream, vocab.size())) {
+		return false;
+	}
+
+	// Write items.
+	for (VocabIndex ii = 1; ii <= vocab.size(); ii++) {
+		// Write item padding (C.2.5.5: 000000).
+		if (!fi_write_stream_bits(stream, 6, 0)) {
+			return false;
+		}
+
+		// Write item (C.16).
+		if (!write_name_surrogate(stream, vocab[ii])) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
-/* Section 12.6.  */
-static FI_Octet const fi_header[] = { 0xE0, 0x00 };
+//
+// Document serialization subsubroutines.
+// TODO: These are probably useful for more than just the Document type, and
+// probably need to be moved into their own module.
+// TODO: Although the spec talks about bits, we can work just in octets, but we
+// may need to pass around the values of some bits if they're not jsut padding.
+//
 
-/* Section 12.7.  */
-static FI_Octet const fi_version[] = { 0x00, 0x01 };
+#include <cassert>
 
-/* 12.8: Bit 8 of following octet is 0.  */
+// C.16
+bool
+write_name_surrogate(FI_OctetStream *stream, const FI_NameSurrogate& name)
+                    throw ()
+{
+	assert(fi_get_stream_num_bits(stream) == 6); // C.16.2
 
-/* ECN encoding of Document.  */
+	FI_Octet presence_flags = 0;
 
-/* 12.11: 4 bits of padding to complete final octet.  */
+	// Set prefix-string-index presence flag (C.16.3).
+	if (name.prefix_idx) {
+		presence_flags |= FI_BIT_1;
+	}
 
-
-/* Based on informational section C.2.  */
+	// Set namespace-name-string-index presence flag (C.16.4).
+	if (name.namespace_idx) {
+		presence_flags |= FI_BIT_2;
+	}
 
-/* C.2.3: 7-bit field, indicating absence/presence of optional components.  */
+	if (!fi_write_stream_bits(stream, 2, presence_flags)) {
+		return false;
+	}
 
-/* C.2.4/C.21: additional-data: length (id uri)+. */
+	// If prefix-string-index, '0' + C.25 (C.16.5).
+	if (name.prefix_idx) {
+		if (!fi_write_stream_bits(stream, 1, 0)) {
+			return false;
+		}
 
-/* C.2.5: initial-vocabulary.  */
+		if (!write_non_zero_uint20_bit_2(stream, name.prefix_idx)) {
+			return false;
+		}
+	}
 
-/* C.2.6: notations.  */
-/* b110000 */
-/* C.11.3: <system-identifier?> <public-identifier?> */
+	// If namespace-name-string-index, '0' + C.25 (C.16.6).
+	if (name.namespace_idx) {
+		if (!fi_write_stream_bits(stream, 1, 0)) {
+			return false;
+		}
 
+		if (!write_non_zero_uint20_bit_2(stream, name.namespace_idx)) {
+			return false;
+		}
+	}
 
-/* C.2.7: unparsed-entities.  */
+	// For local-name-string-index, '0' + C.25 (C.16.7).
+	if (!fi_write_stream_bits(stream, 1, 0)) {
+		return false;
+	}
 
-/* C.2.8: character-encoding-scheme.  */
+	if (!write_non_zero_uint20_bit_2(stream, name.local_idx)) {
+		return false;
+	}
 
-/* C.2.9: standalone.  0x00 = FALSE, 0x01 = TRUE.  Optional.  */
+	return true;
+}
 
-/* C.2.10/C.14: version.  */
+// C.21
+bool
+write_length_sequence_of(FI_OctetStream *stream, FI_Length len) throw ()
+{
+	assert(len > 0 && len <= FI_ONE_MEG);
+	assert(fi_get_stream_num_bits(stream) == 0); // C.21.1
 
-/* C.2.11: 0 or more children. (element, processing, comment, DTD.) */
+	FI_Octet *w_buf;
 
-/* C.2.12: 0xF: Termination bits. (Potentially 0xF0 with padding.) */
+	if (len <= 128) {
+		// [1,128] (C.21.2)
+		w_buf = fi_get_stream_write_buffer(stream, 1);
+		if (!w_buf) {
+			return false;
+		}
 
-
-/* C.21: Sequence-Of length.  */
-//1 -- 128: 0x00 -- 0x7F
-//129 -- 2^20: 0x80 0x00 0x00 -- 0x8F 0xFF 0x7F
+		w_buf[0] = len - 1;
+	} else {
+		// [129,2^20] (C.21.3)
+		w_buf = fi_get_stream_write_buffer(stream, 3);
+		if (!w_buf) {
+			return false;
+		}
 
-/* C.22: NonEmptyOctetString, starting at 2nd bit.  */
-/* Length + octets.  */
-//1 -- 64: 0x00 -- 0x3F
-//65 -- 320: 0x40 -- 0x40 0xFF
-//321 -- 2^32: 0x60 0xFF 0xFF 0xFE 0xBF -- 0x60 0xFF 0xFF 0xFE 0xBF
+		len -= 129;
+
+		w_buf[0] = FI_BIT_1 /* 1000 */ | (len >> 16);
+		w_buf[1] = len >> 8;
+		w_buf[2] = len;
+	}
+
+	return true;
+}
+
+// C.22
+bool
+write_non_empty_string_bit_2(FI_OctetStream *stream, const CharString& str)
+                            throw ()
+{
+	assert(str.size() > 0 && str.size() <= FI_FOUR_GIG);
+	assert(fi_get_stream_num_bits(stream) == 1);  // C.22.1
+
+	// Write string length (C.22.3).
+	FI_Length len;
+	FI_Octet *w_buf;
+
+	if (str.size() <= 64) {
+		// [1,64] (C.22.3.1)
+		len = str.size() - 1;
+
+		if (!fi_write_stream_bits(stream, 7, len << 1)) {
+			return false;
+		}
+	} else if (str.size() <= 320) {
+		// [65,320] (C.22.3.2)
+		len = str.size() - 65;
+
+		if (!fi_write_stream_bits(stream, 7, FI_BIT_1 /* 10 00000 */)) {
+			return false;
+		}
+
+		w_buf = fi_get_stream_write_buffer(stream, 1);
+		if (!w_buf) {
+			return false;
+		}
+
+		w_buf[0] = len;
+	} else {
+		// [321,2^32] (C.22.3.3)
+		len = str.size() - 321;
+
+		if (!fi_write_stream_bits(stream, 7,
+		                          FI_BIT_1 | FI_BIT_2 /* 11 00000 */)) {
+			return false;
+		}
+
+		w_buf = fi_get_stream_write_buffer(stream, 4);
+		if (!w_buf) {
+			return false;
+		}
+
+		w_buf[0] = len >> 24;
+		w_buf[1] = len >> 16;
+		w_buf[2] = len >> 8;
+		w_buf[3] = len;
+	}
+
+	// Write string octets (C.22.4).
+	w_buf = fi_get_stream_write_buffer(stream, str.size());
+	if (!w_buf) {
+		return false;
+	}
+
+	str.copy(reinterpret_cast<FI_Char *>(w_buf), str.size());
+
+	return true;
+}
+
+// C.25
+bool
+write_non_zero_uint20_bit_2(FI_OctetStream *stream, FI_UInt20 val) throw ()
+{
+	assert(val > 0 && val <= FI_ONE_MEG);
+	assert(fi_get_stream_num_bits(stream) == 1); // C.25.1
+
+	FI_Octet *w_buf;
+
+	if (val <= 64) {
+		// [1,64] (C.25.2)
+		val -= 1;
+
+		if (!fi_write_stream_bits(stream, 7, val << 1)) {
+			return false;
+		}
+	} else if (val <= 8256) {
+		// [65,8256] (C.25.3)
+		val -= 65;
+
+		if (!fi_write_stream_bits(stream, 7, FI_BIT_1 | val >> 7)) {
+			return false;
+		}
+
+		w_buf = fi_get_stream_write_buffer(stream, 1);
+		if (!w_buf) {
+			return false;
+		}
+
+		w_buf[0] = val;
+	} else {
+		// [8257,2^20] (C.25.4)
+		val -= 8257;
+
+		if (!fi_write_stream_bits(stream, 7,
+		                          FI_BIT_1 | FI_BIT_2 | val >> 15)) {
+			return false;
+		}
+
+		w_buf = fi_get_stream_write_buffer(stream, 2);
+		if (!w_buf) {
+			return false;
+		}
+
+		w_buf[0] = val >> 8;
+		w_buf[1] = val;
+	}
+
+	return true;
+}
 
 } // anonymous namespace
 

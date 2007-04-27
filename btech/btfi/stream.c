@@ -217,6 +217,20 @@ fi_get_stream_bits(const FI_OctetStream *stream)
 	return stream->bits;
 }
 
+/* Explicitly sets the contents of the bit accumulator.  */
+int
+fi_set_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits)
+{
+	if (num_bits < 0 || num_bits > 7 || (bits & 0x01)) {
+		FI_SET_ERROR(stream->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
+	stream->bits = bits;
+	stream->num_bits = num_bits;
+	return 1;
+}
+
 /*
  * Clear the bit accumulator, writing its value out to the stream.  Any missing
  * bits will be padded out with 0's.

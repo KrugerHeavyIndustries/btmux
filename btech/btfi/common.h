@@ -11,7 +11,8 @@
  * Constants.
  */
 
-#define FI_ONE_MEG 1048576
+#define FI_ONE_MEG 1048576UL /* 2^20 */
+#define FI_FOUR_GIG 4294967296ULL /* 2^32 */
 
 /*
  * Common types.
@@ -20,6 +21,7 @@
 typedef unsigned char FI_Octet;		/* 8-bit octet */
 typedef char FI_Char;			/* UTF-8 character component */
 
+typedef unsigned long FI_UInt20;	/* 0 to at least 2^20 */
 typedef unsigned long FI_Length;	/* 0 to at least 2^32 - 1 */
 
 /*

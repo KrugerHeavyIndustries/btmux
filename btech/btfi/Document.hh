@@ -16,8 +16,9 @@ namespace FI {
 
 class Document : public Serializable {
 public:
-	Document () : start_flag (false), stop_flag (false) {}
-	~Document () {}
+	Document ()
+	: start_flag (false), stop_flag (false),
+	  prefixes (1), namespace_names (1) {}
 
 	// Next write()/read() will be document header.
 	void start () throw ();
@@ -32,7 +33,8 @@ private:
 	bool start_flag;
 	bool stop_flag;
 
-	void writeInit () throw (Exception);
+	void initWrite () throw (Exception);
+	bool writeVocab (FI_OctetStream *stream) throw ();
 
 	// Fast Infoset vocabulary tables.
 	RA_VocabTable restricted_alphabets;
