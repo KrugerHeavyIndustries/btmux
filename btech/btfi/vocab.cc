@@ -30,9 +30,9 @@ const CharString DATE_AND_TIME_ALPHABET ("012345789-:TZ ");
 
 } // anonymous namespace
 
-const VocabIndex RA_VocabTable::MAX = 256; // 7.2.18
-const VocabIndex RA_VocabTable::LAST_BUILTIN = FI_RA_DATE_AND_TIME;
-const VocabIndex RA_VocabTable::FIRST_ADDED = 16; // 7.2.19
+const FI_VocabIndex RA_VocabTable::MAX = 256; // 7.2.18
+const FI_VocabIndex RA_VocabTable::LAST_BUILTIN = FI_RA_DATE_AND_TIME;
+const FI_VocabIndex RA_VocabTable::FIRST_ADDED = 16; // 7.2.19
 
 void
 RA_VocabTable::clear() throw ()
@@ -40,7 +40,7 @@ RA_VocabTable::clear() throw ()
 	alphabets.clear();
 }
 
-VocabIndex
+FI_VocabIndex
 RA_VocabTable::add(const_entry_ref entry) throw (Exception)
 {
 	// X.891 section 8.2.2 requires restricted alphabets to contain 2 or
@@ -49,7 +49,7 @@ RA_VocabTable::add(const_entry_ref entry) throw (Exception)
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = FIRST_ADDED + alphabets.size();
+	FI_VocabIndex nextIndex = FIRST_ADDED + alphabets.size();
 
 	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
@@ -60,7 +60,7 @@ RA_VocabTable::add(const_entry_ref entry) throw (Exception)
 }
 
 RA_VocabTable::const_entry_ref
-RA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
+RA_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
 {
 	switch (idx) {
 	case FI_RA_NUMERIC:
@@ -87,7 +87,7 @@ RA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 	}
 }
 
-VocabIndex
+FI_VocabIndex
 RA_VocabTable::size() const throw ()
 {
 	if (alphabets.empty()) {
@@ -124,9 +124,9 @@ const FI_EncodingAlgorithm *ea_cdata_ptr = &fi_ea_cdata;
 
 } // anonymous namespace
 
-const VocabIndex EA_VocabTable::MAX = 256; // 7.2.18
-const VocabIndex EA_VocabTable::LAST_BUILTIN = FI_EA_CDATA;
-const VocabIndex EA_VocabTable::FIRST_ADDED = 32; // 7.2.20
+const FI_VocabIndex EA_VocabTable::MAX = 256; // 7.2.18
+const FI_VocabIndex EA_VocabTable::LAST_BUILTIN = FI_EA_CDATA;
+const FI_VocabIndex EA_VocabTable::FIRST_ADDED = 32; // 7.2.20
 
 void
 EA_VocabTable::clear() throw ()
@@ -135,7 +135,7 @@ EA_VocabTable::clear() throw ()
 }
 
 EA_VocabTable::const_entry_ref
-EA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
+EA_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
 {
 	switch (idx) {
 	case FI_EA_HEXADECIMAL:
@@ -174,7 +174,7 @@ EA_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 	}
 }
 
-VocabIndex
+FI_VocabIndex
 EA_VocabTable::size() const throw ()
 {
 	return LAST_BUILTIN;
@@ -202,7 +202,7 @@ const CharString EMPTY_STRING ("");
 
 } // anonymous namespace
 
-const VocabIndex DS_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
+const FI_VocabIndex DS_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
 
 void
 DS_VocabTable::clear() throw ()
@@ -211,14 +211,14 @@ DS_VocabTable::clear() throw ()
 	reverse_map.clear();
 }
 
-VocabIndex
+FI_VocabIndex
 DS_VocabTable::add(const_entry_ref entry) throw (Exception)
 {
 	if (entry.empty()) {
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = size() + 1;
+	FI_VocabIndex nextIndex = size() + 1;
 
 	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
@@ -230,7 +230,7 @@ DS_VocabTable::add(const_entry_ref entry) throw (Exception)
 }
 
 DS_VocabTable::const_entry_ref
-DS_VocabTable::operator[](VocabIndex idx) const throw (Exception)
+DS_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
 {
 	if (idx == FI_VOCAB_INDEX_NULL) {
 		return EMPTY_STRING;
@@ -241,7 +241,7 @@ DS_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 	return strings[idx - 1];
 }
 
-VocabIndex
+FI_VocabIndex
 DS_VocabTable::find(const_entry_ref entry) const throw (Exception)
 {
 	if (entry.empty()) {
@@ -271,7 +271,7 @@ DS_VocabTable::find(const_entry_ref entry) const throw (Exception)
  * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
  */
 
-const VocabIndex DN_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
+const FI_VocabIndex DN_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
 
 void
 DN_VocabTable::clear() throw ()
@@ -280,14 +280,14 @@ DN_VocabTable::clear() throw ()
 	reverse_map.clear();
 }
 
-VocabIndex
+FI_VocabIndex
 DN_VocabTable::add(const_entry_ref entry) throw (Exception)
 {
 	if (entry.local_idx == FI_VOCAB_INDEX_NULL) {
 		throw InvalidArgumentException ();
 	}
 
-	VocabIndex nextIndex = size() + 1;
+	FI_VocabIndex nextIndex = size() + 1;
 
 	if (nextIndex > MAX) {
 		return FI_VOCAB_INDEX_NULL;
@@ -299,7 +299,7 @@ DN_VocabTable::add(const_entry_ref entry) throw (Exception)
 }
 
 DN_VocabTable::const_entry_ref
-DN_VocabTable::operator[](VocabIndex idx) const throw (Exception)
+DN_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
 {
 	if (idx <= FI_VOCAB_INDEX_NULL || idx > size()) {
 		throw IndexOutOfBoundsException ();
@@ -308,7 +308,7 @@ DN_VocabTable::operator[](VocabIndex idx) const throw (Exception)
 	return names[idx - 1];
 }
 
-VocabIndex
+FI_VocabIndex
 DN_VocabTable::find(const_entry_ref entry) const throw (Exception)
 {
 	name_map_type::const_iterator p = reverse_map.find(entry);

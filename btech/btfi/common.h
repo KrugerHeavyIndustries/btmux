@@ -34,6 +34,7 @@ typedef enum {
 	FI_ERROR_EOS,			/* End of stream */
 	FI_ERROR_NOFILE,		/* File not found */
 	FI_ERROR_INVAL,			/* Invalid argument */
+	FI_ERROR_ILLEGAL,		/* Illegal state */
 	FI_ERROR_ERRNO,			/* Check errno */
 	FI_ERROR_EXCEPTION		/* Caught Exception */
 } FI_ErrorCode;
@@ -68,7 +69,7 @@ extern const char *const fi_error_strings[];
  */
 
 /* Sections 6.5 and 6.10: Vocabulary table indexes range from 1 to 2^20.  */
-typedef unsigned long VocabIndex;
+typedef unsigned long FI_VocabIndex;
 
 #define FI_VOCAB_INDEX_NULL 0
 
@@ -93,14 +94,14 @@ typedef enum {
 } FI_EA_VocabIndex;
 
 typedef struct FI_NameSurrogate {
-	VocabIndex prefix_idx;		/* optional */
-	VocabIndex namespace_idx;	/* optional, required by prefix_idx */
-	VocabIndex local_idx;		/* required */
+	FI_VocabIndex prefix_idx;	/* optional */
+	FI_VocabIndex namespace_idx;	/* optional, required by prefix_idx */
+	FI_VocabIndex local_idx;	/* required */
 
 #ifdef __cplusplus
-	FI_NameSurrogate (VocabIndex local_idx,
-	                  VocabIndex namespace_idx = FI_VOCAB_INDEX_NULL,
-	                  VocabIndex prefix_idx = FI_VOCAB_INDEX_NULL)
+	FI_NameSurrogate (FI_VocabIndex local_idx,
+	                  FI_VocabIndex namespace_idx = FI_VOCAB_INDEX_NULL,
+	                  FI_VocabIndex prefix_idx = FI_VOCAB_INDEX_NULL)
 	: prefix_idx(prefix_idx),
 	  namespace_idx(namespace_idx),
 	  local_idx(local_idx) {}

@@ -126,6 +126,28 @@ fi_generate(FI_Generator *gen, const char *filename)
 	return 1;
 }
 
+FI_VocabIndex
+fi_add_element_name(FI_Generator *gen, const char *name)
+{
+	try {
+		return gen->document->addElementName(name);
+	} catch (const Exception& e) {
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
+		return FI_VOCAB_INDEX_NULL;
+	}
+}
+
+FI_VocabIndex
+fi_add_attribute_name(FI_Generator *gen, const char *name)
+{
+	try {
+		return gen->document->addAttributeName(name);
+	} catch (const Exception& e) {
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
+		return FI_VOCAB_INDEX_NULL;
+	}
+}
+
 
 //
 // Parser API.

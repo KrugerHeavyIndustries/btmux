@@ -24,7 +24,7 @@ template<typename T, typename U>
 void
 test_max(T& table, const U& entry)
 {
-	for (VocabIndex ii = table.add(entry); ii < T::MAX; ii++) {
+	for (FI_VocabIndex ii = table.add(entry); ii < T::MAX; ii++) {
 		if (table.add(entry) != (ii + 1)
 		    || table.size() != (ii + 1)) {
 			die("VocabTable<T>::add", "Index out of order");
@@ -42,7 +42,7 @@ test_max(T& table, const U& entry)
 void
 run_test()
 {
-	VocabIndex idx1, idx2, idx3;
+	FI_VocabIndex idx1, idx2, idx3;
 
 	//
 	// Construct a few examples of the various tables.
@@ -74,7 +74,7 @@ run_test()
 
 	if (ra_vt1[idx1] != "hello world"
 	    || ra_vt2[idx2] != "how now brown cow") {
-		die("RA_VocabTable[VocabIndex]",
+		die("RA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
@@ -82,7 +82,7 @@ run_test()
 		ra_vt1[0];
 		ra_vt2[4];
 
-		die("RA_VocabTable[VocabIndex]",
+		die("RA_VocabTable[FI_VocabIndex]",
 		    "Didn't throw IndexOutOfBoundsException");
 	} catch (const IndexOutOfBoundsException& e) {
 	}
@@ -90,7 +90,7 @@ run_test()
 	try {
 		ra_vt2[4];
 
-		die("RA_VocabTable[VocabIndex]",
+		die("RA_VocabTable[FI_VocabIndex]",
 		    "Didn't throw InvalidArgumentException");
 	} catch (const InvalidArgumentException& e) {
 	}
@@ -128,7 +128,7 @@ run_test()
 	    || ea_vt2[8] != &fi_ea_double
 	    || ea_vt2[9] != &fi_ea_uuid
 	    || ea_vt2[10] != &fi_ea_cdata) {
-		die("EA_VocabTable[VocabIndex]",
+		die("EA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
@@ -136,7 +136,7 @@ run_test()
 		ea_vt1[0];
 		ea_vt2[11];
 
-		die("EA_VocabTable[VocabIndex]",
+		die("EA_VocabTable[FI_VocabIndex]",
 		    "Didn't throw IndexOutOfBoundsException");
 	} catch (const IndexOutOfBoundsException& e) {
 	}
@@ -178,7 +178,7 @@ run_test()
 	    || ds_vt1[idx1] != "how"
 	    || ds_vt2[idx2] != "now://brown"
 	    || ds_vt3[idx3] != "cow") {
-		die("DS_VocabTable[VocabIndex]",
+		die("DS_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
@@ -187,7 +187,7 @@ run_test()
 		ds_vt2[2];
 		ds_vt3[2];
 
-		die("DS_VocabTable[VocabIndex]",
+		die("DS_VocabTable[FI_VocabIndex]",
 		    "Didn't throw IndexOutOfBoundsException");
 	} catch (const IndexOutOfBoundsException& e) {
 	}
@@ -236,7 +236,7 @@ run_test()
 	}
 
 	if (dn_vt1[idx1] != ns1 || dn_vt2[idx2] != ns2) {
-		die("DN_VocabTable[VocabIndex]",
+		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
@@ -244,7 +244,7 @@ run_test()
 		dn_vt1[0];
 		dn_vt2[2];
 
-		die("DN_VocabTable[VocabIndex]",
+		die("DN_VocabTable[FI_VocabIndex]",
 		    "Didn't throw IndexOutOfBoundsException");
 	} catch (const IndexOutOfBoundsException& e) {
 	}
