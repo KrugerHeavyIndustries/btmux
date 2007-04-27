@@ -72,10 +72,6 @@ public:
 	}
 
 	// Proxy handling.
-	static const Value& getValue (const FI_Value *proxy) throw () {
-		return proxy->parent;
-	}
-
 	const FI_Value *getProxy () const throw () {
 		return &proxy;
 	}

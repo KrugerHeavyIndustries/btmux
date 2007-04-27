@@ -8,9 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "Name.hh"
-#include "Value.hh"
-
 #include "Attributes.hh"
 
 namespace BTech {
@@ -27,10 +24,8 @@ public:
 	}
 
 	// Add an attribute to this set.
-	bool add (const FI_Name *name, const FI_Value *value)
-	         throw (Exception) {
-		attributes.push_back(NameValue (Name::getName(name),
-		                                Value::getValue(value)));
+	bool add (const Name& name, const Value& value) throw (Exception) {
+		attributes.push_back(NameValue (name, value));
 		return true;
 	}
 
@@ -42,20 +37,20 @@ public:
 		return attributes.size();
 	}
 
-	const FI_Name *getName (int idx) const throw () {
+	const Name& getName (int idx) const throw (Exception) {
 		if (idx < 0 || idx >= getLength()) {
-			return 0;
+			throw IndexOutOfBoundsException ();
 		}
 
-		return attributes[idx].first.getProxy();
+		return attributes[idx].first;
 	}
 
-	const FI_Value *getValue (int idx) const throw () {
+	const Value& getValue (int idx) const throw (Exception) {
 		if (idx < 0 || idx >= getLength()) {
-			return 0;
+			throw IndexOutOfBoundsException ();
 		}
 
-		return attributes[idx].second.getProxy();
+		return attributes[idx].second;
 	}
 
 private:

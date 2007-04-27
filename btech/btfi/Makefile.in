@@ -45,7 +45,7 @@ CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libbtfi_la_LIBADD =
-am_libbtfi_la_OBJECTS = sax.lo Document.lo Element.lo Attributes.lo \
+am_libbtfi_la_OBJECTS = sax.lo Document.lo Element.lo \
 	MutableAttributes.lo Name.lo Value.lo generic.lo vocab.lo \
 	encalg.lo encutil.lo stream.lo common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
@@ -191,8 +191,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libbtfi.la
 libbtfi_la_SOURCES = sax.cc sax.h \
-	Document.cc Element.cc Attributes.cc MutableAttributes.cc \
-	Document.hh Element.hh Attributes.hh MutableAttributes.hh \
+	Document.cc Element.cc MutableAttributes.cc \
+	Document.hh Element.hh MutableAttributes.hh Attributes.hh \
 	Name.cc Value.cc generic.cc \
 	Name.hh Value.hh generic.h \
 	vocab.cc encalg.c encutil.cc stream.c common.c \
@@ -266,7 +266,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Attributes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Document.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Element.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MutableAttributes.Plo@am__quote@

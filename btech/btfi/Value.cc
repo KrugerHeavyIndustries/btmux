@@ -64,7 +64,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 	// Create/assign the new value.
 	switch (type) {
 	case FI_VALUE_AS_SHORT:
-		if (value_type == FI_VALUE_AS_SHORT) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Int16>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Int16>(count, buf);
@@ -75,7 +75,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_INT:
-		if (value_type == FI_VALUE_AS_INT) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Int32>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Int32>(count, buf);
@@ -86,7 +86,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_LONG:
-		if (value_type == FI_VALUE_AS_LONG) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Int64>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Int64>(count, buf);
@@ -97,7 +97,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_BOOLEAN:
-		if (value_type == FI_VALUE_AS_BOOLEAN) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Boolean>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Boolean>(count, buf);
@@ -108,7 +108,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_FLOAT:
-		if (value_type == FI_VALUE_AS_FLOAT) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Float32>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Float32>(count, buf);
@@ -119,7 +119,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_DOUBLE:
-		if (value_type == FI_VALUE_AS_DOUBLE) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Float64>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Float64>(count, buf);
@@ -132,7 +132,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 	case FI_VALUE_AS_UUID:
 		count *= sizeof(FI_UUID); // FIXME: check for overflow
 
-		if (value_type == FI_VALUE_AS_UUID) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Octet>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Octet>(count, buf);
@@ -143,7 +143,7 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
 		break;
 
 	case FI_VALUE_AS_OCTETS:
-		if (value_type == FI_VALUE_AS_OCTETS) {
+		if (value_type == type && value_count == count) {
 			set_value_buf<FI_Octet>(value_buf, count, buf);
 		} else {
 			new_buf = new_value_buf<FI_Octet>(count, buf);

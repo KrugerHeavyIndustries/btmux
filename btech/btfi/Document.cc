@@ -63,6 +63,8 @@ Document::start() throw ()
 {
 	start_flag = true;
 	stop_flag = false;
+
+	nesting_depth = 0;
 }
 
 void

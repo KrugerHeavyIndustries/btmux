@@ -11,7 +11,10 @@
 #ifndef BTECH_FI_ATTRIBUTES_HH
 #define BTECH_FI_ATTRIBUTES_HH
 
-#include "sax.h"
+#include "common.h"
+
+#include "Name.hh"
+#include "Value.hh"
 
 namespace BTech {
 namespace FI {
@@ -23,9 +26,9 @@ protected:
 public:
 	virtual int getLength () const throw () = 0;
 
-	virtual const FI_Name *getName (int idx) const throw () = 0;
+	virtual const Name& getName (int idx) const throw (Exception) = 0;
 
-	virtual const FI_Value *getValue (int idx) const throw () = 0;
+	virtual const Value& getValue (int idx) const throw (Exception) = 0;
 }; // class Attributes
 
 } // namespace FI

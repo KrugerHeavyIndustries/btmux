@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <cassert>
 
 #include "common.h"
 #include "stream.h"
@@ -15,6 +16,7 @@
 #include <memory>
 
 #include "Document.hh"
+#include "Element.hh"
 #include "MutableAttributes.hh"
 
 #include "sax.h"
@@ -55,7 +57,7 @@ int
 fi_add_attribute(FI_Attributes *attrs,
                  const FI_Name *name, const FI_Value *value)
 {
-	return attrs->impl.add(name, value);
+	return attrs->impl.add(name->parent, value->parent);
 }
 
 int
@@ -67,13 +69,21 @@ fi_get_attributes_length(const FI_Attributes *attrs)
 const FI_Name *
 fi_get_attribute_name(const FI_Attributes *attrs, int idx)
 {
-	return attrs->impl.getName(idx);
+	try {
+		return attrs->impl.getName(idx).getProxy();
+	} catch (const IndexOutOfBoundsException& e) {
+		return 0;
+	}
 }
 
 const FI_Value *
 fi_get_attribute_value(const FI_Attributes *attrs, int idx)
 {
-	return attrs->impl.getValue(idx);
+	try {
+		return attrs->impl.getValue(idx).getProxy();
+	} catch (const IndexOutOfBoundsException& e) {
+		return 0;
+	}
 }
 
 
@@ -93,6 +103,7 @@ struct FI_tag_Generator {
 	FI_OctetStream *buffer;
 
 	Document *document;
+	Element *element;
 }; // FI_Generator
 
 namespace {
@@ -111,10 +122,12 @@ fi_create_generator(void)
 {
 	auto_ptr<FI_Generator> new_gen;
 	auto_ptr<Document> new_doc;
+	auto_ptr<Element> new_element;
 
 	try {
 		new_gen.reset(new FI_Generator);
 		new_doc.reset(new Document);
+		new_element.reset(new Element (*new_doc));
 	} catch (const std::bad_alloc& e) {
 		// Yay, auto_ptr magic.
 		return NULL;
@@ -137,6 +150,7 @@ fi_create_generator(void)
 	}
 
 	new_gen->document = new_doc.release();
+	new_gen->element = new_element.release();
 	return new_gen.release();
 }
 
@@ -150,6 +164,7 @@ fi_destroy_generator(FI_Generator *gen)
 
 	fi_destroy_stream(gen->buffer);
 
+	delete gen->element;
 	delete gen->document;
 	delete gen;
 }
@@ -372,12 +387,44 @@ int
 gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
                     const FI_Attributes *attrs) throw ()
 {
+	FI_Generator *gen = GET_GEN(handler);
+
+	// Sanity checks.
+	if (!gen->fpout) {
+		FI_SET_ERROR(gen->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
+	// Write element header.
+	gen->element->start(name->parent, attrs->impl);
+
+	if (!write_object(gen, gen->element)) {
+		// error_info set by write_object().
+		return 0;
+	}
+
 	return 1;
 }
 
 int
 gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name) throw ()
 {
+	FI_Generator *gen = GET_GEN(handler);
+
+	// Sanity checks.
+	if (!gen->fpout) {
+		FI_SET_ERROR(gen->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
+	// Write element trailer.
+	gen->element->stop(name->parent);
+
+	if (!write_object(gen, gen->element)) {
+		// error_info set by write_object().
+		return 0;
+	}
+
 	return 1;
 }
 

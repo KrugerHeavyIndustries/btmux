@@ -9,8 +9,6 @@
 #include "stream.h"
 #include "vocab.hh"
 
-#include "Element.hh"
-
 namespace BTech {
 namespace FI {
 
@@ -26,6 +24,23 @@ public:
 
 	// Next write()/read() will be document trailer.
 	void stop () throw ();
+
+	// Increase nesting depth.
+	void decreaseDepth () throw () {
+		// TODO: Check nesting_depth >= 0.
+		nesting_depth--;
+	}
+
+	// Decrease nesting depth.
+	void increaseDepth () throw () {
+		// TODO: Check nesting_depth <= MAX.
+		nesting_depth++;
+	}
+
+	// Get nesting depth.
+	int getDepth () const throw () {
+		return nesting_depth;
+	}
 
 	// Add an element/attribute name to the initial vocabulary.
 	FI_VocabIndex addElementName (const char *name) throw (Exception);
@@ -45,6 +60,8 @@ private:
 	FI_VocabIndex addName (DN_VocabTable& table, const char *name)
 	                      throw (Exception);
 	bool writeVocab (FI_OctetStream *stream) throw ();
+
+	int nesting_depth;
 
 	// Fast Infoset vocabulary tables.
 	RA_VocabTable restricted_alphabets;
