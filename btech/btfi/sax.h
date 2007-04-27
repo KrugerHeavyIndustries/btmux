@@ -15,11 +15,38 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct FI_tag_ContentHandler FI_ContentHandler;
+/*
+ * Generic types.
+ */
 
-/* TODO: Types like Attributes, etc. should be defined elsewhere.  */
-typedef struct FI_tag_Name FI_Name;
+typedef struct {
+} FI_Name;
+
+typedef struct {
+} FI_Value;
+
+/*
+ * Attributes.
+ */
+
 typedef struct FI_tag_Attributes FI_Attributes;
+
+FI_Attributes *fi_create_attributes(void);
+void fi_destroy_attributes(FI_Attributes *attrs);
+
+void fi_clear_attributes(FI_Attributes *attrs);
+int fi_add_attribute(FI_Attributes *attrs,
+                     const FI_Name *name, const FI_Value *value);
+
+int fi_get_attributes_length(const FI_Attributes *attrs);
+const FI_Name *fi_get_attribute_name(const FI_Attributes *attrs, int idx);
+const FI_Value *fi_get_attribute_value(const FI_Attributes *attrs, int idx);
+
+/*
+ * Event handlers.
+ */
+
+typedef struct FI_tag_ContentHandler FI_ContentHandler;
 
 struct FI_tag_ContentHandler {
 	/* Document start/stop events.  */
@@ -28,8 +55,8 @@ struct FI_tag_ContentHandler {
 
 	/* Element start/stop events.  */
 	int (*startElement)(FI_ContentHandler *handler,
-	                    FI_Name *name, FI_Attributes *atts);
-	int (*endElement)(FI_ContentHandler *handler, FI_Name *name);
+	                    const FI_Name *name, const FI_Attributes *attrs);
+	int (*endElement)(FI_ContentHandler *handler, const FI_Name *name);
 
 	/* "Character" chunks. */
 	int (*characters)(FI_Octet ch[], int start, int length);

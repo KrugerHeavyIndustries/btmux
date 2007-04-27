@@ -15,12 +15,66 @@
 #include <memory>
 
 #include "Document.hh"
+#include "MutableAttributes.hh"
 
 #include "sax.h"
 
 using std::auto_ptr;
 
 using namespace BTech::FI;
+
+
+/*
+ * Attributes API.
+ */
+
+// C-compatible wrapper around the MutableAttributes class.
+struct FI_tag_Attributes {
+	MutableAttributes impl;
+}; // FI_Attributes
+
+FI_Attributes *
+fi_create_attributes(void)
+{
+	return new FI_Attributes ();
+}
+
+void
+fi_destroy_attributes(FI_Attributes *attrs)
+{
+	delete attrs;
+}
+
+void
+fi_clear_attributes(FI_Attributes *attrs)
+{
+	attrs->impl.clear();
+}
+
+int
+fi_add_attribute(FI_Attributes *attrs,
+                 const FI_Name *name, const FI_Value *value)
+{
+	return attrs->impl.add(name, value);
+}
+
+int
+fi_get_attributes_length(const FI_Attributes *attrs)
+{
+	return attrs->impl.getLength();
+}
+
+const FI_Name *
+fi_get_attribute_name(const FI_Attributes *attrs, int idx)
+{
+	return attrs->impl.getName(idx);
+}
+
+const FI_Value *
+fi_get_attribute_value(const FI_Attributes *attrs, int idx)
+{
+	return attrs->impl.getValue(idx);
+}
 
 
 /*
@@ -43,8 +97,12 @@ struct FI_tag_Generator {
 
 namespace {
 
-int gen_ch_startDocument(FI_ContentHandler *);
-int gen_ch_endDocument(FI_ContentHandler *);
+int gen_ch_startDocument(FI_ContentHandler *) throw ();
+int gen_ch_endDocument(FI_ContentHandler *) throw ();
+
+int gen_ch_startElement(FI_ContentHandler *, const FI_Name *,
+                        const FI_Attributes *) throw ();
+int gen_ch_endElement(FI_ContentHandler *, const FI_Name *) throw ();
 
 } // anonymous namespace
 
@@ -66,6 +124,9 @@ fi_create_generator(void)
 
 	new_gen->content_handler.startDocument = gen_ch_startDocument;
 	new_gen->content_handler.endDocument = gen_ch_endDocument;
+
+	new_gen->content_handler.startElement = gen_ch_startElement;
+	new_gen->content_handler.endElement = gen_ch_endElement;
 
 	new_gen->fpout = NULL;
 	new_gen->buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
@@ -256,7 +317,7 @@ write_object(FI_Generator *gen, Serializable *object)
 }
 
 int
-gen_ch_startDocument(FI_ContentHandler *handler)
+gen_ch_startDocument(FI_ContentHandler *handler) throw ()
 {
 	FI_Generator *gen = GET_GEN(handler);
 
@@ -278,7 +339,7 @@ gen_ch_startDocument(FI_ContentHandler *handler)
 }
 
 int
-gen_ch_endDocument(FI_ContentHandler *handler)
+gen_ch_endDocument(FI_ContentHandler *handler) throw ()
 {
 	FI_Generator *gen = GET_GEN(handler);
 
@@ -304,6 +365,19 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 	}
 
 	gen->fpout = NULL;
+	return 1;
+}
+
+int
+gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
+                    const FI_Attributes *attrs) throw ()
+{
+	return 1;
+}
+
+int
+gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name) throw ()
+{
 	return 1;
 }
 

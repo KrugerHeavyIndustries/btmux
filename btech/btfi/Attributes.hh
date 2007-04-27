@@ -11,29 +11,21 @@
 #ifndef BTECH_FI_ATTRIBUTES_HH
 #define BTECH_FI_ATTRIBUTES_HH
 
+#include "sax.h"
+
 namespace BTech {
 namespace FI {
-
-typedef struct FI_tag_Name FI_Name; // FIXME: define elsewhere
-typedef struct FI_tag_Value FI_Value; // FIXME: define elsewhere
 
 class Attributes {
 protected:
 	virtual ~Attributes () {}
 
 public:
-	virtual int getIndex (const FI_Name *name) const throw () = 0;
-
 	virtual int getLength () const throw () = 0;
 
-	virtual const FI_Value *getValue (int index) const throw () = 0;
+	virtual const FI_Name *getName (int idx) const throw () = 0;
 
-	// Convenience method for getting a value directly from a name.
-	virtual const FI_Value *getValue (const FI_Name *name) const throw () {
-		const int idx = getIndex(name);
-
-		return (idx == -1) ? 0 : getValue(idx);
-	}
+	virtual const FI_Value *getValue (int idx) const throw () = 0;
 }; // class Attributes
 
 } // namespace FI
