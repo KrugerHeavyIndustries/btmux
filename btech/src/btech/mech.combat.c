@@ -1249,11 +1249,11 @@ void FireWeapon(MECH * mech,
 				rollstat.hitstats[RbaseToHit - 2][1]++;
 			if(roll > RbaseToHit && mudconf.btech_glancing_blows && RbaseToHit < 13 && RbaseToHit > 1)
 				rollstat.hitstats[RbaseToHit - 2][1]++;
-
+		}
 			MechFireBroadcast(mech, ishex ? NULL : target, mapx, mapy,
 							  mech_map, &MechWeapons[weapindx].name[3],
 							  (roll >= RbaseToHit) && range_ok);
-		}
+		
 	}
 	/* Tell our target they were just shot at... */
 	if(target) {
