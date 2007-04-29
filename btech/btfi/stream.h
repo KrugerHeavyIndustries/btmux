@@ -51,6 +51,10 @@ FI_Octet *fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length);
 #define FI_BIT_7 0x02
 #define FI_BIT_8 0x01
 
+#define FI_BITS(a,b,c,d,e,f,g,h) \
+	(((a+0) << 7) | ((b+0) << 6) | ((c+0) << 5) | ((d+0) << 4) \
+	 | ((e+0) << 3) | ((f+0) << 2) | ((g+0) << 1) | (h+0))
+
 int fi_get_stream_num_bits(const FI_OctetStream *stream);
 FI_Octet fi_get_stream_bits(const FI_OctetStream *stream);
 int fi_set_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits);

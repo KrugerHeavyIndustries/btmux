@@ -145,7 +145,7 @@ write_test(void)
 	 * Write this document as a Fast Infoset:
 	 *
 	 * <?xml encoding='utf-8'?>
-	 * <how cow='moo'>
+	 * <how xmlns="http://btonline-btech.sourceforge.net" cow='moo'>
 	 *     <now brown='1' now='3.14'>
 	 *         <how brown='oops' />
 	 *     </now>
