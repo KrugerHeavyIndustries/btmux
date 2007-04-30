@@ -1163,9 +1163,15 @@ void ammo_explosion(MECH * attacker, MECH * mech, int ammoloc,
 		DamageMech(mech, attacker, 0, -1, ammoloc, 0, 0, -1, damage, -1, 0,
 				   -1, 0, 0);
 
+/* Rule Reference: BMR Revised, Page 16-17 (Ammo Explosion=2 Bruise) */
+/* Rule Reference: Total Warfare, Page 41 (Ammo Explosion=2 Bruise) */
+
 	if(MechType(mech) != CLASS_BSUIT) {
 		mech_notify(mech, MECHPILOT,
 					"You take personal injury from the ammunition explosion!");
+
+/* Rule Reference: MaxTech Revised, Page 46 (Reduce by 1 because of pain resistance) */
+
 		if(HasBoolAdvantage(MechPilot(mech), "pain_resistance"))
 			headhitmwdamage(mech, mech, 1);
 		else
@@ -1478,6 +1484,10 @@ void UpdateHeat(MECH * mech)
 
 	if(MechHeat(mech) < 0.0)
 		MechHeat(mech) = 0.0;
+
+/* Rule Reference: BMR Revised, Page 17 (Heat=>26 +2 Bruise, Heat=>15 +1 Bruise, w/o Lifesupport) */
+/* Rule Reference: Total Warfare, Page 42 (Heat=>26 +2 Bruise, Heat=>15 +1 Bruise, w/o Lifesupport) */
+/* Custom Rule: Give bruise if heat > 30 and Random 0 or 1 */
 
 	if((muxevent_tick % TURN) == 0)
 		if(MechCritStatus(mech) & LIFE_SUPPORT_DESTROYED ||

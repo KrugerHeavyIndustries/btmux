@@ -1787,6 +1787,10 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 
 	/* damage pilot */
 	MechCocoon(mech) = 0;
+	
+/* Rule Reference: BMR Revised, Page 16 ( Fall = Bruise if Pilot roll fails) */
+/* Rule Reference: Total Warfare, Page 41 ( Fall = Bruise if Pilot roll fails) */
+
 	if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW || seemsg)
 		mech_notify(mech, MECHPILOT,
 					"You try to avoid taking damage in the fall.");

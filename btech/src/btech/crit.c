@@ -381,6 +381,18 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 					   MechWeapons[Weapon2I(critType)].explosiondamage, -1, 7,
 					   -1, 0, 1);
 		}
+/* Rule Reference: BMR Revised, Page 16-17 (Ammo Explosion=2 Bruise) */
+/* Rule Reference: Total Warfare, Page 41 (Ammo Explosion=2 Bruise) */
+	
+		if(MechType(mech) != CLASS_BSUIT) {
+			mech_notify(mech, MECHPILOT, "You take personal injury from the ammunition explosion!");
+
+/* Rule Reference: MaxTech Revised, Page 46 (Reduce by 1 because of pain resistance) */
+
+		if(HasBoolAdvantage(MechPilot(mech), "pain_resistance"))
+			headhitmwdamage(mech, mech, 1);
+		else
+			headhitmwdamage(mech, mech, 2);
 
 		return 1;
 	} else if(IsAMS(Weapon2I(critType))) {	/* Have to shut down AMS when its critted */

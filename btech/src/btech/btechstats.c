@@ -893,33 +893,42 @@ int PilotStatusRollNeeded[] = { 0, 3, 5, 7, 10, 11 };
 
 int mw_ic_bth(MECH * mech)
 {
+/* Rule Reference: BMR Revised, Page 17 ( Consciousness Table ) */
+/* Rule Reference: Total Warfare, Page 41-42 ( Consciousness Table ) */
+/* Rule Reference: MaxTech Revised, Page 46 ( Pain Resistance = -1 ) */
+
 	int playerBLD;
 	int bruise, playerhits;
 	PSTATS *s;
-	int mod = 1;
+	int mod = 0;
 
 	s = retrieve_stats(MechPilot(mech),
 					   VALUES_ATTRS | VALUES_ADVS | VALUES_HEALTH);
 	playerBLD = char_gvalue(s, "build");
 	bruise = char_gbruise(s);
 	playerhits = 10 * playerBLD - bruise;
-	if(char_gvalue(s, "toughness") == 1)
+	if(char_gvalue(s, "pain_resistance") == 1)
 		mod = -1;
 	if(playerhits >= (8 * playerBLD))
-		return 3 * mod;
+		return 3 + mod;
 	else if(playerhits >= (6 * playerBLD))
-		return 5 * mod;
+		return 5 + mod;
 	else if(playerhits >= (4 * playerBLD))
-		return 7 * mod;
+		return 7 + mod;
 	else if(playerhits >= (2 * playerBLD))
-		return 9 * mod;
+		return 10 + mod;
 	else if(playerhits >= -1)
-		return 11 * mod;
+		return 11 + mod;
 	return 0;
 }
 
 int handlemwconc(MECH * mech, int initial)
 {
+/* Rule Reference: MechWarrior 2nd Edition RPG, Page 22 (Toughness = Best of 3D6) */
+/* Rule Reference: Old Tactical Handbook, Page 51 (Use MW 2nd Edition) */
+/* Rule Reference: BMR Revised, Page 17 ( >5 Bruise = Death ) */
+/* Rule Reference: Total Warfare, Page 41-42 ( >5 Bruise = Death ) */
+
 	int m, roll;
 
 	if(In_Character(mech->mynum) && MechPilot(mech) > 0)
@@ -944,7 +953,7 @@ int handlemwconc(MECH * mech, int initial)
 	}
 	if(initial && Uncon(mech))
 		return 0;
-	if(m < 0)
+	if(HasBoolAdvantage(MechPilot(mech), "toughness"))
 		/*  Gets the saving roll for someone with toughness  */
 		roll = char_rollsaving();
 	else

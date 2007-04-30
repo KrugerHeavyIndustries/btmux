@@ -595,6 +595,10 @@ void DamageMech(MECH * wounded,
 
 		/*      mech_notify (wounded, MECHALL,
 		   "You take 10 points of Lethal damage!!"); */
+
+/* Rule Reference: BMR Revised, Page 16 (Head Hit = 1 Bruise) */
+/* Rule Reference: Total Warfare, Page 41 (Head Hit = 1 Bruise) */
+
 		headhitmwdamage(wounded, attacker, 1);
 	}
 	if(kill) {
