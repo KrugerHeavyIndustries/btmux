@@ -393,7 +393,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 			headhitmwdamage(wounded, wounded, 1);
 		else
 			headhitmwdamage(wounded, wounded, 2);
-
+}
 		return 1;
 	} else if(IsAMS(Weapon2I(critType))) {	/* Have to shut down AMS when its critted */
 		mech_printf(wounded, MECHALL,
