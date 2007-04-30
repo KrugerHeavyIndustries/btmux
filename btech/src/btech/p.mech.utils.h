@@ -21,6 +21,9 @@ void MarkForLOSUpdate(MECH * mech);
 /* Intentional kill types.  */
 #define KILL_TYPE_NORMAL "DESTROYED" /* all other kills; includes carrier destruction */
 #define KILL_TYPE_PILOT "PILOT"
+#define KILL_TYPE_BEHEADED "BEHEADED"
+#define KILL_TYPE_XLENGINE "XLENGINE"
+
 void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason);
 
 MAP *ValidMap(dbref player, dbref map);

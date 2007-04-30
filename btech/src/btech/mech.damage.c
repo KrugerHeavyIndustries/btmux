@@ -950,7 +950,10 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 			DestroySection(wounded, attacker, LOS, RARM);
 		else if(hitloc == CTORSO || hitloc == HEAD) {
 			if(!Destroyed(wounded))
-				DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
+				if(hitloc == HEAD)
+					DestroyMech(wounded, attacker, 1, KILL_TYPE_BEHEADED);
+				else
+					DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 			/* If it's the head or a MW's CT, kill the contents if IC */
 			if(hitloc == HEAD || ((MechType(wounded) == CLASS_MW) &&
 								  (hitloc == CTORSO))) {

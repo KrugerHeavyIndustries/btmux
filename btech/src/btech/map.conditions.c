@@ -258,11 +258,17 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 							reactor_explosion(wounded, attacker);	
 						}
 
-
-						DestroyMech(wounded, attacker, 1,
-						            (wounded == attacker)
-						            ? KILL_TYPE_SELF_DESTRUCT
-						            : KILL_TYPE_NORMAL);
+						if((MechType(wounded) == CLASS_MECH) && 
+								(hitloc == LTORSO || hitloc == RTORSO) && (MechSpecials(wounded) && XL_TECH))
+						        DestroyMech(wounded, attacker, 1, 
+										(wounded == attacker) 
+										? KILL_TYPE_SELF_DESTRUCT 
+										: KILL_TYPE_XLENGINE);
+						else
+							DestroyMech(wounded, attacker, 1,
+							            (wounded == attacker)
+							            ? KILL_TYPE_SELF_DESTRUCT
+							            : KILL_TYPE_NORMAL);
 					}
 					break;
 				case TARGETING_COMPUTER:
