@@ -16,38 +16,38 @@ class Document : public Serializable {
 public:
 	Document ()
 	: start_flag (false), stop_flag (false),
-	  is_reading (false), is_writing (false),
-	  prefixes (1), namespace_names (1) {}
+	  is_reading (false), is_writing (false) {}
 
 	// Next write()/read() will be document header.
-	void start () throw ();
+	void start ();
 
 	// Next write()/read() will be document trailer.
-	void stop () throw ();
+	void stop ();
 
 	// Increase nesting depth.
-	void decreaseDepth () throw () {
+	void decreaseDepth () {
 		// TODO: Check nesting_depth >= 0.
 		nesting_depth--;
 	}
 
 	// Decrease nesting depth.
-	void increaseDepth () throw () {
+	void increaseDepth () {
 		// TODO: Check nesting_depth <= MAX.
 		nesting_depth++;
 	}
 
 	// Get nesting depth.
-	int getDepth () const throw () {
+	int getDepth () const {
 		return nesting_depth;
 	}
 
-	// Add an element/attribute name to the initial vocabulary.
-	FI_VocabIndex addElementName (const char *name) throw (Exception);
-	FI_VocabIndex addAttributeName (const char *name) throw (Exception);
+	// Get a vocabulary table reference for an element/attribute name in
+	// the default namespace.
+	VocabTable::EntryRef getElementNameRef (const char *name);
+	VocabTable::EntryRef getAttributeNameRef (const char *name);
 
-	void write (FI_OctetStream *stream) throw (Exception);
-	void read (FI_OctetStream *stream) throw (Exception);
+	void write (FI_OctetStream *stream);
+	void read (FI_OctetStream *stream);
 
 private:
 	bool start_flag;
@@ -56,10 +56,8 @@ private:
 	bool is_reading;
 	bool is_writing;
 
-	void setWriting () throw (Exception);
-	FI_VocabIndex addName (DN_VocabTable& table, const char *name)
-	                      throw (Exception);
-	bool writeVocab (FI_OctetStream *stream) throw ();
+	void setWriting ();
+	bool writeVocab (FI_OctetStream *stream);
 
 	int nesting_depth;
 
@@ -67,8 +65,8 @@ private:
 	RA_VocabTable restricted_alphabets;
 	EA_VocabTable encoding_algorithms;
 
-	DS_VocabTable prefixes;
-	DS_VocabTable namespace_names;
+	PFX_DS_VocabTable prefixes;
+	NSN_DS_VocabTable namespace_names;
 	DS_VocabTable local_names;
 
 	DS_VocabTable other_ncnames;

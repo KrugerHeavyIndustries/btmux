@@ -16,6 +16,57 @@ namespace BTech {
 namespace FI {
 
 /*
+ * Generic VocabTable definitions.
+ */
+
+void
+VocabTable::clear ()
+{
+	if (parent) {
+		base_idx = parent->last_idx + 1;
+		last_idx = parent->last_idx;
+	}
+
+	vocabulary.clear();
+}
+
+FI_VocabIndex
+VocabTable::acquireIndex(Entry *entry)
+{
+	if (last_idx >= max_idx) {
+		return FI_VOCAB_INDEX_NULL;
+	}
+
+	// Assign index.
+	vocabulary.push_back(EntryRef(entry));
+	return ++last_idx;
+}
+
+const VocabTable::EntryRef&
+VocabTable::lookupIndex(FI_VocabIndex idx) const
+{
+	if (idx < base_idx) {
+		// Parent index.
+		if (!parent) {
+			throw IndexOutOfBoundsException ();
+		}
+
+		return parent->lookupIndex(idx);
+	}
+
+	// TODO: We can assert idx <= last_idx.
+
+	idx -= base_idx;
+
+	if (idx >= vocabulary.size()) {
+		throw IndexOutOfBoundsException ();
+	}
+
+	return vocabulary[idx];
+}
+
+
+/*
  * 8.2: Restricted alphabets: Character sets for restricted strings.  Not
  * dynamic.  Entries 1 and 2 are defined in section 9.
  *
@@ -23,78 +74,64 @@ namespace FI {
  * character set.
  */
 
-namespace {
-
-const CharString NUMERIC_ALPHABET ("0123456789-+.e ");
-const CharString DATE_AND_TIME_ALPHABET ("012345789-:TZ ");
-
-} // anonymous namespace
-
-const FI_VocabIndex RA_VocabTable::MAX = 256; // 7.2.18
-const FI_VocabIndex RA_VocabTable::LAST_BUILTIN = FI_RA_DATE_AND_TIME;
-const FI_VocabIndex RA_VocabTable::FIRST_ADDED = 16; // 7.2.19
-
-void
-RA_VocabTable::clear() throw ()
+RA_VocabTable::RA_VocabTable()
+: TypedVocabTable<value_type> (256), // 7.2.18
+  NUMERIC_ALPHABET (get_numeric_alphabet()),
+  DATE_AND_TIME_ALPHABET (get_date_and_time_alphabet())
 {
-	alphabets.clear();
+	base_idx = 16; // 7.2.19
+	last_idx = base_idx - 1;
 }
 
-FI_VocabIndex
-RA_VocabTable::add(const_entry_ref entry) throw (Exception)
+const VocabTable::EntryRef
+RA_VocabTable::getEntry(const_value_ref value)
 {
 	// X.891 section 8.2.2 requires restricted alphabets to contain 2 or
 	// more characters.
-	if (entry.size() < 2) {
+	if (value.size() < 2) {
 		throw InvalidArgumentException ();
 	}
 
-	FI_VocabIndex nextIndex = FIRST_ADDED + alphabets.size();
-
-	if (nextIndex > MAX) {
-		return FI_VOCAB_INDEX_NULL;
+	if (value == getValue(NUMERIC_ALPHABET)) {
+		return NUMERIC_ALPHABET;
+	} else if (value == getValue(DATE_AND_TIME_ALPHABET)) {
+		return DATE_AND_TIME_ALPHABET;
+	} else {
+		return TypedVocabTable<value_type>::getEntry(value);
 	}
-
-	alphabets.push_back(entry);
-	return nextIndex;
 }
 
-RA_VocabTable::const_entry_ref
-RA_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
+RA_VocabTable::const_value_ref
+RA_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	switch (idx) {
 	case FI_RA_NUMERIC:
-		return NUMERIC_ALPHABET;
+		return getValue(NUMERIC_ALPHABET);
 
 	case FI_RA_DATE_AND_TIME:
-		return DATE_AND_TIME_ALPHABET;
+		return getValue(DATE_AND_TIME_ALPHABET);
 
 	default:
-		// Fall back to look-up table.
-		if (idx <= FI_VOCAB_INDEX_NULL) {
-			throw IndexOutOfBoundsException ();
-		} else if (idx < FIRST_ADDED) {
-			throw InvalidArgumentException ();
-		}
-
-		idx -= FIRST_ADDED;
-
-		if (idx >= alphabets.size()) {
-			throw IndexOutOfBoundsException ();
-		}
-
-		return alphabets[idx];
+		return TypedVocabTable<value_type>::operator [](idx);
 	}
 }
 
-FI_VocabIndex
-RA_VocabTable::size() const throw ()
+// Provides singleton NUMERIC_ALPHABET TypedEntry, to avoid static init.
+RA_VocabTable::TypedEntry&
+RA_VocabTable::get_numeric_alphabet()
 {
-	if (alphabets.empty()) {
-		return LAST_BUILTIN;
-	} else {
-		return FIRST_ADDED + alphabets.size() - 1;
-	}
+	static StaticTypedEntry NUMERIC_ALPHABET (FI_RA_NUMERIC,
+	                                          "0123456789-+.e ");
+	return NUMERIC_ALPHABET;
+}
+
+// Provides singleton DATE_AND_TIME_ALPHABET TypedEntry, to avoid static init.
+RA_VocabTable::TypedEntry&
+RA_VocabTable::get_date_and_time_alphabet()
+{
+	static StaticTypedEntry DATE_AND_TIME_ALPHABET (FI_RA_DATE_AND_TIME,
+	                                                "012345789-:TZ ");
+	return DATE_AND_TIME_ALPHABET;
 }
 
 
@@ -124,18 +161,21 @@ const FI_EncodingAlgorithm *ea_cdata_ptr = &fi_ea_cdata;
 
 } // anonymous namespace
 
-const FI_VocabIndex EA_VocabTable::MAX = 256; // 7.2.18
-const FI_VocabIndex EA_VocabTable::LAST_BUILTIN = FI_EA_CDATA;
-const FI_VocabIndex EA_VocabTable::FIRST_ADDED = 32; // 7.2.20
-
-void
-EA_VocabTable::clear() throw ()
+EA_VocabTable::EA_VocabTable()
+: TypedVocabTable<value_type> (256) // 7.2.18
 {
-	// XXX: No support for external encoding algorithms.
+	base_idx = 32; // 7.2.20
+	last_idx = base_idx - 1;
 }
 
-EA_VocabTable::const_entry_ref
-EA_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
+EA_VocabTable::DynamicTypedEntry *
+EA_VocabTable::createTypedEntry(const_value_ref value)
+{
+	throw UnsupportedOperationException ();
+}
+
+EA_VocabTable::const_value_ref
+EA_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	switch (idx) {
 	case FI_EA_HEXADECIMAL:
@@ -174,12 +214,6 @@ EA_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
 	}
 }
 
-FI_VocabIndex
-EA_VocabTable::size() const throw ()
-{
-	return LAST_BUILTIN;
-}
-
 
 /*
  * 8.4: Dynamic strings: Character strings.  Dynamic.  Each document has 8:
@@ -196,66 +230,40 @@ EA_VocabTable::size() const throw ()
  * Processing rules are defined in section 7.13 and 7.14.
  */
 
-namespace {
-
-const CharString EMPTY_STRING ("");
-
-} // anonymous namespace
-
-const FI_VocabIndex DS_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
-
-void
-DS_VocabTable::clear() throw ()
+DS_VocabTable::DS_VocabTable()
+: EMPTY_STRING (get_empty_string())
 {
-	strings.clear();
-	reverse_map.clear();
 }
 
-FI_VocabIndex
-DS_VocabTable::add(const_entry_ref entry) throw (Exception)
+const VocabTable::EntryRef
+DS_VocabTable::getEntry (const_value_ref value)
 {
-	if (entry.empty()) {
-		throw InvalidArgumentException ();
+	if (value.empty()) {
+		return EMPTY_STRING;
 	}
 
-	FI_VocabIndex nextIndex = size() + 1;
-
-	if (nextIndex > MAX) {
-		return FI_VOCAB_INDEX_NULL;
-	}
-
-	strings.push_back(entry);
-	reverse_map[entry] = nextIndex;
-	return nextIndex;
+	return TypedVocabTable<value_type>::getEntry (value);
 }
 
-DS_VocabTable::const_entry_ref
-DS_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
+DS_VocabTable::const_value_ref
+DS_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	if (idx == FI_VOCAB_INDEX_NULL) {
-		return EMPTY_STRING;
-	} else if (idx < FI_VOCAB_INDEX_NULL || idx > size()) {
-		throw IndexOutOfBoundsException ();
+		return getValue(EMPTY_STRING);
+	} else {
+		return TypedVocabTable<value_type>::operator [](idx);
 	}
-
-	return strings[idx - 1];
 }
 
-FI_VocabIndex
-DS_VocabTable::find(const_entry_ref entry) const throw (Exception)
+// Provides singleton EMPTY_STRING TypedEntry, to avoid static init.
+DS_VocabTable::TypedEntry&
+DS_VocabTable::get_empty_string()
 {
-	if (entry.empty()) {
-		throw InvalidArgumentException ();
-	}
-
-	string_map_type::const_iterator p = reverse_map.find(entry);
-	if (p == reverse_map.end()) {
-		return FI_VOCAB_INDEX_NULL;
-	}
-
-	return p->second;
+	static StaticTypedEntry EMPTY_STRING (FI_VOCAB_INDEX_NULL, "");
+	return EMPTY_STRING;
 }
 
+#if 0
 
 /*
  * 8.5: Dynamic names: Name surrogates.  Dynamic.  Each document has 2:
@@ -270,8 +278,6 @@ DS_VocabTable::find(const_entry_ref entry) const throw (Exception)
  * The meaning of the three possible kinds of name surrogates is defined in
  * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
  */
-
-const FI_VocabIndex DN_VocabTable::MAX = FI_ONE_MEG; // 7.2.18
 
 void
 DN_VocabTable::clear() throw ()
@@ -318,6 +324,7 @@ DN_VocabTable::find(const_entry_ref entry) const throw (Exception)
 
 	return p->second;
 }
+#endif
 
 } // namespace FI
 } // namespace BTech

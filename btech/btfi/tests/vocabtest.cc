@@ -22,17 +22,17 @@ die(const char *cause, const char *reason) throw (int)
 
 template<typename T, typename U>
 void
-test_max(T& table, const U& entry)
+test_max(T& table, const U& sample, FI_VocabIndex max)
 {
-	for (FI_VocabIndex ii = table.add(entry); ii < T::MAX; ii++) {
-		if (table.add(entry) != (ii + 1)
-		    || table.size() != (ii + 1)) {
+	for (FI_VocabIndex ii = table.createEntry(sample).getIndex();
+	     ii < max;
+	     ii++) {
+		if (table.createEntry(sample).getIndex() != (ii + 1)) {
 			die("VocabTable<T>::add", "Index out of order");
 		}
 	}
 
-	if (table.add(entry) != FI_VOCAB_INDEX_NULL
-	    || table.size() != T::MAX) {
+	if (table.createEntry(sample).getIndex() != FI_VOCAB_INDEX_NULL) {
 		die("VocabTable<T>::add", "Didn't clamp at maximum index");
 	}
 
@@ -42,6 +42,7 @@ test_max(T& table, const U& entry)
 void
 run_test()
 {
+	VocabTable::EntryRef ref1, ref2, ref3;
 	FI_VocabIndex idx1, idx2, idx3;
 
 	//
@@ -50,32 +51,50 @@ run_test()
 	RA_VocabTable ra_vt1, ra_vt2;
 	EA_VocabTable ea_vt1, ea_vt2;
 	DS_VocabTable ds_vt1, ds_vt2, ds_vt3;
+#if 0
 	DN_VocabTable dn_vt1, dn_vt2;
+#endif // 0
 
 	//
 	// Test restricted alphabet tables.
 	//
-	idx1 = ra_vt1.add("hello world");
-	idx2 = ra_vt2.add("how now brown cow");
+	ref1 = ra_vt1.getEntry("hello world");
+	ref2 = ra_vt2.getEntry("how now brown cow");
+	ref3 = ra_vt1.createEntry("hello world");
 
-	if (idx1 != 16 || idx2 != 16) {
-		die("RA_VocabTable::add(CharString)",
+	idx3 = ref3.getIndex();
+	idx1 = ref1.getIndex();
+	idx2 = ref2.getIndex();
+
+	if (idx1 != 17 || idx2 != 16 || idx3 != 16) {
+		die("RA_VocabTable::getEntry(CharString)",
 		    "Incorrect indexes assigned");
-	}
-
-	try {
-		ra_vt1.add(" ");
-		ra_vt1.add("");
-
-		die("RA_VocabTable::add(CharString)",
-		    "Didn't throw InvalidArgumentException");
-	} catch (const InvalidArgumentException& e) {
 	}
 
 	if (ra_vt1[idx1] != "hello world"
 	    || ra_vt2[idx2] != "how now brown cow") {
 		die("RA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
+	}
+
+	ref2 = ra_vt1.getEntry("bob's your uncle");
+	ref3 = ra_vt1.getEntry("hello world");
+
+	idx2 = ref2.getIndex();
+	idx3 = ref3.getIndex();
+
+	if (idx2 != 18 || idx3 != 17) {
+		die("RA_VocabTable::getEntry(CharString)",
+		    "Incorrect indexes assigned");
+	}
+
+	try {
+		ra_vt1.getEntry(" ");
+		ra_vt1.getEntry("");
+
+		die("RA_VocabTable::getEntry(CharString)",
+		    "Didn't throw InvalidArgumentException");
+	} catch (const InvalidArgumentException& e) {
 	}
 
 	try {
@@ -88,32 +107,37 @@ run_test()
 	}
 
 	try {
+		// Test the hole between last built-in and first user index.
 		ra_vt2[4];
 
 		die("RA_VocabTable[FI_VocabIndex]",
-		    "Didn't throw InvalidArgumentException");
-	} catch (const InvalidArgumentException& e) {
+		    "Didn't throw IndexOutOfBoundsException");
+	} catch (const IndexOutOfBoundsException& e) {
 	}
 
-	try {
-		ra_vt1.find("hello world");
-		ra_vt2.find("how now brown cow");
+	// The following test of disinternment can only check for fatal errors.
+	ref1 = ra_vt1.getEntry("bob's your uncle");
+	ref1.release();
 
-		die("RA_VocabTable::find(CharString)",
-		    "Didn't throw UnsupportedOperationException");
-	} catch (const UnsupportedOperationException& e) {
-	}
-
-	test_max(ra_vt1, "..");
+	test_max(ra_vt1, "..", 256);
 
 	//
 	// Test encoding algorithm tables.
 	//
 	try {
-		ea_vt1.add(0);
-		ea_vt2.add(0);
+		ea_vt1.createEntry(0);
+		ea_vt2.createEntry(0);
 
-		die("EA_VocabTable::add(FI_EncodingAlgorithm *)",
+		die("EA_VocabTable::createEntry(FI_EncodingAlgorithm *)",
+		    "Didn't throw UnsupportedOperationException");
+	} catch (const UnsupportedOperationException& e) {
+	}
+
+	try {
+		ea_vt1.getEntry(0);
+		ea_vt2.getEntry(0);
+
+		die("EA_VocabTable::getEntry(FI_EncodingAlgorithm *)",
 		    "Didn't throw UnsupportedOperationException");
 	} catch (const UnsupportedOperationException& e) {
 	}
@@ -133,6 +157,7 @@ run_test()
 	}
 
 	try {
+		// Test the hole between last built-in and first user index.
 		ea_vt1[0];
 		ea_vt2[11];
 
@@ -141,37 +166,28 @@ run_test()
 	} catch (const IndexOutOfBoundsException& e) {
 	}
 
-	try {
-		ea_vt1.find(0);
-		ea_vt2.find(0);
+	// The following test of disinternment can only check for fatal errors.
+	ref1 = ra_vt1.getEntry("bob's your uncle");
+	ref1.release();
 
-		die("EA_VocabTable::find(FI_EncodingAlgorithm *)",
-		    "Didn't throw UnsupportedOperationException");
-	} catch (const UnsupportedOperationException& e) {
-	}
-
-	// XXX: test_max() doesn't make sense when we can't add().
-	//test_max(ea_vt1, 256);
+	// XXX: test_max() doesn't make sense when we can't createEntry().
+	//test_max(ea_vt1, 0, 256);
 
 	//
 	// Test dynamic string tables.
 	//
 
-	idx1 = ds_vt1.add("how");
-	idx2 = ds_vt2.add("now://brown");
-	idx3 = ds_vt3.add("cow");
+	ref1 = ds_vt1.getEntry("how");
+	ref2 = ds_vt2.getEntry("now://brown");
+	ref3 = ds_vt3.createEntry("cow");
+
+	idx3 = ref3.getIndex();
+	idx1 = ref1.getIndex();
+	idx2 = ref2.getIndex();
 
 	if (idx1 != 1 || idx2 != 1 || idx3 != 1) {
-		die("DS_VocabTable::add(CharString)",
+		die("DS_VocabTable::getEntry(CharString)",
 		    "Incorrect indexes assigned");
-	}
-
-	try {
-		ds_vt1.add("");
-
-		die("DS_VocabTable::add(CharString)",
-		    "Didn't throw InvalidArgumentException");
-	} catch (const InvalidArgumentException& e) {
 	}
 
 	if (ds_vt1[FI_VOCAB_INDEX_NULL] != ""
@@ -180,6 +196,21 @@ run_test()
 	    || ds_vt3[idx3] != "cow") {
 		die("DS_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
+	}
+
+	if (ds_vt1.getEntry("how").getIndex() != idx1
+	    || ds_vt2.getEntry("now://brown").getIndex() != idx2
+	    || ds_vt3.getEntry("cow").getIndex() != (idx3 + 1)) {
+		die("DS_VocabTable::getEntry(CharString)",
+		    "Reverse mapping failed");
+	}
+
+	ref3 = ds_vt1.getEntry("");
+	ref3 = ref3;
+
+	if (ref3.getIndex() != FI_VOCAB_INDEX_NULL) {
+		die("DS_VocabTable::getEntry(CharString)",
+		    "Incorrect indexes assigned");
 	}
 
 	try {
@@ -192,26 +223,9 @@ run_test()
 	} catch (const IndexOutOfBoundsException& e) {
 	}
 
-	if (ds_vt1.find("how") != idx1
-	    || ds_vt2.find("now://brown") != idx2
-	    || ds_vt3.find("cow") != idx3
-	    || ds_vt1.find("now://brown") != FI_VOCAB_INDEX_NULL
-	    || ds_vt2.find("cow") != FI_VOCAB_INDEX_NULL
-	    || ds_vt3.find("how") != FI_VOCAB_INDEX_NULL) {
-		die("DS_VocabTable::find(CharString)",
-		    "Reverse mapping failed");
-	}
+	test_max(ds_vt1, ".", FI_ONE_MEG);
 
-	try {
-		ds_vt1.find("");
-
-		die("DS_VocabTable::find(CharString)",
-		    "Didn't throw InvalidArgumentException");
-	} catch (const InvalidArgumentException& e) {
-	}
-
-	test_max(ds_vt1, ".");
-
+#if 0
 	//
 	// Test dynamic name tables.
 	//
@@ -257,6 +271,7 @@ run_test()
 	}
 
 	test_max(dn_vt1, ns1);
+#endif // 0
 }
 
 } // anonymous namespace

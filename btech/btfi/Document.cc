@@ -30,6 +30,8 @@
  * 7.2.27: [standalone] must not be set (???).
  * 7.2.28: [version] must not be set (???).
  * 7.2.29: [children] must only include the root element, [document element].
+ *
+ * Update: initial-vocabulary is currently not written, must be processed.
  */
 
 #include "autoconf.h"
@@ -50,16 +52,16 @@ namespace {
 
 const char *const NAMESPACE = "http://btonline-btech.sourceforge.net";
 
-bool write_header(FI_OctetStream *) throw ();
-bool write_trailer(FI_OctetStream *) throw ();
+bool write_header(FI_OctetStream *);
+bool write_trailer(FI_OctetStream *);
 
-bool write_ds_table(FI_OctetStream *, const DS_VocabTable&) throw ();
-bool write_dn_table(FI_OctetStream *, const DN_VocabTable&) throw ();
+bool write_ds_table(FI_OctetStream *, const DS_VocabTable&);
+bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
 
 } // anonymous namespace
 
 void
-Document::start() throw ()
+Document::start()
 {
 	start_flag = true;
 	stop_flag = false;
@@ -68,26 +70,26 @@ Document::start() throw ()
 }
 
 void
-Document::stop() throw ()
+Document::stop()
 {
 	start_flag = false;
 	stop_flag = true;
 }
 
-FI_VocabIndex
-Document::addElementName(const char *name) throw (Exception)
+VocabTable::EntryRef
+Document::getElementNameRef(const char *name)
 {
-	return addName(element_name_surrogates, name);
+//	return element_name_surrogates.getEntryRef(name);
 }
 
-FI_VocabIndex
-Document::addAttributeName(const char *name) throw (Exception)
+VocabTable::EntryRef
+Document::getAttributeNameRef(const char *name)
 {
-	return addName(attribute_name_surrogates, name);
+//	return attribute_name_surrogates.getEntryRef(name);
 }
 
 void
-Document::write(FI_OctetStream *stream) throw (Exception)
+Document::write(FI_OctetStream *stream)
 {
 	setWriting();
 
@@ -97,10 +99,12 @@ Document::write(FI_OctetStream *stream) throw (Exception)
 			throw Exception ();
 		}
 
+#ifdef USE_FI_INITIAL_VOCABULARY
 		if (!writeVocab(stream)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
+#endif // !USE_FI_INITIAL_VOCABULARY
 	} else if (stop_flag) {
 		if (!write_trailer(stream)) {
 			// TODO: Assign an exception for stream errors.
@@ -112,7 +116,7 @@ Document::write(FI_OctetStream *stream) throw (Exception)
 }
 
 void
-Document::read(FI_OctetStream *stream) throw (Exception)
+Document::read(FI_OctetStream *stream)
 {
 	if (!is_reading) {
 		// TODO: setReading()
@@ -129,7 +133,7 @@ Document::read(FI_OctetStream *stream) throw (Exception)
 
 
 void
-Document::setWriting() throw (Exception)
+Document::setWriting()
 {
 	if (is_writing) {
 		// Already in writing mode.
@@ -142,6 +146,7 @@ Document::setWriting() throw (Exception)
 	 * Initialize vocabulary tables.
 	 */
 
+#if 0
 	prefixes.clear();
 	namespace_names.clear();
 
@@ -156,50 +161,15 @@ Document::setWriting() throw (Exception)
 	if (NAMESPACE_IDX == FI_VOCAB_INDEX_NULL) {
 		throw IllegalStateException ();
 	}
+#endif // 0
 
 	is_writing = true;
 }
 
-FI_VocabIndex
-Document::addName(DN_VocabTable& table, const char *name) throw (Exception)
-{
-	if (start_flag) {
-		// Can't add new names after start.
-		throw IllegalStateException ();
-	}
-
-	setWriting(); // initial vocabulary is only meaningful for writing
-
-	// Get local name index.
-	FI_VocabIndex ln_idx = local_names.find(name);
-	if (ln_idx == FI_VOCAB_INDEX_NULL) {
-		// Try to add string.
-		ln_idx = local_names.add(name);
-		if (ln_idx == FI_VOCAB_INDEX_NULL) {
-			// Reached maximum number of entries.
-			return FI_VOCAB_INDEX_NULL;
-		}
-	}
-
-	// Get name surrogate index.
-	const FI_NameSurrogate tmp_ns (ln_idx, NAMESPACE_IDX);
-
-	FI_VocabIndex ns_idx = table.find(tmp_ns);
-	if (ns_idx == FI_VOCAB_INDEX_NULL) {
-		// Try to add name surrogate.
-		ns_idx = table.add(tmp_ns);
-		if (ns_idx == FI_VOCAB_INDEX_NULL) {
-			// Reached maximum number of entries.
-			return FI_VOCAB_INDEX_NULL;
-		}
-	}
-
-	return ns_idx;
-}
-
 bool
-Document::writeVocab(FI_OctetStream *stream) throw ()
+Document::writeVocab(FI_OctetStream *stream)
 {
+#if 0
 	// Write padding (C.2.5: 000).
 	// Write optional component presence flags (C.2.5.1: 00001 ?00000??).
 	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
@@ -233,7 +203,7 @@ Document::writeVocab(FI_OctetStream *stream) throw ()
 	    && !write_dn_table(stream, attribute_name_surrogates)) {
 		return false;
 	}
-
+#endif // 0
 	return true;
 }
 
@@ -263,7 +233,7 @@ get_xml_decl(int version, int standalone)
 }
 
 bool
-write_header(FI_OctetStream *stream) throw ()
+write_header(FI_OctetStream *stream)
 {
 	// Decide which XML declaration to use.
 	const char *xml_decl = get_xml_decl(0 /* no version */,
@@ -290,14 +260,19 @@ write_header(FI_OctetStream *stream) throw ()
 	w_buf[3] = FI_BIT_8;
 
 	// Write padding (12.8: 0).
+#ifdef USE_FI_INITIAL_VOCABULARY
 	// Write optional component presence flags (C.2.3: 0100000).
 	w_buf[4] = FI_BIT_3 /* initial-vocabulary present */;
+#else // !USE_FI_INITIAL_VOCABULARY
+	// Write optional component presence flags (C.2.3: 0000000).
+	w_buf[4] = 0x00; /* initial-vocabulary not present */
+#endif // !USE_FI_INITIAL_VOCABULARY
 
 	return true;
 }
 
 bool
-write_trailer(FI_OctetStream *stream) throw ()
+write_trailer(FI_OctetStream *stream)
 {
 	FI_Octet *w_buf;
 
@@ -338,8 +313,9 @@ write_trailer(FI_OctetStream *stream) throw ()
 
 // C.2.5.3: Identifier string vocabulary tables.
 bool
-write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab) throw ()
+write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab)
 {
+#if 0
 	// Write string count (C.21).
 	if (!write_length_sequence_of(stream,
 	                              vocab.size() - vocab.last_builtin)) {
@@ -358,14 +334,15 @@ write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab) throw ()
 			return false;
 		}
 	}
-
+#endif // 0
 	return true;
 }
 
 // C.2.5.5: Name surrogate vocabulary tables.
 bool
-write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab) throw ()
+write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab)
 {
+#if 0
 	// Write name surrogate count (C.21).
 	if (!write_length_sequence_of(stream, vocab.size())) {
 		return false;
@@ -383,7 +360,7 @@ write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab) throw ()
 			return false;
 		}
 	}
-
+#endif // 0
 	return true;
 }
 

@@ -20,7 +20,7 @@ namespace {
 // Replace value of existing type.
 template<typename T>
 void
-set_name_buf(char *name_buf, const void *buf) throw ()
+set_name_buf(char *name_buf, const void *buf)
 {
 	*reinterpret_cast<T *>(name_buf) = *reinterpret_cast<const T *>(buf);
 }
@@ -28,7 +28,7 @@ set_name_buf(char *name_buf, const void *buf) throw ()
 // Create value of different type.
 template<typename T>
 char *
-new_name_buf(const void *buf) throw ()
+new_name_buf(const void *buf)
 {
 	char *new_buf;
 
@@ -45,13 +45,13 @@ new_name_buf(const void *buf) throw ()
 
 } // anonymous namespace
 
-Name::~Name() throw ()
+Name::~Name()
 {
 	delete[] name_buf;
 }
 
 bool
-Name::setName(FI_NameType type, const void *buf) throw ()
+Name::setName(FI_NameType type, const void *buf)
 {
 	char *new_buf = 0;
 

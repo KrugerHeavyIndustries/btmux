@@ -9,6 +9,7 @@
 
 #define TEST_FILE "saxtest.test"
 
+#if 0
 static FI_Generator *gen;
 static FI_ContentHandler *handler;
 
@@ -181,11 +182,12 @@ write_test(void)
 	fi_destroy_name(e_name);
 	fi_destroy_generator(gen);
 }
+#endif // 0
 
 int
 real_main(void)
 {
-	write_test();
+//	write_test();
 
 	exit(EXIT_SUCCESS);
 }

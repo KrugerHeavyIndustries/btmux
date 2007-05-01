@@ -108,12 +108,12 @@ struct FI_tag_Generator {
 
 namespace {
 
-int gen_ch_startDocument(FI_ContentHandler *) throw ();
-int gen_ch_endDocument(FI_ContentHandler *) throw ();
+int gen_ch_startDocument(FI_ContentHandler *);
+int gen_ch_endDocument(FI_ContentHandler *);
 
 int gen_ch_startElement(FI_ContentHandler *, const FI_Name *,
-                        const FI_Attributes *) throw ();
-int gen_ch_endElement(FI_ContentHandler *, const FI_Name *) throw ();
+                        const FI_Attributes *);
+int gen_ch_endElement(FI_ContentHandler *, const FI_Name *);
 
 } // anonymous namespace
 
@@ -202,22 +202,22 @@ fi_generate(FI_Generator *gen, const char *filename)
 	return 1;
 }
 
-FI_VocabIndex
-fi_add_element_name(FI_Generator *gen, const char *name)
+FI_NameRef *
+fi_get_element_name_ref(FI_Generator *gen, const char *name)
 {
 	try {
-		return gen->document->addElementName(name);
+		return reinterpret_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getElementNameRef(name)));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
 	}
 }
 
-FI_VocabIndex
-fi_add_attribute_name(FI_Generator *gen, const char *name)
+FI_NameRef *
+fi_get_attribute_name_ref(FI_Generator *gen, const char *name)
 {
 	try {
-		return gen->document->addAttributeName(name);
+		return reinterpret_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getAttributeNameRef(name)));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
@@ -332,7 +332,7 @@ write_object(FI_Generator *gen, Serializable *object)
 }
 
 int
-gen_ch_startDocument(FI_ContentHandler *handler) throw ()
+gen_ch_startDocument(FI_ContentHandler *handler)
 {
 	FI_Generator *gen = GET_GEN(handler);
 
@@ -354,7 +354,7 @@ gen_ch_startDocument(FI_ContentHandler *handler) throw ()
 }
 
 int
-gen_ch_endDocument(FI_ContentHandler *handler) throw ()
+gen_ch_endDocument(FI_ContentHandler *handler)
 {
 	FI_Generator *gen = GET_GEN(handler);
 
@@ -385,7 +385,7 @@ gen_ch_endDocument(FI_ContentHandler *handler) throw ()
 
 int
 gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
-                    const FI_Attributes *attrs) throw ()
+                    const FI_Attributes *attrs)
 {
 	FI_Generator *gen = GET_GEN(handler);
 
@@ -407,7 +407,7 @@ gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
 }
 
 int
-gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name) throw ()
+gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 {
 	FI_Generator *gen = GET_GEN(handler);
 
