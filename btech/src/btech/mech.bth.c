@@ -349,9 +349,10 @@ int FindNormalBTH(MECH * mech,
 
 		/* We ignore Movemod if the weapon is in sguided AND its tagged by a friendly TAG AND movemod > 0 */
 		if((wAmmoMode & SGUIDED_MODE) && TaggedBy(target)) {
-			if((MechTeam(getMech(TaggedBy(target))) == MechTeam(mech))) {
-				if(wTargMoveMod < 0)
+			if((MechTeam(getMech(TaggedBy(target))) == MechTeam(mech)) && (TaggedBy(target) != mech->mynum)) {
+				if(wTargMoveMod < 0) {
 					BTHADD("TargetMove (SG Tag -MoveMod)", wTargMoveMod);
+				}
 			} else {
 				BTHADD("TargetMove (SG No Tag)", wTargMoveMod);
 			}
