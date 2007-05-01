@@ -93,6 +93,15 @@ typedef enum {
 	FI_EA_CDATA			/* CDATA (section 10.11) */
 } FI_EA_VocabIndex;
 
+/* Convenience constants for built-in prefixes.  */
+typedef enum {
+	FI_PFX_XML = 1			/* xml (section 7.2.21) */
+} FI_PFX_VocabIndex;
+
+typedef enum {
+	FI_NSN_XML = 1			/* http://www.w3.org/XML/1998/namespace (section 7.2.22) */
+} FI_NSN_VocabIndex;
+
 typedef struct FI_NameSurrogate {
 	FI_VocabIndex prefix_idx;	/* optional */
 	FI_VocabIndex namespace_idx;	/* optional, required by prefix_idx */

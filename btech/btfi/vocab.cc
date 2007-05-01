@@ -27,6 +27,12 @@ VocabTable::clear ()
 		last_idx = parent->last_idx;
 	}
 
+	for (std::vector<EntryRef>::iterator pp = vocabulary.begin();
+	     pp != vocabulary.end();
+	     ++pp) {
+		pp->entry->resetIndex();
+	}
+
 	vocabulary.clear();
 }
 
@@ -240,9 +246,9 @@ DS_VocabTable::getEntry (const_value_ref value)
 {
 	if (value.empty()) {
 		return EMPTY_STRING;
+	} else {
+		return TypedVocabTable<value_type>::getEntry (value);
 	}
-
-	return TypedVocabTable<value_type>::getEntry (value);
 }
 
 DS_VocabTable::const_value_ref
@@ -263,7 +269,90 @@ DS_VocabTable::get_empty_string()
 	return EMPTY_STRING;
 }
 
-#if 0
+
+/*
+ * 7.2.21: The PREFIX table has the following built-ins:
+ *
+ * xml
+ */
+
+PFX_DS_VocabTable::PFX_DS_VocabTable()
+: XML_PREFIX (get_xml_prefix())
+{
+	last_idx = FI_PFX_XML;
+	base_idx = last_idx + 1;
+}
+
+const VocabTable::EntryRef
+PFX_DS_VocabTable::getEntry(const_value_ref value)
+{
+	if (value == getValue(XML_PREFIX)) {
+		return XML_PREFIX;
+	} else {
+		return TypedVocabTable<value_type>::getEntry (value);
+	}
+}
+
+PFX_DS_VocabTable::const_value_ref
+PFX_DS_VocabTable::operator [](FI_VocabIndex idx) const
+{
+	if (idx == FI_PFX_XML) {
+		return getValue(XML_PREFIX);
+	} else {
+		return TypedVocabTable<value_type>::operator [](idx);
+	}
+}
+
+// Provides singleton XML_PREFIX TypedEntry, to avoid static init.
+PFX_DS_VocabTable::TypedEntry&
+PFX_DS_VocabTable::get_xml_prefix()
+{
+	static StaticTypedEntry XML_PREFIX (FI_PFX_XML, "xml");
+	return XML_PREFIX;
+}
+
+
+/*
+ * 7.2.22: The NAMESPACE_NAMES has the following built-ins:
+ *
+ * http://www.w3.org/XML/1998/namespace
+ */
+
+NSN_DS_VocabTable::NSN_DS_VocabTable()
+: XML_NAMESPACE (get_xml_namespace())
+{
+	last_idx = FI_NSN_XML;
+	base_idx = last_idx + 1;
+}
+
+const VocabTable::EntryRef
+NSN_DS_VocabTable::getEntry(const_value_ref value)
+{
+	if (value == getValue(XML_NAMESPACE)) {
+		return XML_NAMESPACE;
+	} else {
+		return TypedVocabTable<value_type>::getEntry (value);
+	}
+}
+
+NSN_DS_VocabTable::const_value_ref
+NSN_DS_VocabTable::operator [](FI_VocabIndex idx) const
+{
+	if (idx == FI_NSN_XML) {
+		return getValue(XML_NAMESPACE);
+	} else {
+		return TypedVocabTable<value_type>::operator [](idx);
+	}
+}
+
+// Provides singleton XML_NAMESPACE TypedEntry, to avoid static init.
+NSN_DS_VocabTable::TypedEntry&
+NSN_DS_VocabTable::get_xml_namespace()
+{
+	static StaticTypedEntry XML_NAMESPACE (FI_NSN_XML, "http://www.w3.org/XML/1998/namespace");
+	return XML_NAMESPACE;
+}
+
 
 /*
  * 8.5: Dynamic names: Name surrogates.  Dynamic.  Each document has 2:
@@ -279,51 +368,21 @@ DS_VocabTable::get_empty_string()
  * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
  */
 
-void
-DN_VocabTable::clear() throw ()
+// TODO:
+//
+// 1) Set it up so that name surrogates are derived automatically from the
+//    related name tables.
+// 2) Expand the FI_NameSurrogate type to cover all possibilities.
+// 3) Add a mechanism to test if a table is full before trying to add new
+//    entries to it.
+// 4) Extend method signatures to handle the more complex type.
+#if 0
+
+const VocabTable::EntryRef
+DN_VocabTable::getEntry(const_entry_ref entry) throw (Exception)
 {
-	names.clear();
-	reverse_map.clear();
 }
 
-FI_VocabIndex
-DN_VocabTable::add(const_entry_ref entry) throw (Exception)
-{
-	if (entry.local_idx == FI_VOCAB_INDEX_NULL) {
-		throw InvalidArgumentException ();
-	}
-
-	FI_VocabIndex nextIndex = size() + 1;
-
-	if (nextIndex > MAX) {
-		return FI_VOCAB_INDEX_NULL;
-	}
-
-	names.push_back(entry);
-	reverse_map[entry] = nextIndex;
-	return nextIndex;
-}
-
-DN_VocabTable::const_entry_ref
-DN_VocabTable::operator[](FI_VocabIndex idx) const throw (Exception)
-{
-	if (idx <= FI_VOCAB_INDEX_NULL || idx > size()) {
-		throw IndexOutOfBoundsException ();
-	}
-
-	return names[idx - 1];
-}
-
-FI_VocabIndex
-DN_VocabTable::find(const_entry_ref entry) const throw (Exception)
-{
-	name_map_type::const_iterator p = reverse_map.find(entry);
-	if (p == reverse_map.end()) {
-		return FI_VOCAB_INDEX_NULL;
-	}
-
-	return p->second;
-}
 #endif
 
 } // namespace FI

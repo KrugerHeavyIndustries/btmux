@@ -184,6 +184,8 @@ protected:
 
 		virtual FI_VocabIndex getIndex () = 0;
 
+		virtual void resetIndex () {}
+
 		virtual bool operator < (const Entry& rValue) const = 0;
 
 	protected:
@@ -322,6 +324,10 @@ protected:
 			return cached_idx;
 		}
 
+		void resetIndex () {
+			has_cached_idx = false;
+		}
+
 	protected:
 		void addRef () {
 			ref_count++;
@@ -386,10 +392,10 @@ private:
 		// Unintern entries before destruction, to avoid triggering
 		// automatic disinternment by the EntryRef.
 		~EntryPool () {
-			for (std::set<EntryRef>::const_iterator p = interned.begin();
-			     p != interned.end();
-			     ++p) {
-				getDynamicTypedEntry(*p)->is_interned = false;
+			for (std::set<EntryRef>::const_iterator pp = interned.begin();
+			     pp != interned.end();
+			     ++pp) {
+				getDynamicTypedEntry(*pp)->is_interned = false;
 			}
 		}
 
@@ -468,7 +474,14 @@ class PFX_DS_VocabTable : public DS_VocabTable {
 public:
 	PFX_DS_VocabTable ();
 
+	const EntryRef getEntry (const_value_ref value);
+
 	const_value_ref operator [] (FI_VocabIndex idx) const;
+
+private:
+	const EntryRef XML_PREFIX;
+
+	static TypedEntry& get_xml_prefix ();
 }; // class PFX_DS_VocabTable
 
 //
@@ -478,7 +491,14 @@ class NSN_DS_VocabTable : public DS_VocabTable {
 public:
 	NSN_DS_VocabTable ();
 
+	const EntryRef getEntry (const_value_ref value);
+
 	const_value_ref operator [] (FI_VocabIndex idx) const;
+
+private:
+	const EntryRef XML_NAMESPACE;
+
+	static TypedEntry& get_xml_namespace ();
 }; // class NN_DS_VocabTable
 
 //
@@ -486,7 +506,6 @@ public:
 //
 class DN_VocabTable : public TypedVocabTable<FI_NameSurrogate> {
 public:
-	DN_VocabTable ();
 }; // class DN_VocabTable
 
 } // namespace FI

@@ -147,13 +147,6 @@ Document::setWriting()
 	 */
 
 #if 0
-	prefixes.clear();
-	namespace_names.clear();
-
-	// Fast Infoset built-ins.
-	prefixes.add("xml"); // 7.2.21
-	namespace_names.add("http://www.w3.org/XML/1998/namespace"); // 7.2.22
-
 	// Our namespace.  Since this will be the default namespace in
 	// documents we create, we don't need (or want) to define a prefix.
 	// TODO: We may want to point this at a document.

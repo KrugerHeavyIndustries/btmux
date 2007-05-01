@@ -51,9 +51,7 @@ run_test()
 	RA_VocabTable ra_vt1, ra_vt2;
 	EA_VocabTable ea_vt1, ea_vt2;
 	DS_VocabTable ds_vt1, ds_vt2, ds_vt3;
-#if 0
 	DN_VocabTable dn_vt1, dn_vt2;
-#endif // 0
 
 	//
 	// Test restricted alphabet tables.
@@ -176,7 +174,6 @@ run_test()
 	//
 	// Test dynamic string tables.
 	//
-
 	ref1 = ds_vt1.getEntry("how");
 	ref2 = ds_vt2.getEntry("now://brown");
 	ref3 = ds_vt3.createEntry("cow");
@@ -225,14 +222,40 @@ run_test()
 
 	test_max(ds_vt1, ".", FI_ONE_MEG);
 
-#if 0
+	//
+	// Test built-in entries of PREFIX and NAMESPACE NAME tables.
+	//
+	PFX_DS_VocabTable pfx_vt;
+	NSN_DS_VocabTable nsn_vt;
+
+	if (pfx_vt[FI_PFX_XML] != "xml") {
+		die("PFX_DS_VocabTable[FI_VocabIndex]",
+		    "Forward mapping failed");
+	}
+
+	if (nsn_vt[FI_NSN_XML] != "http://www.w3.org/XML/1998/namespace") {
+		die("NSN_DS_VocabTable[FI_VocabIndex]",
+		    "Forward mapping failed");
+	}
+
+	if (pfx_vt.getEntry("xml").getIndex() != FI_PFX_XML) {
+		die("PFX_DS_VocabTable.getEntry(CharString)",
+		    "Reverse mapping failed");
+	}
+
+	if (nsn_vt.getEntry("http://www.w3.org/XML/1998/namespace").getIndex() != FI_NSN_XML) {
+		die("NSN_DS_VocabTable.getEntry(CharString)",
+		    "Reverse mapping failed");
+	}
+
 	//
 	// Test dynamic name tables.
 	//
-
 	FI_NameSurrogate ns1 (idx3, idx2, idx1);
 	FI_NameSurrogate ns2 (idx3);
 
+	// TODO: Test clearing tables.
+#if 0
 	idx1 = dn_vt1.add(ns1);
 	idx2 = dn_vt2.add(ns2);
 
