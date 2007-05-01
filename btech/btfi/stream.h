@@ -75,8 +75,8 @@ protected:
 	virtual ~Serializable () {}
 
 public:
-	virtual void write (FI_OctetStream *stream) throw (Exception) = 0;
-	virtual void read (FI_OctetStream *stream) throw (Exception) = 0;
+	virtual void write (FI_OctetStream *stream) = 0;
+	virtual void read (FI_OctetStream *stream) = 0;
 }; // class Serializable
 
 } // namespace FI

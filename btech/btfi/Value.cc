@@ -21,7 +21,7 @@ namespace {
 // Replace value of existing type.
 template<typename T>
 void
-set_value_buf(char *value_buf, size_t count, const void *buf) throw ()
+set_value_buf(char *value_buf, size_t count, const void *buf)
 {
 	const T *const src_buf = reinterpret_cast<const T *>(buf);
 	T *const dst_buf = reinterpret_cast<T *>(value_buf);
@@ -34,7 +34,7 @@ set_value_buf(char *value_buf, size_t count, const void *buf) throw ()
 // Create value of different type.
 template<typename T>
 char *
-new_value_buf(size_t count, const void *buf) throw ()
+new_value_buf(size_t count, const void *buf)
 {
         char *new_buf;
 
@@ -51,13 +51,13 @@ new_value_buf(size_t count, const void *buf) throw ()
 
 } // anonymous namespace
 
-Value::~Value() throw ()
+Value::~Value()
 {
 	delete[] value_buf;
 }
 
 bool
-Value::setValue(FI_ValueType type, size_t count, const void *buf) throw ()
+Value::setValue(FI_ValueType type, size_t count, const void *buf)
 {
 	char *new_buf = 0;
 

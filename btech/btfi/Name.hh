@@ -28,23 +28,20 @@ namespace FI {
 
 class Name {
 public:
-	Name () throw ()
-	: proxy (*this),
-	  name_type (FI_NAME_AS_NULL), name_buf (0) {}
+	Name () : proxy (*this), name_type (FI_NAME_AS_NULL), name_buf (0) {}
 
-	~Name () throw ();
+	~Name ();
 
 	// Assignment.
-	Name (const Name& src) throw (Exception)
-	: proxy (*this),
-	  name_type(FI_NAME_AS_NULL), name_buf (0) {
+	Name (const Name& src)
+	: proxy (*this), name_type(FI_NAME_AS_NULL), name_buf (0) {
 		if (!setName(src.name_type, src.name_buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();
 		}
 	}
 
-	Name& operator= (const Name& src) throw (Exception) {
+	Name& operator= (const Name& src) {
 		if (!setName(src.name_type, src.name_buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();
@@ -53,23 +50,23 @@ public:
 		return *this;
 	}
 
-	bool setName (FI_NameType type, const void *buf) throw ();
+	bool setName (FI_NameType type, const void *buf);
 
 	// Accessors.
-	FI_NameType getType () const throw () {
+	FI_NameType getType () const {
 		return name_type;
 	}
 
-	const void *getName () const throw () {
+	const void *getName () const {
 		return name_buf;
 	}
 
 	// Proxy handling.
-	const FI_Name *getProxy () const throw () {
+	const FI_Name *getProxy () const {
 		return &proxy;
 	}
 
-	FI_Name *getProxy () throw () {
+	FI_Name *getProxy () {
 		return &proxy;
 	}
 

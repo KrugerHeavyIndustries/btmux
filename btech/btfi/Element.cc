@@ -58,29 +58,28 @@ namespace FI {
 namespace {
 
 FI_VocabIndex
-debug_name(const Name *name) throw ()
+debug_name(const Name *name)
 {
 	assert(name->getType() == FI_NAME_AS_INDEX);
 	return *reinterpret_cast<const FI_VocabIndex *>(name->getName());
 }
 
 const char *
-debug_value(const Value& value) throw ()
+debug_value(const Value& value)
 {
 	assert(value.getType() == FI_VALUE_AS_OCTETS);
 	return reinterpret_cast<const char *>(value.getValue());
 }
 
-bool write_start(FI_OctetStream *, const Name&, const Attributes&, bool)
-                throw ();
-bool write_end(FI_OctetStream *) throw ();
+bool write_start(FI_OctetStream *, const Name&, const Attributes&, bool);
+bool write_end(FI_OctetStream *);
 
-bool write_namespace_attributes(FI_OctetStream *) throw ();
+bool write_namespace_attributes(FI_OctetStream *);
 
 } // anonymous namespace
 
 void
-Element::start(const Name& name, const Attributes& attrs) throw ()
+Element::start(const Name& name, const Attributes& attrs)
 {
 	start_flag = true;
 	stop_flag = false;
@@ -90,7 +89,7 @@ Element::start(const Name& name, const Attributes& attrs) throw ()
 }
 
 void
-Element::stop(const Name& name) throw ()
+Element::stop(const Name& name)
 {
 	start_flag = false;
 	stop_flag = true;
@@ -99,7 +98,7 @@ Element::stop(const Name& name) throw ()
 }
 
 void
-Element::write(FI_OctetStream *stream) throw (Exception)
+Element::write(FI_OctetStream *stream)
 {
 	if (start_flag) {
 		if (!write_start(stream, *w_name, *w_attrs,
@@ -111,14 +110,14 @@ Element::write(FI_OctetStream *stream) throw (Exception)
 		doc.increaseDepth();
 
 		// XXX: Debug.
-		printf("%*s<%lu",
+		printf("%*s<%u",
 		       4 * (doc.getDepth() - 1), "", debug_name(w_name));
 
 		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
 			const Name& a_name = w_attrs->getName(ii);
 			const Value& a_value = w_attrs->getValue(ii);
 
-			printf(" %lu='%.*s'", debug_name(&a_name),
+			printf(" %u='%.*s'", debug_name(&a_name),
 			       a_value.getCount(), debug_value(a_value));
 		}
 
@@ -132,7 +131,7 @@ Element::write(FI_OctetStream *stream) throw (Exception)
 		}
 
 		// XXX: Debug.
-		printf("%*s</%lu>\n",
+		printf("%*s</%u>\n",
 		       4 * doc.getDepth(), "", debug_name(w_name));
 	} else {
 		throw IllegalStateException ();
@@ -140,7 +139,7 @@ Element::write(FI_OctetStream *stream) throw (Exception)
 }
 
 void
-Element::read(FI_OctetStream *stream) throw (Exception)
+Element::read(FI_OctetStream *stream)
 {
 	if (start_flag) {
 	} else if (stop_flag) {
@@ -158,7 +157,7 @@ namespace {
 
 bool
 write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
-            bool useNamespace) throw ()
+            bool useNamespace)
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
 	switch (fi_get_stream_num_bits(stream)) {
@@ -203,7 +202,7 @@ write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
 }
 
 bool
-write_end(FI_OctetStream *stream) throw ()
+write_end(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 0
 	       || fi_get_stream_num_bits(stream) == 4);
@@ -217,7 +216,7 @@ write_end(FI_OctetStream *stream) throw ()
 }
 
 bool
-write_namespace_attributes(FI_OctetStream *stream) throw ()
+write_namespace_attributes(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 

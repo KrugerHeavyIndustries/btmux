@@ -30,14 +30,14 @@ namespace FI {
 
 class Value {
 public:
-	Value () throw ()
+	Value ()
 	: proxy (*this),
 	  value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {}
 
-	~Value () throw ();
+	~Value ();
 
 	// Assignment.
-	Value (const Value& src) throw (Exception)
+	Value (const Value& src)
 	: proxy (*this),
 	  value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {
 		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
@@ -46,7 +46,7 @@ public:
 		}
 	}
 
-	Value& operator= (const Value& src) throw (Exception) {
+	Value& operator= (const Value& src) {
 		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();
@@ -55,28 +55,27 @@ public:
 		return *this;
 	}
 
-	bool setValue (FI_ValueType type, size_t count, const void *buf)
-	              throw ();
+	bool setValue (FI_ValueType type, size_t count, const void *buf);
 
 	// Accessors.
-	FI_ValueType getType () const throw () {
+	FI_ValueType getType () const {
 		return value_type;
 	}
 
-	size_t getCount () const throw () {
+	size_t getCount () const {
 		return value_count;
 	}
 
-	const void *getValue () const throw () {
+	const void *getValue () const {
 		return value_buf;
 	}
 
 	// Proxy handling.
-	const FI_Value *getProxy () const throw () {
+	const FI_Value *getProxy () const {
 		return &proxy;
 	}
 
-	FI_Value *getProxy () throw () {
+	FI_Value *getProxy () {
 		return &proxy;
 	}
 

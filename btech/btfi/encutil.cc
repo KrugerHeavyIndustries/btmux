@@ -26,7 +26,7 @@ namespace FI {
 // FIXME: The namespace index is currently hardcoded to 2, since we only use
 // this to encode our default namespace index on the document element.
 bool
-write_namespace_attribute(FI_OctetStream *stream) throw ()
+write_namespace_attribute(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 6); // C.12.2
 
@@ -54,7 +54,7 @@ write_namespace_attribute(FI_OctetStream *stream) throw ()
 
 // C.13
 bool
-write_identifier(FI_OctetStream *stream, const Name& id) throw ()
+write_identifier(FI_OctetStream *stream, const Name& id)
 {
 	assert(fi_get_stream_num_bits(stream) == 0); // C.13.2
 
@@ -85,7 +85,6 @@ write_identifier(FI_OctetStream *stream, const Name& id) throw ()
 // C.16
 bool
 write_name_surrogate(FI_OctetStream *stream, const FI_NameSurrogate& name)
-                    throw ()
 {
 	assert(fi_get_stream_num_bits(stream) == 6); // C.16.2
 
@@ -141,7 +140,7 @@ write_name_surrogate(FI_OctetStream *stream, const FI_NameSurrogate& name)
 
 // C.18
 bool
-write_name_bit_3(FI_OctetStream *stream, const Name& name) throw ()
+write_name_bit_3(FI_OctetStream *stream, const Name& name)
 {
 	assert(fi_get_stream_num_bits(stream) == 2); // C.18.2
 
@@ -165,7 +164,7 @@ write_name_bit_3(FI_OctetStream *stream, const Name& name) throw ()
 
 // C.21
 bool
-write_length_sequence_of(FI_OctetStream *stream, FI_Length len) throw ()
+write_length_sequence_of(FI_OctetStream *stream, FI_Length len)
 {
 	assert(len > 0 && len <= FI_ONE_MEG);
 	assert(fi_get_stream_num_bits(stream) == 0); // C.21.1
@@ -200,7 +199,6 @@ write_length_sequence_of(FI_OctetStream *stream, FI_Length len) throw ()
 // C.22
 bool
 write_non_empty_string_bit_2(FI_OctetStream *stream, const CharString& str)
-                            throw ()
 {
 	assert(str.size() > 0 && str.size() <= FI_FOUR_GIG);
 	assert(fi_get_stream_num_bits(stream) == 1);  // C.22.1
@@ -263,7 +261,7 @@ write_non_empty_string_bit_2(FI_OctetStream *stream, const CharString& str)
 
 // C.25
 bool
-write_non_zero_uint20_bit_2(FI_OctetStream *stream, FI_UInt20 val) throw ()
+write_non_zero_uint20_bit_2(FI_OctetStream *stream, FI_UInt20 val)
 {
 	assert(val > 0 && val <= FI_ONE_MEG);
 	assert(fi_get_stream_num_bits(stream) == 1); // C.25.1
@@ -314,7 +312,7 @@ write_non_zero_uint20_bit_2(FI_OctetStream *stream, FI_UInt20 val) throw ()
 
 // C.27
 bool
-write_non_zero_uint20_bit_3(FI_OctetStream *stream, FI_UInt20 val) throw ()
+write_non_zero_uint20_bit_3(FI_OctetStream *stream, FI_UInt20 val)
 {
 	assert(val > 0 && val <= FI_ONE_MEG);
 	assert(fi_get_stream_num_bits(stream) == 2); // C.27.1

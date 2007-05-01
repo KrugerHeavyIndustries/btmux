@@ -19,12 +19,12 @@ private:
 
 public:
 	// Clear all attributes from this set.
-	void clear () throw () {
+	void clear () {
 		attributes.clear();
 	}
 
 	// Add an attribute to this set.
-	bool add (const Name& name, const Value& value) throw (Exception) {
+	bool add (const Name& name, const Value& value) {
 		attributes.push_back(NameValue (name, value));
 		return true;
 	}
@@ -33,11 +33,11 @@ public:
 	// Attributes implementation.
 	//
 
-	int getLength () const throw () {
+	int getLength () const {
 		return attributes.size();
 	}
 
-	const Name& getName (int idx) const throw (Exception) {
+	const Name& getName (int idx) const {
 		if (idx < 0 || idx >= getLength()) {
 			throw IndexOutOfBoundsException ();
 		}
@@ -45,7 +45,7 @@ public:
 		return attributes[idx].first;
 	}
 
-	const Value& getValue (int idx) const throw (Exception) {
+	const Value& getValue (int idx) const {
 		if (idx < 0 || idx >= getLength()) {
 			throw IndexOutOfBoundsException ();
 		}

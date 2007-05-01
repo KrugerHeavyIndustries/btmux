@@ -24,11 +24,11 @@ protected:
 	virtual ~Attributes () {}
 
 public:
-	virtual int getLength () const throw () = 0;
+	virtual int getLength () const = 0;
 
-	virtual const Name& getName (int idx) const throw (Exception) = 0;
+	virtual const Name& getName (int idx) const = 0;
 
-	virtual const Value& getValue (int idx) const throw (Exception) = 0;
+	virtual const Value& getValue (int idx) const = 0;
 }; // class Attributes
 
 } // namespace FI

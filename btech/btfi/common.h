@@ -11,7 +11,7 @@
  * Constants.
  */
 
-#define FI_ONE_MEG 1048576UL /* 2^20 */
+#define FI_ONE_MEG 1048576U /* 2^20 */
 #define FI_FOUR_GIG 4294967296ULL /* 2^32 */
 
 /*
@@ -21,8 +21,8 @@
 typedef unsigned char FI_Octet;		/* 8-bit octet */
 typedef char FI_Char;			/* UTF-8 character component */
 
-typedef unsigned long FI_UInt20;	/* 0 to at least 2^20 */
-typedef unsigned long FI_Length;	/* 0 to at least 2^32 - 1 */
+typedef unsigned int FI_UInt20;		/* 0 to at least 2^20 */
+typedef unsigned int FI_Length;		/* 0 to at least 2^32 - 1 */
 
 /*
  * Error handling.
@@ -69,7 +69,7 @@ extern const char *const fi_error_strings[];
  */
 
 /* Sections 6.5 and 6.10: Vocabulary table indexes range from 1 to 2^20.  */
-typedef unsigned long FI_VocabIndex;
+typedef unsigned int FI_VocabIndex;
 
 #define FI_VOCAB_INDEX_NULL 0
 
@@ -106,7 +106,7 @@ typedef struct FI_NameSurrogate {
 	  namespace_idx(namespace_idx),
 	  local_idx(local_idx) {}
 
-	bool operator< (const FI_NameSurrogate& rhs) const throw () {
+	bool operator < (const FI_NameSurrogate& rhs) const {
 		if (prefix_idx < rhs.prefix_idx) {
 			return true;
 		} else if (namespace_idx < rhs.namespace_idx) {
@@ -116,13 +116,13 @@ typedef struct FI_NameSurrogate {
 		}
 	}
 
-	bool operator== (const FI_NameSurrogate& rhs) const throw () {
+	bool operator == (const FI_NameSurrogate& rhs) const {
 		return (local_idx == rhs.local_idx
 		        && namespace_idx == rhs.namespace_idx
 		        && prefix_idx == rhs.prefix_idx);
 	}
 
-	bool operator!= (const FI_NameSurrogate& rhs) const throw () {
+	bool operator != (const FI_NameSurrogate& rhs) const {
 		return !(*this == rhs);
 	}
 #endif /* __cplusplus */

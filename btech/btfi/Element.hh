@@ -23,13 +23,13 @@ public:
 	  doc (doc), w_name (0), w_attrs (0) {}
 
 	// Next write()/read() will be element header.
-	void start (const Name& name, const Attributes& attrs) throw ();
+	void start (const Name& name, const Attributes& attrs);
 
 	// Next write()/read() will be element trailer.
-	void stop (const Name& name) throw ();
+	void stop (const Name& name);
 
-	void write (FI_OctetStream *stream) throw (Exception);
-	void read (FI_OctetStream *stream) throw (Exception);
+	void write (FI_OctetStream *stream);
+	void read (FI_OctetStream *stream);
 
 private:
 	bool start_flag;
