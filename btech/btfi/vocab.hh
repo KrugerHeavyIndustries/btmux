@@ -13,8 +13,6 @@
 #include "common.h"
 #include "encalg.h"
 
-#include "Exception.hh"
-
 
 namespace BTech {
 namespace FI {
@@ -56,6 +54,12 @@ public:
 	 *
 	 * An EntryRef will normally be created by the getEntryRef() method of
 	 * a TypedVocabTable.
+	 *
+	 * Note that EntryRef may use reference counting to manage memory, so
+	 * circular references must carefully be avoided.  In practice, this
+	 * means an Entry should never hold an EntryRef that potentially points
+	 * to itself, whether directly or indirectly.  An Entry may freely hold
+	 * an EntryRef that points to a different object, however.
 	 */
 	class EntryRef {
 		friend class VocabTable;
@@ -98,9 +102,12 @@ public:
 			return *this;
 		}
 
-		// Return the vocabulary table index, or FI_VOCAB_INDEX_NULL if
-		// an index can not be assigned due to reaching the table's
-		// index limit.  Throws an Exception for all other errors.
+		// Invoke hasIndex() on the associated Entry.
+		bool hasIndex () const {
+			return entry->hasIndex();
+		}
+
+		// Invoke getIndex() on the associated Entry.
 		FI_VocabIndex getIndex () const {
 			return entry->getIndex();
 		}
@@ -108,16 +115,21 @@ public:
 		// Ordering comparison.
 		bool operator < (const EntryRef& rValue) const {
 			// We need to compare by entry value here.
-			return *entry < *rValue.entry;
-		}
-
-		// Test whether two references point to the same Entry.
-		bool operator != (const EntryRef& rValue) const {
-			return entry != rValue.entry;
-		}
-
-		bool operator == (const EntryRef& rValue) const {
-			return entry == rValue.entry;
+			if (!entry) {
+				if (!rValue.entry) {
+					// 0 == 0
+					return false;
+				} else {
+					// 0 < *
+					return true;
+				}
+			} else if (!rValue.entry) {
+				// * > 0
+				return false;
+			} else {
+				// L < R ?
+				return *entry < *rValue.entry;
+			}
 		}
 
 		// Test whether this reference points to a given Entry.  Useful
@@ -138,24 +150,20 @@ public:
 			}
 		}
 
-	private:
+	protected:
 		// Reference-counted pointer.
 		Entry *entry;
 	}; // class VocabTable::EntryRef
 
 protected:
-	// Allows derived classes to get the raw pointer of an EntryRef.
-	static Entry *getPointer (const EntryRef& ref) {
-		return ref.entry;
-	}
-
 	// Construct a table with an optional parent table.
-	VocabTable (FI_VocabIndex max_idx)
-	: parent (0), max_idx (max_idx),
-	  base_idx (1), last_idx (0) {}
+	VocabTable (FI_VocabIndex initial_last_idx = 0,
+	            FI_VocabIndex max_idx = FI_ONE_MEG)
+	: parent (0), initial_last_idx (initial_last_idx), max_idx (max_idx),
+	  base_idx (initial_last_idx + 1), last_idx (initial_last_idx) {}
 
 	VocabTable (VocabTable *parent)
-	: parent (parent), max_idx (parent->max_idx),
+	: parent (parent), initial_last_idx (0), max_idx (parent->max_idx),
 	  base_idx (parent->last_idx + 1), last_idx (parent->last_idx) {}
 
 	// Acquire a vocabulary index for the entry.  If the table's index
@@ -169,6 +177,10 @@ protected:
 
 	// Pointer to the parent table, if any.
 	VocabTable *const parent;
+
+	// Initial last index.  Only meaningful on root tables, as a
+	// convenience for handling built-ins.
+	const FI_VocabIndex initial_last_idx;
 
 	// Maximum vocabulary index.  Set at construction time, and should be
 	// identical for all levels of the hierarchy.
@@ -194,10 +206,15 @@ protected:
 	 * A vocabulary table entry, representing an (index, value) pair.
 	 */
 	class Entry {
-		friend class VocabTable;
+		friend class EntryRef;
 
 	public:
 		virtual ~Entry () {}
+
+		// Returns true if the entry has been assigned an index.  The
+		// index may still be FI_VOCAB_INDEX_NULL, in case the
+		// associated table's limit was reached.
+		virtual bool hasIndex () const { return true; }
 
 		// Get the entry's index.  Return FI_VOCAB_INDEX_NULL if an
 		// index can not be assigned, for whatever reason. (The index
@@ -240,6 +257,8 @@ protected:
 	class DynamicTypedEntry;
 
 public:
+	class TypedEntryRef;
+
 	typedef T value_type;
 	typedef const T& const_value_ref;
 
@@ -264,7 +283,7 @@ public:
 
 	// Create a new TypedEntry for a value.  Will always return a new
 	// entry, rather than reusing an existing one.
-	virtual const EntryRef createEntry (const_value_ref value) {
+	virtual const TypedEntryRef createEntry (const_value_ref value) {
 		return createTypedEntry(value);
 	}
 
@@ -276,20 +295,42 @@ public:
 	// the returned EntryRef for later usage.
 	//
 	// This must return an EntryRef by value, NOT by reference.
-	virtual const EntryRef getEntry (const_value_ref value) {
+	virtual const TypedEntryRef getEntry (const_value_ref value) {
 		return entry_pool->intern(createTypedEntry(value));
 	}
 
 	// Get stored value by vocabulary index.  Throws OutOfBoundsException
 	// if given a non-existent index.
 	virtual const_value_ref operator [] (FI_VocabIndex idx) const {
-		return getValue(lookupIndex(idx));
+		return static_cast<const TypedEntryRef&>(lookupIndex(idx)).getValue();
 	}
 
-	// Retrieve the typed value from a TypedEntry EntryRef.
-	static const_value_ref getValue (const EntryRef& ref) {
-		return getTypedEntry(ref)->getValue();
-	}
+	/*
+	 * Type-safe EntryRef.
+	 */
+	class TypedEntryRef : public EntryRef {
+		friend class TypedVocabTable;
+
+	public:
+		TypedEntryRef (TypedEntry *entry = 0) : EntryRef (entry) {}
+
+		TypedEntryRef (const TypedEntryRef& rValue)
+		: EntryRef (rValue.entry) {}
+
+		TypedEntryRef& operator = (const TypedEntryRef& rValue) {
+			EntryRef::operator =(rValue);
+			return *this;
+		}
+
+		const_value_ref getValue () const {
+			return getTypedEntry()->value;
+		}
+
+	private:
+		TypedEntry *getTypedEntry () const {
+			return static_cast<TypedEntry *>(entry);
+		}
+	}; // template class TypedVocabTable::TypedEntryRef
 
 protected:
 	// Create a new DynamicTypedEntry for a value.
@@ -297,33 +338,24 @@ protected:
 		return new DynamicTypedEntry (*this, value);
 	}
 
-	// Convert an EntryRef to a TypedEntry.
-	static TypedEntry *getTypedEntry (const EntryRef& ref) {
-		return static_cast<TypedEntry *>(getPointer(ref));
-	}
-
-	// Convert an EntryRef to a DynamicTypedEntry.
-	static DynamicTypedEntry *getDynamicTypedEntry (const EntryRef& ref) {
-		return static_cast<DynamicTypedEntry *>(getPointer(ref));
-	}
-
-	TypedVocabTable (FI_VocabIndex max_idx = FI_ONE_MEG)
-	: VocabTable (max_idx), entry_pool (new EntryPool ()) {}
+	TypedVocabTable (FI_VocabIndex initial_last_idx = 0,
+	                 FI_VocabIndex max_idx = FI_ONE_MEG)
+	: VocabTable (initial_last_idx, max_idx),
+	  entry_pool (new EntryPool ()) {}
 
 	TypedVocabTable (TypedVocabTable *parent)
-	: VocabTable (parent), entry_pool (parent->getEntryPool()) {}
+	: VocabTable (parent),
+	  entry_pool (parent->getEntryPool()) {}
 
 	/*
 	 * TypedEntry for vocabulary table values.
 	 */
 	class TypedEntry : public Entry {
-	public:
-		const_value_ref getValue () const {
-			return value;
-		}
+		friend class TypedEntryRef;
 
+	public:
 		bool operator < (const Entry& entry) const {
-			return value < static_cast<const TypedEntry&>(entry).getValue();
+			return value < static_cast<const TypedEntry&>(entry).value;
 		}
 
 	protected:
@@ -343,6 +375,10 @@ protected:
 		                   const_value_ref value)
 		: TypedEntry (value), owner (owner), has_cached_idx (false),
 		  ref_count (0), is_interned (false) {}
+
+		bool hasIndex () const {
+			return has_cached_idx;
+		}
 
 		FI_VocabIndex getIndex () {
 			if (!has_cached_idx) {
@@ -422,32 +458,46 @@ private:
 
 	// Pool of interned Entry objects.
 	class EntryPool {
+		typedef std::set<TypedEntryRef> RefSet;
+		typedef typename RefSet::const_iterator RefSetIterator;
+
 	public:
 		// Unintern entries before destruction, to avoid triggering
 		// automatic disinternment by the EntryRef.
 		~EntryPool () {
-			for (std::set<EntryRef>::const_iterator pp = interned.begin();
+			for (RefSetIterator pp = interned.begin();
 			     pp != interned.end();
 			     ++pp) {
-				getDynamicTypedEntry(*pp)->is_interned = false;
+				setInterned(pp->getTypedEntry(), false);
 			}
 		}
 
 		// Intern entry.
-		const EntryRef& intern (DynamicTypedEntry *entry) {
-			const EntryRef& ref = *interned.insert(entry).first;
-			getDynamicTypedEntry(ref)->is_interned = true;
+		const TypedEntryRef& intern (DynamicTypedEntry *entry) {
+			const TypedEntryRef& ref = *interned.insert(entry).first;
+			setInterned(ref.getTypedEntry(), true);
 			return ref;
 		}
 
 		// Disintern entry.
 		void disintern (DynamicTypedEntry *entry) {
-			entry->is_interned = false;
+			setInterned(entry, false);
 			interned.erase(entry);
 		}
 
 	private:
-		std::set<EntryRef> interned;
+		static DynamicTypedEntry *castTypedEntry (TypedEntry *entry) {
+			return static_cast<DynamicTypedEntry *>(entry);
+		}
+
+		static void setInterned (Entry *entry, bool state) {
+			DynamicTypedEntry *const dyn_entry
+			= static_cast<DynamicTypedEntry *>(entry);
+
+			dyn_entry->is_interned = state;
+		}
+
+		RefSet interned;
 	}; // class VocabTable::EntryPool
 }; // template class TypedVocabTable
 
@@ -459,13 +509,13 @@ class RA_VocabTable : public TypedVocabTable<CharString> {
 public:
 	RA_VocabTable ();
 
-	const EntryRef getEntry (const_value_ref value);
+	const TypedEntryRef getEntry (const_value_ref value);
 
 	const_value_ref operator [] (FI_VocabIndex idx) const;
 
 private:
-	const EntryRef NUMERIC_ALPHABET;
-	const EntryRef DATE_AND_TIME_ALPHABET;
+	const TypedEntryRef NUMERIC_ALPHABET;
+	const TypedEntryRef DATE_AND_TIME_ALPHABET;
 
 	static TypedEntry *get_numeric_alphabet ();
 	static TypedEntry *get_date_and_time_alphabet();
@@ -491,12 +541,15 @@ class DS_VocabTable : public TypedVocabTable<CharString> {
 public:
 	DS_VocabTable ();
 
-	const EntryRef getEntry (const_value_ref value);
+	const TypedEntryRef getEntry (const_value_ref value);
 
 	const_value_ref operator [] (FI_VocabIndex idx) const;
 
+protected:
+	DS_VocabTable (FI_VocabIndex initial_last_idx);
+
 private:
-	const EntryRef EMPTY_STRING;
+	const TypedEntryRef EMPTY_STRING;
 
 	static TypedEntry *get_empty_string ();
 }; // class DS_VocabTable
@@ -508,12 +561,12 @@ class PFX_DS_VocabTable : public DS_VocabTable {
 public:
 	PFX_DS_VocabTable ();
 
-	const EntryRef getEntry (const_value_ref value);
+	const TypedEntryRef getEntry (const_value_ref value);
 
 	const_value_ref operator [] (FI_VocabIndex idx) const;
 
 private:
-	const EntryRef XML_PREFIX;
+	const TypedEntryRef XML_PREFIX;
 
 	static TypedEntry *get_xml_prefix ();
 }; // class PFX_DS_VocabTable
@@ -525,15 +578,15 @@ class NSN_DS_VocabTable : public DS_VocabTable {
 public:
 	NSN_DS_VocabTable ();
 
-	const EntryRef getEntry (const_value_ref value);
+	const TypedEntryRef getEntry (const_value_ref value);
 
 	const_value_ref operator [] (FI_VocabIndex idx) const;
 
 private:
-	const EntryRef XML_NAMESPACE;
+	const TypedEntryRef XML_NAMESPACE;
 
 	static TypedEntry *get_xml_namespace ();
-}; // class NN_DS_VocabTable
+}; // class NSN_DS_VocabTable
 
 } // namespace FI
 } // namespace BTech

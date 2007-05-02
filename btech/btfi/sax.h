@@ -12,7 +12,6 @@
 #include "common.h"
 
 #include "names.h"
-#include "values.h"
 #include "attribs.h"
 
 #ifdef __cplusplus
@@ -54,9 +53,8 @@ FI_ContentHandler *fi_getContentHandler(FI_Generator *gen);
 
 int fi_generate(FI_Generator *gen, const char *filename);
 
-typedef struct FI_tag_NameRef FI_NameRef;
-FI_NameRef *fi_get_element_name_ref(FI_Generator *gen, const char *name);
-FI_NameRef *fi_get_attribute_name_ref(FI_Generator *gen, const char *name);
+FI_Name *fi_create_element_name(FI_Generator *gen, const char *name);
+FI_Name *fi_create_attribute_name(FI_Generator *gen, const char *name);
 
 /*
  * Parser.

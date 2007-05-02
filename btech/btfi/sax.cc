@@ -34,9 +34,9 @@ using namespace BTech::FI;
 
 // This must stay POD (plain old data) in order for offsetof() to be valid.
 struct FI_tag_Generator {
-	FI_ErrorInfo error_info;
-
 	FI_ContentHandler content_handler;
+
+	FI_ErrorInfo error_info;
 
 	FILE *fpout;
 	FI_OctetStream *buffer;
@@ -141,22 +141,22 @@ fi_generate(FI_Generator *gen, const char *filename)
 	return 1;
 }
 
-FI_NameRef *
-fi_get_element_name_ref(FI_Generator *gen, const char *name)
+FI_Name *
+fi_create_element_name(FI_Generator *gen, const char *name)
 {
 	try {
-		//return static_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getElementNameRef(name)));
+		return new FI_Name (gen->document->getElementName(name));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
 	}
 }
 
-FI_NameRef *
-fi_get_attribute_name_ref(FI_Generator *gen, const char *name)
+FI_Name *
+fi_create_attribute_name(FI_Generator *gen, const char *name)
 {
 	try {
-		//return static_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getAttributeNameRef(name)));
+		return new FI_Name (gen->document->getAttributeName(name));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
@@ -169,9 +169,9 @@ fi_get_attribute_name_ref(FI_Generator *gen, const char *name)
 //
 
 struct FI_tag_Parser {
-	FI_ErrorInfo error_info;
-
 	FI_ContentHandler *content_handler;
+
+	FI_ErrorInfo error_info;
 }; // FI_Parser
 
 FI_Parser *
@@ -335,7 +335,7 @@ gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
 	}
 
 	// Write element header.
-	//gen->element->start(name->parent, attrs->impl);
+	gen->element->start(name->getNameRef(), attrs->impl);
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().
@@ -357,7 +357,7 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	}
 
 	// Write element trailer.
-	//gen->element->stop(name->parent);
+	gen->element->stop(name->getNameRef());
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().

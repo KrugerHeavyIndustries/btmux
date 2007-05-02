@@ -90,39 +90,8 @@ DN_VocabTable::DynamicNameEntry::acquireIndex()
 
 using namespace BTech::FI;
 
-#if 0
-FI_Name *
-fi_create_name(void)
-{
-	try {
-		return (new Name ())->getProxy();
-	} catch (const std::bad_alloc& e) {
-		return 0;
-	}
-}
-
 void
-fi_destroy_name(FI_Name *obj)
+fi_destroy_name(FI_Name *name)
 {
-	delete &obj->parent;
+	delete name;
 }
-
-FI_NameType
-fi_get_name_type(const FI_Name *obj)
-{
-	return obj->parent.getType();
-}
-
-const void *
-fi_get_name(const FI_Name *obj)
-{
-	return obj->parent.getName();
-}
-
-int
-fi_set_name(FI_Name *obj, FI_NameType type, const void *buf)
-{
-	return obj->parent.setName(type, buf);
-}
-
-#endif // 0

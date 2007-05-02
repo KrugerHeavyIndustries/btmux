@@ -9,6 +9,8 @@
 #include "common.h"
 #include "stream.h"
 
+#include "vocab.hh"
+
 #include "Document.hh"
 #include "Name.hh"
 #include "Attributes.hh"
@@ -20,13 +22,14 @@ class Element : public Serializable {
 public:
 	Element (Document& doc)
 	: start_flag (false), stop_flag (false),
-	  doc (doc), w_name (0), w_attrs (0) {}
+	  doc (doc), w_attrs (0) {}
 
 	// Next write()/read() will be element header.
-	void start (const Name& name, const Attributes& attrs);
+	void start (const DN_VocabTable::TypedEntryRef& name,
+	            const Attributes& attrs);
 
 	// Next write()/read() will be element trailer.
-	void stop (const Name& name);
+	void stop (const DN_VocabTable::TypedEntryRef& name);
 
 	void write (FI_OctetStream *stream);
 	void read (FI_OctetStream *stream);
@@ -37,7 +40,7 @@ private:
 
 	Document& doc;
 
-	const Name *w_name;
+	DN_VocabTable::TypedEntryRef w_name;
 	const Attributes *w_attrs;
 }; // class Element
 

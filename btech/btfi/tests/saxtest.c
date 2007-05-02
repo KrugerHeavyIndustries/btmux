@@ -9,7 +9,6 @@
 
 #define TEST_FILE "saxtest.test"
 
-#if 0
 static FI_Generator *gen;
 static FI_ContentHandler *handler;
 
@@ -30,28 +29,23 @@ die_gen(const char *cause)
 	exit(EXIT_FAILURE);
 }
 
-static FI_Name *e_name, *a_name;
 static FI_Value *a_value;
 static FI_Attributes *attributes;
 
 static void
-start_element(FI_VocabIndex name, ...)
+start_element(const FI_Name *e_name, ...)
 {
-	FI_VocabIndex a_idx;
+	const FI_Name *a_name;
 
 	va_list ap;
 
 	/* Collect attribute values.  */
 	fi_clear_attributes(attributes);
 
-	va_start(ap, name);
+	va_start(ap, e_name);
 
-	while ((a_idx = va_arg(ap, FI_VocabIndex)) != FI_VOCAB_INDEX_NULL) {
+	while ((a_name = va_arg(ap, const FI_Name *))) {
 		const char *const a_buf = va_arg(ap, const char *);
-
-		if (!fi_set_name(a_name, FI_NAME_AS_INDEX, &a_idx)) {
-			die("fi_set_name");
-		}
 
 		if (!fi_set_value(a_value,
 		                  FI_VALUE_AS_OCTETS, strlen(a_buf), a_buf)) {
@@ -66,23 +60,15 @@ start_element(FI_VocabIndex name, ...)
 	va_end(ap);
 
 	/* Begin element.  */
-	if (!fi_set_name(e_name, FI_NAME_AS_INDEX, &name)) {
-		die("fi_set_name");
-	}
-
 	if (!handler->startElement(handler, e_name, attributes)) {
 		die_gen("generate::startElement");
 	}
 }
 
 static void
-end_element(FI_VocabIndex name)
+end_element(const FI_Name *e_name)
 {
 	/* End element.  */
-	if (!fi_set_name(e_name, FI_NAME_AS_INDEX, &name)) {
-		die("fi_set_name");
-	}
-
 	if (!handler->endElement(handler, e_name)) {
 		die_gen("generate::endElement");
 	}
@@ -91,18 +77,13 @@ end_element(FI_VocabIndex name)
 static void
 write_test(void)
 {
-	FI_VocabIndex en_how, en_now, an_brown, an_cow, an_now;
+	FI_Name *en_how, *en_now;
+	FI_Name *an_brown, *an_cow, *an_now;
 
 	/* Set up.  */
 	gen = fi_create_generator();
 	if (!gen) {
 		die("fi_create_generator");
-	}
-
-	e_name = fi_create_name();
-	a_name = fi_create_name();
-	if (!e_name || !a_name) {
-		die("fi_create_name");
 	}
 
 	a_value = fi_create_value();
@@ -124,22 +105,20 @@ write_test(void)
 		die_gen("fi_generate");
 	}
 
-	/* Add initial vocabulary entries.  */
-	en_how = fi_add_element_name(gen, "how");
-	en_now = fi_add_element_name(gen, "now");
+	/* Get all our FI_Name handles.  */
+	en_how = fi_create_element_name(gen, "how");
+	en_now = fi_create_element_name(gen, "now");
 
-	if (en_how == FI_VOCAB_INDEX_NULL || en_now == FI_VOCAB_INDEX_NULL) {
-		die_gen("fi_add_element_name");
+	if (!en_how || !en_now) {
+		die_gen("fi_create_element_name");
 	}
 
-	an_brown = fi_add_attribute_name(gen, "brown");
-	an_cow = fi_add_attribute_name(gen, "cow");
-	an_now = fi_add_attribute_name(gen, "now");
+	an_brown = fi_create_attribute_name(gen, "brown");
+	an_cow = fi_create_attribute_name(gen, "cow");
+	an_now = fi_create_attribute_name(gen, "now");
 
-	if (an_brown == FI_VOCAB_INDEX_NULL
-	    || an_cow == FI_VOCAB_INDEX_NULL
-	    || an_now == FI_VOCAB_INDEX_NULL) {
-		die_gen("fi_add_attribute_name");
+	if (!an_brown || !an_cow || !an_now) {
+		die_gen("fi_create_attribute_name");
 	}
 
 	/*
@@ -176,18 +155,23 @@ write_test(void)
 	}
 
 	/* Clean up.  */
+	fi_destroy_name(en_how);
+	fi_destroy_name(en_now);
+
+	fi_destroy_name(an_brown);
+	fi_destroy_name(an_cow);
+	fi_destroy_name(an_now);
+
 	fi_destroy_attributes(attributes);
 	fi_destroy_value(a_value);
-	fi_destroy_name(a_name);
-	fi_destroy_name(e_name);
+
 	fi_destroy_generator(gen);
 }
-#endif // 0
 
 int
 real_main(void)
 {
-//	write_test();
+	write_test();
 
 	exit(EXIT_SUCCESS);
 }

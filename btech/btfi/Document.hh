@@ -43,8 +43,8 @@ public:
 
 	// Get a vocabulary table reference for an element/attribute name in
 	// the default namespace.
-	VocabTable::EntryRef getElementNameRef (const char *name);
-	VocabTable::EntryRef getAttributeNameRef (const char *name);
+	const DN_VocabTable::TypedEntryRef getElementName (const char *name);
+	const DN_VocabTable::TypedEntryRef getAttributeName (const char *name);
 
 	void write (FI_OctetStream *stream);
 	void read (FI_OctetStream *stream);
@@ -79,8 +79,10 @@ private:
 	DN_VocabTable element_name_surrogates;
 	DN_VocabTable attribute_name_surrogates;
 
-	// Cached vocabulary entries.
-	const VocabTable::EntryRef BT_NAMESPACE;
+public:
+	// Cached vocabulary entries.  Need to put them at the end, to be sure
+	// they're constructed last.
+	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // class Document
 
 } // namespace FI

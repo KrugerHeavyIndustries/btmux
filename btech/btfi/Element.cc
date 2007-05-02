@@ -59,52 +59,91 @@ namespace FI {
 
 namespace {
 
-FI_VocabIndex
-debug_name(const VocabTable::EntryRef& name)
+void
+debug_print_name(const DN_VocabTable::TypedEntryRef& name_ref)
 {
-	return name.getIndex();
+	const Name& name = name_ref.getValue();
+
+	// Namespace part.
+	if (name.nsn_part != 0) {
+		putchar('{');
+		fputs(name.nsn_part.getValue().c_str(),
+		      stdout);
+		if (name.nsn_part.hasIndex()) {
+			const FI_VocabIndex idx = name.nsn_part.getIndex();
+			if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
+		}
+		putchar('}');
+	}
+
+	// Prefix part.
+	if (name.pfx_part != 0) {
+		fputs(name.pfx_part.getValue().c_str(),
+		      stdout);
+		if (name.pfx_part.hasIndex()) {
+			const FI_VocabIndex idx = name.pfx_part.getIndex();
+			if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
+		}
+		putchar(':');
+	}
+
+	// Local part.
+	fputs(name.local_part.getValue().c_str(), stdout);
+	if (name.local_part.hasIndex()) {
+		const FI_VocabIndex idx = name.local_part.getIndex();
+		if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
+	}
+
+	// Entire qualified name.
+	if (name_ref.hasIndex()) {
+		const FI_VocabIndex idx = name_ref.getIndex();
+		if (idx != FI_VOCAB_INDEX_NULL) printf("[%d]", idx);
+	}
 }
 
-const char *
-debug_value(const Value& value)
+void
+debug_print_value(const Value& value)
 {
 	assert(value.getType() == FI_VALUE_AS_OCTETS);
-	return static_cast<const char *>(value.getValue());
+	const char *data = static_cast<const char *>(value.getValue());
+	printf("%.*s", value.getCount(), data);
 }
 
-bool write_start(FI_OctetStream *, const Name&, const Attributes&,
-                 const VocabTable::EntryRef&);
+bool write_start(FI_OctetStream *, const NSN_DS_VocabTable::TypedEntryRef&,
+                 const DN_VocabTable::TypedEntryRef&, const Attributes&);
 bool write_end(FI_OctetStream *);
 
-bool write_namespace_attributes(FI_OctetStream *, const VocabTable::EntryRef&);
+bool write_namespace_attributes(FI_OctetStream *,
+                                const NSN_DS_VocabTable::TypedEntryRef&);
 
 } // anonymous namespace
 
 void
-Element::start(const Name& name, const Attributes& attrs)
+Element::start(const DN_VocabTable::TypedEntryRef& name,
+               const Attributes& attrs)
 {
 	start_flag = true;
 	stop_flag = false;
 
-	w_name = &name;
+	w_name = name;
 	w_attrs = &attrs;
 }
 
 void
-Element::stop(const Name& name)
+Element::stop(const DN_VocabTable::TypedEntryRef& name)
 {
 	start_flag = false;
 	stop_flag = true;
 
-	w_name = &name;
+	w_name = name;
 }
 
 void
 Element::write(FI_OctetStream *stream)
 {
 	if (start_flag) {
-		if (!write_start(stream, *w_name, *w_attrs,
-		                 0 /*doc.getDepth() == 0*/)) {
+		if (!write_start(stream, doc.getDepth() ? 0 : doc.BT_NAMESPACE,
+		                 w_name, *w_attrs)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
@@ -112,18 +151,20 @@ Element::write(FI_OctetStream *stream)
 		doc.increaseDepth();
 
 		// XXX: Debug.
-		//printf("%*s<%u",
-		//       4 * (doc.getDepth() - 1), "", debug_name(w_name));
+		for (int ii = 1; ii < doc.getDepth(); ii++) putchar('\t');
+
+		putchar('<');
+		debug_print_name(w_name);
 
 		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
-			//const Name& a_name = w_attrs->getName(ii);
-			//const Value& a_value = w_attrs->getValue(ii);
-
-			//printf(" %u='%.*s'", debug_name(&a_name),
-			//       a_value.getCount(), debug_value(a_value));
+			putchar(' ');
+			debug_print_name(w_attrs->getNameRef(ii));
+			fputs("='", stdout);
+			debug_print_value(w_attrs->getValue(ii));
+			putchar('\'');
 		}
 
-		printf(">\n");
+		puts(">");
 	} else if (stop_flag) {
 		doc.decreaseDepth();
 
@@ -133,8 +174,11 @@ Element::write(FI_OctetStream *stream)
 		}
 
 		// XXX: Debug.
-		//printf("%*s</%u>\n",
-		//       4 * doc.getDepth(), "", debug_name(w_name));
+		for (int ii = 0; ii < doc.getDepth(); ii++) putchar('\t');
+
+		fputs("</", stdout);
+		debug_print_name(w_name);
+		puts(">");
 	} else {
 		throw IllegalStateException ();
 	}
@@ -158,8 +202,9 @@ namespace {
 //
 
 bool
-write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
-            const VocabTable::EntryRef& namespace_name)
+write_start(FI_OctetStream *stream,
+            const NSN_DS_VocabTable::TypedEntryRef& ns_name,
+            const DN_VocabTable::TypedEntryRef& name, const Attributes& attrs)
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
 	switch (fi_get_stream_num_bits(stream)) {
@@ -183,13 +228,12 @@ write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
 	// Write identification (C.2.11.2, C.3.7.2: 0).
 	// Write attributes presence flag (C.3.3).
 	if (!fi_write_stream_bits(stream, 2,
-	                          attrs.getLength() ? 0/*TODO:FI_BIT_2*/ : 0)) {
+	                          attrs.getLength() ? FI_BIT_2 : 0)) {
 		return false;
 	}
 
 	// Write namespace-attributes (C.3.4).
-	if (namespace_name != 0
-	    && !write_namespace_attributes(stream, namespace_name)) {
+	if (!write_namespace_attributes(stream, ns_name)) {
 		return false;
 	}
 
@@ -202,6 +246,8 @@ write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
 #endif // 0
 
 	// Write attributes (C.3.6).
+	if (attrs.getLength()) {
+	}
 
 	// Write children (C.3.7).
 	return true;
@@ -223,12 +269,17 @@ write_end(FI_OctetStream *stream)
 
 bool
 write_namespace_attributes(FI_OctetStream *stream,
-                           const VocabTable::EntryRef& namespace_name)
+                           const NSN_DS_VocabTable::TypedEntryRef& ns_name)
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 
+	if (ns_name == 0) {
+		// No namespace attributes to write.
+		return true;
+	}
+
 	// Write identification (C.3.4.1: 1110, 00).
-	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,1,0,0,0,,))) {
+	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,1,0, 0,0,,))) {
 		return false;
 	}
 
@@ -240,7 +291,7 @@ write_namespace_attributes(FI_OctetStream *stream,
 		return false;
 	}
 
-	if (!write_namespace_attribute(stream, namespace_name)) {
+	if (!write_namespace_attribute(stream, ns_name)) {
 		return false;
 	}
 
@@ -252,9 +303,9 @@ write_namespace_attributes(FI_OctetStream *stream,
 		return false;
 	}
 
-	w_buf[0] = FI_BITS(1,1,1,1,0,0,0,0);
+	w_buf[0] = FI_BITS(1,1,1,1, 0,0,0,0);
 
-	if (!fi_write_stream_bits(stream, 2, 0)) {
+	if (!fi_write_stream_bits(stream, 2, FI_BITS(0,0,,,,,,))) {
 		return false;
 	}
 

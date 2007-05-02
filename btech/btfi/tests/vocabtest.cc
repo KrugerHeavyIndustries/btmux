@@ -4,6 +4,7 @@
 
 #include "encalg.h"
 
+#include "Exception.hh"
 #include "vocab.hh"
 #include "Name.hh"
 
@@ -253,12 +254,12 @@ run_test()
 	//
 	// Test dynamic name tables.
 	//
-	ref1 = pfx_vt.getEntry("how");
-	ref2 = nsn_vt.getEntry("now://brown");
-	ref3 = ds_vt3.getEntry("cow");
+	PFX_DS_VocabTable::TypedEntryRef pfx_ref = pfx_vt.getEntry("how");
+	NSN_DS_VocabTable::TypedEntryRef nsn_ref = nsn_vt.getEntry("now://brown");
+	DS_VocabTable::TypedEntryRef local_ref = ds_vt3.getEntry("cow");
 
-	const Name n1 (ref3, ref2, ref1);
-	const Name n2 (ref3);
+	const Name n1 (local_ref, nsn_ref, pfx_ref);
+	const Name n2 (local_ref);
 
 	idx1 = dn_vt1.getEntry(n1).getIndex();
 	idx2 = dn_vt2.getEntry(n2).getIndex();
@@ -268,12 +269,12 @@ run_test()
 		    "Incorrect indexes assigned");
 	}
 
-	if (dn_vt1[idx1].pfx_part != ref1
-	    || dn_vt1[idx1].nsn_part != ref2
-	    || dn_vt2[idx1].local_part != ref3
+	if (dn_vt1[idx1].pfx_part.getValue() != pfx_ref.getValue()
+	    || dn_vt1[idx1].nsn_part.getValue() != nsn_ref.getValue()
+	    || dn_vt2[idx1].local_part.getValue() != local_ref.getValue()
 	    || dn_vt2[idx2].pfx_part != 0
 	    || dn_vt2[idx2].nsn_part != 0
-	    || dn_vt2[idx2].local_part != ref3) {
+	    || dn_vt2[idx2].local_part.getValue() != local_ref.getValue()) {
 		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -296,11 +297,11 @@ run_test()
 	test_max(dn_vt1, n1);
 
 	// Test addition when the name table is full.
-	ref1 = ds_vt1.getEntry("local");
-	ref2 = nsn_vt.getEntry("namespace");
-	ref3 = pfx_vt.getEntry("prefix");
+	local_ref = ds_vt1.getEntry("local");
+	nsn_ref = nsn_vt.getEntry("namespace");
+	pfx_ref = pfx_vt.getEntry("prefix");
 
-	Name n3 (ref1, ref2, ref3);
+	Name n3 (local_ref, nsn_ref, pfx_ref);
 
 	if (dn_vt1.getEntry(n3).getIndex() != FI_VOCAB_INDEX_NULL) {
 		die("DN_VocabTable::getEntry(Name)",
@@ -311,9 +312,9 @@ run_test()
 	idx2 = nsn_vt.getEntry("intervening").getIndex();
 	idx3 = pfx_vt.getEntry("intervening").getIndex();
 
-	if ((idx1 != ref1.getIndex() + 1)
-	    || (idx2 != ref2.getIndex() + 1)
-	    || (idx3 != ref3.getIndex() + 1)) {
+	if ((idx1 != local_ref.getIndex() + 1)
+	    || (idx2 != nsn_ref.getIndex() + 1)
+	    || (idx3 != pfx_ref.getIndex() + 1)) {
 		die("DN_VocabTable::EntryRef::getIndex()",
 		    "Didn't properly assign string indexes");
 	}
@@ -322,20 +323,20 @@ run_test()
 	dn_vt1.clear();
 	test_max(nsn_vt, "namespace");
 
-	ref1 = ds_vt1.getEntry("local 2");
-	ref2 = nsn_vt.getEntry("namespace 2");
-	ref3 = pfx_vt.getEntry("prefix 2");
+	local_ref = ds_vt1.getEntry("local 2");
+	nsn_ref = nsn_vt.getEntry("namespace 2");
+	pfx_ref = pfx_vt.getEntry("prefix 2");
 
-	Name n4 (ref1, ref2, ref3);
+	Name n4 (local_ref, nsn_ref, pfx_ref);
 
 	if (dn_vt1.getEntry(n4).getIndex() != FI_VOCAB_INDEX_NULL) {
 		die("DN_VocabTable::getEntry(Name)",
 		    "Didn't clamp at component string table full");
 	}
 
-	if ((idx1 != ref1.getIndex() - 1)
-	    || (FI_VOCAB_INDEX_NULL != ref2.getIndex())
-	    || (idx3 != ref3.getIndex() - 1)) {
+	if ((idx1 != local_ref.getIndex() - 1)
+	    || (FI_VOCAB_INDEX_NULL != nsn_ref.getIndex())
+	    || (idx3 != pfx_ref.getIndex() - 1)) {
 		die("DS_VocabTable::EntryRef::getIndex()",
 		    "Didn't properly assign string indexes");
 	}

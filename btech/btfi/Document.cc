@@ -40,6 +40,9 @@
 #include <string>
 
 #include "stream.h"
+
+#include "Exception.hh"
+#include "Name.hh"
 #include "encutil.hh"
 
 #include "Document.hh"
@@ -55,8 +58,10 @@ const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
 bool write_header(FI_OctetStream *);
 bool write_trailer(FI_OctetStream *);
 
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 bool write_ds_table(FI_OctetStream *, const DS_VocabTable&);
 bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
+#endif // FI_USE_INITIAL_VOCABULARY
 
 } // anonymous namespace
 
@@ -83,16 +88,18 @@ Document::stop()
 	stop_flag = true;
 }
 
-VocabTable::EntryRef
-Document::getElementNameRef(const char *name)
+const DN_VocabTable::TypedEntryRef
+Document::getElementName(const char *name)
 {
-//	return element_name_surrogates.getEntryRef(name);
+	const Name element_name (local_names.getEntry(name), BT_NAMESPACE);
+	return element_name_surrogates.getEntry(element_name);
 }
 
-VocabTable::EntryRef
-Document::getAttributeNameRef(const char *name)
+const DN_VocabTable::TypedEntryRef
+Document::getAttributeName(const char *name)
 {
-//	return attribute_name_surrogates.getEntryRef(name);
+	const Name attribute_name (local_names.getEntry(name), BT_NAMESPACE);
+	return attribute_name_surrogates.getEntry(attribute_name);
 }
 
 void
@@ -106,12 +113,12 @@ Document::write(FI_OctetStream *stream)
 			throw Exception ();
 		}
 
-#ifdef USE_FI_INITIAL_VOCABULARY
+#if 0 // defined(USE_FI_INITIAL_VOCABULARY)
 		if (!writeVocab(stream)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
-#endif // !USE_FI_INITIAL_VOCABULARY
+#endif // FI_USE_INITIAL_VOCABULARY
 	} else if (stop_flag) {
 		if (!write_trailer(stream)) {
 			// TODO: Assign an exception for stream errors.
@@ -175,7 +182,7 @@ Document::setWriting()
 bool
 Document::writeVocab(FI_OctetStream *stream)
 {
-#if 0
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 	// Write padding (C.2.5: 000).
 	// Write optional component presence flags (C.2.5.1: 00001 ?00000??).
 	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
@@ -209,7 +216,7 @@ Document::writeVocab(FI_OctetStream *stream)
 	    && !write_dn_table(stream, attribute_name_surrogates)) {
 		return false;
 	}
-#endif // 0
+#endif // FI_USE_INITIAL_VOCABULARY
 	return true;
 }
 
@@ -266,13 +273,13 @@ write_header(FI_OctetStream *stream)
 	w_buf[3] = FI_BIT_8;
 
 	// Write padding (12.8: 0).
-#ifdef USE_FI_INITIAL_VOCABULARY
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 	// Write optional component presence flags (C.2.3: 0100000).
 	w_buf[4] = FI_BIT_3 /* initial-vocabulary present */;
-#else // !USE_FI_INITIAL_VOCABULARY
+#else // !FI_USE_INITIAL_VOCABULARY
 	// Write optional component presence flags (C.2.3: 0000000).
 	w_buf[4] = 0x00; /* initial-vocabulary not present */
-#endif // !USE_FI_INITIAL_VOCABULARY
+#endif // !FI_USE_INITIAL_VOCABULARY
 
 	return true;
 }
@@ -317,11 +324,11 @@ write_trailer(FI_OctetStream *stream)
 	return true;
 }
 
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 // C.2.5.3: Identifier string vocabulary tables.
 bool
 write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab)
 {
-#if 0
 	// Write string count (C.21).
 	if (!write_length_sequence_of(stream,
 	                              vocab.size() - vocab.last_builtin)) {
@@ -340,7 +347,7 @@ write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab)
 			return false;
 		}
 	}
-#endif // 0
+
 	return true;
 }
 
@@ -348,7 +355,6 @@ write_ds_table(FI_OctetStream *stream, const DS_VocabTable& vocab)
 bool
 write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab)
 {
-#if 0
 	// Write name surrogate count (C.21).
 	if (!write_length_sequence_of(stream, vocab.size())) {
 		return false;
@@ -366,9 +372,10 @@ write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab)
 			return false;
 		}
 	}
-#endif // 0
+
 	return true;
 }
+#endif // FI_USE_INITIAL_VOCABULARY
 
 } // anonymous namespace
 

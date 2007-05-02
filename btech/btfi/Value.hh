@@ -48,7 +48,7 @@ public:
 		}
 	}
 
-	Value& operator= (const Value& src) {
+	Value& operator = (const Value& src) {
 		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();

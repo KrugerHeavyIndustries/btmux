@@ -26,10 +26,11 @@ namespace FI {
 //
 
 // C.12
-// TODO: Fix this to work with arbitrary namespace attributes.
+// TODO: Fix this to work with arbitrary namespace attributes, not just the
+// default BT_NAMESPACE.
 bool
 write_namespace_attribute(FI_OctetStream *stream,
-                          const VocabTable::EntryRef& namespace_name)
+                          const NSN_DS_VocabTable::TypedEntryRef& ns_name)
 {
 	assert(fi_get_stream_num_bits(stream) == 6); // C.12.2
 
@@ -41,7 +42,7 @@ write_namespace_attribute(FI_OctetStream *stream,
 
 	// No prefix to encode using C.13 (C.12.5).
 	// namespace-name encoded using C.13 (C.12.6).
-	if (!write_identifier(stream, namespace_name)) {
+	if (!write_identifier(stream, ns_name)) {
 		return false;
 	}
 
@@ -50,11 +51,12 @@ write_namespace_attribute(FI_OctetStream *stream,
 
 // C.13
 bool
-write_identifier(FI_OctetStream *stream, const VocabTable::EntryRef& id)
+write_identifier(FI_OctetStream *stream,
+                 const DS_VocabTable::TypedEntryRef& id_str)
 {
 	assert(fi_get_stream_num_bits(stream) == 0); // C.13.2
 
-	const FI_VocabIndex idx = id.getIndex();
+	const FI_VocabIndex idx = id_str.getIndex();
 	if (idx == FI_VOCAB_INDEX_NULL) {
 		// Use literal rules (C.13.3).
 		// Write '0' + C.22.
@@ -62,8 +64,7 @@ write_identifier(FI_OctetStream *stream, const VocabTable::EntryRef& id)
 			return false;
 		}
 
-		const CharString& str = DS_VocabTable::getValue(id);
-		if (!write_non_empty_string_bit_2(stream, str)) {
+		if (!write_non_empty_string_bit_2(stream, id_str.getValue())) {
 			return false;
 		}
 	} else {
@@ -81,12 +82,11 @@ write_identifier(FI_OctetStream *stream, const VocabTable::EntryRef& id)
 	return true;
 }
 
-// FIXME: C.16
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
+// C.16
 bool
 write_name_surrogate(FI_OctetStream *stream, const VocabTable::EntryRef& name)
 {
-	return false;
-#if 0
 	assert(fi_get_stream_num_bits(stream) == 6); // C.16.2
 
 	FI_Octet presence_flags = 0;
@@ -137,8 +137,8 @@ write_name_surrogate(FI_OctetStream *stream, const VocabTable::EntryRef& name)
 	}
 
 	return true;
-#endif // 0
 }
+#endif // 0
 
 // C.18
 bool

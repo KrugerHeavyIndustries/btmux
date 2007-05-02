@@ -9,6 +9,7 @@
 #include "common.h"
 #include "encalg.h"
 
+#include "Exception.hh"
 #include "vocab.hh"
 
 
@@ -20,12 +21,12 @@ namespace FI {
  */
 
 void
-VocabTable::clear ()
+VocabTable::clear()
 {
 	if (parent) {
 		last_idx = parent->last_idx;
 	} else {
-		last_idx = 0;
+		last_idx = initial_last_idx;
 	}
 
 	base_idx = last_idx + 1;
@@ -84,15 +85,14 @@ VocabTable::lookupIndex(FI_VocabIndex idx) const
  */
 
 RA_VocabTable::RA_VocabTable()
-: TypedVocabTable<value_type> (256), // 7.2.18
+: TypedVocabTable<value_type> (15 /* last reserved for built-in (7.2.19) */,
+                               256 /* table limit (7.2.18) */),
   NUMERIC_ALPHABET (get_numeric_alphabet()),
   DATE_AND_TIME_ALPHABET (get_date_and_time_alphabet())
 {
-	base_idx = 16; // 7.2.19
-	last_idx = base_idx - 1;
 }
 
-const VocabTable::EntryRef
+const RA_VocabTable::TypedEntryRef
 RA_VocabTable::getEntry(const_value_ref value)
 {
 	// X.891 section 8.2.2 requires restricted alphabets to contain 2 or
@@ -101,9 +101,9 @@ RA_VocabTable::getEntry(const_value_ref value)
 		throw InvalidArgumentException ();
 	}
 
-	if (value == getValue(NUMERIC_ALPHABET)) {
+	if (value == NUMERIC_ALPHABET.getValue()) {
 		return NUMERIC_ALPHABET;
-	} else if (value == getValue(DATE_AND_TIME_ALPHABET)) {
+	} else if (value == DATE_AND_TIME_ALPHABET.getValue()) {
 		return DATE_AND_TIME_ALPHABET;
 	} else {
 		return TypedVocabTable<value_type>::getEntry(value);
@@ -115,10 +115,10 @@ RA_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	switch (idx) {
 	case FI_RA_NUMERIC:
-		return getValue(NUMERIC_ALPHABET);
+		return NUMERIC_ALPHABET.getValue();
 
 	case FI_RA_DATE_AND_TIME:
-		return getValue(DATE_AND_TIME_ALPHABET);
+		return DATE_AND_TIME_ALPHABET.getValue();
 
 	default:
 		return TypedVocabTable<value_type>::operator [](idx);
@@ -171,10 +171,9 @@ const FI_EncodingAlgorithm *ea_cdata_ptr = &fi_ea_cdata;
 } // anonymous namespace
 
 EA_VocabTable::EA_VocabTable()
-: TypedVocabTable<value_type> (256) // 7.2.18
+: TypedVocabTable<value_type> (31 /* last reserved for built-in (7.2.20) */,
+                               256 /* table limit (7.2.18) */)
 {
-	base_idx = 32; // 7.2.20
-	last_idx = base_idx - 1;
 }
 
 EA_VocabTable::DynamicTypedEntry *
@@ -244,7 +243,13 @@ DS_VocabTable::DS_VocabTable()
 {
 }
 
-const VocabTable::EntryRef
+DS_VocabTable::DS_VocabTable(FI_VocabIndex initial_last_idx)
+: TypedVocabTable<CharString> (initial_last_idx),
+  EMPTY_STRING (get_empty_string())
+{
+}
+
+const DS_VocabTable::TypedEntryRef
 DS_VocabTable::getEntry (const_value_ref value)
 {
 	if (value.empty()) {
@@ -258,7 +263,7 @@ DS_VocabTable::const_value_ref
 DS_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	if (idx == FI_VOCAB_INDEX_NULL) {
-		return getValue(EMPTY_STRING);
+		return EMPTY_STRING.getValue();
 	} else {
 		return TypedVocabTable<value_type>::operator [](idx);
 	}
@@ -280,16 +285,14 @@ DS_VocabTable::get_empty_string()
  */
 
 PFX_DS_VocabTable::PFX_DS_VocabTable()
-: XML_PREFIX (get_xml_prefix())
+: DS_VocabTable (FI_PFX_XML), XML_PREFIX (get_xml_prefix())
 {
-	last_idx = FI_PFX_XML;
-	base_idx = last_idx + 1;
 }
 
-const VocabTable::EntryRef
+const PFX_DS_VocabTable::TypedEntryRef
 PFX_DS_VocabTable::getEntry(const_value_ref value)
 {
-	if (value == getValue(XML_PREFIX)) {
+	if (value == XML_PREFIX.getValue()) {
 		return XML_PREFIX;
 	} else {
 		return TypedVocabTable<value_type>::getEntry (value);
@@ -300,7 +303,7 @@ PFX_DS_VocabTable::const_value_ref
 PFX_DS_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	if (idx == FI_PFX_XML) {
-		return getValue(XML_PREFIX);
+		return XML_PREFIX.getValue();
 	} else {
 		return TypedVocabTable<value_type>::operator [](idx);
 	}
@@ -322,16 +325,14 @@ PFX_DS_VocabTable::get_xml_prefix()
  */
 
 NSN_DS_VocabTable::NSN_DS_VocabTable()
-: XML_NAMESPACE (get_xml_namespace())
+: DS_VocabTable (FI_NSN_XML), XML_NAMESPACE (get_xml_namespace())
 {
-	last_idx = FI_NSN_XML;
-	base_idx = last_idx + 1;
 }
 
-const VocabTable::EntryRef
+const NSN_DS_VocabTable::TypedEntryRef
 NSN_DS_VocabTable::getEntry(const_value_ref value)
 {
-	if (value == getValue(XML_NAMESPACE)) {
+	if (value == XML_NAMESPACE.getValue()) {
 		return XML_NAMESPACE;
 	} else {
 		return TypedVocabTable<value_type>::getEntry (value);
@@ -342,7 +343,7 @@ NSN_DS_VocabTable::const_value_ref
 NSN_DS_VocabTable::operator [](FI_VocabIndex idx) const
 {
 	if (idx == FI_NSN_XML) {
-		return getValue(XML_NAMESPACE);
+		return XML_NAMESPACE.getValue();
 	} else {
 		return TypedVocabTable<value_type>::operator [](idx);
 	}
