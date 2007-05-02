@@ -72,7 +72,8 @@ debug_value(const Value& value)
 	return static_cast<const char *>(value.getValue());
 }
 
-bool write_start(FI_OctetStream *, const Name&, const Attributes&, bool);
+bool write_start(FI_OctetStream *, const Name&, const Attributes&,
+                 const VocabTable::EntryRef&);
 bool write_end(FI_OctetStream *);
 
 bool write_namespace_attributes(FI_OctetStream *, const VocabTable::EntryRef&);
@@ -103,7 +104,7 @@ Element::write(FI_OctetStream *stream)
 {
 	if (start_flag) {
 		if (!write_start(stream, *w_name, *w_attrs,
-		                 doc.getDepth() == 0)) {
+		                 0 /*doc.getDepth() == 0*/)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}

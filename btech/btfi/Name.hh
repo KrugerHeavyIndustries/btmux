@@ -30,23 +30,48 @@ public:
 	//
 	// Note that this comparison is by value, not by index.
 	bool operator < (const Name& rValue) const {
-		if (pfx_part == 0 || rValue.pfx_part == 0) {
-			if (rValue.pfx_part != 0) {
+		if (pfx_part == 0) {
+			if (rValue.pfx_part == 0) {
+				// 0 == 0
+			} else {
+				// 0 < Rp
 				return true;
 			}
-		} else if (getValue(pfx_part) < getValue(rValue.pfx_part)) {
+		} else if (rValue.pfx_part == 0) {
+				// Lp > 0
+				return false;
+		} else if (pfx_part < rValue.pfx_part) {
+			// Lp < Rp
 			return true;
+		} else if (rValue.pfx_part < pfx_part) {
+			// Lp > Rp
+			return false;
+		} else {
+			// Lp == Rp
 		}
 
-		if (nsn_part == 0 || rValue.nsn_part == 0) {
-			if (rValue.nsn_part != 0) {
+		if (nsn_part == 0) {
+			if (rValue.nsn_part == 0) {
+				// 0 == 0
+			} else {
+				// 0 < Rn
 				return true;
 			}
-		} else if (getValue(nsn_part) < getValue(rValue.nsn_part)) {
+		} else if (rValue.nsn_part == 0) {
+				// Ln > 0
+				return false;
+		} else if (nsn_part < rValue.nsn_part) {
+			// Ln < Rn
 			return true;
+		} else if (rValue.nsn_part < nsn_part) {
+			// Ln > Rn
+			return false;
+		} else {
+			// Ln == Rn
 		}
 
-		return getValue(local_part) < getValue(rValue.local_part);
+		// Ll ? Rl
+		return local_part < rValue.local_part;
 	}
 
 	const VocabTable::EntryRef pfx_part;

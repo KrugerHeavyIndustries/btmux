@@ -311,8 +311,34 @@ run_test()
 	idx2 = nsn_vt.getEntry("intervening").getIndex();
 	idx3 = pfx_vt.getEntry("intervening").getIndex();
 
-	fprintf(stderr, "%d %d %d\n", idx1, idx2, idx3);
-	fprintf(stderr, "%d %d %d\n", ref1.getIndex(), ref2.getIndex(), ref3.getIndex());
+	if ((idx1 != ref1.getIndex() + 1)
+	    || (idx2 != ref2.getIndex() + 1)
+	    || (idx3 != ref3.getIndex() + 1)) {
+		die("DN_VocabTable::EntryRef::getIndex()",
+		    "Didn't properly assign string indexes");
+	}
+
+	// Test addition when a string table is full.
+	dn_vt1.clear();
+	test_max(nsn_vt, "namespace");
+
+	ref1 = ds_vt1.getEntry("local 2");
+	ref2 = nsn_vt.getEntry("namespace 2");
+	ref3 = pfx_vt.getEntry("prefix 2");
+
+	Name n4 (ref1, ref2, ref3);
+
+	if (dn_vt1.getEntry(n4).getIndex() != FI_VOCAB_INDEX_NULL) {
+		die("DN_VocabTable::getEntry(Name)",
+		    "Didn't clamp at component string table full");
+	}
+
+	if ((idx1 != ref1.getIndex() - 1)
+	    || (FI_VOCAB_INDEX_NULL != ref2.getIndex())
+	    || (idx3 != ref3.getIndex() - 1)) {
+		die("DS_VocabTable::EntryRef::getIndex()",
+		    "Didn't properly assign string indexes");
+	}
 }
 
 } // anonymous namespace

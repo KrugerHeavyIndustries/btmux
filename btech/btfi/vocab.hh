@@ -6,7 +6,6 @@
 #define BTECH_FI_VOCAB_HH
 
 #include <cstddef>
-#include <cstdio>
 
 #include <vector>
 #include <set>
