@@ -6,12 +6,15 @@
 #define BTECH_FI_VOCAB_HH
 
 #include <cstddef>
+#include <cstdio>
 
 #include <vector>
 #include <set>
 
 #include "common.h"
 #include "encalg.h"
+
+#include "Exception.hh"
 
 
 namespace BTech {
@@ -66,10 +69,6 @@ public:
 			}
 		}
 
-		EntryRef (Entry& entry) : entry (&entry) {
-			entry.addRef();
-		}
-
 		~EntryRef () {
 			if (entry) {
 				entry->delRef();
@@ -107,10 +106,29 @@ public:
 			return entry->getIndex();
 		}
 
-		// Comparison.
+		// Ordering comparison.
 		bool operator < (const EntryRef& rValue) const {
 			// We need to compare by entry value here.
 			return *entry < *rValue.entry;
+		}
+
+		// Test whether two references point to the same Entry.
+		bool operator != (const EntryRef& rValue) const {
+			return entry != rValue.entry;
+		}
+
+		bool operator == (const EntryRef& rValue) const {
+			return entry == rValue.entry;
+		}
+
+		// Test whether this reference points to a given Entry.  Useful
+		// for doing things like ref != 0.
+		bool operator != (const Entry *rValue) const {
+			return entry != rValue;
+		}
+
+		bool operator == (const Entry *rValue) const {
+			return entry == rValue;
 		}
 
 		// Explicitly release the reference to the managed pointer.
@@ -182,8 +200,22 @@ protected:
 	public:
 		virtual ~Entry () {}
 
+		// Get the entry's index.  Return FI_VOCAB_INDEX_NULL if an
+		// index can not be assigned, for whatever reason. (The index
+		// may also simply be FI_VOCAB_INDEX_NULL; it may be necessary
+		// to disambiguate from context, such as by checking if the
+		// value is an empty string.) Errors should be reported by
+		// throwing an appropriate Exception.
+		//
+		// Once assigned, the index should never change.  Also, other
+		// than a FI_VOCAB_INDEX_NULL, indicating a missing index, the
+		// index should be unique within its context for any given
+		// Entry instance (though multiple Entry instances may have the
+		// same value).
 		virtual FI_VocabIndex getIndex () = 0;
 
+		// Unassign index.  A new index may be returned by the next
+		// invocation of getIndex().
 		virtual void resetIndex () {}
 
 		virtual bool operator < (const Entry& rValue) const = 0;
@@ -205,13 +237,13 @@ private:
 	class EntryPool;
 
 protected:
-	typedef T value_type;
-	typedef const T& const_value_ref;
-
 	class TypedEntry;
 	class DynamicTypedEntry;
 
 public:
+	typedef T value_type;
+	typedef const T& const_value_ref;
+
 	~TypedVocabTable () {
 		if (!parent) {
 			// We could theoretically destroy the parent of a table
@@ -298,7 +330,6 @@ protected:
 	protected:
 		TypedEntry (const_value_ref value) : value (value) {}
 
-	private:
 		const value_type value;
 	}; // template class TypedVocabTable::TypedEntry
 
@@ -316,7 +347,7 @@ protected:
 
 		FI_VocabIndex getIndex () {
 			if (!has_cached_idx) {
-				cached_idx = owner.acquireIndex(this);
+				cached_idx = acquireIndex();
 				has_cached_idx = true;
 			}
 
@@ -343,6 +374,10 @@ protected:
 				owner.entry_pool->disintern(this);
 				// disintern() will drop ref_count to 0.
 			}
+		}
+
+		virtual FI_VocabIndex acquireIndex () {
+			return owner.acquireIndex(this);
 		}
 
 	private:
@@ -433,8 +468,8 @@ private:
 	const EntryRef NUMERIC_ALPHABET;
 	const EntryRef DATE_AND_TIME_ALPHABET;
 
-	static TypedEntry& get_numeric_alphabet ();
-	static TypedEntry& get_date_and_time_alphabet();
+	static TypedEntry *get_numeric_alphabet ();
+	static TypedEntry *get_date_and_time_alphabet();
 }; // class RA_VocabTable
 
 //
@@ -464,7 +499,7 @@ public:
 private:
 	const EntryRef EMPTY_STRING;
 
-	static TypedEntry& get_empty_string ();
+	static TypedEntry *get_empty_string ();
 }; // class DS_VocabTable
 
 //
@@ -481,7 +516,7 @@ public:
 private:
 	const EntryRef XML_PREFIX;
 
-	static TypedEntry& get_xml_prefix ();
+	static TypedEntry *get_xml_prefix ();
 }; // class PFX_DS_VocabTable
 
 //
@@ -498,15 +533,8 @@ public:
 private:
 	const EntryRef XML_NAMESPACE;
 
-	static TypedEntry& get_xml_namespace ();
+	static TypedEntry *get_xml_namespace ();
 }; // class NN_DS_VocabTable
-
-//
-// Dynamic name table implementation.
-//
-class DN_VocabTable : public TypedVocabTable<FI_NameSurrogate> {
-public:
-}; // class DN_VocabTable
 
 } // namespace FI
 } // namespace BTech

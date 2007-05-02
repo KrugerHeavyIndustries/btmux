@@ -102,65 +102,14 @@ typedef enum {
 	FI_NSN_XML = 1			/* http://www.w3.org/XML/1998/namespace (section 7.2.22) */
 } FI_NSN_VocabIndex;
 
-typedef struct FI_NameSurrogate {
-	FI_VocabIndex prefix_idx;	/* optional */
-	FI_VocabIndex namespace_idx;	/* optional, required by prefix_idx */
-	FI_VocabIndex local_idx;	/* required */
-
-#ifdef __cplusplus
-	FI_NameSurrogate (FI_VocabIndex local_idx,
-	                  FI_VocabIndex namespace_idx = FI_VOCAB_INDEX_NULL,
-	                  FI_VocabIndex prefix_idx = FI_VOCAB_INDEX_NULL)
-	: prefix_idx(prefix_idx),
-	  namespace_idx(namespace_idx),
-	  local_idx(local_idx) {}
-
-	bool operator < (const FI_NameSurrogate& rhs) const {
-		if (prefix_idx < rhs.prefix_idx) {
-			return true;
-		} else if (namespace_idx < rhs.namespace_idx) {
-			return true;
-		} else {
-			return local_idx < rhs.local_idx;
-		}
-	}
-
-	bool operator == (const FI_NameSurrogate& rhs) const {
-		return (local_idx == rhs.local_idx
-		        && namespace_idx == rhs.namespace_idx
-		        && prefix_idx == rhs.prefix_idx);
-	}
-
-	bool operator != (const FI_NameSurrogate& rhs) const {
-		return !(*this == rhs);
-	}
-#endif /* __cplusplus */
-} FI_NameSurrogate;
-
 #ifdef __cplusplus
 
-#include <exception>
 #include <string>
 
 namespace BTech {
 namespace FI {
 
-typedef std::basic_string<FI_Char> CharString;
-
-class Exception : public std::exception {
-}; // Exception
-
-class IndexOutOfBoundsException : public Exception {
-}; // IndexOutOfBoundsException
-
-class InvalidArgumentException : public Exception {
-}; // InvalidArgumentException
-
-class IllegalStateException : public Exception {
-}; // IllegalStateException
-
-class UnsupportedOperationException : public Exception {
-}; // UnsupportedOperationException
+typedef std::string CharString;
 
 } // namespace FI
 } // namespace BTech

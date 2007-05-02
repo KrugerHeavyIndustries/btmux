@@ -27,67 +27,6 @@ using namespace BTech::FI;
 
 
 /*
- * Attributes API.
- */
-
-// C-compatible wrapper around the MutableAttributes class.
-struct FI_tag_Attributes {
-	MutableAttributes impl;
-}; // FI_Attributes
-
-FI_Attributes *
-fi_create_attributes(void)
-{
-	return new FI_Attributes ();
-}
-
-void
-fi_destroy_attributes(FI_Attributes *attrs)
-{
-	delete attrs;
-}
-
-void
-fi_clear_attributes(FI_Attributes *attrs)
-{
-	attrs->impl.clear();
-}
-
-int
-fi_add_attribute(FI_Attributes *attrs,
-                 const FI_Name *name, const FI_Value *value)
-{
-	return attrs->impl.add(name->parent, value->parent);
-}
-
-int
-fi_get_attributes_length(const FI_Attributes *attrs)
-{
-	return attrs->impl.getLength();
-}
-
-const FI_Name *
-fi_get_attribute_name(const FI_Attributes *attrs, int idx)
-{
-	try {
-		return attrs->impl.getName(idx).getProxy();
-	} catch (const IndexOutOfBoundsException& e) {
-		return 0;
-	}
-}
-
-const FI_Value *
-fi_get_attribute_value(const FI_Attributes *attrs, int idx)
-{
-	try {
-		return attrs->impl.getValue(idx).getProxy();
-	} catch (const IndexOutOfBoundsException& e) {
-		return 0;
-	}
-}
-
-
-/*
  * Generator API.
  */
 
@@ -206,7 +145,7 @@ FI_NameRef *
 fi_get_element_name_ref(FI_Generator *gen, const char *name)
 {
 	try {
-		return reinterpret_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getElementNameRef(name)));
+		//return static_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getElementNameRef(name)));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
@@ -217,7 +156,7 @@ FI_NameRef *
 fi_get_attribute_name_ref(FI_Generator *gen, const char *name)
 {
 	try {
-		return reinterpret_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getAttributeNameRef(name)));
+		//return static_cast<FI_NameRef *>(new VocabTable::EntryRef (gen->document->getAttributeNameRef(name)));
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
@@ -396,7 +335,7 @@ gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
 	}
 
 	// Write element header.
-	gen->element->start(name->parent, attrs->impl);
+	//gen->element->start(name->parent, attrs->impl);
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().
@@ -418,7 +357,7 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	}
 
 	// Write element trailer.
-	gen->element->stop(name->parent);
+	//gen->element->stop(name->parent);
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().

@@ -50,7 +50,7 @@ namespace FI {
 
 namespace {
 
-const char *const NAMESPACE = "http://btonline-btech.sourceforge.net";
+const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
 
 bool write_header(FI_OctetStream *);
 bool write_trailer(FI_OctetStream *);
@@ -59,6 +59,13 @@ bool write_ds_table(FI_OctetStream *, const DS_VocabTable&);
 bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
 
 } // anonymous namespace
+
+Document::Document()
+: start_flag (false), stop_flag (false),
+  is_reading (false), is_writing (false),
+  BT_NAMESPACE (namespace_names.getEntry(BT_NAMESPACE_URI))
+{
+}
 
 void
 Document::start()
@@ -145,16 +152,22 @@ Document::setWriting()
 	/*
 	 * Initialize vocabulary tables.
 	 */
+	restricted_alphabets.clear();
+	encoding_algorithms.clear();
 
-#if 0
-	// Our namespace.  Since this will be the default namespace in
-	// documents we create, we don't need (or want) to define a prefix.
-	// TODO: We may want to point this at a document.
-	NAMESPACE_IDX = namespace_names.add(NAMESPACE);
-	if (NAMESPACE_IDX == FI_VOCAB_INDEX_NULL) {
-		throw IllegalStateException ();
-	}
-#endif // 0
+	prefixes.clear();
+	namespace_names.clear();
+	local_names.clear();
+
+	other_ncnames.clear();
+	other_uris.clear();
+
+	attribute_values.clear();
+	content_character_chunks.clear();
+	other_strings.clear();
+
+	element_name_surrogates.clear();
+	attribute_name_surrogates.clear();
 
 	is_writing = true;
 }

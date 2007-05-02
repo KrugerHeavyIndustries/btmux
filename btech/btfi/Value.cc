@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "common.h"
-#include "generic.h"
+#include "values.h"
 
 #include "Value.hh"
 
@@ -23,7 +23,7 @@ template<typename T>
 void
 set_value_buf(char *value_buf, size_t count, const void *buf)
 {
-	const T *const src_buf = reinterpret_cast<const T *>(buf);
+	const T *const src_buf = static_cast<const T *>(buf);
 	T *const dst_buf = reinterpret_cast<T *>(value_buf);
 
 	for (size_t ii = 0; ii < count; ii++) {
@@ -171,3 +171,50 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf)
 
 } // namespace FI
 } // namespace BTech
+
+
+/*
+ * C interface.
+ */
+
+using namespace BTech::FI;
+
+FI_Value *
+fi_create_value(void)
+{
+	try {
+		return (new Value ())->getProxy();
+	} catch (const std::bad_alloc& e) {
+		return 0;
+	}
+}
+
+void
+fi_destroy_value(FI_Value *obj)
+{
+	delete &obj->parent;
+}
+
+FI_ValueType
+fi_get_value_type(const FI_Value *obj)
+{
+	return obj->parent.getType();
+}
+
+size_t
+fi_get_value_count(const FI_Value *obj)
+{
+	return obj->parent.getCount();
+}
+
+const void *
+fi_get_value(const FI_Value *obj)
+{
+	return obj->parent.getValue();
+}
+
+int
+fi_set_value(FI_Value *obj, FI_ValueType type, size_t count, const void *buf)
+{
+	return obj->parent.setValue(type, count, buf);
+}

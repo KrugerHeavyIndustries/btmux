@@ -23,9 +23,12 @@ void
 VocabTable::clear ()
 {
 	if (parent) {
-		base_idx = parent->last_idx + 1;
 		last_idx = parent->last_idx;
+	} else {
+		last_idx = 0;
 	}
+
+	base_idx = last_idx + 1;
 
 	for (std::vector<EntryRef>::iterator pp = vocabulary.begin();
 	     pp != vocabulary.end();
@@ -123,21 +126,21 @@ RA_VocabTable::operator [](FI_VocabIndex idx) const
 }
 
 // Provides singleton NUMERIC_ALPHABET TypedEntry, to avoid static init.
-RA_VocabTable::TypedEntry&
+RA_VocabTable::TypedEntry *
 RA_VocabTable::get_numeric_alphabet()
 {
 	static StaticTypedEntry NUMERIC_ALPHABET (FI_RA_NUMERIC,
 	                                          "0123456789-+.e ");
-	return NUMERIC_ALPHABET;
+	return &NUMERIC_ALPHABET;
 }
 
 // Provides singleton DATE_AND_TIME_ALPHABET TypedEntry, to avoid static init.
-RA_VocabTable::TypedEntry&
+RA_VocabTable::TypedEntry *
 RA_VocabTable::get_date_and_time_alphabet()
 {
 	static StaticTypedEntry DATE_AND_TIME_ALPHABET (FI_RA_DATE_AND_TIME,
 	                                                "012345789-:TZ ");
-	return DATE_AND_TIME_ALPHABET;
+	return &DATE_AND_TIME_ALPHABET;
 }
 
 
@@ -262,11 +265,11 @@ DS_VocabTable::operator [](FI_VocabIndex idx) const
 }
 
 // Provides singleton EMPTY_STRING TypedEntry, to avoid static init.
-DS_VocabTable::TypedEntry&
+DS_VocabTable::TypedEntry *
 DS_VocabTable::get_empty_string()
 {
 	static StaticTypedEntry EMPTY_STRING (FI_VOCAB_INDEX_NULL, "");
-	return EMPTY_STRING;
+	return &EMPTY_STRING;
 }
 
 
@@ -304,11 +307,11 @@ PFX_DS_VocabTable::operator [](FI_VocabIndex idx) const
 }
 
 // Provides singleton XML_PREFIX TypedEntry, to avoid static init.
-PFX_DS_VocabTable::TypedEntry&
+PFX_DS_VocabTable::TypedEntry *
 PFX_DS_VocabTable::get_xml_prefix()
 {
 	static StaticTypedEntry XML_PREFIX (FI_PFX_XML, "xml");
-	return XML_PREFIX;
+	return &XML_PREFIX;
 }
 
 
@@ -346,44 +349,13 @@ NSN_DS_VocabTable::operator [](FI_VocabIndex idx) const
 }
 
 // Provides singleton XML_NAMESPACE TypedEntry, to avoid static init.
-NSN_DS_VocabTable::TypedEntry&
+NSN_DS_VocabTable::TypedEntry *
 NSN_DS_VocabTable::get_xml_namespace()
 {
-	static StaticTypedEntry XML_NAMESPACE (FI_NSN_XML, "http://www.w3.org/XML/1998/namespace");
-	return XML_NAMESPACE;
+	static StaticTypedEntry
+	XML_NAMESPACE (FI_NSN_XML, "http://www.w3.org/XML/1998/namespace");
+	return &XML_NAMESPACE;
 }
-
-
-/*
- * 8.5: Dynamic names: Name surrogates.  Dynamic.  Each document has 2:
- *
- * ELEMENT NAME
- * ATTRIBUTE NAME
- *
- * Name surrogates are triplets of indices into the PREFIX, NAMESPACE NAME,
- * and LOCAL NAME tables, representing qualified names.  Only the LOCAL NAME
- * index is mandatory.  The PREFIX index requires the NAMESPACE NAME index.
- *
- * The meaning of the three possible kinds of name surrogates is defined in
- * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
- */
-
-// TODO:
-//
-// 1) Set it up so that name surrogates are derived automatically from the
-//    related name tables.
-// 2) Expand the FI_NameSurrogate type to cover all possibilities.
-// 3) Add a mechanism to test if a table is full before trying to add new
-//    entries to it.
-// 4) Extend method signatures to handle the more complex type.
-#if 0
-
-const VocabTable::EntryRef
-DN_VocabTable::getEntry(const_entry_ref entry) throw (Exception)
-{
-}
-
-#endif
 
 } // namespace FI
 } // namespace BTech

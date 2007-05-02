@@ -9,6 +9,9 @@
 
 #include "stream.h"
 
+#include "names.h"
+
+#include "vocab.hh"
 #include "Name.hh"
 
 #include "encutil.hh"
@@ -23,10 +26,10 @@ namespace FI {
 //
 
 // C.12
-// FIXME: The namespace index is currently hardcoded to 2, since we only use
-// this to encode our default namespace index on the document element.
+// TODO: Fix this to work with arbitrary namespace attributes.
 bool
-write_namespace_attribute(FI_OctetStream *stream)
+write_namespace_attribute(FI_OctetStream *stream,
+                          const VocabTable::EntryRef& namespace_name)
 {
 	assert(fi_get_stream_num_bits(stream) == 6); // C.12.2
 
@@ -38,13 +41,6 @@ write_namespace_attribute(FI_OctetStream *stream)
 
 	// No prefix to encode using C.13 (C.12.5).
 	// namespace-name encoded using C.13 (C.12.6).
-	const FI_VocabIndex namespace_idx = 2;
-
-	Name namespace_name;
-	if (!namespace_name.setName(FI_NAME_AS_INDEX, &namespace_idx)) {
-		return false;
-	}
-
 	if (!write_identifier(stream, namespace_name)) {
 		return false;
 	}
@@ -54,17 +50,25 @@ write_namespace_attribute(FI_OctetStream *stream)
 
 // C.13
 bool
-write_identifier(FI_OctetStream *stream, const Name& id)
+write_identifier(FI_OctetStream *stream, const VocabTable::EntryRef& id)
 {
 	assert(fi_get_stream_num_bits(stream) == 0); // C.13.2
 
-	FI_VocabIndex idx;
+	const FI_VocabIndex idx = id.getIndex();
+	if (idx == FI_VOCAB_INDEX_NULL) {
+		// Use literal rules (C.13.3).
+		// Write '0' + C.22.
+		if (!fi_write_stream_bits(stream, 1, 0)) {
+			return false;
+		}
 
-	switch (id.getType()) {
-	case FI_NAME_AS_INDEX:
-		// Write '1' + C.25 (C.13.4).
-		idx = *reinterpret_cast<const FI_VocabIndex *>(id.getName());
-
+		const CharString& str = DS_VocabTable::getValue(id);
+		if (!write_non_empty_string_bit_2(stream, str)) {
+			return false;
+		}
+	} else {
+		// Use index rules (C.13.4).
+		// Write '1' + C.25.
 		if (!fi_write_stream_bits(stream, 1, FI_BIT_1)) {
 			return false;
 		}
@@ -72,20 +76,17 @@ write_identifier(FI_OctetStream *stream, const Name& id)
 		if (!write_non_zero_uint20_bit_2(stream, idx)) {
 			return false;
 		}
-		break;
-
-	default:
-		// FIXME: Use '0' + C.22 (C.13.3).
-		return false;
 	}
 
 	return true;
 }
 
-// C.16
+// FIXME: C.16
 bool
-write_name_surrogate(FI_OctetStream *stream, const FI_NameSurrogate& name)
+write_name_surrogate(FI_OctetStream *stream, const VocabTable::EntryRef& name)
 {
+	return false;
+#if 0
 	assert(fi_get_stream_num_bits(stream) == 6); // C.16.2
 
 	FI_Octet presence_flags = 0;
@@ -136,27 +137,25 @@ write_name_surrogate(FI_OctetStream *stream, const FI_NameSurrogate& name)
 	}
 
 	return true;
+#endif // 0
 }
 
 // C.18
 bool
-write_name_bit_3(FI_OctetStream *stream, const Name& name)
+write_name_bit_3(FI_OctetStream *stream, const VocabTable::EntryRef& name)
 {
 	assert(fi_get_stream_num_bits(stream) == 2); // C.18.2
 
-	FI_VocabIndex idx;
-
-	switch (name.getType()) {
-	case FI_NAME_AS_INDEX:
-		// Write name-surrogate-index using C.27 (C.18.4).
-		idx = *reinterpret_cast<const FI_VocabIndex *>(name.getName());
+	const FI_VocabIndex idx = name.getIndex();
+	if (idx == FI_VOCAB_INDEX_NULL) {
+		// FIXME: Use literal-name (C.18.3).
+		return false;
+	} else {
+		// Use name-surrogate-index (C.18.4).
+		// Write name-surrogate-index using C.27.
 		if (!write_non_zero_uint20_bit_3(stream, idx)) {
 			return false;
 		}
-		break;
-
-	default: // FIXME: support other types
-		return false;
 	}
 
 	return true;
@@ -188,7 +187,7 @@ write_length_sequence_of(FI_OctetStream *stream, FI_Length len)
 
 		len -= 129;
 
-		w_buf[0] = FI_BIT_1 /* 1000 */ | (len >> 16);
+		w_buf[0] = FI_BITS(1,0,0,0,,,,) | (len >> 16);
 		w_buf[1] = len >> 8;
 		w_buf[2] = len;
 	}
@@ -218,7 +217,8 @@ write_non_empty_string_bit_2(FI_OctetStream *stream, const CharString& str)
 		// [65,320] (C.22.3.2)
 		len = str.size() - 65;
 
-		if (!fi_write_stream_bits(stream, 7, FI_BIT_1 /* 10 00000 */)) {
+		if (!fi_write_stream_bits(stream, 7,
+		                          FI_BITS(1,0, 0,0,0,0,0,))) {
 			return false;
 		}
 
@@ -233,7 +233,7 @@ write_non_empty_string_bit_2(FI_OctetStream *stream, const CharString& str)
 		len = str.size() - 321;
 
 		if (!fi_write_stream_bits(stream, 7,
-		                          FI_BIT_1 | FI_BIT_2 /* 11 00000 */)) {
+		                          FI_BITS(1,1, 0,0,0,0,0,))) {
 			return false;
 		}
 
@@ -294,7 +294,7 @@ write_non_zero_uint20_bit_2(FI_OctetStream *stream, FI_UInt20 val)
 		val -= 8257;
 
 		if (!fi_write_stream_bits(stream, 7,
-		                          FI_BIT_1 | FI_BIT_2 | val >> 15)) {
+		                          FI_BITS(1,1,,,,,,) | val >> 15)) {
 			return false;
 		}
 

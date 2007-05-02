@@ -1,39 +1,18 @@
 /*
- * Generic types.
+ * Generic value type.
  */
 
-#ifndef BTECH_FI_GENERIC_H
-#define BTECH_FI_GENERIC_H
+#ifndef BTECH_FI_VALUES_H
+#define BTECH_FI_VALUES_H
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include "common.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-/*
- * Generic names.
- */
-
-typedef enum {
-	FI_NAME_AS_NULL,		/* no name */
-	FI_NAME_AS_INDEX		/* name surrogate FI_VocabIndex */
-} FI_NameType;
-
-typedef struct FI_tag_Name FI_Name;
-
-FI_Name *fi_create_name(void);
-void fi_destroy_name(FI_Name *obj);
-
-FI_NameType fi_get_name_type(const FI_Name *obj);
-const void *fi_get_name(const FI_Name *obj);
-
-int fi_set_name(FI_Name *obj, FI_NameType type, const void *buf);
-
-/*
- * Generic values.
- */
 
 typedef int_fast16_t FI_Int16;		/* signed 16-bit integer */
 typedef int_fast32_t FI_Int32;		/* signed 32-bit integer */
@@ -71,4 +50,4 @@ int fi_set_value(FI_Value *obj,
 } // extern "C"
 #endif /* __cplusplus */
 
-#endif /* !BTECH_FI_GENERIC_H */
+#endif /* !BTECH_FI_VALUES_H */

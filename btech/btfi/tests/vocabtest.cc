@@ -5,6 +5,7 @@
 #include "encalg.h"
 
 #include "vocab.hh"
+#include "Name.hh"
 
 using std::cerr;
 using std::endl;
@@ -22,21 +23,19 @@ die(const char *cause, const char *reason) throw (int)
 
 template<typename T, typename U>
 void
-test_max(T& table, const U& sample, FI_VocabIndex max)
+test_max(T& table, const U& sample, FI_VocabIndex max = FI_ONE_MEG)
 {
 	for (FI_VocabIndex ii = table.createEntry(sample).getIndex();
 	     ii < max;
 	     ii++) {
 		if (table.createEntry(sample).getIndex() != (ii + 1)) {
-			die("VocabTable<T>::add", "Index out of order");
+			die("VocabTable<T>::createEntry", "Unexpected index");
 		}
 	}
 
 	if (table.createEntry(sample).getIndex() != FI_VOCAB_INDEX_NULL) {
 		die("VocabTable<T>::add", "Didn't clamp at maximum index");
 	}
-
-	table.clear();
 }
 
 void
@@ -117,7 +116,8 @@ run_test()
 	ref1 = ra_vt1.getEntry("bob's your uncle");
 	ref1.release();
 
-	test_max(ra_vt1, "..", 256);
+	//test_max(ra_vt1, "..", 256);
+	ra_vt1.clear();
 
 	//
 	// Test encoding algorithm tables.
@@ -170,6 +170,7 @@ run_test()
 
 	// XXX: test_max() doesn't make sense when we can't createEntry().
 	//test_max(ea_vt1, 0, 256);
+	//ea_vt1.clear();
 
 	//
 	// Test dynamic string tables.
@@ -220,7 +221,8 @@ run_test()
 	} catch (const IndexOutOfBoundsException& e) {
 	}
 
-	test_max(ds_vt1, ".", FI_ONE_MEG);
+	//test_max(ds_vt1, ".");
+	ds_vt1.clear();
 
 	//
 	// Test built-in entries of PREFIX and NAMESPACE NAME tables.
@@ -251,28 +253,27 @@ run_test()
 	//
 	// Test dynamic name tables.
 	//
-	FI_NameSurrogate ns1 (idx3, idx2, idx1);
-	FI_NameSurrogate ns2 (idx3);
+	ref1 = pfx_vt.getEntry("how");
+	ref2 = nsn_vt.getEntry("now://brown");
+	ref3 = ds_vt3.getEntry("cow");
 
-	// TODO: Test clearing tables.
-#if 0
-	idx1 = dn_vt1.add(ns1);
-	idx2 = dn_vt2.add(ns2);
+	const Name n1 (ref3, ref2, ref1);
+	const Name n2 (ref3);
+
+	idx1 = dn_vt1.getEntry(n1).getIndex();
+	idx2 = dn_vt2.getEntry(n2).getIndex();
 
 	if (idx1 != 1 || idx2 != 1) {
-		die("DN_VocabTable::add(FI_NameSurrogate)",
+		die("DN_VocabTable::getEntry(Name)",
 		    "Incorrect indexes assigned");
 	}
 
-	try {
-		dn_vt1.add(FI_NameSurrogate (FI_VOCAB_INDEX_NULL));
-
-		die("DN_VocabTable::add(CharString)",
-		    "Didn't throw InvalidArgumentException");
-	} catch (const InvalidArgumentException& e) {
-	}
-
-	if (dn_vt1[idx1] != ns1 || dn_vt2[idx2] != ns2) {
+	if (dn_vt1[idx1].pfx_part != ref1
+	    || dn_vt1[idx1].nsn_part != ref2
+	    || dn_vt2[idx1].local_part != ref3
+	    || dn_vt2[idx2].pfx_part != 0
+	    || dn_vt2[idx2].nsn_part != 0
+	    || dn_vt2[idx2].local_part != ref3) {
 		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -286,15 +287,32 @@ run_test()
 	} catch (const IndexOutOfBoundsException& e) {
 	}
 
-	if (dn_vt1.find(ns1) != idx1 || dn_vt2.find(ns2) != idx2
-	    || dn_vt1.find(ns2) != FI_VOCAB_INDEX_NULL
-	    || dn_vt2.find(ns1) != FI_VOCAB_INDEX_NULL) {
-		die("DN_VocabTable::find(FI_NameSurrogate)",
+	if (dn_vt1.getEntry(n1).getIndex() != idx1
+	    || dn_vt2.getEntry(n2).getIndex() != idx2) {
+		die("DN_VocabTable::getEntry(Name)",
 		    "Reverse mapping failed");
 	}
 
-	test_max(dn_vt1, ns1);
-#endif // 0
+	test_max(dn_vt1, n1);
+
+	// Test addition when the name table is full.
+	ref1 = ds_vt1.getEntry("local");
+	ref2 = nsn_vt.getEntry("namespace");
+	ref3 = pfx_vt.getEntry("prefix");
+
+	Name n3 (ref1, ref2, ref3);
+
+	if (dn_vt1.getEntry(n3).getIndex() != FI_VOCAB_INDEX_NULL) {
+		die("DN_VocabTable::getEntry(Name)",
+		    "Didn't clamp at maximum index");
+	}
+
+	idx1 = ds_vt1.getEntry("intervening").getIndex();
+	idx2 = nsn_vt.getEntry("intervening").getIndex();
+	idx3 = pfx_vt.getEntry("intervening").getIndex();
+
+	fprintf(stderr, "%d %d %d\n", idx1, idx2, idx3);
+	fprintf(stderr, "%d %d %d\n", ref1.getIndex(), ref2.getIndex(), ref3.getIndex());
 }
 
 } // anonymous namespace

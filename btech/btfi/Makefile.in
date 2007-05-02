@@ -45,9 +45,9 @@ CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libbtfi_la_LIBADD =
-am_libbtfi_la_OBJECTS = sax.lo Document.lo Element.lo \
-	MutableAttributes.lo Name.lo Value.lo generic.lo vocab.lo \
-	encalg.lo encutil.lo stream.lo common.lo
+am_libbtfi_la_OBJECTS = sax.lo Document.lo Element.lo Name.lo Value.lo \
+	MutableAttributes.lo vocab.lo encalg.lo encutil.lo stream.lo \
+	common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
 am_saxtest_OBJECTS = dummy.$(OBJEXT) saxtest.$(OBJEXT)
 saxtest_OBJECTS = $(am_saxtest_OBJECTS)
@@ -191,12 +191,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libbtfi.la
 libbtfi_la_SOURCES = sax.cc sax.h \
-	Document.cc Element.cc MutableAttributes.cc \
-	Document.hh Element.hh MutableAttributes.hh Attributes.hh \
-	Name.cc Value.cc generic.cc \
-	Name.hh Value.hh generic.h \
+	Document.cc Element.cc \
+	Document.hh Element.hh Attributes.hh \
+	Name.cc         Value.cc          MutableAttributes.cc \
+	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
 	vocab.cc encalg.c encutil.cc stream.c common.c \
-	vocab.hh encalg.h encutil.hh stream.h common.h
+	vocab.hh encalg.h encutil.hh stream.h common.h Exception.hh
 
 saxtest_SOURCES = tests/dummy.cc tests/saxtest.c
 saxtest_LDADD = libbtfi.la
@@ -275,7 +275,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encalg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encutil.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxtest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stream.Plo@am__quote@

@@ -8,7 +8,9 @@
 #include <stddef.h>
 
 #include "common.h"
-#include "generic.h"
+#include "values.h"
+
+#include "Exception.hh"
 
 namespace BTech {
 namespace FI {

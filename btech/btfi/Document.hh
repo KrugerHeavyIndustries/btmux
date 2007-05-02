@@ -7,16 +7,16 @@
 #define BTECH_FI_DOCUMENT_HH
 
 #include "stream.h"
+
 #include "vocab.hh"
+#include "Name.hh"
 
 namespace BTech {
 namespace FI {
 
 class Document : public Serializable {
 public:
-	Document ()
-	: start_flag (false), stop_flag (false),
-	  is_reading (false), is_writing (false) {}
+	Document ();
 
 	// Next write()/read() will be document header.
 	void start ();
@@ -79,8 +79,8 @@ private:
 	DN_VocabTable element_name_surrogates;
 	DN_VocabTable attribute_name_surrogates;
 
-	// Cached vocabulary indexes.
-	FI_VocabIndex NAMESPACE_IDX;
+	// Cached vocabulary entries.
+	const VocabTable::EntryRef BT_NAMESPACE;
 }; // class Document
 
 } // namespace FI

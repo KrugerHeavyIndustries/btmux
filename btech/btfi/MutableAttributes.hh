@@ -8,6 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "Exception.hh"
+#include "vocab.hh"
+#include "Name.hh"
+
 #include "Attributes.hh"
 
 namespace BTech {
@@ -15,7 +19,7 @@ namespace FI {
 
 class MutableAttributes : public Attributes {
 private:
-	typedef std::pair<Name,Value> NameValue;
+	typedef std::pair<VocabTable::EntryRef,Value> NameValue;
 
 public:
 	// Clear all attributes from this set.
@@ -24,7 +28,7 @@ public:
 	}
 
 	// Add an attribute to this set.
-	bool add (const Name& name, const Value& value) {
+	bool add (const VocabTable::EntryRef& name, const Value& value) {
 		attributes.push_back(NameValue (name, value));
 		return true;
 	}
@@ -37,7 +41,7 @@ public:
 		return attributes.size();
 	}
 
-	const Name& getName (int idx) const {
+	const VocabTable::EntryRef& getName (int idx) const {
 		if (idx < 0 || idx >= getLength()) {
 			throw IndexOutOfBoundsException ();
 		}

@@ -46,8 +46,10 @@
 #include "stream.h"
 #include "encutil.hh"
 
+#include "vocab.hh"
 #include "Name.hh"
 #include "Value.hh"
+#include "Attributes.hh"
 
 #include "Element.hh"
 
@@ -58,23 +60,22 @@ namespace FI {
 namespace {
 
 FI_VocabIndex
-debug_name(const Name *name)
+debug_name(const VocabTable::EntryRef& name)
 {
-	assert(name->getType() == FI_NAME_AS_INDEX);
-	return *reinterpret_cast<const FI_VocabIndex *>(name->getName());
+	return name.getIndex();
 }
 
 const char *
 debug_value(const Value& value)
 {
 	assert(value.getType() == FI_VALUE_AS_OCTETS);
-	return reinterpret_cast<const char *>(value.getValue());
+	return static_cast<const char *>(value.getValue());
 }
 
 bool write_start(FI_OctetStream *, const Name&, const Attributes&, bool);
 bool write_end(FI_OctetStream *);
 
-bool write_namespace_attributes(FI_OctetStream *);
+bool write_namespace_attributes(FI_OctetStream *, const VocabTable::EntryRef&);
 
 } // anonymous namespace
 
@@ -110,15 +111,15 @@ Element::write(FI_OctetStream *stream)
 		doc.increaseDepth();
 
 		// XXX: Debug.
-		printf("%*s<%u",
-		       4 * (doc.getDepth() - 1), "", debug_name(w_name));
+		//printf("%*s<%u",
+		//       4 * (doc.getDepth() - 1), "", debug_name(w_name));
 
 		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
-			const Name& a_name = w_attrs->getName(ii);
-			const Value& a_value = w_attrs->getValue(ii);
+			//const Name& a_name = w_attrs->getName(ii);
+			//const Value& a_value = w_attrs->getValue(ii);
 
-			printf(" %u='%.*s'", debug_name(&a_name),
-			       a_value.getCount(), debug_value(a_value));
+			//printf(" %u='%.*s'", debug_name(&a_name),
+			//       a_value.getCount(), debug_value(a_value));
 		}
 
 		printf(">\n");
@@ -131,8 +132,8 @@ Element::write(FI_OctetStream *stream)
 		}
 
 		// XXX: Debug.
-		printf("%*s</%u>\n",
-		       4 * doc.getDepth(), "", debug_name(w_name));
+		//printf("%*s</%u>\n",
+		//       4 * doc.getDepth(), "", debug_name(w_name));
 	} else {
 		throw IllegalStateException ();
 	}
@@ -157,7 +158,7 @@ namespace {
 
 bool
 write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
-            bool useNamespace)
+            const VocabTable::EntryRef& namespace_name)
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
 	switch (fi_get_stream_num_bits(stream)) {
@@ -186,14 +187,18 @@ write_start(FI_OctetStream *stream, const Name& name, const Attributes& attrs,
 	}
 
 	// Write namespace-attributes (C.3.4).
-	if (useNamespace && !write_namespace_attributes(stream)) {
+	if (namespace_name != 0
+	    && !write_namespace_attributes(stream, namespace_name)) {
 		return false;
 	}
 
 	// Write qualified-name (C.18).
-	if (!write_name_bit_3(stream, name)) {
+#if 0
+	if (!write_name_bit_3(stream,
+	                      element_name_surrogates.getEntry(name))) {
 		return false;
 	}
+#endif // 0
 
 	// Write attributes (C.3.6).
 
@@ -216,7 +221,8 @@ write_end(FI_OctetStream *stream)
 }
 
 bool
-write_namespace_attributes(FI_OctetStream *stream)
+write_namespace_attributes(FI_OctetStream *stream,
+                           const VocabTable::EntryRef& namespace_name)
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 
@@ -233,7 +239,7 @@ write_namespace_attributes(FI_OctetStream *stream)
 		return false;
 	}
 
-	if (!write_namespace_attribute(stream)) {
+	if (!write_namespace_attribute(stream, namespace_name)) {
 		return false;
 	}
 
