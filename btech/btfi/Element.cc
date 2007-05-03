@@ -15,15 +15,8 @@
  * Implementation restrictions:
  * 7.3.4: [namespace attributes] is only set on [document element], and is
  *        always just our default BT namespace (index 2).
- * 7.3.5: qualified-name must always be an element name surrogate index (but
- *        must follow the specification with regards to dynamic indexes).
  * 7.3.7: Only Element-type children are supported. (Other types ignorable?)
  * 
- * TODO: It might be cleaner to make Attributes Serializable, rather than
- *       handling it here.
- *
- * 7.4.4: qualified-name must always be an attribute name surrogate index (but
- *        must follow the specification with regards to dynamic indexes).
  * 7.4.5: normalized-value must always be an octet string (but must follow the
  *        specification with regards to dynamic indexes).
  *
@@ -67,8 +60,10 @@ debug_print_name(const DN_VocabTable::TypedEntryRef& name_ref)
 	// Namespace part.
 	if (name.nsn_part.isValid()) {
 		putchar('{');
+#if 0
 		fputs(name.nsn_part.getValue().c_str(),
 		      stdout);
+#endif // 0
 		if (name.nsn_part.hasIndex()) {
 			const FI_VocabIndex idx = name.nsn_part.getIndex();
 			if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
@@ -148,10 +143,8 @@ Element::write(FI_OctetStream *stream)
 			throw Exception ();
 		}
 
-		doc.increaseDepth();
-
-		// XXX: Debug.
-		for (int ii = 1; ii < doc.getDepth(); ii++) putchar('\t');
+		// XXX: BEGIN DEBUG
+		for (int ii = 0; ii < doc.getDepth(); ii++) putchar('\t');
 
 		putchar('<');
 		debug_print_name(w_name);
@@ -165,6 +158,9 @@ Element::write(FI_OctetStream *stream)
 		}
 
 		puts(">");
+		// XXX: END DEBUG
+
+		doc.increaseDepth();
 	} else if (stop_flag) {
 		doc.decreaseDepth();
 
@@ -173,12 +169,13 @@ Element::write(FI_OctetStream *stream)
 			throw Exception ();
 		}
 
-		// XXX: Debug.
+		// XXX: BEGIN DEBUG
 		for (int ii = 0; ii < doc.getDepth(); ii++) putchar('\t');
 
 		fputs("</", stdout);
 		debug_print_name(w_name);
 		puts(">");
+		// XXX: END DEBUG
 	} else {
 		throw IllegalStateException ();
 	}
@@ -187,6 +184,7 @@ Element::write(FI_OctetStream *stream)
 void
 Element::read(FI_OctetStream *stream)
 {
+	// TODO
 	if (start_flag) {
 	} else if (stop_flag) {
 	} else {
@@ -238,18 +236,36 @@ write_start(FI_OctetStream *stream,
 	}
 
 	// Write qualified-name (C.18).
-#if 0
-	if (!write_name_bit_3(stream,
-	                      element_name_surrogates.getEntry(name))) {
+	if (!write_name_bit_3(stream, name)) {
 		return false;
 	}
-#endif // 0
 
 	// Write attributes (C.3.6).
 	if (attrs.getLength()) {
+		for (int ii = 0; ii < attrs.getLength(); ii++) {
+			// Write identification (C.3.6.1: 0).
+			if (!fi_write_stream_bits(stream, 1, 0)) {
+				return false;
+			}
+
+			// Write attribute using C.4 (C.3.6.1).
+			if (!write_attribute(stream,
+			                     attrs.getName(ii),
+			                     attrs.getValue(ii))) {
+				return false;
+			}
+		}
+
+		// Write termination (C.3.6.2).
+		assert(fi_get_stream_num_bits(stream) == 0); // C.4.2
+
+		if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
+			return false;
+		}
 	}
 
-	// Write children (C.3.7).
+	// Write children (C.3.7).  This is handled by the respective child
+	// serialization routines, so we don't need to do anything here.
 	return true;
 }
 

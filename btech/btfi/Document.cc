@@ -65,7 +65,6 @@ bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
 
 Document::Document()
 : start_flag (false), stop_flag (false),
-  is_reading (false), is_writing (false),
   BT_NAMESPACE (namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 }
@@ -105,9 +104,10 @@ Document::getAttributeName(const char *name)
 void
 Document::write(FI_OctetStream *stream)
 {
-	setWriting();
-
 	if (start_flag) {
+		// Ensure vocabulary tables are cleared before we start.
+		clearVocab();
+
 		if (!write_header(stream)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
@@ -124,6 +124,12 @@ Document::write(FI_OctetStream *stream)
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
+
+		// Clear vocabulary tables, to save some memory.  If we're
+		// caching any entries, they'll remain interned, so we won't
+		// constantly be reallocating the same entries.  This will
+		// reset their vocabulary indexes, however, as intended.
+		clearVocab();
 	} else {
 		throw IllegalStateException ();
 	}
@@ -132,12 +138,10 @@ Document::write(FI_OctetStream *stream)
 void
 Document::read(FI_OctetStream *stream)
 {
-	if (!is_reading) {
-		// TODO: setReading()
-	}
-
 	if (start_flag) {
+		clearVocab();
 	} else if (stop_flag) {
+		clearVocab();
 	} else {
 		throw IllegalStateException ();
 	}
@@ -147,18 +151,8 @@ Document::read(FI_OctetStream *stream)
 
 
 void
-Document::setWriting()
+Document::clearVocab()
 {
-	if (is_writing) {
-		// Already in writing mode.
-		return;
-	}
-
-	is_reading = false;
-
-	/*
-	 * Initialize vocabulary tables.
-	 */
 	restricted_alphabets.clear();
 	encoding_algorithms.clear();
 
@@ -175,14 +169,12 @@ Document::setWriting()
 
 	element_name_surrogates.clear();
 	attribute_name_surrogates.clear();
-
-	is_writing = true;
 }
 
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 bool
 Document::writeVocab(FI_OctetStream *stream)
 {
-#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 	// Write padding (C.2.5: 000).
 	// Write optional component presence flags (C.2.5.1: 00001 ?00000??).
 	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 2);
@@ -218,10 +210,8 @@ Document::writeVocab(FI_OctetStream *stream)
 	}
 
 	return true;
-#else // !FI_USE_INITIAL_VOCABULARY
-	return false;
-#endif // !FI_USE_INITIAL_VOCABULARY
 }
+#endif // !FI_USE_INITIAL_VOCABULARY
 
 
 namespace {

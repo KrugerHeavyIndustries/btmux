@@ -5,8 +5,6 @@
 #ifndef BTECH_FI_COMMON_H
 #define BTECH_FI_COMMON_H
 
-#include <stddef.h>
-
 /*
  * Constants.
  */
@@ -21,8 +19,32 @@
 typedef unsigned char FI_Octet;		/* 8-bit octet */
 typedef char FI_Char;			/* UTF-8 character component */
 
-typedef unsigned int FI_UInt20;		/* 0 to at least 2^20 */
-typedef unsigned int FI_Length;		/* 0 to at least 2^32 - 1 */
+/*
+ * Positive integer types.  These encode values from 1 to some power of 2,
+ * inclusive.  To do this within the smallest possible integer type, the raw
+ * value is shifted down by 1.
+ *
+ * In practice, this means some values aren't usable, but at least they can
+ * handled.
+ *
+ * A companion type, FI_UInt32, provides an unsigned integer type capable of
+ * holding at least 2^32 - 1.
+ */
+
+#define FI_UINT32_MAX 4294967295U	/* 2^32 - 1 */
+
+typedef unsigned int FI_UInt32;		/* 0 to at least 2^32 - 1 */
+
+#define FI_PINT8_MAX  255U		/* 2^8 in p-int encoding */
+#define FI_PINT20_MAX 1048576U		/* 2^20 in p-int encoding */
+#define FI_PINT32_MAX FI_UINT32_MAX	/* 2^32 in p-int encoding */
+
+typedef unsigned char FI_PInt8;		/* 1 to at least 2^8 */
+typedef unsigned int FI_PInt20;		/* 1 to at least 2^20 */
+typedef FI_UInt32 FI_PInt32;		/* 1 to at least 2^32 */
+
+#define FI_UINT_TO_PINT(ui) ((ui) - 1U)	/* convert from UInt to PInt range */
+#define FI_PINT_TO_UINT(pi) ((pi) + 1U)	/* convert from PInt to UInt range */
 
 /*
  * Error handling.

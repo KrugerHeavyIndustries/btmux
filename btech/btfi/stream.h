@@ -17,6 +17,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define FI_LENGTH_MAX ((size_t)-1) /* size_t must be unsigned, of course */
+
+typedef size_t FI_Length;
+
 /* Octet stream.  */
 typedef struct FI_tag_OctetStream FI_OctetStream;
 

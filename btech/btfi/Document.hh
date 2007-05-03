@@ -50,14 +50,13 @@ public:
 	void read (FI_OctetStream *stream);
 
 private:
+	void clearVocab ();
+#if 0 // defined(FI_USE_INITIAL_VOCABULARY)
+	bool writeVocab (FI_OctetStream *stream);
+#endif // FI_USE_INITIAL_VOCABULARY
+
 	bool start_flag;
 	bool stop_flag;
-
-	bool is_reading;
-	bool is_writing;
-
-	void setWriting ();
-	bool writeVocab (FI_OctetStream *stream);
 
 	int nesting_depth;
 
