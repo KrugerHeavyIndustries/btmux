@@ -20,7 +20,7 @@ namespace FI {
 
 class MutableAttributes : public Attributes {
 private:
-	typedef std::pair<FI_Name,Value> NameValue;
+	typedef std::pair<DN_VocabTable::TypedEntryRef,Value> NameValue;
 
 public:
 	// Clear all attributes from this set.
@@ -43,12 +43,12 @@ public:
 		return attributes.size();
 	}
 
-	const DN_VocabTable::TypedEntryRef& getNameRef (int idx) const {
+	const DN_VocabTable::TypedEntryRef getName (int idx) const {
 		if (idx < 0 || idx >= getLength()) {
 			throw IndexOutOfBoundsException ();
 		}
 
-		return attributes[idx].first.getNameRef();
+		return attributes[idx].first;
 	}
 
 	const Value& getValue (int idx) const {
@@ -70,15 +70,21 @@ public:
 			return 0;
 		}
 
-		return &attributes[idx].first;
+		return FI_Name::cast(attributes[idx].first);
 	}
 
+	// Note that STL modifications may change the value of this pointer, so
+	// add() (and obviously clear()) may invalidate it.
+	//
+	// We could fix this by using pointers in the STL container, but there
+	// isn't actually a problem in practice, as Attributes are meant to be
+	// filled in once, then passed around as if constant.
 	const FI_Value *getCValue (int idx) const {
 		if (idx < 0 || idx >= getLength()) {
 			return 0;
 		}
 
-		return attributes[idx].second.getProxy();
+		return FI_Value::cast(attributes[idx].second);
 	}
 
 private:
@@ -88,8 +94,8 @@ private:
 } // namespace FI
 } // namespace BTech
 
-struct FI_tag_Attributes {
-	BTech::FI::MutableAttributes impl;
+// Some magic for C/C++ compatibility.
+struct FI_tag_Attributes : public BTech::FI::MutableAttributes {
 }; // FI_Attributes
 
 #endif /* !BTECH_FI_MUTABLEATTRIBUTES_HH */

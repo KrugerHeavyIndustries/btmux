@@ -335,7 +335,7 @@ gen_ch_startElement(FI_ContentHandler *handler, const FI_Name *name,
 	}
 
 	// Write element header.
-	gen->element->start(name->getNameRef(), attrs->impl);
+	gen->element->start(*name, *attrs);
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().
@@ -357,7 +357,7 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	}
 
 	// Write element trailer.
-	gen->element->stop(name->getNameRef());
+	gen->element->stop(*name);
 
 	if (!write_object(gen, gen->element)) {
 		// error_info set by write_object().

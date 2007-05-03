@@ -28,6 +28,9 @@ class IllegalStateException : public Exception {
 class UnsupportedOperationException : public Exception {
 }; // UnsupportedOperationException
 
+class IOException : public Exception {
+}; // IOException
+
 } // namespace FI
 } // namespace BTech
 

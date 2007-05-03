@@ -183,7 +183,7 @@ FI_Value *
 fi_create_value(void)
 {
 	try {
-		return (new Value ())->getProxy();
+		return new FI_Value ();
 	} catch (const std::bad_alloc& e) {
 		return 0;
 	}
@@ -192,29 +192,29 @@ fi_create_value(void)
 void
 fi_destroy_value(FI_Value *obj)
 {
-	delete &obj->parent;
+	delete obj;
 }
 
 FI_ValueType
 fi_get_value_type(const FI_Value *obj)
 {
-	return obj->parent.getType();
+	return obj->getType();
 }
 
 size_t
 fi_get_value_count(const FI_Value *obj)
 {
-	return obj->parent.getCount();
+	return obj->getCount();
 }
 
 const void *
 fi_get_value(const FI_Value *obj)
 {
-	return obj->parent.getValue();
+	return obj->getValue();
 }
 
 int
 fi_set_value(FI_Value *obj, FI_ValueType type, size_t count, const void *buf)
 {
-	return obj->parent.setValue(type, count, buf);
+	return obj->setValue(type, count, buf);
 }

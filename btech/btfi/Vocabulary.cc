@@ -10,7 +10,7 @@
 #include "encalg.h"
 
 #include "Exception.hh"
-#include "vocab.hh"
+#include "Vocabulary.hh"
 
 
 namespace BTech {
@@ -48,7 +48,7 @@ VocabTable::acquireIndex(Entry *entry)
 	}
 
 	// Assign index.
-	vocabulary.push_back(EntryRef(entry));
+	vocabulary.push_back(entry);
 	return ++last_idx;
 }
 
@@ -244,13 +244,13 @@ DS_VocabTable::DS_VocabTable()
 }
 
 DS_VocabTable::DS_VocabTable(FI_VocabIndex initial_last_idx)
-: TypedVocabTable<CharString> (initial_last_idx),
+: TypedVocabTable<value_type> (initial_last_idx),
   EMPTY_STRING (get_empty_string())
 {
 }
 
 const DS_VocabTable::TypedEntryRef
-DS_VocabTable::getEntry (const_value_ref value)
+DS_VocabTable::getEntry(const_value_ref value)
 {
 	if (value.empty()) {
 		return EMPTY_STRING;

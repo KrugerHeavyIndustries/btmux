@@ -2,8 +2,8 @@
  * Module implementing the vocabulary table data structure required by X.891.
  */
 
-#ifndef BTECH_FI_VOCAB_HH
-#define BTECH_FI_VOCAB_HH
+#ifndef BTECH_FI_VOCABTABLE_HH
+#define BTECH_FI_VOCABTABLE_HH
 
 #include <cstddef>
 
@@ -11,7 +11,6 @@
 #include <set>
 
 #include "common.h"
-#include "encalg.h"
 
 
 namespace BTech {
@@ -132,14 +131,9 @@ public:
 			}
 		}
 
-		// Test whether this reference points to a given Entry.  Useful
-		// for doing things like ref != 0.
-		bool operator != (const Entry *rValue) const {
-			return entry != rValue;
-		}
-
-		bool operator == (const Entry *rValue) const {
-			return entry == rValue;
+		// Test whether the reference points anywhere.
+		bool isValid () const {
+			return entry != 0;
 		}
 
 		// Explicitly release the reference to the managed pointer.
@@ -230,8 +224,9 @@ protected:
 		// same value).
 		virtual FI_VocabIndex getIndex () = 0;
 
-		// Unassign index.  A new index may be returned by the next
-		// invocation of getIndex().
+		// Unassign a dynamically-assigned index, allowing a new index
+		// to be returned by the next invocation of getIndex().  Has no
+		// effect on statically-assigned indexes.
 		virtual void resetIndex () {}
 
 		virtual bool operator < (const Entry& rValue) const = 0;
@@ -274,17 +269,20 @@ public:
 			// In short, no fancy reference counting needed.
 			//
 			// TODO: Document for the API user that deleting parent
-			// tables
-			// before children is really bad, even if it seems
-			// obvious.
+			// tables before children is really bad, even if it
+			// seems obvious.
 			delete entry_pool;
 		}
 	}
 
 	// Create a new TypedEntry for a value.  Will always return a new
-	// entry, rather than reusing an existing one.
+	// entry, rather than reusing an existing one.  The entry may be
+	// interned, just like with getEntry(), so this may also be slow.
 	virtual const TypedEntryRef createEntry (const_value_ref value) {
-		return createTypedEntry(value);
+		DynamicTypedEntry *const entry = createTypedEntry(value);
+		TypedEntryRef entry_ref (entry); // hold a reference
+		entry_pool->intern(entry);
+		return entry_ref;
 	}
 
 	// Get a TypedEntry for a value.  Can (but is not required to) return
@@ -486,10 +484,6 @@ private:
 		}
 
 	private:
-		static DynamicTypedEntry *castTypedEntry (TypedEntry *entry) {
-			return static_cast<DynamicTypedEntry *>(entry);
-		}
-
 		static void setInterned (Entry *entry, bool state) {
 			DynamicTypedEntry *const dyn_entry
 			= static_cast<DynamicTypedEntry *>(entry);
@@ -498,97 +492,10 @@ private:
 		}
 
 		RefSet interned;
-	}; // class VocabTable::EntryPool
+	}; // template class VocabTable::EntryPool
 }; // template class TypedVocabTable
-
-
-//
-// Restricted alphabet table implementation.
-//
-class RA_VocabTable : public TypedVocabTable<CharString> {
-public:
-	RA_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-private:
-	const TypedEntryRef NUMERIC_ALPHABET;
-	const TypedEntryRef DATE_AND_TIME_ALPHABET;
-
-	static TypedEntry *get_numeric_alphabet ();
-	static TypedEntry *get_date_and_time_alphabet();
-}; // class RA_VocabTable
-
-//
-// Encoding algorithm table implementation.
-//
-class EA_VocabTable : public TypedVocabTable<const FI_EncodingAlgorithm *> {
-public:
-	EA_VocabTable ();
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-protected:
-	DynamicTypedEntry *createTypedEntry (const_value_ref value);
-}; // class EA_VocabTable
-
-//
-// Dynamic string table implementation.
-//
-class DS_VocabTable : public TypedVocabTable<CharString> {
-public:
-	DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-protected:
-	DS_VocabTable (FI_VocabIndex initial_last_idx);
-
-private:
-	const TypedEntryRef EMPTY_STRING;
-
-	static TypedEntry *get_empty_string ();
-}; // class DS_VocabTable
-
-//
-// Prefix table implementation.
-//
-class PFX_DS_VocabTable : public DS_VocabTable {
-public:
-	PFX_DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-private:
-	const TypedEntryRef XML_PREFIX;
-
-	static TypedEntry *get_xml_prefix ();
-}; // class PFX_DS_VocabTable
-
-//
-// Namespace name table implementation.
-//
-class NSN_DS_VocabTable : public DS_VocabTable {
-public:
-	NSN_DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-private:
-	const TypedEntryRef XML_NAMESPACE;
-
-	static TypedEntry *get_xml_namespace ();
-}; // class NSN_DS_VocabTable
 
 } // namespace FI
 } // namespace BTech
 
-#endif /* !BTECH_FI_VOCAB_HH */
+#endif /* !BTECH_FI_VOCABTABLE_HH */

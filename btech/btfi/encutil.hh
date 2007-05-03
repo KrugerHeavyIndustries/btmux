@@ -8,10 +8,8 @@
 #include "common.h"
 #include "stream.h"
 
-#include "names.h"
-
-#include "vocab.hh"
 #include "Name.hh"
+#include "Vocabulary.hh"
 
 namespace BTech {
 namespace FI {

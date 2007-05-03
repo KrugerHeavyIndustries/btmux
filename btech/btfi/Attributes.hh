@@ -11,8 +11,6 @@
 #ifndef BTECH_FI_ATTRIBUTES_HH
 #define BTECH_FI_ATTRIBUTES_HH
 
-#include "common.h"
-
 #include "Name.hh"
 #include "Value.hh"
 
@@ -26,7 +24,7 @@ protected:
 public:
 	virtual int getLength () const = 0;
 
-	virtual const DN_VocabTable::TypedEntryRef& getNameRef (int idx) const = 0;
+	virtual const DN_VocabTable::TypedEntryRef getName (int idx) const = 0;
 
 	virtual const Value& getValue (int idx) const = 0;
 }; // class Attributes

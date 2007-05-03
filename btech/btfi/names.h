@@ -15,7 +15,7 @@ typedef struct FI_tag_Name FI_Name;
  * corresponding vocabulary table.  For example, fi_create_element_name()
  * creates a new FI_Name in a FI_Generator's element vocabulary table.  */
 
-void fi_destroy_name(FI_Name *);
+void fi_destroy_name(FI_Name *name);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -46,10 +46,10 @@
 #include "stream.h"
 #include "encutil.hh"
 
-#include "vocab.hh"
 #include "Name.hh"
 #include "Value.hh"
 #include "Attributes.hh"
+#include "Vocabulary.hh"
 
 #include "Element.hh"
 
@@ -65,7 +65,7 @@ debug_print_name(const DN_VocabTable::TypedEntryRef& name_ref)
 	const Name& name = name_ref.getValue();
 
 	// Namespace part.
-	if (name.nsn_part != 0) {
+	if (name.nsn_part.isValid()) {
 		putchar('{');
 		fputs(name.nsn_part.getValue().c_str(),
 		      stdout);
@@ -77,7 +77,7 @@ debug_print_name(const DN_VocabTable::TypedEntryRef& name_ref)
 	}
 
 	// Prefix part.
-	if (name.pfx_part != 0) {
+	if (name.pfx_part.isValid()) {
 		fputs(name.pfx_part.getValue().c_str(),
 		      stdout);
 		if (name.pfx_part.hasIndex()) {
@@ -158,7 +158,7 @@ Element::write(FI_OctetStream *stream)
 
 		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
 			putchar(' ');
-			debug_print_name(w_attrs->getNameRef(ii));
+			debug_print_name(w_attrs->getName(ii));
 			fputs("='", stdout);
 			debug_print_value(w_attrs->getValue(ii));
 			putchar('\'');
@@ -273,7 +273,7 @@ write_namespace_attributes(FI_OctetStream *stream,
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 
-	if (ns_name == 0) {
+	if (!ns_name.isValid()) {
 		// No namespace attributes to write.
 		return true;
 	}

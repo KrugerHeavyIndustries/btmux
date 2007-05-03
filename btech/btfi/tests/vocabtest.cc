@@ -5,8 +5,8 @@
 #include "encalg.h"
 
 #include "Exception.hh"
-#include "vocab.hh"
 #include "Name.hh"
+#include "Vocabulary.hh"
 
 using std::cerr;
 using std::endl;
@@ -199,7 +199,8 @@ run_test()
 
 	if (ds_vt1.getEntry("how").getIndex() != idx1
 	    || ds_vt2.getEntry("now://brown").getIndex() != idx2
-	    || ds_vt3.getEntry("cow").getIndex() != (idx3 + 1)) {
+	    || ds_vt3.createEntry("cow").getIndex() != (idx3 + 1)
+	    || ds_vt3.getEntry("cow").getIndex() != idx3) {
 		die("DS_VocabTable::getEntry(CharString)",
 		    "Reverse mapping failed");
 	}
@@ -272,8 +273,8 @@ run_test()
 	if (dn_vt1[idx1].pfx_part.getValue() != pfx_ref.getValue()
 	    || dn_vt1[idx1].nsn_part.getValue() != nsn_ref.getValue()
 	    || dn_vt2[idx1].local_part.getValue() != local_ref.getValue()
-	    || dn_vt2[idx2].pfx_part != 0
-	    || dn_vt2[idx2].nsn_part != 0
+	    || dn_vt2[idx2].pfx_part.isValid()
+	    || dn_vt2[idx2].nsn_part.isValid()
 	    || dn_vt2[idx2].local_part.getValue() != local_ref.getValue()) {
 		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");

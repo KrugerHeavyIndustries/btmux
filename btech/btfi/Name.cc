@@ -54,12 +54,12 @@ DN_VocabTable::DynamicNameEntry::acquireIndex()
 	// indexes will be created whenever it is possible to create an index;
 	// index creation is not optional, so there's no need to decide whether
 	// or not to invoke getIndex() on a name component.
-	const bool has_pfx = (value.pfx_part != 0);
+	const bool has_pfx = value.pfx_part.isValid();
 	const FI_VocabIndex pfx_idx = has_pfx
 	                              ? value.pfx_part.getIndex()
 	                              : FI_VOCAB_INDEX_NULL;
 
-	const bool has_nsn = (value.nsn_part != 0);
+	const bool has_nsn = value.nsn_part.isValid();
 	const FI_VocabIndex nsn_idx = has_nsn
 	                              ? value.nsn_part.getIndex()
 	                              : FI_VOCAB_INDEX_NULL;

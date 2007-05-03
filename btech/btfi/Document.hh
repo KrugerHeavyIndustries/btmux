@@ -8,8 +8,8 @@
 
 #include "stream.h"
 
-#include "vocab.hh"
 #include "Name.hh"
+#include "Vocabulary.hh"
 
 namespace BTech {
 namespace FI {
@@ -61,7 +61,7 @@ private:
 
 	int nesting_depth;
 
-	// Fast Infoset vocabulary tables.
+	// Fast Infoset vocabulary tables.  Most aren't used yet.
 	RA_VocabTable restricted_alphabets;
 	EA_VocabTable encoding_algorithms;
 
@@ -81,7 +81,7 @@ private:
 
 public:
 	// Cached vocabulary entries.  Need to put them at the end, to be sure
-	// they're constructed last.
+	// they're constructed after the vocabulary tables.
 	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // class Document
 

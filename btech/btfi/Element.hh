@@ -9,8 +9,6 @@
 #include "common.h"
 #include "stream.h"
 
-#include "vocab.hh"
-
 #include "Document.hh"
 #include "Name.hh"
 #include "Attributes.hh"

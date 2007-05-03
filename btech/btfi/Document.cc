@@ -37,13 +37,11 @@
 #include "autoconf.h"
 
 #include <cstring>
-#include <string>
 
 #include "stream.h"
 
 #include "Exception.hh"
 #include "Name.hh"
-#include "encutil.hh"
 
 #include "Document.hh"
 
@@ -78,6 +76,8 @@ Document::start()
 	start_flag = true;
 	stop_flag = false;
 
+	// For pretty-printing debugging output.  Could theoretically use it to
+	// test that we're generating a well-formed document.
 	nesting_depth = 0;
 }
 
@@ -216,8 +216,11 @@ Document::writeVocab(FI_OctetStream *stream)
 	    && !write_dn_table(stream, attribute_name_surrogates)) {
 		return false;
 	}
-#endif // FI_USE_INITIAL_VOCABULARY
+
 	return true;
+#else // !FI_USE_INITIAL_VOCABULARY
+	return false;
+#endif // !FI_USE_INITIAL_VOCABULARY
 }
 
 
@@ -265,20 +268,20 @@ write_header(FI_OctetStream *stream)
 	w_buf += xml_decl_len;
 
 	// Write identification (12.6: 11100000 00000000).
-	w_buf[0] = FI_BIT_1 | FI_BIT_2 | FI_BIT_3;
-	w_buf[1] = 0x00;
+	w_buf[0] = FI_BITS(1,1,1,0,0,0,0,0);
+	w_buf[1] = FI_BITS(0,0,0,0,0,0,0,0);
 
 	// Write Fast Infoset version number (12.7: 00000000 00000001).
-	w_buf[2] = 0x00;
-	w_buf[3] = FI_BIT_8;
+	w_buf[2] = FI_BITS(0,0,0,0,0,0,0,0);
+	w_buf[3] = FI_BITS(0,0,0,0,0,0,0,1);
 
 	// Write padding (12.8: 0).
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 	// Write optional component presence flags (C.2.3: 0100000).
-	w_buf[4] = FI_BIT_3 /* initial-vocabulary present */;
+	w_buf[4] = FI_BITS(,0,1 /* initial-vocabulary not present */,0,0,0,0,0);
 #else // !FI_USE_INITIAL_VOCABULARY
 	// Write optional component presence flags (C.2.3: 0000000).
-	w_buf[4] = 0x00; /* initial-vocabulary not present */
+	w_buf[4] = FI_BITS(,0,0 /* initial-vocabulary not present */,0,0,0,0,0);
 #endif // !FI_USE_INITIAL_VOCABULARY
 
 	return true;
@@ -293,32 +296,26 @@ write_trailer(FI_OctetStream *stream)
 	switch (fi_get_stream_num_bits(stream)) {
 	case 0:
 		// Write termination (C.2.12: 1111).
-		// 12.11: Ended on the 4th bit of an octet.
+		// 12.11: End on the 4th bit of an octet.
 		w_buf = fi_get_stream_write_buffer(stream, 1);
 		if (!w_buf) {
 			return false;
 		}
 
-		w_buf[0] = FI_BIT_1 | FI_BIT_2 | FI_BIT_3 | FI_BIT_4;
+		w_buf[0] = FI_BITS(1,1,1,1,,,,);
 		break;
 
 	case 4:
 		// Write termination (C.2.12: 1111).
-		// 12.11: Ended on the 8th bit of an octet.
-		if (!fi_write_stream_bits(stream, 4, FI_BIT_1 | FI_BIT_2
-		                                     | FI_BIT_3 | FI_BIT_4)) {
+		// 12.11: End on the 8th bit of an octet.
+		if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
 			return false;
 		}
 		break;
 
 	default:
-		// FIXME: For debugging only.
-		if (!fi_write_stream_bits(stream,
-		                          8 - fi_get_stream_num_bits(stream),
-		                          0xFF)) {
-			return false;
-		}
-		break;
+		// Shouldn't happen.
+		return false;
 	}
 
 	return true;

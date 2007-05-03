@@ -8,7 +8,7 @@
 #include "common.h"
 #include "names.h"
 
-#include "vocab.hh"
+#include "Vocabulary.hh"
 
 namespace BTech {
 namespace FI {
@@ -35,8 +35,6 @@ public:
 		} else if (rValue.pfx_part < pfx_part) {
 			// Lp > Rp
 			return false;
-		} else {
-			// Lp == Rp
 		}
 
 		if (nsn_part < rValue.nsn_part) {
@@ -45,8 +43,6 @@ public:
 		} else if (rValue.nsn_part < nsn_part) {
 			// Ln > Rn
 			return false;
-		} else {
-			// Ln == Rn
 		}
 
 		// Ll < Rl ?
@@ -62,8 +58,6 @@ public:
  * Dynamic name table.
  */
 class DN_VocabTable : public TypedVocabTable<Name> {
-public:
-
 protected:
 	class DynamicNameEntry;
 
@@ -85,17 +79,14 @@ protected:
 } // namespace FI
 } // namespace BTech
 
-struct FI_tag_Name {
-public:
-	FI_tag_Name (const BTech::FI::DN_VocabTable::TypedEntryRef& ref)
-	: name_ref (ref) {}
+// Some magic for C/C++ compatibility.
+struct FI_tag_Name : public BTech::FI::DN_VocabTable::TypedEntryRef {
+	FI_tag_Name (const TypedEntryRef& src) : TypedEntryRef (src) {}
 
-	const BTech::FI::DN_VocabTable::TypedEntryRef& getNameRef () const {
-		return name_ref;
+	// Cast any DN_VocabTable::TypedEntryRef() to a FI_Name.
+	static const FI_Name *cast (const TypedEntryRef& ref) {
+		return static_cast<const FI_Name *>(&ref);
 	}
-
-private:
-	BTech::FI::DN_VocabTable::TypedEntryRef name_ref;
 }; // FI_Name
 
 #endif /* !BTECH_FI_NAME_HH */

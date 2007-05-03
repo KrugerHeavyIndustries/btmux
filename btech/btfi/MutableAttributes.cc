@@ -4,16 +4,12 @@
 
 #include "autoconf.h"
 
+#include "attribs.h"
+
 #include "Name.hh"
 #include "Value.hh"
 
 #include "MutableAttributes.hh"
-
-namespace BTech {
-namespace FI {
-
-} // namespace FI
-} // namespace BTech
 
 
 /*
@@ -42,30 +38,30 @@ fi_destroy_attributes(FI_Attributes *attrs)
 void
 fi_clear_attributes(FI_Attributes *attrs)
 {
-	attrs->impl.clear();
+	attrs->clear();
 }
 
 int
 fi_add_attribute(FI_Attributes *attrs,
                  const FI_Name *name, const FI_Value *value)
 {
-	return attrs->impl.add(name->getNameRef(), value->parent);
+	return attrs->add(*name, *value);
 }
 
 int
 fi_get_attributes_length(const FI_Attributes *attrs)
 {
-	return attrs->impl.getLength();
+	return attrs->getLength();
 }
 
 const FI_Name *
 fi_get_attribute_name(const FI_Attributes *attrs, int idx)
 {
-	return attrs->impl.getCName(idx);
+	return attrs->getCName(idx);
 }
 
 const FI_Value *
 fi_get_attribute_value(const FI_Attributes *attrs, int idx)
 {
-	return attrs->impl.getCValue(idx);
+	return attrs->getCValue(idx);
 }

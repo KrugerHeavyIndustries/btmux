@@ -1,12 +1,12 @@
 noinst_LTLIBRARIES = libbtfi.la
 
-libbtfi_la_SOURCES = sax.cc sax.h \
-	Document.cc Element.cc \
-	Document.hh Element.hh Attributes.hh \
+libbtfi_la_SOURCES = \
+	sax.cc encutil.cc Document.cc Element.cc \
+	sax.h  encutil.hh Document.hh Element.hh Attributes.hh \
 	Name.cc         Value.cc          MutableAttributes.cc \
 	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
-	vocab.cc encalg.c encutil.cc stream.c common.c \
-	vocab.hh encalg.h encutil.hh stream.h common.h Exception.hh
+	Vocabulary.cc                            encalg.c stream.c common.c \
+	Vocabulary.hh VocabTable.hh Exception.hh encalg.h stream.h common.h
 
 check_PROGRAMS = saxtest vocabtest
 
