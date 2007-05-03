@@ -307,7 +307,7 @@ public:
 	 * Type-safe EntryRef.
 	 */
 	class TypedEntryRef : public EntryRef {
-		friend class TypedVocabTable;
+		friend class TypedVocabTable::EntryPool;
 
 	public:
 		TypedEntryRef (TypedEntry *entry = 0) : EntryRef (entry) {}
