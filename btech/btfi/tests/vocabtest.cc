@@ -262,6 +262,10 @@ run_test()
 	const Name n1 (local_ref, nsn_ref, pfx_ref);
 	const Name n2 (local_ref);
 
+	pfx_ref.getIndex();
+	nsn_ref.getIndex();
+	local_ref.getIndex();
+
 	idx1 = dn_vt1.getEntry(n1).getIndex();
 	idx2 = dn_vt2.getEntry(n2).getIndex();
 
@@ -302,6 +306,10 @@ run_test()
 	nsn_ref = nsn_vt.getEntry("namespace");
 	pfx_ref = pfx_vt.getEntry("prefix");
 
+	pfx_ref.getIndex();
+	nsn_ref.getIndex();
+	local_ref.getIndex();
+
 	Name n3 (local_ref, nsn_ref, pfx_ref);
 
 	if (dn_vt1.getEntry(n3).getIndex() != FI_VOCAB_INDEX_NULL) {
@@ -327,6 +335,10 @@ run_test()
 	local_ref = ds_vt1.getEntry("local 2");
 	nsn_ref = nsn_vt.getEntry("namespace 2");
 	pfx_ref = pfx_vt.getEntry("prefix 2");
+
+	pfx_ref.getIndex();
+	nsn_ref.getIndex();
+	local_ref.getIndex();
 
 	Name n4 (local_ref, nsn_ref, pfx_ref);
 

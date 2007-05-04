@@ -129,7 +129,7 @@ write_test(void)
 	 *     <now brown='1' now='3.14'>
 	 *         <how brown='oops' />
 	 *     </now>
-	 *     <now cow='moo' />
+	 *     <now now='cow' />
 	 * </how>
 	 */
 	if (!handler->startDocument(handler)) {

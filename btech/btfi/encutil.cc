@@ -78,40 +78,50 @@ write_identifier(FI_OctetStream *stream,
 	assert(fi_get_stream_num_bits(stream) == 0); // C.13.2
 
 	const bool has_idx = id_str.hasIndex();
-	const FI_VocabIndex idx = id_str.getIndex();
-	if (has_idx && idx != FI_VOCAB_INDEX_NULL) {
-		// Use index rules (C.13.4).
-		// Write '1' + C.25.
-		if (!fi_write_stream_bits(stream, 1, FI_BIT_1)) {
-			return false;
+
+	if (has_idx) {
+		const FI_VocabIndex idx = id_str.getIndex();
+		if (idx != FI_VOCAB_INDEX_NULL) {
+			// Use index rules (C.13.4).
+			// Write '1' + C.25.
+			if (!fi_write_stream_bits(stream, 1, FI_BIT_1)) {
+				return false;
+			}
+
+			if (!write_pint20_bit_2(stream, FI_UINT_TO_PINT(idx))) {
+				return false;
+			}
+
+			return true;
 		}
+	}
 
-		if (!write_pint20_bit_2(stream, FI_UINT_TO_PINT(idx))) {
-			return false;
-		}
-	} else {
-		// Use literal rules (C.13.3).
-		const CharString& value = id_str.getValue();
+	// Use literal rules (C.13.3).
+	const CharString& value = id_str.getValue();
 
-		// Write '0' + C.22.
-		if (!fi_write_stream_bits(stream, 1, 0)) {
-			return false;
-		}
+	// Write '0' + C.22.
+	if (!fi_write_stream_bits(stream, 1, 0)) {
+		return false;
+	}
 
-		const FI_Length buf_len = value.size();
+	const FI_Length buf_len = value.size();
 
-		if (buf_len < 1) {
-			return false;
-		}
+	if (buf_len < 1) {
+		return false;
+	}
 
-		const FI_PInt32 len = FI_UINT_TO_PINT(buf_len);
+	const FI_PInt32 len = FI_UINT_TO_PINT(buf_len);
 
-		FI_Octet *w_buf = write_non_empty_octets_bit_2(stream, len);
-		if (!w_buf) {
-			return false;
-		}
+	FI_Octet *w_buf = write_non_empty_octets_bit_2(stream, len);
+	if (!w_buf) {
+		return false;
+	}
 
-		memcpy(w_buf, value.data(), buf_len);
+	memcpy(w_buf, value.data(), buf_len);
+
+	// Enter identifying string into vocabulary table (7.13.7).
+	if (!has_idx) {
+		id_str.getIndex();
 	}
 
 	return true;
@@ -206,41 +216,50 @@ write_name_bit_2(FI_OctetStream *stream,
 	assert(fi_get_stream_num_bits(stream) == 1); // C.17.2
 
 	const bool has_idx = name.hasIndex();
-	const FI_VocabIndex idx = name.getIndex(); // also gets subparts
-	if (has_idx && idx != FI_VOCAB_INDEX_NULL) {
-		// Use name-surrogate-index (C.17.4).
-		// Write name-surrogate-index using C.25.
-		if (!write_pint20_bit_2(stream, FI_UINT_TO_PINT(idx))) {
-			return false;
-		}
-	} else {
-		// Use literal-qualified-name (C.17.3).
-		const Name& literal = name.getValue();
 
-		// Write identification (C.17.3: 1111 0).
-		// Write prefix and namespace-name presence (C.17.3.1).
-		const bool has_pfx = literal.pfx_part.isValid();
-		const bool has_nsn = literal.nsn_part.isValid();
-		if (!fi_write_stream_bits(stream, 7,
-		                          FI_BITS(1,1,1,1, 0,
-		                                  has_pfx, has_nsn,))) {
-			return false;
-		}
+	if (has_idx) {
+		const FI_VocabIndex idx = name.getIndex();
+		if (idx != FI_VOCAB_INDEX_NULL) {
+			// Use name-surrogate-index (C.17.4).
+			// Write name-surrogate-index using C.25.
+			if (!write_pint20_bit_2(stream, FI_UINT_TO_PINT(idx))) {
+				return false;
+			}
 
-		// Write optional prefix using C.13 (C.17.3.2).
-		if (has_pfx && !write_identifier(stream, literal.pfx_part)) {
-			return false;
+			return true;
 		}
+	}
 
-		// Write optional namespace-name using C.13 (C.17.3.3).
-		if (has_nsn && !write_identifier(stream, literal.nsn_part)) {
-			return false;
-		}
+	// Use literal-qualified-name (C.17.3).
+	const Name& literal = name.getValue();
 
-		// Write local-name using C.13 (C.17.3.4).
-		if (!write_identifier(stream, literal.local_part)) {
-			return false;
-		}
+	// Write identification (C.17.3: 1111 0).
+	// Write prefix and namespace-name presence (C.17.3.1).
+	const bool has_pfx = literal.pfx_part.isValid();
+	const bool has_nsn = literal.nsn_part.isValid();
+	if (!fi_write_stream_bits(stream, 7,
+	                          FI_BITS(1,1,1,1, 0, has_pfx, has_nsn,))) {
+		return false;
+	}
+
+	// Write optional prefix using C.13 (C.17.3.2).
+	if (has_pfx && !write_identifier(stream, literal.pfx_part)) {
+		return false;
+	}
+
+	// Write optional namespace-name using C.13 (C.17.3.3).
+	if (has_nsn && !write_identifier(stream, literal.nsn_part)) {
+		return false;
+	}
+
+	// Write local-name using C.13 (C.17.3.4).
+	if (!write_identifier(stream, literal.local_part)) {
+		return false;
+	}
+
+	// Enter name surrogate into vocabulary table (7.16.7.5).
+	if (!has_idx) {
+		name.getIndex();
 	}
 
 	return true;
@@ -254,41 +273,50 @@ write_name_bit_3(FI_OctetStream *stream,
 	assert(fi_get_stream_num_bits(stream) == 2); // C.18.2
 
 	const bool has_idx = name.hasIndex();
-	const FI_VocabIndex idx = name.getIndex(); // also gets subparts
-	if (has_idx && idx != FI_VOCAB_INDEX_NULL) {
-		// Use name-surrogate-index (C.18.4).
-		// Write name-surrogate-index using C.27.
-		if (!write_pint20_bit_3(stream, FI_UINT_TO_PINT(idx))) {
-			return false;
-		}
-	} else {
-		// Use literal-qualified-name (C.18.3).
-		const Name& literal = name.getValue();
 
-		// Write identification (C.18.3: 1111).
-		// Write prefix and namespace-name presence (C.18.3.1).
-		const bool has_pfx = literal.pfx_part.isValid();
-		const bool has_nsn = literal.nsn_part.isValid();
-		if (!fi_write_stream_bits(stream, 6,
-		                          FI_BITS(1,1,1,1,
-		                                  has_pfx, has_nsn,,))) {
-			return false;
-		}
+	if (has_idx) {
+		const FI_VocabIndex idx = name.getIndex();
+		if (idx != FI_VOCAB_INDEX_NULL) {
+			// Use name-surrogate-index (C.18.4).
+			// Write name-surrogate-index using C.27.
+			if (!write_pint20_bit_3(stream, FI_UINT_TO_PINT(idx))) {
+				return false;
+			}
 
-		// Write optional prefix using C.13 (C.18.3.2).
-		if (has_pfx && !write_identifier(stream, literal.pfx_part)) {
-			return false;
+			return true;
 		}
+	}
 
-		// Write optional namespace-name using C.13 (C.18.3.3).
-		if (has_nsn && !write_identifier(stream, literal.nsn_part)) {
-			return false;
-		}
+	// Use literal-qualified-name (C.18.3).
+	const Name& literal = name.getValue();
 
-		// Write local-name using C.13 (C.18.3.4).
-		if (!write_identifier(stream, literal.local_part)) {
-			return false;
-		}
+	// Write identification (C.18.3: 1111).
+	// Write prefix and namespace-name presence (C.18.3.1).
+	const bool has_pfx = literal.pfx_part.isValid();
+	const bool has_nsn = literal.nsn_part.isValid();
+	if (!fi_write_stream_bits(stream, 6,
+	                          FI_BITS(1,1,1,1, has_pfx, has_nsn,,))) {
+		return false;
+	}
+
+	// Write optional prefix using C.13 (C.18.3.2).
+	if (has_pfx && !write_identifier(stream, literal.pfx_part)) {
+		return false;
+	}
+
+	// Write optional namespace-name using C.13 (C.18.3.3).
+	if (has_nsn && !write_identifier(stream, literal.nsn_part)) {
+		return false;
+	}
+
+	// Write local-name using C.13 (C.18.3.4).
+	if (!write_identifier(stream, literal.local_part)) {
+		return false;
+	}
+
+	// Enter name surrogate into vocabulary table (7.16.7.5).
+	if (!has_idx) {
+		name.getIndex();
 	}
 
 	return true;
