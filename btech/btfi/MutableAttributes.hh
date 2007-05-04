@@ -96,6 +96,12 @@ private:
 
 // Some magic for C/C++ compatibility.
 struct FI_tag_Attributes : public BTech::FI::MutableAttributes {
+	// Cast any Attributes to an FI_Attributes.  Actually, this is only
+	// technically correct for MutableAttributes, not Attributes in
+	// general, but it's of no practical consequence.
+	static const FI_Attributes *cast (const Attributes& ref) {
+		return static_cast<const FI_Attributes *>(&ref);
+	}
 }; // FI_Attributes
 
 #endif /* !BTECH_FI_MUTABLEATTRIBUTES_HH */

@@ -11,7 +11,7 @@
 
 #include "Document.hh"
 #include "Name.hh"
-#include "Attributes.hh"
+#include "MutableAttributes.hh"
 
 namespace BTech {
 namespace FI {
@@ -23,14 +23,31 @@ public:
 	  doc (doc), w_attrs (0) {}
 
 	// Next write()/read() will be element header.
-	void start (const DN_VocabTable::TypedEntryRef& name,
-	            const Attributes& attrs);
+	void start ();
 
 	// Next write()/read() will be element trailer.
-	void stop (const DN_VocabTable::TypedEntryRef& name);
+	void stop ();
 
 	void write (FI_OctetStream *stream);
 	void read (FI_OctetStream *stream);
+
+	// Set element properties.
+	void setName (const DN_VocabTable::TypedEntryRef& name) {
+		this->name = name;
+	}
+
+	void setAttributes (const Attributes& attrs) {
+		w_attrs = &attrs;
+	}
+
+	// Get element properties.
+	const DN_VocabTable::TypedEntryRef& getName () const {
+		return name;
+	}
+
+	const Attributes& getAttributes () const {
+		return r_attrs;
+	}
 
 private:
 	bool start_flag;
@@ -38,8 +55,11 @@ private:
 
 	Document& doc;
 
-	DN_VocabTable::TypedEntryRef w_name;
+	DN_VocabTable::TypedEntryRef name;
 	const Attributes *w_attrs;
+	MutableAttributes r_attrs;
+
+	// Incremental read state.
 }; // class Element
 
 } // namespace FI

@@ -9,12 +9,13 @@
 
 /* Some constant error strings.  */
 const char *const fi_error_strings[] = {
-	"No error",
-	"Out of memory",
-	"End of stream",
-	"File not found",
-	"Invalid argument",
-	"Illegal state",
-	"Check errno",
-	"Caught BTech::FI::Exception"
+	"No error",			/* No error set */
+	"Unknown error",		/* Catch-all code; generally a bug */
+	"Out of memory",		/* Couldn't allocate required memory */
+	"End of stream",		/* Reached end of FI_OctetStream */
+	"File not found",		/* File not found */
+	"Invalid argument",		/* Bad argument to function call */
+	"Illegal state",		/* Unexpected state reached */
+	"Check errno",			/* Error information is in errno */
+	"Caught BTech::FI::Exception"	/* Error resulted from an Exception */
 }; /* fi_error_strings */

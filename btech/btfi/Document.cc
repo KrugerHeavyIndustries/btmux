@@ -74,10 +74,6 @@ Document::start()
 {
 	start_flag = true;
 	stop_flag = false;
-
-	// For pretty-printing debugging output.  Could theoretically use it to
-	// test that we're generating a well-formed document.
-	nesting_depth = 0;
 }
 
 void
@@ -85,6 +81,67 @@ Document::stop()
 {
 	start_flag = false;
 	stop_flag = true;
+}
+
+void
+Document::write(FI_OctetStream *stream)
+{
+	if (start_flag) {
+		// Ensure vocabulary tables are cleared before we start.
+		clearVocab();
+
+		// Write document header.
+		if (!write_header(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+
+#if 0 // defined(USE_FI_INITIAL_VOCABULARY)
+		if (!writeVocab(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+#endif // FI_USE_INITIAL_VOCABULARY
+	} else if (stop_flag) {
+		// Write document trailer.
+		if (!write_trailer(stream)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+
+		// Clear vocabulary tables, to save some memory.  If we're
+		// caching any entries, they'll remain interned, so we won't
+		// constantly be reallocating the same entries.  This will
+		// reset their vocabulary indexes, however, as intended.
+		clearVocab();
+	} else {
+		throw IllegalStateException ();
+	}
+}
+
+void
+Document::read(FI_OctetStream *stream)
+{
+	if (start_flag) {
+		// Ensure vocabulary tables are cleared before we start.
+		clearVocab();
+
+		// Try to read document header.
+
+		// Determine next child type.
+		setNext(0); // XXX: DEBUG
+	} else if (stop_flag) {
+		// Try to read document trailer.
+
+
+		// Clear vocabulary tables, to save some memory.  If we're
+		// caching any entries, they'll remain interned, so we won't
+		// constantly be reallocating the same entries.  This will
+		// reset their vocabulary indexes, however, as intended.
+		clearVocab();
+	} else {
+		throw IllegalStateException ();
+	}
 }
 
 // Namespaces in XML 1.0 (Second Edition)
@@ -109,54 +166,6 @@ Document::getAttributeName(const char *name)
 {
 	const Name attribute_name (local_names.getEntry(name));
 	return attribute_name_surrogates.getEntry(attribute_name);
-}
-
-void
-Document::write(FI_OctetStream *stream)
-{
-	if (start_flag) {
-		// Ensure vocabulary tables are cleared before we start.
-		clearVocab();
-
-		if (!write_header(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
-
-#if 0 // defined(USE_FI_INITIAL_VOCABULARY)
-		if (!writeVocab(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
-#endif // FI_USE_INITIAL_VOCABULARY
-	} else if (stop_flag) {
-		if (!write_trailer(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
-
-		// Clear vocabulary tables, to save some memory.  If we're
-		// caching any entries, they'll remain interned, so we won't
-		// constantly be reallocating the same entries.  This will
-		// reset their vocabulary indexes, however, as intended.
-		clearVocab();
-	} else {
-		throw IllegalStateException ();
-	}
-}
-
-void
-Document::read(FI_OctetStream *stream)
-{
-	if (start_flag) {
-		clearVocab();
-	} else if (stop_flag) {
-		clearVocab();
-	} else {
-		throw IllegalStateException ();
-	}
-
-	throw UnsupportedOperationException ();
 }
 
 

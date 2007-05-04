@@ -12,7 +12,7 @@ check_PROGRAMS = saxtest vocabtest
 
 TESTS = saxtest vocabtest
 
-saxtest_SOURCES = tests/dummy.cc tests/saxtest.c
+saxtest_SOURCES = tests/saxtest.cc tests/saxwrite.c tests/saxread.c
 saxtest_LDADD = libbtfi.la
 
 vocabtest_SOURCES = tests/vocabtest.cc

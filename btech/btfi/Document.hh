@@ -6,6 +6,8 @@
 #ifndef BTECH_FI_DOCUMENT_HH
 #define BTECH_FI_DOCUMENT_HH
 
+#include <vector>
+
 #include "stream.h"
 
 #include "Name.hh"
@@ -15,7 +17,12 @@ namespace BTech {
 namespace FI {
 
 class Document : public Serializable {
+	friend class Element;
+
 public:
+	static const int START_ELEMENT = 2;
+	static const int END_ELEMENT = 3;
+
 	Document ();
 
 	// Next write()/read() will be document header.
@@ -24,30 +31,46 @@ public:
 	// Next write()/read() will be document trailer.
 	void stop ();
 
-	// Increase nesting depth.
-	void decreaseDepth () {
-		// TODO: Check nesting_depth >= 0.
-		nesting_depth--;
-	}
-
-	// Decrease nesting depth.
-	void increaseDepth () {
-		// TODO: Check nesting_depth <= MAX.
-		nesting_depth++;
-	}
-
-	// Get nesting depth.
-	int getDepth () const {
-		return nesting_depth;
-	}
+	void write (FI_OctetStream *stream);
+	void read (FI_OctetStream *stream);
 
 	// Get a vocabulary table reference for an element/attribute name in
 	// the default namespace.
 	const DN_VocabTable::TypedEntryRef getElementName (const char *name);
 	const DN_VocabTable::TypedEntryRef getAttributeName (const char *name);
 
-	void write (FI_OctetStream *stream);
-	void read (FI_OctetStream *stream);
+	// Does the document have any more children?
+	bool hasNext () const {
+		return next_child_type != 0;
+	}
+
+	// Get the type of the next child.
+	int next () {
+		int child_type = next_child_type;
+		next_child_type = 0;
+		return child_type;
+	}
+
+protected:
+	// Set next child type to be returned.
+	void setNext (int child_type) {
+		next_child_type = child_type;
+	}
+
+	// Interact with the element stack.
+	bool hasElements () const {
+		return !element_stack.empty();
+	}
+
+	void pushElement (const DN_VocabTable::TypedEntryRef& name) {
+		element_stack.push_back(name);
+	}
+
+	const DN_VocabTable::TypedEntryRef popElement () {
+		const DN_VocabTable::TypedEntryRef ref = element_stack.back();
+		element_stack.pop_back();
+		return ref;
+	}
 
 private:
 	void clearVocab ();
@@ -58,7 +81,10 @@ private:
 	bool start_flag;
 	bool stop_flag;
 
-	int nesting_depth;
+	// Child handling.
+	int next_child_type;
+
+	std::vector<DN_VocabTable::TypedEntryRef> element_stack;
 
 	// Fast Infoset vocabulary tables.  Most aren't used yet.
 	RA_VocabTable restricted_alphabets;
@@ -77,6 +103,8 @@ private:
 
 	DN_VocabTable element_name_surrogates;
 	DN_VocabTable attribute_name_surrogates;
+
+	// Incremental read state.
 
 public:
 	// Cached vocabulary entries.  Need to put them at the end, to be sure

@@ -35,7 +35,11 @@ struct FI_tag_ContentHandler {
 	int (*endElement)(FI_ContentHandler *handler, const FI_Name *name);
 
 	/* "Character" chunks. */
-	int (*characters)(FI_Octet ch[], int start, int length);
+	int (*characters)(FI_ContentHandler *handler,
+	                  const FI_Octet *ch, int length);
+
+	/* For application use.  */
+	void *app_data_ptr;
 }; /* FI_ContentHandler */
 
 /*

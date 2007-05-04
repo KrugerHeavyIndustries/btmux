@@ -7,17 +7,11 @@
 
 #include "sax.h"
 
-#define TEST_FILE "saxtest.test"
+extern void die(const char *);
 
+
 static FI_Generator *gen;
 static FI_ContentHandler *handler;
-
-static void
-die(const char *cause)
-{
-	fprintf(stderr, "%s\n", cause);
-	exit(EXIT_FAILURE);
-}
 
 static void
 die_gen(const char *cause)
@@ -74,8 +68,8 @@ end_element(const FI_Name *e_name)
 	}
 }
 
-static void
-write_test(void)
+void
+write_test(const char *const TEST_FILE)
 {
 	FI_Name *en_how, *en_now;
 	FI_Name *an_brown, *an_cow, *an_now;
@@ -166,12 +160,4 @@ write_test(void)
 	fi_destroy_value(a_value);
 
 	fi_destroy_generator(gen);
-}
-
-int
-real_main(void)
-{
-	write_test();
-
-	exit(EXIT_SUCCESS);
 }

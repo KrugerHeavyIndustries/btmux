@@ -49,7 +49,8 @@ am_libbtfi_la_OBJECTS = sax.lo encutil.lo Document.lo Element.lo \
 	Name.lo Value.lo MutableAttributes.lo Vocabulary.lo encalg.lo \
 	stream.lo common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
-am_saxtest_OBJECTS = dummy.$(OBJEXT) saxtest.$(OBJEXT)
+am_saxtest_OBJECTS = saxtest.$(OBJEXT) saxwrite.$(OBJEXT) \
+	saxread.$(OBJEXT)
 saxtest_OBJECTS = $(am_saxtest_OBJECTS)
 saxtest_DEPENDENCIES = libbtfi.la
 am_vocabtest_OBJECTS = vocabtest.$(OBJEXT)
@@ -198,7 +199,7 @@ libbtfi_la_SOURCES = \
 	Vocabulary.cc                            encalg.c stream.c common.c \
 	Vocabulary.hh VocabTable.hh Exception.hh encalg.h stream.h common.h
 
-saxtest_SOURCES = tests/dummy.cc tests/saxtest.c
+saxtest_SOURCES = tests/saxtest.cc tests/saxwrite.c tests/saxread.c
 saxtest_LDADD = libbtfi.la
 vocabtest_SOURCES = tests/vocabtest.cc
 vocabtest_LDADD = libbtfi.la
@@ -273,11 +274,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Value.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vocabulary.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dummy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encalg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encutil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sax.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxtest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxwrite.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stream.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vocabtest.Po@am__quote@
 
@@ -302,19 +304,33 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-saxtest.o: tests/saxtest.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxtest.o -MD -MP -MF $(DEPDIR)/saxtest.Tpo -c -o saxtest.o `test -f 'tests/saxtest.c' || echo '$(srcdir)/'`tests/saxtest.c
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxtest.Tpo $(DEPDIR)/saxtest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxtest.c' object='saxtest.o' libtool=no @AMDEPBACKSLASH@
+saxwrite.o: tests/saxwrite.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxwrite.o -MD -MP -MF $(DEPDIR)/saxwrite.Tpo -c -o saxwrite.o `test -f 'tests/saxwrite.c' || echo '$(srcdir)/'`tests/saxwrite.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxwrite.Tpo $(DEPDIR)/saxwrite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxwrite.c' object='saxwrite.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxtest.o `test -f 'tests/saxtest.c' || echo '$(srcdir)/'`tests/saxtest.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxwrite.o `test -f 'tests/saxwrite.c' || echo '$(srcdir)/'`tests/saxwrite.c
 
-saxtest.obj: tests/saxtest.c
-@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxtest.obj -MD -MP -MF $(DEPDIR)/saxtest.Tpo -c -o saxtest.obj `if test -f 'tests/saxtest.c'; then $(CYGPATH_W) 'tests/saxtest.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxtest.c'; fi`
-@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxtest.Tpo $(DEPDIR)/saxtest.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxtest.c' object='saxtest.obj' libtool=no @AMDEPBACKSLASH@
+saxwrite.obj: tests/saxwrite.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxwrite.obj -MD -MP -MF $(DEPDIR)/saxwrite.Tpo -c -o saxwrite.obj `if test -f 'tests/saxwrite.c'; then $(CYGPATH_W) 'tests/saxwrite.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxwrite.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxwrite.Tpo $(DEPDIR)/saxwrite.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxwrite.c' object='saxwrite.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxtest.obj `if test -f 'tests/saxtest.c'; then $(CYGPATH_W) 'tests/saxtest.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxtest.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxwrite.obj `if test -f 'tests/saxwrite.c'; then $(CYGPATH_W) 'tests/saxwrite.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxwrite.c'; fi`
+
+saxread.o: tests/saxread.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxread.o -MD -MP -MF $(DEPDIR)/saxread.Tpo -c -o saxread.o `test -f 'tests/saxread.c' || echo '$(srcdir)/'`tests/saxread.c
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxread.Tpo $(DEPDIR)/saxread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxread.c' object='saxread.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxread.o `test -f 'tests/saxread.c' || echo '$(srcdir)/'`tests/saxread.c
+
+saxread.obj: tests/saxread.c
+@am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT saxread.obj -MD -MP -MF $(DEPDIR)/saxread.Tpo -c -o saxread.obj `if test -f 'tests/saxread.c'; then $(CYGPATH_W) 'tests/saxread.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxread.c'; fi`
+@am__fastdepCC_TRUE@	mv -f $(DEPDIR)/saxread.Tpo $(DEPDIR)/saxread.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='tests/saxread.c' object='saxread.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o saxread.obj `if test -f 'tests/saxread.c'; then $(CYGPATH_W) 'tests/saxread.c'; else $(CYGPATH_W) '$(srcdir)/tests/saxread.c'; fi`
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -337,19 +353,19 @@ saxtest.obj: tests/saxtest.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
-dummy.o: tests/dummy.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dummy.o -MD -MP -MF $(DEPDIR)/dummy.Tpo -c -o dummy.o `test -f 'tests/dummy.cc' || echo '$(srcdir)/'`tests/dummy.cc
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/dummy.Tpo $(DEPDIR)/dummy.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tests/dummy.cc' object='dummy.o' libtool=no @AMDEPBACKSLASH@
+saxtest.o: tests/saxtest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT saxtest.o -MD -MP -MF $(DEPDIR)/saxtest.Tpo -c -o saxtest.o `test -f 'tests/saxtest.cc' || echo '$(srcdir)/'`tests/saxtest.cc
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/saxtest.Tpo $(DEPDIR)/saxtest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tests/saxtest.cc' object='saxtest.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dummy.o `test -f 'tests/dummy.cc' || echo '$(srcdir)/'`tests/dummy.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o saxtest.o `test -f 'tests/saxtest.cc' || echo '$(srcdir)/'`tests/saxtest.cc
 
-dummy.obj: tests/dummy.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT dummy.obj -MD -MP -MF $(DEPDIR)/dummy.Tpo -c -o dummy.obj `if test -f 'tests/dummy.cc'; then $(CYGPATH_W) 'tests/dummy.cc'; else $(CYGPATH_W) '$(srcdir)/tests/dummy.cc'; fi`
-@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/dummy.Tpo $(DEPDIR)/dummy.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tests/dummy.cc' object='dummy.obj' libtool=no @AMDEPBACKSLASH@
+saxtest.obj: tests/saxtest.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT saxtest.obj -MD -MP -MF $(DEPDIR)/saxtest.Tpo -c -o saxtest.obj `if test -f 'tests/saxtest.cc'; then $(CYGPATH_W) 'tests/saxtest.cc'; else $(CYGPATH_W) '$(srcdir)/tests/saxtest.cc'; fi`
+@am__fastdepCXX_TRUE@	mv -f $(DEPDIR)/saxtest.Tpo $(DEPDIR)/saxtest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='tests/saxtest.cc' object='saxtest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o dummy.obj `if test -f 'tests/dummy.cc'; then $(CYGPATH_W) 'tests/dummy.cc'; else $(CYGPATH_W) '$(srcdir)/tests/dummy.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o saxtest.obj `if test -f 'tests/saxtest.cc'; then $(CYGPATH_W) 'tests/saxtest.cc'; else $(CYGPATH_W) '$(srcdir)/tests/saxtest.cc'; fi`
 
 vocabtest.o: tests/vocabtest.cc
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT vocabtest.o -MD -MP -MF $(DEPDIR)/vocabtest.Tpo -c -o vocabtest.o `test -f 'tests/vocabtest.cc' || echo '$(srcdir)/'`tests/vocabtest.cc

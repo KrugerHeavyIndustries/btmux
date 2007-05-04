@@ -52,6 +52,7 @@ typedef FI_UInt32 FI_PInt32;		/* 1 to at least 2^32 */
 
 typedef enum {
 	FI_ERROR_NONE,			/* No error */
+	FI_ERROR_UNKNOWN,		/* Unknown error */
 	FI_ERROR_OOM,			/* Out of memory */
 	FI_ERROR_EOS,			/* End of stream */
 	FI_ERROR_NOFILE,		/* File not found */
@@ -81,7 +82,7 @@ typedef struct {
 #define FI_COPY_ERROR(lhs,rhs) \
 	do { \
 		(lhs).error_code = (rhs).error_code; \
-		(lhs).error_stirng = (rhs).error_string; \
+		(lhs).error_string = (rhs).error_string; \
 	} while (0)
 
 extern const char *const fi_error_strings[];

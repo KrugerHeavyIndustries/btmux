@@ -114,40 +114,40 @@ bool write_namespace_attributes(FI_OctetStream *,
 } // anonymous namespace
 
 void
-Element::start(const DN_VocabTable::TypedEntryRef& name,
-               const Attributes& attrs)
+Element::start()
 {
 	start_flag = true;
 	stop_flag = false;
-
-	w_name = name;
-	w_attrs = &attrs;
 }
 
 void
-Element::stop(const DN_VocabTable::TypedEntryRef& name)
+Element::stop()
 {
 	start_flag = false;
 	stop_flag = true;
-
-	w_name = name;
 }
 
 void
 Element::write(FI_OctetStream *stream)
 {
+	static int nesting_depth = 0; // XXX: DEBUG
+
 	if (start_flag) {
-		if (!write_start(stream, doc.getDepth() ? 0 : doc.BT_NAMESPACE,
-		                 w_name, *w_attrs)) {
+		// Write element header.
+		if (!write_start(stream,
+		                 doc.hasElements() ? 0 : doc.BT_NAMESPACE,
+		                 name, *w_attrs)) {
 			// TODO: Assign an exception for stream errors.
 			throw Exception ();
 		}
 
+		doc.pushElement(name);
+
 		// XXX: BEGIN DEBUG
-		for (int ii = 0; ii < doc.getDepth(); ii++) putchar('\t');
+		for (int ii = 0; ii < nesting_depth; ii++) putchar('\t');
 
 		putchar('<');
-		debug_print_name(w_name);
+		debug_print_name(name);
 
 		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
 			putchar(' ');
@@ -158,11 +158,17 @@ Element::write(FI_OctetStream *stream)
 		}
 
 		puts(">");
-		// XXX: END DEBUG
 
-		doc.increaseDepth();
+		nesting_depth++;
+		// XXX: END DEBUG
 	} else if (stop_flag) {
-		doc.decreaseDepth();
+		// Write element trailer.
+		if (!doc.hasElements()) {
+			// Tried to pop too many elements.
+			throw IllegalStateException ();
+		}
+
+		name = doc.popElement(); // XXX: don't need to restore name...
 
 		if (!write_end(stream)) {
 			// TODO: Assign an exception for stream errors.
@@ -170,10 +176,12 @@ Element::write(FI_OctetStream *stream)
 		}
 
 		// XXX: BEGIN DEBUG
-		for (int ii = 0; ii < doc.getDepth(); ii++) putchar('\t');
+		nesting_depth--;
+
+		for (int ii = 0; ii < nesting_depth; ii++) putchar('\t');
 
 		fputs("</", stdout);
-		debug_print_name(w_name);
+		debug_print_name(name);
 		puts(">");
 		// XXX: END DEBUG
 	} else {
@@ -184,9 +192,25 @@ Element::write(FI_OctetStream *stream)
 void
 Element::read(FI_OctetStream *stream)
 {
-	// TODO
+	static int nesting_depth = 0; // XXX: DEBUG
+
 	if (start_flag) {
+		// Try to read element header.
+
+		doc.pushElement(name);
+
+		// Determine next child type.
 	} else if (stop_flag) {
+		// Try to read element trailer.
+		if (!doc.hasElements()) {
+			// Tried to pop too many elements.
+			throw IllegalStateException ();
+		}
+
+		name = doc.popElement(); // need name for SAX API
+
+
+		// Determine next child type.
 	} else {
 		throw IllegalStateException ();
 	}

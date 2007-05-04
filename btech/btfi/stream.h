@@ -27,8 +27,8 @@ typedef struct FI_tag_OctetStream FI_OctetStream;
 FI_OctetStream *fi_create_stream(size_t initial_size);
 void fi_destroy_stream(FI_OctetStream *stream);
 
-void *fi_get_stream_data(const FI_OctetStream *stream);
-void fi_set_stream_data(FI_OctetStream *stream, void *app_data);
+void *fi_get_stream_app_data_ptr(const FI_OctetStream *stream);
+void fi_set_stream_app_data_ptr(FI_OctetStream *stream, void *app_data_ptr);
 
 void fi_clear_stream(FI_OctetStream *stream);
 
@@ -37,6 +37,10 @@ const FI_ErrorInfo *fi_get_stream_error(const FI_OctetStream *stream);
 void fi_clear_stream_error(FI_OctetStream *stream);
 
 /* Octet-oriented stream operations.  */
+FI_Length fi_get_stream_free_length(const FI_OctetStream *stream);
+FI_Length fi_get_stream_needed_length(const FI_OctetStream *stream);
+void fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length);
+
 FI_Length fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr);
 
 FI_Length fi_try_read_stream(FI_OctetStream *stream,
@@ -60,11 +64,10 @@ FI_Octet *fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length);
 	 | ((e+0) << 3) | ((f+0) << 2) | ((g+0) << 1) | (h+0))
 
 int fi_get_stream_num_bits(const FI_OctetStream *stream);
-FI_Octet fi_get_stream_bits(const FI_OctetStream *stream);
-int fi_set_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits);
 
 int fi_flush_stream_bits(FI_OctetStream *stream);
 int fi_write_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits);
+int fi_read_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet *bits);
 
 #ifdef __cplusplus
 } // extern "C"
