@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "common.h"
 #include "stream.h"
 
 #include "Name.hh"
@@ -20,8 +21,12 @@ class Document : public Serializable {
 	friend class Element;
 
 public:
-	static const int START_ELEMENT = 2;
-	static const int END_ELEMENT = 3;
+	enum ChildType {
+		NO_CHILD,
+
+		START_ELEMENT,
+		END_ELEMENT
+	}; // enum ChildType
 
 	Document ();
 
@@ -45,18 +50,13 @@ public:
 	}
 
 	// Get the type of the next child.
-	int next () {
-		int child_type = next_child_type;
-		next_child_type = 0;
+	ChildType next () {
+		ChildType child_type = next_child_type;
+		next_child_type = NO_CHILD;
 		return child_type;
 	}
 
 protected:
-	// Set next child type to be returned.
-	void setNext (int child_type) {
-		next_child_type = child_type;
-	}
-
 	// Interact with the element stack.
 	bool hasElements () const {
 		return !element_stack.empty();
@@ -82,7 +82,7 @@ private:
 	bool stop_flag;
 
 	// Child handling.
-	int next_child_type;
+	ChildType next_child_type;
 
 	std::vector<DN_VocabTable::TypedEntryRef> element_stack;
 
@@ -104,7 +104,29 @@ private:
 	DN_VocabTable element_name_surrogates;
 	DN_VocabTable attribute_name_surrogates;
 
-	// Incremental read state.
+	// Write subroutines.
+	void write_header (FI_OctetStream *stream);
+	void write_trailer (FI_OctetStream *stream);
+
+	// Read subroutines.
+	bool read_header (FI_OctetStream *stream);
+	bool read_trailer (FI_OctetStream *stream);
+
+	void read_next (FI_OctetStream *stream);
+
+	enum {
+		RESET_READ_STATE,
+		MAIN_READ_STATE,
+		NEXT_PART_READ_STATE
+	} r_state;
+
+	enum {
+		RESET_HEADER_STATE,
+		XML_DECL_HEADER_STATE,
+		MAIN_HEADER_STATE
+	} r_header_state;
+
+	FI_Length r_len_state;
 
 public:
 	// Cached vocabulary entries.  Need to put them at the end, to be sure

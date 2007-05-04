@@ -322,6 +322,15 @@ write_name_bit_3(FI_OctetStream *stream,
 	return true;
 }
 
+bool
+read_name_bit_3(FI_OctetStream *stream,
+                const DN_VocabTable::TypedEntryRef& name,
+                FI_Length& r_len_state)
+{
+	// FIXME
+	return false;
+}
+
 // C.19
 bool
 write_encoded_bit_3(FI_OctetStream *stream, const Value& value)

@@ -44,6 +44,10 @@ bool write_name_bit_2(FI_OctetStream *stream,
 bool write_name_bit_3(FI_OctetStream *stream,
                       const DN_VocabTable::TypedEntryRef& name);
 
+bool read_name_bit_3(FI_OctetStream *stream,
+                     const DN_VocabTable::TypedEntryRef& name,
+                     FI_Length& r_len_state);
+
 // C.19
 bool write_encoded_bit_3(FI_OctetStream *stream, const Value& value);
 

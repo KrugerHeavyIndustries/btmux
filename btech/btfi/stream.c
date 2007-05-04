@@ -154,6 +154,15 @@ fi_get_stream_needed_length(const FI_OctetStream *stream)
 }
 
 /*
+ * Set the needed length directly.
+ */
+void
+fi_set_stream_needed_length(FI_OctetStream *stream, FI_Length length)
+{
+	stream->needed_length = length;
+}
+
+/*
  * Reduce the occupied length of the stream, which is useful for partial
  * writes.  Reducing by more than the number of available octets will silently
  * clamp to the number of available octets.
@@ -163,14 +172,12 @@ fi_get_stream_needed_length(const FI_OctetStream *stream)
 void
 fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length)
 {
-	const FI_Length occupied_length = stream->length - stream->cursor;
-
-	if (occupied_length <= length) {
+	if ((stream->length - stream->cursor) <= length) {
 		/* Empty buffer.  As an optimization, reset the cursor, too.  */
 		stream->cursor = 0;
 		stream->length = 0;
 	} else {
-		stream->length = occupied_length - length;
+		stream->length -= length;
 	}
 }
 
@@ -194,37 +201,65 @@ fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr)
 }
 
 /*
- * Attempt to read a specific number of octets from the stream.  If successful,
- * returns length, and advances the stream cursor.  If unsuccessful, returns
- * the actual number of read octets, and does NOT advance the stream cursor.
- * In both cases, buffer_ptr (if non-NULL) will be set to point to the read
+ * Attempt to read between min_len and max_len octets from the stream, where
+ * 0 <= min_len <= max_len <= FI_MAX_LENGTH.  Returns the actual number of
+ * octets available. (Note that this may be larger than max_len! The caller may
+ * use the extra octets to opportunistically look ahead.)
+ *
+ * If all max_len octets are available, the operation is considered a success.
+ * The stream cursor is advanced by min_len, and fi_get_stream_needed_length()
+ * will return 0.
+ *
+ * If at least min_len octets are available, the operation is considered a
+ * partial success.  The stream cursor is still advanced by min_len, but
+ * fi_get_stream_needed_length() will return the difference between max_len and
+ * the number of available octets.
+ *
+ * If less than min_len octets are available, the operation is considered a
+ * failure.  The stream cursor will NOT be advanced, and
+ * fi_get_stream_needed_length() will return the difference between max_len and
+ * the number of available octets.
+ *
+ * In all cases, buffer_ptr (if non-NULL) will be set to point to the read
  * octets.
  *
  * Any existing buffer pointers may be invalidated.
+ *
+ * If min_len == max_len, this is essentially a read operation.
+ *
+ * If min_len == 0, this is essentially a peek operation.
+ *
+ * If 0 < min_len < max_len, this is a read operation with some lookahead.
  */
 FI_Length
 fi_try_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr,
-                   FI_Length length)
+                   FI_Length min_len, FI_Length max_len)
 {
-	FI_Length remaining_length;
+	FI_Length avail_len;
+
+	assert(min_len <= max_len);
 
 	if (buffer_ptr) {
 		*buffer_ptr = stream->buffer + stream->cursor;
 	}
 
-	remaining_length = stream->length - stream->cursor;
+	avail_len = stream->length - stream->cursor;
 
-	if (remaining_length < length) {
-		FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
-		stream->needed_length = length - remaining_length;
-		return remaining_length;
+	if (avail_len < max_len) {
+		stream->needed_length = max_len - avail_len;
+
+		if (avail_len < min_len) {
+			FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
+			return avail_len;
+		}
+	} else {
+		stream->needed_length = 0;
 	}
 
 	shrink_buffer(stream);
 
-	stream->cursor += length;
-	stream->needed_length = 0;
-	return length;
+	stream->cursor += min_len;
+	return avail_len;
 }
 
 /*
@@ -261,6 +296,20 @@ int
 fi_get_stream_num_bits(const FI_OctetStream *stream)
 {
 	return stream->num_bits;
+}
+
+/* Sets the number of bits (ranging from 0 to 7) in the bit accumulator.  */
+void
+fi_set_stream_num_bits(FI_OctetStream *stream, int num_bits)
+{
+	stream->num_bits = num_bits;
+}
+
+/* Set the contents of the bit accumulator.  */
+void
+fi_set_stream_bits(FI_OctetStream *stream, FI_Octet bits)
+{
+	stream->bits = bits;
 }
 
 /*
@@ -340,70 +389,6 @@ fi_write_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet bits)
 
 	stream->bits = bits << (8 - stream->num_bits);
 	stream->num_bits = total_bits - 8;
-	return 1;
-}
-
-/*
- * Reads some number of bits (up to 8) from the stream, possibly including bits
- * leftover in the accumulator from previous fi_read_stream_bits() operations.
- *
- * Octet-oriented stream operations will ignore any accumulated bits.  It is
- * the responsibility of the calling application to check the value of
- * fi_get_stream_num_bits(), and read out to a full octet, before conducting
- * any octet-oriented stream operations.
- *
- * Bits are numbered from 1 (MSB) to 8 (LSB).  The FI_BIT_# macros have been
- * provided to make creating bit strings easier.
- *
- * This function should not be used for reading long sequences of bits, but
- * instead is intended for reading a partial octet, to determine further
- * processing.
- *
- * The read bits are returned in the FI_Octet addressed by "bits".  Only the
- * first num_bits are meaningful; the remainder may contain arbitrary data.
- * The caller is expected to mask off the appropriate bits.
- *
- * Returns 0 on errors.
- */
-int
-fi_read_stream_bits(FI_OctetStream *stream, int num_bits, FI_Octet *bits)
-{
-	const FI_Octet *read_ptr;
-
-	FI_Octet tmp_bits, next_octet;
-	int need_bits;
-
-	if (num_bits < 1 || num_bits > 8) {
-		FI_SET_ERROR(stream->error_info, FI_ERROR_INVAL);
-		return 0;
-	}
-
-	/* Try to fill request from the accumulator.  */
-	tmp_bits = stream->bits;
-	need_bits = num_bits - stream->num_bits;
-
-	if (need_bits <= 0) {
-		stream->bits = tmp_bits << num_bits;
-		stream->num_bits = -need_bits;
-
-		*bits = tmp_bits;
-		stream->needed_length = 0;
-		return 1;
-	}
-
-	/* Read octet.  */
-	if (fi_try_read_stream(stream, &read_ptr, 1) != 1) {
-		/* XXX: Error set by fi_try_read_stream.  */
-		return 0;
-	}
-
-	next_octet = read_ptr[0];
-
-	stream->bits = next_octet << need_bits;
-	stream->num_bits = 8 - need_bits;
-
-	*bits = tmp_bits | (next_octet >> (num_bits - need_bits));
-	stream->needed_length = 0;
 	return 1;
 }
 

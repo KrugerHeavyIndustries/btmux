@@ -37,6 +37,7 @@
 #include "autoconf.h"
 
 #include <cstring>
+#include <cassert>
 
 #include "stream.h"
 
@@ -52,9 +53,6 @@ namespace FI {
 namespace {
 
 const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
-
-bool write_header(FI_OctetStream *);
-bool write_trailer(FI_OctetStream *);
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 bool write_ds_table(FI_OctetStream *, const DS_VocabTable&);
@@ -74,6 +72,7 @@ Document::start()
 {
 	start_flag = true;
 	stop_flag = false;
+	r_state = RESET_READ_STATE;
 }
 
 void
@@ -81,20 +80,18 @@ Document::stop()
 {
 	start_flag = false;
 	stop_flag = true;
+	r_state = RESET_READ_STATE;
 }
 
 void
 Document::write(FI_OctetStream *stream)
 {
 	if (start_flag) {
-		// Ensure vocabulary tables are cleared before we start.
+		// Ensure vocabulary tables are cleared.
 		clearVocab();
 
 		// Write document header.
-		if (!write_header(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		write_header(stream);
 
 #if 0 // defined(USE_FI_INITIAL_VOCABULARY)
 		if (!writeVocab(stream)) {
@@ -104,10 +101,7 @@ Document::write(FI_OctetStream *stream)
 #endif // FI_USE_INITIAL_VOCABULARY
 	} else if (stop_flag) {
 		// Write document trailer.
-		if (!write_trailer(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		write_trailer(stream);
 
 		// Clear vocabulary tables, to save some memory.  If we're
 		// caching any entries, they'll remain interned, so we won't
@@ -123,22 +117,53 @@ void
 Document::read(FI_OctetStream *stream)
 {
 	if (start_flag) {
-		// Ensure vocabulary tables are cleared before we start.
-		clearVocab();
+		switch (r_state) {
+		case RESET_READ_STATE:
+			// Ensure vocabulary tables are cleared.
+			clearVocab();
 
-		// Try to read document header.
+			r_state = MAIN_READ_STATE;
+			r_header_state = RESET_HEADER_STATE;
+			// FALLTHROUGH
 
-		// Determine next child type.
-		setNext(0); // XXX: DEBUG
+		case MAIN_READ_STATE:
+			// Try to read document header.
+			if (!read_header(stream)) {
+				return;
+			}
+
+			r_state = NEXT_PART_READ_STATE;
+			// FALLTHROUGH
+
+		case NEXT_PART_READ_STATE:
+			// Determine next child type.
+			read_next(stream);
+			break;
+		}
 	} else if (stop_flag) {
-		// Try to read document trailer.
+		switch (r_state) {
+		case RESET_READ_STATE:
+			r_state = MAIN_READ_STATE;
+			// FALLTHROUGH
 
+		case MAIN_READ_STATE:
+			// Try to read document trailer.
+			if (!read_trailer(stream)) {
+				return;
+			}
 
-		// Clear vocabulary tables, to save some memory.  If we're
-		// caching any entries, they'll remain interned, so we won't
-		// constantly be reallocating the same entries.  This will
-		// reset their vocabulary indexes, however, as intended.
-		clearVocab();
+			r_state = NEXT_PART_READ_STATE;
+			// FALLTHROUGH
+
+		case NEXT_PART_READ_STATE:
+			// Clear vocabulary tables, to save some memory.  If
+			// we're caching any entries, they'll remain interned,
+			// so we won't constantly be reallocating the same
+			// entries.  This will reset their vocabulary indexes,
+			// however, as intended.
+			clearVocab();
+			break;
+		}
 	} else {
 		throw IllegalStateException ();
 	}
@@ -233,32 +258,39 @@ Document::writeVocab(FI_OctetStream *stream)
 #endif // !FI_USE_INITIAL_VOCABULARY
 
 
+/*
+ * Document common subroutines.
+ */
+
 namespace {
 
-//
-// Document serialization subroutines.
-//
+const char *const xml_decl[] = {
+	"<?xml encoding='finf'?>",
+	"<?xml encoding='finf' standalone='no'?>",
+	"<?xml encoding='finf' standalone='yes'?>",
+	"<?xml version='1.0' encoding='finf'?>",
+	"<?xml version='1.0' encoding='finf' standalone='no'?>",
+	"<?xml version='1.0' encoding='finf' standalone='yes'?>",
+	"<?xml version='1.1' encoding='finf'?>",
+	"<?xml version='1.1' encoding='finf' standalone='no'?>",
+	"<?xml version='1.1' encoding='finf' standalone='yes'?>"
+}; // xml_decl[]
 
 const char *
 get_xml_decl(int version, int standalone)
 {
-	static const char *const xml_decl[] = {
-		"<?xml encoding='finf'?>",
-		"<?xml encoding='finf' standalone='no'?>",
-		"<?xml encoding='finf' standalone='yes'?>",
-		"<?xml version='1.0' encoding='finf'?>",
-		"<?xml version='1.0' encoding='finf' standalone='no'?>",
-		"<?xml version='1.0' encoding='finf' standalone='yes'?>",
-		"<?xml version='1.1' encoding='finf'?>",
-		"<?xml version='1.1' encoding='finf' standalone='no'?>",
-		"<?xml version='1.1' encoding='finf' standalone='yes'?>"
-	};
-
 	return xml_decl[3 * version + standalone];
 }
 
-bool
-write_header(FI_OctetStream *stream)
+} // anonymous namespace
+
+
+/*
+ * Document serialization subroutines.
+ */
+
+void
+Document::write_header(FI_OctetStream *stream)
 {
 	// Decide which XML declaration to use.
 	const char *xml_decl = get_xml_decl(0 /* no version */,
@@ -269,7 +301,8 @@ write_header(FI_OctetStream *stream)
 	// Reserve space.
 	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, xml_decl_len + 5);
 	if (!w_buf) {
-		return false;
+		// TODO: Assign an Exception for stream errors.
+		throw Exception ();
 	}
 
 	// Write XML declaration.
@@ -284,20 +317,35 @@ write_header(FI_OctetStream *stream)
 	w_buf[2] = FI_BITS(0,0,0,0,0,0,0,0);
 	w_buf[3] = FI_BITS(0,0,0,0,0,0,0,1);
 
-	// Write padding (12.8: 0).
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
-	// Write optional component presence flags (C.2.3: 0100000).
-	w_buf[4] = FI_BITS(,0,1 /* initial-vocabulary not present */,0,0,0,0,0);
-#else // !FI_USE_INITIAL_VOCABULARY
-	// Write optional component presence flags (C.2.3: 0000000).
-	w_buf[4] = FI_BITS(,0,0 /* initial-vocabulary not present */,0,0,0,0,0);
-#endif // !FI_USE_INITIAL_VOCABULARY
+	// Write padding (12.8: 0).
+	w_buf[4] = FI_BITS(0, // padding
 
-	return true;
+	// Write optional component presence flags (C.2.3: 0100000).
+	                   0,
+	                   1, // initial-vocabulary
+	                   0,
+	                   0,
+	                   0,
+	                   0,
+	                   0);
+#else // !FI_USE_INITIAL_VOCABULARY
+	// Write padding (12.8: 0).
+	w_buf[4] = FI_BITS(0, // padding
+
+	// Write optional component presence flags (C.2.3: 0000000).
+	                   0,
+	                   0, // no initial-vocabulary
+	                   0,
+	                   0,
+	                   0,
+	                   0,
+	                   0);
+#endif // !FI_USE_INITIAL_VOCABULARY
 }
 
-bool
-write_trailer(FI_OctetStream *stream)
+void
+Document::write_trailer(FI_OctetStream *stream)
 {
 	FI_Octet *w_buf;
 
@@ -308,7 +356,8 @@ write_trailer(FI_OctetStream *stream)
 		// 12.11: End on the 4th bit of an octet.
 		w_buf = fi_get_stream_write_buffer(stream, 1);
 		if (!w_buf) {
-			return false;
+			// TODO: Assign an Exception for stream errors.
+			throw Exception ();
 		}
 
 		w_buf[0] = FI_BITS(1,1,1,1,,,,);
@@ -318,16 +367,15 @@ write_trailer(FI_OctetStream *stream)
 		// Write termination (C.2.12: 1111).
 		// 12.11: End on the 8th bit of an octet.
 		if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
-			return false;
+			// TODO: Assign an Exception for stream errors.
+			throw Exception ();
 		}
 		break;
 
 	default:
 		// Shouldn't happen.
-		return false;
+		throw IllegalStateException ();
 	}
-
-	return true;
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
@@ -383,7 +431,297 @@ write_dn_table(FI_OctetStream *stream, const DN_VocabTable& vocab)
 }
 #endif // FI_USE_INITIAL_VOCABULARY
 
+
+/*
+ * Document unserialization subroutines.
+ */
+
+namespace {
+
+bool
+read_xml_decl(FI_OctetStream *stream, FI_Length& r_len_state)
+{
+	const FI_Octet *r_buf;
+	FI_Length avail_len;
+
+	// Get at least one more octet than last time.
+	avail_len = fi_try_read_stream(stream, &r_buf, 0, r_len_state + 1);
+	if (avail_len <= r_len_state) {
+		return false;
+	}
+
+	// Search for "?>" from r_len_state - 2 to the current position.
+	FI_Length ii;
+
+	bool saw_question_mark = false;
+	for (ii = r_len_state - 1; ii < avail_len; ii++) {
+		if (saw_question_mark) {
+			if (r_buf[ii] == '>') {
+				// Probably just saw an XML declaration.
+				// TODO: Implement the full grammar.
+				break;
+			} else if (r_buf[ii] != '?') {
+				saw_question_mark = false;
+			}
+		} else if (r_buf[ii] == '?') {
+			saw_question_mark = true;
+		}
+	}
+
+	if (ii < avail_len) {
+		ii++; // advance ii to input XML declaration length
+	} else {
+		// Didn't find a "?>" yet.
+		r_len_state = ii;
+
+		// Just as a sanity check, give up after 192 octets or so.
+		if (r_len_state > 192) {
+			throw UnsupportedOperationException ();
+		}
+
+		// Mark the stream as needing at least one more byte.
+		if (saw_question_mark) {
+			fi_set_stream_needed_length(stream, 1);
+		} else {
+			fi_set_stream_needed_length(stream, 2);
+		}
+
+		return false;
+	}
+
+	// Try to match against the 9 possible XML declarations for a valid
+	// Fast Infoset document (12.3).
+	const int XML_DECL_MAX = sizeof(xml_decl) / sizeof(xml_decl[0]);
+
+	int jj;
+
+	for (jj = 0; jj < XML_DECL_MAX; jj++) {
+		if (strlen(xml_decl[jj]) != ii) {
+			// Not even the same length.
+			continue;
+		}
+
+		if (memcmp(r_buf, xml_decl[jj], ii) == 0) {
+			// Match, yay.
+			break;;
+		}
+	}
+
+	if (jj == XML_DECL_MAX) {
+		// TODO: We're being rather strict here about what we accept,
+		// since we didn't implement a full XML declaration parser.
+		// This behavior is allowed by the X.891 standard, but probably
+		// isn't very friendly.
+		throw IllegalStateException ();
+	}
+
+	// FIXME: We don't verify that the XML declaration matches the contents
+	// of the Document section.
+
+	// Success, advance cursor.
+	avail_len = fi_try_read_stream(stream, 0, ii, ii);
+	assert(avail_len >= ii); // this always works, really
+	return true;
+}
+
 } // anonymous namespace
+
+bool
+Document::read_header(FI_OctetStream *stream)
+{
+	const FI_Octet *r_buf;
+
+redispatch:
+	switch (r_header_state) {
+	case RESET_HEADER_STATE:
+		// A Fast Infoset may optionally begin with a UTF-8 encoded XML
+		// declaration (which begins with "<?xml") (12.3).
+		if (fi_try_read_stream(stream, &r_buf, 0, 4) < 4) {
+			return false;
+		}
+
+		if (r_buf[0] != '<' || r_buf[1] != '?'
+		    || r_buf[2] != 'x' || r_buf[3] != 'm') {
+			// Try again as a Fast Infoset identification string.
+			r_header_state = MAIN_HEADER_STATE;
+			// XXX: Gotos are not evil, but if you really feel this
+			// one is so egregious, you can replace it with a
+			// continue and a loop, or some other construct.  But I
+			// think that's even worse.
+			goto redispatch;
+		}
+
+		r_header_state = XML_DECL_HEADER_STATE;
+		r_len_state = 4;
+		// FALLTHROUGH
+
+	case XML_DECL_HEADER_STATE:
+		// Try to read XML declaration.
+		if (!read_xml_decl(stream, r_len_state)) {
+			return false;
+		}
+
+		r_header_state = MAIN_HEADER_STATE;
+		// FALLTHROUGH
+
+	case MAIN_HEADER_STATE:
+		if (fi_try_read_stream(stream, &r_buf, 5, 5) < 5) {
+			return false;
+		}
+
+		// Read identification (12.6: 11100000 00000000).
+		if (r_buf[0] != FI_BITS(1,1,1,0,0,0,0,0)
+		    || r_buf[1] != FI_BITS(0,0,0,0,0,0,0,0)) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+
+		// Read Fast Infoset version number (12.7: 00000000 00000001).
+		if (r_buf[2] != FI_BITS(0,0,0,0,0,0,0,0)
+		    || r_buf[3] != FI_BITS(0,0,0,0,0,0,0,1)) {
+			// Unsupported Fast Infoset version.
+			throw UnsupportedOperationException ();
+		}
+
+		// Next comes a 0 bit of padding, then 7 bits for the optional
+		// component presence flags (C.2.3).  We don't support any of
+		// them right now, so we expect 0 0000000.
+		if (r_buf[4] != FI_BITS(0, // padding
+
+		                        0,
+		                        0, // no initial-vocabulary
+		                        0,
+		                        0,
+		                        0,
+		                        0,
+		                        0)) {
+			throw UnsupportedOperationException ();
+		}
+		break;
+	}
+
+	return true;
+}
+
+bool
+Document::read_trailer(FI_OctetStream *stream)
+{
+	// Read document terminator bits (C.2.12).
+	const FI_Octet *r_buf;
+	FI_Octet bits;
+
+	if (fi_try_read_stream(stream, &r_buf, 1, 1) < 1) {
+		return false;
+	}
+
+	switch (fi_get_stream_num_bits(stream)) {
+	case 0:
+		// Ended on 4th bit, has padding (1111 0000).
+		bits = r_buf[0];
+
+		if (bits != FI_BITS(1,1,1,1, 0,0,0,0)) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+		break;
+
+	case 4:
+		// Ended on 8th bit, no padding (xxxx 1111).
+		bits = (r_buf[0] << 4) & FI_BITS(1,1,1,1,,,,);
+		if (bits != FI_BITS(1,1,1,1,,,,)) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+		break;
+
+	default:
+		// Should never happen.
+		throw IllegalStateException ();
+	}
+
+	return true;
+}
+
+// XXX: This code is also used to iterate over Element children.
+void
+Document::read_next(FI_OctetStream *stream)
+{
+	// Peek at the next octet to figure out what to do.
+	const FI_Octet *r_buf;
+	FI_Octet bits;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
+		return;
+	}
+
+	// Children start on the first bit of an octet, but the most recent bit
+	// may have been the fourth or eight bit (C.2.11.1, C.3.7.1).
+	switch (fi_get_stream_num_bits(stream)) {
+	case 0:
+		// Either start of child, or terminator.
+		bits = r_buf[0] & FI_BITS(1,1,1,1,,,,);
+
+		if (bits == FI_BITS(1,1,1,1,,,,)) {
+			// Terminator.
+			// FIXME: We only support Element/Document terminators.
+			if (hasElements()) {
+				next_child_type = END_ELEMENT;
+			} else {
+				// END_DOCUMENT
+				next_child_type = NO_CHILD;
+			}
+
+			return;
+		} else {
+			// Child starts on this octet.
+		}
+		break;
+
+	case 4:
+		// Either terminator, or padding.
+		bits = (r_buf[0] << 4) & FI_BITS(1,1,1,1,,,,);
+
+		if (bits == FI_BITS(1,1,1,1,,,,)) {
+			// Terminator.
+			// FIXME: We only support Element/Document terminators.
+			if (hasElements()) {
+				next_child_type = END_ELEMENT;
+			} else {
+				// END_DOCUMENT
+				next_child_type = NO_CHILD;
+			}
+
+			return;
+		} else if (bits == FI_BITS(0,0,0,0,,,,)) {
+			// Padding.  Child starts on next octet.
+			fi_set_stream_num_bits(stream, 0);
+
+			if (fi_try_read_stream(stream, &r_buf, 1, 2) < 2) {
+				// We already have enough state to resume.
+				return;
+			}
+
+			r_buf++;
+		} else {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+		break;
+
+	default:
+		// Shouldn't happen.
+		throw IllegalStateException ();
+	}
+
+	// Identify the child type.
+	if (!(r_buf[0] & FI_BIT_1)) {
+		// Child is the start of an element (C.2.11.2, C.3.7.2).
+		next_child_type = START_ELEMENT;
+	} else {
+		// Unsupported child type.
+		throw UnsupportedOperationException ();
+	}
+}
 
 } // namespace FI
 } // namespace BTech

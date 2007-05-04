@@ -273,11 +273,11 @@ fi_parse(FI_Parser *parser, const char *filename)
 }
 
 
-//
-// Generator subroutines.
-//
-
 namespace {
+
+/*
+ * Generator subroutines.
+ */
 
 // Get FI_Generator from FI_ContentHandler.
 FI_Generator *
@@ -422,20 +422,21 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	return 1;
 }
 
-} // anonymous namespace
-
 
-//
-// Parser subroutines.
-//
-
-namespace {
+/*
+ * Parser subroutines.
+ */
 
 // Helper routine to read from file to buffer.
 bool
 read_file_octets(FI_Parser *parser, FI_Length min_len)
 {
 	// Prepare buffer for read from file.
+	if (min_len == 0 && feof(parser->fpin)) {
+		// Don't need to read anything.
+		return true;
+	}
+
 	FI_Length len = fi_get_stream_free_length(parser->buffer);
 
 	if (len < min_len) {
@@ -461,13 +462,14 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 0
-	// TODO: Verify that the parser code can handle the worst case
-	// of being forced to parse 1 octet at a time.
-	len = 1;
+#if 1 
+	// XXX: Verify that the parser code can handle the worst case of being
+	// forced to parse 1 octet at a time.
 	min_len = 1;
-#endif // 0
+	size_t r_len = fread(w_buf, sizeof(FI_Octet), 1, parser->fpin);
+#else // 0
 	size_t r_len = fread(w_buf, sizeof(FI_Octet), len, parser->fpin);
+#endif // 0
 	if (r_len < len) {
 		if (ferror(parser->fpin)) {
 			FI_SET_ERROR(parser->error_info,

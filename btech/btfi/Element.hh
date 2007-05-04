@@ -56,10 +56,39 @@ private:
 	Document& doc;
 
 	DN_VocabTable::TypedEntryRef name;
+
+	// Write subroutines.
+	void write_start (FI_OctetStream *stream);
+	void write_end (FI_OctetStream *stream);
+	void write_namespace_attributes (FI_OctetStream *stream);
+	void write_attributes (FI_OctetStream *stream);
+
 	const Attributes *w_attrs;
+
+	// Read subroutines.
+	bool read_start (FI_OctetStream *stream);
+	bool read_end (FI_OctetStream *stream);
+	bool read_namespace_attributes (FI_OctetStream *stream);
+	bool read_attributes (FI_OctetStream *stream);
+
 	MutableAttributes r_attrs;
 
-	// Incremental read state.
+	enum {
+		RESET_READ_STATE,
+		MAIN_READ_STATE,
+		NEXT_PART_READ_STATE
+	} r_state;
+
+	enum {
+		RESET_ELEMENT_STATE,
+		NS_DECL_ELEMENT_STATE,
+		NAME_ELEMENT_STATE,
+		ATTRS_ELEMENT_STATE
+	} r_element_state;
+
+	bool r_has_attrs;
+
+	FI_Length r_len_state;
 }; // class Element
 
 } // namespace FI

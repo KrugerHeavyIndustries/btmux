@@ -33,7 +33,7 @@
 
 #include <cstddef>
 #include <cassert>
-#include <cstdio>
+#include <cstdio> // XXX: DEBUG
 
 #include "common.h"
 #include "stream.h"
@@ -41,7 +41,7 @@
 
 #include "Name.hh"
 #include "Value.hh"
-#include "Attributes.hh"
+#include "MutableAttributes.hh"
 #include "Vocabulary.hh"
 
 #include "Element.hh"
@@ -50,74 +50,12 @@
 namespace BTech {
 namespace FI {
 
-namespace {
-
-void
-debug_print_name(const DN_VocabTable::TypedEntryRef& name_ref)
-{
-	const Name& name = name_ref.getValue();
-
-	// Namespace part.
-	if (name.nsn_part.isValid()) {
-		putchar('{');
-#if 0
-		fputs(name.nsn_part.getValue().c_str(),
-		      stdout);
-#endif // 0
-		if (name.nsn_part.hasIndex()) {
-			const FI_VocabIndex idx = name.nsn_part.getIndex();
-			if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
-		}
-		putchar('}');
-	}
-
-	// Prefix part.
-	if (name.pfx_part.isValid()) {
-		fputs(name.pfx_part.getValue().c_str(),
-		      stdout);
-		if (name.pfx_part.hasIndex()) {
-			const FI_VocabIndex idx = name.pfx_part.getIndex();
-			if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
-		}
-		putchar(':');
-	}
-
-	// Local part.
-	fputs(name.local_part.getValue().c_str(), stdout);
-	if (name.local_part.hasIndex()) {
-		const FI_VocabIndex idx = name.local_part.getIndex();
-		if (idx != FI_VOCAB_INDEX_NULL) printf("(%d)", idx);
-	}
-
-	// Entire qualified name.
-	if (name_ref.hasIndex()) {
-		const FI_VocabIndex idx = name_ref.getIndex();
-		if (idx != FI_VOCAB_INDEX_NULL) printf("[%d]", idx);
-	}
-}
-
-void
-debug_print_value(const Value& value)
-{
-	assert(value.getType() == FI_VALUE_AS_OCTETS);
-	const char *data = static_cast<const char *>(value.getValue());
-	printf("%.*s", value.getCount(), data);
-}
-
-bool write_start(FI_OctetStream *, const NSN_DS_VocabTable::TypedEntryRef&,
-                 const DN_VocabTable::TypedEntryRef&, const Attributes&);
-bool write_end(FI_OctetStream *);
-
-bool write_namespace_attributes(FI_OctetStream *,
-                                const NSN_DS_VocabTable::TypedEntryRef&);
-
-} // anonymous namespace
-
 void
 Element::start()
 {
 	start_flag = true;
 	stop_flag = false;
+	r_state = RESET_READ_STATE;
 }
 
 void
@@ -125,44 +63,19 @@ Element::stop()
 {
 	start_flag = false;
 	stop_flag = true;
+	r_state = RESET_READ_STATE;
 }
 
 void
 Element::write(FI_OctetStream *stream)
 {
-	static int nesting_depth = 0; // XXX: DEBUG
-
 	if (start_flag) {
-		// Write element header.
-		if (!write_start(stream,
-		                 doc.hasElements() ? 0 : doc.BT_NAMESPACE,
-		                 name, *w_attrs)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		// Write element start.
+		write_start(stream);
 
 		doc.pushElement(name);
-
-		// XXX: BEGIN DEBUG
-		for (int ii = 0; ii < nesting_depth; ii++) putchar('\t');
-
-		putchar('<');
-		debug_print_name(name);
-
-		for (int ii = 0; ii < w_attrs->getLength(); ii++) {
-			putchar(' ');
-			debug_print_name(w_attrs->getName(ii));
-			fputs("='", stdout);
-			debug_print_value(w_attrs->getValue(ii));
-			putchar('\'');
-		}
-
-		puts(">");
-
-		nesting_depth++;
-		// XXX: END DEBUG
 	} else if (stop_flag) {
-		// Write element trailer.
+		// Write element end.
 		if (!doc.hasElements()) {
 			// Tried to pop too many elements.
 			throw IllegalStateException ();
@@ -170,20 +83,7 @@ Element::write(FI_OctetStream *stream)
 
 		name = doc.popElement(); // XXX: don't need to restore name...
 
-		if (!write_end(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
-
-		// XXX: BEGIN DEBUG
-		nesting_depth--;
-
-		for (int ii = 0; ii < nesting_depth; ii++) putchar('\t');
-
-		fputs("</", stdout);
-		debug_print_name(name);
-		puts(">");
-		// XXX: END DEBUG
+		write_end(stream);
 	} else {
 		throw IllegalStateException ();
 	}
@@ -192,41 +92,68 @@ Element::write(FI_OctetStream *stream)
 void
 Element::read(FI_OctetStream *stream)
 {
-	static int nesting_depth = 0; // XXX: DEBUG
-
 	if (start_flag) {
-		// Try to read element header.
+		switch (r_state) {
+		case RESET_READ_STATE:
+			r_state = MAIN_READ_STATE;
+			r_element_state = RESET_ELEMENT_STATE;
+			// FALLTHROUGH
 
-		doc.pushElement(name);
+		case MAIN_READ_STATE:
+			// Try to read element start.
+			if (!read_start(stream)) {
+				return;
+			}
 
-		// Determine next child type.
-	} else if (stop_flag) {
-		// Try to read element trailer.
-		if (!doc.hasElements()) {
-			// Tried to pop too many elements.
-			throw IllegalStateException ();
+			doc.pushElement(name);
+
+			r_state = NEXT_PART_READ_STATE;
+			// FALLTHROUGH
+
+		case NEXT_PART_READ_STATE:
+			// Determine next child type.
+			doc.read_next(stream);
+			break;
 		}
+	} else if (stop_flag) {
+		switch (r_state) {
+		case RESET_READ_STATE:
+			if (!doc.hasElements()) {
+				// Tried to pop too many elements.
+				throw IllegalStateException ();
+			}
 
-		name = doc.popElement(); // need name for SAX API
+			name = doc.popElement(); // need name for SAX API
 
+			r_state = MAIN_READ_STATE;
+			// FALLTHROUGH
 
-		// Determine next child type.
+		case MAIN_READ_STATE:
+			// Try to read element end.
+			if (!read_end(stream)) {
+				return;
+			}
+
+			r_state = NEXT_PART_READ_STATE;
+			// FALLTHROUGH
+
+		case NEXT_PART_READ_STATE:
+			// Determine next child type.
+			doc.read_next(stream);
+			break;
+		}
 	} else {
 		throw IllegalStateException ();
 	}
 }
 
 
-namespace {
+/*
+ * Element serialization subroutines.
+ */
 
-//
-// Element serialization subroutines.
-//
-
-bool
-write_start(FI_OctetStream *stream,
-            const NSN_DS_VocabTable::TypedEntryRef& ns_name,
-            const DN_VocabTable::TypedEntryRef& name, const Attributes& attrs)
+void
+Element::write_start(FI_OctetStream *stream)
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
 	switch (fi_get_stream_num_bits(stream)) {
@@ -238,89 +165,67 @@ write_start(FI_OctetStream *stream,
 		// C.2.11.1, C.3.7.1: Add 0000 padding.
 		// C.3.2: Starting at 1st bit of next octet.
 		if (!fi_flush_stream_bits(stream)) {
-			return false;
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
 		}
 		break;
 
 	default:
 		// Shouldn't happen.
-		return false;
+		throw IllegalStateException ();
 	}
 
 	// Write identification (C.2.11.2, C.3.7.2: 0).
 	// Write attributes presence flag (C.3.3).
 	if (!fi_write_stream_bits(stream, 2,
-	                          attrs.getLength() ? FI_BIT_2 : 0)) {
-		return false;
+	                          w_attrs->getLength() ? FI_BIT_2 : 0)) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
 	// Write namespace-attributes (C.3.4).
-	if (!write_namespace_attributes(stream, ns_name)) {
-		return false;
-	}
+	write_namespace_attributes(stream);
 
 	// Write qualified-name (C.18).
 	if (!write_name_bit_3(stream, name)) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
 	// Write attributes (C.3.6).
-	if (attrs.getLength()) {
-		for (int ii = 0; ii < attrs.getLength(); ii++) {
-			// Write identification (C.3.6.1: 0).
-			if (!fi_write_stream_bits(stream, 1, 0)) {
-				return false;
-			}
-
-			// Write attribute using C.4 (C.3.6.1).
-			if (!write_attribute(stream,
-			                     attrs.getName(ii),
-			                     attrs.getValue(ii))) {
-				return false;
-			}
-		}
-
-		// Write termination (C.3.6.2).
-		assert(fi_get_stream_num_bits(stream) == 0); // C.4.2
-
-		if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
-			return false;
-		}
-	}
+	write_attributes(stream);
 
 	// Write children (C.3.7).  This is handled by the respective child
 	// serialization routines, so we don't need to do anything here.
-	return true;
 }
 
-bool
-write_end(FI_OctetStream *stream)
+void
+Element::write_end(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 0
 	       || fi_get_stream_num_bits(stream) == 4);
 
 	// Write termination (C.3.8: 1111).
 	if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
-
-	return true;
 }
 
-bool
-write_namespace_attributes(FI_OctetStream *stream,
-                           const NSN_DS_VocabTable::TypedEntryRef& ns_name)
+void
+Element::write_namespace_attributes(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 
-	if (!ns_name.isValid()) {
-		// No namespace attributes to write.
-		return true;
+	if (!doc.hasElements()) {
+		// We only write the BT_NAMESPACE default namespace at root.
+		return;
 	}
 
 	// Write identification (C.3.4.1: 1110, 00).
 	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,1,0, 0,0,,))) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
 	// Write namespace-attributes using C.12 (C.3.4.2: 110011).
@@ -328,11 +233,13 @@ write_namespace_attributes(FI_OctetStream *stream,
 	// 2, our default namespace, with no prefix.
 	// FIXME: This needs to be looked up, not hardcoded.
 	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,0,0,1,1,,))) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
-	if (!write_namespace_attribute(stream, ns_name)) {
-		return false;
+	if (!write_namespace_attribute(stream, doc.BT_NAMESPACE)) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
 	// Write termination (C.3.4.3: 1111, 0000 00).
@@ -340,19 +247,193 @@ write_namespace_attributes(FI_OctetStream *stream,
 
 	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
 	if (!w_buf) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
 	}
 
 	w_buf[0] = FI_BITS(1,1,1,1, 0,0,0,0);
 
 	if (!fi_write_stream_bits(stream, 2, FI_BITS(0,0,,,,,,))) {
-		return false;
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
+}
+
+void
+Element::write_attributes(FI_OctetStream *stream)
+{
+	if (!w_attrs->getLength()) {
+		// No attributes.
+		return;
+	}
+
+	for (int ii = 0; ii < w_attrs->getLength(); ii++) {
+		// Write identification (C.3.6.1: 0).
+		if (!fi_write_stream_bits(stream, 1, 0)) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+
+		// Write attribute using C.4 (C.3.6.1).
+		if (!write_attribute(stream,
+		                     w_attrs->getName(ii),
+		                     w_attrs->getValue(ii))) {
+			// TODO: Assign an exception for stream errors.
+			throw Exception ();
+		}
+	}
+
+	// Write termination (C.3.6.2).
+	assert(fi_get_stream_num_bits(stream) == 0); // C.4.2
+
+	if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
+}
+
+
+/*
+ * Element unserialization subroutines.
+ */
+
+bool
+Element::read_start(FI_OctetStream *stream)
+{
+	const FI_Octet *r_buf;
+	FI_Length avail_len;
+	FI_Octet bits;
+
+redispatch:
+	switch (r_element_state) {
+	case RESET_ELEMENT_STATE:
+		// Peek at the second bit to check if we have attributes.
+		r_attrs.clear();
+
+		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
+			return false;
+		}
+
+		r_has_attrs = r_buf[0] & FI_BIT_2;
+
+		// Check if we have namespace attributes (C.3.4.1: 1110 00).
+		bits = r_buf[0] & FI_BITS(,,1,1,1,1,1,1);
+
+		if (bits != FI_BITS(,,1,1,1,0, 0,0)) {
+			// Skip directly to NAME_ELEMENT_STATE.
+			r_element_state = NAME_ELEMENT_STATE;
+			goto redispatch; // already commented on in Document
+		}
+
+		// FIXME: As an implementation restriction, we only allow
+		// namespace attributes at the root level.
+		if (doc.hasElements()) {
+			throw UnsupportedOperationException ();
+		}
+
+		// Consume namespace attributes presence bits (C.3.4.1).
+		avail_len = fi_try_read_stream(stream, 0, 1, 1);
+		assert(avail_len >= 1); // this always works, really
+
+		r_element_state = NS_DECL_ELEMENT_STATE;
+		// FALLTHROUGH
+
+	case NS_DECL_ELEMENT_STATE:
+		// Parse namespace attributes.
+		if (!read_namespace_attributes(stream)) {
+			return false;
+		}
+
+		r_element_state = NAME_ELEMENT_STATE;
+		// FALLTHROUGH
+
+	case NAME_ELEMENT_STATE:
+		// Parse element name.
+		if (!read_name_bit_3(stream, name, r_len_state)) {
+			return false;
+		}
+
+		if (!r_has_attrs) {
+			// Proceed directly to parsing children.
+			break;
+		}
+
+		r_element_state = ATTRS_ELEMENT_STATE;
+		// FALLTHROUGH
+
+	case ATTRS_ELEMENT_STATE:
+		// Parse attributes.
+		if (!read_attributes(stream)) {
+			return false;
+		}
+		break;
 	}
 
 	return true;
 }
 
-} // anonymous namespace
+bool
+Element::read_end(FI_OctetStream *stream)
+{
+	// Read element terminator bits (C.3.8).
+	const FI_Octet *r_buf;
+	FI_Length avail_len;
+	FI_Octet bits;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
+		return false;
+	}
+
+	switch (fi_get_stream_num_bits(stream)) {
+	case 0:
+		// Ended on 4th bit (C.3.2).
+		bits = r_buf[0] & FI_BITS(1,1,1,1,,,,);
+
+		if (bits != FI_BITS(1,1,1,1,,,,)) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+
+		fi_set_stream_num_bits(stream, 4);
+		// Next 4 bits will be either terminator or padding.
+		break;
+
+	case 4:
+		// Ended on 8th bit (C.3.2).
+		bits = (r_buf[0] << 4) & FI_BITS(1,1,1,1,,,,);
+
+		if (bits != FI_BITS(1,1,1,1,,,,)) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+
+		avail_len = fi_try_read_stream(stream, 0, 1, 1);
+		assert(avail_len >= 1); // this always works, really
+		break;
+
+	default:
+		// Should never happen.
+		throw IllegalStateException ();
+	}
+
+	return true;
+}
+
+bool
+Element::read_namespace_attributes(FI_OctetStream *stream)
+{
+	// FIXME
+	fputs("reading namespace-attributes\n", stderr);
+	return false;
+}
+
+bool
+Element::read_attributes(FI_OctetStream *stream)
+{
+	// FIXME
+	fputs("reading attributes\n", stderr);
+	return false;
+}
 
 } // namespace FI
 } // namespace BTech
