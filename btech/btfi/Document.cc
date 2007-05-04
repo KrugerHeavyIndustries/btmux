@@ -87,6 +87,16 @@ Document::stop()
 	stop_flag = true;
 }
 
+// Namespaces in XML 1.0 (Second Edition)
+// http://www.w3.org/TR/2006/REC-xml-names-20060816
+//
+// Section 6.2, paragraph 2:
+//
+// A default namespace declaration applies to all unprefixed element names
+// within its scope. Default namespace declarations do not apply directly to
+// attribute names; the interpretation of unprefixed attributes is determined
+// by the element on which they appear.
+
 const DN_VocabTable::TypedEntryRef
 Document::getElementName(const char *name)
 {
@@ -97,7 +107,7 @@ Document::getElementName(const char *name)
 const DN_VocabTable::TypedEntryRef
 Document::getAttributeName(const char *name)
 {
-	const Name attribute_name (local_names.getEntry(name), BT_NAMESPACE);
+	const Name attribute_name (local_names.getEntry(name));
 	return attribute_name_surrogates.getEntry(attribute_name);
 }
 
