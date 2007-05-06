@@ -6,7 +6,6 @@
 #ifndef BTECH_FI_ENCALG_H
 #define BTECH_FI_ENCALG_H
 
-#include "common.h"
 #include "stream.h"
 
 typedef struct {

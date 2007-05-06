@@ -13,6 +13,9 @@ namespace FI {
 class Exception : public std::exception {
 }; // Exception
 
+class AssertionFailureException : public Exception {
+}; // AssertionFailureException
+
 class OutOfMemoryException : public Exception {
 }; // OutOfMemoryException
 

@@ -11,6 +11,7 @@
 
 #include "common.h"
 
+#include "Exception.hh"
 #include "ObjectPool.hh"
 
 
@@ -28,6 +29,9 @@ namespace FI {
  * vocabulary tables.  Specific vocabulary tables will generally be derived
  * from the TypedVocabTable<T> template, which provides interfaces for actually
  * creating and accessing vocabulary table entries.
+ *
+ * TODO: Add explicit keyword where useful.  This is relatively new to C++, so
+ * it should only be used to catch mistakes, not to enforce behavior.
  */
 class VocabTable {
 protected:
@@ -117,16 +121,8 @@ public:
 		}
 
 		// Test whether the reference points anywhere.
-		bool isValid () const {
-			return entry != 0;
-		}
-
-		// Explicitly release the reference to the managed pointer.
-		void release () {
-			if (entry) {
-				entry->delRef();
-				entry = 0;
-			}
+		operator const void * () const {
+			return entry;
 		}
 
 	protected:
@@ -223,14 +219,26 @@ protected:
  */
 template<typename T>
 class TypedVocabTable : public VocabTable {
-protected:
-	class TypedEntry;
-
 public:
 	class TypedEntryRef;
 
 	typedef T value_type;
 	typedef const T& const_reference;
+
+protected:
+	class TypedEntry;
+
+	// Note that we specifically use a regular TypedEntry pointer here.
+	typedef ObjectPool<value_type,TypedEntry *> EntryPool;
+	typedef typename EntryPool::PoolPtr EntryPoolPtr;
+
+public:
+	~TypedVocabTable () {
+		// Delete our entry pool, held by our wildly dangerous pointer.
+		if (own_entry_pool) {
+			delete entry_pool;
+		}
+	}
 
 	// Get a TypedEntry by vocabulary index.  Throws OutOfBoundsException
 	// if given a non-existent index.
@@ -242,8 +250,6 @@ public:
 	 * Type-safe EntryRef.
 	 */
 	class TypedEntryRef : public EntryRef {
-		friend class EntryPool;
-
 	public:
 		TypedEntryRef (TypedEntry *entry = 0) : EntryRef (entry) {}
 
@@ -281,7 +287,7 @@ public:
 			} else {
 				// L < R ?
 				return getTypedEntry()->value
-				       < getTypedEntry()->value;
+				       < src.getTypedEntry()->value;
 			}
 		}
 
@@ -293,20 +299,79 @@ public:
 
 protected:
 	TypedVocabTable (bool read_only, FI_VocabIndex max_idx)
-	: VocabTable (read_only, max_idx) {}
+	: VocabTable (read_only, max_idx), typed_parent (0),
+	  own_entry_pool (true),
+	  entry_pool (new EntryPool ()) {}
 
-	TypedVocabTable (bool read_only, TypedVocabTable *parent)
-	: VocabTable (read_only, parent) {}
+	TypedVocabTable (bool read_only, TypedVocabTable *parent,
+	                 EntryPool *shared_pool = 0)
+	: VocabTable (read_only, parent), typed_parent (parent),
+	  own_entry_pool (!shared_pool),
+	  entry_pool (shared_pool ? shared_pool : new EntryPool ()) {}
+
+	// Search the entry pool by value for an existing TypedEntry.  Returns
+	// a null EntryPoolPtr if the TypedEntry can not be found.
+	const EntryPoolPtr findEntry (const_reference value) {
+		// Check the local entry pool.
+		const EntryPoolPtr pool_ptr = entry_pool->findObject(value);
+		if (pool_ptr) {
+			// TODO: Assert pool_ptr.metadata() != 0.
+			return pool_ptr;
+		}
+
+		// Fall back to the parent.
+		if (typed_parent) {
+			return typed_parent->findEntry(value);
+		}
+
+		// Give up.
+		return 0;
+	}
+
+	// Convenience method for adding static entries.  A pointer to the
+	// allocated memory is returned, which the caller is responsible for
+	// deallocating when the table is no longer needed.  For the intended
+	// use of allocating static entries, a static auto_ptr is probably a
+	// good way of handling it.
+	TypedEntry *addStaticEntry (FI_VocabIndex idx, const_reference value) {
+		if (findEntry(value)) {
+			throw AssertionFailureException ();
+		}
+
+		const EntryPoolPtr pool_ptr = entry_pool->createObject(value);
+
+		TypedEntry *const entry = new StaticTypedEntry (idx, pool_ptr);
+		pool_ptr.metadata() = entry;
+
+		if ((base_idx + vocabulary.size()) != idx
+		    || acquireIndex(entry) != idx) {  
+			throw AssertionFailureException ();
+		}
+
+		return entry;
+	}
+
+	TypedVocabTable *const typed_parent;
+
+	// Pool of singleton value_type values (and their associated TypeEntry
+	// objects).  own_entry_pool is true if this object created the pool.
+	const bool own_entry_pool;
+	EntryPool *const entry_pool;
 
 	/*
 	 * TypedEntry for vocabulary table values.
 	 */
 	class TypedEntry : public Entry {
 	public:
+		// Provide read-only access to the pooled value.
 		const_reference value;
 
 	protected:
-		TypedEntry (const_reference value) : value (value) {}
+		TypedEntry (const EntryPoolPtr& pool_ptr)
+		: value (*pool_ptr), pool_ptr (pool_ptr) {}
+
+		// Retain a reference to the pooled value.
+		const EntryPoolPtr pool_ptr;
 	}; // template class TypedVocabTable::TypedEntry
 
 	/*
@@ -316,12 +381,14 @@ protected:
 	 *
 	 * For example, you can't directly initialize CharString tables with a
 	 * string constant like "", because that actually creates a temporary
-	 * std::string copy, and passes that by reference.
+	 * CharString copy, and passes a reference to the temporary, which
+	 * doesn't have a sufficient lifetime.
 	 */
 	class StaticTypedEntry : public TypedEntry {
 	public:
-		StaticTypedEntry (FI_VocabIndex idx, const_reference value)
-		: TypedEntry (value), static_idx (idx) {}
+		StaticTypedEntry (FI_VocabIndex idx,
+		                  const EntryPoolPtr& pool_ptr)
+		: TypedEntry (pool_ptr), static_idx (idx) {}
 
 		bool hasIndex () const {
 			return true;
@@ -332,7 +399,7 @@ protected:
 		}
 
 	private:
-		FI_VocabIndex static_idx;
+		const FI_VocabIndex static_idx;
 	}; // template class TypedVocabTable::StaticTypedEntry
 }; // template class TypedVocabTable
 
@@ -354,32 +421,25 @@ public:
 protected:
 	class DynamicTypedEntry;
 
-	typedef ObjectPool<T,DynamicTypedEntry *> EntryPool;
-	typedef typename EntryPool::PoolPtr EntryPoolPtr;
+	typedef typename TypedVocabTable::EntryPool EntryPool;
+	typedef typename TypedVocabTable::EntryPoolPtr EntryPoolPtr;
 
 public:
-	~DynamicTypedVocabTable () {
-		if (!dynamic_root) {
-			// We could theoretically destroy the dynamic_root of a
-			// table and leave it with a dangling reference, but if
-			// you delete the parent of a table first, and then
-			// expect to be able to use it normally, then you've
-			// got other problems.
-			//
-			// In short, no fancy reference counting needed.
-			//
-			// TODO: Document for the API user that deleting parent
-			// tables before children is really bad, even if it
-			// seems really obvious to us.
-			delete entry_pool;
-		}
-	}
-
 	// Create a new TypedEntry for a value.  Will always return a new
 	// entry, rather than reusing an existing one.  The entry may be
 	// interned, just like with getEntry(), so this may also be slow.
 	virtual const TypedEntryRef createEntry (const_reference value) {
-		return createEntryObject(entry_pool->getObject(value));
+		// Look for an existing entry.
+		EntryPoolPtr pool_ptr = findEntry(value);
+		if (!pool_ptr) {
+			// Add a new interned entry.
+			pool_ptr = entry_pool->createObject(value);
+			pool_ptr.metadata() = createEntryObject(pool_ptr);
+			return pool_ptr.metadata();
+		} else {
+			// Create new, uninterned entry.
+			return createEntryObject(pool_ptr);
+		}
 	}
 
 	// Get a TypedEntry for a value.  Can (but is not required to) return
@@ -387,40 +447,41 @@ public:
 	//
 	// This may be relatively slow, so avoid calling it too much.  The
 	// suggested usage is to call it once for each known value, and cache
-	// the returned EntryRef for later usage.
+	// the returned TypedEntryRef for later usage.
 	//
-	// This must return an EntryRef by value, NOT by reference.
+	// This must return an TypedEntryRef by value, NOT by reference.
 	virtual const TypedEntryRef getEntry (const_reference value) {
-		const EntryPoolPtr value_ptr = entry_pool->getObject(value);
-
-		if (!value_ptr.metadata()) {
-			// Initialize entry.
-			value_ptr.metadata() = createEntryObject(value_ptr);
+		// Look for an existing entry.
+		EntryPoolPtr pool_ptr = findEntry(value);
+		if (!pool_ptr) {
+			// Add a new interned entry.
+			pool_ptr = entry_pool->createObject(value);
+			pool_ptr.metadata() = createEntryObject(pool_ptr);
+			return pool_ptr.metadata();
+		} else {
+			// Use existing, interned entry.
+			return pool_ptr.metadata();
 		}
-
-		return value_ptr.metadata();
 	}
 
 protected:
 	DynamicTypedVocabTable (bool read_only, FI_VocabIndex max_idx)
 	: TypedVocabTable (read_only, max_idx),
-	  dynamic_root (0),
-	  entry_pool (new EntryPool ()) {}
+	  dynamic_root (0) {}
 
 	DynamicTypedVocabTable (bool read_only, TypedVocabTable *parent)
 	: TypedVocabTable (read_only, parent),
-	  dynamic_root (0),
-	  entry_pool (new EntryPool ()) {}
+	  dynamic_root (0) {}
 
 	DynamicTypedVocabTable (bool read_only, DynamicTypedVocabTable *parent)
-	: TypedVocabTable (read_only, parent),
-	  dynamic_root (parent->getDynamicRoot()),
-	  entry_pool (dynamic_root->entry_pool) {}
+	: TypedVocabTable (read_only, parent,
+	                   parent->getDynamicRoot()->entry_pool),
+	  dynamic_root (parent->getDynamicRoot()) {}
 
 	// Create a new DynamicTypedEntry for a value.
 	virtual DynamicTypedEntry *
-	createEntryObject (const EntryPoolPtr& value_ptr) {
-		return new DynamicTypedEntry (*this, value_ptr);
+	createEntryObject (const EntryPoolPtr& pool_ptr) {
+		return new DynamicTypedEntry (*this, pool_ptr);
 	}
 
 	/*
@@ -429,10 +490,9 @@ protected:
 	class DynamicTypedEntry : public TypedEntry {
 	public:
 		DynamicTypedEntry (DynamicTypedVocabTable& owner,
-		                   const EntryPoolPtr& value_ptr)
-		: TypedEntry (*value_ptr), value_ptr (value_ptr),
-		  owner (owner), has_cached_idx (false),
-		  ref_count (0), is_interned (false) {}
+		                   const EntryPoolPtr& pool_ptr)
+		: TypedEntry (pool_ptr),
+		  owner (owner), has_cached_idx (false), ref_count (0) {}
 
 		bool hasIndex () const {
 			return has_cached_idx;
@@ -458,14 +518,24 @@ protected:
 		}
 
 		void delRef () {
-			ref_count--;
-			if (ref_count < 1) {
+			if (--ref_count < 1) {
 				// TODO: Assert ref_count == 0.
 				// XXX: We're crazy! Yay!
 				delete this;
-			} else if (is_interned && ref_count == 1) {
-				//owner.disintern(value);
-				// disintern() will drop ref_count to 0.
+
+				// When this object is deleted, there are no
+				// more references to it.  The value_ptr will
+				// be released, and there should be no more
+				// references to that, either.  This will
+				// automatically take care of de-registering
+				// the value-to-Entry mapping, so there will be
+				// no dangling pointers.
+				//
+				// To ensure this, we should never allow
+				// external, reference-counted access to
+				// value_ptr; the user holding a reference to
+				// the DynamicTypedEntry (and thus implicitly
+				// to the value) is sufficient.
 			}
 		}
 
@@ -474,28 +544,23 @@ protected:
 		}
 
 	private:
-		using TypedEntry::value;
-		const EntryPoolPtr value_ptr;
-
 		DynamicTypedVocabTable& owner;
 
 		bool has_cached_idx;
 		FI_VocabIndex cached_idx;
 
 		size_t ref_count;
-
-		bool is_interned;
 	}; // template class DynamicTypedVocabTable::DynamicTypedEntry
 
 private:
-	// Get the first DynamicTypedVocabTable in the search hierarchy.
+	using TypedVocabTable::entry_pool;
+
+	// Get the root dynamic table in the lookup hierarchy.
 	DynamicTypedVocabTable *getDynamicRoot () {
 		return dynamic_root ? dynamic_root : this;
 	}
 
 	DynamicTypedVocabTable *const dynamic_root;
-
-	EntryPool *const entry_pool;
 }; // template class DynamicTypedVocabTable
 
 } // namespace FI

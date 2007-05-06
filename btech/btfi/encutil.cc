@@ -235,8 +235,8 @@ write_name_bit_2(FI_OctetStream *stream,
 
 	// Write identification (C.17.3: 1111 0).
 	// Write prefix and namespace-name presence (C.17.3.1).
-	const bool has_pfx = literal.pfx_part.isValid();
-	const bool has_nsn = literal.nsn_part.isValid();
+	const bool has_pfx = literal.pfx_part;
+	const bool has_nsn = literal.nsn_part;
 	if (!fi_write_stream_bits(stream, 7,
 	                          FI_BITS(1,1,1,1, 0, has_pfx, has_nsn,))) {
 		return false;
@@ -292,8 +292,8 @@ write_name_bit_3(FI_OctetStream *stream,
 
 	// Write identification (C.18.3: 1111).
 	// Write prefix and namespace-name presence (C.18.3.1).
-	const bool has_pfx = literal.pfx_part.isValid();
-	const bool has_nsn = literal.nsn_part.isValid();
+	const bool has_pfx = literal.pfx_part;
+	const bool has_nsn = literal.nsn_part;
 	if (!fi_write_stream_bits(stream, 6,
 	                          FI_BITS(1,1,1,1, has_pfx, has_nsn,,))) {
 		return false;

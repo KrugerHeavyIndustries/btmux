@@ -6,6 +6,8 @@
 
 #include "autoconf.h"
 
+#include <memory>
+
 #include "common.h"
 #include "encalg.h"
 
@@ -13,6 +15,9 @@
 #include "VocabSimple.hh"
 
 
+// Use auto_ptr to avoid memory leak warnings from valgrind & friends.
+using std::auto_ptr;
+
 namespace BTech {
 namespace FI {
 
@@ -47,13 +52,19 @@ VocabTable::clear()
 FI_VocabIndex
 VocabTable::acquireIndex(Entry *entry)
 {
-	if (last_idx >= max_idx) {
+	// Add, then compare, to deal with overflow for -1 case (used to
+	// initialize index 0 for empty string tables).  A few cycles slower,
+	// sure, but this isn't on the critical path.
+	const FI_VocabIndex next_idx = last_idx + 1;
+
+	if (next_idx > max_idx) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
 	// Assign index.
 	vocabulary.push_back(entry);
-	return ++last_idx;
+	last_idx = next_idx;
+	return next_idx;
 }
 
 const VocabTable::EntryRef&
@@ -91,29 +102,19 @@ VocabTable::lookupIndex(FI_VocabIndex idx) const
 RA_VocabTable::TypedVocabTable *
 RA_VocabTable::builtin_table()
 {
-	static RA_VocabTable builtins (true);
+	static RA_VocabTable builtins (true, 256 /* table limit (7.2.18) */);
 	return &builtins;
 }
 
-RA_VocabTable::RA_VocabTable(bool read_only)
-: DynamicTypedVocabTable<value_type> (true, 256 /* table limit (7.2.18) */)
+RA_VocabTable::RA_VocabTable(bool read_only, FI_VocabIndex max_idx)
+: DynamicTypedVocabTable<value_type> (true, max_idx)
 {
-	// Built-in restricted alphabets.
-	static CharString NUMERIC_ALPHABET = "0123456789-+.e ";
-	static CharString DATE_AND_TIME_ALPHABET = "012345789-:TZ ";
+	// Add built-in restricted alphabets.
+	static auto_ptr<Entry>
+	entry_1 (addStaticEntry(FI_RA_NUMERIC, "0123456789-+.e "));
 
-	// Built-in restricted alphabet entries.
-	static StaticTypedEntry
-	NUMERIC_ALPHABET_ENTRY (FI_RA_NUMERIC, NUMERIC_ALPHABET);
-
-	static StaticTypedEntry
-	DATE_AND_TIME_ALPHABET_ENTRY (FI_RA_DATE_AND_TIME,
-	                              DATE_AND_TIME_ALPHABET);
-
-	// Add built-in restricted alphabet entries.
-	// TODO: Assert we acquire the correct indexes.
-	acquireIndex(&NUMERIC_ALPHABET_ENTRY);
-	acquireIndex(&DATE_AND_TIME_ALPHABET_ENTRY);
+	static auto_ptr<Entry>
+	entry_2 (addStaticEntry(FI_RA_DATE_AND_TIME, "012345789-:TZ "));
 
 	// Up to 15 reserved for built-in (7.2.19).
 	last_idx = 15;
@@ -151,56 +152,43 @@ RA_VocabTable::getEntry(const_reference value)
 EA_VocabTable *
 EA_VocabTable::builtin_table()
 {
-	static EA_VocabTable builtins (true);
+	static EA_VocabTable builtins (true, 256 /* table limit (7.2.18) */);
 	return &builtins;
 }
 
-EA_VocabTable::EA_VocabTable(bool read_only)
-: TypedVocabTable<value_type> (true, 256 /* table limit (7.2.18) */)
+EA_VocabTable::EA_VocabTable(bool read_only, FI_VocabIndex max_idx)
+: TypedVocabTable<value_type> (true, max_idx)
 {
-	// Built-in encoding algorithm entries.
-	static StaticTypedEntry
-	HEXADECIMAL_ENTRY (FI_EA_HEXADECIMAL, fi_ea_hexadecimal);
+	// Add built-in encoding algorithms.
+	static auto_ptr<Entry>
+	entry_1 (addStaticEntry(FI_EA_HEXADECIMAL, &fi_ea_hexadecimal));
 
-	static StaticTypedEntry
-	BASE64_ENTRY (FI_EA_BASE64, fi_ea_base64);
+	static auto_ptr<Entry>
+	entry_2 (addStaticEntry(FI_EA_BASE64, &fi_ea_base64));
 
-	static StaticTypedEntry
-	SHORT_ENTRY (FI_EA_SHORT, fi_ea_short);
+	static auto_ptr<Entry>
+	entry_3 (addStaticEntry(FI_EA_SHORT, &fi_ea_short));
 
-	static StaticTypedEntry
-	INT_ENTRY (FI_EA_INT, fi_ea_int);
+	static auto_ptr<Entry>
+	entry_4 (addStaticEntry(FI_EA_INT, &fi_ea_int));
 
-	static StaticTypedEntry
-	LONG_ENTRY (FI_EA_LONG, fi_ea_long);
+	static auto_ptr<Entry>
+	entry_5 (addStaticEntry(FI_EA_LONG, &fi_ea_long));
 
-	static StaticTypedEntry
-	BOOLEAN_ENTRY (FI_EA_BOOLEAN, fi_ea_boolean);
+	static auto_ptr<Entry>
+	entry_6 (addStaticEntry(FI_EA_BOOLEAN, &fi_ea_boolean));
 
-	static StaticTypedEntry
-	FLOAT_ENTRY (FI_EA_FLOAT, fi_ea_float);
+	static auto_ptr<Entry>
+	entry_7 (addStaticEntry(FI_EA_FLOAT, &fi_ea_float));
 
-	static StaticTypedEntry
-	DOUBLE_ENTRY (FI_EA_DOUBLE, fi_ea_double);
+	static auto_ptr<Entry>
+	entry_8 (addStaticEntry(FI_EA_DOUBLE, &fi_ea_double));
 
-	static StaticTypedEntry
-	CDATA_ENTRY (FI_EA_CDATA, fi_ea_cdata);
+	static auto_ptr<Entry>
+	entry_9 (addStaticEntry(FI_EA_UUID, &fi_ea_uuid));
 
-	static StaticTypedEntry
-	UUID_ENTRY (FI_EA_UUID, fi_ea_uuid);
-
-	// Add built-in encoding algorithm entries.
-	// TODO: Assert we acquire the correct indexes.
-	acquireIndex(&HEXADECIMAL_ENTRY);
-	acquireIndex(&BASE64_ENTRY);
-	acquireIndex(&SHORT_ENTRY);
-	acquireIndex(&INT_ENTRY);
-	acquireIndex(&LONG_ENTRY);
-	acquireIndex(&BOOLEAN_ENTRY);
-	acquireIndex(&FLOAT_ENTRY);
-	acquireIndex(&DOUBLE_ENTRY);
-	acquireIndex(&CDATA_ENTRY);
-	acquireIndex(&UUID_ENTRY);
+	static auto_ptr<Entry>
+	entry_10 (addStaticEntry(FI_EA_CDATA, &fi_ea_cdata));
 
 	// Up to 31 reserved for built-in (7.2.20).
 	last_idx = 31;
@@ -230,27 +218,20 @@ EA_VocabTable::EA_VocabTable()
 DS_VocabTable::TypedVocabTable *
 DS_VocabTable::builtin_table()
 {
-	static DS_VocabTable builtins (true);
+	static DS_VocabTable builtins (true, FI_ONE_MEG);
 	return &builtins;
 }
 
-DS_VocabTable::DS_VocabTable(bool read_only)
-: DynamicTypedVocabTable<value_type> (true, FI_ONE_MEG)
+DS_VocabTable::DS_VocabTable(bool read_only, FI_VocabIndex max_idx)
+: DynamicTypedVocabTable<value_type> (true, max_idx)
 {
-	// Built-in strings.
-	static CharString EMPTY_STRING = "";
-
-	// Built-in string entries.
-	static StaticTypedEntry
-	EMPTY_STRING_ENTRY (FI_VOCAB_INDEX_NULL, EMPTY_STRING);
-
-	// Add built-in string entries.
-	// TODO: Assert we acquire the correct indexes.
-	acquireIndex(&EMPTY_STRING_ENTRY);
-
 	// Index 0 is the empty string.
 	base_idx = 0;
-	last_idx = 0;
+	last_idx = -1;
+
+	// Add built-in strings.
+	static auto_ptr<Entry>
+	entry_0 (addStaticEntry(FI_VOCAB_INDEX_NULL, ""));
 }
 
 DS_VocabTable::DS_VocabTable()
@@ -259,7 +240,8 @@ DS_VocabTable::DS_VocabTable()
 }
 
 DS_VocabTable::DS_VocabTable(TypedVocabTable *parent)
-: DynamicTypedVocabTable<value_type> (true, parent)
+: DynamicTypedVocabTable<value_type> (parent ? false : true,
+                                      parent ? parent : builtin_table())
 {
 }
 
@@ -273,21 +255,16 @@ DS_VocabTable::DS_VocabTable(TypedVocabTable *parent)
 DS_VocabTable *
 PFX_DS_VocabTable::builtin_table()
 {
-	static PFX_DS_VocabTable builtins (true);
+	static PFX_DS_VocabTable builtins (true, FI_ONE_MEG);
 	return &builtins;
 }
 
-PFX_DS_VocabTable::PFX_DS_VocabTable(bool read_only)
+PFX_DS_VocabTable::PFX_DS_VocabTable(bool read_only, FI_VocabIndex idx)
+: DS_VocabTable (0)
 {
-	// Built-in prefix strings.
-	static CharString XML_PREFIX = "xml";
-
-	// Built-in prefix string entries.
-	static StaticTypedEntry XML_PREFIX_ENTRY (FI_PFX_XML, XML_PREFIX);
-
-	// Add built-in prefix string entries.
-	// TODO: Assert we acquire the correct indexes.
-	acquireIndex(&XML_PREFIX_ENTRY);
+	// Add built-in prefix strings.
+	static auto_ptr<Entry>
+	entry_1 (addStaticEntry(FI_PFX_XML, "xml"));
 }
 
 PFX_DS_VocabTable::PFX_DS_VocabTable()
@@ -305,23 +282,17 @@ PFX_DS_VocabTable::PFX_DS_VocabTable()
 DS_VocabTable *
 NSN_DS_VocabTable::builtin_table()
 {
-	static NSN_DS_VocabTable builtins (true);
+	static NSN_DS_VocabTable builtins (true, FI_ONE_MEG);
 	return &builtins;
 }
 
-NSN_DS_VocabTable::NSN_DS_VocabTable(bool read_only)
+NSN_DS_VocabTable::NSN_DS_VocabTable(bool read_only, FI_VocabIndex max_idx)
+: DS_VocabTable (0)
 {
-	// Built-in namespace name strings.
-	static CharString
-	XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace";
-
-	// Built-in namespace name string entries.
-	static StaticTypedEntry
-	XML_NAMESPACE_ENTRY (FI_NSN_XML, XML_NAMESPACE);
-
-	// Add built-in namespace name string entries.
-	// TODO: Assert we acquire the correct indexes.
-	acquireIndex(&XML_NAMESPACE_ENTRY);
+	// Add built-in namespace name strings.
+	static auto_ptr<Entry>
+	entry_1 (addStaticEntry(FI_NSN_XML,
+	                        "http://www.w3.org/XML/1998/namespace"));
 }
 
 NSN_DS_VocabTable::NSN_DS_VocabTable()

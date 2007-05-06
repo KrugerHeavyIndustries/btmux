@@ -1,6 +1,5 @@
 #include "autoconf.h"
 
-#include <cstring>
 #include <iostream>
 
 #include "encalg.h"
@@ -13,12 +12,6 @@ using std::cerr;
 using std::endl;
 
 using namespace BTech::FI;
-
-inline bool
-operator != (const FI_EncodingAlgorithm& lhs, const FI_EncodingAlgorithm& rhs)
-{
-	return memcmp(&lhs, &rhs, sizeof(FI_EncodingAlgorithm)) != 0;
-}
 
 namespace {
 
@@ -122,7 +115,7 @@ run_test()
 
 	// The following test of disinternment can only check for fatal errors.
 	ref1 = ra_vt1.getEntry("bob's your uncle");
-	ref1.release();
+	ref1 = 0;
 
 	//test_max(ra_vt1, "..", 256);
 	ra_vt1.clear();
@@ -130,16 +123,16 @@ run_test()
 	//
 	// Test encoding algorithm tables.
 	//
-	if (*ea_vt2[1] != fi_ea_hexadecimal
-	    || *ea_vt2[2] != fi_ea_base64
-	    || *ea_vt2[3] != fi_ea_short
-	    || *ea_vt2[4] != fi_ea_int
-	    || *ea_vt2[5] != fi_ea_long
-	    || *ea_vt2[6] != fi_ea_boolean
-	    || *ea_vt2[7] != fi_ea_float
-	    || *ea_vt2[8] != fi_ea_double
-	    || *ea_vt2[9] != fi_ea_uuid
-	    || *ea_vt2[10] != fi_ea_cdata) {
+	if (*ea_vt2[1] != &fi_ea_hexadecimal
+	    || *ea_vt2[2] != &fi_ea_base64
+	    || *ea_vt2[3] != &fi_ea_short
+	    || *ea_vt2[4] != &fi_ea_int
+	    || *ea_vt2[5] != &fi_ea_long
+	    || *ea_vt2[6] != &fi_ea_boolean
+	    || *ea_vt2[7] != &fi_ea_float
+	    || *ea_vt2[8] != &fi_ea_double
+	    || *ea_vt2[9] != &fi_ea_uuid
+	    || *ea_vt2[10] != &fi_ea_cdata) {
 		die("EA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -156,7 +149,7 @@ run_test()
 
 	// The following test of disinternment can only check for fatal errors.
 	ref1 = ra_vt1.getEntry("bob's your uncle");
-	ref1.release();
+	ref1 = 0;
 
 	// XXX: test_max() doesn't make sense when we can't createEntry().
 	//test_max(ea_vt1, 0, 256);
@@ -186,11 +179,6 @@ run_test()
 		    "Forward mapping failed");
 	}
 
-	fprintf(stderr, "%d %d %d %d\n",
-	        ds_vt1.getEntry("how").getIndex(),
-	        ds_vt2.getEntry("now://brown").getIndex(),
-	        ds_vt3.createEntry("cow").getIndex(),
-	        ds_vt3.getEntry("cow").getIndex());
 	if (ds_vt1.getEntry("how").getIndex() != idx1
 	    || ds_vt2.getEntry("now://brown").getIndex() != idx2
 	    || ds_vt3.createEntry("cow").getIndex() != (idx3 + 1)
@@ -271,8 +259,8 @@ run_test()
 	if (*dn_vt1[idx1]->pfx_part != *pfx_ref
 	    || *dn_vt1[idx1]->nsn_part != *nsn_ref
 	    || *dn_vt2[idx1]->local_part != *local_ref
-	    || dn_vt2[idx2]->pfx_part.isValid()
-	    || dn_vt2[idx2]->nsn_part.isValid()
+	    || dn_vt2[idx2]->pfx_part
+	    || dn_vt2[idx2]->nsn_part
 	    || *dn_vt2[idx2]->local_part != *local_ref) {
 		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");

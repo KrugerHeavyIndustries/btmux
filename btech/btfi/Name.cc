@@ -57,19 +57,19 @@ DN_VocabTable::DynamicNameEntry::acquireIndex()
 	// simplest way to ensure this is to only use interned getEntry()
 	// components with names, never createEntry() components.
 
-	if (value.pfx_part.isValid()
+	if (value.pfx_part
 	    && (!value.pfx_part.hasIndex()
 	        || value.pfx_part.getIndex() == FI_VOCAB_INDEX_NULL)) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
-	if (value.nsn_part.isValid()
+	if (value.nsn_part
 	    && (!value.nsn_part.hasIndex()
 	        || value.nsn_part.getIndex() == FI_VOCAB_INDEX_NULL)) {
 		return FI_VOCAB_INDEX_NULL;
 	}
 
-	if (!value.local_part.hasIndex()
+	if (!value.local_part
 	    || value.local_part.getIndex() == FI_VOCAB_INDEX_NULL) {
 		return FI_VOCAB_INDEX_NULL;
 	}
