@@ -30,6 +30,11 @@ namespace FI {
  * section 8.5.3.  Processing rules are defined in section 7.15 and 7.16.
  */
 
+DN_VocabTable::DN_VocabTable()
+: DynamicTypedVocabTable<value_type> (false, FI_ONE_MEG)
+{
+}
+
 // Resolving a qualified name to a name surrogate index is a somewhat
 // complicated process, described in section 7.16.
 FI_VocabIndex

@@ -1,5 +1,6 @@
 #include "autoconf.h"
 
+#include <cstring>
 #include <iostream>
 
 #include "encalg.h"
@@ -12,6 +13,12 @@ using std::cerr;
 using std::endl;
 
 using namespace BTech::FI;
+
+inline bool
+operator != (const FI_EncodingAlgorithm& lhs, const FI_EncodingAlgorithm& rhs)
+{
+	return memcmp(&lhs, &rhs, sizeof(FI_EncodingAlgorithm)) != 0;
+}
 
 namespace {
 
@@ -69,8 +76,8 @@ run_test()
 		    "Incorrect indexes assigned");
 	}
 
-	if (ra_vt1[idx1] != "hello world"
-	    || ra_vt2[idx2] != "how now brown cow") {
+	if (*ra_vt1[idx1] != "hello world"
+	    || *ra_vt2[idx2] != "how now brown cow") {
 		die("RA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -123,34 +130,16 @@ run_test()
 	//
 	// Test encoding algorithm tables.
 	//
-	try {
-		ea_vt1.createEntry(0);
-		ea_vt2.createEntry(0);
-
-		die("EA_VocabTable::createEntry(FI_EncodingAlgorithm *)",
-		    "Didn't throw UnsupportedOperationException");
-	} catch (const UnsupportedOperationException& e) {
-	}
-
-	try {
-		ea_vt1.getEntry(0);
-		ea_vt2.getEntry(0);
-
-		die("EA_VocabTable::getEntry(FI_EncodingAlgorithm *)",
-		    "Didn't throw UnsupportedOperationException");
-	} catch (const UnsupportedOperationException& e) {
-	}
-
-	if (ea_vt2[1] != &fi_ea_hexadecimal
-	    || ea_vt2[2] != &fi_ea_base64
-	    || ea_vt2[3] != &fi_ea_short
-	    || ea_vt2[4] != &fi_ea_int
-	    || ea_vt2[5] != &fi_ea_long
-	    || ea_vt2[6] != &fi_ea_boolean
-	    || ea_vt2[7] != &fi_ea_float
-	    || ea_vt2[8] != &fi_ea_double
-	    || ea_vt2[9] != &fi_ea_uuid
-	    || ea_vt2[10] != &fi_ea_cdata) {
+	if (*ea_vt2[1] != fi_ea_hexadecimal
+	    || *ea_vt2[2] != fi_ea_base64
+	    || *ea_vt2[3] != fi_ea_short
+	    || *ea_vt2[4] != fi_ea_int
+	    || *ea_vt2[5] != fi_ea_long
+	    || *ea_vt2[6] != fi_ea_boolean
+	    || *ea_vt2[7] != fi_ea_float
+	    || *ea_vt2[8] != fi_ea_double
+	    || *ea_vt2[9] != fi_ea_uuid
+	    || *ea_vt2[10] != fi_ea_cdata) {
 		die("EA_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -189,14 +178,19 @@ run_test()
 		    "Incorrect indexes assigned");
 	}
 
-	if (ds_vt1[FI_VOCAB_INDEX_NULL] != ""
-	    || ds_vt1[idx1] != "how"
-	    || ds_vt2[idx2] != "now://brown"
-	    || ds_vt3[idx3] != "cow") {
+	if (*ds_vt1[FI_VOCAB_INDEX_NULL] != ""
+	    || *ds_vt1[idx1] != "how"
+	    || *ds_vt2[idx2] != "now://brown"
+	    || *ds_vt3[idx3] != "cow") {
 		die("DS_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
+	fprintf(stderr, "%d %d %d %d\n",
+	        ds_vt1.getEntry("how").getIndex(),
+	        ds_vt2.getEntry("now://brown").getIndex(),
+	        ds_vt3.createEntry("cow").getIndex(),
+	        ds_vt3.getEntry("cow").getIndex());
 	if (ds_vt1.getEntry("how").getIndex() != idx1
 	    || ds_vt2.getEntry("now://brown").getIndex() != idx2
 	    || ds_vt3.createEntry("cow").getIndex() != (idx3 + 1)
@@ -232,12 +226,12 @@ run_test()
 	PFX_DS_VocabTable pfx_vt;
 	NSN_DS_VocabTable nsn_vt;
 
-	if (pfx_vt[FI_PFX_XML] != "xml") {
+	if (*pfx_vt[FI_PFX_XML] != "xml") {
 		die("PFX_DS_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
 
-	if (nsn_vt[FI_NSN_XML] != "http://www.w3.org/XML/1998/namespace") {
+	if (*nsn_vt[FI_NSN_XML] != "http://www.w3.org/XML/1998/namespace") {
 		die("NSN_DS_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}
@@ -274,12 +268,12 @@ run_test()
 		    "Incorrect indexes assigned");
 	}
 
-	if (dn_vt1[idx1].pfx_part.getValue() != pfx_ref.getValue()
-	    || dn_vt1[idx1].nsn_part.getValue() != nsn_ref.getValue()
-	    || dn_vt2[idx1].local_part.getValue() != local_ref.getValue()
-	    || dn_vt2[idx2].pfx_part.isValid()
-	    || dn_vt2[idx2].nsn_part.isValid()
-	    || dn_vt2[idx2].local_part.getValue() != local_ref.getValue()) {
+	if (*dn_vt1[idx1]->pfx_part != *pfx_ref
+	    || *dn_vt1[idx1]->nsn_part != *nsn_ref
+	    || *dn_vt2[idx1]->local_part != *local_ref
+	    || dn_vt2[idx2]->pfx_part.isValid()
+	    || dn_vt2[idx2]->nsn_part.isValid()
+	    || *dn_vt2[idx2]->local_part != *local_ref) {
 		die("DN_VocabTable[FI_VocabIndex]",
 		    "Forward mapping failed");
 	}

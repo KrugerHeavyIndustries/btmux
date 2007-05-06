@@ -5,8 +5,10 @@ libbtfi_la_SOURCES = \
 	sax.h  encutil.hh Document.hh Element.hh Attributes.hh \
 	Name.cc         Value.cc          MutableAttributes.cc \
 	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
-	Vocabulary.cc                            encalg.c stream.c common.c \
-	Vocabulary.hh VocabTable.hh Exception.hh encalg.h stream.h common.h
+	Vocabulary.cc VocabSimple.cc \
+	Vocabulary.hh VocabSimple.hh VocabTable.hh \
+	encalg.c stream.c common.c \
+	encalg.h stream.h common.h ObjectPool.hh Exception.hh
 
 check_PROGRAMS = saxtest vocabtest
 

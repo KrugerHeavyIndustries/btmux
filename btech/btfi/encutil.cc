@@ -97,7 +97,7 @@ write_identifier(FI_OctetStream *stream,
 	}
 
 	// Use literal rules (C.13.3).
-	const CharString& value = id_str.getValue();
+	const CharString& value = *id_str;
 
 	// Write '0' + C.22.
 	if (!fi_write_stream_bits(stream, 1, 0)) {
@@ -231,7 +231,7 @@ write_name_bit_2(FI_OctetStream *stream,
 	}
 
 	// Use literal-qualified-name (C.17.3).
-	const Name& literal = name.getValue();
+	const Name& literal = *name;
 
 	// Write identification (C.17.3: 1111 0).
 	// Write prefix and namespace-name presence (C.17.3.1).
@@ -288,7 +288,7 @@ write_name_bit_3(FI_OctetStream *stream,
 	}
 
 	// Use literal-qualified-name (C.18.3).
-	const Name& literal = name.getValue();
+	const Name& literal = *name;
 
 	// Write identification (C.18.3: 1111).
 	// Write prefix and namespace-name presence (C.18.3.1).

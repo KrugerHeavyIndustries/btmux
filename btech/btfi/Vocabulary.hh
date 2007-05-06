@@ -1,106 +1,51 @@
 /*
- * Module implementing the specific vocabulary tables required by X.891.
+ * Module implementing the vocabulary data structure required by X.891.
  */
 
 #ifndef BTECH_FI_VOCABULARY_HH
 #define BTECH_FI_VOCABULARY_HH
 
-#include "VocabTable.hh"
-
-#include "common.h"
-#include "encalg.h"
+#include "VocabSimple.hh"
+#include "Name.hh"
 
 
 namespace BTech {
 namespace FI {
 
 //
-// Restricted alphabet table implementation.
+// A vocabulary consisting of the entire set of vocabulary tables.
 //
-class RA_VocabTable : public TypedVocabTable<CharString> {
+class Vocabulary {
 public:
-	RA_VocabTable ();
+	void clear ();
 
-	const TypedEntryRef getEntry (const_value_ref value);
+	const PFX_DS_VocabTable::TypedEntryRef getPrefix (const char *pfx);
+	const NSN_DS_VocabTable::TypedEntryRef getNamespace (const char *nsn);
+	const DS_VocabTable::TypedEntryRef getLocalName (const char *local);
 
-	const_value_ref operator [] (FI_VocabIndex idx) const;
+	const DN_VocabTable::TypedEntryRef getElementName (const Name& name);
+	const DN_VocabTable::TypedEntryRef getAttributeName (const Name& name);
 
 private:
-	const TypedEntryRef NUMERIC_ALPHABET;
-	const TypedEntryRef DATE_AND_TIME_ALPHABET;
+	RA_VocabTable restricted_alphabets;
+	EA_VocabTable encoding_algorithms;
 
-	static TypedEntry *get_numeric_alphabet ();
-	static TypedEntry *get_date_and_time_alphabet();
-}; // class RA_VocabTable
+	PFX_DS_VocabTable prefixes;
+	NSN_DS_VocabTable namespace_names;
+	DS_VocabTable local_names;
 
-//
-// Encoding algorithm table implementation.
-//
-class EA_VocabTable : public TypedVocabTable<const FI_EncodingAlgorithm *> {
-public:
-	EA_VocabTable ();
+	DS_VocabTable other_ncnames;
+	DS_VocabTable other_uris;
 
-	const_value_ref operator [] (FI_VocabIndex idx) const;
+	DS_VocabTable attribute_values;
+	DS_VocabTable content_character_chunks;
+	DS_VocabTable other_strings;
 
-protected:
-	DynamicTypedEntry *createTypedEntry (const_value_ref value);
-}; // class EA_VocabTable
-
-//
-// Dynamic string table implementation.
-//
-class DS_VocabTable : public TypedVocabTable<CharString> {
-public:
-	DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-protected:
-	DS_VocabTable (FI_VocabIndex initial_last_idx);
-
-private:
-	const TypedEntryRef EMPTY_STRING;
-
-	static TypedEntry *get_empty_string ();
-}; // class DS_VocabTable
-
-//
-// Prefix table implementation.
-//
-class PFX_DS_VocabTable : public DS_VocabTable {
-public:
-	PFX_DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-private:
-	const TypedEntryRef XML_PREFIX;
-
-	static TypedEntry *get_xml_prefix ();
-}; // class PFX_DS_VocabTable
-
-//
-// Namespace name table implementation.
-//
-class NSN_DS_VocabTable : public DS_VocabTable {
-public:
-	NSN_DS_VocabTable ();
-
-	const TypedEntryRef getEntry (const_value_ref value);
-
-	const_value_ref operator [] (FI_VocabIndex idx) const;
-
-private:
-	const TypedEntryRef XML_NAMESPACE;
-
-	static TypedEntry *get_xml_namespace ();
-}; // class NSN_DS_VocabTable
+	DN_VocabTable element_name_surrogates;
+	DN_VocabTable attribute_name_surrogates;
+}; // class Vocabulary
 
 } // namespace FI
 } // namespace BTech
 
-#endif /* !BTECH_FI_VOCABULARY_HH */
+#endif // !BTECH_FI_VOCABULARY_HH

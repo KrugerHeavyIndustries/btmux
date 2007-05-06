@@ -63,7 +63,7 @@ bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
 
 Document::Document()
 : start_flag (false), stop_flag (false),
-  BT_NAMESPACE (namespace_names.getEntry(BT_NAMESPACE_URI))
+  BT_NAMESPACE (vocabulary.getNamespace(BT_NAMESPACE_URI))
 {
 }
 
@@ -87,8 +87,9 @@ void
 Document::write(FI_OctetStream *stream)
 {
 	if (start_flag) {
-		// Ensure vocabulary tables are cleared.
-		clearVocab();
+		// Ensure state is cleared.
+		element_stack.clear();
+		vocabulary.clear();
 
 		// Write document header.
 		write_header(stream);
@@ -103,11 +104,14 @@ Document::write(FI_OctetStream *stream)
 		// Write document trailer.
 		write_trailer(stream);
 
-		// Clear vocabulary tables, to save some memory.  If we're
-		// caching any entries, they'll remain interned, so we won't
-		// constantly be reallocating the same entries.  This will
-		// reset their vocabulary indexes, however, as intended.
-		clearVocab();
+		// Clear state now, to save some memory.  Note that for the
+		// vocabulary tables, any cached entries that still have an
+		// EntryRef to them will remain interned, so they won't be
+		// constantly reallocated on each run (but the indexes will be
+		// reset, as intended).
+		assert(!hasElements());
+		element_stack.clear();
+		vocabulary.clear();
 	} else {
 		throw IllegalStateException ();
 	}
@@ -119,8 +123,9 @@ Document::read(FI_OctetStream *stream)
 	if (start_flag) {
 		switch (r_state) {
 		case RESET_READ_STATE:
-			// Ensure vocabulary tables are cleared.
-			clearVocab();
+			// Ensure state is cleared.
+			element_stack.clear();
+			vocabulary.clear();
 
 			r_state = MAIN_READ_STATE;
 			r_header_state = RESET_HEADER_STATE;
@@ -156,12 +161,14 @@ Document::read(FI_OctetStream *stream)
 			// FALLTHROUGH
 
 		case NEXT_PART_READ_STATE:
-			// Clear vocabulary tables, to save some memory.  If
-			// we're caching any entries, they'll remain interned,
-			// so we won't constantly be reallocating the same
-			// entries.  This will reset their vocabulary indexes,
-			// however, as intended.
-			clearVocab();
+			// Clear state now, to save some memory.  Note that for
+			// the vocabulary tables, any cached entries that still
+			// have an EntryRef to them will remain interned, so
+			// they won't be constantly reallocated on each run
+			// (but the indexes will be reset, as intended).
+			assert(!hasElements());
+			element_stack.clear();
+			vocabulary.clear();
 			break;
 		}
 	} else {
@@ -182,37 +189,15 @@ Document::read(FI_OctetStream *stream)
 const DN_VocabTable::TypedEntryRef
 Document::getElementName(const char *name)
 {
-	const Name element_name (local_names.getEntry(name), BT_NAMESPACE);
-	return element_name_surrogates.getEntry(element_name);
+	const Name element_name (vocabulary.getLocalName(name), BT_NAMESPACE);
+	return vocabulary.getElementName(element_name);
 }
 
 const DN_VocabTable::TypedEntryRef
 Document::getAttributeName(const char *name)
 {
-	const Name attribute_name (local_names.getEntry(name));
-	return attribute_name_surrogates.getEntry(attribute_name);
-}
-
-
-void
-Document::clearVocab()
-{
-	restricted_alphabets.clear();
-	encoding_algorithms.clear();
-
-	prefixes.clear();
-	namespace_names.clear();
-	local_names.clear();
-
-	other_ncnames.clear();
-	other_uris.clear();
-
-	attribute_values.clear();
-	content_character_chunks.clear();
-	other_strings.clear();
-
-	element_name_surrogates.clear();
-	attribute_name_surrogates.clear();
+	const Name attribute_name (vocabulary.getLocalName(name));
+	return vocabulary.getAttributeName(attribute_name);
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
@@ -519,8 +504,7 @@ read_xml_decl(FI_OctetStream *stream, FI_Length& r_len_state)
 	// of the Document section.
 
 	// Success, advance cursor.
-	avail_len = fi_try_read_stream(stream, 0, ii, ii);
-	assert(avail_len >= ii); // this always works, really
+	fi_advance_stream_cursor(stream, ii);
 	return true;
 }
 

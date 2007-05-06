@@ -42,7 +42,6 @@
 #include "Name.hh"
 #include "Value.hh"
 #include "MutableAttributes.hh"
-#include "Vocabulary.hh"
 
 #include "Element.hh"
 
@@ -217,7 +216,7 @@ Element::write_namespace_attributes(FI_OctetStream *stream)
 {
 	assert(fi_get_stream_num_bits(stream) == 2);
 
-	if (!doc.hasElements()) {
+	if (doc.hasElements()) {
 		// We only write the BT_NAMESPACE default namespace at root.
 		return;
 	}
@@ -301,7 +300,6 @@ bool
 Element::read_start(FI_OctetStream *stream)
 {
 	const FI_Octet *r_buf;
-	FI_Length avail_len;
 	FI_Octet bits;
 
 redispatch:
@@ -332,8 +330,7 @@ redispatch:
 		}
 
 		// Consume namespace attributes presence bits (C.3.4.1).
-		avail_len = fi_try_read_stream(stream, 0, 1, 1);
-		assert(avail_len >= 1); // this always works, really
+		fi_advance_stream_cursor(stream, 1);
 
 		r_element_state = NS_DECL_ELEMENT_STATE;
 		// FALLTHROUGH
@@ -377,7 +374,6 @@ Element::read_end(FI_OctetStream *stream)
 {
 	// Read element terminator bits (C.3.8).
 	const FI_Octet *r_buf;
-	FI_Length avail_len;
 	FI_Octet bits;
 
 	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
@@ -407,8 +403,7 @@ Element::read_end(FI_OctetStream *stream)
 			throw IllegalStateException ();
 		}
 
-		avail_len = fi_try_read_stream(stream, 0, 1, 1);
-		assert(avail_len >= 1); // this always works, really
+		fi_advance_stream_cursor(stream, 1);
 		break;
 
 	default:
@@ -422,9 +417,44 @@ Element::read_end(FI_OctetStream *stream)
 bool
 Element::read_namespace_attributes(FI_OctetStream *stream)
 {
+	if (doc.hasElements()) {
+		// We only allow a BT_NAMESPACE default namespace at root.
+		throw UnsupportedOperationException ();
+	}
+
+	// Write namespace-attributes using C.12 (C.3.4.2: 110011).
+	// XXX: We only have 1 namespace-attribute, which corresponds to index
+	// 2, our default namespace, with no prefix.
+	// FIXME: This needs to be looked up, not hardcoded.
+	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,0,0,1,1,,))) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
+
+	if (!write_namespace_attribute(stream, doc.BT_NAMESPACE)) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
+
+	// Write termination (C.3.4.3: 1111, 0000 00).
+	assert(fi_get_stream_num_bits(stream) == 0);
+
+	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
+	if (!w_buf) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
+
+	w_buf[0] = FI_BITS(1,1,1,1, 0,0,0,0);
+
+	if (!fi_write_stream_bits(stream, 2, FI_BITS(0,0,,,,,,))) {
+		// TODO: Assign an exception for stream errors.
+		throw Exception ();
+	}
 	// FIXME
 	fputs("reading namespace-attributes\n", stderr);
-	return false;
+
+	return true;
 }
 
 bool

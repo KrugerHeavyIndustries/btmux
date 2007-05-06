@@ -46,8 +46,8 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libbtfi_la_LIBADD =
 am_libbtfi_la_OBJECTS = sax.lo encutil.lo Document.lo Element.lo \
-	Name.lo Value.lo MutableAttributes.lo Vocabulary.lo encalg.lo \
-	stream.lo common.lo
+	Name.lo Value.lo MutableAttributes.lo Vocabulary.lo \
+	VocabSimple.lo encalg.lo stream.lo common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
 am_saxtest_OBJECTS = saxtest.$(OBJEXT) saxwrite.$(OBJEXT) \
 	saxread.$(OBJEXT)
@@ -196,8 +196,10 @@ libbtfi_la_SOURCES = \
 	sax.h  encutil.hh Document.hh Element.hh Attributes.hh \
 	Name.cc         Value.cc          MutableAttributes.cc \
 	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
-	Vocabulary.cc                            encalg.c stream.c common.c \
-	Vocabulary.hh VocabTable.hh Exception.hh encalg.h stream.h common.h
+	Vocabulary.cc VocabSimple.cc \
+	Vocabulary.hh VocabSimple.hh VocabTable.hh \
+	encalg.c stream.c common.c \
+	encalg.h stream.h common.h ObjectPool.hh Exception.hh
 
 saxtest_SOURCES = tests/saxtest.cc tests/saxwrite.c tests/saxread.c
 saxtest_LDADD = libbtfi.la
@@ -272,6 +274,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MutableAttributes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Value.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/VocabSimple.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vocabulary.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encalg.Plo@am__quote@

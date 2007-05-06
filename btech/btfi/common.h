@@ -53,6 +53,7 @@ typedef FI_UInt32 FI_PInt32;		/* 1 to at least 2^32 */
 typedef enum {
 	FI_ERROR_NONE,			/* No error */
 	FI_ERROR_UNKNOWN,		/* Unknown error */
+	FI_ERROR_UNSUPPORTED,		/* Unsupported operation */
 	FI_ERROR_OOM,			/* Out of memory */
 	FI_ERROR_EOS,			/* End of stream */
 	FI_ERROR_NOFILE,		/* File not found */

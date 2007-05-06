@@ -11,7 +11,6 @@
 #include "common.h"
 #include "stream.h"
 
-#include "Name.hh"
 #include "Vocabulary.hh"
 
 namespace BTech {
@@ -73,7 +72,6 @@ protected:
 	}
 
 private:
-	void clearVocab ();
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 	bool writeVocab (FI_OctetStream *stream);
 #endif // FI_USE_INITIAL_VOCABULARY
@@ -86,23 +84,7 @@ private:
 
 	std::vector<DN_VocabTable::TypedEntryRef> element_stack;
 
-	// Fast Infoset vocabulary tables.  Most aren't used yet.
-	RA_VocabTable restricted_alphabets;
-	EA_VocabTable encoding_algorithms;
-
-	PFX_DS_VocabTable prefixes;
-	NSN_DS_VocabTable namespace_names;
-	DS_VocabTable local_names;
-
-	DS_VocabTable other_ncnames;
-	DS_VocabTable other_uris;
-
-	DS_VocabTable attribute_values;
-	DS_VocabTable content_character_chunks;
-	DS_VocabTable other_strings;
-
-	DN_VocabTable element_name_surrogates;
-	DN_VocabTable attribute_name_surrogates;
+	Vocabulary vocabulary;
 
 	// Write subroutines.
 	void write_header (FI_OctetStream *stream);

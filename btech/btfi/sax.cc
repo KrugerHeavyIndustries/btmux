@@ -508,6 +508,14 @@ read_object(FI_Parser *parser, Serializable& object)
 		// Try to unserialize the object.
 		try {
 			object.read(parser->buffer);
+		} catch (const IllegalStateException& e) {
+			// FIXME: Extract FI_ErrorInfo data from Exception.
+			FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
+			return false;
+		} catch (const UnsupportedOperationException& e) {
+			// FIXME: Extract FI_ErrorInfo data from Exception.
+			FI_SET_ERROR(parser->error_info, FI_ERROR_UNSUPPORTED);
+			return false;
 		} catch (const Exception& e) {
 			// FIXME: Extract FI_ErrorInfo data from Exception.
 			FI_SET_ERROR(parser->error_info, FI_ERROR_EXCEPTION);

@@ -8,7 +8,7 @@
 #include "common.h"
 #include "names.h"
 
-#include "Vocabulary.hh"
+#include "VocabSimple.hh"
 
 namespace BTech {
 namespace FI {
@@ -57,19 +57,23 @@ public:
 /*
  * Dynamic name table.
  */
-class DN_VocabTable : public TypedVocabTable<Name> {
+class DN_VocabTable : public DynamicTypedVocabTable<Name> {
+public:
+	DN_VocabTable ();
+
 protected:
 	class DynamicNameEntry;
 
 	// Create a new DynamicTypedEntry for a value.
-	DynamicTypedEntry *createTypedEntry (const_value_ref value) {
-		return new DynamicNameEntry (*this, value);
+	DynamicTypedEntry *createEntryObject (const EntryPoolPtr& value_ptr) {
+		return new DynamicNameEntry (*this, value_ptr);
 	}
 
 	class DynamicNameEntry : public DynamicTypedEntry {
 	public:
-		DynamicNameEntry (DN_VocabTable& table, const_value_ref value)
-		: DynamicTypedEntry (table, value) {}
+		DynamicNameEntry (DN_VocabTable& owner,
+		                  const EntryPoolPtr& value_ptr)
+		: DynamicTypedEntry (owner, value_ptr) {}
 
 	protected:
 		FI_VocabIndex acquireIndex ();

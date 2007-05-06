@@ -40,7 +40,9 @@ void fi_clear_stream_error(FI_OctetStream *stream);
 FI_Length fi_get_stream_free_length(const FI_OctetStream *stream);
 FI_Length fi_get_stream_needed_length(const FI_OctetStream *stream);
 void fi_set_stream_needed_length(FI_OctetStream *stream, FI_Length length);
+
 void fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length);
+void fi_advance_stream_cursor(FI_OctetStream *stream, FI_Length length);
 
 FI_Length fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr);
 

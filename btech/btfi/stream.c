@@ -172,6 +172,9 @@ fi_set_stream_needed_length(FI_OctetStream *stream, FI_Length length)
 void
 fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length)
 {
+	// Correct code shouldn't rely on clamping behavior.
+	assert(length <= (stream->length - stream->cursor));
+
 	if ((stream->length - stream->cursor) <= length) {
 		/* Empty buffer.  As an optimization, reset the cursor, too.  */
 		stream->cursor = 0;
@@ -179,6 +182,30 @@ fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length)
 	} else {
 		stream->length -= length;
 	}
+}
+
+/*
+ * Advances the stream read cursor without returning the contents.  Trying to
+ * advance past the end of the stream will silently clamp to the end of the
+ * buffer.
+ *
+ * This operation may invalidate buffer pointers.
+ */
+void
+fi_advance_stream_cursor(FI_OctetStream *stream, FI_Length length)
+{
+	// Correct code shouldn't rely on clamping behavior.
+	assert(length <= (stream->length - stream->cursor));
+
+	if ((stream->length - stream->cursor) <= length) {
+		/* Empty buffer.  As an optimization, reset the cursor, too.  */
+		stream->cursor = 0;
+		stream->length = 0;
+	} else {
+		stream->cursor += length;
+	}
+
+	shrink_buffer(stream);
 }
 
 /*
