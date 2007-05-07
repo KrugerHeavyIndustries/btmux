@@ -11,6 +11,7 @@
 #include "common.h"
 #include "stream.h"
 
+#include "Exception.hh"
 #include "Vocabulary.hh"
 
 namespace BTech {
@@ -62,10 +63,20 @@ protected:
 	}
 
 	void pushElement (const DN_VocabTable::TypedEntryRef& name) {
+		if (!hasElements()) {
+			if (r_saw_root_element) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			} else {
+				r_saw_root_element = true;
+			}
+		}
+
 		element_stack.push_back(name);
 	}
 
 	const DN_VocabTable::TypedEntryRef popElement () {
+		// TODO: Throw our own kind of exception here.
 		const DN_VocabTable::TypedEntryRef ref = element_stack.back();
 		element_stack.pop_back();
 		return ref;
@@ -107,6 +118,8 @@ private:
 		XML_DECL_HEADER_STATE,
 		MAIN_HEADER_STATE
 	} r_header_state;
+
+	bool r_saw_root_element;
 
 	FI_Length r_len_state;
 

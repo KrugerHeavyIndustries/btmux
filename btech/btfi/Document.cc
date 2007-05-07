@@ -63,7 +63,7 @@ bool write_dn_table(FI_OctetStream *, const DN_VocabTable&);
 
 Document::Document()
 : start_flag (false), stop_flag (false),
-  BT_NAMESPACE (vocabulary.getNamespace(BT_NAMESPACE_URI))
+  BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 }
 
@@ -143,11 +143,17 @@ Document::read(FI_OctetStream *stream)
 		case NEXT_PART_READ_STATE:
 			// Determine next child type.
 			read_next(stream);
+			r_saw_root_element = false;
 			break;
 		}
 	} else if (stop_flag) {
 		switch (r_state) {
 		case RESET_READ_STATE:
+			if (!r_saw_root_element) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
 			r_state = MAIN_READ_STATE;
 			// FALLTHROUGH
 
@@ -189,15 +195,16 @@ Document::read(FI_OctetStream *stream)
 const DN_VocabTable::TypedEntryRef
 Document::getElementName(const char *name)
 {
-	const Name element_name (vocabulary.getLocalName(name), BT_NAMESPACE);
-	return vocabulary.getElementName(element_name);
+	const Name element_name (vocabulary.local_names.getEntry(name),
+	                         BT_NAMESPACE);
+	return vocabulary.element_name_surrogates.getEntry(element_name);
 }
 
 const DN_VocabTable::TypedEntryRef
 Document::getAttributeName(const char *name)
 {
-	const Name attribute_name (vocabulary.getLocalName(name));
-	return vocabulary.getAttributeName(attribute_name);
+	const Name attribute_name (vocabulary.local_names.getEntry(name));
+	return vocabulary.attribute_name_surrogates.getEntry(attribute_name);
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)

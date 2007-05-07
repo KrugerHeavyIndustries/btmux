@@ -19,14 +19,7 @@ class Vocabulary {
 public:
 	void clear ();
 
-	const PFX_DS_VocabTable::TypedEntryRef getPrefix (const char *pfx);
-	const NSN_DS_VocabTable::TypedEntryRef getNamespace (const char *nsn);
-	const DS_VocabTable::TypedEntryRef getLocalName (const char *local);
-
-	const DN_VocabTable::TypedEntryRef getElementName (const Name& name);
-	const DN_VocabTable::TypedEntryRef getAttributeName (const Name& name);
-
-private:
+	// There's no real need to protect these from sane API users.
 	RA_VocabTable restricted_alphabets;
 	EA_VocabTable encoding_algorithms;
 

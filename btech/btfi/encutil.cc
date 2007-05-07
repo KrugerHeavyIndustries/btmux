@@ -6,6 +6,7 @@
 
 #include <string>
 #include <cassert>
+#include <cstdio> // DEBUG
 
 #include "stream.h"
 
@@ -23,6 +24,18 @@ namespace FI {
 // TODO: Although the spec talks about bits, with some careful analysis, we can
 // work just in octets, but we may need to pass around the values of some bits
 // if they're not just padding.
+//
+
+//
+// TODO: Most of our parsing routines are designed to repeatedly re-parse the
+// stream, until it can successfully parse the whole value.  This isn't
+// strictly necessary, but the alternative requires maintaining more state.
+//
+// The performance impact should be negligible in most cases, so we've elected
+// to adopt the simplicity of a reduced state design.
+//
+// Should we decide to add more state, I suggest moving all these routines into
+// an Encoder/Decoder class, similar to the reference Java implementation.
 //
 
 // C.4
@@ -64,6 +77,51 @@ write_namespace_attribute(FI_OctetStream *stream,
 	// No prefix to encode using C.13 (C.12.5).
 	// namespace-name encoded using C.13 (C.12.6).
 	if (!write_identifier(stream, ns_name)) {
+		return false;
+	}
+
+	return true;
+}
+
+bool
+read_namespace_attribute(FI_OctetStream *stream, FI_Length& adv_len,
+                         Vocabulary& vocabulary,
+                         NSN_DS_VocabTable::TypedEntryRef& ns_name)
+{
+	assert(adv_len == 0);
+
+	// This is currently hard-coded to check that the namespace attribute
+	// has no prefix, and matches ns_name.
+
+	// Peek at first two bits.
+	const FI_Octet *r_buf;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
+		return false;
+	}
+
+	// Check that prefix presence bit hasn't been set (C.12.3).
+	if (r_buf[0] & FI_BIT_7) {
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	// Check that the namespace-name presence bit has been set (C.12.4).
+	if (!(r_buf[0] & FI_BIT_8)) {
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	// Don't parse prefix using C.13 (C.12.5).
+	// Parse namespace-name using C.13 (C.12.6).
+	// TODO: Be able to cast ns_name down like this, and assign any
+	// DS_VocabTable value to it, somewhat breaks type safety.  Add some
+	// checks in the TypedEntryRef assignment/copy operators to make this,
+	// or don't derive from DS_VocabTable.  Or just roll with it. :-)
+	adv_len = 1;
+
+	if (!read_identifier(stream, adv_len,
+	                     vocabulary.namespace_names, ns_name)) {
 		return false;
 	}
 
@@ -122,6 +180,57 @@ write_identifier(FI_OctetStream *stream,
 	// Enter identifying string into vocabulary table (7.13.7).
 	if (!has_idx) {
 		id_str.getIndex();
+	}
+
+	return true;
+}
+
+bool
+read_identifier(FI_OctetStream *stream, FI_Length& adv_len,
+                DS_VocabTable& string_table, DS_VocabTable::TypedEntryRef& id)
+{
+	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+
+	// Peek at discriminant bit.
+	const FI_Octet *r_buf;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, adv_len + 1) <= adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	if (r_buf[0] & FI_BIT_1) {
+		// Read string-index using C.25 (C.13.4).
+		FI_PInt20 idx;
+
+		if (!read_pint20_bit_2(stream, adv_len, idx)) {
+			return false;
+		}
+
+		assert(idx < FI_ONE_MEG);
+
+		// Resolve by string-index.  This will throw an
+		// IndexOutOfBoundsException if we parsed a bogus index.
+		id = string_table[FI_PINT_TO_UINT(idx)];
+	} else {
+		// Read literal-character-string using C.22 (C.13.3).
+		FI_PInt20 len;
+
+		r_buf = read_non_empty_octets_bit_2(stream, adv_len, len);
+		if (!r_buf) {
+			return false;
+		}
+
+		// Construct CharString from buffer contents.
+		// XXX: FI_PINT_TO_UINT() doesn't overflow because we already
+		// used it to allocate the read buffer we're using.
+		CharString literal (reinterpret_cast<const char *>(r_buf),
+		                    FI_PINT_TO_UINT(len));
+
+		// Don't forget to try and add a string index.
+		id = string_table.getEntry(literal);
+		id.getIndex();
 	}
 
 	return true;
@@ -324,8 +433,7 @@ write_name_bit_3(FI_OctetStream *stream,
 
 bool
 read_name_bit_3(FI_OctetStream *stream,
-                const DN_VocabTable::TypedEntryRef& name,
-                FI_Length& r_len_state)
+                const DN_VocabTable::TypedEntryRef& name)
 {
 	// FIXME
 	return false;
@@ -522,6 +630,109 @@ write_non_empty_octets_bit_2(FI_OctetStream *stream, FI_PInt32 len)
 	return fi_get_stream_write_buffer(stream, buf_len);
 }
 
+const FI_Octet *
+read_non_empty_octets_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
+                            FI_PInt32& len)
+{
+	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+
+	// Read string length (C.22.3).
+	const FI_Octet *r_buf;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	FI_Length tmp_len;
+
+	if (r_buf[0] & FI_BIT_2) {
+		switch (r_buf[0] & FI_BITS(,/*1*/,1,1,1,1,1,1)) {
+		case FI_BITS(,/*1*/,0, 0,0,0,0,0):
+			// [65,320] (C.22.3.2)
+			adv_len += 1;
+			next_adv_len = adv_len + 1;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_len = r_buf[0];
+
+			tmp_len += FI_UINT_TO_PINT(65);
+			break;
+
+		case FI_BITS(,/*1*/,1, 0,0,0,0,0):
+			// [321,2^32] (C.22.3.3)
+			adv_len += 1;
+			next_adv_len = adv_len + 4;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_len = r_buf[0] << 24;
+			tmp_len |= r_buf[1] << 16;
+			tmp_len |= r_buf[2] << 8;
+			tmp_len |= r_buf[3];
+
+			if (tmp_len > FI_PINT32_MAX - FI_UINT_TO_PINT(321)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_len += FI_UINT_TO_PINT(321);
+			break;
+
+		default:
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+	} else {
+		// [1,64] (C.22.3.1)
+		tmp_len = r_buf[0] & FI_BITS(,,1,1,1,1,1,1);
+
+		tmp_len += FI_UINT_TO_PINT(1);
+	}
+
+	// Compute octet string length, being careful to check for overflows.
+
+	// Note that FI_PINT_TO_UINT(tmp_len) should give a value which is at
+	// least 1, so here underflow is <=, rather than <.  This accounts for
+	// the possibility that FI_PINT_TO_UINT() itself will overflow.
+	if (next_adv_len + FI_PINT_TO_UINT(tmp_len) <= next_adv_len) {
+		// Adding tmp_len to next_adv_len would overflow.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	// Read string octets.
+	adv_len = next_adv_len;
+	next_adv_len += FI_PINT_TO_UINT(tmp_len);
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len; // properly used pointers can't overflow
+
+	// Success.
+	adv_len = next_adv_len;
+	len = tmp_len;
+	return r_buf;
+}
+
 // C.23
 // Note that this doesn't actually write the octets, but leaves that up to the
 // caller to do in the buffer provided.
@@ -639,6 +850,88 @@ write_pint20_bit_2(FI_OctetStream *stream, FI_PInt20 val)
 	return true;
 }
 
+bool
+read_pint20_bit_2(FI_OctetStream *stream, FI_Length& adv_len, FI_PInt20& val)
+{
+	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+
+	// Peek at the first few bits to decide how much to read.
+	const FI_Octet *r_buf;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, adv_len + 1) <= adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	// Decode value.
+	FI_Length next_adv_len;
+	FI_PInt20 tmp_val;
+
+	if (r_buf[0] & FI_BIT_2) {
+		if (r_buf[0] & FI_BIT_3) {
+			if (r_buf[0] & FI_BIT_4) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			// [8257,2^20] (C.25.4)
+			next_adv_len = adv_len + 3;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_val = (r_buf[0] & FI_BITS(,,,,1,1,1,1)) << 16;
+			tmp_val |= r_buf[1] << 8;
+			tmp_val |= r_buf[2];
+
+			if (tmp_val > FI_PINT20_MAX - FI_UINT_TO_PINT(8257)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_val += FI_UINT_TO_PINT(8257);
+		} else {
+			// [65,8256] (C.25.3)
+			next_adv_len = adv_len + 2;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_val = (r_buf[0] & FI_BITS(,,,1,1,1,1,1)) << 8;
+			tmp_val |= r_buf[1];
+
+			tmp_val += FI_UINT_TO_PINT(65);
+		}
+	} else {
+		// [1,64] (C.25.2)
+		next_adv_len = adv_len + 1;
+		if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+		    < next_adv_len) {
+			return false;
+		}
+
+		r_buf += adv_len;
+
+		tmp_val = (r_buf[0] & FI_BITS(,,1,1,1,1,1,1));
+
+		tmp_val += FI_UINT_TO_PINT(1);
+	}
+
+	// Success.
+	adv_len = next_adv_len;
+	val = tmp_val;
+	return true;
+}
+
 // C.27
 bool
 write_pint20_bit_3(FI_OctetStream *stream, FI_PInt20 val)
@@ -721,6 +1014,53 @@ write_pint8(FI_OctetStream *stream, FI_PInt8 val)
 	val -= FI_UINT_TO_PINT(1);
 
 	return fi_write_stream_bits(stream, 8, val);
+}
+
+bool
+read_pint8(FI_OctetStream *stream, FI_Length& adv_len, FI_PInt8& val)
+{
+	// TODO: Assert something about adv_len?
+	// XXX: Note that the caller needs to tell us whether we're on bit 5 or
+	// 7, using fi_set_stream_num_bits().
+
+	// Get the next two octets.
+	const FI_Octet *r_buf;
+	FI_PInt8 tmp_val;
+
+	FI_Length next_adv_len = adv_len + 2;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	switch (fi_get_stream_num_bits(stream)) {
+	case 4:
+		// Starting on bit 5.
+		tmp_val = (r_buf[0] & FI_BITS(,,,,1,1,1,1)) << 4;
+		tmp_val |= (r_buf[1] & FI_BITS(1,1,1,1,,,,)) >> 4;
+		break;
+
+	case 6:
+		// Starting on bit 7.
+		tmp_val = (r_buf[0] & FI_BITS(,,,,,,1,1)) << 6;
+		tmp_val |= (r_buf[1] & FI_BITS(1,1,1,1,1,1,,)) >> 2;
+		break;
+
+	default:
+		// Should never happen.
+		throw AssertionFailureException ();
+	}
+
+	// [1,256] (C.29.2).
+	tmp_val += FI_UINT_TO_PINT(1);
+
+	// Success.
+	adv_len = next_adv_len;
+	val = tmp_val;
+	return true;
 }
 
 } // namespace FI
