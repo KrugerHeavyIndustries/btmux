@@ -17,6 +17,10 @@ typedef struct FI_tag_Name FI_Name;
 
 void fi_destroy_name(FI_Name *name);
 
+const char *fi_get_name_prefix(const FI_Name *name);
+const char *fi_get_name_namespace_name(const FI_Name *name);
+const char *fi_get_name_local_name(const FI_Name *name);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif /* __cplusplus */

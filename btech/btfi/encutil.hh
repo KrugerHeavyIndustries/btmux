@@ -20,6 +20,11 @@ bool write_attribute(FI_OctetStream *stream,
                      const DN_VocabTable::TypedEntryRef& name,
                      const Value& value);
 
+bool read_attribute(FI_OctetStream *stream, FI_Length& adv_len,
+                    Vocabulary& vocabulary,
+                    DN_VocabTable::TypedEntryRef& name,
+                    Value& value);
+
 // C.12
 bool write_namespace_attribute(FI_OctetStream *stream,
                                const NSN_DS_VocabTable::TypedEntryRef& ns_name);
@@ -39,6 +44,9 @@ bool read_identifier(FI_OctetStream *stream, FI_Length& adv_len,
 // C.14
 bool write_value_bit_1(FI_OctetStream *stream, const Value& value);
 
+bool read_value_bit_1(FI_OctetStream *stream, FI_Length& adv_len,
+                      Value& value);
+
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 // C.16
 bool write_name_surrogate(FI_OctetStream *stream, const FI_Name *name);
@@ -48,16 +56,23 @@ bool write_name_surrogate(FI_OctetStream *stream, const FI_Name *name);
 bool write_name_bit_2(FI_OctetStream *stream,
                       const DN_VocabTable::TypedEntryRef& name);
 
+bool read_name_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
+                     Vocabulary& vocabulary,
+                     DN_VocabTable::TypedEntryRef& name);
+
 // C.18
 bool write_name_bit_3(FI_OctetStream *stream,
                       const DN_VocabTable::TypedEntryRef& name);
 
-bool read_name_bit_3(FI_OctetStream *stream, FI_Length& av_len,
+bool read_name_bit_3(FI_OctetStream *stream, FI_Length& adv_len,
                      Vocabulary& vocabulary,
                      DN_VocabTable::TypedEntryRef& name);
 
 // C.19
 bool write_encoded_bit_3(FI_OctetStream *stream, const Value& value);
+
+bool read_encoded_bit_3(FI_OctetStream *stream, FI_Length& adv_len,
+                        Value& value);
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
 // C.21
@@ -74,11 +89,17 @@ const FI_Octet *read_non_empty_octets_bit_2(FI_OctetStream *stream,
 // C.23
 FI_Octet *write_non_empty_octets_bit_5(FI_OctetStream *stream, FI_PInt32 len);
 
+const FI_Octet *read_non_empty_octets_bit_5(FI_OctetStream *stream,
+                                            FI_Length& adv_len,
+                                            FI_PInt32& len);
+
 // C.25
 bool write_pint20_bit_2(FI_OctetStream *stream, FI_PInt20 val);
 
 bool read_pint20_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
                        FI_PInt20& val);
+
+// TODO: C.26.  Needed to handle indexed attribute values.
 
 // C.27
 bool write_pint20_bit_3(FI_OctetStream *stream, FI_PInt20 val);

@@ -64,11 +64,11 @@ protected:
 
 	void pushElement (const DN_VocabTable::TypedEntryRef& name) {
 		if (!hasElements()) {
-			if (r_saw_root_element) {
+			if (saw_root_element) {
 				// Not a valid Fast Infoset.
 				throw IllegalStateException ();
 			} else {
-				r_saw_root_element = true;
+				saw_root_element = true;
 			}
 		}
 
@@ -119,7 +119,7 @@ private:
 		MAIN_HEADER_STATE
 	} r_header_state;
 
-	bool r_saw_root_element;
+	bool saw_root_element;
 
 	FI_Length r_len_state;
 

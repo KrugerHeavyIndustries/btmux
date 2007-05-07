@@ -59,6 +59,26 @@ write_attribute(FI_OctetStream *stream,
 	return true;
 }
 
+bool
+read_attribute(FI_OctetStream *stream, FI_Length& adv_len,
+               Vocabulary& vocabulary,
+               DN_VocabTable::TypedEntryRef& name, Value& value)
+{
+	assert(adv_len == 0); // no overflow please
+
+	// Read qualified-name using C.17 (C.4.3).
+	if (!read_name_bit_2(stream, adv_len, vocabulary, name)) {
+		return false;
+	}
+
+	// Read normalized-value using C.14 (C.4.4).
+	if (!read_value_bit_1(stream, adv_len, value)) {
+		return false;
+	}
+
+	return true;
+}
+
 // C.12
 // TODO: Fix this to work with arbitrary namespace attributes, not just the
 // default BT_NAMESPACE.
@@ -252,11 +272,36 @@ write_value_bit_1(FI_OctetStream *stream, const Value& value)
 	}
 
 	// Write character-string using C.19 (C.14.3.2).
-	if (!write_encoded_bit_3(stream, value)) {
+	return write_encoded_bit_3(stream, value);
+}
+
+bool
+read_value_bit_1(FI_OctetStream *stream, FI_Length& adv_len, Value& value)
+{
+	// TODO: Assert something about adv_len.
+
+	// Read literal-character-string discriminant (C.14.3: 0); the
+	// string-index alternative is not currently supported (and thus
+	// add-to-table will also be FALSE).
+	// Read add-to-table (C.14.3.1: 0).
+	const FI_Octet *r_buf;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
 		return false;
 	}
 
-	return true;
+	r_buf += adv_len;
+
+	if ((r_buf[0] & FI_BIT_1) || (r_buf[0] & FI_BIT_2)) {
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	// Write character-string using C.19 (C.14.3.2).
+	return read_encoded_bit_3(stream, adv_len, value);
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
@@ -371,6 +416,86 @@ write_name_bit_2(FI_OctetStream *stream,
 		name.getIndex();
 	}
 
+	return true;
+}
+
+bool
+read_name_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
+                Vocabulary& vocabulary, DN_VocabTable::TypedEntryRef& name)
+{
+	assert(adv_len == 0); // no overflow please
+
+	// Peek at first bits.
+	const FI_Octet *r_buf;
+	FI_Octet bits;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	bits = (r_buf[0] << 1) & FI_BITS(1,1,1,1,1,,,);
+	if (bits != FI_BITS(1,1,1,1,0,,,)) {
+		// Read as name-surrogate-index using C.25 (C.17.4).
+		FI_PInt20 idx;
+
+		if (!read_pint20_bit_2(stream, adv_len, idx)) {
+			return false;
+		}
+
+		// TODO: Throws IndexOutOfBoundsException if given bogus index.
+		name = vocabulary.attribute_names[FI_PINT_TO_UINT(idx)];
+		return true;
+	}
+
+	// Read as literal-qualified-name (C.17.3).
+	PFX_DS_VocabTable::TypedEntryRef pfx_part;
+	NSN_DS_VocabTable::TypedEntryRef nsn_part;
+	DS_VocabTable::TypedEntryRef local_part;
+
+	// Read presence bits (C.17.3.1).
+	const bool has_pfx = r_buf[0] & FI_BIT_7;
+	const bool has_nsn = r_buf[0] & FI_BIT_8;
+
+	adv_len += 1;
+
+	if (has_pfx) {
+		// Read prefix using C.13 (C.17.3.2).
+		if (!read_identifier(stream, adv_len,
+		                     vocabulary.prefixes, pfx_part)) {
+			return false;
+		}
+
+		// TODO: Don't allow use of non-declared prefixes.
+		// Might be best to do this with a separate data structure that
+		// handles namespace scoping properly.
+	}
+
+	if (has_nsn) {
+		// Read namespace-name using C.13 (C.17.3.3).
+		if (!read_identifier(stream, adv_len,
+		                     vocabulary.namespace_names, nsn_part)) {
+			return false;
+		}
+
+		// TODO: Don't allow use of non-declared namespace names.
+		// Might be best to do this with a separate data structure that
+		// handles namespace scoping properly.
+	}
+
+	// Read local name using C.13 (C.17.3.4).
+	if (!read_identifier(stream, adv_len,
+	                     vocabulary.local_names, local_part)) {
+		return false;
+	}
+
+	// Don't forget to try and add a name surrogate index.
+	name = vocabulary.attribute_names.getEntry(Name (local_part, nsn_part, pfx_part));
+	name.getIndex();
 	return true;
 }
 
@@ -504,18 +629,20 @@ read_name_bit_3(FI_OctetStream *stream, FI_Length& adv_len,
 }
 
 // C.19
+enum EncodingMode {
+	ENCODE_AS_UTF8        = FI_BITS(0,0,,,,,,), // C.19.3.1
+	ENCODE_AS_UTF16       = FI_BITS(0,1,,,,,,), // C.19.3.2
+	ENCODE_WITH_ALPHABET  = FI_BITS(1,0,,,,,,), // C.19.3.3
+	ENCODE_WITH_ALGORITHM = FI_BITS(1,1,,,,,,)  // C.19.3.4
+}; // enum EncodingMode
+
 bool
 write_encoded_bit_3(FI_OctetStream *stream, const Value& value)
 {
 	assert(fi_get_stream_num_bits(stream) == 2); // C.19.2
 
 	// Decide which encoding to use based on value type.
-	enum {
-		ENCODE_AS_UTF8        = FI_BITS(0,0,,,,,,), // C.19.3.1
-		ENCODE_AS_UTF16       = FI_BITS(0,1,,,,,,), // C.19.3.2
-		ENCODE_WITH_ALPHABET  = FI_BITS(1,0,,,,,,), // C.19.3.3
-		ENCODE_WITH_ALGORITHM = FI_BITS(1,1,,,,,,)  // C.19.3.4
-	} mode;
+	EncodingMode mode;
 
 	switch (value.getType()) {
 	case FI_VALUE_AS_OCTETS:
@@ -587,6 +714,74 @@ write_encoded_bit_3(FI_OctetStream *stream, const Value& value)
 	default:
 		// Should never happen.
 		return false;
+	}
+
+	return true;
+}
+
+bool
+read_encoded_bit_3(FI_OctetStream *stream, FI_Length& adv_len, Value& value)
+{
+	// TODO: Assert something about adv_len.
+
+	// Peek at encoding type bits.
+	const FI_Octet *r_buf;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	// Discriminate the encoding mode.
+	const FI_Octet bits = (r_buf[0] << 2) & FI_BITS(1,1,,,,,,);
+
+	FI_PInt32 len;
+
+	switch (bits) {
+	case ENCODE_AS_UTF8:
+		// Read octets using C.23 (C.19.4).
+		r_buf = read_non_empty_octets_bit_5(stream, adv_len, len);
+		if (!r_buf) {
+			return false;
+		}
+
+		// Set Value from buffer contents.
+		// XXX: FI_PINT_TO_UINT() doesn't overflow because we already
+		// used it to allocate the read buffer we're using.
+		// TODO: Support other value types.
+		if (!value.setValue(FI_VALUE_AS_OCTETS,
+		                    FI_PINT_TO_UINT(len), r_buf)) {
+			// Couldn't set the attribute value.
+			throw UnsupportedOperationException ();
+		}
+		break;
+
+	case ENCODE_AS_UTF16:
+		// TODO: We don't use the utf-16 alternative.
+		// Read octets using C.23 (C.19.4).
+		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALPHABET:
+		// TODO: We don't use the restricted-alphabet alternative.
+		// FIXME: Implementation restriction.
+		// Read restricted-alphabet index using C.29 (C.19.3.3).
+		// Read octets using C.23 (C.19.4).
+		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALGORITHM:
+		// Read encoding-algorithm index using C.29 (C.19.3.4).
+		// Read octets using C.23 (C.19.4).
+		// TODO: We don't support encoding algorithms yet.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+
+	default:
+		// Should never happen.
+		throw AssertionFailureException ();
 	}
 
 	return true;
@@ -712,7 +907,7 @@ read_non_empty_octets_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
 
 	r_buf += adv_len;
 
-	FI_Length tmp_len;
+	FI_PInt32 tmp_len;
 
 	if (r_buf[0] & FI_BIT_2) {
 		switch (r_buf[0] & FI_BITS(,/*1*/,1,1,1,1,1,1)) {
@@ -859,6 +1054,109 @@ write_non_empty_octets_bit_5(FI_OctetStream *stream, FI_PInt32 len)
 
 	// Write string octets (C.23.4). (Or rather, provide the buffer to.)
 	return fi_get_stream_write_buffer(stream, buf_len);
+}
+
+const FI_Octet *
+read_non_empty_octets_bit_5(FI_OctetStream *stream, FI_Length& adv_len,
+                            FI_PInt32& len)
+{
+	// TODO: Come up with an assertion that makes sense here.
+
+	// Read string length (C.23.3).
+	const FI_Octet *r_buf;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	FI_PInt32 tmp_len;
+
+	if (r_buf[0] & FI_BIT_5) {
+		switch (r_buf[0] & FI_BITS(,,,,/*1*/,1,1,1)) {
+		case FI_BITS(,,,,/*1*/,0, 0,0):
+			// [9,264] (C.23.3.2)
+			adv_len += 1;
+			next_adv_len = adv_len + 1;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_len = r_buf[0];
+
+			tmp_len += FI_UINT_TO_PINT(9);
+			break;
+
+		case FI_BITS(,,,,/*1*/,1, 0,0):
+			// [265,2^32] (C.23.3.3)
+			adv_len += 1;
+			next_adv_len = adv_len + 4;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_len = r_buf[0] << 24;
+			tmp_len |= r_buf[1] << 16;
+			tmp_len |= r_buf[2] << 8;
+			tmp_len |= r_buf[3];
+
+			if (tmp_len > FI_PINT32_MAX - FI_UINT_TO_PINT(265)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_len += FI_UINT_TO_PINT(265);
+			break;
+
+		default:
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+	} else {
+		// [1,8] (C.23.3.1)
+		tmp_len = r_buf[0] & FI_BITS(,,,,,1,1,1);
+
+		tmp_len += FI_UINT_TO_PINT(1);
+	}
+
+	// Compute octet string length, being careful to check for overflows.
+
+	// Note that FI_PINT_TO_UINT(tmp_len) should give a value which is at
+	// least 1, so here underflow is <=, rather than <.  This accounts for
+	// the possibility that FI_PINT_TO_UINT() itself will overflow.
+	if (next_adv_len + FI_PINT_TO_UINT(tmp_len) <= next_adv_len) {
+		// Adding tmp_len to next_adv_len would overflow.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	// Read string octets.
+	adv_len = next_adv_len;
+	next_adv_len += FI_PINT_TO_UINT(tmp_len);
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len; // properly used pointers can't overflow
+
+	// Success.
+	adv_len = next_adv_len;
+	len = tmp_len;
+	return r_buf;
 }
 
 // C.25

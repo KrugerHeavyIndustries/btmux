@@ -100,7 +100,14 @@ Document::write(FI_OctetStream *stream)
 			throw Exception ();
 		}
 #endif // FI_USE_INITIAL_VOCABULARY
+
+		saw_root_element = false;
 	} else if (stop_flag) {
+		if (!saw_root_element) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+
 		// Write document trailer.
 		write_trailer(stream);
 
@@ -143,13 +150,13 @@ Document::read(FI_OctetStream *stream)
 		case NEXT_PART_READ_STATE:
 			// Determine next child type.
 			read_next(stream);
-			r_saw_root_element = false;
+			saw_root_element = false;
 			break;
 		}
 	} else if (stop_flag) {
 		switch (r_state) {
 		case RESET_READ_STATE:
-			if (!r_saw_root_element) {
+			if (!saw_root_element) {
 				// Not a valid Fast Infoset.
 				throw IllegalStateException ();
 			}

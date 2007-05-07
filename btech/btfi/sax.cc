@@ -462,7 +462,7 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 1 
+#if 0
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
 	min_len = 1;

@@ -33,7 +33,6 @@
 
 #include <cstddef>
 #include <cassert>
-#include <cstdio> // XXX: DEBUG
 
 #include "common.h"
 #include "stream.h"
@@ -368,12 +367,18 @@ redispatch:
 		}
 
 		r_element_state = ATTRS_ELEMENT_STATE;
+		r_saw_an_attribute = false;
 		// FALLTHROUGH
 
 	case ATTRS_ELEMENT_STATE:
 		// Parse attributes.
 		if (!read_attributes(stream)) {
 			return false;
+		}
+
+		if (!r_saw_an_attribute) {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
 		}
 		break;
 	}
@@ -415,6 +420,7 @@ Element::read_end(FI_OctetStream *stream)
 			throw IllegalStateException ();
 		}
 
+		fi_set_stream_num_bits(stream, 0);
 		fi_advance_stream_cursor(stream, 1);
 		break;
 
@@ -497,9 +503,45 @@ restart:
 bool
 Element::read_attributes(FI_OctetStream *stream)
 {
-	// FIXME
-	fputs("reading attributes\n", stderr);
-	return false;
+	// Read attributes (C.3.6).
+	const FI_Octet *r_buf;
+	FI_Octet bits;
+
+	for (;;) {
+		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
+			return false;
+		}
+
+		if (r_buf[0] & FI_BIT_1) {
+			// Not an attribute.  Check for terminator (C.3.6.2).
+			bits = r_buf[0] & FI_BITS(1,1,1,1,,,,);
+			if (bits != FI_BITS(1,1,1,1,,,,)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			fi_set_stream_num_bits(stream, 4);
+			return true;
+		}
+
+		// Identified as attribute (C.3.6.1).
+		DN_VocabTable::TypedEntryRef name;
+		Value value;
+
+		FI_Length adv_len = 0;
+
+		if (!read_attribute(stream, adv_len, doc.vocabulary,
+		                    name, value)) {
+			return false;
+		}
+
+		// Success.
+		fi_advance_stream_cursor(stream, adv_len);
+
+		r_attrs.add(name, value);
+
+		r_saw_an_attribute = true;
+	}
 }
 
 } // namespace FI

@@ -88,6 +88,8 @@ private:
 
 	bool r_has_attrs;
 
+	bool r_saw_an_attribute;
+
 	FI_Length r_len_state;
 }; // class Element
 

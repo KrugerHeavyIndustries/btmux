@@ -30,29 +30,108 @@ die_parser(const char *cause)
 static int
 startDocument(FI_ContentHandler *handler)
 {
-	puts("START DOCUMENT");
+	puts("(START DOCUMENT)");
 	return 1;
 }
 
 static int
 endDocument(FI_ContentHandler *handler)
 {
-	puts("END DOCUMENT");
+	puts("(END DOCUMENT)");
 	return 1;
+}
+
+static int is_open = 0;
+
+static int level = 0;
+
+static void
+print_indent(void)
+{
+	int ii;
+
+	for (ii = 0; ii < level; ii++) {
+		putchar('\t');
+	}
+}
+
+static void
+print_name(const FI_Name *name)
+{
+	const char *pfx_str = fi_get_name_prefix(name);
+	/*const char *nsn_str = fi_get_name_namespace_name(name);*/
+	const char *local_str = fi_get_name_local_name(name);
+
+	if (pfx_str) {
+		fputs(pfx_str, stdout);
+		putchar(':');
+	}
+
+	fputs(local_str, stdout);
+}
+
+static void
+print_value(const FI_Value *value)
+{
+	switch (fi_get_value_type(value)) {
+	case FI_VALUE_AS_OCTETS:
+		// Not quite right...
+		printf("\"%.*s\"",
+		       fi_get_value_count(value),
+		       (const char *)fi_get_value(value));
+		break;
+
+	default:
+		printf("(unknown type #%d)", fi_get_value_type(value));
+		break;
+	}
 }
 
 static int
 startElement(FI_ContentHandler *handler,
              const FI_Name *name, const FI_Attributes *attrs)
 {
-	puts("START ELEMENT");
+	int ii, max_ii;
+
+	if (is_open) {
+		/* Close the most recent element.  */
+		fputs(">\n", stdout);
+	}
+
+	print_indent();
+	level++;
+
+	putchar('<');
+	print_name(name);
+
+	max_ii = fi_get_attributes_length(attrs);
+	for (ii = 0; ii < max_ii; ii++) {
+		putchar(' ');
+		print_name(fi_get_attribute_name(attrs, ii));
+		putchar('=');
+		print_value(fi_get_attribute_value(attrs, ii));
+	}
+
+	is_open = 1;
 	return 1;
 }
 
 static int
 endElement(FI_ContentHandler *handler, const FI_Name *name)
 {
-	puts("END ELEMENT");
+	level--;
+
+	if (is_open) {
+		fputs(" />\n", stdout);
+		is_open = 0;
+	} else {
+		print_indent();
+
+		fputs("</", stdout);
+		print_name(name);
+		fputs(">\n", stdout);
+	}
+
 	return 1;
 }
 

@@ -92,3 +92,21 @@ fi_destroy_name(FI_Name *name)
 {
 	delete name;
 }
+
+const char *
+fi_get_name_prefix(const FI_Name *name)
+{
+	return (*name)->pfx_part ? (*name)->pfx_part->c_str() : 0;
+}
+
+const char *
+fi_get_name_namespace_name(const FI_Name *name)
+{
+	return (*name)->nsn_part ? (*name)->nsn_part->c_str() : 0;
+}
+
+const char *
+fi_get_name_local_name(const FI_Name *name)
+{
+	return (*name)->local_part->c_str();
+}
