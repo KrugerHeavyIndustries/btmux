@@ -52,8 +52,9 @@ bool write_name_bit_2(FI_OctetStream *stream,
 bool write_name_bit_3(FI_OctetStream *stream,
                       const DN_VocabTable::TypedEntryRef& name);
 
-bool read_name_bit_3(FI_OctetStream *stream,
-                     const DN_VocabTable::TypedEntryRef& name);
+bool read_name_bit_3(FI_OctetStream *stream, FI_Length& av_len,
+                     Vocabulary& vocabulary,
+                     DN_VocabTable::TypedEntryRef& name);
 
 // C.19
 bool write_encoded_bit_3(FI_OctetStream *stream, const Value& value);
@@ -81,6 +82,9 @@ bool read_pint20_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
 
 // C.27
 bool write_pint20_bit_3(FI_OctetStream *stream, FI_PInt20 val);
+
+bool read_pint20_bit_3(FI_OctetStream *stream, FI_Length& adv_len,
+                       FI_PInt20& val);
 
 // C.29
 bool write_pint8(FI_OctetStream *stream, FI_PInt8 val);

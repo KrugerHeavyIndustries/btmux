@@ -31,8 +31,8 @@ Vocabulary::clear ()
 	content_character_chunks.clear();
 	other_strings.clear();
 
-	element_name_surrogates.clear();
-	attribute_name_surrogates.clear();
+	element_names.clear();
+	attribute_names.clear();
 }
 
 } // namespace FI

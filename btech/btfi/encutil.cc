@@ -189,7 +189,7 @@ bool
 read_identifier(FI_OctetStream *stream, FI_Length& adv_len,
                 DS_VocabTable& string_table, DS_VocabTable::TypedEntryRef& id)
 {
-	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+	// TODO: Assert adv_len is something reasonable.
 
 	// Peek at discriminant bit.
 	const FI_Octet *r_buf;
@@ -213,26 +213,26 @@ read_identifier(FI_OctetStream *stream, FI_Length& adv_len,
 		// Resolve by string-index.  This will throw an
 		// IndexOutOfBoundsException if we parsed a bogus index.
 		id = string_table[FI_PINT_TO_UINT(idx)];
-	} else {
-		// Read literal-character-string using C.22 (C.13.3).
-		FI_PInt20 len;
-
-		r_buf = read_non_empty_octets_bit_2(stream, adv_len, len);
-		if (!r_buf) {
-			return false;
-		}
-
-		// Construct CharString from buffer contents.
-		// XXX: FI_PINT_TO_UINT() doesn't overflow because we already
-		// used it to allocate the read buffer we're using.
-		CharString literal (reinterpret_cast<const char *>(r_buf),
-		                    FI_PINT_TO_UINT(len));
-
-		// Don't forget to try and add a string index.
-		id = string_table.getEntry(literal);
-		id.getIndex();
+		return true;
 	}
 
+	// Read literal-character-string using C.22 (C.13.3).
+	FI_PInt20 len;
+
+	r_buf = read_non_empty_octets_bit_2(stream, adv_len, len);
+	if (!r_buf) {
+		return false;
+	}
+
+	// Construct CharString from buffer contents.
+	// XXX: FI_PINT_TO_UINT() doesn't overflow because we already used it
+	// to allocate the read buffer we're using.
+	const CharString literal (reinterpret_cast<const char *>(r_buf),
+	                          FI_PINT_TO_UINT(len));
+
+	// Don't forget to try and add a string index.
+	id = string_table.getEntry(literal);
+	id.getIndex();
 	return true;
 }
 
@@ -432,11 +432,75 @@ write_name_bit_3(FI_OctetStream *stream,
 }
 
 bool
-read_name_bit_3(FI_OctetStream *stream,
-                const DN_VocabTable::TypedEntryRef& name)
+read_name_bit_3(FI_OctetStream *stream, FI_Length& adv_len,
+                Vocabulary& vocabulary, DN_VocabTable::TypedEntryRef& name)
 {
-	// FIXME
-	return false;
+	assert(adv_len == 0); // no overflow please
+
+	// Peek at first bits.
+	const FI_Octet *r_buf;
+	FI_Octet bits;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	bits = (r_buf[0] << 2) & FI_BITS(1,1,1,1,,,,);
+	if (bits != FI_BITS(1,1,1,1,,,,)) {
+		// Read as name-surrogate-index using C.27 (C.18.4).
+		FI_PInt20 idx;
+
+		if (!read_pint20_bit_3(stream, adv_len, idx)) {
+			return false;
+		}
+
+		// TODO: Throws IndexOutOfBoundsException if given bogus index.
+		name = vocabulary.element_names[FI_PINT_TO_UINT(idx)];
+		return true;
+	}
+
+	// Read as literal-qualified-name (C.18.3).
+	PFX_DS_VocabTable::TypedEntryRef pfx_part;
+	NSN_DS_VocabTable::TypedEntryRef nsn_part;
+	DS_VocabTable::TypedEntryRef local_part;
+
+	// Read presence bits (C.18.3.1).
+	const bool has_pfx = r_buf[0] & FI_BIT_7;
+	const bool has_nsn = r_buf[0] & FI_BIT_8;
+
+	adv_len += 1;
+
+	if (has_pfx) {
+		// Read prefix using C.13 (C.18.3.2).
+		if (!read_identifier(stream, adv_len,
+		                     vocabulary.prefixes, pfx_part)) {
+			return false;
+		}
+	}
+
+	if (has_nsn) {
+		// Read namespace-name using C.13 (C.18.3.3).
+		if (!read_identifier(stream, adv_len,
+		                     vocabulary.namespace_names, nsn_part)) {
+			return false;
+		}
+	}
+
+	// Read local name using C.13 (C.18.3.4).
+	if (!read_identifier(stream, adv_len,
+	                     vocabulary.local_names, local_part)) {
+		return false;
+	}
+
+	// Don't forget to try and add a name surrogate index.
+	name = vocabulary.element_names.getEntry(Name (local_part, nsn_part, pfx_part));
+	name.getIndex();
+	return true;
 }
 
 // C.19
@@ -634,7 +698,7 @@ const FI_Octet *
 read_non_empty_octets_bit_2(FI_OctetStream *stream, FI_Length& adv_len,
                             FI_PInt32& len)
 {
-	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+	// TODO: Come up with an assertion that makes sense here.
 
 	// Read string length (C.22.3).
 	const FI_Octet *r_buf;
@@ -858,14 +922,16 @@ read_pint20_bit_2(FI_OctetStream *stream, FI_Length& adv_len, FI_PInt20& val)
 	// Peek at the first few bits to decide how much to read.
 	const FI_Octet *r_buf;
 
-	if (fi_try_read_stream(stream, &r_buf, 0, adv_len + 1) <= adv_len) {
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
 		return false;
 	}
 
 	r_buf += adv_len;
 
 	// Decode value.
-	FI_Length next_adv_len;
 	FI_PInt20 tmp_val;
 
 	if (r_buf[0] & FI_BIT_2) {
@@ -913,15 +979,7 @@ read_pint20_bit_2(FI_OctetStream *stream, FI_Length& adv_len, FI_PInt20& val)
 		}
 	} else {
 		// [1,64] (C.25.2)
-		next_adv_len = adv_len + 1;
-		if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
-		    < next_adv_len) {
-			return false;
-		}
-
-		r_buf += adv_len;
-
-		tmp_val = (r_buf[0] & FI_BITS(,,1,1,1,1,1,1));
+		tmp_val = r_buf[0] & FI_BITS(,,1,1,1,1,1,1);
 
 		tmp_val += FI_UINT_TO_PINT(1);
 	}
@@ -999,6 +1057,110 @@ write_pint20_bit_3(FI_OctetStream *stream, FI_PInt20 val)
 		w_buf[2] = val;
 	}
 
+	return true;
+}
+
+bool
+read_pint20_bit_3(FI_OctetStream *stream, FI_Length& adv_len, FI_PInt20& val)
+{
+	assert(adv_len >= 0 && adv_len <= 1); // no overflow please
+
+	// Peek at the first few bits to decide how much to read.
+	const FI_Octet *r_buf;
+
+	FI_Length next_adv_len = adv_len + 1;
+
+	if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+	    < next_adv_len) {
+		return false;
+	}
+
+	r_buf += adv_len;
+
+	// Decode value.
+	FI_PInt20 tmp_val;
+
+	if (r_buf[0] & FI_BIT_3) {
+		switch (r_buf[0] & FI_BITS(,,/*1*/,1,1,,,)) {
+		case FI_BITS(,,/*1*/,0,0,,,):
+			// [33,2080] (C.27.3)
+			next_adv_len = adv_len + 2;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_val = (r_buf[0] & FI_BITS(,,,,,1,1,1)) << 8;
+			tmp_val |= r_buf[1];
+
+			tmp_val += FI_UINT_TO_PINT(33);
+			break;
+
+		case FI_BITS(,,/*1*/,0,1,,,):
+			// [2081,526368] (C.27.4)
+			next_adv_len = adv_len + 3;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			tmp_val = (r_buf[0] & FI_BITS(,,,,,1,1,1)) << 16;
+			tmp_val |= r_buf[1] << 8;
+			tmp_val |= r_buf[2];
+
+			tmp_val += FI_UINT_TO_PINT(2081);
+			break;
+
+		case FI_BITS(,,/*1*/,1,0,,,):
+			// [526369,2^20] (C.27.5)
+			next_adv_len = adv_len + 4;
+
+			if (fi_try_read_stream(stream, &r_buf, 0, next_adv_len)
+			    < next_adv_len) {
+				return false;
+			}
+
+			r_buf += adv_len;
+
+			// Padding: 000 0000.
+			if ((r_buf[0] & FI_BITS(,,,,,1,1,1))
+			    || (r_buf[1] & FI_BITS(1,1,1,1,,,,))) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_val = (r_buf[1] & FI_BITS(,,,,1,1,1,1)) << 16;
+			tmp_val |= r_buf[2] << 8;
+			tmp_val |= r_buf[3];
+
+			if (tmp_val > FI_PINT20_MAX - FI_UINT_TO_PINT(526369)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_val += FI_UINT_TO_PINT(526369);
+			break;
+
+		default:
+			// Not a valid Fast Inofset.
+			throw IllegalStateException ();
+		}
+	} else {
+		// [1,32] (C.27.2)
+		tmp_val = r_buf[0] & FI_BITS(,,,1,1,1,1,1);
+
+		tmp_val += FI_UINT_TO_PINT(1);
+	}
+
+	// Success.
+	adv_len = next_adv_len;
+	val = tmp_val;
 	return true;
 }
 

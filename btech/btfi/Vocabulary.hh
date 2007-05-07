@@ -34,8 +34,8 @@ public:
 	DS_VocabTable content_character_chunks;
 	DS_VocabTable other_strings;
 
-	DN_VocabTable element_name_surrogates;
-	DN_VocabTable attribute_name_surrogates;
+	DN_VocabTable element_names;
+	DN_VocabTable attribute_names;
 }; // class Vocabulary
 
 } // namespace FI

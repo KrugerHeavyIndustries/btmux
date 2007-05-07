@@ -302,6 +302,8 @@ Element::read_start(FI_OctetStream *stream)
 	const FI_Octet *r_buf;
 	FI_Octet bits;
 
+	FI_Length adv_len;
+
 redispatch:
 	switch (r_element_state) {
 	case RESET_ELEMENT_STATE:
@@ -352,9 +354,13 @@ redispatch:
 
 	case NAME_ELEMENT_STATE:
 		// Parse element name.
-		if (!read_name_bit_3(stream, name)) {
+		adv_len = 0;
+
+		if (!read_name_bit_3(stream, adv_len, doc.vocabulary, name)) {
 			return false;
 		}
+
+		fi_advance_stream_cursor(stream, adv_len);
 
 		if (!r_has_attrs) {
 			// Proceed directly to parsing children.
@@ -428,6 +434,7 @@ Element::read_namespace_attributes(FI_OctetStream *stream)
 		throw UnsupportedOperationException ();
 	}
 
+restart:
 	// Read next NamespaceAttribute item using C.12.
 	NSN_DS_VocabTable::TypedEntryRef ns_name;
 
@@ -438,12 +445,12 @@ Element::read_namespace_attributes(FI_OctetStream *stream)
 		return false;
 	}
 
+	FI_Length adv_len = 0;
+
 	switch (r_buf[0] & FI_BITS(1,1,1,1,1,1,,)) {
 	case FI_BITS(1,1,0,0,1,1,,):
 		// Read NamespaceAttribute using C.12 (C.3.4.2: 110011).
-		r_len_state = 0;
-
-		if (!read_namespace_attribute(stream, r_len_state,
+		if (!read_namespace_attribute(stream, adv_len,
 		                              doc.vocabulary, ns_name)) {
 			return false;
 		}
@@ -458,7 +465,7 @@ Element::read_namespace_attributes(FI_OctetStream *stream)
 			throw UnsupportedOperationException ();
 		}
 
-		fi_advance_stream_cursor(stream, r_len_state);
+		fi_advance_stream_cursor(stream, adv_len);
 		break;
 
 	case FI_BITS(1,1,1,1, 0,0,0,0):
@@ -482,7 +489,9 @@ Element::read_namespace_attributes(FI_OctetStream *stream)
 	}
 
 	// Look for more NamespaceAttribute items, until we reach terminator.
-	return false;
+	// FIXME: OK, this goto /is/ slightly evil.  I'm just too lazy to put
+	// this code into a proper loop yet.
+	goto restart;
 }
 
 bool

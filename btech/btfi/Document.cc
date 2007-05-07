@@ -197,14 +197,14 @@ Document::getElementName(const char *name)
 {
 	const Name element_name (vocabulary.local_names.getEntry(name),
 	                         BT_NAMESPACE);
-	return vocabulary.element_name_surrogates.getEntry(element_name);
+	return vocabulary.element_names.getEntry(element_name);
 }
 
 const DN_VocabTable::TypedEntryRef
 Document::getAttributeName(const char *name)
 {
 	const Name attribute_name (vocabulary.local_names.getEntry(name));
-	return vocabulary.attribute_name_surrogates.getEntry(attribute_name);
+	return vocabulary.attribute_names.getEntry(attribute_name);
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
