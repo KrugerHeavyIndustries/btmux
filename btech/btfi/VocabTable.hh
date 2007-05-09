@@ -409,8 +409,13 @@ protected:
 template<typename T>
 class DynamicTypedVocabTable : public TypedVocabTable<T> {
 protected:
+	class DynamicTypedEntry;
+
 	typedef TypedVocabTable<T> TypedVocabTable;
 	typedef typename TypedVocabTable::TypedEntry TypedEntry;
+
+	typedef typename TypedVocabTable::EntryPool EntryPool;
+	typedef typename TypedVocabTable::EntryPoolPtr EntryPoolPtr;
 
 public:
 	typedef typename TypedVocabTable::TypedEntryRef TypedEntryRef;
@@ -418,13 +423,6 @@ public:
 	typedef typename TypedVocabTable::value_type value_type;
 	typedef typename TypedVocabTable::const_reference const_reference;
 
-protected:
-	class DynamicTypedEntry;
-
-	typedef typename TypedVocabTable::EntryPool EntryPool;
-	typedef typename TypedVocabTable::EntryPoolPtr EntryPoolPtr;
-
-public:
 	// Create a new TypedEntry for a value.  Will always return a new
 	// entry, rather than reusing an existing one.  The entry may be
 	// interned, just like with getEntry(), so this may also be slow.

@@ -19,6 +19,12 @@
 typedef unsigned char FI_Octet;		/* 8-bit octet */
 typedef char FI_Char;			/* UTF-8 character component */
 
+typedef enum FI_tag_Ternary {
+	FI_TERNARY_FALSE = -1,		/* ternary false */
+	FI_TERNARY_UNKNOWN = 0,		/* ternary unknown */
+	FI_TERNARY_TRUE = 1		/* ternary true */
+} FI_Ternary; /* (balanced) ternary logic */
+
 /*
  * Positive integer types.  These encode values from 1 to some power of 2,
  * inclusive.  To do this within the smallest possible integer type, the raw
@@ -27,16 +33,20 @@ typedef char FI_Char;			/* UTF-8 character component */
  * In practice, this means some values aren't usable, but at least they can
  * handled.
  *
+ * A companion type, FI_UInt21, provides an unsigned integer type capable of
+ * holding at least 2^20. (The name "FI_UInt21" is a bit of a misnomer.)
+ *
  * A companion type, FI_UInt32, provides an unsigned integer type capable of
  * holding at least 2^32 - 1.
  */
 
 #define FI_UINT32_MAX 4294967295U	/* 2^32 - 1 */
 
+typedef unsigned int FI_UInt21;		/* 0 to at least 2^20 */
 typedef unsigned int FI_UInt32;		/* 0 to at least 2^32 - 1 */
 
 #define FI_PINT8_MAX  255U		/* 2^8 in p-int encoding */
-#define FI_PINT20_MAX 1048576U		/* 2^20 in p-int encoding */
+#define FI_PINT20_MAX 1048575U		/* 2^20 in p-int encoding */
 #define FI_PINT32_MAX FI_UINT32_MAX	/* 2^32 in p-int encoding */
 
 typedef unsigned char FI_PInt8;		/* 1 to at least 2^8 */

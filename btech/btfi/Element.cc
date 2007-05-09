@@ -31,13 +31,13 @@
 
 #include "autoconf.h"
 
-#include <cstddef>
 #include <cassert>
 
 #include "common.h"
-#include "stream.h"
-#include "encutil.hh"
 
+#include "Codec.hh"
+
+#include "Vocabulary.hh"
 #include "Name.hh"
 #include "Value.hh"
 #include "MutableAttributes.hh"
@@ -48,31 +48,36 @@
 namespace BTech {
 namespace FI {
 
-void
-Element::start()
+Element::Element(Document& doc)
+: serialize_mode (SERIALIZE_NONE), doc (doc), w_attrs (0)
 {
-	start_flag = true;
-	stop_flag = false;
-	r_state = RESET_READ_STATE;
+}
+
+void
+Element::start(const NSN_DS_VocabTable::TypedEntryRef& ns_name)
+{
+	serialize_mode = SERIALIZE_START;
+	saved_ns_name = ns_name;
 }
 
 void
 Element::stop()
 {
-	start_flag = false;
-	stop_flag = true;
-	r_state = RESET_READ_STATE;
+	serialize_mode = SERIALIZE_END;
 }
 
 void
-Element::write(FI_OctetStream *stream)
+Element::write(Encoder& encoder)
 {
-	if (start_flag) {
+	switch (serialize_mode) {
+	case SERIALIZE_START:
 		// Write element start.
-		write_start(stream);
+		write_start(encoder);
 
 		doc.pushElement(name);
-	} else if (stop_flag) {
+		break;
+
+	case SERIALIZE_END:
 		// Write element end.
 		if (!doc.hasElements()) {
 			// Tried to pop too many elements.
@@ -81,16 +86,20 @@ Element::write(FI_OctetStream *stream)
 
 		name = doc.popElement(); // XXX: don't need to restore name...
 
-		write_end(stream);
-	} else {
+		write_end(encoder);
+		break;
+
+	default:
+		// start()/stop() wasn't called.
 		throw IllegalStateException ();
 	}
 }
 
 void
-Element::read(FI_OctetStream *stream)
+Element::read(Decoder& decoder)
 {
-	if (start_flag) {
+	switch (serialize_mode) {
+	case SERIALIZE_START:
 		switch (r_state) {
 		case RESET_READ_STATE:
 			r_state = MAIN_READ_STATE;
@@ -99,7 +108,7 @@ Element::read(FI_OctetStream *stream)
 
 		case MAIN_READ_STATE:
 			// Try to read element start.
-			if (!read_start(stream)) {
+			if (!read_start(decoder)) {
 				return;
 			}
 
@@ -110,10 +119,14 @@ Element::read(FI_OctetStream *stream)
 
 		case NEXT_PART_READ_STATE:
 			// Determine next child type.
-			doc.read_next(stream);
+			if (!decoder.readNext()) {
+				return;
+			}
 			break;
 		}
-	} else if (stop_flag) {
+		break;
+
+	case SERIALIZE_END:
 		switch (r_state) {
 		case RESET_READ_STATE:
 			if (!doc.hasElements()) {
@@ -123,24 +136,24 @@ Element::read(FI_OctetStream *stream)
 
 			name = doc.popElement(); // need name for SAX API
 
-			r_state = MAIN_READ_STATE;
-			// FALLTHROUGH
-
-		case MAIN_READ_STATE:
-			// Try to read element end.
-			if (!read_end(stream)) {
-				return;
-			}
-
 			r_state = NEXT_PART_READ_STATE;
 			// FALLTHROUGH
 
 		case NEXT_PART_READ_STATE:
 			// Determine next child type.
-			doc.read_next(stream);
+			if (!decoder.readNext()) {
+				return;
+			}
 			break;
+
+		default:
+			// Should never happen.
+			throw AssertionFailureException ();
 		}
-	} else {
+		break;
+
+	default:
+		// start()/stop() wasn't called.
 		throw IllegalStateException ();
 	}
 }
@@ -151,10 +164,10 @@ Element::read(FI_OctetStream *stream)
  */
 
 void
-Element::write_start(FI_OctetStream *stream)
+Element::write_start(Encoder& encoder)
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
-	switch (fi_get_stream_num_bits(stream)) {
+	switch (encoder.getBitOffset()) {
 	case 0:
 		// C.3.2: Starting at 1st bit of this octet.
 		break;
@@ -162,10 +175,7 @@ Element::write_start(FI_OctetStream *stream)
 	case 4:
 		// C.2.11.1, C.3.7.1: Add 0000 padding.
 		// C.3.2: Starting at 1st bit of next octet.
-		if (!fi_flush_stream_bits(stream)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		encoder.writeBits(4, FI_BITS(,,,,0,0,0,0));
 		break;
 
 	default:
@@ -175,45 +185,44 @@ Element::write_start(FI_OctetStream *stream)
 
 	// Write identification (C.2.11.2, C.3.7.2: 0).
 	// Write attributes presence flag (C.3.3).
-	if (!fi_write_stream_bits(stream, 2,
-	                          w_attrs->getLength() ? FI_BIT_2 : 0)) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeBits(2, FI_BITS(0, w_attrs->getLength(),,,,,,));
 
 	// Write namespace-attributes (C.3.4).
-	write_namespace_attributes(stream);
+	write_namespace_attributes(encoder);
 
 	// Write qualified-name (C.18).
-	if (!write_name_bit_3(stream, name)) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeElementName(name);
 
 	// Write attributes (C.3.6).
-	write_attributes(stream);
+	write_attributes(encoder);
 
 	// Write children (C.3.7).  This is handled by the respective child
 	// serialization routines, so we don't need to do anything here.
 }
 
 void
-Element::write_end(FI_OctetStream *stream)
+Element::write_end(Encoder& encoder)
 {
-	assert(fi_get_stream_num_bits(stream) == 0
-	       || fi_get_stream_num_bits(stream) == 4);
-
 	// Write termination (C.3.8: 1111).
-	if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
+	switch (encoder.getBitOffset()) {
+	case 0:
+		encoder.writeBits(4, FI_BITS(1,1,1,1,,,,));
+		break;
+
+	case 4:
+		encoder.writeBits(4, FI_BITS(,,,,1,1,1,1));
+		break;
+
+	default:
+		// Not a valid Fast Infoset.
+		throw IllegalStateException ();
 	}
 }
 
 void
-Element::write_namespace_attributes(FI_OctetStream *stream)
+Element::write_namespace_attributes(Encoder& encoder)
 {
-	assert(fi_get_stream_num_bits(stream) == 2);
+	assert(encoder.getBitOffset() == 2);
 
 	if (doc.hasElements()) {
 		// We only write the BT_NAMESPACE default namespace at root.
@@ -221,73 +230,49 @@ Element::write_namespace_attributes(FI_OctetStream *stream)
 	}
 
 	// Write identification (C.3.4.1: 1110, 00).
-	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,1,0, 0,0,,))) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeBits(6, FI_BITS(,,1,1,1,0, 0,0));
 
 	// Write namespace-attributes using C.12 (C.3.4.2: 110011).
 	// XXX: We only have 1 namespace-attribute, which corresponds to index
 	// 2, our default namespace, with no prefix.
 	// FIXME: This needs to be looked up, not hardcoded.
-	if (!fi_write_stream_bits(stream, 6, FI_BITS(1,1,0,0,1,1,,))) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeBits(6, FI_BITS(1,1,0,0,1,1,,));
 
-	if (!write_namespace_attribute(stream, doc.BT_NAMESPACE)) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeNSAttribute(saved_ns_name);
 
 	// Write termination (C.3.4.3: 1111, 0000 00).
-	assert(fi_get_stream_num_bits(stream) == 0);
+	assert(encoder.getBitOffset() == 0);
 
-	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
-	if (!w_buf) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	FI_Octet *w_buf = encoder.getWriteBuffer(1);
 
 	w_buf[0] = FI_BITS(1,1,1,1, 0,0,0,0);
 
-	if (!fi_write_stream_bits(stream, 2, FI_BITS(0,0,,,,,,))) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeBits(2, FI_BITS(0,0,,,,,,));
 }
 
 void
-Element::write_attributes(FI_OctetStream *stream)
+Element::write_attributes(Encoder& encoder)
 {
 	if (!w_attrs->getLength()) {
 		// No attributes.
 		return;
 	}
 
+	assert(encoder.getBitOffset() == 0);
+
 	for (int ii = 0; ii < w_attrs->getLength(); ii++) {
 		// Write identification (C.3.6.1: 0).
-		if (!fi_write_stream_bits(stream, 1, 0)) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		encoder.writeBits(1, FI_BITS(0,,,,,,,));
 
 		// Write attribute using C.4 (C.3.6.1).
-		if (!write_attribute(stream,
-		                     w_attrs->getName(ii),
-		                     w_attrs->getValue(ii))) {
-			// TODO: Assign an exception for stream errors.
-			throw Exception ();
-		}
+		encoder.writeAttribute(w_attrs->getName(ii),
+		                       w_attrs->getValue(ii));
 	}
 
 	// Write termination (C.3.6.2).
-	assert(fi_get_stream_num_bits(stream) == 0); // C.4.2
+	assert(encoder.getBitOffset() == 0); // C.4.2
 
-	if (!fi_write_stream_bits(stream, 4, FI_BITS(1,1,1,1,,,,))) {
-		// TODO: Assign an exception for stream errors.
-		throw Exception ();
-	}
+	encoder.writeBits(4, FI_BITS(1,1,1,1,,,,));
 }
 
 
@@ -296,12 +281,10 @@ Element::write_attributes(FI_OctetStream *stream)
  */
 
 bool
-Element::read_start(FI_OctetStream *stream)
+Element::read_start(Decoder& decoder)
 {
 	const FI_Octet *r_buf;
 	FI_Octet bits;
-
-	FI_Length adv_len;
 
 redispatch:
 	switch (r_element_state) {
@@ -309,9 +292,11 @@ redispatch:
 		// Peek at the second bit to check if we have attributes.
 		r_attrs.clear();
 
+#if 0
 		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
 			return false;
 		}
+#endif // FIXME
 
 		r_has_attrs = r_buf[0] & FI_BIT_2;
 
@@ -337,14 +322,16 @@ redispatch:
 		}
 
 		// Consume namespace attributes presence bits (C.3.4.1).
+#if 0
 		fi_advance_stream_cursor(stream, 1);
+#endif // FIXME
 
 		r_element_state = NS_DECL_ELEMENT_STATE;
 		// FALLTHROUGH
 
 	case NS_DECL_ELEMENT_STATE:
 		// Parse namespace attributes.
-		if (!read_namespace_attributes(stream)) {
+		if (!read_namespace_attributes(decoder)) {
 			return false;
 		}
 
@@ -353,13 +340,9 @@ redispatch:
 
 	case NAME_ELEMENT_STATE:
 		// Parse element name.
-		adv_len = 0;
-
-		if (!read_name_bit_3(stream, adv_len, doc.vocabulary, name)) {
+		if (!decoder.readElementName(name)) {
 			return false;
 		}
-
-		fi_advance_stream_cursor(stream, adv_len);
 
 		if (!r_has_attrs) {
 			// Proceed directly to parsing children.
@@ -372,7 +355,7 @@ redispatch:
 
 	case ATTRS_ELEMENT_STATE:
 		// Parse attributes.
-		if (!read_attributes(stream)) {
+		if (!read_attributes(decoder)) {
 			return false;
 		}
 
@@ -387,130 +370,83 @@ redispatch:
 }
 
 bool
-Element::read_end(FI_OctetStream *stream)
-{
-	// Read element terminator bits (C.3.8).
-	const FI_Octet *r_buf;
-	FI_Octet bits;
-
-	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-		return false;
-	}
-
-	switch (fi_get_stream_num_bits(stream)) {
-	case 0:
-		// Ended on 4th bit (C.3.2).
-		bits = r_buf[0] & FI_BITS(1,1,1,1,,,,);
-
-		if (bits != FI_BITS(1,1,1,1,,,,)) {
-			// Not a valid Fast Infoset.
-			throw IllegalStateException ();
-		}
-
-		fi_set_stream_num_bits(stream, 4);
-		// Next 4 bits will be either terminator or padding.
-		break;
-
-	case 4:
-		// Ended on 8th bit (C.3.2).
-		bits = (r_buf[0] << 4) & FI_BITS(1,1,1,1,,,,);
-
-		if (bits != FI_BITS(1,1,1,1,,,,)) {
-			// Not a valid Fast Infoset.
-			throw IllegalStateException ();
-		}
-
-		fi_set_stream_num_bits(stream, 0);
-		fi_advance_stream_cursor(stream, 1);
-		break;
-
-	default:
-		// Should never happen.
-		throw IllegalStateException ();
-	}
-
-	return true;
-}
-
-bool
-Element::read_namespace_attributes(FI_OctetStream *stream)
+Element::read_namespace_attributes(Decoder& decoder)
 {
 	if (doc.hasElements()) {
 		// We only allow a BT_NAMESPACE default namespace at root.
 		throw UnsupportedOperationException ();
 	}
 
-restart:
 	// Read next NamespaceAttribute item using C.12.
 	NSN_DS_VocabTable::TypedEntryRef ns_name;
 
 	const FI_Octet *r_buf;
 	FI_Octet bits;
 
-	if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-		return false;
-	}
-
-	FI_Length adv_len = 0;
-
-	switch (r_buf[0] & FI_BITS(1,1,1,1,1,1,,)) {
-	case FI_BITS(1,1,0,0,1,1,,):
-		// Read NamespaceAttribute using C.12 (C.3.4.2: 110011).
-		if (!read_namespace_attribute(stream, adv_len,
-		                              doc.vocabulary, ns_name)) {
+	for (;;) {
+#if 0
+		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
 			return false;
 		}
+#endif // FIXME
 
-		// FIXME: This routine is currently hard-coded to check that
-		// the NamespaceAttribute is doc.BT_NAMESPACE, with no prefix.
-		if (*ns_name != *doc.BT_NAMESPACE
-		    || !ns_name.hasIndex() || !doc.BT_NAMESPACE.hasIndex()
-		    || ns_name.getIndex() != doc.BT_NAMESPACE.getIndex()
-		    || ns_name.getIndex() != 2) {
-			// FIXME: Implementation restriction.
-			throw UnsupportedOperationException ();
-		}
+		switch (r_buf[0] & FI_BITS(1,1,1,1,1,1,,)) {
+		case FI_BITS(1,1,0,0,1,1,,):
+			// Read NamespaceAttribute using C.12 (C.3.4.2: 110011).
+			if (!decoder.readNSAttribute(ns_name)) {
+				return false;
+			}
 
-		fi_advance_stream_cursor(stream, adv_len);
-		break;
+			// FIXME: This routine is currently hard-coded to check
+			// that the NamespaceAttribute == saved_ns_name.
+			if (*ns_name != *saved_ns_name
+			    || !ns_name.hasIndex() || !saved_ns_name.hasIndex()
+			    || ns_name.getIndex() != saved_ns_name.getIndex()
+			    || ns_name.getIndex() != 2) {
+				// FIXME: Implementation restriction.
+				throw UnsupportedOperationException ();
+			}
+			break;
 
-	case FI_BITS(1,1,1,1, 0,0,0,0):
-		// Read terminator and padding (C.3.4.3: 1111 000000).
-		if (fi_try_read_stream(stream, &r_buf, 0, 2) < 2) {
-			return false;
-		}
+		case FI_BITS(1,1,1,1, 0,0,0,0):
+			// Read terminator and padding (C.3.4.3: 1111 000000).
+#if 0
+			if (fi_try_read_stream(stream, &r_buf, 0, 2) < 2) {
+				return false;
+			}
+#endif // FIXME
 
-		bits = r_buf[1] & FI_BITS(1,1,,,,,,);
-		if (bits != FI_BITS(0,0,,,,,,)) {
+			bits = r_buf[1] & FI_BITS(1,1,,,,,,);
+			if (bits != FI_BITS(0,0,,,,,,)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+#if 0
+			fi_advance_stream_cursor(stream, 1);
+#endif // FIXME
+			return true;
+
+		default:
 			// Not a valid Fast Infoset.
 			throw IllegalStateException ();
 		}
-
-		fi_advance_stream_cursor(stream, 1);
-		return true;
-
-	default:
-		// Not a valid Fast Infoset.
-		throw IllegalStateException ();
 	}
-
-	// Look for more NamespaceAttribute items, until we reach terminator.
-	// FIXME: OK, this goto /is/ slightly evil.  I'm just too lazy to put
-	// this code into a proper loop yet.
-	goto restart;
 }
 
 bool
-Element::read_attributes(FI_OctetStream *stream)
+Element::read_attributes(Decoder& decoder)
 {
 	// Read attributes (C.3.6).
 	const FI_Octet *r_buf;
 	FI_Octet bits;
 
 	for (;;) {
+#if 0
 		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
 			return false;
 		}
+#endif // FIXME
 
 		if (r_buf[0] & FI_BIT_1) {
 			// Not an attribute.  Check for terminator (C.3.6.2).
@@ -520,7 +456,9 @@ Element::read_attributes(FI_OctetStream *stream)
 				throw IllegalStateException ();
 			}
 
+#if 0
 			fi_set_stream_num_bits(stream, 4);
+#endif // FIXME
 			return true;
 		}
 
@@ -528,15 +466,9 @@ Element::read_attributes(FI_OctetStream *stream)
 		DN_VocabTable::TypedEntryRef name;
 		Value value;
 
-		FI_Length adv_len = 0;
-
-		if (!read_attribute(stream, adv_len, doc.vocabulary,
-		                    name, value)) {
+		if (!decoder.readAttribute(name, value)) {
 			return false;
 		}
-
-		// Success.
-		fi_advance_stream_cursor(stream, adv_len);
 
 		r_attrs.add(name, value);
 

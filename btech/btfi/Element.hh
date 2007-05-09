@@ -6,10 +6,10 @@
 #ifndef BTECH_FI_ELEMENT_HH
 #define BTECH_FI_ELEMENT_HH
 
-#include "common.h"
-#include "stream.h"
+#include "Codec.hh"
 
 #include "Document.hh"
+#include "Vocabulary.hh"
 #include "Name.hh"
 #include "MutableAttributes.hh"
 
@@ -18,18 +18,16 @@ namespace FI {
 
 class Element : public Serializable {
 public:
-	Element (Document& doc)
-	: start_flag (false), stop_flag (false),
-	  doc (doc), w_attrs (0) {}
+	Element (Document& doc);
 
 	// Next write()/read() will be element header.
-	void start ();
+	void start (const NSN_DS_VocabTable::TypedEntryRef& ns_name);
 
 	// Next write()/read() will be element trailer.
 	void stop ();
 
-	void write (FI_OctetStream *stream);
-	void read (FI_OctetStream *stream);
+	void write (Encoder& encoder);
+	void read (Decoder& decoder);
 
 	// Set element properties.
 	void setName (const DN_VocabTable::TypedEntryRef& name) {
@@ -50,26 +48,30 @@ public:
 	}
 
 private:
-	bool start_flag;
-	bool stop_flag;
+	enum {
+		SERIALIZE_NONE,
+
+		SERIALIZE_START,
+		SERIALIZE_END,
+	} serialize_mode;
 
 	Document& doc;
 
+	NSN_DS_VocabTable::TypedEntryRef saved_ns_name;
 	DN_VocabTable::TypedEntryRef name;
 
 	// Write subroutines.
-	void write_start (FI_OctetStream *stream);
-	void write_end (FI_OctetStream *stream);
-	void write_namespace_attributes (FI_OctetStream *stream);
-	void write_attributes (FI_OctetStream *stream);
+	void write_start (Encoder& encoder);
+	void write_end (Encoder& encoder);
+	void write_namespace_attributes (Encoder& encoder);
+	void write_attributes (Encoder& encoder);
 
 	const Attributes *w_attrs;
 
 	// Read subroutines.
-	bool read_start (FI_OctetStream *stream);
-	bool read_end (FI_OctetStream *stream);
-	bool read_namespace_attributes (FI_OctetStream *stream);
-	bool read_attributes (FI_OctetStream *stream);
+	bool read_start (Decoder& decoder);
+	bool read_namespace_attributes (Decoder& decoder);
+	bool read_attributes (Decoder& decoder);
 
 	MutableAttributes r_attrs;
 
@@ -89,8 +91,6 @@ private:
 	bool r_has_attrs;
 
 	bool r_saw_an_attribute;
-
-	FI_Length r_len_state;
 }; // class Element
 
 } // namespace FI

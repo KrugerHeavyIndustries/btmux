@@ -20,7 +20,25 @@ typedef int_fast64_t FI_Int64;		/* signed 64-bit integer */
 typedef unsigned char FI_Boolean;	/* boolean */
 typedef float FI_Float32;		/* single-precision IEEE 754 */
 typedef double FI_Float64;		/* double-precision IEEE 754 */
-typedef FI_Octet FI_UUID[16];		/* 128-bit (16 octet) UUID */
+typedef struct FI_tag_UUID FI_UUID;	/* 128-bit (16 octet) UUID */
+
+struct FI_tag_UUID {
+	FI_Octet octets[16];
+
+#ifdef __cplusplus
+	bool operator < (const FI_UUID& rhs) const {
+		for (size_t ii = 0; ii < sizeof(octets); ii++) {
+			if (octets[ii] < rhs.octets[ii]) {
+				return true;
+			} else if (rhs.octets[ii] < octets[ii]) {
+				return false;
+			}
+		}
+
+		return false;
+	}
+#endif /* __cplusplus */
+}; /* FI_UUID */
 
 typedef enum {
 	FI_VALUE_AS_NULL,		/* no value */

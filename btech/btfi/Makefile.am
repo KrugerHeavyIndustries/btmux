@@ -1,8 +1,8 @@
 noinst_LTLIBRARIES = libbtfi.la
 
 libbtfi_la_SOURCES = \
-	sax.cc encutil.cc Document.cc Element.cc \
-	sax.h  encutil.hh Document.hh Element.hh Attributes.hh \
+	sax.cc Codec.cc Document.cc Element.cc \
+	sax.h  Codec.hh Document.hh Element.hh Attributes.hh \
 	Name.cc         Value.cc          MutableAttributes.cc \
 	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
 	Vocabulary.cc VocabSimple.cc \

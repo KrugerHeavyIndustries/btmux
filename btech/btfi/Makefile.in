@@ -45,9 +45,9 @@ CONFIG_HEADER = $(top_builddir)/autoconf.h
 CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libbtfi_la_LIBADD =
-am_libbtfi_la_OBJECTS = sax.lo encutil.lo Document.lo Element.lo \
-	Name.lo Value.lo MutableAttributes.lo Vocabulary.lo \
-	VocabSimple.lo encalg.lo stream.lo common.lo
+am_libbtfi_la_OBJECTS = sax.lo Codec.lo Document.lo Element.lo Name.lo \
+	Value.lo MutableAttributes.lo Vocabulary.lo VocabSimple.lo \
+	encalg.lo stream.lo common.lo
 libbtfi_la_OBJECTS = $(am_libbtfi_la_OBJECTS)
 am_saxtest_OBJECTS = saxtest.$(OBJEXT) saxwrite.$(OBJEXT) \
 	saxread.$(OBJEXT)
@@ -192,8 +192,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libbtfi.la
 libbtfi_la_SOURCES = \
-	sax.cc encutil.cc Document.cc Element.cc \
-	sax.h  encutil.hh Document.hh Element.hh Attributes.hh \
+	sax.cc Codec.cc Document.cc Element.cc \
+	sax.h  Codec.hh Document.hh Element.hh Attributes.hh \
 	Name.cc         Value.cc          MutableAttributes.cc \
 	Name.hh names.h Value.hh values.h MutableAttributes.hh attribs.h \
 	Vocabulary.cc VocabSimple.cc \
@@ -269,6 +269,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Codec.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Document.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Element.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MutableAttributes.Plo@am__quote@
@@ -278,7 +279,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Vocabulary.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encalg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/encutil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/saxtest.Po@am__quote@

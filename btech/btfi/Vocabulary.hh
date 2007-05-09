@@ -7,6 +7,7 @@
 
 #include "VocabSimple.hh"
 #include "Name.hh"
+#include "Value.hh"
 
 
 namespace BTech {
@@ -30,9 +31,9 @@ public:
 	DS_VocabTable other_ncnames;
 	DS_VocabTable other_uris;
 
-	DS_VocabTable attribute_values;
-	DS_VocabTable content_character_chunks;
-	DS_VocabTable other_strings;
+	DV_VocabTable attribute_values;
+	DV_VocabTable content_character_chunks;
+	DV_VocabTable other_strings;
 
 	DN_VocabTable element_names;
 	DN_VocabTable attribute_names;

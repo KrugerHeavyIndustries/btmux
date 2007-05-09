@@ -123,8 +123,11 @@ write_test(const char *const TEST_FILE)
 	 *     <now brown='1' now='3.14'>
 	 *         <how brown='oops' />
 	 *     </now>
-	 *     <now now='cow' />
+	 *     <now now='cow' cow='' />
 	 * </how>
+	 *
+	 * TODO: Test empty attribute values, which are valid but require using
+	 * the attribute-value-by-index format.
 	 */
 	if (!handler->startDocument(handler)) {
 		die_gen("generate::startDocument");
@@ -139,7 +142,7 @@ write_test(const char *const TEST_FILE)
 
 		end_element(en_now);
 
-		start_element(en_now, an_now, "cow", 0);
+		start_element(en_now, an_now, "cow", an_cow, "", 0);
 		end_element(en_now);
 
 	end_element(en_how);

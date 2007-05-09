@@ -337,6 +337,65 @@ run_test()
 	}
 }
 
+void
+dv_table_test()
+{
+	VocabTable::EntryRef ref1, ref2, ref3;
+	FI_VocabIndex idx1, idx2, idx3;
+
+	//
+	// Test dynamic value tables.
+	//
+	DV_VocabTable dv_vt1, dv_vt2, dv_vt3;
+
+	const FI_Int32 an_int32 = 0x12345678;
+
+	const Value an_int32_value (FI_VALUE_AS_INT, 1, &an_int32);
+	const Value an_octet_value (FI_VALUE_AS_OCTETS, 3, "how");
+
+	ref1 = dv_vt1.getEntry(an_octet_value);
+	ref2 = dv_vt2.getEntry(Value ());
+	ref3 = dv_vt3.createEntry(an_int32_value);
+
+	idx3 = ref3.getIndex();
+	idx1 = ref1.getIndex();
+	idx2 = ref2.getIndex();
+
+	if (idx1 != 1 || idx2 != FI_VOCAB_INDEX_NULL || idx3 != 1) {
+		die("DV_VocabTable::getEntry(Value)",
+		    "Incorrect indexes assigned");
+	}
+
+	if (dv_vt1[FI_VOCAB_INDEX_NULL]->getType() != FI_VALUE_AS_NULL
+	    || dv_vt1[FI_VOCAB_INDEX_NULL]->getCount() != 0
+	    || *dv_vt1[idx1] < an_octet_value || an_octet_value < *dv_vt1[idx1] 
+	    || *Value_cast<FI_Int32>(*dv_vt3[idx3]) != an_int32) {
+		die("DV_VocabTable[FI_VocabIndex]",
+		    "Forward mapping failed");
+	}
+
+	if (dv_vt1.getEntry(an_octet_value).getIndex() != idx1
+	    || dv_vt2.getEntry(Value ()).getIndex() != idx2
+	    || dv_vt3.createEntry(an_int32_value).getIndex() != (idx3 + 1)
+	    || dv_vt3.getEntry(an_int32_value).getIndex() != idx3) {
+		die("DV_VocabTable::getEntry(Value)",
+		    "Reverse mapping failed");
+	}
+
+	try {
+		dv_vt1[2];
+		dv_vt2[2];
+		dv_vt3[2];
+
+		die("DV_VocabTable[FI_VocabIndex]",
+		    "Didn't throw IndexOutOfBoundsException");
+	} catch (const IndexOutOfBoundsException& e) {
+	}
+
+	test_max(dv_vt1, an_int32_value);
+	dv_vt1.clear();
+}
+
 } // anonymous namespace
 
 int
@@ -344,6 +403,7 @@ main()
 {
 	try {
 		run_test();
+		dv_table_test();
 	} catch (int e) {
 		return e;
 	}

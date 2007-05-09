@@ -4,13 +4,13 @@
 
 #include "autoconf.h"
 
-#include <cstddef>
 #include <cstdio>
 #include <cassert>
 
 #include "common.h"
 #include "stream.h"
 
+#include "Codec.hh"
 #include "Document.hh"
 #include "Element.hh"
 #include "MutableAttributes.hh"
@@ -19,7 +19,13 @@
 
 using namespace BTech::FI;
 
-#define DEFAULT_BUFFER_SIZE 8192 // good as any; generally 2 pages/16 sectors
+namespace {
+
+const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
+
+const FI_Length DEFAULT_BUFFER_SIZE = 8192; // good as any; ~2 pages/16 sectors
+
+} // anonymous namespace
 
 
 /*
@@ -37,8 +43,13 @@ struct FI_tag_Generator {
 	FILE *fpout;
 	FI_OctetStream *buffer;
 
+	Encoder encoder;
+	Vocabulary vocabulary;
+
 	Document document;
 	Element element;
+
+	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Generator
 
 namespace {
@@ -53,12 +64,16 @@ int gen_ch_endElement(FI_ContentHandler *, const FI_Name *);
 } // anonymous namespace
 
 FI_tag_Generator::FI_tag_Generator()
-: fpout (0), buffer (0), element (document)
+: fpout (0), buffer (0), element (document),
+  BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
 	if (!buffer) {
 		throw std::bad_alloc ();
 	}
+
+	encoder.setStream(buffer);
+	encoder.setVocabulary(vocabulary);
 
 	content_handler.startDocument = gen_ch_startDocument;
 	content_handler.endDocument = gen_ch_endDocument;
@@ -129,31 +144,55 @@ fi_generate(FI_Generator *gen, const char *filename)
 	}
 
 	fi_clear_stream(gen->buffer);
+	gen->encoder.clear();
 
 	// Wait for generator events.
 	return 1;
 }
 
+// Namespaces in XML 1.0 (Second Edition)
+// http://www.w3.org/TR/2006/REC-xml-names-20060816
+//
+// Section 6.2, paragraph 2:
+//
+// A default namespace declaration applies to all unprefixed element names
+// within its scope. Default namespace declarations do not apply directly to
+// attribute names; the interpretation of unprefixed attributes is determined
+// by the element on which they appear.
+
 FI_Name *
 fi_create_element_name(FI_Generator *gen, const char *name)
 {
 	try {
-		return new FI_Name (gen->document.getElementName(name));
+		const Name
+		element_name (gen->vocabulary.local_names.getEntry(name),
+		              gen->BT_NAMESPACE);
+
+		const DN_VocabTable::TypedEntryRef element_ref
+		= gen->vocabulary.element_names.getEntry(element_name);
+
+		return new FI_Name (element_ref);
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
-	}
+	} // FIXME: Catch all exceptions (at all C/C++ boundaries in API)
 }
 
 FI_Name *
 fi_create_attribute_name(FI_Generator *gen, const char *name)
 {
 	try {
-		return new FI_Name (gen->document.getAttributeName(name));
+		const Name
+		attr_name (gen->vocabulary.local_names.getEntry(name));
+
+		const DN_VocabTable::TypedEntryRef attr_ref
+		= gen->vocabulary.attribute_names.getEntry(attr_name);
+
+		return new FI_Name (attr_ref);
 	} catch (const Exception& e) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return FI_VOCAB_INDEX_NULL;
-	}
+	} // FIXME: Catch all exceptions (at all C/C++ boundaries in API)
 }
 
 
@@ -172,8 +211,13 @@ struct FI_tag_Parser {
 	FILE *fpin;
 	FI_OctetStream *buffer;
 
+	Decoder decoder;
+	Vocabulary vocabulary;
+
 	Document document;
 	Element element;
+
+	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Parser
 
 namespace {
@@ -189,12 +233,16 @@ bool parse_endElement(FI_Parser *);
 } // anonymous namespace
 
 FI_tag_Parser::FI_tag_Parser()
-: fpin (0), buffer (0), element (document)
+: fpin (0), buffer (0), element (document),
+  BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
 	if (!buffer) {
 		throw std::bad_alloc ();
 	}
+
+	decoder.setStream(buffer);
+	decoder.setVocabulary(vocabulary);
 
 	content_handler = 0;
 
@@ -257,18 +305,21 @@ fi_parse(FI_Parser *parser, const char *filename)
 	}
 
 	fi_clear_stream(parser->buffer);
+	parser->decoder.clear();
 
 	// Parse document from start to finish.
 	if (!parse_document(parser)) {
 		// error_info set by parse_document()
 		fclose(parser->fpin); // XXX: Don't care, parsing failed
 		parser->fpin = 0;
+		parser->vocabulary.clear(); // XXX: Save some memory
 		return false;
 	}
 
 	// Close stream.
 	fclose(parser->fpin); // XXX: Don't care, finished parsing
 	parser->fpin = 0;
+	parser->vocabulary.clear(); // XXX: Save some memory
 	return 1;
 }
 
@@ -292,7 +343,7 @@ write_object(FI_Generator *gen, Serializable& object)
 {
 	// Serialize object.
 	try {
-		object.write(gen->buffer);
+		object.write(gen->encoder);
 	} catch (const Exception& e) {
 		// FIXME: Extract FI_ErrorInfo data from Exception.
 		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
@@ -367,6 +418,7 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 	}
 
 	gen->fpout = 0;
+	gen->vocabulary.clear(); // XXX: Save some memory
 	return 1;
 }
 
@@ -383,7 +435,7 @@ gen_ch_startElement(FI_ContentHandler *handler,
 	}
 
 	// Write element header.
-	gen->element.start();
+	gen->element.start(gen->BT_NAMESPACE);
 
 	gen->element.setName(*name);
 	gen->element.setAttributes(*attrs);
@@ -412,6 +464,7 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 
 	// Don't need to set name, because we maintain the value on a stack.
 	// Besides, we don't actually write it out anyway.
+	// TODO: Should probably check they match, though?
 	//gen->element.setName(*name);
 
 	if (!write_object(gen, gen->element)) {
@@ -462,7 +515,7 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 0
+#if 1
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
 	min_len = 1;
@@ -507,7 +560,7 @@ read_object(FI_Parser *parser, Serializable& object)
 
 		// Try to unserialize the object.
 		try {
-			object.read(parser->buffer);
+			object.read(parser->decoder);
 		} catch (const IllegalStateException& e) {
 			// FIXME: Extract FI_ErrorInfo data from Exception.
 			FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
@@ -538,17 +591,25 @@ parse_document(FI_Parser *parser)
 	}
 
 	// Parse document children.
-	while (parser->document.hasNext()) {
-		switch (parser->document.next()) {
-		case Document::START_ELEMENT:
+	bool end_of_document = false;
+
+	do {
+		switch (parser->decoder.next()) {
+		case Decoder::START_ELEMENT:
 			if (!parse_startElement(parser)) {
 				return false;
 			}
 			break;
 
-		case Document::END_ELEMENT:
-			if (!parse_endElement(parser)) {
-				return false;
+		case Decoder::END_CHILD:
+			if (!parser->document.hasElements()) {
+				// Interpret as end of document.
+				end_of_document = true;
+			} else {
+				// Interpret as end of element.
+				if (!parse_endElement(parser)) {
+					return false;
+				}
 			}
 			break;
 
@@ -557,7 +618,7 @@ parse_document(FI_Parser *parser)
 			FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
 			return false;
 		}
-	}
+	} while (!end_of_document);
 
 	// Parse document trailer.
 	if (!parse_endDocument(parser)) {
@@ -618,7 +679,7 @@ parse_endDocument(FI_Parser *parser)
 bool
 parse_startElement(FI_Parser *parser)
 {
-	parser->element.start();
+	parser->element.start(parser->BT_NAMESPACE);
 
 	if (!read_object(parser, parser->element)) {
 		return false;

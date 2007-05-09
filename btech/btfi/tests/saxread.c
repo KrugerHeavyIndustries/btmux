@@ -170,7 +170,7 @@ read_test(const char *const TEST_FILE)
 	 *     <now brown='1' now='3.14'>
 	 *         <how brown='oops' />
 	 *     </now>
-	 *     <now now='cow' />
+	 *     <now now='cow' cow='' />
 	 * </how>
 	 */
 	if (!fi_parse(parser, TEST_FILE)) {

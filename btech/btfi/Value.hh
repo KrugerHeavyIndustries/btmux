@@ -10,6 +10,7 @@
 #include "values.h"
 
 #include "Exception.hh"
+#include "VocabTable.hh"
 
 namespace BTech {
 namespace FI {
@@ -30,6 +31,14 @@ public:
 		}
 	}
 
+	Value (FI_ValueType type, size_t count, const void *buf)
+	: value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {
+		if (!setValue(type, count, buf)) {
+			// TODO: Need a more specific Exception.
+			throw Exception ();
+		}
+	}
+
 	Value& operator = (const Value& src) {
 		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
 			// TODO: Need a more specific Exception.
@@ -40,6 +49,9 @@ public:
 	}
 
 	bool setValue (FI_ValueType type, size_t count, const void *buf);
+
+	// Comparison.
+	bool operator < (const Value& rhs) const;
 
 	// Accessors.
 	FI_ValueType getType () const {
@@ -59,6 +71,28 @@ private:
 	size_t value_count;
 	char *value_buf;
 }; // class Value
+
+/*
+ * Dynamic value table.
+ */
+class DV_VocabTable : public DynamicTypedVocabTable<Value> {
+public:
+	DV_VocabTable ();
+
+private:
+	DV_VocabTable (bool read_only, FI_VocabIndex max_idx);
+
+	static TypedVocabTable *builtin_table ();
+}; // class DN_VocabTable
+
+// Template function to ease casting a Value to primitive types.
+// TODO: Add specializations that check the types are correct.
+template<typename T>
+const T *
+Value_cast(const Value& value)
+{
+	return static_cast<const T *>(value.getValue());
+}
 
 } // namespace FI
 } // namespace BTech
