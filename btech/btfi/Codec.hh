@@ -37,6 +37,20 @@ enum XMLVersion {
 	XML_VERSION_1_1
 }; // enum XMLVersion
 
+enum ChildType {
+	NEXT_UNKNOWN,			// bad state
+
+	END_CHILD,			// end of child (doc, el, dtd)
+
+	START_ELEMENT,			// start of element (doc, el)
+	PROCESSING_INSTRUCTION,		// processing instruction (doc, el, dtd)
+	ENTITY_REFERENCE,		// unexpanded entity reference (el)
+	CHARACTERS,			// character chunk (el)
+	COMMENT,			// comment (doc, el)
+	DTD				// document type declaration (doc)
+}; // enum ChildType
+
+
 class Encoder {
 public:
 	Encoder ();
@@ -124,20 +138,6 @@ public:
 	}
 
 	// Child type iteration.
-
-	// TODO: Move these constants somewhere common.
-	enum ChildType {
-		NEXT_UNKNOWN,		// bad state
-
-		END_CHILD,		// end of child (doc, el, dtd)
-
-		START_ELEMENT,		// start of element (doc, el)
-		PROCESSING_INSTRUCTION,	// processing instruction (doc, el, dtd)
-		ENTITY_REFERENCE,	// unexpanded entity reference (el)
-		CHARACTERS,		// character chunk (el)
-		COMMENT,		// comment (doc, el)
-		DTD			// document type declaration (doc)
-	}; // enum ChildType
 
 	ChildType next () {
 		ChildType child_type = next_child_type;

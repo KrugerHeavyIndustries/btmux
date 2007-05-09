@@ -338,10 +338,136 @@ Encoder::writeXMLDecl(XMLVersion version, FI_Ternary standalone)
 	memcpy(w_buf, xml_decl[ii], xml_decl_len);
 }
 
+// TODO: Can probably just replace this with a regexp matcher, provided we have
+// an appropriate library available.
 bool
 Decoder::readXMLDecl()
 {
-	return true;
+	// Stop trying to parse an XML declaration at MAX_LEN length.  This is
+	// to prevent wasting too much time trying to parse an overly long XML
+	// declaration.
+	static const FI_Length MAX_LEN = 192;
+
+	const FI_Octet *r_buf;
+	FI_Length tmp_len = saved_len;
+
+	switch (super_step) {
+	case 0:
+		saved_len = 0;
+
+		if (!readBits(0)) {
+			return false;
+		}
+
+		if (getBits() != '<') {
+			// Can't be an XML declaration, consider empty.
+			return true;
+		}
+
+		super_step = 1;
+		// FALLTHROUGH
+
+	case 1:
+		// Look for the "<?xml".
+		if (fi_try_read_stream(stream, &r_buf, 0, 5) < 5) {
+			return false;
+		}
+
+		if (r_buf[1] != '?' || r_buf[2] != 'x'
+		    || r_buf[3] != 'm' || r_buf[4] != 'l') {
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+
+		super_step = 2;
+		tmp_len = 5;
+		saved_len = tmp_len;
+		// FALLTHROUGH
+
+	case 2:
+		// TODO: Implement parsing for the full grammar.
+
+		// Look for "?>" (regexp \?+>).
+		do {
+			++tmp_len;
+
+			FI_Length len = fi_try_read_stream(stream, &r_buf,
+			                                   0, tmp_len);
+			if (len < tmp_len) {
+				return false;
+			}
+
+			if (len > MAX_LEN) {
+				// Don't look farther than MAX_LEN.
+				len = MAX_LEN;
+			}
+
+			for (FI_Length ii = tmp_len - 1; ii < len; ii++) {
+				switch (sub_step) {
+				case 0:
+					// Look for '?'.
+					if (r_buf[ii] == '?') {
+						sub_step = 1;
+					}
+					break;
+
+				case 1:
+					// Look for '?>'.
+					if (r_buf[ii] == '>') {
+						// We're done!
+						sub_step = 0;
+						tmp_len = ii + 1;
+						goto break_top;
+					} else if (r_buf[ii] == '?') {
+						// Keep looking.
+					} else {
+						// Restart '?' search.
+						sub_step = 0;
+					}
+					break;
+				}
+			}
+
+			tmp_len = len;
+			saved_len = tmp_len;
+		} while (tmp_len < MAX_LEN);
+
+		// Reached MAX_LEN.  Give up parsing XML declaration.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+
+	default:
+		// Should never happen.
+		throw AssertionFailureException ();
+	}
+
+break_top:
+	// Check if the XML declaration is any of the ones we accept.
+	// TODO: We only accept one of the exact 9 strings which are listed in
+	// 12.3.  This isn't very generous of us.
+	// FIXME: Need to check that the version/standalone attributes match
+	// Document's decoded version/standalone properties.
+	const int XML_DECL_MAX = sizeof(xml_decl) / sizeof(xml_decl[0]);
+
+	int jj;
+
+	for (jj = 0; jj < XML_DECL_MAX; jj++) {
+		if (strlen(xml_decl[jj]) != tmp_len) {
+			// Not even the same length.
+			continue;
+		}
+
+		if (memcmp(r_buf, xml_decl[jj], tmp_len) == 0) {
+			// Matched, yay.
+			fi_advance_stream_cursor(stream, tmp_len);
+
+			super_step = 0;
+			return true;
+		}
+	}
+
+	// No matches.  Technically not a valid Fast Infoset.
+	throw IllegalStateException ();
 }
 
 // C.4
@@ -1772,123 +1898,3 @@ write_length_sequence_of(FI_OctetStream *stream, FI_PInt20 len)
 
 } // namespace FI
 } // namespace BTech
-#if 0
-bool
-read_xml_decl(FI_OctetStream *stream, FI_Length& r_len_state)
-{
-	const FI_Octet *r_buf;
-	FI_Length avail_len;
-
-	// Get at least one more octet than last time.
-	avail_len = fi_try_read_stream(stream, &r_buf, 0, r_len_state + 1);
-	if (avail_len <= r_len_state) {
-		return false;
-	}
-
-	// Search for "?>" from r_len_state - 2 to the current position.
-	FI_Length ii;
-
-	bool saw_question_mark = false;
-	for (ii = r_len_state - 1; ii < avail_len; ii++) {
-		if (saw_question_mark) {
-			if (r_buf[ii] == '>') {
-				// Probably just saw an XML declaration.
-				// TODO: Implement the full grammar.
-				break;
-			} else if (r_buf[ii] != '?') {
-				saw_question_mark = false;
-			}
-		} else if (r_buf[ii] == '?') {
-			saw_question_mark = true;
-		}
-	}
-
-	if (ii < avail_len) {
-		ii++; // advance ii to input XML declaration length
-	} else {
-		// Didn't find a "?>" yet.
-		r_len_state = ii;
-
-		// Just as a sanity check, give up after 192 octets or so.
-		if (r_len_state > 192) {
-			throw UnsupportedOperationException ();
-		}
-
-		// Mark the stream as needing at least one more byte.
-		if (saw_question_mark) {
-			fi_set_stream_needed_length(stream, 1);
-		} else {
-			fi_set_stream_needed_length(stream, 2);
-		}
-
-		return false;
-	}
-
-	// Try to match against the 9 possible XML declarations for a valid
-	// Fast Infoset document (12.3).
-	const int XML_DECL_MAX = sizeof(xml_decl) / sizeof(xml_decl[0]);
-
-	int jj;
-
-	for (jj = 0; jj < XML_DECL_MAX; jj++) {
-		if (strlen(xml_decl[jj]) != ii) {
-			// Not even the same length.
-			continue;
-		}
-
-		if (memcmp(r_buf, xml_decl[jj], ii) == 0) {
-			// Match, yay.
-			break;;
-		}
-	}
-
-	if (jj == XML_DECL_MAX) {
-		// TODO: We're being rather strict here about what we accept,
-		// since we didn't implement a full XML declaration parser.
-		// This behavior is allowed by the X.891 standard, but probably
-		// isn't very friendly.
-		throw IllegalStateException ();
-	}
-
-	// FIXME: We don't verify that the XML declaration matches the contents
-	// of the Document section.
-
-	// Success, advance cursor.
-	fi_advance_stream_cursor(stream, ii);
-	return true;
-}
-
-{
-		// A Fast Infoset may optionally begin with a UTF-8 encoded XML
-		// declaration (which begins with "<?xml") (12.3).
-#if 0
-		if (fi_try_read_stream(stream, &r_buf, 0, 4) < 4) {
-			return false;
-		}
-#endif // FIXME
-
-		if (r_buf[0] != '<' || r_buf[1] != '?'
-		    || r_buf[2] != 'x' || r_buf[3] != 'm') {
-			// Try again as a Fast Infoset identification string.
-			r_header_state = MAIN_HEADER_STATE;
-			// XXX: Gotos are not evil, but if you really feel this
-			// one is so egregious, you can replace it with a
-			// continue and a loop, or some other construct.  But I
-			// think that's even worse.
-			goto redispatch;
-		}
-
-		r_header_state = XML_DECL_HEADER_STATE;
-		r_len_state = 4;
-		// FALLTHROUGH
-
-	case XML_DECL_HEADER_STATE:
-		// Try to read XML declaration.
-#if 0
-		if (!read_xml_decl(stream, r_len_state)) {
-			return false;
-		}
-#endif // FIXME
-}
-
-#endif // 0

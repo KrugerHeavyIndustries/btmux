@@ -74,6 +74,10 @@ static void
 print_value(const FI_Value *value)
 {
 	switch (fi_get_value_type(value)) {
+	case FI_VALUE_AS_NULL:
+		fputs("\"\"", stdout);
+		break;
+
 	case FI_VALUE_AS_OCTETS:
 		// Not quite right...
 		printf("\"%.*s\"",

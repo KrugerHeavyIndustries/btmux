@@ -88,6 +88,12 @@ private:
 		ATTRS_ELEMENT_STATE
 	} r_element_state;
 
+	enum {
+		RESET_ATTR_STATE,
+		MAIN_ATTR_STATE,
+		END_ATTR_STATE
+	} r_attr_state;
+
 	bool r_has_attrs;
 
 	bool r_saw_an_attribute;

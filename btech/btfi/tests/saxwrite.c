@@ -125,9 +125,6 @@ write_test(const char *const TEST_FILE)
 	 *     </now>
 	 *     <now now='cow' cow='' />
 	 * </how>
-	 *
-	 * TODO: Test empty attribute values, which are valid but require using
-	 * the attribute-value-by-index format.
 	 */
 	if (!handler->startDocument(handler)) {
 		die_gen("generate::startDocument");

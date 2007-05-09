@@ -57,6 +57,7 @@ void
 Element::start(const NSN_DS_VocabTable::TypedEntryRef& ns_name)
 {
 	serialize_mode = SERIALIZE_START;
+	r_state = RESET_READ_STATE;
 	saved_ns_name = ns_name;
 }
 
@@ -64,6 +65,7 @@ void
 Element::stop()
 {
 	serialize_mode = SERIALIZE_END;
+	r_state = RESET_READ_STATE;
 }
 
 void
@@ -283,25 +285,22 @@ Element::write_attributes(Encoder& encoder)
 bool
 Element::read_start(Decoder& decoder)
 {
-	const FI_Octet *r_buf;
 	FI_Octet bits;
 
-redispatch:
+reparse:
 	switch (r_element_state) {
 	case RESET_ELEMENT_STATE:
+		assert(decoder.getBitOffset() == 1);
+
 		// Peek at the second bit to check if we have attributes.
 		r_attrs.clear();
 
-#if 0
-		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-			return false;
-		}
-#endif // FIXME
+		r_has_attrs = decoder.getBits() & FI_BIT_2;
 
-		r_has_attrs = r_buf[0] & FI_BIT_2;
+		decoder.readBits(1);
 
 		// Check if we have namespace attributes (C.3.4.1: 1110 00).
-		bits = r_buf[0] & FI_BITS(,,1,1,1,1,1,1);
+		bits = decoder.getBits() & FI_BITS(,,1,1,1,1,1,1);
 
 		if (bits != FI_BITS(,,1,1,1,0, 0,0)) {
 			if (!doc.hasElements()) {
@@ -312,8 +311,10 @@ redispatch:
 
 			// Skip directly to NAME_ELEMENT_STATE.
 			r_element_state = NAME_ELEMENT_STATE;
-			goto redispatch; // already commented on in Document
+			goto reparse; // already commented on in Document
 		}
+
+		decoder.readBits(6);
 
 		// FIXME: As an implementation restriction, we only allow
 		// namespace attributes at the root level.
@@ -321,12 +322,8 @@ redispatch:
 			throw UnsupportedOperationException ();
 		}
 
-		// Consume namespace attributes presence bits (C.3.4.1).
-#if 0
-		fi_advance_stream_cursor(stream, 1);
-#endif // FIXME
-
 		r_element_state = NS_DECL_ELEMENT_STATE;
+		r_attr_state = RESET_ATTR_STATE;
 		// FALLTHROUGH
 
 	case NS_DECL_ELEMENT_STATE:
@@ -350,6 +347,7 @@ redispatch:
 		}
 
 		r_element_state = ATTRS_ELEMENT_STATE;
+		r_attr_state = RESET_ATTR_STATE;
 		r_saw_an_attribute = false;
 		// FALLTHROUGH
 
@@ -380,18 +378,40 @@ Element::read_namespace_attributes(Decoder& decoder)
 	// Read next NamespaceAttribute item using C.12.
 	NSN_DS_VocabTable::TypedEntryRef ns_name;
 
-	const FI_Octet *r_buf;
-	FI_Octet bits;
-
 	for (;;) {
-#if 0
-		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-			return false;
-		}
-#endif // FIXME
+		switch (r_attr_state) {
+		case RESET_ATTR_STATE:
+			if (!decoder.readBits(6)) {
+				return false;
+			}
 
-		switch (r_buf[0] & FI_BITS(1,1,1,1,1,1,,)) {
-		case FI_BITS(1,1,0,0,1,1,,):
+			switch (decoder.getBits() & FI_BITS(1,1,1,1,1,1,,)) {
+			case FI_BITS(1,1,0,0,1,1,,):
+				// NamespaceAttribute (C.3.4.2: 110011).
+				break;
+
+			case FI_BITS(1,1,1,1, 0,0,/*0*/,/*0*/):
+				// Terminator + padding (C.3.4.3: 1111 000000).
+				if (decoder.getBits()
+				    != FI_BITS(1,1,1,1, 0,0,0,0)) {
+					// Not a valid Fast Infoset.
+					throw IllegalStateException ();
+				}
+
+				decoder.readBits(2);
+
+				r_attr_state = END_ATTR_STATE;
+				continue;
+
+			default:
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			r_attr_state = MAIN_ATTR_STATE;
+			// FALLTHROUGH
+
+		case MAIN_ATTR_STATE:
 			// Read NamespaceAttribute using C.12 (C.3.4.2: 110011).
 			if (!decoder.readNSAttribute(ns_name)) {
 				return false;
@@ -406,30 +426,26 @@ Element::read_namespace_attributes(Decoder& decoder)
 				// FIXME: Implementation restriction.
 				throw UnsupportedOperationException ();
 			}
+
+			r_attr_state = RESET_ATTR_STATE;
 			break;
 
-		case FI_BITS(1,1,1,1, 0,0,0,0):
+		case END_ATTR_STATE:
 			// Read terminator and padding (C.3.4.3: 1111 000000).
-#if 0
-			if (fi_try_read_stream(stream, &r_buf, 0, 2) < 2) {
+			if (!decoder.readBits(2)) {
 				return false;
 			}
-#endif // FIXME
 
-			bits = r_buf[1] & FI_BITS(1,1,,,,,,);
-			if (bits != FI_BITS(0,0,,,,,,)) {
+			if ((decoder.getBits() & FI_BIT_1)
+			    || (decoder.getBits() & FI_BIT_2)) {
 				// Not a valid Fast Infoset.
 				throw IllegalStateException ();
 			}
-
-#if 0
-			fi_advance_stream_cursor(stream, 1);
-#endif // FIXME
 			return true;
 
 		default:
-			// Not a valid Fast Infoset.
-			throw IllegalStateException ();
+			// Should never happen.
+			throw AssertionFailureException ();
 		}
 	}
 }
@@ -438,41 +454,52 @@ bool
 Element::read_attributes(Decoder& decoder)
 {
 	// Read attributes (C.3.6).
-	const FI_Octet *r_buf;
+	DN_VocabTable::TypedEntryRef name;
+	Value value;
+
 	FI_Octet bits;
 
 	for (;;) {
-#if 0
-		if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-			return false;
-		}
-#endif // FIXME
+		switch (r_attr_state) {
+		case RESET_ATTR_STATE:
+			assert(decoder.getBitOffset() == 0);
 
-		if (r_buf[0] & FI_BIT_1) {
-			// Not an attribute.  Check for terminator (C.3.6.2).
-			bits = r_buf[0] & FI_BITS(1,1,1,1,,,,);
-			if (bits != FI_BITS(1,1,1,1,,,,)) {
-				// Not a valid Fast Infoset.
-				throw IllegalStateException ();
+			if (!decoder.readBits(1)) {
+				return false;
 			}
 
-#if 0
-			fi_set_stream_num_bits(stream, 4);
-#endif // FIXME
-			return true;
+			if (decoder.getBits() & FI_BIT_1) {
+				// Check for terminator (C.3.6.2).
+				decoder.readBits(3);
+
+				bits = decoder.getBits() & FI_BITS(1,1,1,1,,,,);
+
+				if (bits != FI_BITS(1,1,1,1,,,,)) {
+					// Not a valid Fast Infoset.
+					throw IllegalStateException ();
+				}
+				return true;
+			}
+
+			r_attr_state = MAIN_ATTR_STATE;
+			// FALLTHROUGH
+
+		case MAIN_ATTR_STATE:
+			// Identified as attribute (C.3.6.1).
+			if (!decoder.readAttribute(name, value)) {
+				return false;
+			}
+
+			r_attrs.add(name, value);
+			r_saw_an_attribute = true;
+
+			r_attr_state = RESET_ATTR_STATE;
+			break;
+
+		default:
+			// Should never happen.
+			throw AssertionFailureException ();
 		}
-
-		// Identified as attribute (C.3.6.1).
-		DN_VocabTable::TypedEntryRef name;
-		Value value;
-
-		if (!decoder.readAttribute(name, value)) {
-			return false;
-		}
-
-		r_attrs.add(name, value);
-
-		r_saw_an_attribute = true;
 	}
 }
 

@@ -486,7 +486,7 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 {
 	// Prepare buffer for read from file.
 	if (min_len == 0 && feof(parser->fpin)) {
-		// Don't need to read anything.
+		// End of file already reached, and min_len == 0.
 		return true;
 	}
 
@@ -498,7 +498,7 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	}
 
 	if (len == 0) {
-		// Don't need to read anything.
+		// Buffer free space already filled, and min_len == 0.
 		return true;
 	}
 
@@ -515,10 +515,10 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 1
+#if 0
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
-	min_len = 1;
+	min_len = min_len ? 1 : 0;
 	size_t r_len = fread(w_buf, sizeof(FI_Octet), 1, parser->fpin);
 #else // 0
 	size_t r_len = fread(w_buf, sizeof(FI_Octet), len, parser->fpin);
@@ -595,13 +595,13 @@ parse_document(FI_Parser *parser)
 
 	do {
 		switch (parser->decoder.next()) {
-		case Decoder::START_ELEMENT:
+		case START_ELEMENT:
 			if (!parse_startElement(parser)) {
 				return false;
 			}
 			break;
 
-		case Decoder::END_CHILD:
+		case END_CHILD:
 			if (!parser->document.hasElements()) {
 				// Interpret as end of document.
 				end_of_document = true;

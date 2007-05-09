@@ -148,15 +148,6 @@ fi_get_stream_needed_length(const FI_OctetStream *stream)
 }
 
 /*
- * Set the needed length directly.
- */
-void
-fi_set_stream_needed_length(FI_OctetStream *stream, FI_Length length)
-{
-	stream->needed_length = length;
-}
-
-/*
  * Reduce the occupied length of the stream, which is useful for partial
  * writes.  Reducing by more than the number of available octets will silently
  * clamp to the number of available octets.
