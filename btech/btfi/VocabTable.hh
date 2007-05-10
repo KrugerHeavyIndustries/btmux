@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "common.h"
+#include "fiptypes.h" // FIXME: move FI_VocabIndex, FI_VOCAB_INDEX_NULL out
 
 #include "Exception.hh"
 #include "ObjectPool.hh"

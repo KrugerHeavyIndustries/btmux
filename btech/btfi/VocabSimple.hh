@@ -8,7 +8,7 @@
 
 #include "VocabTable.hh"
 
-#include "common.h"
+#include "common.h" // FIXME: only needed for CharString
 #include "encalg.h"
 
 

@@ -59,7 +59,9 @@ Document::start()
 {
 	serialize_mode = SERIALIZE_HEADER;
 	r_state = RESET_READ_STATE;
+
 	element_stack.clear();
+	saw_root_element = false;
 }
 
 void
@@ -67,10 +69,15 @@ Document::stop()
 {
 	serialize_mode = SERIALIZE_TRAILER;
 	r_state = RESET_READ_STATE;
+
+	if (hasElements() || !saw_root_element) {
+		// Not a valid Fast Infoset.
+		throw IllegalStateException ();
+	}
 }
 
 void
-Document::write(Encoder& encoder)
+Document::write(Encoder& encoder) const
 {
 	switch (serialize_mode) {
 	case SERIALIZE_HEADER:
@@ -83,22 +90,11 @@ Document::write(Encoder& encoder)
 			throw Exception ();
 		}
 #endif // FI_USE_INITIAL_VOCABULARY
-
-		saw_root_element = false;
 		break;
 
 	case SERIALIZE_TRAILER:
-		if (!saw_root_element) {
-			// Not a valid Fast Infoset.
-			throw IllegalStateException ();
-		}
-
 		// Write document trailer.
 		write_trailer(encoder);
-
-		// Clear state now, to save some memory.  Note that for the
-		assert(!hasElements());
-		element_stack.clear(); // XXX: Save some memory
 		break;
 
 	default:
@@ -107,7 +103,7 @@ Document::write(Encoder& encoder)
 	}
 }
 
-void
+bool
 Document::read(Decoder& decoder)
 {
 	switch (serialize_mode) {
@@ -122,19 +118,8 @@ Document::read(Decoder& decoder)
 		case MAIN_READ_STATE:
 			// Try to read document header.
 			if (!read_header(decoder)) {
-				return;
+				return false;
 			}
-
-			r_state = NEXT_PART_READ_STATE;
-			// FALLTHROUGH
-
-		case NEXT_PART_READ_STATE:
-			// Determine next child type.
-			if (!decoder.readNext()) {
-				return;
-			}
-
-			saw_root_element = false;
 			break;
 		}
 		break;
@@ -142,15 +127,6 @@ Document::read(Decoder& decoder)
 	case SERIALIZE_TRAILER:
 		switch (r_state) {
 		case RESET_READ_STATE:
-			if (!saw_root_element) {
-				// Not a valid Fast Infoset.
-				throw IllegalStateException ();
-			}
-
-			r_state = NEXT_PART_READ_STATE;
-			// FALLTHROUGH
-
-		case NEXT_PART_READ_STATE:
 			if (decoder.getBitOffset() == 4) {
 				// Ended on 4th bit, has padding (1111 0000).
 				if (decoder.getBits()
@@ -161,14 +137,6 @@ Document::read(Decoder& decoder)
 			} else {
 				assert(decoder.getBitOffset() == 0);
 			}
-
-			// Clear state now, to save some memory.  Note that for
-			// the vocabulary tables, any cached entries that still
-			// have an EntryRef to them will remain interned, so
-			// they won't be constantly reallocated on each run
-			// (but the indexes will be reset, as intended).
-			assert(!hasElements());
-			element_stack.clear();
 			break;
 
 		default:
@@ -181,6 +149,8 @@ Document::read(Decoder& decoder)
 		// Didn't call start()/stop() first.
 		throw IllegalStateException ();
 	}
+
+	return true;
 }
 
 #if 0 // defined(FI_USE_INITIAL_VOCABULARY)
@@ -231,7 +201,7 @@ Document::writeVocab(FI_OctetStream *stream)
  */
 
 void
-Document::write_header(Encoder& encoder)
+Document::write_header(Encoder& encoder) const
 {
 	// Write XML declaration.
 	XMLVersion version = XML_VERSION_NONE;
@@ -277,7 +247,7 @@ Document::write_header(Encoder& encoder)
 }
 
 void
-Document::write_trailer(Encoder& encoder)
+Document::write_trailer(Encoder& encoder) const
 {
 	FI_Octet *w_buf;
 

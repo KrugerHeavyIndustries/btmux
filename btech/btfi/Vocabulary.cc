@@ -24,12 +24,12 @@ Vocabulary::clear ()
 	namespace_names.clear();
 	local_names.clear();
 
-	other_ncnames.clear();
-	other_uris.clear();
+	//other_ncnames.clear();
+	//other_uris.clear();
 
 	attribute_values.clear();
 	content_character_chunks.clear();
-	other_strings.clear();
+	//other_strings.clear();
 
 	element_names.clear();
 	attribute_names.clear();

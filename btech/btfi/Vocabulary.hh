@@ -28,12 +28,12 @@ public:
 	NSN_DS_VocabTable namespace_names;
 	DS_VocabTable local_names;
 
-	DS_VocabTable other_ncnames;
-	DS_VocabTable other_uris;
+	//DS_VocabTable other_ncnames;
+	//DS_VocabTable other_uris;
 
 	DV_VocabTable attribute_values;
 	DV_VocabTable content_character_chunks;
-	DV_VocabTable other_strings;
+	//DV_VocabTable other_strings;
 
 	DN_VocabTable element_names;
 	DN_VocabTable attribute_names;

@@ -11,7 +11,8 @@
 
 #include <stddef.h>
 
-#include "common.h"
+#include "fiptypes.h"
+#include "errors.h"
 
 #ifdef __cplusplus
 extern "C" {

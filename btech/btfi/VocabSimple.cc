@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "common.h"
+#include "common.h" // FIXME: only needed for various vocab index definitions
 #include "encalg.h"
 
 #include "Exception.hh"

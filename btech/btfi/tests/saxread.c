@@ -140,7 +140,7 @@ endElement(FI_ContentHandler *handler, const FI_Name *name)
 }
 
 static int
-characters(FI_ContentHandler *handler, const FI_Octet *ch, int length)
+characters(FI_ContentHandler *handler, const FI_Value *value)
 {
 	/* TODO: Not implemented.  */
 	die("FI_ContentHandler::characters");

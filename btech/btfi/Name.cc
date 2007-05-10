@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "common.h"
 #include "names.h"
 
 #include "Exception.hh"

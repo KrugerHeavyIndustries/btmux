@@ -5,7 +5,6 @@
 #ifndef BTECH_FI_NAME_HH
 #define BTECH_FI_NAME_HH
 
-#include "common.h"
 #include "names.h"
 
 #include "VocabSimple.hh"

@@ -9,9 +9,11 @@
 #ifndef BTECH_FI_SAX_H
 #define BTECH_FI_SAX_H
 
-#include "common.h"
+#include "fiptypes.h"
+#include "errors.h"
 
 #include "names.h"
+#include "values.h"
 #include "attribs.h"
 
 #ifdef __cplusplus
@@ -35,8 +37,7 @@ struct FI_tag_ContentHandler {
 	int (*endElement)(FI_ContentHandler *handler, const FI_Name *name);
 
 	/* "Character" chunks. */
-	int (*characters)(FI_ContentHandler *handler,
-	                  const FI_Octet *ch, int length);
+	int (*characters)(FI_ContentHandler *handler, const FI_Value *value);
 
 	/* For application use.  */
 	void *app_data_ptr;

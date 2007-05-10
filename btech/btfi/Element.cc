@@ -33,8 +33,6 @@
 
 #include <cassert>
 
-#include "common.h"
-
 #include "Codec.hh"
 
 #include "Vocabulary.hh"
@@ -69,7 +67,7 @@ Element::stop()
 }
 
 void
-Element::write(Encoder& encoder)
+Element::write(Encoder& encoder) const
 {
 	switch (serialize_mode) {
 	case SERIALIZE_START:
@@ -86,7 +84,7 @@ Element::write(Encoder& encoder)
 			throw IllegalStateException ();
 		}
 
-		name = doc.popElement(); // XXX: don't need to restore name...
+		doc.popElement(); // XXX: don't need to restore name...
 
 		write_end(encoder);
 		break;
@@ -97,7 +95,7 @@ Element::write(Encoder& encoder)
 	}
 }
 
-void
+bool
 Element::read(Decoder& decoder)
 {
 	switch (serialize_mode) {
@@ -111,19 +109,10 @@ Element::read(Decoder& decoder)
 		case MAIN_READ_STATE:
 			// Try to read element start.
 			if (!read_start(decoder)) {
-				return;
+				return false;
 			}
 
 			doc.pushElement(name);
-
-			r_state = NEXT_PART_READ_STATE;
-			// FALLTHROUGH
-
-		case NEXT_PART_READ_STATE:
-			// Determine next child type.
-			if (!decoder.readNext()) {
-				return;
-			}
 			break;
 		}
 		break;
@@ -137,15 +126,6 @@ Element::read(Decoder& decoder)
 			}
 
 			name = doc.popElement(); // need name for SAX API
-
-			r_state = NEXT_PART_READ_STATE;
-			// FALLTHROUGH
-
-		case NEXT_PART_READ_STATE:
-			// Determine next child type.
-			if (!decoder.readNext()) {
-				return;
-			}
 			break;
 
 		default:
@@ -158,6 +138,8 @@ Element::read(Decoder& decoder)
 		// start()/stop() wasn't called.
 		throw IllegalStateException ();
 	}
+
+	return true;
 }
 
 
@@ -166,7 +148,7 @@ Element::read(Decoder& decoder)
  */
 
 void
-Element::write_start(Encoder& encoder)
+Element::write_start(Encoder& encoder) const
 {
 	// Pad out bitstream so we start on the 1st bit of an octet.
 	switch (encoder.getBitOffset()) {
@@ -203,7 +185,7 @@ Element::write_start(Encoder& encoder)
 }
 
 void
-Element::write_end(Encoder& encoder)
+Element::write_end(Encoder& encoder) const
 {
 	// Write termination (C.3.8: 1111).
 	switch (encoder.getBitOffset()) {
@@ -222,7 +204,7 @@ Element::write_end(Encoder& encoder)
 }
 
 void
-Element::write_namespace_attributes(Encoder& encoder)
+Element::write_namespace_attributes(Encoder& encoder) const
 {
 	assert(encoder.getBitOffset() == 2);
 
@@ -253,7 +235,7 @@ Element::write_namespace_attributes(Encoder& encoder)
 }
 
 void
-Element::write_attributes(Encoder& encoder)
+Element::write_attributes(Encoder& encoder) const
 {
 	if (!w_attrs->getLength()) {
 		// No attributes.
@@ -419,10 +401,7 @@ Element::read_namespace_attributes(Decoder& decoder)
 
 			// FIXME: This routine is currently hard-coded to check
 			// that the NamespaceAttribute == saved_ns_name.
-			if (*ns_name != *saved_ns_name
-			    || !ns_name.hasIndex() || !saved_ns_name.hasIndex()
-			    || ns_name.getIndex() != saved_ns_name.getIndex()
-			    || ns_name.getIndex() != 2) {
+			if (*ns_name != *saved_ns_name) {
 				// FIXME: Implementation restriction.
 				throw UnsupportedOperationException ();
 			}

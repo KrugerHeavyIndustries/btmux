@@ -9,13 +9,17 @@
 
 #include "values.h"
 
-#include "Exception.hh"
+#include "Serializable.hh"
 #include "VocabTable.hh"
+
+#include "Exception.hh"
 
 namespace BTech {
 namespace FI {
 
-class Value {
+class DV_VocabTable;
+
+class Value : public Serializable {
 public:
 	Value ()
 	: value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {}
@@ -66,10 +70,35 @@ public:
 		return value_buf;
 	}
 
+	// Fast Infoset serialization support.
+	void setVocabTable (DV_VocabTable& new_vocab_table);
+
+	void write (Encoder& encoder) const;
+	bool read (Decoder& decoder);
+
 private:
 	FI_ValueType value_type;
 	size_t value_count;
 	char *value_buf;
+
+	// Fast Infoset serialization support.
+
+	// C.14/C.19.
+	void write_bit1 (Encoder& encoder) const;
+	bool read_bit1 (Decoder& decoder);
+
+	// C.15/C.20.
+	void write_bit3 (Encoder& encoder) const;
+	bool read_bit3 (Decoder& decoder);
+
+	// TODO: Come up with a reasonable protocol for foisting all this state
+	// on to the shared Encoder/Decoder objects.
+	DV_VocabTable *vocab_table;
+	bool add_value_to_table;
+
+	unsigned char super_step, sub_step;
+	FI_ValueType next_value_type;
+	FI_Length saved_len;
 }; // class Value
 
 /*

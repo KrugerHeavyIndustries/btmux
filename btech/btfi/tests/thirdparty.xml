@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This is an XML file that will be encoded with a bunch of features that our
+     Fast Infoset implementation does not generate, but will properly ignore.
+
+     Note that there are still some features we don't properly ignore, or can't
+     be tested simply by generating a Fast Infoset from this document in the
+     most naive manner. -->
+<how xmlns="http://btonline-btech.sourceforge.net" cow="moo">
+	<now brown="1" now="3.14">
+		<how brown="oops"/>
+	</now>
+	<now now="cow" cow="" brown="moo" />
+</how>

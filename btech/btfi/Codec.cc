@@ -13,6 +13,7 @@
 #include <cassert>
 
 #include "stream.h"
+#include "encalg.h"
 
 #include "Name.hh"
 #include "Value.hh"
@@ -67,8 +68,6 @@ Decoder::clear()
 		vocabulary->clear();
 	}
 
-	next_child_type = NEXT_UNKNOWN;
-
 	num_read_bits = 0;
 
 	super_step = 0;
@@ -101,6 +100,20 @@ Decoder::getReadBuffer(FI_Length length)
 	}
 
 	return r_buf;
+}
+
+bool
+Decoder::skipLength(FI_Length& length)
+{
+	FI_Length avail_len = fi_try_read_stream(stream, 0, length, length);
+
+	if (avail_len < length) {
+		fi_advance_stream_cursor(stream, avail_len);
+		length -= avail_len;
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -173,7 +186,7 @@ Decoder::readBits(unsigned int num_bits)
 // Consumes identification/terminator bits.  Some child types are not valid in
 // all contexts; it is the responsibility of the caller to verify this.
 bool
-Decoder::readNext()
+Decoder::readNext(ChildType& child_type)
 {
 	// Children always start on the first bit of an octet, but the most
 	// recent bit may either be the fourth or eight bit (C.2.11.1,
@@ -190,7 +203,7 @@ Decoder::readNext()
 		case FI_BITS(,,,,1,1,1,1):
 			// Terminator.
 			readBits(4);
-			next_child_type = END_CHILD;
+			child_type = END_CHILD;
 			return true;
 
 		case FI_BITS(,,,,0,0,0,0):
@@ -219,23 +232,23 @@ Decoder::readNext()
 	if (!(getBits() & FI_BIT_1)) {
 		// Start of element (C.2.11.2, C.3.7.2: 0).
 		readBits(1);
-		next_child_type = START_ELEMENT;
+		child_type = START_ELEMENT;
 	} else if (!(getBits() & FI_BIT_2)) {
 		// Character chunk (C.3.7.5: 10).
 		readBits(2);
-		next_child_type = CHARACTERS;
+		child_type = CHARACTERS;
 	} else if (!(getBits() & FI_BIT_3)) {
 		// Unexpanded entity reference or DTD.
 		readBits(6);
 		switch (getBits() & FI_BITS(/*1*/,/*1*/,/*0*/,1,1,1,,)) {
 		case FI_BITS(/*1*/,/*1*/,/*0*/,0,1,0,,):
 			// Unexpanded entity reference (C.3.7.4: 110010).
-			next_child_type = ENTITY_REFERENCE;
+			child_type = ENTITY_REFERENCE;
 			break;
 
 		case FI_BITS(/*1*/,/*1*/,/*0*/,0,0,1,,):
 			// DTD (C.2.11.5: 110001).
-			next_child_type = DTD;
+			child_type = DTD;
 			break;
 
 		default:
@@ -249,12 +262,12 @@ Decoder::readNext()
 		case FI_BITS(/*1*/,/*1*/,/*1*/,/*0*/,0,0,0,1):
 			// Processing instruction
 			// (C.2.11.3, C.3.7.3, C.9.6: 11100001).
-			next_child_type = PROCESSING_INSTRUCTION;
+			child_type = PROCESSING_INSTRUCTION;
 			break;
 
 		case FI_BITS(/*1*/,/*1*/,/*1*/,/*0*/,0,0,1,0):
 			// Comment (C.2.11.4, C.3.7.6: 11100010).
-			next_child_type = COMMENT;
+			child_type = COMMENT;
 			break;
 
 		default:
@@ -264,7 +277,7 @@ Decoder::readNext()
 	} else {
 		// Terminator (C.2.12, C.3.8, C.9.7: 1111).
 		readBits(4);
-		next_child_type = END_CHILD;
+		child_type = END_CHILD;
 	}
 
 	return true;
@@ -481,7 +494,7 @@ Encoder::writeAttribute(const DN_VocabTable::TypedEntryRef& name,
 	writeName_bit2(name);
 
 	// Write normalized-value using C.14 (C.4.4).
-	writeValue_bit1(value);
+	value.write(*this);
 }
 
 bool
@@ -496,11 +509,13 @@ Decoder::readAttribute(DN_VocabTable::TypedEntryRef& name,
 		}
 
 		super_step = 1;
+
+		value.setVocabTable(vocabulary->attribute_values);
 		// FALLTHROUGH
 
 	case 1:
 		// Read normalized-value using C.14 (C.4.4).
-		if (!readValue_bit1(vocabulary->attribute_values, value)) {
+		if (!value.read(*this)) {
 			return false;
 		}
 
@@ -686,7 +701,7 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		id = string_table.getEntry(CharString (reinterpret_cast<const char *>(r_buf), saved_len));
+		id = string_table.createEntry(CharString (reinterpret_cast<const char *>(r_buf), saved_len));
 		id.getIndex();
 		break;
 
@@ -696,98 +711,6 @@ reparse:
 	}
 
 	sub_sub_step = 0;
-	return true;
-}
-
-// C.14
-// Note that we only choose to encode by literal, not index, except for the
-// empty string/value.  Also, we never request values be added to the table.
-// FIXME: We do need to support adding values to tables during parsing, though.
-void
-Encoder::writeValue_bit1(const Value& value)
-{
-	assert(getBitOffset() == 0); // C.14.2
-
-	if (value.getType() == FI_VALUE_AS_NULL) {
-		// Use index rules (C.14.4).
-
-		// Write string-index discriminant (C.14.4: 1).
-		writeBits(1, FI_BITS(1,,,,,,,));
-
-		// Write string-index using C.26 (C.14.4).
-		writeUInt21_bit2(FI_VOCAB_INDEX_NULL);
-		return;
-	}
-
-	// Use literal rules (C.14.3).
-
-	// Write literal-character-string discriminant (C.14.3: 0).
-	// Write add-to-table (C.14.3.1: 0). (Adding currently not supported.)
-	writeBits(2, FI_BITS(0, 0,,,,,,));
-
-	// Write character-string using C.19 (C.14.3.2).
-	writeEncoded_bit3(value);
-}
-
-bool
-Decoder::readValue_bit1(DV_VocabTable& value_table, Value& value)
-{
-	FI_UInt21 idx;
-
-reparse:
-	switch (sub_step) {
-	case 0:
-		assert(getBitOffset() == 0); // C.14.2
-
-		// Examine discriminator bits.
-		if (!readBits(1)) {
-			return false;
-		}
-
-		if (!(getBits() & FI_BIT_1)) {
-			// Use literal rules (C.14.3).
-			sub_step = 2;
-			goto reparse;
-		}
-
-		sub_step = 1;
-		// FALLTHROUGH
-
-	case 1:
-		// Read string-index using C.26 (C.14.4).
-		if (!readUInt21_bit2(idx)) {
-			return false;
-		}
-
-		// XXX: Throws IndexOutOfBoundsException on bogus index.
-		value = *value_table[idx];
-		break;
-
-	case 2:
-		// Read add-to-table (C.14.3.1).
-		readBits(1);
-
-		if (getBits() & FI_BIT_2) {
-			// FIXME: Implementation restriction.
-			throw UnsupportedOperationException ();
-		}
-
-		sub_step = 3;
-		// FALLTHROUGH
-
-	case 3:
-		// Read character-string using C.19 (C.14.3.2).
-		if (!readEncoded_bit3(value)) {
-			return false;
-		}
-		break;
-
-	default:
-		// Should never happen.
-		throw AssertionFailureException ();
-	}
-
-	sub_step = 0;
 	return true;
 }
 
@@ -928,9 +851,9 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		name = name_table.getEntry(Name (saved_local_part,
-		                                 saved_nsn_part,
-		                                 saved_pfx_part));
+		name = name_table.createEntry(Name (saved_local_part,
+		                                    saved_nsn_part,
+		                                    saved_pfx_part));
 		name.getIndex();
 		break;
 	}
@@ -1076,168 +999,14 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		name = name_table.getEntry(Name (saved_local_part,
-		                                 saved_nsn_part,
-		                                 saved_pfx_part));
+		name = name_table.createEntry(Name (saved_local_part,
+		                                    saved_nsn_part,
+		                                    saved_pfx_part));
 		name.getIndex();
 		break;
 	}
 
 	sub_step = 0;
-	return true;
-}
-
-// C.19
-enum EncodingMode {
-	ENCODE_AS_UTF8        = FI_BITS(,,0,0,,,,), // C.19.3.1
-	ENCODE_AS_UTF16       = FI_BITS(,,0,1,,,,), // C.19.3.2
-	ENCODE_WITH_ALPHABET  = FI_BITS(,,1,0,,,,), // C.19.3.3
-	ENCODE_WITH_ALGORITHM = FI_BITS(,,1,1,,,,)  // C.19.3.4
-}; // enum EncodingMode
-
-void
-Encoder::writeEncoded_bit3(const Value& value)
-{
-	assert(getBitOffset() == 2); // C.19.2
-	assert(value.getCount() > 0); // non-empty
-
-	// Selecting the encoding based on value type.
-	EncodingMode mode;
-
-	switch (value.getType()) {
-	case FI_VALUE_AS_OCTETS:
-		// Encode as octets of UTF-8.
-		// FIXME: This needs to be actual UTF-8, not just arbitrary
-		// octets.  Arbitrary octets will require an encoding algorithm
-		// of their own.
-		mode = ENCODE_AS_UTF8;
-		break;
-
-	default:
-		// Unsupported value type.
-		throw UnsupportedOperationException ();
-	}
-
-	// Write discriminant (C.19.3).
-	writeBits(2, mode);
-
-	// Write the encoded octet string.
-	FI_Octet *w_buf;
-	FI_Length len;
-
-	switch (mode) {
-	case ENCODE_AS_UTF8:
-		// Write octets using C.23 (C.19.4).
-		len = value.getCount();
-
-		writeNonEmptyOctets_len_bit5(FI_UINT_TO_PINT(len));
-
-		w_buf = getWriteBuffer(len);
-
-		memcpy(w_buf, value.getValue(), len);
-		break;
-
-	case ENCODE_AS_UTF16:
-		// TODO: We don't use the utf-16 alternative.
-		// Write octets using C.23 (C.19.4).
-		throw UnsupportedOperationException ();
-
-	case ENCODE_WITH_ALPHABET:
-		// TODO: We don't use the restricted-alphabet alternative.
-		// Write restricted-alphabet index using C.29 (C.19.3.3).
-		// Write octets using C.23 (C.19.4).
-		throw UnsupportedOperationException ();
-
-	case ENCODE_WITH_ALGORITHM:
-		// TODO: We don't support encoding algorithms yet.
-		// Write encoding-algorithm index using C.29 (C.19.3.4).
-		// Write octets using C.23 (C.19.4).
-		throw UnsupportedOperationException ();
-
-	default:
-		// Should never happen.
-		throw AssertionFailureException ();
-	}
-}
-
-bool
-Decoder::readEncoded_bit3(Value& value)
-{
-	const FI_Octet *r_buf;
-
-	FI_PInt32 octets_len;
-
-reparse:
-	switch (sub_sub_step) {
-	case 0:
-		assert(getBitOffset() == 2); // C.19.2
-
-		// Examine discriminator bits.
-		readBits(2);
-
-		switch (getBits() & FI_BITS(,,1,1,,,,)) {
-		case ENCODE_AS_UTF8:
-			// Use UTF-8 decoding rules.
-			sub_sub_step = 1;
-			goto reparse;
-
-		case ENCODE_AS_UTF16:
-			// TODO: We don't use the utf-16 alternative.
-			// Read octets using C.23 (C.19.4).
-			throw UnsupportedOperationException ();
-
-		case ENCODE_WITH_ALPHABET:
-			// TODO: We don't use the restricted-alphabet
-			// alternative.
-			// FIXME: Implementation restriction.
-			// Read restricted-alphabet index using C.29 (C.19.3.3).
-			// Read octets using C.23 (C.19.4).
-			throw UnsupportedOperationException ();
-
-		case ENCODE_WITH_ALGORITHM:
-			// TODO: We don't support encoding algorithms yet.
-			// FIXME: Implementation restriction.
-			// Read encoding-algorithm index using C.29 (C.19.3.4).
-			// Read octets using C.23 (C.19.4).
-			throw UnsupportedOperationException ();
-		}
-		break;
-
-	case 1:
-		// Decode UTF-8.
-
-		// Read octets using C.23 (C.19.4).
-		if (!readNonEmptyOctets_len_bit5(octets_len)) {
-			return false;
-		}
-
-		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
-		// checked in readNonEmptyOctets_len_bit5().
-		saved_len = FI_PINT_TO_UINT(octets_len);
-
-		sub_sub_step = 2;
-		// FALLTHROUGH
-
-	case 2:
-		r_buf = getReadBuffer(saved_len);
-		if (!r_buf) {
-			return false;
-		}
-
-		// Set Value from buffer contents.
-		// TODO: Support other value types.
-		if (!value.setValue(FI_VALUE_AS_OCTETS, saved_len, r_buf)) {
-			// Couldn't set the attribute value.
-			throw UnsupportedOperationException ();
-		}
-		break;
-
-	default:
-		// Should never happen.
-		throw AssertionFailureException ();
-	}
-
-	sub_sub_step = 0;
 	return true;
 }
 
@@ -1749,7 +1518,6 @@ Encoder::writePInt8(FI_PInt8 val)
 
 	case 6:
 		// Starting on bit 7.
-		// TODO: We don't actually use this right now.
 		writeBits(2, (val & FI_BITS(1,1,,,,,,)) >> 6);
 		writeBits(6, (val & FI_BITS(,,1,1,1,1,1,1)) << 2);
 		break;

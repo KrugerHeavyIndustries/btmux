@@ -6,11 +6,10 @@
 #ifndef BTECH_FI_ELEMENT_HH
 #define BTECH_FI_ELEMENT_HH
 
-#include "Codec.hh"
+#include "Serializable.hh"
 
 #include "Document.hh"
 #include "Vocabulary.hh"
-#include "Name.hh"
 #include "MutableAttributes.hh"
 
 namespace BTech {
@@ -26,8 +25,8 @@ public:
 	// Next write()/read() will be element trailer.
 	void stop ();
 
-	void write (Encoder& encoder);
-	void read (Decoder& decoder);
+	void write (Encoder& encoder) const;
+	bool read (Decoder& decoder);
 
 	// Set element properties.
 	void setName (const DN_VocabTable::TypedEntryRef& name) {
@@ -61,10 +60,10 @@ private:
 	DN_VocabTable::TypedEntryRef name;
 
 	// Write subroutines.
-	void write_start (Encoder& encoder);
-	void write_end (Encoder& encoder);
-	void write_namespace_attributes (Encoder& encoder);
-	void write_attributes (Encoder& encoder);
+	void write_start (Encoder& encoder) const;
+	void write_end (Encoder& encoder) const;
+	void write_namespace_attributes (Encoder& encoder) const;
+	void write_attributes (Encoder& encoder) const;
 
 	const Attributes *w_attrs;
 
@@ -78,7 +77,6 @@ private:
 	enum {
 		RESET_READ_STATE,
 		MAIN_READ_STATE,
-		NEXT_PART_READ_STATE
 	} r_state;
 
 	enum {

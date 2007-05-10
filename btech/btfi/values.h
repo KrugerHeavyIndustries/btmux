@@ -6,20 +6,13 @@
 #define BTECH_FI_VALUES_H
 
 #include <stddef.h>
-#include <stdint.h>
 
-#include "common.h"
+#include "fiptypes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef int_fast16_t FI_Int16;		/* signed 16-bit integer */
-typedef int_fast32_t FI_Int32;		/* signed 32-bit integer */
-typedef int_fast64_t FI_Int64;		/* signed 64-bit integer */
-typedef unsigned char FI_Boolean;	/* boolean */
-typedef float FI_Float32;		/* single-precision IEEE 754 */
-typedef double FI_Float64;		/* double-precision IEEE 754 */
 typedef struct FI_tag_UUID FI_UUID;	/* 128-bit (16 octet) UUID */
 
 struct FI_tag_UUID {

@@ -5,11 +5,9 @@
 #ifndef BTECH_FI_CODEC_HH
 #define BTECH_FI_CODEC_HH
 
-#include "common.h"
+#include "fiptypes.h"
 #include "stream.h"
 
-#include "Name.hh"
-#include "Value.hh"
 #include "Vocabulary.hh"
 
 // Section 5.5: Fast Infoset numbers bits from 1 (MSB) to 8 (LSB).
@@ -50,6 +48,12 @@ enum ChildType {
 	DTD				// document type declaration (doc)
 }; // enum ChildType
 
+enum EncodingFormat {
+	ENCODE_AS_UTF8        = FI_BITS(,,0,0,,,,), // C.19.3.1
+	ENCODE_AS_UTF16       = FI_BITS(,,0,1,,,,), // C.19.3.2
+	ENCODE_WITH_ALPHABET  = FI_BITS(,,1,0,,,,), // C.19.3.3
+	ENCODE_WITH_ALGORITHM = FI_BITS(,,1,1,,,,)  // C.19.3.4
+}; // enum EncodingFormat
 
 class Encoder {
 public:
@@ -92,24 +96,21 @@ public:
 	void writeNSAttribute
 	     (const NSN_DS_VocabTable::TypedEntryRef& ns_name); // C.12
 
-protected:
 	// Less primitive encoding routines.
-	void writeValue_bit1 (const Value& value); // C.14
-
 	void writeName_bit2 (const DN_VocabTable::TypedEntryRef& name); // C.17
 	void writeName_bit3 (const DN_VocabTable::TypedEntryRef& name); // C.18
 
 	// Primitive encoding routines.
 	void writeIdentifier (const DS_VocabTable::TypedEntryRef& id); // C.13
 
-	void writeEncoded_bit3 (const Value& value); // C.19
-
 	void writeNonEmptyOctets_len_bit2 (FI_PInt32 len); // C.22.3
 	void writeNonEmptyOctets_len_bit5 (FI_PInt32 len); // C.23.3
+	void writeNonEmptyOctets_len_bit7 (FI_PInt32 len); // C.24.3
 
 	void writePInt20_bit2 (FI_PInt20 val); // C.25
 	void writeUInt21_bit2 (FI_UInt21 val); // C.26
 	void writePInt20_bit3 (FI_PInt20 val); // C.27
+	void writePInt20_bit4 (FI_PInt20 val); // C.28
 
 	void writePInt8 (FI_PInt8 val); // C.29
 
@@ -137,16 +138,10 @@ public:
 		vocabulary = &new_vocabulary;
 	}
 
-	// Child type iteration.
-
-	ChildType next () {
-		ChildType child_type = next_child_type;
-		next_child_type = NEXT_UNKNOWN;
-		return child_type;
-	}
-
 	// Byte-level I/O routines.
 	const FI_Octet *getReadBuffer (FI_Length length);
+
+	bool skipLength (FI_Length& length);
 
 	// Bit-level I/O routines.
 	unsigned int getBitOffset () const {
@@ -160,7 +155,7 @@ public:
 	bool readBits (unsigned int num_bits);
 
 	// High-level decoding routines.  May use super_step.
-	bool readNext ();
+	bool readNext (ChildType& child_type);
 
 	bool readXMLDecl (); // 12.3
 
@@ -174,10 +169,7 @@ public:
 	bool readNSAttribute
 	     (NSN_DS_VocabTable::TypedEntryRef& ns_name); // C.12
 
-protected:
 	// Less primitive decoding routines.  May use sub_step.
-	bool readValue_bit1 (DV_VocabTable& value_table, Value& value); // C.14
-
 	bool readName_bit2 (DN_VocabTable& name_table,
 	                    DN_VocabTable::TypedEntryRef& name); // C.17
 	bool readName_bit3 (DN_VocabTable& name_table,
@@ -187,24 +179,22 @@ protected:
 	bool readIdentifier (DS_VocabTable& string_table,
 	                     DS_VocabTable::TypedEntryRef& id); // C.13
 
-	bool readEncoded_bit3 (Value& value); // C.19
-
 	// None of the following use sub_sub_step, but instead repeatedly
 	// reparse a (small) set of discriminator bits.  They're short and
 	// don't recurse, so it's not a big deal.
 	bool readNonEmptyOctets_len_bit2 (FI_PInt32& len); // C.22.3
 	bool readNonEmptyOctets_len_bit5 (FI_PInt32& len); // C.23.3
+	bool readNonEmptyOctets_len_bit7 (FI_PInt32& len); // C.24.3
 
 	bool readPInt20_bit2 (FI_PInt20& val); // C.25
 	bool readUInt21_bit2 (FI_UInt21& val); // C.26
 	bool readPInt20_bit3 (FI_PInt20& val); // C.27
+	bool readPInt20_bit4 (FI_PInt20& val); // C.28
 
 	bool readPInt8 (FI_PInt8& val); // C.29
 
 private:
 	FI_OctetStream *stream;
-
-	ChildType next_child_type;
 
 	// Bit-level I/O.
 	unsigned int num_read_bits;
@@ -222,17 +212,6 @@ private:
 	NSN_DS_VocabTable::TypedEntryRef saved_nsn_part;
 	DS_VocabTable::TypedEntryRef saved_local_part;
 }; // class Decoder
-
-// Abstract base class for objects supporting serialization via an
-// Encoder/Decoder.
-class Serializable {
-protected:
-	virtual ~Serializable () {}
-
-public:
-	virtual void write (Encoder& encoder) = 0;
-	virtual void read (Decoder& decoder) = 0;
-}; // class Serializable
 
 } // namespace FI
 } // namespace BTech

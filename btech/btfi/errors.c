@@ -4,7 +4,7 @@
 
 #include "autoconf.h"
 
-#include "common.h"
+#include "errors.h"
 
 
 /* Some constant error strings.  */

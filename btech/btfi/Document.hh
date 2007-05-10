@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "Codec.hh"
+#include "Serializable.hh"
 
 #include "Exception.hh"
 #include "Vocabulary.hh"
@@ -28,12 +28,16 @@ public:
 	// Next write()/read() will be document trailer.
 	void stop ();
 
-	void write (Encoder& encoder);
-	void read (Decoder& decoder);
+	void write (Encoder& encoder) const;
+	bool read (Decoder& decoder);
 
 	// Interact with the element stack.
 	bool hasElements () const {
 		return !element_stack.empty();
+	}
+
+	void clearElements () {
+		element_stack.clear();
 	}
 
 protected:
@@ -68,8 +72,8 @@ private:
 	std::vector<DN_VocabTable::TypedEntryRef> element_stack;
 
 	// Write subroutines.
-	void write_header (Encoder& encoder);
-	void write_trailer (Encoder& encoder);
+	void write_header (Encoder& encoder) const;
+	void write_trailer (Encoder& encoder) const;
 
 	// Read subroutines.
 	bool read_header (Decoder& decoder);
@@ -77,7 +81,6 @@ private:
 	enum {
 		RESET_READ_STATE,
 		MAIN_READ_STATE,
-		NEXT_PART_READ_STATE
 	} r_state;
 
 	enum {

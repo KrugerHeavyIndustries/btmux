@@ -7,7 +7,6 @@
 #include <cstdio>
 #include <cassert>
 
-#include "common.h"
 #include "stream.h"
 
 #include "Codec.hh"
@@ -32,6 +31,19 @@ const FI_Length DEFAULT_BUFFER_SIZE = 8192; // good as any; ~2 pages/16 sectors
  * Generator API.
  */
 
+namespace {
+
+int gen_ch_startDocument(FI_ContentHandler *);
+int gen_ch_endDocument(FI_ContentHandler *);
+
+int gen_ch_startElement(FI_ContentHandler *, const FI_Name *,
+                        const FI_Attributes *);
+int gen_ch_endElement(FI_ContentHandler *, const FI_Name *);
+
+int gen_ch_characters(FI_ContentHandler *, const FI_Value *);
+
+} // anonymous namespace
+
 struct FI_tag_Generator {
 	FI_tag_Generator ();
 	~FI_tag_Generator ();
@@ -52,17 +64,6 @@ struct FI_tag_Generator {
 	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Generator
 
-namespace {
-
-int gen_ch_startDocument(FI_ContentHandler *);
-int gen_ch_endDocument(FI_ContentHandler *);
-
-int gen_ch_startElement(FI_ContentHandler *, const FI_Name *,
-                        const FI_Attributes *);
-int gen_ch_endElement(FI_ContentHandler *, const FI_Name *);
-
-} // anonymous namespace
-
 FI_tag_Generator::FI_tag_Generator()
 : fpout (0), buffer (0), element (document),
   BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
@@ -81,7 +82,7 @@ FI_tag_Generator::FI_tag_Generator()
 	content_handler.startElement = gen_ch_startElement;
 	content_handler.endElement = gen_ch_endElement;
 
-	content_handler.characters = 0;
+	content_handler.characters = gen_ch_characters;
 
 	content_handler.app_data_ptr = this;
 
@@ -200,6 +201,32 @@ fi_create_attribute_name(FI_Generator *gen, const char *name)
 // Parser API.
 //
 
+namespace {
+
+void parse_document(FI_Parser *);
+
+void parse_startDocument(FI_Parser *);
+void parse_endDocument(FI_Parser *);
+
+void parse_startElement(FI_Parser *);
+void parse_endElement(FI_Parser *);
+
+void parse_characters(FI_Parser *);
+
+// Implements parsing support for COMMENT items.
+struct Comment : public Serializable {
+	void write (Encoder& encoder) const {
+		throw UnsupportedOperationException ();
+	}
+
+	bool read (Decoder& decoder);
+
+	int sub_step;
+	FI_Length left_len;
+}; // struct Comment
+
+} // anonymous namespace
+
 struct FI_tag_Parser {
 	FI_tag_Parser ();
 	~FI_tag_Parser ();
@@ -216,21 +243,12 @@ struct FI_tag_Parser {
 
 	Document document;
 	Element element;
+	Value characters;
+
+	Comment comment;
 
 	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Parser
-
-namespace {
-
-bool parse_document(FI_Parser *);
-
-bool parse_startDocument(FI_Parser *);
-bool parse_endDocument(FI_Parser *);
-
-bool parse_startElement(FI_Parser *);
-bool parse_endElement(FI_Parser *);
-
-} // anonymous namespace
 
 FI_tag_Parser::FI_tag_Parser()
 : fpin (0), buffer (0), element (document),
@@ -308,12 +326,30 @@ fi_parse(FI_Parser *parser, const char *filename)
 	parser->decoder.clear();
 
 	// Parse document from start to finish.
-	if (!parse_document(parser)) {
-		// error_info set by parse_document()
+	bool parse_failed = false;
+
+	try {
+		parse_document(parser);
+	} catch (const IllegalStateException& e) {
+		// FIXME: Extract FI_ErrorInfo data from Exception.
+		FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
+		parse_failed = true;
+	} catch (const UnsupportedOperationException& e) {
+		// FIXME: Extract FI_ErrorInfo data from Exception.
+		FI_SET_ERROR(parser->error_info, FI_ERROR_UNSUPPORTED);
+		parse_failed = true;
+	} catch (const Exception& e) {
+		// FIXME: Extract FI_ErrorInfo data from Exception.
+		FI_SET_ERROR(parser->error_info, FI_ERROR_EXCEPTION);
+		parse_failed = true;
+	} // TODO: Catch all other exceptions.
+
+	if (parse_failed) {
 		fclose(parser->fpin); // XXX: Don't care, parsing failed
 		parser->fpin = 0;
 		parser->vocabulary.clear(); // XXX: Save some memory
-		return false;
+		parser->document.clearElements(); // XXX: Save some memory
+		return 0;
 	}
 
 	// Close stream.
@@ -339,7 +375,7 @@ GET_GEN(FI_ContentHandler *handler)
 
 // Helper routine to write out to buffers.
 bool
-write_object(FI_Generator *gen, Serializable& object)
+write_object(FI_Generator *gen, const Serializable& object)
 {
 	// Serialize object.
 	try {
@@ -407,6 +443,8 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 
 	if (!write_object(gen, gen->document)) {
 		// error_info set by write_object().
+		gen->vocabulary.clear(); // XXX: Save some memory
+		gen->document.clearElements(); // XXX: Save some memory
 		return 0;
 	}
 
@@ -414,6 +452,7 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 	if (fclose(gen->fpout) != 0) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_ERRNO);
 		gen->fpout = 0;
+		gen->vocabulary.clear(); // XXX: Save some memory
 		return 0;
 	}
 
@@ -475,19 +514,41 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	return 1;
 }
 
+int
+gen_ch_characters(FI_ContentHandler *handler, const FI_Value *value)
+{
+	FI_Generator *const gen = GET_GEN(handler);
+
+	// Sanity checks.
+	if (!gen->fpout) {
+		FI_SET_ERROR(gen->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
+	// Write character chunk.
+	if (!write_object(gen, *value)) {
+		// error_info set by write_object().
+		return 0;
+	}
+
+	return 1;
+}
+
 
 /*
  * Parser subroutines.
  */
 
 // Helper routine to read from file to buffer.
-bool
-read_file_octets(FI_Parser *parser, FI_Length min_len)
+void
+read_file_octets(FI_Parser *parser)
 {
 	// Prepare buffer for read from file.
+	FI_Length min_len = fi_get_stream_needed_length(parser->buffer);
+
 	if (min_len == 0 && feof(parser->fpin)) {
-		// End of file already reached, and min_len == 0.
-		return true;
+		// Nothing needs to or can be read.
+		return;
 	}
 
 	FI_Length len = fi_get_stream_free_length(parser->buffer);
@@ -498,15 +559,14 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	}
 
 	if (len == 0) {
-		// Buffer free space already filled, and min_len == 0.
-		return true;
+		// Nothing needs to be read.
+		return;
 	}
 
 	FI_Octet *w_buf = fi_get_stream_write_buffer(parser->buffer, len);
 	if (!w_buf) {
-		FI_COPY_ERROR(parser->error_info,
-		              *fi_get_stream_error(parser->buffer));
-		return false;
+		// FIXME: Set error information in IOException.
+		throw IOException ();
 	}
 
 	// Read into buffer.
@@ -515,181 +575,148 @@ read_file_octets(FI_Parser *parser, FI_Length min_len)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 0
+#if 1
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
-	min_len = min_len ? 1 : 0;
+	min_len = 1;
 	size_t r_len = fread(w_buf, sizeof(FI_Octet), 1, parser->fpin);
 #else // 0
 	size_t r_len = fread(w_buf, sizeof(FI_Octet), len, parser->fpin);
 #endif // 0
 	if (r_len < len) {
 		if (ferror(parser->fpin)) {
-			FI_SET_ERROR(parser->error_info,
-			             FI_ERROR_ERRNO);
-			return false;
+			// FIXME: Set error information in IOException.
+			throw IOException ();
 		}
 
 		// EOF.
 		if (r_len < min_len) {
 			// File isn't long enough.  Give up.
-			// FIXME: This error code isn't really right.
-			FI_SET_ERROR(parser->error_info, FI_ERROR_EOS);
-			return false;
+			// FIXME: Set error information in IOException.
+			throw IOException ();
 		}
 
 		// Can still satisfy request.  Adjust write size.
 		fi_reduce_stream_length(parser->buffer, len - r_len);
 	}
-
-	return true;
 }
 
-// Helper routine to read objects from a buffer.
-bool
-read_object(FI_Parser *parser, Serializable& object)
-{
-	FI_Length min_len = 0;
-
-	do {
-		// Get octets from the file.
-		if (!read_file_octets(parser, min_len)) {
-			// error_info set by read_file_octets()
-			return false;
-		}
-
-		// Try to unserialize the object.
-		try {
-			object.read(parser->decoder);
-		} catch (const IllegalStateException& e) {
-			// FIXME: Extract FI_ErrorInfo data from Exception.
-			FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
-			return false;
-		} catch (const UnsupportedOperationException& e) {
-			// FIXME: Extract FI_ErrorInfo data from Exception.
-			FI_SET_ERROR(parser->error_info, FI_ERROR_UNSUPPORTED);
-			return false;
-		} catch (const Exception& e) {
-			// FIXME: Extract FI_ErrorInfo data from Exception.
-			FI_SET_ERROR(parser->error_info, FI_ERROR_EXCEPTION);
-			return false;
-		}
-
-		// See if we need more data to complete the read().
-		min_len = fi_get_stream_needed_length(parser->buffer);
-	} while (min_len > 0);
-
-	return true;
-}
-
-bool
+void
 parse_document(FI_Parser *parser)
 {
+	// Pre-fill the buffer.
+	read_file_octets(parser);
+
 	// Parse document header.
-	if (!parse_startDocument(parser)) {
-		return false;
-	}
+	parse_startDocument(parser);
 
 	// Parse document children.
-	bool end_of_document = false;
+	for (;;) {
+		ChildType next_child_type;
 
-	do {
-		switch (parser->decoder.next()) {
-		case START_ELEMENT:
-			if (!parse_startElement(parser)) {
-				return false;
-			}
-			break;
+		while (!parser->decoder.readNext(next_child_type)) {
+			read_file_octets(parser);
+		}
 
+		switch (next_child_type) {
 		case END_CHILD:
 			if (!parser->document.hasElements()) {
 				// Interpret as end of document.
-				end_of_document = true;
+				goto break_top;
 			} else {
 				// Interpret as end of element.
-				if (!parse_endElement(parser)) {
-					return false;
-				}
+				parse_endElement(parser);
+			}
+			break;
+
+		case START_ELEMENT:
+			// Element start.
+			parse_startElement(parser);
+			break;
+
+		case CHARACTERS:
+			// Character chunk.
+			parse_characters(parser);
+			break;
+
+		case COMMENT:
+			// Comment.  We silently consume these.
+			parser->comment.sub_step = 0;
+
+			while (!parser->comment.read(parser->decoder)) {
+				read_file_octets(parser);
 			}
 			break;
 
 		default:
 			// FIXME: Unsupported child type.
-			FI_SET_ERROR(parser->error_info, FI_ERROR_ILLEGAL);
-			return false;
+			throw IllegalStateException ();
 		}
-	} while (!end_of_document);
-
-	// Parse document trailer.
-	if (!parse_endDocument(parser)) {
-		return false;
 	}
 
-	return true;
+break_top:
+	// Parse document trailer.
+	parse_endDocument(parser);
 }
 
-bool
+void
 parse_startDocument(FI_Parser *parser)
 {
 	parser->document.start();
 
-	if (!read_object(parser, parser->document)) {
-		return false;
+	while (!parser->document.read(parser->decoder)) {
+		read_file_octets(parser);
 	}
 
 	// Call content event handler.
 	FI_ContentHandler *const handler = parser->content_handler;
 
 	if (!handler || !handler->startDocument) {
-		return true;
+		return;
 	}
 
 	if (!handler->startDocument(handler)) {
 		// FIXME: Set error_info to user-triggered.
-		return false;
+		throw Exception ();
 	}
-
-	return true;
 }
 
-bool
+void
 parse_endDocument(FI_Parser *parser)
 {
 	parser->document.stop();
 
-	if (!read_object(parser, parser->document)) {
-		return false;
+	while (!parser->document.read(parser->decoder)) {
+		read_file_octets(parser);
 	}
 
 	// Call content event handler.
 	FI_ContentHandler *const handler = parser->content_handler;
 
 	if (!handler || !handler->endDocument) {
-		return true;
+		return;
 	}
 
 	if (!handler->endDocument(handler)) {
 		// FIXME: Set error_info to user-triggered.
-		return false;
+		throw Exception ();
 	}
-
-	return true;
 }
 
-bool
+void
 parse_startElement(FI_Parser *parser)
 {
 	parser->element.start(parser->BT_NAMESPACE);
 
-	if (!read_object(parser, parser->element)) {
-		return false;
+	while (!parser->element.read(parser->decoder)) {
+		read_file_octets(parser);
 	}
 
 	// Call content event handler.
 	FI_ContentHandler *const handler = parser->content_handler;
 
 	if (!handler || !handler->startElement) {
-		return true;
+		return;
 	}
 
 	const DN_VocabTable::TypedEntryRef& name = parser->element.getName();
@@ -699,35 +726,148 @@ parse_startElement(FI_Parser *parser)
 	                           FI_Name::cast(name),
 	                           FI_Attributes::cast(attrs))) {
 		// FIXME: Set error_info to user-triggered.
-		return false;
+		throw Exception ();
 	}
-
-	return true;
 }
 
-bool
+void
 parse_endElement(FI_Parser *parser)
 {
 	parser->element.stop();
 
-	if (!read_object(parser, parser->element)) {
-		return false;
+	while (!parser->element.read(parser->decoder)) {
+		read_file_octets(parser);
 	}
 
 	// Call content event handler.
 	FI_ContentHandler *const handler = parser->content_handler;
 
 	if (!handler || !handler->endElement) {
-		return true;
+		return;
 	}
 
 	const DN_VocabTable::TypedEntryRef& name = parser->element.getName();
 
 	if (!handler->endElement(handler, FI_Name::cast(name))) {
 		// FIXME: Set error_info to user-triggered.
-		return false;
+		throw Exception ();
+	}
+}
+
+void
+parse_characters(FI_Parser *parser)
+{
+	parser->characters.setVocabTable(parser->vocabulary.content_character_chunks);
+
+	while (!parser->characters.read(parser->decoder)) {
+		read_file_octets(parser);
 	}
 
+	// Call content event handler.
+	FI_ContentHandler *const handler = parser->content_handler;
+
+	if (!handler || !handler->characters) {
+		return;
+	}
+
+	if (!handler->characters(handler,
+	                         FI_Value::cast(parser->characters))) {
+		// FIXME: Set error_info to user-triggered.
+		throw Exception ();
+	}
+}
+
+// C.8
+bool
+Comment::read(Decoder& decoder)
+{
+	// The rules essentially follow those for reading values (C.14), except
+	// we simply discard the actual value.
+	//
+	// XXX: We don't verify whether indexed comments actually exist or not.
+	FI_UInt21 idx;
+	FI_PInt32 tmp_len;
+
+reparse:
+	switch (sub_step) {
+	case 0:
+		assert(decoder.getBitOffset() == 0); // C.14.2
+
+		// Examine discriminator bits.
+		if (!decoder.readBits(1)) {
+			return false;
+		}
+
+		if (!(decoder.getBits() & FI_BIT_1)) {
+			// Use literal rules (C.14.3).
+
+			// Ignore add-to-table (C.14.3.1).
+			// Ignore discriminator (C.19.3).
+			switch (decoder.getBits() & FI_BITS(,,1,1,,,,)) {
+			case ENCODE_AS_UTF8:
+			case ENCODE_AS_UTF16:
+				// 1 bit add-to-table + 2 bits discriminator.
+				decoder.readBits(3);
+				sub_step = 3;
+				break;
+
+			case ENCODE_WITH_ALPHABET:
+			case ENCODE_WITH_ALGORITHM:
+				// 1 bit add-to-table + 2 bits discriminator.
+				// 4(+4) bits of alphabet/algorithm index.
+				decoder.readBits(7);
+				sub_step = 2;
+				break;
+			}
+			goto reparse;
+		}
+
+		sub_step = 1;
+		// FALLTHROUGH
+
+	case 1:
+		// Read string-index using C.26 (C.14.4).
+		if (!decoder.readUInt21_bit2(idx)) {
+			return false;
+		}
+
+		// XXX: Ignore index.
+		break;
+
+	case 2:
+		// Ignore last 4 bits of alphabet/algorithm index.
+		if (!decoder.readBits(4)) {
+			return false;
+		}
+
+		sub_step = 3;
+		// FALLTHROUGH
+
+	case 3:
+		// Read character-string length using C.23.3 (C.19.4).
+		if (!decoder.readNonEmptyOctets_len_bit5(tmp_len)) {
+			return false;
+		}
+
+		// XXX: readNonEmptyOctets_len_bit5() checks for overflow.
+		left_len = FI_PINT_TO_UINT(tmp_len);
+
+		sub_step = 4;
+		// FALLTHROUGH
+
+	case 4:
+		// Ignore value.
+		if (!decoder.skipLength(left_len)) {
+			return false;
+		}
+		break;
+
+	default:
+		// Should never happen.
+		throw AssertionFailureException ();
+	}
+
+	sub_step = 0;
 	return true;
 }
 

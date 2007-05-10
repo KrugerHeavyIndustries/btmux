@@ -21,6 +21,7 @@ int
 main()
 {
 	const char *const TEST_FILE = "saxtest.finf";
+	const char *const THIRD_PARTY_FILE = "tests/thirdparty.finf";
 
 	write_test(TEST_FILE);
 	read_test(TEST_FILE);
@@ -28,6 +29,8 @@ main()
 	if (remove(TEST_FILE) != 0) {
 		die("remove");
 	}
+
+	read_test(THIRD_PARTY_FILE);
 
 	return 0;
 }
