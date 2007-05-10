@@ -37,23 +37,11 @@ startDocument(FI_ContentHandler *handler)
 static int
 endDocument(FI_ContentHandler *handler)
 {
-	puts("(END DOCUMENT)");
+	puts("\n(END DOCUMENT)");
 	return 1;
 }
 
 static int is_open = 0;
-
-static int level = 0;
-
-static void
-print_indent(void)
-{
-	int ii;
-
-	for (ii = 0; ii < level; ii++) {
-		putchar('\t');
-	}
-}
 
 static void
 print_name(const FI_Name *name)
@@ -78,8 +66,7 @@ print_value(const FI_Value *value)
 		fputs("\"\"", stdout);
 		break;
 
-	case FI_VALUE_AS_OCTETS:
-		// Not quite right...
+	case FI_VALUE_AS_UTF8:
 		printf("\"%.*s\"",
 		       fi_get_value_count(value),
 		       (const char *)fi_get_value(value));
@@ -99,11 +86,8 @@ startElement(FI_ContentHandler *handler,
 
 	if (is_open) {
 		/* Close the most recent element.  */
-		fputs(">\n", stdout);
+		fputs(">", stdout);
 	}
-
-	print_indent();
-	level++;
 
 	putchar('<');
 	print_name(name);
@@ -123,17 +107,13 @@ startElement(FI_ContentHandler *handler,
 static int
 endElement(FI_ContentHandler *handler, const FI_Name *name)
 {
-	level--;
-
 	if (is_open) {
-		fputs(" />\n", stdout);
+		fputs(" />", stdout);
 		is_open = 0;
 	} else {
-		print_indent();
-
 		fputs("</", stdout);
 		print_name(name);
-		fputs(">\n", stdout);
+		fputs(">", stdout);
 	}
 
 	return 1;
@@ -142,9 +122,39 @@ endElement(FI_ContentHandler *handler, const FI_Name *name)
 static int
 characters(FI_ContentHandler *handler, const FI_Value *value)
 {
-	/* TODO: Not implemented.  */
-	die("FI_ContentHandler::characters");
-	return 0;
+	if (is_open) {
+		/* Close the most recent element.  */
+		fputs(">", stdout);
+		is_open = 0;
+	}
+
+#if 0
+	fputs("<![CDATA[", stdout);
+#endif // 0
+
+	switch (fi_get_value_type(value)) {
+	case FI_VALUE_AS_NULL:
+		die("FI_ContentHandler::characters: empty CDATA");
+		break;
+
+	case FI_VALUE_AS_UTF8:
+		printf("%.*s",
+		       fi_get_value_count(value),
+		       (const char *)fi_get_value(value));
+		break;
+
+	default:
+#if 0
+		printf("(unknown type #%d)", fi_get_value_type(value));
+#endif // 0
+		break;
+	}
+
+#if 0
+	fputs("]]>", stdout);
+#endif // 0
+
+	return 1;
 }
 
 void

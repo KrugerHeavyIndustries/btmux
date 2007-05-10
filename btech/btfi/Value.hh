@@ -82,6 +82,11 @@ private:
 	char *value_buf;
 
 	// Fast Infoset serialization support.
+	FI_Length getEncodedSize (Encoder& encoder) const;
+	size_t getDecodedSize (Decoder& decoder) const;
+
+	void encodeOctets (Encoder& encoder, FI_Length len) const;
+	bool decodeOctets (Decoder& decoder, FI_Length len);
 
 	// C.14/C.19.
 	void write_bit1 (Encoder& encoder) const;

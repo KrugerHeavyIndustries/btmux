@@ -8,6 +8,7 @@
 #include <cassert>
 
 #include "stream.h"
+#include "encalg.h"
 
 #include "Codec.hh"
 #include "Document.hh"
@@ -23,6 +24,33 @@ namespace {
 const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
 
 const FI_Length DEFAULT_BUFFER_SIZE = 8192; // good as any; ~2 pages/16 sectors
+
+// Implements generating and parsing support for CHARACTERS items.
+struct Characters : public Serializable {
+	Characters (DV_VocabTable& vocab_table) : vocab_table (vocab_table) {
+		r_value.setVocabTable(vocab_table);
+	}
+
+	void write (Encoder& encoder) const;
+	bool read (Decoder& decoder);
+
+	const FI_Value *w_value;
+
+	DV_VocabTable& vocab_table;
+	FI_Value r_value;
+}; // struct Characters
+
+// Implements parsing support for COMMENT items.
+struct Comment : public Serializable {
+	void write (Encoder& encoder) const {
+		throw UnsupportedOperationException ();
+	}
+
+	bool read (Decoder& decoder);
+
+	int sub_step;
+	FI_Length left_len;
+}; // struct Comment
 
 } // anonymous namespace
 
@@ -60,12 +88,14 @@ struct FI_tag_Generator {
 
 	Document document;
 	Element element;
+	Characters characters;
 
 	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Generator
 
 FI_tag_Generator::FI_tag_Generator()
-: fpout (0), buffer (0), element (document),
+: fpout (0), buffer (0),
+  element (document), characters (vocabulary.content_character_chunks),
   BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
@@ -104,6 +134,10 @@ FI_tag_Generator::~FI_tag_Generator()
 FI_Generator *
 fi_create_generator(void)
 {
+	if (!fi_init_encoding_algorithms()) {
+		return 0;
+	}
+
 	try {
 		return new FI_Generator ();
 	} catch (const std::bad_alloc& e) {
@@ -213,18 +247,6 @@ void parse_endElement(FI_Parser *);
 
 void parse_characters(FI_Parser *);
 
-// Implements parsing support for COMMENT items.
-struct Comment : public Serializable {
-	void write (Encoder& encoder) const {
-		throw UnsupportedOperationException ();
-	}
-
-	bool read (Decoder& decoder);
-
-	int sub_step;
-	FI_Length left_len;
-}; // struct Comment
-
 } // anonymous namespace
 
 struct FI_tag_Parser {
@@ -243,7 +265,7 @@ struct FI_tag_Parser {
 
 	Document document;
 	Element element;
-	Value characters;
+	Characters characters;
 
 	Comment comment;
 
@@ -251,7 +273,8 @@ struct FI_tag_Parser {
 }; // FI_Parser
 
 FI_tag_Parser::FI_tag_Parser()
-: fpin (0), buffer (0), element (document),
+: fpin (0), buffer (0),
+  element (document), characters (vocabulary.content_character_chunks),
   BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
@@ -282,6 +305,10 @@ FI_tag_Parser::~FI_tag_Parser()
 FI_Parser *
 fi_create_parser(void)
 {
+	if (!fi_init_encoding_algorithms()) {
+		return 0;
+	}
+
 	try {
 		return new FI_Parser ();
 	} catch (const std::bad_alloc& e) {
@@ -525,8 +552,16 @@ gen_ch_characters(FI_ContentHandler *handler, const FI_Value *value)
 		return 0;
 	}
 
+	if (!gen->document.hasElements()) {
+		// Character data is ony allowed inside of an element.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_INVAL);
+		return 0;
+	}
+
 	// Write character chunk.
-	if (!write_object(gen, *value)) {
+	gen->characters.w_value = value;
+
+	if (!write_object(gen, gen->characters)) {
 		// error_info set by write_object().
 		return 0;
 	}
@@ -575,7 +610,7 @@ read_file_octets(FI_Parser *parser)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 1
+#if 0
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
 	min_len = 1;
@@ -757,7 +792,10 @@ parse_endElement(FI_Parser *parser)
 void
 parse_characters(FI_Parser *parser)
 {
-	parser->characters.setVocabTable(parser->vocabulary.content_character_chunks);
+	if (!parser->document.hasElements()) {
+		// Character data is ony allowed inside of an element.
+		throw IllegalStateException ();
+	}
 
 	while (!parser->characters.read(parser->decoder)) {
 		read_file_octets(parser);
@@ -771,10 +809,25 @@ parse_characters(FI_Parser *parser)
 	}
 
 	if (!handler->characters(handler,
-	                         FI_Value::cast(parser->characters))) {
+	                         FI_Value::cast(parser->characters.r_value))) {
 		// FIXME: Set error_info to user-triggered.
 		throw Exception ();
 	}
+}
+
+// C.7
+void
+Characters::write(Encoder& encoder) const
+{
+	encoder.writeNext(CHARACTERS);
+
+	w_value->write(encoder);
+}
+
+bool
+Characters::read(Decoder& decoder)
+{
+	return r_value.read(decoder);
 }
 
 // C.8

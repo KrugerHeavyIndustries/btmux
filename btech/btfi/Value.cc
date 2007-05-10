@@ -152,6 +152,24 @@ Value::setValue(FI_ValueType type, size_t count, const void *buf)
 	char *new_buf;
 
 	switch (type) {
+	case FI_VALUE_AS_UTF8:
+		// XXX: This isn't /really/ right...
+		if (in_place) {
+			set_value_buf<FI_UInt8>(value_buf, count, buf);
+		} else {
+			new_buf = new_value_buf<FI_UInt8>(count, buf);
+		}
+		break;
+
+	case FI_VALUE_AS_UTF16:
+		// XXX: This isn't /really/ right...
+		if (in_place) {
+			set_value_buf<FI_UInt16>(value_buf, count, buf);
+		} else {
+			new_buf = new_value_buf<FI_UInt16>(count, buf);
+		}
+		break;
+
 	case FI_VALUE_AS_SHORT:
 		if (in_place) {
 			set_value_buf<FI_Int16>(value_buf, count, buf);
@@ -268,6 +286,22 @@ Value::operator < (const Value& rhs) const
 
 	// Compare the values.
 	switch (value_type) {
+	case FI_VALUE_AS_UTF8:
+		// XXX: Doing UTF-8 properly would mean implementing Unicode
+		// collation rules, but we just use this comparison function
+		// for data structures, so it doesn't matter, unless all your
+		// strings aren't canonicalized in the same form.
+		return less_value_buf<FI_UInt8>(value_count,
+		                                value_buf, rhs.value_buf);
+
+	case FI_VALUE_AS_UTF16:
+		// XXX: Doing UTF-16 properly would mean implementing Unicode
+		// collation rules, but we just use this comparison function
+		// for data structures, so it doesn't matter, unless all your
+		// strings aren't canonicalized in the same form.
+		return less_value_buf<FI_UInt16>(value_count,
+		                                 value_buf, rhs.value_buf);
+
 	case FI_VALUE_AS_SHORT:
 		return less_value_buf<FI_Int16>(value_count,
 		                                value_buf, rhs.value_buf);
@@ -312,6 +346,27 @@ Value::operator < (const Value& rhs) const
  * Fast Infoset serialization support.
  */
 
+namespace {
+
+// Selecting the encoding format based on value type.
+EncodingFormat
+getEncodingFormat(FI_ValueType value_type)
+{
+	switch (value_type) {
+	case FI_VALUE_AS_UTF8:
+		return ENCODE_AS_UTF8;
+
+	case FI_VALUE_AS_UTF16:
+		return ENCODE_AS_UTF16;
+
+	default:
+		// Try to encode everything else with an algorithm.
+		return ENCODE_WITH_ALGORITHM;
+	}
+}
+
+} // anonymous namespace
+
 void
 Value::setVocabTable(DV_VocabTable& new_vocab_table)
 {
@@ -329,10 +384,8 @@ Value::write(Encoder& encoder) const
 		break;
 
 	case 2:
-#if 0
 		// Write value starting on third bit (C.15).
 		write_bit3(encoder);
-#endif // FIXME
 		break;
 
 	default:
@@ -375,12 +428,10 @@ reparse:
 		break;
 
 	case 2:
-#if 0
 		// Read value header starting on third bit (C.15).
 		if (!read_bit3(decoder)) {
 			return false;
 		}
-#endif // FIXME
 		break;
 
 	default:
@@ -389,6 +440,48 @@ reparse:
 	}
 
 	super_step = 0;
+	return true;
+}
+
+FI_Length
+Value::getEncodedSize(Encoder& encoder) const
+{
+	// FIXME: Use an encoding algorithm, if appropriate.
+	throw UnsupportedOperationException ();
+}
+
+void
+Value::encodeOctets(Encoder& encoder, FI_Length len) const
+{
+	// FIXME: Use an encoding algorithm, if appropriate.
+	assert(getEncodingFormat(value_type) == ENCODE_AS_UTF8);
+
+	FI_Octet *w_buf = encoder.getWriteBuffer(len);
+
+	memcpy(w_buf, value_buf, len);
+}
+
+bool
+Value::decodeOctets(Decoder& decoder, FI_Length len)
+{
+	// FIXME: Use an encoding algorithm, if appropriate.
+	assert(getEncodingFormat(next_value_type) == ENCODE_AS_UTF8);
+
+	const FI_Octet *r_buf = decoder.getReadBuffer(len);
+	if (!r_buf) {
+		return false;
+	}
+
+	if (!setValue(FI_VALUE_AS_UTF8, len, r_buf)) {
+		// Couldn't set the attribute value.
+		// FIXME: This exception makes no sense.
+		throw UnsupportedOperationException ();
+	}
+
+	if (add_value_to_table) {
+		vocab_table->createEntry(*this).getIndex();
+	}
+
 	return true;
 }
 
@@ -419,52 +512,64 @@ Value::write_bit1(Encoder& encoder) const
 	encoder.writeBits(2, FI_BITS(0, 0,,,,,,));
 
 	// Write character-string using C.19 (C.14.3.2).
-	assert(value_count > 0); // non-empty
-
-	// Selecting the encoding based on value type.
-	// FIXME: Support other value types (encoding algorithms).
-	assert(value_type == FI_VALUE_AS_OCTETS);
-	EncodingFormat format = ENCODE_AS_UTF8;
 
 	// Write discriminant (C.19.3).
+	const EncodingFormat format = getEncodingFormat(value_type);
+
 	encoder.writeBits(2, format);
+
+	// Write encoded string length using C.23.3 (C.19.4). (And optionally
+	// write the restricted-alphabet/encoding-algorithm index.)
+	FI_Length len;
+	FI_VocabIndex encoding_idx;
 
 	switch (format) {
 	case ENCODE_AS_UTF8:
+		if (value_count > FI_LENGTH_MAX / 1) {
+			// Overflow.
+			throw UnsupportedOperationException ();
+		}
+
+		len = value_count * 1;
 		break;
 
 	case ENCODE_AS_UTF16:
 		// TODO: We don't use the utf-16 alternative.
+		if (value_count > FI_LENGTH_MAX / 2) {
+			// Overflow.
+			throw UnsupportedOperationException ();
+		}
+
+		len = value_count * 2;
 		throw UnsupportedOperationException ();
 
 	case ENCODE_WITH_ALPHABET:
-	case ENCODE_WITH_ALGORITHM:
 		// TODO: We don't use the restricted-alphabet alternative.
-		// TODO: We don't support encoding algorithms yet.
 		// Write restricted-alphabet index using C.29 (C.19.3.3).
-		// Write encoding-algorithm index using C.29 (C.19.3.4).
 		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALGORITHM:
+		// Write encoding-algorithm index using C.29 (C.19.3.4).
+		len = getEncodedSize(encoder);
+
+		encoding_idx = encoder.getEncodingAlgorithm(*this).getIndex();
+		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
+
+		encoder.writePInt8(FI_UINT_TO_PINT(encoding_idx));
+		break;
 	}
 
 	// Encode octets.
-	// TODO: Move this into a separate method, for modularity.
-	// TODO: Assert FI_UINT_TO_PINT(len) <= FI_PINT32_MAX?
-	FI_Length len = value_count;
+	assert(len > 0 && len <= FI_UINT32_MAX);
 
-	// Write encoded string length using C.23.3 (C.19.4).
 	encoder.writeNonEmptyOctets_len_bit5(FI_UINT_TO_PINT(len));
 
-	FI_Octet *w_buf = encoder.getWriteBuffer(len);
-
-	memcpy(w_buf, value_buf, len);
+	encodeOctets(encoder, len);
 }
 
-// FIXME: Value is left in an inconsistent state during deserialization.
 bool
 Value::read_bit1(Decoder& decoder)
 {
-	const FI_Octet *r_buf;
-
 	FI_UInt21 idx;
 
 	FI_PInt8 encoding_idx;
@@ -514,12 +619,12 @@ reparse:
 		switch (decoder.getBits() & FI_BITS(,,1,1,,,,)) {
 		case ENCODE_AS_UTF8:
 			// Use UTF-8 decoding rules.
-			// TODO: Need a UTF-8-specific value type.
-			next_value_type = FI_VALUE_AS_OCTETS;
+			next_value_type = FI_VALUE_AS_UTF8;
 			break;
 
 		case ENCODE_AS_UTF16:
-			// TODO: We don't use the utf-16 alternative.
+			// FIXME: We don't support the utf-16 alternative.
+			next_value_type = FI_VALUE_AS_UTF16;
 			throw UnsupportedOperationException ();
 
 		case ENCODE_WITH_ALPHABET:
@@ -549,19 +654,8 @@ reparse:
 
 	case 4:
 		// Read encoded string octets.
-		r_buf = decoder.getReadBuffer(saved_len);
-		if (!r_buf) {
+		if (!decodeOctets(decoder, saved_len)) {
 			return false;
-		}
-
-		// Decode octets.
-		// TODO: Move this into a separate method, for modularity.
-		// FIXME: Support other value types (encoding algorithms).
-		assert(next_value_type == FI_VALUE_AS_OCTETS);
-		if (!setValue(FI_VALUE_AS_OCTETS, saved_len, r_buf)) {
-			// Couldn't set the attribute value.
-			// FIXME: This exception makes no sense.
-			throw UnsupportedOperationException ();
 		}
 		break;
 
@@ -572,11 +666,216 @@ reparse:
 		}
 
 		// Determine future value type.
-		// TODO: We don't support the restricted-alphabet alternative.
+		// FIXME: We don't support the restricted-alphabet alternative.
 		throw UnsupportedOperationException ();
 
 	case 6:
 		// Read encoding-algorithm index using C.29 (C.19.3.4).
+		if (!decoder.readPInt8(encoding_idx)) {
+			return false;
+		}
+
+		// Determine future value type.
+		// FIXME: We don't support the encoding-algorithm alternative.
+		throw UnsupportedOperationException ();
+
+	default:
+		// Should never happen.
+		throw AssertionFailureException ();
+	}
+
+	sub_step = 0;
+	return true;
+}
+
+// C.15/C.20
+// Note that we can't encode an empty index, due to encoding the string-index
+// using C.28.  C.15 is used for encoding character content, so empty content
+// is simply omitted, not coded.
+void
+Value::write_bit3(Encoder& encoder) const
+{
+	assert(encoder.getBitOffset() == 2); // C.15.2
+
+#if 0
+	if (value_type == FI_VALUE_AS_NULL) {
+		// Use index rules (C.15.4).
+
+		// Write string-index discriminant (C.15.4: 1).
+		encoder.writeBits(1, FI_BITS(,,1,,,,,));
+
+		// Write string-index using C.28 (C.15.4).
+		encoder.writePInt20_bit4(FI_VOCAB_INDEX_NULL);
+		return;
+	}
+#endif // 0
+
+	// Use literal rules (C.15.3).
+
+	// Write literal-character-string discriminant (C.15.3: 0).
+	// Write add-to-table (C.15.3.1: 0). (Adding currently not supported.)
+	encoder.writeBits(2, FI_BITS(,,0, 0,,,,));
+
+	// Write character-string using C.20 (C.15.3.2).
+
+	// Write discriminant (C.20.3).
+	const EncodingFormat format = getEncodingFormat(value_type);
+
+	encoder.writeBits(2, (format >> 2));
+
+	// Write encoded string length using C.24.3 (C.20.4). (And optionally
+	// write the restricted-alphabet/encoding-algorithm index.)
+	FI_Length len;
+	FI_VocabIndex encoding_idx;
+
+	switch (format) {
+	case ENCODE_AS_UTF8:
+		if (value_count > FI_LENGTH_MAX / 1) {
+			// Overflow.
+			throw UnsupportedOperationException ();
+		}
+
+		len = value_count * 1;
+		break;
+
+	case ENCODE_AS_UTF16:
+		// TODO: We don't use the utf-16 alternative.
+		if (value_count > FI_LENGTH_MAX / 2) {
+			// Overflow.
+			throw UnsupportedOperationException ();
+		}
+
+		len = value_count * 2;
+		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALPHABET:
+		// TODO: We don't use the restricted-alphabet alternative.
+		// Write restricted-alphabet index using C.29 (C.20.3.3).
+		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALGORITHM:
+		// Write encoding-algorithm index using C.29 (C.20.3.4).
+		len = getEncodedSize(encoder);
+
+		encoding_idx = encoder.getEncodingAlgorithm(*this).getIndex();
+		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
+
+		encoder.writePInt8(FI_UINT_TO_PINT(encoding_idx));
+		break;
+	}
+
+	// Encode octets.
+	assert(len > 0 && len <= FI_UINT32_MAX);
+
+	encoder.writeNonEmptyOctets_len_bit7(FI_UINT_TO_PINT(len));
+
+	encodeOctets(encoder, len);
+}
+
+bool
+Value::read_bit3(Decoder& decoder)
+{
+	FI_PInt20 idx;
+
+	FI_PInt8 encoding_idx;
+	FI_PInt32 octets_len;
+
+reparse:
+	switch (sub_step) {
+	case 0:
+		assert(decoder.getBitOffset() == 2); // C.15.2
+
+		// Examine discriminator bits.
+		if (!decoder.readBits(1)) {
+			return false;
+		}
+
+		if (!(decoder.getBits() & FI_BIT_3)) {
+			// Use literal rules (C.15.3).
+
+			// Read add-to-table (C.15.3.1).
+			decoder.readBits(1);
+
+			add_value_to_table = decoder.getBits() & FI_BIT_4;
+
+			sub_step = 2;
+			goto reparse;
+		}
+
+		sub_step = 1;
+		// FALLTHROUGH
+
+	case 1:
+		// Read string-index using C.28 (C.15.4).
+		if (!decoder.readPInt20_bit4(idx)) {
+			return false;
+		}
+
+		// XXX: Throws IndexOutOfBoundsException on bogus index.
+		*this = *(*vocab_table)[FI_PINT_TO_UINT(idx)];
+		break;
+
+	case 2:
+		// Read character-string using C.20 (C.15.3.2).
+
+		// Examine discriminator bits.
+		decoder.readBits(2);
+
+		switch ((decoder.getBits() & FI_BITS(,,,,1,1,,)) << 2) {
+		case ENCODE_AS_UTF8:
+			// Use UTF-8 decoding rules.
+			next_value_type = FI_VALUE_AS_UTF8;
+			break;
+
+		case ENCODE_AS_UTF16:
+			// FIXME: We don't support the utf-16 alternative.
+			next_value_type = FI_VALUE_AS_UTF16;
+			throw UnsupportedOperationException ();
+
+		case ENCODE_WITH_ALPHABET:
+			sub_step = 5;
+			goto reparse;
+
+		case ENCODE_WITH_ALGORITHM:
+			sub_step = 6;
+			goto reparse;
+		}
+
+		sub_step = 3;
+		// FALLTHROUGH
+
+	case 3:
+		// Read encoded string length using C.24.3 (C.20.4).
+		if (!decoder.readNonEmptyOctets_len_bit7(octets_len)) {
+			return false;
+		}
+
+		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
+		// checked in readNonEmptyOctets_len_bit7().
+		saved_len = FI_PINT_TO_UINT(octets_len);
+
+		sub_step = 4;
+		// FALLTHROUGH
+
+	case 4:
+		// Read encoded string octets.
+		if (!decodeOctets(decoder, saved_len)) {
+			return false;
+		}
+		break;
+
+	case 5:
+		// Read restricted-alphabet index using C.29 (C.20.3.3).
+		if (!decoder.readPInt8(encoding_idx)) {
+			return false;
+		}
+
+		// Determine future value type.
+		// FIXME: We don't support the restricted-alphabet alternative.
+		throw UnsupportedOperationException ();
+
+	case 6:
+		// Read encoding-algorithm index using C.29 (C.20.3.4).
 		if (!decoder.readPInt8(encoding_idx)) {
 			return false;
 		}

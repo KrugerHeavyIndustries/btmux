@@ -7,6 +7,7 @@
 
 #include "fiptypes.h"
 #include "stream.h"
+#include "encalg.h"
 
 #include "Vocabulary.hh"
 
@@ -69,6 +70,12 @@ public:
 		vocabulary = &new_vocabulary;
 	}
 
+	// Encoding algorthim support.
+	const EA_VocabTable::TypedEntryRef
+	getEncodingAlgorithm (const Value& value) const;
+
+	FI_EncodingContext encoding_context;
+
 	// Byte-level I/O routines.
 	FI_Octet *getWriteBuffer (FI_Length length);
 
@@ -84,6 +91,8 @@ public:
 	void writeBits (unsigned int num_bits, FI_Octet octet_mask);
 
 	// High-level encoding routines.
+	void writeNext (ChildType child_type);
+
 	void writeXMLDecl (XMLVersion version, FI_Ternary standalone); // 12.3
 
 	void writeElementName (const DN_VocabTable::TypedEntryRef& name) {
@@ -137,6 +146,9 @@ public:
 	void setVocabulary (Vocabulary& new_vocabulary) {
 		vocabulary = &new_vocabulary;
 	}
+
+	// Encoding algorthim support.
+	FI_EncodingContext encoding_context;
 
 	// Byte-level I/O routines.
 	const FI_Octet *getReadBuffer (FI_Length length);

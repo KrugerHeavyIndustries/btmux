@@ -72,6 +72,8 @@ Element::write(Encoder& encoder) const
 	switch (serialize_mode) {
 	case SERIALIZE_START:
 		// Write element start.
+		encoder.writeNext(START_ELEMENT);
+
 		write_start(encoder);
 
 		doc.pushElement(name);
@@ -86,7 +88,7 @@ Element::write(Encoder& encoder) const
 
 		doc.popElement(); // XXX: don't need to restore name...
 
-		write_end(encoder);
+		encoder.writeNext(END_CHILD);
 		break;
 
 	default:
@@ -150,26 +152,10 @@ Element::read(Decoder& decoder)
 void
 Element::write_start(Encoder& encoder) const
 {
-	// Pad out bitstream so we start on the 1st bit of an octet.
-	switch (encoder.getBitOffset()) {
-	case 0:
-		// C.3.2: Starting at 1st bit of this octet.
-		break;
+	assert(encoder.getBitOffset() == 1);
 
-	case 4:
-		// C.2.11.1, C.3.7.1: Add 0000 padding.
-		// C.3.2: Starting at 1st bit of next octet.
-		encoder.writeBits(4, FI_BITS(,,,,0,0,0,0));
-		break;
-
-	default:
-		// Shouldn't happen.
-		throw IllegalStateException ();
-	}
-
-	// Write identification (C.2.11.2, C.3.7.2: 0).
 	// Write attributes presence flag (C.3.3).
-	encoder.writeBits(2, FI_BITS(0, w_attrs->getLength(),,,,,,));
+	encoder.writeBits(1, FI_BITS(,w_attrs->getLength(),,,,,,));
 
 	// Write namespace-attributes (C.3.4).
 	write_namespace_attributes(encoder);
@@ -182,25 +168,6 @@ Element::write_start(Encoder& encoder) const
 
 	// Write children (C.3.7).  This is handled by the respective child
 	// serialization routines, so we don't need to do anything here.
-}
-
-void
-Element::write_end(Encoder& encoder) const
-{
-	// Write termination (C.3.8: 1111).
-	switch (encoder.getBitOffset()) {
-	case 0:
-		encoder.writeBits(4, FI_BITS(1,1,1,1,,,,));
-		break;
-
-	case 4:
-		encoder.writeBits(4, FI_BITS(,,,,1,1,1,1));
-		break;
-
-	default:
-		// Not a valid Fast Infoset.
-		throw IllegalStateException ();
-	}
 }
 
 void

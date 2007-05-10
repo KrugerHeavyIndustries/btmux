@@ -61,7 +61,6 @@ private:
 
 	// Write subroutines.
 	void write_start (Encoder& encoder) const;
-	void write_end (Encoder& encoder) const;
 	void write_namespace_attributes (Encoder& encoder) const;
 	void write_attributes (Encoder& encoder) const;
 

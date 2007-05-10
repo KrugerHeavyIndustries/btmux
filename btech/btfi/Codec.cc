@@ -14,6 +14,7 @@
 
 #include "stream.h"
 #include "encalg.h"
+#include "common.h"
 
 #include "Name.hh"
 #include "Value.hh"
@@ -73,6 +74,54 @@ Decoder::clear()
 	super_step = 0;
 	sub_step = 0;
 	sub_sub_step = 0;
+}
+
+
+/*
+ * Encoding algorithm support.
+ */
+
+// Get an encoding algorithm appropriate to a value.  Throws an
+// UnsupportedOperationException for values that can't be encoded using an
+// algorithm.  It is the caller's responsibility to only pass in values that
+// can be encoded with an algorithm. (TODO: We may want to change this.)
+const EA_VocabTable::TypedEntryRef
+Encoder::getEncodingAlgorithm(const Value& value) const
+{
+	switch (value.getType()) {
+	case FI_VALUE_AS_OCTETS:
+		// Raw binary needs to be encoded with hexadecimal or Base64.
+		// Base64 is much more efficient than hexadecimal.
+		//
+		// TODO: A non-standard option is just to dump raw binary
+		// octets into the file, but this requires adding a custom
+		// encoding algorithm entry to the generated file.
+		return vocabulary->encoding_algorithms[FI_EA_BASE64];
+
+	case FI_VALUE_AS_SHORT:
+		return vocabulary->encoding_algorithms[FI_EA_SHORT];
+
+	case FI_VALUE_AS_INT:
+		return vocabulary->encoding_algorithms[FI_EA_INT];
+
+	case FI_VALUE_AS_LONG:
+		return vocabulary->encoding_algorithms[FI_EA_LONG];
+
+	case FI_VALUE_AS_BOOLEAN:
+		return vocabulary->encoding_algorithms[FI_EA_BOOLEAN];
+
+	case FI_VALUE_AS_FLOAT:
+		return vocabulary->encoding_algorithms[FI_EA_FLOAT];
+
+	case FI_VALUE_AS_DOUBLE:
+		return vocabulary->encoding_algorithms[FI_EA_DOUBLE];
+
+	case FI_VALUE_AS_UUID:
+		return vocabulary->encoding_algorithms[FI_EA_UUID];
+
+	default:
+		throw UnsupportedOperationException ();
+	}
 }
 
 
@@ -182,9 +231,91 @@ Decoder::readBits(unsigned int num_bits)
  * High-level encoding/decoding routines.
  */
 
-// Determine next child of document/element/DTD (possibly none for terminator).
-// Consumes identification/terminator bits.  Some child types are not valid in
-// all contexts; it is the responsibility of the caller to verify this.
+// Write the identification bits for the next child of a document/element/DTD
+// (or END_CHILD for terminator).
+void
+Encoder::writeNext(ChildType child_type)
+{
+	// Children always start on the first bit of an octet, but the most
+	// recent bit may either be the fourth or eight bit (C.2.11.1,
+	// C.3.7.1), possibly requiring padding.
+	switch (getBitOffset()) {
+	case 0:
+		// Child may start on this octet.
+		break;
+
+	case 4:
+		// Terminator or padding.
+		switch (child_type) {
+		case END_CHILD:
+			// Terminator.
+			writeBits(4, FI_BITS(,,,,1,1,1,1));
+			return;
+
+		case START_ELEMENT:
+		case PROCESSING_INSTRUCTION:
+		case ENTITY_REFERENCE:
+		case CHARACTERS:
+		case COMMENT:
+		case DTD:
+			// Padding.
+			writeBits(4, FI_BITS(,,,,0,0,0,0));
+
+			// Child may start on next octet.
+			break;
+
+		default:
+			// Shouldn't happen.
+			throw AssertionFailureException ();
+		}
+		break;
+
+	default:
+		// Shouldn't happen.
+		throw IllegalStateException ();
+	}
+
+	// Write child type identification.
+	switch (child_type) {
+	case START_ELEMENT:
+		// Start of element (C.2.11.2, C.3.7.2: 0).
+		writeBits(1, FI_BITS(0,,,,,,,));
+		break;
+
+	case CHARACTERS:
+		// Character chunk (C.3.7.5: 10).
+		writeBits(2, FI_BITS(1,0,,,,,,));
+		break;
+
+	case ENTITY_REFERENCE:
+		// Unexpanded entity reference (C.3.7.4: 110010).
+		writeBits(6, FI_BITS(1,1,0,0,1,0,,));
+		break;
+
+	case PROCESSING_INSTRUCTION:
+		// Processing instruction (C.2.11.3, C.3.7.3, C.9.6: 11100001).
+		writeBits(8, FI_BITS(1,1,1,0,0,0,0,1));
+		break;
+
+	case COMMENT:
+		// Comment (C.2.11.4, C.3.7.6: 11100010).
+		writeBits(8, FI_BITS(1,1,1,0,0,0,1,0));
+		break;
+
+	case END_CHILD:
+		// Terminator (C.2.12, C.3.8, C.9.7: 1111).
+		writeBits(4, FI_BITS(1,1,1,1,,,,));
+		break;
+
+	default:
+		// Shouldn't happen.
+		throw AssertionFailureException ();
+	}
+}
+
+// Determine next child of a document/element/DTD (possibly none if reached
+// terminator).  Consumes identification/terminator bits.  Some child types are
+// not valid in all contexts; it is the responsibility of the caller to verify.
 bool
 Decoder::readNext(ChildType& child_type)
 {
@@ -1232,6 +1363,117 @@ Decoder::readNonEmptyOctets_len_bit5(FI_PInt32& len)
 	return true;
 }
 
+// C.24.3
+// Note that this only writes the length of the octet string.
+void
+Encoder::writeNonEmptyOctets_len_bit7(FI_PInt32 len)
+{
+	assert(getBitOffset() == 6); // C.24.2
+	assert(len <= FI_PINT32_MAX);
+
+	if (len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
+		// Will overflow.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	FI_Octet *w_buf;
+
+	if (len <= FI_UINT_TO_PINT(2)) {
+		// [1,2] (C.23.3.1)
+		len -= FI_UINT_TO_PINT(1);
+
+		writeBits(2, FI_BITS(,,,,,,0,) | len);
+	} else if (len <= FI_UINT_TO_PINT(258)) {
+		// [3,258] (C.24.3.2)
+		len -= FI_UINT_TO_PINT(3);
+
+		writeBits(2, FI_BITS(,,,,,,1,0));
+
+		w_buf = getWriteBuffer(1);
+
+		w_buf[0] = len;
+	} else {
+		// [259,2^32] (C.24.3.3)
+		len -= FI_UINT_TO_PINT(259);
+
+		writeBits(2, FI_BITS(,,,,,,1,1));
+
+		w_buf = getWriteBuffer(4);
+
+		w_buf[0] = len >> 24;
+		w_buf[1] = len >> 16;
+		w_buf[2] = len >> 8;
+		w_buf[3] = len;
+	}
+}
+
+bool
+Decoder::readNonEmptyOctets_len_bit7(FI_PInt32& len)
+{
+	assert(getBitOffset() == 6); // C.24.2
+
+	const FI_Octet *r_buf;
+
+	FI_PInt32 tmp_len;
+
+	if (getBits() & FI_BIT_7) {
+		switch (getBits() & FI_BITS(,,,,,,/*1*/,1)) {
+		case FI_BITS(,,,,,,/*1*/,0):
+			// [3,258] (C.24.3.2)
+			r_buf = getReadBuffer(1);
+			if (!r_buf) {
+				return false;
+			}
+
+			tmp_len = r_buf[0];
+
+			tmp_len += FI_UINT_TO_PINT(3);
+			break;
+
+		case FI_BITS(,,,,,,/*1*/,1):
+			// [259,2^32] (C.24.3.3)
+			r_buf = getReadBuffer(4);
+			if (!r_buf) {
+				return false;
+			}
+
+			tmp_len = r_buf[0] << 24;
+			tmp_len |= r_buf[1] << 16;
+			tmp_len |= r_buf[2] << 8;
+			tmp_len |= r_buf[3];
+
+			if (tmp_len > FI_PINT32_MAX - FI_UINT_TO_PINT(259)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_len += FI_UINT_TO_PINT(259);
+			break;
+
+		default:
+			// Not a valid Fast Infoset.
+			throw IllegalStateException ();
+		}
+	} else {
+		// [1,2] (C.24.3.1)
+		tmp_len = getBits() & FI_BITS(,,,,,,/*0*/,1);
+
+		tmp_len += FI_UINT_TO_PINT(1);
+	}
+
+	if (tmp_len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
+		// Will overflow.
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+	}
+
+	readBits(2);
+
+	len = tmp_len;
+	return true;
+}
+
 // C.25
 void
 Encoder::writePInt20_bit2(FI_PInt20 val)
@@ -1407,7 +1649,7 @@ Encoder::writePInt20_bit3(FI_PInt20 val)
 		// [526369,2^20] (C.27.5)
 		val -= FI_UINT_TO_PINT(526369);
 
-		writeBits(6, FI_BITS(,,1,1,0,0,0,0));
+		writeBits(6, FI_BITS(,,1,1,0, 0,0,0));
 
 		w_buf = getWriteBuffer(3);
 
@@ -1421,7 +1663,7 @@ Encoder::writePInt20_bit3(FI_PInt20 val)
 bool
 Decoder::readPInt20_bit3(FI_PInt20& val)
 {
-	assert(getBitOffset() == 2);
+	assert(getBitOffset() == 2); // C.27.1
 
 	const FI_Octet *r_buf;
 
@@ -1494,6 +1736,135 @@ Decoder::readPInt20_bit3(FI_PInt20& val)
 	}
 
 	readBits(6);
+
+	val = tmp_val;
+	return true;
+}
+
+// C.28
+void
+Encoder::writePInt20_bit4(FI_PInt20 val)
+{
+	assert(getBitOffset() == 3); // C.28.1
+	assert(val <= FI_PINT20_MAX);
+
+	FI_Octet *w_buf;
+
+	if (val <= FI_UINT_TO_PINT(16)) {
+		// [1,16] (C.28.2)
+		val -= FI_UINT_TO_PINT(1);
+
+		writeBits(5, FI_BITS(,,,0,,,,) | val);
+	} else if (val <= FI_UINT_TO_PINT(1040)) {
+		// [17,1040] (C.28.3)
+		val -= FI_UINT_TO_PINT(17);
+
+		writeBits(5, FI_BITS(,,,1,0,0,,) | val >> 8);
+
+		w_buf = getWriteBuffer(1);
+
+		w_buf[0] = val;
+	} else if (val <= FI_UINT_TO_PINT(263184)) {
+		// [1041,263184] (C.28.4)
+		val -= FI_UINT_TO_PINT(1041);
+
+		writeBits(5, FI_BITS(,,,1,0,1,,) | val >> 16);
+
+		w_buf = getWriteBuffer(2);
+
+		w_buf[0] = val >> 8;
+		w_buf[1] = val;
+	} else {
+		// [263185,2^20] (C.28.5)
+		val -= FI_UINT_TO_PINT(263185);
+
+		writeBits(5, FI_BITS(,,,1,1,0, 0,0));
+
+		w_buf = getWriteBuffer(3);
+
+		// Padding '0000'
+		w_buf[0] = val >> 16;
+		w_buf[1] = val >> 8;
+		w_buf[2] = val;
+	}
+}
+
+bool
+Decoder::readPInt20_bit4(FI_PInt20& val)
+{
+	assert(getBitOffset() == 3); // C.28.1
+
+	const FI_Octet *r_buf;
+
+	FI_PInt20 tmp_val;
+
+	if (getBits() & FI_BIT_4) {
+		switch (getBits() & FI_BITS(,,,/*1*/,1,1,,)) {
+		case FI_BITS(,,,/*1*/,0,0,,):
+			// [17,1040] (C.28.3)
+			r_buf = getReadBuffer(1);
+			if (!r_buf) {
+				return false;
+			}
+
+			tmp_val = (getBits() & FI_BITS(,,,,,,1,1)) << 8;
+			tmp_val |= r_buf[0];
+
+			tmp_val += FI_UINT_TO_PINT(17);
+			break;
+
+		case FI_BITS(,,,/*1*/,0,1,,):
+			// [1041,263184] (C.28.4)
+			r_buf = getReadBuffer(2);
+			if (!r_buf) {
+				return false;
+			}
+
+			tmp_val = (getBits() & FI_BITS(,,,,,,1,1)) << 16;
+			tmp_val |= r_buf[0] << 8;
+			tmp_val |= r_buf[1];
+
+			tmp_val += FI_UINT_TO_PINT(1041);
+			break;
+
+		case FI_BITS(,,,/*1*/,1,0,,):
+			// [263185,2^20] (C.28.5)
+			r_buf = getReadBuffer(3);
+			if (!r_buf) {
+				return false;
+			}
+
+			// Padding: 00 0000.
+			if ((getBits() & FI_BITS(,,,,,,1,1))
+			    || (r_buf[0] & FI_BITS(1,1,1,1,,,,))) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_val = (r_buf[0] & FI_BITS(,,,,1,1,1,1)) << 16;
+			tmp_val |= r_buf[1] << 8;
+			tmp_val |= r_buf[2];
+
+			if (tmp_val > FI_PINT20_MAX - FI_UINT_TO_PINT(263185)) {
+				// Not a valid Fast Infoset.
+				throw IllegalStateException ();
+			}
+
+			tmp_val += FI_UINT_TO_PINT(263185);
+			break;
+
+		default:
+			// Not a valid Fast Inofset.
+			throw IllegalStateException ();
+		}
+	} else {
+		// [1,16] (C.28.2)
+		tmp_val = getBits() & FI_BITS(,,,/*0*/,1,1,1,1);
+
+		tmp_val += FI_UINT_TO_PINT(1);
+	}
+
+	readBits(5);
 
 	val = tmp_val;
 	return true;

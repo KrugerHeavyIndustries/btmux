@@ -42,7 +42,7 @@ start_element(const FI_Name *e_name, ...)
 		const char *const a_buf = va_arg(ap, const char *);
 
 		if (!fi_set_value(a_value,
-		                  FI_VALUE_AS_OCTETS, strlen(a_buf), a_buf)) {
+		                  FI_VALUE_AS_UTF8, strlen(a_buf), a_buf)) {
 			die("fi_set_value");
 		}
 
@@ -65,6 +65,19 @@ end_element(const FI_Name *e_name)
 	/* End element.  */
 	if (!handler->endElement(handler, e_name)) {
 		die_gen("generate::endElement");
+	}
+}
+
+static void
+characters(const char *text)
+{
+	/* Characters.  */
+	if (!fi_set_value(a_value, FI_VALUE_AS_UTF8, strlen(text), text)) {
+		die("fi_set_value");
+	}
+
+	if (!handler->characters(handler, a_value)) {
+		die_gen("generate::characters");
 	}
 }
 
@@ -123,7 +136,7 @@ write_test(const char *const TEST_FILE)
 	 *     <now brown='1' now='3.14'>
 	 *         <how brown='oops' />
 	 *     </now>
-	 *     <now now='cow' cow='' />
+	 *     <now now='cow' cow='' brown='moo' />
 	 * </how>
 	 */
 	if (!handler->startDocument(handler)) {
@@ -132,15 +145,26 @@ write_test(const char *const TEST_FILE)
 
 	start_element(en_how, an_cow, "moo", 0);
 
+	characters("\n\t");
+
 		start_element(en_now, an_brown, "1", an_now, "3.14", 0);
+
+	characters("\n\t\t");
 
 			start_element(en_how, an_brown, "oops", 0);
 			end_element(en_how);
 
+	characters("\n\t");
+
 		end_element(en_now);
 
-		start_element(en_now, an_now, "cow", an_cow, "", 0);
+	characters("\n\t");
+
+		start_element(en_now, an_now, "cow", an_cow, "",
+		              an_brown, "moo", 0);
 		end_element(en_now);
+
+	characters("\n");
 
 	end_element(en_how);
 
