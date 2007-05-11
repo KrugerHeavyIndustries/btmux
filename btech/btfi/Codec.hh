@@ -56,10 +56,10 @@ enum EncodingFormat {
 	ENCODE_WITH_ALGORITHM = FI_BITS(,,1,1,,,,)  // C.19.3.4
 }; // enum EncodingFormat
 
-class Encoder {
+// TODO: Codec isn't a very accurate name.  I'll probably end up borrowing
+// something from the StAX API or something, like XMLStream or something.
+class Codec {
 public:
-	Encoder ();
-
 	void clear ();
 
 	void setStream (FI_OctetStream *out_stream) {
@@ -70,24 +70,41 @@ public:
 		vocabulary = &new_vocabulary;
 	}
 
-	// Encoding algorthim support.
-	const EA_VocabTable::TypedEntryRef
-	getEncodingAlgorithm (const Value& value) const;
-
-	FI_EncodingContext encoding_context;
-
-	// Byte-level I/O routines.
-	FI_Octet *getWriteBuffer (FI_Length length);
-
 	// Bit-level I/O routines.
 	unsigned int getBitOffset () const {
-		return num_unwritten_bits;
+		return num_partial_bits;
 	}
 
 	FI_Octet getBits () const {
 		return partial_octet;
 	}
 
+	// Encoding algorithm support.
+	void setEncodingAlgorithm (FI_VocabIndex idx);
+
+	EA_VocabTable::TypedEntryRef encoding_algorithm;
+	FI_EncodingContext encoding_context;
+
+protected:
+	Codec ();
+	~Codec ();
+
+	// Byte-level I/O.
+	FI_OctetStream *stream;
+
+	// Bit-level I/O.
+	unsigned int num_partial_bits;
+	FI_Octet partial_octet;
+
+	Vocabulary *vocabulary;
+}; // class Codec
+
+class Encoder : public Codec {
+public:
+	// Byte-level I/O routines.
+	FI_Octet *getWriteBuffer (FI_Length length);
+
+	// Bit-level I/O routines.
 	void writeBits (unsigned int num_bits, FI_Octet octet_mask);
 
 	// High-level encoding routines.
@@ -124,31 +141,11 @@ public:
 	void writePInt8 (FI_PInt8 val); // C.29
 
 private:
-	FI_OctetStream *stream;
-
-	// Bit-level I/O.
-	unsigned int num_unwritten_bits;
-	FI_Octet partial_octet;
-
-	Vocabulary *vocabulary;
 }; // class Encoder
 
-class Decoder {
+class Decoder : public Codec {
 public:
-	Decoder ();
-
 	void clear ();
-
-	void setStream (FI_OctetStream *out_stream) {
-		stream = out_stream;
-	}
-
-	void setVocabulary (Vocabulary& new_vocabulary) {
-		vocabulary = &new_vocabulary;
-	}
-
-	// Encoding algorthim support.
-	FI_EncodingContext encoding_context;
 
 	// Byte-level I/O routines.
 	const FI_Octet *getReadBuffer (FI_Length length);
@@ -156,14 +153,6 @@ public:
 	bool skipLength (FI_Length& length);
 
 	// Bit-level I/O routines.
-	unsigned int getBitOffset () const {
-		return num_read_bits;
-	}
-
-	FI_Octet getBits () const {
-		return partial_octet;
-	}
-
 	bool readBits (unsigned int num_bits);
 
 	// High-level decoding routines.  May use super_step.
@@ -205,17 +194,28 @@ public:
 
 	bool readPInt8 (FI_PInt8& val); // C.29
 
+	// These state variables are accessible to external clients of Decoder.
+	// Other than initially setting the ext_*_step variables to 0, the
+	// Decoder makes no use of them.  Their main purpose is to avoid
+	// replicating similar state variables on every client that needs them.
+	//
+	// To aid in cooperation, only one Decoder client should use these
+	// variables at any one time, and the owning client should always set
+	// at least the ext_super_step variable back to 0 after parsing
+	// completes successfully. (In the case of errors, it is presumed that
+	// the parsing loop will call clear(), which will take care of this.)
+	//
+	// TODO: We could add a Serializable pointer to track which object is
+	// the current client, but the extra safety probably isn't needed.
+	//
+	// TODO: Having continuations would be a neat way to avoid having
+	// these state variables to begin with, but it's a bit heavy-handed for
+	// a one-off task.
+	int ext_super_step, ext_sub_step, ext_sub_sub_step;
+	FI_Length ext_saved_len;
+
 private:
-	FI_OctetStream *stream;
-
-	// Bit-level I/O.
-	unsigned int num_read_bits;
-	FI_Octet partial_octet;
-
-	Vocabulary *vocabulary;
-
 	int super_step, sub_step, sub_sub_step;
-
 	FI_Length saved_len;
 
 	DN_VocabTable::TypedEntryRef saved_name;

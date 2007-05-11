@@ -59,7 +59,62 @@ print_name(const FI_Name *name)
 }
 
 static void
-print_value(const FI_Value *value)
+print_value_content(const FI_Value *value)
+{
+	const size_t count = fi_get_value_count(value);
+	const FI_ValueType type = fi_get_value_type(value);
+	const char *data_ptr = (const char *)fi_get_value(value);
+
+	size_t ii;
+
+	switch (type) {
+	case FI_VALUE_AS_NULL:
+		die("print_value_content: Unexpected NULL value");
+		break;
+
+	case FI_VALUE_AS_UTF8:
+		printf("%.*s", count, data_ptr);
+		break;
+
+	case FI_VALUE_AS_OCTETS:
+		fputs("[Base64(", stdout);
+
+		for (ii = 0; ii < count; ii++) {
+			if (ii != 0) {
+				putchar(' ');
+			}
+
+			printf("%02X", ((FI_Octet *)data_ptr)[ii]);
+		}
+
+		fputs(")]", stdout);
+		break;
+
+	default:
+		for (ii = 0; ii < count; ii++) {
+			if (ii != 0) {
+				fputs(", ", stdout);
+			}
+
+			switch (type) {
+			case FI_VALUE_AS_INT:
+				printf("%d", ((FI_Int32 *)data_ptr)[ii]);
+				break;
+
+			case FI_VALUE_AS_FLOAT:
+				printf("%g", ((FI_Float32 *)data_ptr)[ii]);
+				break;
+
+			default:
+				printf("(unknown type #%d)", type);
+			}
+		}
+		break;
+	}
+}
+
+static void
+print_attr_value(const FI_Value *value)
 {
 	switch (fi_get_value_type(value)) {
 	case FI_VALUE_AS_NULL:
@@ -67,13 +122,15 @@ print_value(const FI_Value *value)
 		break;
 
 	case FI_VALUE_AS_UTF8:
-		printf("\"%.*s\"",
-		       fi_get_value_count(value),
-		       (const char *)fi_get_value(value));
+		putchar('"');
+		print_value_content(value);
+		putchar('"');
 		break;
 
 	default:
-		printf("(unknown type #%d)", fi_get_value_type(value));
+		putchar('{');
+		print_value_content(value);
+		putchar('}');
 		break;
 	}
 }
@@ -97,7 +154,7 @@ startElement(FI_ContentHandler *handler,
 		putchar(' ');
 		print_name(fi_get_attribute_name(attrs, ii));
 		putchar('=');
-		print_value(fi_get_attribute_value(attrs, ii));
+		print_attr_value(fi_get_attribute_value(attrs, ii));
 	}
 
 	is_open = 1;
@@ -132,22 +189,10 @@ characters(FI_ContentHandler *handler, const FI_Value *value)
 	fputs("<![CDATA[", stdout);
 #endif // 0
 
-	switch (fi_get_value_type(value)) {
-	case FI_VALUE_AS_NULL:
+	if (fi_get_value_type(value) == FI_VALUE_AS_NULL) {
 		die("FI_ContentHandler::characters: empty CDATA");
-		break;
-
-	case FI_VALUE_AS_UTF8:
-		printf("%.*s",
-		       fi_get_value_count(value),
-		       (const char *)fi_get_value(value));
-		break;
-
-	default:
-#if 0
-		printf("(unknown type #%d)", fi_get_value_type(value));
-#endif // 0
-		break;
+	} else {
+		print_value_content(value);
 	}
 
 #if 0
@@ -181,11 +226,13 @@ read_test(const char *const TEST_FILE)
 	 *
 	 * <?xml encoding='utf-8'?>
 	 * <how xmlns="http://btonline-btech.sourceforge.net" cow='moo'>
-	 *     <now brown='1' now='3.14'>
-	 *         <how brown='oops' />
+	 *     <now brown={-1, 0, 1} now={3.14}>
+	 *         <how brown='oops'>[Base64(DINNER)]</how>
 	 *     </now>
-	 *     <now now='cow' cow='' />
+	 *     <now now='cow' cow='' brown='moo' />
 	 * </how>
+	 *
+	 * Note that this isn't an exhaustive test of encoding algorithms.
 	 */
 	if (!fi_parse(parser, TEST_FILE)) {
 		die_parser("fi_parse");

@@ -10,6 +10,10 @@
 extern void die(const char *);
 
 
+static const FI_Octet DINNER[6] = { 0x0C, 0x40, 0x03, 0x04, 0x41, 0x05 };
+static const FI_Int32 TERNARY[3] = { -1, 0, 1 };
+static const FI_Float32 PIE = 3.14f;
+
 static FI_Generator *gen;
 static FI_ContentHandler *handler;
 
@@ -26,6 +30,13 @@ die_gen(const char *cause)
 static FI_Value *a_value;
 static FI_Attributes *attributes;
 
+/*
+ * Variable arguments are of the form:
+ *
+ * (FI_Name *a_name, FI_ValueType a_type, size_t a_count, const void *a_buf)
+ *
+ * terminated by a_name = 0.
+ */
 static void
 start_element(const FI_Name *e_name, ...)
 {
@@ -39,10 +50,11 @@ start_element(const FI_Name *e_name, ...)
 	va_start(ap, e_name);
 
 	while ((a_name = va_arg(ap, const FI_Name *))) {
-		const char *const a_buf = va_arg(ap, const char *);
+		const FI_ValueType a_type = va_arg(ap, FI_ValueType);
+		const size_t a_count = va_arg(ap, size_t);
+		const void *const a_buf = va_arg(ap, const void *);
 
-		if (!fi_set_value(a_value,
-		                  FI_VALUE_AS_UTF8, strlen(a_buf), a_buf)) {
+		if (!fi_set_value(a_value, a_type, a_count, a_buf)) {
 			die("fi_set_value");
 		}
 
@@ -69,10 +81,10 @@ end_element(const FI_Name *e_name)
 }
 
 static void
-characters(const char *text)
+characters(FI_ValueType type, size_t count, const void *buf)
 {
 	/* Characters.  */
-	if (!fi_set_value(a_value, FI_VALUE_AS_UTF8, strlen(text), text)) {
+	if (!fi_set_value(a_value, type, count, buf)) {
 		die("fi_set_value");
 	}
 
@@ -133,38 +145,52 @@ write_test(const char *const TEST_FILE)
 	 *
 	 * <?xml encoding='utf-8'?>
 	 * <how xmlns="http://btonline-btech.sourceforge.net" cow='moo'>
-	 *     <now brown='1' now='3.14'>
-	 *         <how brown='oops' />
+	 *     <now brown={-1, 0, 1} now={3.14}>
+	 *         <how brown='oops'>[Base64(DINNER)]</how>
 	 *     </now>
 	 *     <now now='cow' cow='' brown='moo' />
 	 * </how>
+	 *
+	 * Note that this isn't an exhaustive test of encoding algorithms.
 	 */
 	if (!handler->startDocument(handler)) {
 		die_gen("generate::startDocument");
 	}
 
-	start_element(en_how, an_cow, "moo", 0);
+	start_element(en_how,
+	              an_cow, FI_VALUE_AS_UTF8, 3, "moo",
+	              0);
 
-	characters("\n\t");
+	characters(FI_VALUE_AS_UTF8, 2, "\n\t");
 
-		start_element(en_now, an_brown, "1", an_now, "3.14", 0);
+		start_element(en_now,
+		              an_brown, FI_VALUE_AS_INT, 3, TERNARY,
+		              an_now, FI_VALUE_AS_FLOAT, 1, &PIE,
+		              0);
 
-	characters("\n\t\t");
+	characters(FI_VALUE_AS_UTF8, 3, "\n\t\t");
 
-			start_element(en_how, an_brown, "oops", 0);
+			start_element(en_how,
+			              an_brown, FI_VALUE_AS_UTF8, 4, "oops",
+			              0);
+
+			characters(FI_VALUE_AS_OCTETS, 6, DINNER);
+
 			end_element(en_how);
 
-	characters("\n\t");
+	characters(FI_VALUE_AS_UTF8, 2, "\n\t");
 
 		end_element(en_now);
 
-	characters("\n\t");
+	characters(FI_VALUE_AS_UTF8, 2, "\n\t");
 
-		start_element(en_now, an_now, "cow", an_cow, "",
-		              an_brown, "moo", 0);
+		start_element(en_now,
+		              an_now, FI_VALUE_AS_UTF8, 3, "cow",
+		              an_cow, FI_VALUE_AS_UTF8, 0, "",
+		              an_brown, FI_VALUE_AS_UTF8, 3, "moo", 0);
 		end_element(en_now);
 
-	characters("\n");
+	characters(FI_VALUE_AS_UTF8, 1, "\n");
 
 	end_element(en_how);
 

@@ -20,7 +20,7 @@ extern "C" {
 
 #define FI_LENGTH_MAX ((size_t)-1)
 
-typedef size_t FI_Length;
+typedef size_t FI_Length; /* FI_LENGTH_MAX must be <= SIZE_MAX, for sanity */
 
 /* Octet stream.  */
 typedef struct FI_tag_OctetStream FI_OctetStream;

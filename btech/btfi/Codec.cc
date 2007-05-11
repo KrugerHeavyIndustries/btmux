@@ -27,37 +27,45 @@ namespace FI {
 
 
 /*
- * General Encoder routines.
+ * General routines.
  */
 
-Encoder::Encoder()
+Codec::Codec()
 : vocabulary (0)
 {
+	encoding_context.free_context = 0;
 	clear();
 }
 
-// Reset Encoder state.  This will clear the associated vocabulary and internal
-// decoder state, but not the associated output stream.
-void
-Encoder::clear()
+Codec::~Codec()
 {
+	if (encoding_context.free_context && encoding_context.context) {
+		encoding_context.free_context(encoding_context.context);
+	}
+}
+
+// Reset Codec state.
+void
+Codec::clear()
+{
+	encoding_algorithm = 0;
+
+	if (encoding_context.free_context && encoding_context.context) {
+		encoding_context.free_context(encoding_context.context);
+		encoding_context.free_context = 0;
+	}
+
+	encoding_context.identifier = 0;
+	encoding_context.context = 0;
+
+	FI_CLEAR_ERROR(encoding_context.error_info);
+
 	if (vocabulary) {
 		vocabulary->clear();
 	}
 
-	num_unwritten_bits = 0;
+	num_partial_bits = 0;
 	partial_octet = 0;
-}
-
-
-/*
- * General Decoder routines.
- */
-
-Decoder::Decoder()
-: vocabulary (0)
-{
-	clear();
 }
 
 // Reset Decoder state.  This will clear the associated vocabulary and internal
@@ -65,63 +73,23 @@ Decoder::Decoder()
 void
 Decoder::clear()
 {
-	if (vocabulary) {
-		vocabulary->clear();
-	}
-
-	num_read_bits = 0;
+	Codec::clear();
 
 	super_step = 0;
 	sub_step = 0;
 	sub_sub_step = 0;
+
+	ext_super_step = 0;
+	ext_sub_step = 0;
+	ext_sub_sub_step = 0;
 }
 
-
-/*
- * Encoding algorithm support.
- */
-
-// Get an encoding algorithm appropriate to a value.  Throws an
-// UnsupportedOperationException for values that can't be encoded using an
-// algorithm.  It is the caller's responsibility to only pass in values that
-// can be encoded with an algorithm. (TODO: We may want to change this.)
-const EA_VocabTable::TypedEntryRef
-Encoder::getEncodingAlgorithm(const Value& value) const
+// Set encoding_algorithm according to the given encoding algorithm vocabulary
+// table index.  Will throw an IndexOutOfBoundsException for a bogus index.
+void
+Codec::setEncodingAlgorithm(FI_VocabIndex idx)
 {
-	switch (value.getType()) {
-	case FI_VALUE_AS_OCTETS:
-		// Raw binary needs to be encoded with hexadecimal or Base64.
-		// Base64 is much more efficient than hexadecimal.
-		//
-		// TODO: A non-standard option is just to dump raw binary
-		// octets into the file, but this requires adding a custom
-		// encoding algorithm entry to the generated file.
-		return vocabulary->encoding_algorithms[FI_EA_BASE64];
-
-	case FI_VALUE_AS_SHORT:
-		return vocabulary->encoding_algorithms[FI_EA_SHORT];
-
-	case FI_VALUE_AS_INT:
-		return vocabulary->encoding_algorithms[FI_EA_INT];
-
-	case FI_VALUE_AS_LONG:
-		return vocabulary->encoding_algorithms[FI_EA_LONG];
-
-	case FI_VALUE_AS_BOOLEAN:
-		return vocabulary->encoding_algorithms[FI_EA_BOOLEAN];
-
-	case FI_VALUE_AS_FLOAT:
-		return vocabulary->encoding_algorithms[FI_EA_FLOAT];
-
-	case FI_VALUE_AS_DOUBLE:
-		return vocabulary->encoding_algorithms[FI_EA_DOUBLE];
-
-	case FI_VALUE_AS_UUID:
-		return vocabulary->encoding_algorithms[FI_EA_UUID];
-
-	default:
-		throw UnsupportedOperationException ();
-	}
+	encoding_algorithm = vocabulary->encoding_algorithms[idx];
 }
 
 
@@ -173,14 +141,14 @@ Decoder::skipLength(FI_Length& length)
 void
 Encoder::writeBits(unsigned int num_bits, FI_Octet octet_mask)
 {
-	assert(num_bits <= 8 - num_unwritten_bits);
+	assert(num_bits <= 8 - num_partial_bits);
 
 	partial_octet |= octet_mask;
 
-	if (num_bits < 8 - num_unwritten_bits) {
-		num_unwritten_bits += num_bits;
+	if (num_bits < 8 - num_partial_bits) {
+		num_partial_bits += num_bits;
 	} else {
-		num_unwritten_bits = 0;
+		num_partial_bits = 0;
 
 		// Write out accumulated bits.
 		FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
@@ -196,9 +164,9 @@ Encoder::writeBits(unsigned int num_bits, FI_Octet octet_mask)
 bool
 Decoder::readBits(unsigned int num_bits)
 {
-	assert(num_bits <= 8 - num_read_bits);
+	assert(num_bits <= 8 - num_partial_bits);
 
-	if (num_read_bits == 0) {
+	if (num_partial_bits == 0) {
 		// Load next octet.
 		const FI_Octet *r_buf;
 
@@ -217,10 +185,10 @@ Decoder::readBits(unsigned int num_bits)
 		partial_octet = r_buf[0];
 	}
 
-	if (num_bits < 8 - num_read_bits) {
-		num_read_bits += num_bits;
+	if (num_bits < 8 - num_partial_bits) {
+		num_partial_bits += num_bits;
 	} else {
-		num_read_bits = 0;
+		num_partial_bits = 0;
 	}
 
 	return true;
@@ -628,6 +596,7 @@ Encoder::writeAttribute(const DN_VocabTable::TypedEntryRef& name,
 	value.write(*this);
 }
 
+// XXX: The passed value must be persistent between calls!
 bool
 Decoder::readAttribute(DN_VocabTable::TypedEntryRef& name,
                        Value& value)
@@ -1905,12 +1874,17 @@ Decoder::readPInt8(FI_PInt8& val)
 	FI_PInt8 tmp_val;
 
 	// Read partial + octet.
+	// XXX: This is one of the only routines that reads bits like this.  As
+	// a special case, we're allowing it to manipulate num_partial_bits
+	// directly, rather than using our bit I/O methods.
 	switch (getBitOffset()) {
 	case 4:
 		// Starting on bit 5.
 		tmp_val = (getBits() & FI_BITS(,,,,1,1,1,1)) << 4;
 
+		num_partial_bits = 0;
 		if (!readBits(4)) {
+			num_partial_bits = 4;
 			return false;
 		}
 
@@ -1921,7 +1895,9 @@ Decoder::readPInt8(FI_PInt8& val)
 		// Starting on bit 7.
 		tmp_val = (getBits() & FI_BITS(,,,,,,1,1)) << 6;
 
+		num_partial_bits = 0;
 		if (!readBits(6)) {
+			num_partial_bits = 6;
 			return false;
 		}
 

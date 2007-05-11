@@ -374,15 +374,22 @@ fi_parse(FI_Parser *parser, const char *filename)
 	if (parse_failed) {
 		fclose(parser->fpin); // XXX: Don't care, parsing failed
 		parser->fpin = 0;
-		parser->vocabulary.clear(); // XXX: Save some memory
-		parser->document.clearElements(); // XXX: Save some memory
+
+		// XXX: Save some memory.
+		fi_clear_stream(parser->buffer);
+		parser->vocabulary.clear();
+		parser->document.clearElements();
 		return 0;
 	}
 
 	// Close stream.
 	fclose(parser->fpin); // XXX: Don't care, finished parsing
 	parser->fpin = 0;
-	parser->vocabulary.clear(); // XXX: Save some memory
+
+	// XXX: Save some memory.
+	fi_clear_stream(parser->buffer);
+	parser->vocabulary.clear();
+	assert(!parser->document.hasElements());
 	return 1;
 }
 
@@ -470,8 +477,11 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 
 	if (!write_object(gen, gen->document)) {
 		// error_info set by write_object().
-		gen->vocabulary.clear(); // XXX: Save some memory
-		gen->document.clearElements(); // XXX: Save some memory
+
+		// XXX: Save some memory.
+		fi_clear_stream(gen->buffer);
+		gen->vocabulary.clear();
+		gen->document.clearElements();
 		return 0;
 	}
 
@@ -479,12 +489,20 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 	if (fclose(gen->fpout) != 0) {
 		FI_SET_ERROR(gen->error_info, FI_ERROR_ERRNO);
 		gen->fpout = 0;
-		gen->vocabulary.clear(); // XXX: Save some memory
+
+		// XXX: Save some memory.
+		fi_clear_stream(gen->buffer);
+		gen->vocabulary.clear();
+		assert(!gen->document.hasElements());
 		return 0;
 	}
 
 	gen->fpout = 0;
-	gen->vocabulary.clear(); // XXX: Save some memory
+
+	// XXX: Save some memory.
+	fi_clear_stream(gen->buffer);
+	gen->vocabulary.clear();
+	assert(!gen->document.hasElements());
 	return 1;
 }
 
@@ -610,7 +628,7 @@ read_file_octets(FI_Parser *parser)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 0
+#if 1
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
 	min_len = 1;

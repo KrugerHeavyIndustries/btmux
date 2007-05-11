@@ -60,51 +60,64 @@ DV_VocabTable::DV_VocabTable()
 
 
 /*
- * Value implementation.
+ * Dynamically-typed Value implementation.
  */
 
 namespace {
 
-// Replace value of existing type.
-template<typename T>
-void
-set_value_buf(char *value_buf, size_t count, const void *buf)
+// Get the size of a type dynamically.
+size_t
+get_size_of(FI_ValueType value_type)
 {
-	const T *const src_buf = static_cast<const T *>(buf);
-	T *const dst_buf = reinterpret_cast<T *>(value_buf);
-
-	for (size_t ii = 0; ii < count; ii++) {
-		dst_buf[ii] = src_buf[ii];
-	}
-}
-
-// Create value of different type.
-template<typename T>
-char *
-new_value_buf(size_t count, const void *buf)
-{
-	char *new_buf;
-
-	if (count > ((size_t)-1) / sizeof(T)) {
-		// Overflow.
+	switch (value_type) {
+	case FI_VALUE_AS_NULL:
 		return 0;
+
+	case FI_VALUE_AS_SHORT:
+		return sizeof(FI_Int16);
+
+	case FI_VALUE_AS_INT:
+		return sizeof(FI_Int32);
+
+	case FI_VALUE_AS_LONG:
+		return sizeof(FI_Int64);
+
+	case FI_VALUE_AS_BOOLEAN:
+		return sizeof(FI_Boolean);
+
+	case FI_VALUE_AS_FLOAT:
+		return sizeof(FI_Float32);
+
+	case FI_VALUE_AS_DOUBLE:
+		return sizeof(FI_Float64);
+
+	case FI_VALUE_AS_UUID:
+		return sizeof(FI_UUID);
+
+	case FI_VALUE_AS_UTF8:
+		return sizeof(FI_UInt8);
+
+	case FI_VALUE_AS_UTF16:
+		return sizeof(FI_UInt16);
+
+	case FI_VALUE_AS_OCTETS:
+		return sizeof(FI_Octet);
+
+	default:
+		// Don't understand that value type.
+		throw InvalidArgumentException ();
 	}
-
-	try {
-		new_buf = new char[count * sizeof(T)];
-	} catch (const std::bad_alloc& e) {
-		return 0;
-	}
-
-	set_value_buf<T>(new_buf, count, buf);
-
-	return new_buf;
 }
 
 // Test whether one value of a given type is less than another of the same
 // type.  Strings of values are compared lexicographically.
 //
 // The type involved must naturally be LessThanComparable.
+//
+// TODO: This isn't really right because of the existence of NaN floating point
+// values.  For our purposes, though, all NaNs are pretty much the same.  We
+// can fix this by converting to bitwise comparison, using memcmp() or
+// something similar.
 template<typename T>
 bool
 less_value_buf(size_t count, const void *lhs, const void *rhs)
@@ -130,128 +143,118 @@ less_value_buf(size_t count, const void *lhs, const void *rhs)
 
 Value::~Value()
 {
-	delete[] value_buf;
+	delete[] static_cast<char *>(value_buf);
+}
+
+// (Re)allocate memory buffers.  Note the usual restrictions on memory
+// allocated this way; it may only be used with POD (Plain Old Data) types,
+// which are technically the only types bitwise copies are legal.
+bool
+Value::allocate_value_buf(FI_ValueType new_type, size_t new_count)
+{
+	// Handle assignment of empty value.
+	// We don't require value_type == FI_VALUE_AS_NULL, as a convenience.
+	if (new_count < 1 || new_type == FI_VALUE_AS_NULL) {
+		// Set to empty (FI_VALUE_AS_NULL).
+		value_type = FI_VALUE_AS_NULL;
+		value_count = 0;
+		value_size = 0;
+
+		delete[] static_cast<char *>(value_buf);
+		value_buf = 0;
+		value_buf_size = 0;
+		return true;
+	}
+
+	// Compute value size.
+	const size_t item_size = get_size_of(new_type);
+
+	if (new_count > ((size_t)-1) / item_size) {
+		// Would overflow.
+		return false;
+	}
+
+	const size_t exact_size = new_count * item_size;
+	assert(exact_size > 0);
+
+	// Compute value buffer size.
+	size_t pow2_size;
+
+	if (value_buf) {
+		pow2_size = value_buf_size >> 2;
+
+		if (exact_size <= pow2_size) {
+			// Adjust buffer size downward when it saves >75%.
+			size_t tmp_pow2_size = pow2_size >> 1;
+
+			while (tmp_pow2_size > exact_size) {
+				pow2_size = tmp_pow2_size;
+				tmp_pow2_size >>= 1;
+			}
+		} else {
+			// Adjust buffer size upward by powers of 2.
+			pow2_size = value_buf_size;
+
+			while (pow2_size < exact_size) {
+				const size_t tmp_pow2_size = pow2_size << 1;
+
+				if (tmp_pow2_size <= pow2_size) {
+					// Would overflow.
+					return false;
+				}
+
+				pow2_size = tmp_pow2_size;
+			}
+		}
+	} else {
+		// Set initial buffer size as a power of 2.
+		pow2_size = 1;
+
+		while (pow2_size < exact_size) {
+			const size_t tmp_pow2_size = pow2_size << 1;
+
+			if (tmp_pow2_size <= pow2_size) {
+				// Would overflow.
+				return false;
+			}
+
+			pow2_size = tmp_pow2_size;
+		}
+	}
+
+	// Update object state.
+	if (pow2_size != value_buf_size) {
+		char *new_buf;
+
+		try {
+			new_buf = new char[pow2_size];
+		} catch (const std::bad_alloc& e) {
+			return false;
+		}
+
+		delete[] static_cast<char *>(value_buf);
+		value_buf = new_buf;
+		value_buf_size = pow2_size;
+	}
+
+	value_type = new_type;
+	value_count = new_count;
+	value_size = exact_size;
+	return true;
 }
 
 bool
 Value::setValue(FI_ValueType type, size_t count, const void *buf)
 {
-	// Empty values are always of type FI_VALUE_AS_NULL.
-	if (count == 0) {
-		delete[] value_buf;
-
-		value_type = FI_VALUE_AS_NULL;
-		value_count = 0;
-		value_buf = 0;
-		return true;
-	}
-
-	// Create/assign the new value.
-	const bool in_place = (value_type == type && value_count == count);
-
-	char *new_buf;
-
-	switch (type) {
-	case FI_VALUE_AS_UTF8:
-		// XXX: This isn't /really/ right...
-		if (in_place) {
-			set_value_buf<FI_UInt8>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_UInt8>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_UTF16:
-		// XXX: This isn't /really/ right...
-		if (in_place) {
-			set_value_buf<FI_UInt16>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_UInt16>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_SHORT:
-		if (in_place) {
-			set_value_buf<FI_Int16>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Int16>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_INT:
-		if (in_place) {
-			set_value_buf<FI_Int32>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Int32>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_LONG:
-		if (in_place) {
-			set_value_buf<FI_Int64>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Int64>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_BOOLEAN:
-		if (in_place) {
-			set_value_buf<FI_Boolean>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Boolean>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_FLOAT:
-		if (in_place) {
-			set_value_buf<FI_Float32>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Float32>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_DOUBLE:
-		if (in_place) {
-			set_value_buf<FI_Float64>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Float64>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_UUID:
-		if (in_place) {
-			set_value_buf<FI_UUID>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_UUID>(count, buf);
-		}
-		break;
-
-	case FI_VALUE_AS_OCTETS:
-		if (in_place) {
-			set_value_buf<FI_Octet>(value_buf, count, buf);
-		} else {
-			new_buf = new_value_buf<FI_Octet>(count, buf);
-		}
-		break;
-
-	default:
-		// Unknown type requested.
+	if (!allocate_value_buf(type, count)) {
 		return false;
 	}
 
-	// Perform the swap.
-	if (!in_place) {
-		if (!new_buf) {
-			return false;
-		}
-
-		delete[] value_buf;
-
-		value_type = type;
-		value_count = count;
-		value_buf = new_buf;
+	if (value_size == 0) {
+		return true;
 	}
 
+	memcpy(value_buf, buf, value_size);
 	return true;
 }
 
@@ -350,7 +353,7 @@ namespace {
 
 // Selecting the encoding format based on value type.
 EncodingFormat
-getEncodingFormat(FI_ValueType value_type)
+choose_enc_format(FI_ValueType value_type)
 {
 	switch (value_type) {
 	case FI_VALUE_AS_UTF8:
@@ -365,13 +368,82 @@ getEncodingFormat(FI_ValueType value_type)
 	}
 }
 
+// Select the encoding algorithm index based on value type.
+FI_VocabIndex
+choose_enc_alg(FI_ValueType value_type)
+{
+	switch (value_type) {
+	case FI_VALUE_AS_SHORT:
+		return FI_EA_SHORT;
+
+	case FI_VALUE_AS_INT:
+		return FI_EA_INT;
+
+	case FI_VALUE_AS_LONG:
+		return FI_EA_LONG;
+
+	case FI_VALUE_AS_BOOLEAN:
+		return FI_EA_BOOLEAN;
+
+	case FI_VALUE_AS_FLOAT:
+		return FI_EA_FLOAT;
+
+	case FI_VALUE_AS_DOUBLE:
+		return FI_EA_DOUBLE;
+
+	case FI_VALUE_AS_UUID:
+		return FI_EA_UUID;
+
+	case FI_VALUE_AS_OCTETS:
+		return FI_EA_BASE64;
+
+	default:
+		// Couldn't select an appropriate algorithm.
+		throw UnsupportedOperationException ();
+	}
+}
+
+// Select the value type based on encoding algorithm index.
+FI_ValueType
+choose_value_type(FI_VocabIndex encoding_idx)
+{
+	switch (encoding_idx) {
+	case FI_EA_SHORT:
+		return FI_VALUE_AS_SHORT;
+
+	case FI_EA_INT:
+		return FI_VALUE_AS_INT;
+
+	case FI_EA_LONG:
+		return FI_VALUE_AS_LONG;
+
+	case FI_EA_BOOLEAN:
+		return FI_VALUE_AS_BOOLEAN;
+
+	case FI_EA_FLOAT:
+		return FI_VALUE_AS_FLOAT;
+
+	case FI_EA_DOUBLE:
+		return FI_VALUE_AS_DOUBLE;
+
+	case FI_EA_UUID:
+		return FI_VALUE_AS_UUID;
+
+	case FI_EA_BASE64:
+		return FI_VALUE_AS_OCTETS;
+
+	default:
+		// Couldn't select an appropriate value type.
+		throw UnsupportedOperationException ();
+	}
+}
+
 } // anonymous namespace
 
 void
 Value::setVocabTable(DV_VocabTable& new_vocab_table)
 {
 	vocab_table = &new_vocab_table;
-	super_step = 0;
 }
 
 void
@@ -398,9 +470,9 @@ bool
 Value::read(Decoder& decoder)
 {
 reparse:
-	switch (super_step) {
+	switch (decoder.ext_super_step) {
 	case 0:
-		sub_step = 0;
+		decoder.ext_sub_step = 0;
 
 		switch (decoder.getBitOffset()) {
 		case 0:
@@ -409,7 +481,7 @@ reparse:
 
 		case 2:
 			// On third bit.
-			super_step = 2;
+			decoder.ext_super_step = 2;
 			goto reparse;
 
 		default:
@@ -417,7 +489,7 @@ reparse:
 			throw AssertionFailureException ();
 		}
 
-		super_step = 1;
+		decoder.ext_super_step = 1;
 		// FALLTHROUGH
 
 	case 1:
@@ -439,43 +511,110 @@ reparse:
 		throw AssertionFailureException ();
 	}
 
-	super_step = 0;
+	decoder.ext_super_step = 0;
 	return true;
 }
 
 FI_Length
 Value::getEncodedSize(Encoder& encoder) const
 {
-	// FIXME: Use an encoding algorithm, if appropriate.
-	throw UnsupportedOperationException ();
+	const FI_EncodingAlgorithm *enc_alg = *encoder.encoding_algorithm;
+
+	if (!enc_alg->encoded_size(&encoder.encoding_context,
+	                           value_size, value_buf)) {
+		// FIXME: This Exception isn't really appropriate.
+		throw UnsupportedOperationException ();
+	}
+
+	return encoder.encoding_context.encoded_size;
 }
 
 void
 Value::encodeOctets(Encoder& encoder, FI_Length len) const
 {
-	// FIXME: Use an encoding algorithm, if appropriate.
-	assert(getEncodingFormat(value_type) == ENCODE_AS_UTF8);
-
 	FI_Octet *w_buf = encoder.getWriteBuffer(len);
 
-	memcpy(w_buf, value_buf, len);
+	const FI_EncodingAlgorithm *enc_alg;
+
+	switch (choose_enc_format(value_type)) {
+	case ENCODE_AS_UTF8:
+		// TODO: This is a bit too liberal to be UTF-8.
+		memcpy(w_buf, value_buf, len);
+		break;
+
+	case ENCODE_AS_UTF16:
+	case ENCODE_WITH_ALPHABET:
+		// FIXME: Implementation restriction.
+		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALGORITHM:
+		// Use encoding algorithm.
+		enc_alg = *encoder.encoding_algorithm;
+
+		if (!enc_alg->encode(&encoder.encoding_context, w_buf,
+		                     value_size, value_buf)) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+
+		encoder.encoding_algorithm = 0;
+		break;
+	}
 }
 
+// XXX: If this routine fails, we guarantee the Value will be left in a
+// consistent state, but it may lose its original value before decoding aborts.
+// In that case, the Value will become an FI_VALUE_AS_NULL, though the caller
+// still shouldn't try to make use of it, except to assign a new value.
 bool
 Value::decodeOctets(Decoder& decoder, FI_Length len)
 {
-	// FIXME: Use an encoding algorithm, if appropriate.
-	assert(getEncodingFormat(next_value_type) == ENCODE_AS_UTF8);
-
 	const FI_Octet *r_buf = decoder.getReadBuffer(len);
 	if (!r_buf) {
 		return false;
 	}
 
-	if (!setValue(FI_VALUE_AS_UTF8, len, r_buf)) {
-		// Couldn't set the attribute value.
-		// FIXME: This exception makes no sense.
+	const FI_EncodingAlgorithm *enc_alg;
+	size_t next_count;
+
+	switch (choose_enc_format(next_value_type)) {
+	case ENCODE_AS_UTF8:
+		// TODO: This is a bit too liberal to be UTF-8.
+		if (!setValue(FI_VALUE_AS_UTF8, len, r_buf)) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+		break;
+
+	case ENCODE_AS_UTF16:
+	case ENCODE_WITH_ALPHABET:
+		// FIXME: Implementation restriction.
 		throw UnsupportedOperationException ();
+
+	case ENCODE_WITH_ALGORITHM:
+		// Use encoding algorithm.
+		enc_alg = *decoder.encoding_algorithm;
+
+		if (!enc_alg->decoded_size(&decoder.encoding_context,
+		                           len, r_buf)) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+
+		next_count = decoder.encoding_context.decoded_size
+		             / get_size_of(next_value_type);
+
+		if (!allocate_value_buf(next_value_type, next_count)) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+
+		if (!enc_alg->decode(&decoder.encoding_context, value_buf,
+		                     len, r_buf)) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+		break;
 	}
 
 	if (add_value_to_table) {
@@ -514,7 +653,7 @@ Value::write_bit1(Encoder& encoder) const
 	// Write character-string using C.19 (C.14.3.2).
 
 	// Write discriminant (C.19.3).
-	const EncodingFormat format = getEncodingFormat(value_type);
+	const EncodingFormat format = choose_enc_format(value_type);
 
 	encoder.writeBits(2, format);
 
@@ -530,6 +669,8 @@ Value::write_bit1(Encoder& encoder) const
 			throw UnsupportedOperationException ();
 		}
 
+		encoder.encoding_algorithm = 0;
+
 		len = value_count * 1;
 		break;
 
@@ -539,6 +680,8 @@ Value::write_bit1(Encoder& encoder) const
 			// Overflow.
 			throw UnsupportedOperationException ();
 		}
+
+		encoder.encoding_algorithm = 0;
 
 		len = value_count * 2;
 		throw UnsupportedOperationException ();
@@ -550,9 +693,11 @@ Value::write_bit1(Encoder& encoder) const
 
 	case ENCODE_WITH_ALGORITHM:
 		// Write encoding-algorithm index using C.29 (C.19.3.4).
+		encoder.setEncodingAlgorithm(choose_enc_alg(value_type));
+
 		len = getEncodedSize(encoder);
 
-		encoding_idx = encoder.getEncodingAlgorithm(*this).getIndex();
+		encoding_idx = encoder.encoding_algorithm.getIndex();
 		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
 
 		encoder.writePInt8(FI_UINT_TO_PINT(encoding_idx));
@@ -576,7 +721,7 @@ Value::read_bit1(Decoder& decoder)
 	FI_PInt32 octets_len;
 
 reparse:
-	switch (sub_step) {
+	switch (decoder.ext_sub_step) {
 	case 0:
 		assert(decoder.getBitOffset() == 0); // C.14.2
 
@@ -593,11 +738,11 @@ reparse:
 
 			add_value_to_table = decoder.getBits() & FI_BIT_2;
 
-			sub_step = 2;
+			decoder.ext_sub_step = 2;
 			goto reparse;
 		}
 
-		sub_step = 1;
+		decoder.ext_sub_step = 1;
 		// FALLTHROUGH
 
 	case 1:
@@ -628,15 +773,19 @@ reparse:
 			throw UnsupportedOperationException ();
 
 		case ENCODE_WITH_ALPHABET:
-			sub_step = 5;
+			decoder.ext_sub_step = 5;
 			goto reparse;
 
 		case ENCODE_WITH_ALGORITHM:
-			sub_step = 6;
+			decoder.ext_sub_step = 6;
 			goto reparse;
+
+		default:
+			// This should never happen.
+			throw AssertionFailureException ();
 		}
 
-		sub_step = 3;
+		decoder.ext_sub_step = 3;
 		// FALLTHROUGH
 
 	case 3:
@@ -647,14 +796,14 @@ reparse:
 
 		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
 		// checked in readNonEmptyOctets_len_bit5().
-		saved_len = FI_PINT_TO_UINT(octets_len);
+		decoder.ext_saved_len = FI_PINT_TO_UINT(octets_len);
 
-		sub_step = 4;
+		decoder.ext_sub_step = 4;
 		// FALLTHROUGH
 
 	case 4:
 		// Read encoded string octets.
-		if (!decodeOctets(decoder, saved_len)) {
+		if (!decodeOctets(decoder, decoder.ext_saved_len)) {
 			return false;
 		}
 		break;
@@ -675,16 +824,19 @@ reparse:
 			return false;
 		}
 
-		// Determine future value type.
-		// FIXME: We don't support the encoding-algorithm alternative.
-		throw UnsupportedOperationException ();
+		// XXX: Throws IndexOutOfBoundsException on bogus index.
+		next_value_type = choose_value_type(FI_PINT_TO_UINT(encoding_idx));
+		decoder.setEncodingAlgorithm(FI_PINT_TO_UINT(encoding_idx));
+
+		decoder.ext_sub_step = 3;
+		goto reparse;
 
 	default:
 		// Should never happen.
 		throw AssertionFailureException ();
 	}
 
-	sub_step = 0;
+	decoder.ext_sub_step = 0;
 	return true;
 }
 
@@ -719,7 +871,7 @@ Value::write_bit3(Encoder& encoder) const
 	// Write character-string using C.20 (C.15.3.2).
 
 	// Write discriminant (C.20.3).
-	const EncodingFormat format = getEncodingFormat(value_type);
+	const EncodingFormat format = choose_enc_format(value_type);
 
 	encoder.writeBits(2, (format >> 2));
 
@@ -735,6 +887,8 @@ Value::write_bit3(Encoder& encoder) const
 			throw UnsupportedOperationException ();
 		}
 
+		encoder.encoding_algorithm = 0;
+
 		len = value_count * 1;
 		break;
 
@@ -744,6 +898,8 @@ Value::write_bit3(Encoder& encoder) const
 			// Overflow.
 			throw UnsupportedOperationException ();
 		}
+
+		encoder.encoding_algorithm = 0;
 
 		len = value_count * 2;
 		throw UnsupportedOperationException ();
@@ -755,9 +911,11 @@ Value::write_bit3(Encoder& encoder) const
 
 	case ENCODE_WITH_ALGORITHM:
 		// Write encoding-algorithm index using C.29 (C.20.3.4).
+		encoder.setEncodingAlgorithm(choose_enc_alg(value_type));
+
 		len = getEncodedSize(encoder);
 
-		encoding_idx = encoder.getEncodingAlgorithm(*this).getIndex();
+		encoding_idx = encoder.encoding_algorithm.getIndex();
 		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
 
 		encoder.writePInt8(FI_UINT_TO_PINT(encoding_idx));
@@ -781,7 +939,7 @@ Value::read_bit3(Decoder& decoder)
 	FI_PInt32 octets_len;
 
 reparse:
-	switch (sub_step) {
+	switch (decoder.ext_sub_step) {
 	case 0:
 		assert(decoder.getBitOffset() == 2); // C.15.2
 
@@ -798,11 +956,11 @@ reparse:
 
 			add_value_to_table = decoder.getBits() & FI_BIT_4;
 
-			sub_step = 2;
+			decoder.ext_sub_step = 2;
 			goto reparse;
 		}
 
-		sub_step = 1;
+		decoder.ext_sub_step = 1;
 		// FALLTHROUGH
 
 	case 1:
@@ -833,15 +991,19 @@ reparse:
 			throw UnsupportedOperationException ();
 
 		case ENCODE_WITH_ALPHABET:
-			sub_step = 5;
+			decoder.ext_sub_step = 5;
 			goto reparse;
 
 		case ENCODE_WITH_ALGORITHM:
-			sub_step = 6;
+			decoder.ext_sub_step = 6;
 			goto reparse;
+
+		default:
+			// This should never happen.
+			throw AssertionFailureException ();
 		}
 
-		sub_step = 3;
+		decoder.ext_sub_step = 3;
 		// FALLTHROUGH
 
 	case 3:
@@ -852,14 +1014,14 @@ reparse:
 
 		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
 		// checked in readNonEmptyOctets_len_bit7().
-		saved_len = FI_PINT_TO_UINT(octets_len);
+		decoder.ext_saved_len = FI_PINT_TO_UINT(octets_len);
 
-		sub_step = 4;
+		decoder.ext_sub_step = 4;
 		// FALLTHROUGH
 
 	case 4:
 		// Read encoded string octets.
-		if (!decodeOctets(decoder, saved_len)) {
+		if (!decodeOctets(decoder, decoder.ext_saved_len)) {
 			return false;
 		}
 		break;
@@ -880,16 +1042,19 @@ reparse:
 			return false;
 		}
 
-		// Determine future value type.
-		// FIXME: We don't support the encoding-algorithm alternative.
-		throw UnsupportedOperationException ();
+		// XXX: Throws IndexOutOfBoundsException on bogus index.
+		next_value_type = choose_value_type(FI_PINT_TO_UINT(encoding_idx));
+		decoder.setEncodingAlgorithm(FI_PINT_TO_UINT(encoding_idx));
+
+		decoder.ext_sub_step = 3;
+		goto reparse;
 
 	default:
 		// Should never happen.
 		throw AssertionFailureException ();
 	}
 
-	sub_step = 0;
+	decoder.ext_sub_step = 0;
 	return true;
 }
 

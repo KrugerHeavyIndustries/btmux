@@ -401,7 +401,6 @@ Element::read_attributes(Decoder& decoder)
 {
 	// Read attributes (C.3.6).
 	DN_VocabTable::TypedEntryRef name;
-	Value value;
 
 	FI_Octet bits;
 
@@ -432,11 +431,11 @@ Element::read_attributes(Decoder& decoder)
 
 		case MAIN_ATTR_STATE:
 			// Identified as attribute (C.3.6.1).
-			if (!decoder.readAttribute(name, value)) {
+			if (!decoder.readAttribute(name, r_value)) {
 				return false;
 			}
 
-			r_attrs.add(name, value);
+			r_attrs.add(name, r_value);
 			r_saw_an_attribute = true;
 
 			r_attr_state = RESET_ATTR_STATE;

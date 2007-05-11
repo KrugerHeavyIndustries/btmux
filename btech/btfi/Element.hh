@@ -72,6 +72,7 @@ private:
 	bool read_attributes (Decoder& decoder);
 
 	MutableAttributes r_attrs;
+	Value r_value;
 
 	enum {
 		RESET_READ_STATE,

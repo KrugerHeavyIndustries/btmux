@@ -10,7 +10,7 @@
 #include "values.h"
 
 #include "Serializable.hh"
-#include "VocabTable.hh"
+#include "VocabSimple.hh"
 
 #include "Exception.hh"
 
@@ -22,13 +22,15 @@ class DV_VocabTable;
 class Value : public Serializable {
 public:
 	Value ()
-	: value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {}
+	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
+	  value_buf (0), value_buf_size (0) {}
 
 	virtual ~Value ();
 
 	// Assignment.
 	Value (const Value& src)
-	: value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {
+	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
+	  value_buf (0), value_buf_size (0) {
 		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();
@@ -36,7 +38,8 @@ public:
 	}
 
 	Value (FI_ValueType type, size_t count, const void *buf)
-	: value_type (FI_VALUE_AS_NULL), value_count (0), value_buf (0) {
+	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
+	  value_buf (0), value_buf_size (0) {
 		if (!setValue(type, count, buf)) {
 			// TODO: Need a more specific Exception.
 			throw Exception ();
@@ -77,13 +80,18 @@ public:
 	bool read (Decoder& decoder);
 
 private:
+	// Value buffer.
+	bool allocate_value_buf(FI_ValueType new_type, size_t new_count);
+
 	FI_ValueType value_type;
 	size_t value_count;
-	char *value_buf;
+	size_t value_size;
+
+	void *value_buf;
+	size_t value_buf_size;
 
 	// Fast Infoset serialization support.
 	FI_Length getEncodedSize (Encoder& encoder) const;
-	size_t getDecodedSize (Decoder& decoder) const;
 
 	void encodeOctets (Encoder& encoder, FI_Length len) const;
 	bool decodeOctets (Decoder& decoder, FI_Length len);
@@ -101,9 +109,7 @@ private:
 	DV_VocabTable *vocab_table;
 	bool add_value_to_table;
 
-	unsigned char super_step, sub_step;
 	FI_ValueType next_value_type;
-	FI_Length saved_len;
 }; // class Value
 
 /*
