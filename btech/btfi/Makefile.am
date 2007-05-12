@@ -1,3 +1,5 @@
+AM_CPPFLAGS = -I $(srcdir)/include
+
 noinst_LTLIBRARIES = libbtfi.la
 
 libbtfi_la_SOURCES = \

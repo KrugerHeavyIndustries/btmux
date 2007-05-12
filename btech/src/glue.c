@@ -354,7 +354,7 @@ load_update1(void *key, void *data, int depth, void *arg)
 {
 	const dbref key_val = (dbref)key;
 	XCODE *const xcode_obj = data;
-	FILE *const f = arg;
+	FILE *const fp = arg;
 
 	MAP *map;
 	int doh;
@@ -374,13 +374,13 @@ load_update1(void *key, void *data, int depth, void *arg)
 			map_loadmap(1, map, mapbuffer);
 		if(!strcmp(map->mapname, "Default Map") || !map->map)
 			initialize_map_empty(map, key_val);
-		if(!feof(f)) {
-			load_mapdynamic(f, map);
-			if(!feof(f))
+		if(!feof(fp)) {
+			load_mapdynamic(fp, map);
+			if(!feof(fp))
 				if(doh)
-					load_mapobjs(f, map);
+					load_mapobjs(fp, map);
 		}
-		if(feof(f)) {
+		if(feof(fp)) {
 			map->first_free = 0;
 			map->mechflags = NULL;
 			map->mechsOnMap = NULL;
@@ -549,7 +549,7 @@ void heartbeat_init();
 static void
 load_xcode(void)
 {
-	FILE *f;
+	FILE *fp;
 	int xcode_version;
 	int filemode;
 
@@ -557,13 +557,13 @@ load_xcode(void)
 
 	fprintf(stderr, "LOADING: %s\n", mudconf.hcode_db);
 
-	f = my_open_file(mudconf.hcode_db, "r", &filemode);
-	if (!f) {
+	fp = my_open_file(mudconf.hcode_db, "rb", &filemode);
+	if (!fp) {
 		fprintf(stderr, "ERROR: %s not found.\n", mudconf.hcode_db);
 		return;
 	}
 
-	fread(&xcode_version, sizeof(xcode_version), 1, f);
+	fread(&xcode_version, sizeof(xcode_version), 1, fp);
 	if (xcode_version != XCODE_MAGIC) {
 		fprintf(stderr,
 		        "LOADING: %s (skipped xcodetree - version difference: 0x%08X vs 0x%08X)\n",
@@ -571,12 +571,12 @@ load_xcode(void)
 		return;
 	}
 
-	if (load_xcode_tree(f, get_specialobjectsize) < 0) {
+	if (load_xcode_tree(fp, get_specialobjectsize) < 0) {
 		/* TODO: We could be more graceful about this... */
 		exit(EXIT_FAILURE);
 	}
 
-	rb_walk(xcode_tree, WALK_INORDER, load_update1, f);
+	rb_walk(xcode_tree, WALK_INORDER, load_update1, fp);
 	rb_walk(xcode_tree, WALK_INORDER, load_update2, NULL);
 	rb_walk(xcode_tree, WALK_INORDER, load_update3, NULL);
 	rb_walk(xcode_tree, WALK_INORDER, load_update4, NULL);
@@ -584,10 +584,10 @@ load_xcode(void)
 	/* Read in autopilot data */
 	rb_walk(xcode_tree, WALK_INORDER, load_autopilot_data, NULL);
 
-	if (!feof(f))
-		loadrepairs(f);
+	if (!feof(fp))
+		loadrepairs(fp);
 
-	my_close_file(f, &filemode);
+	my_close_file(fp, &filemode);
 
 	fprintf(stderr, "LOADING: %s (done)\n", mudconf.hcode_db);
 
@@ -633,6 +633,7 @@ void LoadSpecialObjects(void)
 	void *tmpdat;
 
 	init_xcode_tree();
+	init_btech_database_parser();
 
 	muxevent_initialize();
 	muxevent_count_initialize();
@@ -666,6 +667,8 @@ void LoadSpecialObjects(void)
 	init_btechstats();
 	load_xcode();
 	zap_unneccessary_hcode();
+
+	load_btech_database();
 }
 
 static int
@@ -812,7 +815,7 @@ static void save_econdb(char *target, int i)
 void
 SaveSpecialObjects(int i)
 {
-	FILE *f;
+	FILE *fp;
 	int filemode, count;
 	int xcode_version = XCODE_MAGIC;
 	char target[LBUF_SIZE];
@@ -829,30 +832,30 @@ SaveSpecialObjects(int i)
 		break;
 	}
 
-	f = my_open_file(target, "w", &filemode);
-	if(!f) {
+	fp = my_open_file(target, "w", &filemode);
+	if(!fp) {
 		log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
 		SendDB("ERROR occured during opening of new hcode-savefile.");
 		return;
 	}
 
-	fwrite(&xcode_version, sizeof(xcode_version), 1, f);
+	fwrite(&xcode_version, sizeof(xcode_version), 1, fp);
 
-	count = save_xcode_tree(f);
+	count = save_xcode_tree(fp);
 	if (count < 0) {
 		/* TODO: We could be more graceful about this... */
 		exit(EXIT_FAILURE);
 	}
 
 	/* Then, check each xcode thing for stuff */
-	rb_walk(xcode_tree, WALK_INORDER, save_maps_func, f);
+	rb_walk(xcode_tree, WALK_INORDER, save_maps_func, fp);
 
 	/* Save autopilot data */
 	/* GoThruTree(xcode_tree, save_autopilot_data); */
 
-	saverepairs(f);
+	saverepairs(fp);
 
-	my_close_file(f, &filemode);
+	my_close_file(fp, &filemode);
 
 	if (i == DUMP_RESTART || i == DUMP_NORMAL) {
 		if (rename(mudconf.hcode_db,
@@ -875,6 +878,8 @@ SaveSpecialObjects(int i)
 #ifdef BT_ADVANCED_ECON
 	save_econdb(target, i);
 #endif
+
+	save_btech_database();
 }
 
 static int

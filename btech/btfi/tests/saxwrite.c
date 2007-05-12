@@ -104,6 +104,11 @@ write_test(const char *const TEST_FILE)
 	FI_Name *an_brown, *an_cow, *an_now;
 
 	/* Set up.  */
+	FILE *fpout = fopen(TEST_FILE, "wb");
+	if (!fpout) {
+		die("fopen");
+	}
+
 	gen = fi_create_generator();
 	if (!gen) {
 		die("fi_create_generator");
@@ -124,8 +129,8 @@ write_test(const char *const TEST_FILE)
 		die_gen("fi_getContentHandler");
 	}
 
-	if (!fi_generate(gen, TEST_FILE)) {
-		die_gen("fi_generate");
+	if (!fi_generate_file(gen, fpout)) {
+		die_gen("fi_generate_file");
 	}
 
 	/* Get all our FI_Name handles.  */
@@ -214,4 +219,8 @@ write_test(const char *const TEST_FILE)
 	fi_destroy_value(a_value);
 
 	fi_destroy_generator(gen);
+
+	if (fclose(fpout) != 0) {
+		die("fclose");
+	}
 }

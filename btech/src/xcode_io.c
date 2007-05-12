@@ -45,6 +45,8 @@
 #include "glue_types.h"
 #include "rbtree.h"
 
+#include "xcode_io.h"
+
 extern rbtree xcode_tree;
 
 
@@ -285,4 +287,350 @@ load_xcode_tree(FILE *f, size_t (*sizefunc)(GlueType))
 	}
 
 	return read_count;
+}
+
+
+/*
+ * EXPERIMENTAL: New btechdb.finf format.
+ *
+ * <xcode xmlns="http://btonline-btech.sourceforge.net">
+ * 	stuff goes here
+ * </xcode>
+ */
+
+#include "sax.h"
+
+static FI_Generator *btdb_generator = NULL;
+static FI_ContentHandler *btdb_gen_handler = NULL;
+
+static FI_Attributes *btdb_attrs = NULL;
+
+typedef enum {
+	EN_XCODE
+} ElementNameIndex;
+
+static struct {
+	const ElementNameIndex idx;
+	const char *const literal;
+	FI_Name *cached;
+} element_names[] = {
+	{ EN_XCODE, "xcode", NULL },
+	{ -1, NULL, NULL }
+}; /* element_names[] */
+
+#define GET_EN(x) (element_names[(x)].cached)
+
+typedef enum {
+	AN_VERSION
+} AttrNameIndex;
+
+static struct {
+	const AttrNameIndex idx;
+	const char *const literal;
+	FI_Name *cached;
+} attr_names[] = {
+	{ AN_VERSION, "version", NULL },
+	{ -1, NULL, NULL }
+}; /* attr_names[] */
+
+#define GET_AN(x) (attr_names[(x)].cached)
+
+typedef enum {
+	VAR_INT_1
+} ValueVariableIndex;
+
+static struct {
+	const ValueVariableIndex idx;
+	const FI_ValueType type;
+	const size_t count;
+	FI_Value *cached;
+} value_vars[] = {
+	{ VAR_INT_1, FI_VALUE_AS_INT, 1, NULL },
+	{ -1, FI_VALUE_AS_NULL, 0, NULL }
+}; /* values[] */
+
+#define GET_VAR(x) (value_vars[(x)].cached)
+
+/* This actually initializes the generator, not the parser.  Ironic.  */
+int
+init_btech_database_parser(void)
+{
+	int ii;
+	FI_Name *new_name;
+	FI_Value *new_var;
+
+	assert(!btdb_generator);
+	btdb_generator = fi_create_generator();
+	if (!btdb_generator) {
+		return 0;
+	}
+
+	btdb_gen_handler = fi_getContentHandler(btdb_generator);
+
+	assert(!btdb_attrs);
+	btdb_attrs = fi_create_attributes();
+	if (!btdb_attrs) {
+		fini_btech_database_parser();
+		return 0;
+	}
+
+	/* Cache element names.  */
+	for (ii = 0; element_names[ii].literal; ii++) {
+		assert(element_names[ii].idx == ii);
+
+		new_name = fi_create_element_name(btdb_generator,
+		                                  element_names[ii].literal);
+		if (!new_name) {
+			fini_btech_database_parser();
+			return 0;
+		}
+
+		assert(!element_names[ii].cached);
+		element_names[ii].cached = new_name;
+	}
+
+	/* Cache attribute names.  */
+	for (ii = 0; attr_names[ii].literal; ii++) {
+		assert(attr_names[ii].idx == ii);
+
+		new_name = fi_create_attribute_name(btdb_generator,
+		                                    attr_names[ii].literal);
+		if (!new_name) {
+			fini_btech_database_parser();
+			return 0;
+		}
+
+		assert(!attr_names[ii].cached);
+		attr_names[ii].cached = new_name;
+	}
+
+	/* Cache common variable types.  */
+	for (ii = 0; value_vars[ii].count; ii++) {
+		assert(value_vars[ii].idx == ii);
+
+		new_var = fi_create_value();
+
+		if (!new_var) {
+			fini_btech_database_parser();
+			return 0;
+		}
+
+		if (!fi_set_value_type(new_var,
+		                       value_vars[ii].type,
+		                       value_vars[ii].count)) {
+			fi_destroy_value(new_var);
+			fini_btech_database_parser();
+			return 0;
+		}
+
+		assert(!value_vars[ii].cached);
+		value_vars[ii].cached = new_var;
+	}
+
+	return 1;
+}
+
+/* This actually finalizes the generator, not the parser.  Ironic.  */
+int
+fini_btech_database_parser(void)
+{
+	int ii;
+
+	if (btdb_generator) {
+		fi_destroy_generator(btdb_generator);
+		btdb_generator = NULL;
+	}
+
+	if (btdb_attrs) {
+		fi_destroy_attributes(btdb_attrs);
+		btdb_attrs = NULL;
+	}
+
+	/* Free any cached element names.  */
+	for (ii = 0; element_names[ii].cached; ii++) {
+		fi_destroy_name(element_names[ii].cached);
+		element_names[ii].cached = NULL;
+	}
+
+	/* Free any cached attribute names.  */
+	for (ii = 0; attr_names[ii].cached; ii++) {
+		fi_destroy_name(attr_names[ii].cached);
+		attr_names[ii].cached = NULL;
+	}
+
+	/* Free any cached value variables.  */
+	for (ii = 0; value_vars[ii].cached; ii++) {
+		fi_destroy_value(value_vars[ii].cached);
+		value_vars[ii].cached = NULL;
+	}
+
+	return 1;
+}
+
+/* This will replace the wrapper in the final version.  */
+static int
+real_save_btech_database(FILE *fpout)
+{
+	FI_Int32 version;
+
+	if (!fi_generate_file(btdb_generator, fpout)) {
+		fputs("FIXME: BTDB: fi_generate_file() error\n", stderr);
+		return 0;
+	}
+
+	if (!btdb_gen_handler->startDocument(btdb_gen_handler)) {
+		fputs("FIXME: BTDB: startDocument() error\n", stderr);
+		return 0;
+	}
+
+	fi_clear_attributes(btdb_attrs);
+
+	version = 0;
+	fi_set_value(GET_VAR(VAR_INT_1), &version);
+
+	if (!fi_add_attribute(btdb_attrs,
+	                      GET_AN(AN_VERSION), GET_VAR(VAR_INT_1))) {
+		fputs("FIXME: BTDB: fi_add_attributes() error\n", stderr);
+		return 0;
+	}
+
+	if (!btdb_gen_handler->startElement(btdb_gen_handler,
+	                                    GET_EN(EN_XCODE), btdb_attrs)) {
+		fputs("FIXME: BTDB: startElement() error\n", stderr);
+		return 0;
+	}                                       
+
+	if (!btdb_gen_handler->endElement(btdb_gen_handler,
+	                                  GET_EN(EN_XCODE))) {
+		fputs("FIXME: BTDB: startElement() error\n", stderr);
+		return 0;
+	}                                       
+
+	if (!btdb_gen_handler->endDocument(btdb_gen_handler)) {
+		fputs("FIXME: BTDB: endDocument() error\n", stderr);
+		return 0;
+	}
+
+	return 1;
+}
+
+/* This will replace the wrapper in the final version.  */
+static int btech_db_startElement(FI_ContentHandler *, const FI_Name *,
+                                 const FI_Attributes *);
+static int btech_db_endElement(FI_ContentHandler *, const FI_Name *);
+
+static int btech_db_characters(FI_ContentHandler *, const FI_Value *);
+
+static FI_ContentHandler btech_db_content_handler = {
+	NULL /* startDocument */,
+	NULL /* endDocument */,
+
+	btech_db_startElement /* startElement */,
+	btech_db_endElement /* endElement */,
+
+	btech_db_characters /* characters */,
+
+	NULL /* app_data_ptr */
+}; /* btech_db_content_handler */
+
+static int
+real_load_btech_database(FILE *fpin)
+{
+	FI_Parser *parser;
+
+	parser = fi_create_parser();
+	if (!parser) {
+		return 0;
+	}
+
+	fi_setContentHandler(parser, &btech_db_content_handler);
+
+	if (!fi_parse_file(parser, fpin)) {
+		fputs("FIXME: BTDB: fi_parse_file() error\n", stderr);
+		fi_destroy_parser(parser);
+		return 0;
+	}
+
+	fi_destroy_parser(parser);
+	return 1;
+}
+
+/* We won't open the FILE ourselves in the final version.  */
+#define BTECHDB_NAME "data/btechdb.finf"
+
+int
+save_btech_database(void)
+{
+	FILE *fpout;
+
+	fpout = fopen(BTECHDB_NAME, "wb");
+	if (!fpout) {
+		fputs("FIXME: BTDB: fopen(fpout) error\n", stderr);
+		return 0;
+	}
+
+	if (!real_save_btech_database(fpout)) {
+		fputs("FIXME: BTDB: save_btech_database() error\n", stderr);
+		return 0;
+	}
+
+	if (fclose(fpout) != 0) {
+		fputs("FIXME: BTDB: fclose(fpout) error\n", stderr);
+		return 0;
+	}
+
+	return 1;
+}
+
+/* We won't open the FILE ourselves in the final version.  */
+int
+load_btech_database(void)
+{
+	FILE *fpin;
+
+	fpin = fopen(BTECHDB_NAME, "rb");
+	if (!fpin) {
+		fputs("FIXME: BTDB: fopen(fpin) error\n", stderr);
+		return 0;
+	}
+
+	if (!real_load_btech_database(fpin)) {
+		fputs("FIXME: BTDB: load_btech_database() error\n", stderr);
+		fclose(fpin);
+		return 0;
+	}
+
+	if (fclose(fpin) != 0) {
+		fputs("FIXME: BTDB: fclose(fpin) error\n", stderr);
+		return 0;
+	}
+
+	return 1;
+}
+
+
+/*
+ * Parser event handlers.
+ */
+
+static int
+btech_db_startElement(FI_ContentHandler *handler, const FI_Name *name,
+                      const FI_Attributes *attrs)
+{
+	fputs("FIXME: BTDB: START ELEMENT\n", stderr);
+	return 1;
+}
+
+static int
+btech_db_endElement(FI_ContentHandler *handler, const FI_Name *name)
+{
+	fputs("FIXME: BTDB: END ELEMENT\n", stderr);
+	return 1;
+}
+
+static int
+btech_db_characters(FI_ContentHandler *handler, const FI_Value *value)
+{
+	fputs("FIXME: BTDB: CHARACTERS\n", stderr);
+	return 1;
 }

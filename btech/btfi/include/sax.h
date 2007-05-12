@@ -9,6 +9,8 @@
 #ifndef BTECH_FI_SAX_H
 #define BTECH_FI_SAX_H
 
+#include <stdio.h>
+
 #include "fiptypes.h"
 #include "errors.h"
 
@@ -56,7 +58,7 @@ const FI_ErrorInfo *fi_get_generator_error(const FI_Generator *gen);
 
 FI_ContentHandler *fi_getContentHandler(FI_Generator *gen);
 
-int fi_generate(FI_Generator *gen, const char *filename);
+int fi_generate_file(FI_Generator *gen, FILE *fpout);
 
 FI_Name *fi_create_element_name(FI_Generator *gen, const char *name);
 FI_Name *fi_create_attribute_name(FI_Generator *gen, const char *name);
@@ -74,7 +76,7 @@ const FI_ErrorInfo *fi_get_parser_error(const FI_Parser *parser);
 
 void fi_setContentHandler(FI_Parser *parser, FI_ContentHandler *handler);
 
-int fi_parse(FI_Parser *parser, const char *filename);
+int fi_parse_file(FI_Parser *parser, FILE *fpin);
 
 #ifdef __cplusplus
 } // extern "C"

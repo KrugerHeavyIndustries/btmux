@@ -206,6 +206,11 @@ void
 read_test(const char *const TEST_FILE)
 {
 	/* Set up.  */
+	FILE *fpin = fopen(TEST_FILE, "rb");
+	if (!fpin) {
+		die("fopen");
+	}
+
 	parser = fi_create_parser();
 	if (!parser) {
 		die("fi_create_parser");
@@ -234,10 +239,14 @@ read_test(const char *const TEST_FILE)
 	 *
 	 * Note that this isn't an exhaustive test of encoding algorithms.
 	 */
-	if (!fi_parse(parser, TEST_FILE)) {
-		die_parser("fi_parse");
+	if (!fi_parse_file(parser, fpin)) {
+		die_parser("fi_parse_file");
 	}
 
 	/* Clean up.  */
 	fi_destroy_parser(parser);
+
+	if (fclose(fpin) != 0) {
+		die("fclose");
+	}
 }

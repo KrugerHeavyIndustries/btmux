@@ -80,7 +80,7 @@ struct FI_tag_Generator {
 
 	FI_ErrorInfo error_info;
 
-	FILE *fpout;
+	FILE *fpout;				// caller-created
 	FI_OctetStream *buffer;
 
 	Encoder encoder;
@@ -121,11 +121,6 @@ FI_tag_Generator::FI_tag_Generator()
 
 FI_tag_Generator::~FI_tag_Generator()
 {
-	if (fpout) {
-		// XXX: Don't care, never finished document.
-		fclose(fpout);
-	}
-
 	if (buffer) {
 		fi_destroy_stream(buffer);
 	}
@@ -164,7 +159,7 @@ fi_getContentHandler(FI_Generator *gen)
 }
 
 int
-fi_generate(FI_Generator *gen, const char *filename)
+fi_generate_file(FI_Generator *gen, FILE *fpout)
 {
 	// Open stream.
 	if (gen->fpout) {
@@ -172,11 +167,7 @@ fi_generate(FI_Generator *gen, const char *filename)
 		fclose(gen->fpout);
 	}
 
-	gen->fpout = fopen(filename, "wb");
-	if (!gen->fpout) {
-		FI_SET_ERROR(gen->error_info, FI_ERROR_NOFILE);
-		return 0;
-	}
+	gen->fpout = fpout;
 
 	fi_clear_stream(gen->buffer);
 	gen->encoder.clear();
@@ -257,7 +248,7 @@ struct FI_tag_Parser {
 
 	FI_ErrorInfo error_info;
 
-	FILE *fpin;
+	FILE *fpin;				// caller-created
 	FI_OctetStream *buffer;
 
 	Decoder decoder;
@@ -292,11 +283,6 @@ FI_tag_Parser::FI_tag_Parser()
 
 FI_tag_Parser::~FI_tag_Parser()
 {
-	if (fpin) {
-		// XXX: Don't care, never finished parsing.
-		fclose(fpin);
-	}
-
 	if (buffer) {
 		fi_destroy_stream(buffer);
 	}
@@ -335,19 +321,14 @@ fi_setContentHandler(FI_Parser *parser, FI_ContentHandler *handler)
 }
 
 int
-fi_parse(FI_Parser *parser, const char *filename)
+fi_parse_file(FI_Parser *parser, FILE *fpin)
 {
 	// Open stream.
 	if (parser->fpin) {
 		// TODO: Warn about incomplete parse?
-		fclose(parser->fpin);
 	}
 
-	parser->fpin = fopen(filename, "rb");
-	if (!parser->fpin) {
-		FI_SET_ERROR(parser->error_info, FI_ERROR_NOFILE);
-		return 0;
-	}
+	parser->fpin = fpin;
 
 	fi_clear_stream(parser->buffer);
 	parser->decoder.clear();
@@ -372,7 +353,6 @@ fi_parse(FI_Parser *parser, const char *filename)
 	} // TODO: Catch all other exceptions.
 
 	if (parse_failed) {
-		fclose(parser->fpin); // XXX: Don't care, parsing failed
 		parser->fpin = 0;
 
 		// XXX: Save some memory.
@@ -383,7 +363,6 @@ fi_parse(FI_Parser *parser, const char *filename)
 	}
 
 	// Close stream.
-	fclose(parser->fpin); // XXX: Don't care, finished parsing
 	parser->fpin = 0;
 
 	// XXX: Save some memory.
@@ -452,10 +431,16 @@ gen_ch_startDocument(FI_ContentHandler *handler)
 	}
 
 	// Write document header.
-	gen->document.start();
+	try {
+		gen->document.start();
 
-	if (!write_object(gen, gen->document)) {
-		// error_info set by write_object().
+		if (!write_object(gen, gen->document)) {
+			// error_info set by write_object().
+			return 0;
+		}
+	} catch (...) {
+		// TODO: Catching all exceptions is kinda hazardous.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return 0;
 	}
 
@@ -474,30 +459,25 @@ gen_ch_endDocument(FI_ContentHandler *handler)
 	}
 
 	// Write document trailer.
-	gen->document.stop();
+	try {
+		gen->document.stop();
 
-	if (!write_object(gen, gen->document)) {
-		// error_info set by write_object().
+		if (!write_object(gen, gen->document)) {
+			// error_info set by write_object().
 
-		// XXX: Save some memory.
-		fi_clear_stream(gen->buffer);
-		gen->vocabulary.clear();
-		gen->document.clearElements();
+			// XXX: Save some memory.
+			fi_clear_stream(gen->buffer);
+			gen->vocabulary.clear();
+			gen->document.clearElements();
+			return 0;
+		}
+	} catch (...) {
+		// TODO: Catching all exceptions is kinda hazardous.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return 0;
 	}
 
 	// Close out file.
-	if (fclose(gen->fpout) != 0) {
-		FI_SET_ERROR(gen->error_info, FI_ERROR_ERRNO);
-		gen->fpout = 0;
-
-		// XXX: Save some memory.
-		fi_clear_stream(gen->buffer);
-		gen->vocabulary.clear();
-		assert(!gen->document.hasElements());
-		return 0;
-	}
-
 	gen->fpout = 0;
 
 	// XXX: Save some memory.
@@ -520,13 +500,19 @@ gen_ch_startElement(FI_ContentHandler *handler,
 	}
 
 	// Write element header.
-	gen->element.start(gen->BT_NAMESPACE);
+	try {
+		gen->element.start(gen->BT_NAMESPACE);
 
-	gen->element.setName(*name);
-	gen->element.setAttributes(*attrs);
+		gen->element.setName(*name);
+		gen->element.setAttributes(*attrs);
 
-	if (!write_object(gen, gen->element)) {
-		// error_info set by write_object().
+		if (!write_object(gen, gen->element)) {
+			// error_info set by write_object().
+			return 0;
+		}
+	} catch (...) {
+		// TODO: Catching all exceptions is kinda hazardous.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return 0;
 	}
 
@@ -545,15 +531,21 @@ gen_ch_endElement(FI_ContentHandler *handler, const FI_Name *name)
 	}
 
 	// Write element trailer.
-	gen->element.stop();
+	try {
+		gen->element.stop();
 
-	// Don't need to set name, because we maintain the value on a stack.
-	// Besides, we don't actually write it out anyway.
-	// TODO: Should probably check they match, though?
-	//gen->element.setName(*name);
+		// Don't need to set name, because we maintain the value on a
+		// stack.  Besides, we don't actually write it out anyway.
+		// TODO: Should probably check they match, though?
+		//gen->element.setName(*name);
 
-	if (!write_object(gen, gen->element)) {
-		// error_info set by write_object().
+		if (!write_object(gen, gen->element)) {
+			// error_info set by write_object().
+			return 0;
+		}
+	} catch (...) {
+		// TODO: Catching all exceptions is kinda hazardous.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return 0;
 	}
 
@@ -578,10 +570,16 @@ gen_ch_characters(FI_ContentHandler *handler, const FI_Value *value)
 	}
 
 	// Write character chunk.
-	gen->characters.w_value = value;
+	try {
+		gen->characters.w_value = value;
 
-	if (!write_object(gen, gen->characters)) {
-		// error_info set by write_object().
+		if (!write_object(gen, gen->characters)) {
+			// error_info set by write_object().
+			return 0;
+		}
+	} catch (...) {
+		// TODO: Catching all exceptions is kinda hazardous.
+		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
 		return 0;
 	}
 
