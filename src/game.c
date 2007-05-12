@@ -1018,12 +1018,31 @@ void fork_and_dump(int key)
     pcache_sync();
     
 	if(!key || (key & DUMP_STRUCT)) {
-		if(!fork()) {
-            dprintk("child database write process starting.");
-			unbind_signals();
+		if (mudconf.fork_dump) {
+			/* Fork and dump.  */
+			switch (fork()) {
+			case -1: /* fork() failed */
+				/* FIXME: Make this error message conform.  */
+				log_perror("DMP", "FAIL", NULL, "fork()");
+				mudstate.dumping = 0;
+				return;
+
+			case 0: /* child */
+				dprintk("child database write process starting.");
+				unbind_signals();
+				dump_database_internal(DUMP_NORMAL);
+				dprintk("child database write process finished.");
+				/* You generally don't want to run atexit()
+				 * handlers and that sort of thing.  */
+				_exit(0);
+				break;
+
+			default: /* parent */
+				break;
+			}
+		} else {
+			/* Just dump.  */
 			dump_database_internal(DUMP_NORMAL);
-            dprintk("child database write process finished.");
-            exit(0);
 		}
 	}
 
