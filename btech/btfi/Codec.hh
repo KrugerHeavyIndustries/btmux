@@ -11,22 +11,6 @@
 
 #include "Vocabulary.hh"
 
-// Section 5.5: Fast Infoset numbers bits from 1 (MSB) to 8 (LSB).
-#define FI_BIT_1 0x80
-#define FI_BIT_2 0x40
-#define FI_BIT_3 0x20
-#define FI_BIT_4 0x10
-#define FI_BIT_5 0x08
-#define FI_BIT_6 0x04
-#define FI_BIT_7 0x02
-#define FI_BIT_8 0x01
-
-#define FI_BITS(a,b,c,d,e,f,g,h) \
-	(  ((0||(a+0)) << 7) | ((0||(b+0)) << 6) \
-	 | ((0||(c+0)) << 5) | ((0||(d+0)) << 4) \
-	 | ((0||(e+0)) << 3) | ((0||(f+0)) << 2) \
-	 | ((0||(g+0)) << 1) | ((0||(h+0))     ))
-
 namespace BTech {
 namespace FI {
 
@@ -48,13 +32,6 @@ enum ChildType {
 	COMMENT,			// comment (doc, el)
 	DTD				// document type declaration (doc)
 }; // enum ChildType
-
-enum EncodingFormat {
-	ENCODE_AS_UTF8        = FI_BITS(,,0,0,,,,), // C.19.3.1
-	ENCODE_AS_UTF16       = FI_BITS(,,0,1,,,,), // C.19.3.2
-	ENCODE_WITH_ALPHABET  = FI_BITS(,,1,0,,,,), // C.19.3.3
-	ENCODE_WITH_ALGORITHM = FI_BITS(,,1,1,,,,)  // C.19.3.4
-}; // enum EncodingFormat
 
 // TODO: Codec isn't a very accurate name.  I'll probably end up borrowing
 // something from the StAX API or something, like XMLStream or something.

@@ -41,8 +41,9 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <assert.h>
 
-#include "stream.h"
+#include "values.h"
 
 #include "encalg.h"
 
@@ -117,28 +118,26 @@ fi_init_encoding_algorithms(void)
  */
 
 static int copy_encoded_size(FI_EncodingContext *,
-                             size_t, const void *);
+                             const FI_Value *);
 static int copy_encode(FI_EncodingContext *, FI_Octet *,
-                       size_t, const void *);
-static int copy_decoded_size(FI_EncodingContext *,
-                             FI_Length, const FI_Octet *);
-static int copy_decode(FI_EncodingContext *, void *,
+                       const FI_Value *);
+static int copy_decode(FI_EncodingContext *, FI_Value *,
                        FI_Length, const FI_Octet *);
 
+static int copy_encoded_size_items(FI_EncodingContext *,
+                                   const FI_Value *, size_t);
+
 static int swap_16_encode(FI_EncodingContext *, FI_Octet *,
-                          size_t, const void *);
-static int swap_16_decode(FI_EncodingContext *, void *,
-                          FI_Length, const FI_Octet *);
+                          const FI_Value *);
+static void swap_16_decode(FI_Value *, FI_Length, const FI_Octet *);
 
 static int swap_32_encode(FI_EncodingContext *, FI_Octet *,
-                          size_t, const void *);
-static int swap_32_decode(FI_EncodingContext *, void *,
-                          FI_Length, const FI_Octet *);
+                          const FI_Value *);
+static void swap_32_decode(FI_Value *, FI_Length, const FI_Octet *);
 
 static int swap_64_encode(FI_EncodingContext *, FI_Octet *,
-                          size_t, const void *);
-static int swap_64_decode(FI_EncodingContext *, void *,
-                          FI_Length, const FI_Octet *);
+                          const FI_Value *);
+static void swap_64_decode(FI_Value *, FI_Length, const FI_Octet *);
 
 
 /*
@@ -158,7 +157,6 @@ const FI_EncodingAlgorithm fi_ea_hexadecimal = {
 	0,
 	copy_encoded_size,
 	copy_encode,
-	copy_decoded_size,
 	copy_decode
 }; /* fi_ea_hexadecimal */
 
@@ -166,7 +164,6 @@ const FI_EncodingAlgorithm fi_ea_base64 = {
 	0,
 	copy_encoded_size,
 	copy_encode,
-	copy_decoded_size,
 	copy_decode
 }; /* fi_ea_base64 */
 
@@ -182,28 +179,82 @@ const FI_EncodingAlgorithm fi_ea_base64 = {
  * See the comment at the head of this file about portability.
  */
 
+static int
+encoded_size_16(FI_EncodingContext *context,
+                const FI_Value *src)
+{
+	return copy_encoded_size_items(context, src, 2);
+}
+
+static int
+encoded_size_32(FI_EncodingContext *context,
+                const FI_Value *src)
+{
+	return copy_encoded_size_items(context, src, 4);
+}
+
+static int
+encoded_size_64(FI_EncodingContext *context,
+                const FI_Value *src)
+{
+	return copy_encoded_size_items(context, src, 8);
+}
+
+static int
+decode_short(FI_EncodingContext *context, FI_Value *dst,
+             FI_Length src_len, const FI_Octet *src)
+{
+	if (!fi_set_value_type(dst, FI_VALUE_AS_SHORT, src_len / 2)) {
+		return 0;
+	}
+
+	swap_16_decode(dst, src_len, src);
+	return 1;
+}
+
+static int
+decode_int(FI_EncodingContext *context, FI_Value *dst,
+           FI_Length src_len, const FI_Octet *src)
+{
+	if (!fi_set_value_type(dst, FI_VALUE_AS_INT, src_len / 4)) {
+		return 0;
+	}
+
+	swap_32_decode(dst, src_len, src);
+	return 1;
+}
+
+static int
+decode_long(FI_EncodingContext *context, FI_Value *dst,
+             FI_Length src_len, const FI_Octet *src)
+{
+	if (!fi_set_value_type(dst, FI_VALUE_AS_LONG, src_len / 8)) {
+		return 0;
+	}
+
+	swap_64_decode(dst, src_len, src);
+	return 1;
+}
+
 const FI_EncodingAlgorithm fi_ea_short = {
 	0,
-	copy_encoded_size,
+	encoded_size_16,
 	swap_16_encode,
-	copy_decoded_size,
-	swap_16_decode
+	decode_short
 }; /* fi_ea_short */
 
 const FI_EncodingAlgorithm fi_ea_int = {
 	0,
-	copy_encoded_size,
+	encoded_size_32,
 	swap_32_encode,
-	copy_decoded_size,
-	swap_32_decode
+	decode_int
 }; /* fi_ea_int */
 
 const FI_EncodingAlgorithm fi_ea_long = {
 	0,
-	copy_encoded_size,
+	encoded_size_32,
 	swap_64_encode,
-	copy_decoded_size,
-	swap_64_decode
+	decode_long
 }; /* fi_ea_long */
 
 /*
@@ -217,20 +268,42 @@ const FI_EncodingAlgorithm fi_ea_long = {
  * See the comment at the head of this file about portability.
  */
 
+static int
+decode_float(FI_EncodingContext *context, FI_Value *dst,
+             FI_Length src_len, const FI_Octet *src)
+{
+	if (!fi_set_value_type(dst, FI_VALUE_AS_FLOAT, src_len / 4)) {
+		return 0;
+	}
+
+	swap_32_decode(dst, src_len, src);
+	return 1;
+}
+
+static int
+decode_double(FI_EncodingContext *context, FI_Value *dst,
+              FI_Length src_len, const FI_Octet *src)
+{
+	if (!fi_set_value_type(dst, FI_VALUE_AS_DOUBLE, src_len / 8)) {
+		return 0;
+	}
+
+	swap_64_decode(dst, src_len, src);
+	return 1;
+}
+
 const FI_EncodingAlgorithm fi_ea_float = {
 	0,
-	copy_encoded_size,
+	encoded_size_32,
 	swap_32_encode,
-	copy_decoded_size,
-	swap_32_decode
+	decode_float
 }; /* fi_ea_float */
 
 const FI_EncodingAlgorithm fi_ea_double = {
 	0,
-	copy_encoded_size,
+	encoded_size_64,
 	swap_64_encode,
-	copy_decoded_size,
-	swap_64_decode
+	decode_double
 }; /* fi_ea_double */
 
 
@@ -242,41 +315,42 @@ const FI_EncodingAlgorithm fi_ea_double = {
 
 static int
 copy_encoded_size(FI_EncodingContext *context,
-                  size_t src_len, const void *src)
+                  const FI_Value *src)
 {
-	if (src_len > FI_LENGTH_MAX) {
-		return 0;
-	}
-
-	context->encoded_size = (FI_Length)src_len;
-	return 1;
+	return copy_encoded_size_items(context, src, 1);
 }
 
 static int
 copy_encode(FI_EncodingContext *context, FI_Octet *dst,
-            size_t src_len, const void *src)
+            const FI_Value *src)
 {
-	memcpy(dst, src, src_len);
+	memcpy(dst, fi_get_value(src), fi_get_value_count(src));
 	return 1;
 }
 
 static int
-copy_decoded_size(FI_EncodingContext *context,
-                  FI_Length src_len, const FI_Octet *src)
+copy_decode(FI_EncodingContext *context, FI_Value *dst,
+            FI_Length src_len, const FI_Octet *src)
 {
-	if (src_len > (size_t)-1) {
+	if (!fi_set_value_type(dst, FI_VALUE_AS_OCTETS, src_len)) {
 		return 0;
 	}
 
-	context->decoded_size = (size_t)src_len;
+	memcpy(fi_get_value_buffer(dst), src, src_len);
 	return 1;
 }
 
 static int
-copy_decode(FI_EncodingContext *context, void *dst,
-            FI_Length src_len, const FI_Octet *src)
+copy_encoded_size_items(FI_EncodingContext *context,
+                        const FI_Value *src, size_t item_size)
 {
-	memcpy(dst, src, src_len);
+	size_t count = fi_get_value_count(src);
+
+	if (count > FI_LENGTH_MAX / item_size) {
+		return 0;
+	}
+
+	context->encoded_size = (FI_Length)(count * item_size);
 	return 1;
 }
 
@@ -332,50 +406,50 @@ swap_64(unsigned char *dst, const unsigned char *src, size_t len)
 
 static int
 swap_16_encode(FI_EncodingContext *context, FI_Octet *dst,
-               size_t src_len, const void *src)
+               const FI_Value *src)
 {
-	swap_16(dst, src, src_len);
+	assert(fi_get_value_count(src) <= ((size_t)-1) / 2);
+
+	swap_16(dst, fi_get_value(src), 2 * fi_get_value_count(src));
 	return 1;
 }
 
-static int
-swap_16_decode(FI_EncodingContext *context, void *dst,
-               FI_Length src_len, const FI_Octet *src)
+static void
+swap_16_decode(FI_Value *dst, FI_Length src_len, const FI_Octet *src)
 {
-	swap_16(dst, src, src_len);
-	return 1;
+	swap_16(fi_get_value_buffer(dst), src, src_len);
 }
 
 static int
 swap_32_encode(FI_EncodingContext *context, FI_Octet *dst,
-               size_t src_len, const void *src)
+               const FI_Value *src)
 {
-	swap_32(dst, src, src_len);
+	assert(fi_get_value_count(src) <= ((size_t)-1) / 4);
+
+	swap_32(dst, fi_get_value(src), 4 * fi_get_value_count(src));
 	return 1;
 }
 
-static int
-swap_32_decode(FI_EncodingContext *context, void *dst,
-               FI_Length src_len, const FI_Octet *src)
+static void
+swap_32_decode(FI_Value *dst, FI_Length src_len, const FI_Octet *src)
 {
-	swap_32(dst, src, src_len);
-	return 1;
+	swap_32(fi_get_value_buffer(dst), src, src_len);
 }
 
 static int
 swap_64_encode(FI_EncodingContext *context, FI_Octet *dst,
-               size_t src_len, const void *src)
+               const FI_Value *src)
 {
-	swap_64(dst, src, src_len);
+	assert(fi_get_value_count(src) <= ((size_t)-1) / 8);
+
+	swap_64(dst, fi_get_value(src), 8 * fi_get_value_count(src));
 	return 1;
 }
 
-static int
-swap_64_decode(FI_EncodingContext *context, void *dst,
-               FI_Length src_len, const FI_Octet *src)
+static void
+swap_64_decode(FI_Value *dst, FI_Length src_len, const FI_Octet *src)
 {
-	swap_64(dst, src, src_len);
-	return 1;
+	swap_64(fi_get_value_buffer(dst), src, src_len);
 }
 
 
@@ -385,7 +459,7 @@ swap_64_decode(FI_EncodingContext *context, void *dst,
 
 static int
 dummy_encoded_size(FI_EncodingContext *context,
-                   size_t src_len, const void *src)
+                   const FI_Value *src)
 {
 	/* Always fails.  */
 	return 0;
@@ -393,22 +467,14 @@ dummy_encoded_size(FI_EncodingContext *context,
 
 static int
 dummy_encode(FI_EncodingContext *context, FI_Octet *dst,
-             size_t src_len, const void *src)
+             const FI_Value *src)
 {
 	/* Always fails.  */
 	return 0;
 }
 
 static int
-dummy_decoded_size(FI_EncodingContext *context,
-                   FI_Length src_len, const FI_Octet *src)
-{
-	/* Always fails.  */
-	return 0;
-}
-
-static int
-dummy_decode(FI_EncodingContext *context, void *dst,
+dummy_decode(FI_EncodingContext *context, FI_Value *dst,
              FI_Length src_len, const FI_Octet *src)
 {
 	/* Always fails.  */
@@ -419,7 +485,6 @@ const FI_EncodingAlgorithm fi_ea_boolean = {
 	0,
 	dummy_encoded_size,
 	dummy_encode,
-	dummy_decoded_size,
 	dummy_decode
 }; /* fi_ea_boolean */
 
@@ -427,7 +492,6 @@ const FI_EncodingAlgorithm fi_ea_uuid = {
 	0,
 	dummy_encoded_size,
 	dummy_encode,
-	dummy_decoded_size,
 	dummy_decode
 }; /* fi_ea_uuid */
 
@@ -435,6 +499,5 @@ const FI_EncodingAlgorithm fi_ea_cdata = {
 	0,
 	dummy_encoded_size,
 	dummy_encode,
-	dummy_decoded_size,
 	dummy_decode
 }; /* fi_ea_cdata */

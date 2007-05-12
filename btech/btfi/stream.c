@@ -22,14 +22,12 @@ struct FI_tag_OctetStream {
 	size_t size;			/* allocated size */
 	FI_Octet *buffer;		/* allocated buffer */
 
-	FI_Length length;		/* occupied length */
-	FI_Length cursor;		/* read cursor */
+	FI_Length w_cursor;		/* write cursor */
+	FI_Length r_cursor;		/* read cursor */
 
 	FI_ErrorInfo error_info;	/* error information */
 
 	FI_Length needed_length;	/* needed octets */
-
-	void *app_data_ptr;		/* application-specific data */
 }; /* FI_OctetStream */
 
 static int grow_buffer(FI_OctetStream *, FI_Length);
@@ -58,8 +56,6 @@ fi_create_stream(size_t initial_size)
 
 	FI_CLEAR_ERROR(new_stream->error_info);
 
-	new_stream->app_data_ptr = NULL;
-
 	/* XXX: initial_size is only a suggestion, so we can't fail.  */
 	grow_buffer(new_stream, initial_size);
 
@@ -76,25 +72,12 @@ fi_destroy_stream(FI_OctetStream *stream)
 	free(stream);
 }
 
-/* Get/set application data pointer.  */
-void *
-fi_get_stream_data(const FI_OctetStream *stream)
-{
-	return stream->app_data_ptr;
-}
-
-void
-fi_set_stream_data(FI_OctetStream *stream, void *app_data_ptr)
-{
-	stream->app_data_ptr = app_data_ptr;
-}
-
 /* Clear stream buffer.  */
 void
 fi_clear_stream(FI_OctetStream *stream)
 {
-	stream->length = 0;
-	stream->cursor = 0;
+	stream->w_cursor = 0;
+	stream->r_cursor = 0;
 
 	stream->needed_length = 0;
 }
@@ -122,13 +105,12 @@ fi_clear_stream_error(FI_OctetStream *stream)
  */
 
 /*
- * Returns the number of octets that can be written without needing to expand
- * the buffer.
+ * Returns the number of unread octets currently in the stream.
  */
 FI_Length
-fi_get_stream_free_length(const FI_OctetStream *stream)
+fi_get_stream_length(const FI_OctetStream *stream)
 {
-	return stream->size / sizeof(FI_Octet) - stream->length;
+	return stream->w_cursor - stream->r_cursor;
 }
 
 /*
@@ -148,24 +130,34 @@ fi_get_stream_needed_length(const FI_OctetStream *stream)
 }
 
 /*
- * Reduce the occupied length of the stream, which is useful for partial
- * writes.  Reducing by more than the number of available octets will silently
- * clamp to the number of available octets.
+ * Returns the number of octets that can be written without needing to expand
+ * the buffer.
+ */
+FI_Length
+fi_get_stream_free_length(const FI_OctetStream *stream)
+{
+	return stream->size / sizeof(FI_Octet) - stream->w_cursor;
+}
+
+/*
+ * Advances the stream write cursor.  Trying to advance past the end of the
+ * stream will silently clamp to the end of the buffer.
  *
- * This operation may invalidate buffer pointers.
+ * This operation is guaranteed not to invalidate write cursors obtained since
+ * the previous call to fi_advance_stream_write_cursor().
  */
 void
-fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length)
+fi_advance_stream_write_cursor(FI_OctetStream *stream, FI_Length length)
 {
 	// Correct code shouldn't rely on clamping behavior.
-	assert(length <= (stream->length - stream->cursor));
+	// TODO: We should probably enforce not advancing farther than the last
+	// write window, either.
+	assert(fi_get_stream_free_length(stream) >= length);
 
-	if ((stream->length - stream->cursor) <= length) {
-		/* Empty buffer.  As an optimization, reset the cursor, too.  */
-		stream->cursor = 0;
-		stream->length = 0;
+	if (fi_get_stream_free_length(stream) <= length) {
+		stream->w_cursor = stream->size;
 	} else {
-		stream->length -= length;
+		stream->w_cursor += length;
 	}
 }
 
@@ -174,128 +166,71 @@ fi_reduce_stream_length(FI_OctetStream *stream, FI_Length length)
  * advance past the end of the stream will silently clamp to the end of the
  * buffer.
  *
- * This operation may invalidate buffer pointers.
+ * This operation is guaranteed not to invalidate read cursors obtained since
+ * the previous call to fi_advance_stream_read_cursor().
  */
 void
-fi_advance_stream_cursor(FI_OctetStream *stream, FI_Length length)
+fi_advance_stream_read_cursor(FI_OctetStream *stream, FI_Length length)
 {
 	// Correct code shouldn't rely on clamping behavior.
-	assert(length <= (stream->length - stream->cursor));
+	assert(fi_get_stream_length(stream) >= length);
 
-	if ((stream->length - stream->cursor) <= length) {
+	shrink_buffer(stream);
+
+	if (fi_get_stream_length(stream) <= length) {
 		/* Empty buffer.  As an optimization, reset the cursor, too.  */
-		stream->cursor = 0;
-		stream->length = 0;
+		stream->w_cursor = 0;
+		stream->r_cursor = 0;
 	} else {
-		stream->cursor += length;
+		stream->r_cursor += length;
 	}
-
-	shrink_buffer(stream);
 }
 
 /*
- * Behaves like fi_try_read_stream(), except always reads all available octets.
+ * Get a read-only window on the stream buffer.  If the requested window would
+ * require more octets than currently available, returns a truncated window and
+ * sets the needed length (returned by fi_get_stream_needed_length()) to the
+ * number of octets required to complete the request.
+ *
+ * To obtain the size of a truncated window, use fi_get_stream_length().
+ *
+ * This operation may invalidate buffer pointers.
+ *
+ * Return NULL on errors.
  */
-FI_Length
-fi_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr)
+const FI_Octet *
+fi_get_stream_read_window(FI_OctetStream *stream, FI_Length length)
 {
-	const FI_Length length = stream->length - stream->cursor;
+	const FI_Length avail_len = fi_get_stream_length(stream);
 
-	if (buffer_ptr) {
-		*buffer_ptr = stream->buffer + stream->cursor;
-	}
+	if (avail_len < length) {
+		stream->needed_length = length - avail_len;
 
-	shrink_buffer(stream);
-
-	stream->cursor += length;
-	stream->needed_length = 0;
-	return length;
-}
-
-/*
- * Attempt to read between min_len and max_len octets from the stream, where
- * 0 <= min_len <= max_len <= FI_MAX_LENGTH.  Returns the actual number of
- * octets available. (Note that this may be larger than max_len! The caller may
- * use the extra octets to opportunistically look ahead.)
- *
- * If all max_len octets are available, the operation is considered a success.
- * The stream cursor is advanced by min_len, and fi_get_stream_needed_length()
- * will return 0.
- *
- * If at least min_len octets are available, the operation is considered a
- * partial success.  The stream cursor is still advanced by min_len, but
- * fi_get_stream_needed_length() will return the difference between max_len and
- * the number of available octets.
- *
- * If less than min_len octets are available, the operation is considered a
- * failure.  The stream cursor will NOT be advanced, and
- * fi_get_stream_needed_length() will return the difference between max_len and
- * the number of available octets.
- *
- * In all cases, buffer_ptr (if non-NULL) will be set to point to the read
- * octets.
- *
- * Any existing buffer pointers may be invalidated.
- *
- * If min_len == max_len, this is essentially a read operation.
- *
- * If min_len == 0, this is essentially a peek operation.
- *
- * If 0 < min_len < max_len, this is a read operation with some lookahead.
- */
-FI_Length
-fi_try_read_stream(FI_OctetStream *stream, const FI_Octet **buffer_ptr,
-                   FI_Length min_len, FI_Length max_len)
-{
-	FI_Length avail_len;
-
-	assert(min_len <= max_len);
-
-	if (buffer_ptr) {
-		*buffer_ptr = stream->buffer + stream->cursor;
-	}
-
-	avail_len = stream->length - stream->cursor;
-
-	if (avail_len < max_len) {
-		stream->needed_length = max_len - avail_len;
-
-		if (avail_len < min_len) {
-			FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
-			return avail_len;
-		}
+		FI_SET_ERROR(stream->error_info, FI_ERROR_EOS);
 	} else {
 		stream->needed_length = 0;
 	}
 
-	shrink_buffer(stream);
-
-	stream->cursor += min_len;
-	return avail_len;
+	return &stream->buffer[stream->r_cursor];
 }
 
 /*
- * Get a writable pointer into the main buffer for a specific number of octets.
- * The caller may use this pointer to directly write the requested number of
- * octets into the buffer.
+ * Get a writable window on the stream buffer.  The caller may use this pointer
+ * to directly write the requested number of octets into the buffer.
  *
- * Any other octet stream calls may invalidate the returned pointer.
+ * This operation may invalidate buffer pointers.
  *
- * Returns NULL on errors.
+ * Return NULL on errors.
  */
 FI_Octet *
-fi_get_stream_write_buffer(FI_OctetStream *stream, FI_Length length)
+fi_get_stream_write_window(FI_OctetStream *stream, FI_Length length)
 {
-	FI_Octet *write_ptr;
-
 	if (!grow_buffer(stream, length)) {
 		FI_SET_ERROR(stream->error_info, FI_ERROR_OOM);
 		return NULL;
 	}
 
-	write_ptr = stream->buffer + stream->length;
-	stream->length += length;
-	return write_ptr;
+	return &stream->buffer[stream->w_cursor];
 }
 
 
@@ -313,9 +248,9 @@ grow_buffer(FI_OctetStream *stream, FI_Length length)
 	size_t new_size, tmp_new_size;
 
 	/* Some sanity checks.  */
-	new_length = stream->length + length;
+	new_length = stream->w_cursor + length;
 
-	if (new_length < stream->length) {
+	if (new_length < stream->w_cursor) {
 		/* Overflow.  */
 		return 0;
 	}
@@ -355,18 +290,18 @@ shrink_buffer(FI_OctetStream *stream)
 {
 	FI_Length tail_length;
 
-	if (stream->cursor <= (stream->size >> 1)) {
+	if (stream->r_cursor <= (stream->size >> 1)) {
 		/* Less than 50% buffer utilization.  */
 		return;
 	}
 
 	/* We can use memcpy(), rather than memmove(), because we're copying
 	 * from second half to first half, so no overlap is possible.  */
-	tail_length = stream->length - stream->cursor;
+	tail_length = fi_get_stream_length(stream);
 
-	memcpy(stream->buffer, stream->buffer + stream->cursor,
+	memcpy(stream->buffer, stream->buffer + stream->r_cursor,
 	       tail_length * sizeof(FI_Octet));
 
-	stream->length = tail_length;
-	stream->cursor = 0;
+	stream->w_cursor = tail_length;
+	stream->r_cursor = 0;
 }

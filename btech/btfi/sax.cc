@@ -421,9 +421,9 @@ write_object(FI_Generator *gen, const Serializable& object)
 	}
 
 	// Write to file.
-	const FI_Octet *r_buf;
+	FI_Length length = fi_get_stream_length(gen->buffer);
 
-	FI_Length length = fi_read_stream(gen->buffer, &r_buf);
+	const FI_Octet *r_buf = fi_get_stream_read_window(gen->buffer, length);
 
 	if (length > 0) {
 		// fwrite() returns length, unless there's an I/O error
@@ -436,6 +436,7 @@ write_object(FI_Generator *gen, const Serializable& object)
 		}
 	}
 
+	fi_advance_stream_read_cursor(gen->buffer, length);
 	return true;
 }
 
@@ -616,7 +617,8 @@ read_file_octets(FI_Parser *parser)
 		return;
 	}
 
-	FI_Octet *w_buf = fi_get_stream_write_buffer(parser->buffer, len);
+	FI_Octet *w_buf = fi_get_stream_write_window(parser->buffer, len);
+
 	if (!w_buf) {
 		// FIXME: Set error information in IOException.
 		throw IOException ();
@@ -628,7 +630,7 @@ read_file_octets(FI_Parser *parser)
 	// Since we optimistically read more data than we know is necessary, a
 	// premature EOF is not an error, unless we are unable to satisfy our
 	// minimum read length.
-#if 1
+#if 0
 	// XXX: Verify that the parser code can handle the worst case of being
 	// forced to parse 1 octet at a time.
 	min_len = 1;
@@ -649,9 +651,10 @@ read_file_octets(FI_Parser *parser)
 			throw IOException ();
 		}
 
-		// Can still satisfy request.  Adjust write size.
-		fi_reduce_stream_length(parser->buffer, len - r_len);
+		// Can still satisfy request.
 	}
+
+	fi_advance_stream_write_cursor(parser->buffer, r_len);
 }
 
 void

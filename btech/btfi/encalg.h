@@ -8,7 +8,8 @@
 
 #include <stddef.h>
 
-#include "stream.h"
+#include "stream.h" /* only for FI_Length? */
+#include "values.h"
 #include "errors.h"
 
 #ifdef __cplusplus
@@ -32,7 +33,6 @@ typedef struct {
 
 	/* State required by all encoding algorithms.  */
 	FI_Length encoded_size;
-	size_t decoded_size;
 
 	/*
 	 * Error information.
@@ -62,18 +62,14 @@ typedef struct {
 
 	/* encoded_size() must compute the size of the output buffer.  */
 	int (*encoded_size)(FI_EncodingContext *context,
-	                    size_t src_len, const void *src);
+	                    const FI_Value *src);
 
 	/* encode() must write out the encoded value of src.  */
 	int (*encode)(FI_EncodingContext *context, FI_Octet *dst,
-	              size_t src_len, const void *src);
-
-	/* decoded_size() must compute the count of the output Value.  */
-	int (*decoded_size)(FI_EncodingContext *context,
-	                    FI_Length src_len, const FI_Octet *src);
+	              const FI_Value *src);
 
 	/* decode() must write out the decoded value of src.  */
-	int (*decode)(FI_EncodingContext *context, void *dst,
+	int (*decode)(FI_EncodingContext *context, FI_Value *dst,
 	              FI_Length src_len, const FI_Octet *src);
 } FI_EncodingAlgorithm;
 

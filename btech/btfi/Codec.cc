@@ -99,37 +99,43 @@ Codec::setEncodingAlgorithm(FI_VocabIndex idx)
 FI_Octet *
 Encoder::getWriteBuffer(FI_Length length)
 {
-	FI_Octet *w_buf = fi_get_stream_write_buffer(stream, length);
+	FI_Octet *w_buf = fi_get_stream_write_window(stream, length);
+
 	if (!w_buf) {
 		throw IOException ();
 	}
 
+	fi_advance_stream_write_cursor(stream, length);
 	return w_buf;
 }
 
 const FI_Octet *
 Decoder::getReadBuffer(FI_Length length)
 {
-	const FI_Octet *r_buf;
+	const FI_Octet *r_buf = fi_get_stream_read_window(stream, length);
 
-	if (fi_try_read_stream(stream, &r_buf, length, length) < length) {
+	if (fi_get_stream_length(stream) < length) {
 		return 0;
 	}
 
+	fi_advance_stream_read_cursor(stream, length);
 	return r_buf;
 }
 
 bool
 Decoder::skipLength(FI_Length& length)
 {
-	FI_Length avail_len = fi_try_read_stream(stream, 0, length, length);
+	fi_get_stream_read_window(stream, length);
+
+	FI_Length avail_len = fi_get_stream_length(stream);
 
 	if (avail_len < length) {
-		fi_advance_stream_cursor(stream, avail_len);
+		fi_advance_stream_read_cursor(stream, avail_len);
 		length -= avail_len;
 		return false;
 	}
 
+	fi_advance_stream_read_cursor(stream, length);
 	return true;
 }
 
@@ -151,10 +157,7 @@ Encoder::writeBits(unsigned int num_bits, FI_Octet octet_mask)
 		num_partial_bits = 0;
 
 		// Write out accumulated bits.
-		FI_Octet *w_buf = fi_get_stream_write_buffer(stream, 1);
-		if (!w_buf) {
-			throw IOException ();
-		}
+		FI_Octet *w_buf = getWriteBuffer(1);
 
 		w_buf[0] = partial_octet;
 		partial_octet = 0;
@@ -168,18 +171,17 @@ Decoder::readBits(unsigned int num_bits)
 
 	if (num_partial_bits == 0) {
 		// Load next octet.
-		const FI_Octet *r_buf;
+		const FI_Octet *r_buf = fi_get_stream_read_window(stream, 1);
+
+		if (fi_get_stream_length(stream) < 1) {
+			return false;
+		}
 
 		if (num_bits > 0) {
 			// Read.
-			if (fi_try_read_stream(stream, &r_buf, 1, 1) < 1) {
-				return false;
-			}
+			fi_advance_stream_read_cursor(stream, 1);
 		} else {
 			// Just peek.
-			if (fi_try_read_stream(stream, &r_buf, 0, 1) < 1) {
-				return false;
-			}
 		}
 
 		partial_octet = r_buf[0];
@@ -481,7 +483,9 @@ Decoder::readXMLDecl()
 
 	case 1:
 		// Look for the "<?xml".
-		if (fi_try_read_stream(stream, &r_buf, 0, 5) < 5) {
+		r_buf = fi_get_stream_read_window(stream, 5);
+
+		if (fi_get_stream_length(stream) < 5) {
 			return false;
 		}
 
@@ -503,8 +507,10 @@ Decoder::readXMLDecl()
 		do {
 			++tmp_len;
 
-			FI_Length len = fi_try_read_stream(stream, &r_buf,
-			                                   0, tmp_len);
+			r_buf = fi_get_stream_read_window(stream, tmp_len);
+
+			FI_Length len = fi_get_stream_length(stream);
+
 			if (len < tmp_len) {
 				return false;
 			}
@@ -571,7 +577,7 @@ break_top:
 
 		if (memcmp(r_buf, xml_decl[jj], tmp_len) == 0) {
 			// Matched, yay.
-			fi_advance_stream_cursor(stream, tmp_len);
+			fi_advance_stream_read_cursor(stream, tmp_len);
 
 			super_step = 0;
 			return true;

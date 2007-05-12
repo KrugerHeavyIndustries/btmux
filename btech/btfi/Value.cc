@@ -109,34 +109,32 @@ get_size_of(FI_ValueType value_type)
 	}
 }
 
-// Test whether one value of a given type is less than another of the same
-// type.  Strings of values are compared lexicographically.
-//
-// The type involved must naturally be LessThanComparable.
-//
-// TODO: This isn't really right because of the existence of NaN floating point
-// values.  For our purposes, though, all NaNs are pretty much the same.  We
-// can fix this by converting to bitwise comparison, using memcmp() or
-// something similar.
-template<typename T>
-bool
-less_value_buf(size_t count, const void *lhs, const void *rhs)
+void
+pow2_ceil_down(size_t& pow2_size, size_t exact_size)
 {
-	const T *const lhs_buf = static_cast<const T *>(lhs);
-	const T *const rhs_buf = static_cast<const T *>(rhs);
+	size_t tmp_pow2_size = pow2_size >> 1;
 
-	for (size_t ii = 0; ii < count; ii++) {
-		if (lhs_buf[ii] < rhs_buf[ii]) {
-			// lhs < rhs
-			return true;
-		} else if (rhs_buf[ii] < lhs_buf[ii]) {
-			// lhs > rhs
+	while (tmp_pow2_size > exact_size) {
+		pow2_size = tmp_pow2_size;
+		tmp_pow2_size >>= 1;
+	}
+}
+
+bool
+pow2_ceil_up(size_t& pow2_size, size_t exact_size)
+{
+	while (pow2_size < exact_size) {
+		const size_t tmp_pow2_size = pow2_size << 1;
+
+		if (tmp_pow2_size <= pow2_size) {
+			// Would overflow.
 			return false;
 		}
+
+		pow2_size = tmp_pow2_size;
 	}
 
-	// lhs == rhs
-	return false;
+	return true;
 }
 
 } // anonymous namespace
@@ -146,16 +144,69 @@ Value::~Value()
 	delete[] static_cast<char *>(value_buf);
 }
 
-// (Re)allocate memory buffers.  Note the usual restrictions on memory
-// allocated this way; it may only be used with POD (Plain Old Data) types,
-// which are technically the only types bitwise copies are legal.
-bool
-Value::allocate_value_buf(FI_ValueType new_type, size_t new_count)
+Value::Value (const Value& src)
+: value_type (src.value_type), value_count (src.value_count),
+  value_size (src.value_size), value_buf_size (src.value_buf_size)
 {
-	// Handle assignment of empty value.
-	// We don't require value_type == FI_VALUE_AS_NULL, as a convenience.
-	if (new_count < 1 || new_type == FI_VALUE_AS_NULL) {
-		// Set to empty (FI_VALUE_AS_NULL).
+	if (value_type == FI_VALUE_AS_NULL) {
+		// Empty buffer.
+		value_buf = 0;
+		return;
+	}
+
+	// Instead of re-throwing our own Exception, maybe just pass the
+	// std::bad_alloc up? Either that, or we have to guarantee that we
+	// never throw unexpected exceptions.
+	try {
+		value_buf = new char[value_buf_size];
+	} catch (const std::bad_alloc& e) {
+		throw OutOfMemoryException ();
+	}
+
+	memcpy(value_buf, src.value_buf, value_size);
+}
+
+Value&
+Value::operator = (const Value& src)
+{
+	if (&src == this) {
+		// Self-assignment, don't do any work.
+		return *this;
+	}
+
+	if (src.value_type == FI_VALUE_AS_NULL) {
+		allocateValueBuffer(0);
+		return *this;
+	}
+
+	// Instead of re-throwing our own Exception, maybe just pass the
+	// std::bad_alloc up? Either that, or we have to guarantee that we
+	// never throw unexpected exceptions.
+	try {
+		allocateValueBuffer(src.value_buf_size);
+	} catch (const std::bad_alloc& e) {
+		throw OutOfMemoryException ();
+	}
+
+	value_type = src.value_type;
+	value_count = src.value_count;
+	value_size = src.value_size;
+
+	memcpy(value_buf, src.value_buf, value_size);
+	return *this;
+}
+
+// (Re)allocate value buffer.  The existing value will be deallocated.  Note
+// that constructors/destructors will not be called; use POD types only.
+//
+// With some casting/templates/massive switch statements/polymorphism, we could
+// support arbitrary types, but that's a heavyweight solution for our needs,
+// which is essentially a dynamically "typed" bag of bytes.
+void
+Value::allocateValueBuffer(size_t new_buf_size)
+{
+	if (new_buf_size == 0) {
+		// Null assignment.
 		value_type = FI_VALUE_AS_NULL;
 		value_count = 0;
 		value_size = 0;
@@ -163,18 +214,38 @@ Value::allocate_value_buf(FI_ValueType new_type, size_t new_count)
 		delete[] static_cast<char *>(value_buf);
 		value_buf = 0;
 		value_buf_size = 0;
+		return;
+	}
+
+	// Conditionally replace existing buffer.
+	if (new_buf_size != value_buf_size) {
+		char *new_buf = new char[new_buf_size];
+
+		delete[] static_cast<char *>(value_buf);
+		value_buf = new_buf;
+		value_buf_size = new_buf_size;
+	}
+}
+
+bool
+Value::setBufferType(FI_ValueType type, size_t count)
+{
+	// Handle assignment of empty value.
+	// We don't require type == FI_VALUE_AS_NULL, as a convenience.
+	if (count < 1 || type == FI_VALUE_AS_NULL) {
+		allocateValueBuffer(0);
 		return true;
 	}
 
 	// Compute value size.
-	const size_t item_size = get_size_of(new_type);
+	const size_t item_size = get_size_of(type);
 
-	if (new_count > ((size_t)-1) / item_size) {
+	if (count > ((size_t)-1) / item_size) {
 		// Would overflow.
 		return false;
 	}
 
-	const size_t exact_size = new_count * item_size;
+	const size_t exact_size = count * item_size;
 	assert(exact_size > 0);
 
 	// Compute value buffer size.
@@ -185,80 +256,54 @@ Value::allocate_value_buf(FI_ValueType new_type, size_t new_count)
 
 		if (exact_size <= pow2_size) {
 			// Adjust buffer size downward when it saves >75%.
-			size_t tmp_pow2_size = pow2_size >> 1;
-
-			while (tmp_pow2_size > exact_size) {
-				pow2_size = tmp_pow2_size;
-				tmp_pow2_size >>= 1;
-			}
+			pow2_ceil_down(pow2_size, exact_size);
 		} else {
 			// Adjust buffer size upward by powers of 2.
 			pow2_size = value_buf_size;
 
-			while (pow2_size < exact_size) {
-				const size_t tmp_pow2_size = pow2_size << 1;
-
-				if (tmp_pow2_size <= pow2_size) {
-					// Would overflow.
-					return false;
-				}
-
-				pow2_size = tmp_pow2_size;
+			if (!pow2_ceil_up(pow2_size, exact_size)) {
+				// Would overflow.
+				return false;
 			}
 		}
 	} else {
 		// Set initial buffer size as a power of 2.
 		pow2_size = 1;
 
-		while (pow2_size < exact_size) {
-			const size_t tmp_pow2_size = pow2_size << 1;
-
-			if (tmp_pow2_size <= pow2_size) {
-				// Would overflow.
-				return false;
-			}
-
-			pow2_size = tmp_pow2_size;
+		if (!pow2_ceil_up(pow2_size, exact_size)) {
+			// Would overflow.
+			return false;
 		}
 	}
 
 	// Update object state.
-	if (pow2_size != value_buf_size) {
-		char *new_buf;
-
-		try {
-			new_buf = new char[pow2_size];
-		} catch (const std::bad_alloc& e) {
-			return false;
-		}
-
-		delete[] static_cast<char *>(value_buf);
-		value_buf = new_buf;
-		value_buf_size = pow2_size;
+	try {
+		allocateValueBuffer(pow2_size);
+	} catch (const std::bad_alloc& e) {
+		return false;
 	}
 
-	value_type = new_type;
-	value_count = new_count;
+	value_type = type;
+	value_count = count;
 	value_size = exact_size;
 	return true;
 }
 
-bool
-Value::setValue(FI_ValueType type, size_t count, const void *buf)
+// Set the value buffer from the contents of an external buffer.
+void
+Value::setBufferValue(const void *src)
 {
-	if (!allocate_value_buf(type, count)) {
-		return false;
+	if (!value_buf) {
+		// Not really needed, but okay.
+		return;
 	}
 
-	if (value_size == 0) {
-		return true;
-	}
-
-	memcpy(value_buf, buf, value_size);
-	return true;
+	memcpy(value_buf, src, value_size);
 }
 
-// Imposes an absolute ordering on all possible values.
+// Imposes an absolute ordering on all possible values.  Note that some values
+// which would otherwise be equal may compare as non-equal; this operator is
+// not generally useful, except to provide ordering for containers.
 bool
 Value::operator < (const Value& rhs) const
 {
@@ -287,61 +332,17 @@ Value::operator < (const Value& rhs) const
 		return false;
 	}
 
-	// Compare the values.
-	switch (value_type) {
-	case FI_VALUE_AS_UTF8:
-		// XXX: Doing UTF-8 properly would mean implementing Unicode
-		// collation rules, but we just use this comparison function
-		// for data structures, so it doesn't matter, unless all your
-		// strings aren't canonicalized in the same form.
-		return less_value_buf<FI_UInt8>(value_count,
-		                                value_buf, rhs.value_buf);
+	assert(value_size == rhs.value_size);
 
-	case FI_VALUE_AS_UTF16:
-		// XXX: Doing UTF-16 properly would mean implementing Unicode
-		// collation rules, but we just use this comparison function
-		// for data structures, so it doesn't matter, unless all your
-		// strings aren't canonicalized in the same form.
-		return less_value_buf<FI_UInt16>(value_count,
-		                                 value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_SHORT:
-		return less_value_buf<FI_Int16>(value_count,
-		                                value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_INT:
-		return less_value_buf<FI_Int32>(value_count,
-		                                value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_LONG:
-		return less_value_buf<FI_Int64>(value_count,
-		                                value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_BOOLEAN:
-		return less_value_buf<FI_Boolean>(value_count,
-		                                  value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_FLOAT:
-		return less_value_buf<FI_Float32>(value_count,
-		                                  value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_DOUBLE:
-		return less_value_buf<FI_Float64>(value_count,
-		                                  value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_UUID:
-		return less_value_buf<FI_UUID>(value_count,
-		                               value_buf, rhs.value_buf);
-
-	case FI_VALUE_AS_OCTETS:
-		return less_value_buf<FI_Octet>(value_count,
-		                                value_buf, rhs.value_buf);
-
-	default:
-		// Should never happen.
-		assert(false);
-		return false;
-	}
+	// Compare the values.  We consider two dynamic values the same only if
+	// they have the exact same bits (to deal with things like multiple NaN
+	// types in IEEE 754 floating point).  Note that this requires that
+	// bitwise comparison be valid, usually appropriate only for POD.
+	//
+	// This ordering is really only used for caching identical Value
+	// objects, so we don't really suffer a penalty if some values don't
+	// compare equal, other than a slight increase in space usage.
+	return (memcmp(value_buf, rhs.value_buf, value_size) < 0);
 }
 
 
@@ -403,41 +404,6 @@ choose_enc_alg(FI_ValueType value_type)
 	}
 }
 
-// Select the value type based on encoding algorithm index.
-FI_ValueType
-choose_value_type(FI_VocabIndex encoding_idx)
-{
-	switch (encoding_idx) {
-	case FI_EA_SHORT:
-		return FI_VALUE_AS_SHORT;
-
-	case FI_EA_INT:
-		return FI_VALUE_AS_INT;
-
-	case FI_EA_LONG:
-		return FI_VALUE_AS_LONG;
-
-	case FI_EA_BOOLEAN:
-		return FI_VALUE_AS_BOOLEAN;
-
-	case FI_EA_FLOAT:
-		return FI_VALUE_AS_FLOAT;
-
-	case FI_EA_DOUBLE:
-		return FI_VALUE_AS_DOUBLE;
-
-	case FI_EA_UUID:
-		return FI_VALUE_AS_UUID;
-
-	case FI_EA_BASE64:
-		return FI_VALUE_AS_OCTETS;
-
-	default:
-		// Couldn't select an appropriate value type.
-		throw UnsupportedOperationException ();
-	}
-}
-
 } // anonymous namespace
 
 void
@@ -452,12 +418,12 @@ Value::write(Encoder& encoder) const
 	switch (encoder.getBitOffset()) {
 	case 0:
 		// Write value starting on first bit (C.14).
-		write_bit1(encoder);
+		write_bit1_or_3(encoder);
 		break;
 
 	case 2:
 		// Write value starting on third bit (C.15).
-		write_bit3(encoder);
+		write_bit1_or_3(encoder, false);
 		break;
 
 	default:
@@ -494,14 +460,14 @@ reparse:
 
 	case 1:
 		// Read value header starting on first bit (C.14).
-		if (!read_bit1(decoder)) {
+		if (!read_bit1_or_3(decoder)) {
 			return false;
 		}
 		break;
 
 	case 2:
 		// Read value header starting on third bit (C.15).
-		if (!read_bit3(decoder)) {
+		if (!read_bit1_or_3(decoder, false)) {
 			return false;
 		}
 		break;
@@ -513,20 +479,6 @@ reparse:
 
 	decoder.ext_super_step = 0;
 	return true;
-}
-
-FI_Length
-Value::getEncodedSize(Encoder& encoder) const
-{
-	const FI_EncodingAlgorithm *enc_alg = *encoder.encoding_algorithm;
-
-	if (!enc_alg->encoded_size(&encoder.encoding_context,
-	                           value_size, value_buf)) {
-		// FIXME: This Exception isn't really appropriate.
-		throw UnsupportedOperationException ();
-	}
-
-	return encoder.encoding_context.encoded_size;
 }
 
 void
@@ -551,8 +503,8 @@ Value::encodeOctets(Encoder& encoder, FI_Length len) const
 		// Use encoding algorithm.
 		enc_alg = *encoder.encoding_algorithm;
 
-		if (!enc_alg->encode(&encoder.encoding_context, w_buf,
-		                     value_size, value_buf)) {
+		if (!enc_alg->encode(&encoder.encoding_context,
+		                     w_buf, FI_Value::cast(*this))) {
 			// FIXME: This Exception isn't really appropriate.
 			throw UnsupportedOperationException ();
 		}
@@ -575,15 +527,16 @@ Value::decodeOctets(Decoder& decoder, FI_Length len)
 	}
 
 	const FI_EncodingAlgorithm *enc_alg;
-	size_t next_count;
 
-	switch (choose_enc_format(next_value_type)) {
+	switch (saved_format) {
 	case ENCODE_AS_UTF8:
 		// TODO: This is a bit too liberal to be UTF-8.
-		if (!setValue(FI_VALUE_AS_UTF8, len, r_buf)) {
+		if (!setBufferType(FI_VALUE_AS_UTF8, len)) {
 			// FIXME: This Exception isn't really appropriate.
 			throw UnsupportedOperationException ();
 		}
+
+		setBufferValue(r_buf);
 		break;
 
 	case ENCODE_AS_UTF16:
@@ -595,22 +548,8 @@ Value::decodeOctets(Decoder& decoder, FI_Length len)
 		// Use encoding algorithm.
 		enc_alg = *decoder.encoding_algorithm;
 
-		if (!enc_alg->decoded_size(&decoder.encoding_context,
-		                           len, r_buf)) {
-			// FIXME: This Exception isn't really appropriate.
-			throw UnsupportedOperationException ();
-		}
-
-		next_count = decoder.encoding_context.decoded_size
-		             / get_size_of(next_value_type);
-
-		if (!allocate_value_buf(next_value_type, next_count)) {
-			// FIXME: This Exception isn't really appropriate.
-			throw UnsupportedOperationException ();
-		}
-
-		if (!enc_alg->decode(&decoder.encoding_context, value_buf,
-		                     len, r_buf)) {
+		if (!enc_alg->decode(&decoder.encoding_context,
+		                     FI_Value::cast(*this), len, r_buf)) {
 			// FIXME: This Exception isn't really appropriate.
 			throw UnsupportedOperationException ();
 		}
@@ -624,43 +563,58 @@ Value::decodeOctets(Decoder& decoder, FI_Length len)
 	return true;
 }
 
-// C.14/C.19
+// C.14/C.19, C.15/C.20
 // Note that we only choose to encode by literal, not index, except for the
 // empty string/value.  Also, we never request values be added to the table,
 // although we do support adding during parsing.
 void
-Value::write_bit1(Encoder& encoder) const
+Value::write_bit1_or_3(Encoder& encoder, bool is_bit1) const
 {
-	assert(encoder.getBitOffset() == 0); // C.14.2
+	assert(!is_bit1 || encoder.getBitOffset() == 0); // C.14.2
+	assert(is_bit1 || encoder.getBitOffset() == 2); // C.15.2
 
 	if (value_type == FI_VALUE_AS_NULL) {
-		// Use index rules (C.14.4).
+		// Use index rules (C.14.4, C.15.5).
+		if (!is_bit1) {
+			// C.15 doesn't allow index 0 (null character data).
+			throw AssertionFailureException ();
+		}
 
-		// Write string-index discriminant (C.14.4: 1).
+		// Write string-index discriminant (C.14.4, C.15.4: 1).
 		encoder.writeBits(1, FI_BITS(1,,,,,,,));
 
-		// Write string-index using C.26 (C.14.4).
+		// Write string-index using C.26 (C.14.4), C.28 (C.15.4).
 		encoder.writeUInt21_bit2(FI_VOCAB_INDEX_NULL);
 		return;
 	}
 
-	// Use literal rules (C.14.3).
+	// Use literal rules (C.14.3, C.15.3).
 
-	// Write literal-character-string discriminant (C.14.3: 0).
-	// Write add-to-table (C.14.3.1: 0). (Adding currently not supported.)
-	encoder.writeBits(2, FI_BITS(0, 0,,,,,,));
+	// Write literal-character-string discriminant (C.14.3, C.15.3: 0).
+	// Write add-to-table (C.14.3.1, C.15.3.1: 0). (Not currently used.)
+	if (is_bit1) {
+		encoder.writeBits(2, FI_BITS(0, 0,,,,,,));
+	} else {
+		encoder.writeBits(2, FI_BITS(,,0, 0,,,,));
+	}
 
-	// Write character-string using C.19 (C.14.3.2).
+	// Write character-string using C.19 (C.14.3.2), C.20 (C.15.3.2).
 
-	// Write discriminant (C.19.3).
+	// Write discriminant (C.19.3, C.20.3).
 	const EncodingFormat format = choose_enc_format(value_type);
 
-	encoder.writeBits(2, format);
+	if (is_bit1) {
+		encoder.writeBits(2, format);
+	} else {
+		encoder.writeBits(2, (format >> 2));
+	}
 
-	// Write encoded string length using C.23.3 (C.19.4). (And optionally
-	// write the restricted-alphabet/encoding-algorithm index.)
+	// Write encoded string length using C.23.3 (C.19.4), C.24.3 (C.20.4).
+	// (And potentially the alphabet/algorithm index.)
 	FI_Length len;
+
 	FI_VocabIndex encoding_idx;
+	const FI_EncodingAlgorithm *enc_alg;
 
 	switch (format) {
 	case ENCODE_AS_UTF8:
@@ -688,14 +642,22 @@ Value::write_bit1(Encoder& encoder) const
 
 	case ENCODE_WITH_ALPHABET:
 		// TODO: We don't use the restricted-alphabet alternative.
-		// Write restricted-alphabet index using C.29 (C.19.3.3).
+		// Write alphabet index using C.29 (C.19.3.3, C.20.3.3).
 		throw UnsupportedOperationException ();
 
 	case ENCODE_WITH_ALGORITHM:
-		// Write encoding-algorithm index using C.29 (C.19.3.4).
+		// Write algorithm index using C.29 (C.19.3.4, C.20.3.4).
 		encoder.setEncodingAlgorithm(choose_enc_alg(value_type));
 
-		len = getEncodedSize(encoder);
+		enc_alg = *encoder.encoding_algorithm;
+
+		if (!enc_alg->encoded_size(&encoder.encoding_context,
+		                           FI_Value::cast(*this))) {
+			// FIXME: This Exception isn't really appropriate.
+			throw UnsupportedOperationException ();
+		}
+
+		len = encoder.encoding_context.encoded_size;
 
 		encoding_idx = encoder.encoding_algorithm.getIndex();
 		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
@@ -707,36 +669,51 @@ Value::write_bit1(Encoder& encoder) const
 	// Encode octets.
 	assert(len > 0 && len <= FI_UINT32_MAX);
 
-	encoder.writeNonEmptyOctets_len_bit5(FI_UINT_TO_PINT(len));
+	if (is_bit1) {
+		encoder.writeNonEmptyOctets_len_bit5(FI_UINT_TO_PINT(len));
+	} else {
+		encoder.writeNonEmptyOctets_len_bit7(FI_UINT_TO_PINT(len));
+	}
 
 	encodeOctets(encoder, len);
 }
 
 bool
-Value::read_bit1(Decoder& decoder)
+Value::read_bit1_or_3(Decoder& decoder, bool is_bit1)
 {
-	FI_UInt21 idx;
+	FI_Octet bits;
 
+	FI_VocabIndex idx;
+
+	FI_PInt32 len;
 	FI_PInt8 encoding_idx;
-	FI_PInt32 octets_len;
 
 reparse:
 	switch (decoder.ext_sub_step) {
 	case 0:
-		assert(decoder.getBitOffset() == 0); // C.14.2
+		assert(!is_bit1 || decoder.getBitOffset() == 0); // C.14.2
+		assert(is_bit1 || decoder.getBitOffset() == 2); // C.15.2
 
 		// Examine discriminator bits.
-		if (!decoder.readBits(1)) {
-			return false;
-		}
+		if (is_bit1) {
+			if (!decoder.readBits(1)) {
+				return false;
+			}
 
-		if (!(decoder.getBits() & FI_BIT_1)) {
-			// Use literal rules (C.14.3).
-
-			// Read add-to-table (C.14.3.1).
+			bits = decoder.getBits();
+		} else {
 			decoder.readBits(1);
 
-			add_value_to_table = decoder.getBits() & FI_BIT_2;
+			bits = decoder.getBits() << 2;
+		}
+
+		if (!(bits & FI_BIT_1)) {
+			// Use literal rules (C.14.3, C.15.3).
+
+			// Read add-to-table (C.14.3.1, C.15.3.1).
+			decoder.readBits(1);
+
+			add_value_to_table = bits & FI_BIT_2;
 
 			decoder.ext_sub_step = 2;
 			goto reparse;
@@ -746,9 +723,23 @@ reparse:
 		// FALLTHROUGH
 
 	case 1:
-		// Read string-index using C.26 (C.14.4).
-		if (!decoder.readUInt21_bit2(idx)) {
-			return false;
+		// Read string-index using C.26 (C.14.4), C.28 (C.15.4).
+		if (is_bit1) {
+			FI_UInt21 tmp_idx;
+
+			if (!decoder.readUInt21_bit2(tmp_idx)) {
+				return false;
+			}
+
+			idx = tmp_idx;
+		} else {
+			FI_PInt20 tmp_idx;
+
+			if (!decoder.readPInt20_bit4(tmp_idx)) {
+				return false;
+			}
+
+			idx = FI_PINT_TO_UINT(tmp_idx);
 		}
 
 		// XXX: Throws IndexOutOfBoundsException on bogus index.
@@ -756,27 +747,35 @@ reparse:
 		break;
 
 	case 2:
-		// Read character-string using C.19 (C.14.3.2).
+		// Read character-string using C.19 (C.14.3.2), C.20 (C.15.3.3).
 
 		// Examine discriminator bits.
 		decoder.readBits(2);
 
-		switch (decoder.getBits() & FI_BITS(,,1,1,,,,)) {
+		if (is_bit1) {
+			bits = decoder.getBits();
+		} else {
+			bits = decoder.getBits() << 2;
+		}
+
+		switch (bits & FI_BITS(,,1,1,,,,)) {
 		case ENCODE_AS_UTF8:
 			// Use UTF-8 decoding rules.
-			next_value_type = FI_VALUE_AS_UTF8;
+			saved_format = ENCODE_AS_UTF8;
 			break;
 
 		case ENCODE_AS_UTF16:
 			// FIXME: We don't support the utf-16 alternative.
-			next_value_type = FI_VALUE_AS_UTF16;
+			saved_format = ENCODE_AS_UTF16;
 			throw UnsupportedOperationException ();
 
 		case ENCODE_WITH_ALPHABET:
+			saved_format = ENCODE_WITH_ALPHABET;
 			decoder.ext_sub_step = 5;
 			goto reparse;
 
 		case ENCODE_WITH_ALGORITHM:
+			saved_format = ENCODE_WITH_ALGORITHM;
 			decoder.ext_sub_step = 6;
 			goto reparse;
 
@@ -789,14 +788,20 @@ reparse:
 		// FALLTHROUGH
 
 	case 3:
-		// Read encoded string length using C.23.3 (C.19.4).
-		if (!decoder.readNonEmptyOctets_len_bit5(octets_len)) {
-			return false;
+		// Read encoded length using C.23.3 (C.19.4), C.24.3 (C.20.4).
+		if (is_bit1) {
+			if (!decoder.readNonEmptyOctets_len_bit5(len)) {
+				return false;
+			}
+		} else {
+			if (!decoder.readNonEmptyOctets_len_bit7(len)) {
+				return false;
+			}
 		}
 
 		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
-		// checked in readNonEmptyOctets_len_bit5().
-		decoder.ext_saved_len = FI_PINT_TO_UINT(octets_len);
+		// checked in readNonEmptyOctets_len_bit{5,7}().
+		decoder.ext_saved_len = FI_PINT_TO_UINT(len);
 
 		decoder.ext_sub_step = 4;
 		// FALLTHROUGH
@@ -809,7 +814,7 @@ reparse:
 		break;
 
 	case 5:
-		// Read restricted-alphabet index using C.29 (C.19.3.3).
+		// Read alphabet index using C.29 (C.19.3.3, C.20.3.3).
 		if (!decoder.readPInt8(encoding_idx)) {
 			return false;
 		}
@@ -819,231 +824,12 @@ reparse:
 		throw UnsupportedOperationException ();
 
 	case 6:
-		// Read encoding-algorithm index using C.29 (C.19.3.4).
+		// Read algorithm index using C.29 (C.19.3.4, C.20.3.4).
 		if (!decoder.readPInt8(encoding_idx)) {
 			return false;
 		}
 
 		// XXX: Throws IndexOutOfBoundsException on bogus index.
-		next_value_type = choose_value_type(FI_PINT_TO_UINT(encoding_idx));
-		decoder.setEncodingAlgorithm(FI_PINT_TO_UINT(encoding_idx));
-
-		decoder.ext_sub_step = 3;
-		goto reparse;
-
-	default:
-		// Should never happen.
-		throw AssertionFailureException ();
-	}
-
-	decoder.ext_sub_step = 0;
-	return true;
-}
-
-// C.15/C.20
-// Note that we can't encode an empty index, due to encoding the string-index
-// using C.28.  C.15 is used for encoding character content, so empty content
-// is simply omitted, not coded.
-void
-Value::write_bit3(Encoder& encoder) const
-{
-	assert(encoder.getBitOffset() == 2); // C.15.2
-
-#if 0
-	if (value_type == FI_VALUE_AS_NULL) {
-		// Use index rules (C.15.4).
-
-		// Write string-index discriminant (C.15.4: 1).
-		encoder.writeBits(1, FI_BITS(,,1,,,,,));
-
-		// Write string-index using C.28 (C.15.4).
-		encoder.writePInt20_bit4(FI_VOCAB_INDEX_NULL);
-		return;
-	}
-#endif // 0
-
-	// Use literal rules (C.15.3).
-
-	// Write literal-character-string discriminant (C.15.3: 0).
-	// Write add-to-table (C.15.3.1: 0). (Adding currently not supported.)
-	encoder.writeBits(2, FI_BITS(,,0, 0,,,,));
-
-	// Write character-string using C.20 (C.15.3.2).
-
-	// Write discriminant (C.20.3).
-	const EncodingFormat format = choose_enc_format(value_type);
-
-	encoder.writeBits(2, (format >> 2));
-
-	// Write encoded string length using C.24.3 (C.20.4). (And optionally
-	// write the restricted-alphabet/encoding-algorithm index.)
-	FI_Length len;
-	FI_VocabIndex encoding_idx;
-
-	switch (format) {
-	case ENCODE_AS_UTF8:
-		if (value_count > FI_LENGTH_MAX / 1) {
-			// Overflow.
-			throw UnsupportedOperationException ();
-		}
-
-		encoder.encoding_algorithm = 0;
-
-		len = value_count * 1;
-		break;
-
-	case ENCODE_AS_UTF16:
-		// TODO: We don't use the utf-16 alternative.
-		if (value_count > FI_LENGTH_MAX / 2) {
-			// Overflow.
-			throw UnsupportedOperationException ();
-		}
-
-		encoder.encoding_algorithm = 0;
-
-		len = value_count * 2;
-		throw UnsupportedOperationException ();
-
-	case ENCODE_WITH_ALPHABET:
-		// TODO: We don't use the restricted-alphabet alternative.
-		// Write restricted-alphabet index using C.29 (C.20.3.3).
-		throw UnsupportedOperationException ();
-
-	case ENCODE_WITH_ALGORITHM:
-		// Write encoding-algorithm index using C.29 (C.20.3.4).
-		encoder.setEncodingAlgorithm(choose_enc_alg(value_type));
-
-		len = getEncodedSize(encoder);
-
-		encoding_idx = encoder.encoding_algorithm.getIndex();
-		assert(encoding_idx > 0 && encoding_idx <= FI_PINT8_MAX);
-
-		encoder.writePInt8(FI_UINT_TO_PINT(encoding_idx));
-		break;
-	}
-
-	// Encode octets.
-	assert(len > 0 && len <= FI_UINT32_MAX);
-
-	encoder.writeNonEmptyOctets_len_bit7(FI_UINT_TO_PINT(len));
-
-	encodeOctets(encoder, len);
-}
-
-bool
-Value::read_bit3(Decoder& decoder)
-{
-	FI_PInt20 idx;
-
-	FI_PInt8 encoding_idx;
-	FI_PInt32 octets_len;
-
-reparse:
-	switch (decoder.ext_sub_step) {
-	case 0:
-		assert(decoder.getBitOffset() == 2); // C.15.2
-
-		// Examine discriminator bits.
-		if (!decoder.readBits(1)) {
-			return false;
-		}
-
-		if (!(decoder.getBits() & FI_BIT_3)) {
-			// Use literal rules (C.15.3).
-
-			// Read add-to-table (C.15.3.1).
-			decoder.readBits(1);
-
-			add_value_to_table = decoder.getBits() & FI_BIT_4;
-
-			decoder.ext_sub_step = 2;
-			goto reparse;
-		}
-
-		decoder.ext_sub_step = 1;
-		// FALLTHROUGH
-
-	case 1:
-		// Read string-index using C.28 (C.15.4).
-		if (!decoder.readPInt20_bit4(idx)) {
-			return false;
-		}
-
-		// XXX: Throws IndexOutOfBoundsException on bogus index.
-		*this = *(*vocab_table)[FI_PINT_TO_UINT(idx)];
-		break;
-
-	case 2:
-		// Read character-string using C.20 (C.15.3.2).
-
-		// Examine discriminator bits.
-		decoder.readBits(2);
-
-		switch ((decoder.getBits() & FI_BITS(,,,,1,1,,)) << 2) {
-		case ENCODE_AS_UTF8:
-			// Use UTF-8 decoding rules.
-			next_value_type = FI_VALUE_AS_UTF8;
-			break;
-
-		case ENCODE_AS_UTF16:
-			// FIXME: We don't support the utf-16 alternative.
-			next_value_type = FI_VALUE_AS_UTF16;
-			throw UnsupportedOperationException ();
-
-		case ENCODE_WITH_ALPHABET:
-			decoder.ext_sub_step = 5;
-			goto reparse;
-
-		case ENCODE_WITH_ALGORITHM:
-			decoder.ext_sub_step = 6;
-			goto reparse;
-
-		default:
-			// This should never happen.
-			throw AssertionFailureException ();
-		}
-
-		decoder.ext_sub_step = 3;
-		// FALLTHROUGH
-
-	case 3:
-		// Read encoded string length using C.24.3 (C.20.4).
-		if (!decoder.readNonEmptyOctets_len_bit7(octets_len)) {
-			return false;
-		}
-
-		// XXX: FI_PINT_TO_UINT() can't overflow, because we already
-		// checked in readNonEmptyOctets_len_bit7().
-		decoder.ext_saved_len = FI_PINT_TO_UINT(octets_len);
-
-		decoder.ext_sub_step = 4;
-		// FALLTHROUGH
-
-	case 4:
-		// Read encoded string octets.
-		if (!decodeOctets(decoder, decoder.ext_saved_len)) {
-			return false;
-		}
-		break;
-
-	case 5:
-		// Read restricted-alphabet index using C.29 (C.20.3.3).
-		if (!decoder.readPInt8(encoding_idx)) {
-			return false;
-		}
-
-		// Determine future value type.
-		// FIXME: We don't support the restricted-alphabet alternative.
-		throw UnsupportedOperationException ();
-
-	case 6:
-		// Read encoding-algorithm index using C.29 (C.20.3.4).
-		if (!decoder.readPInt8(encoding_idx)) {
-			return false;
-		}
-
-		// XXX: Throws IndexOutOfBoundsException on bogus index.
-		next_value_type = choose_value_type(FI_PINT_TO_UINT(encoding_idx));
 		decoder.setEncodingAlgorithm(FI_PINT_TO_UINT(encoding_idx));
 
 		decoder.ext_sub_step = 3;
@@ -1099,11 +885,23 @@ fi_get_value_count(const FI_Value *obj)
 const void *
 fi_get_value(const FI_Value *obj)
 {
-	return obj->getValue();
+	return obj->getBuffer();
 }
 
 int
-fi_set_value(FI_Value *obj, FI_ValueType type, size_t count, const void *buf)
+fi_set_value_type(FI_Value *obj, FI_ValueType type, size_t count)
 {
-	return obj->setValue(type, count, buf);
+	return obj->setBufferType(type, count);
+}
+
+void
+fi_set_value(FI_Value *obj, const void *buf)
+{
+	obj->setBufferValue(buf);
+}
+
+void *
+fi_get_value_buffer(FI_Value *obj)
+{
+	return obj->getBuffer();
 }

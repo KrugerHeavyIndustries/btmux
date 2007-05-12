@@ -19,43 +19,40 @@ namespace FI {
 
 class DV_VocabTable;
 
+enum EncodingFormat {
+	ENCODE_AS_UTF8        = FI_BITS(,,0,0,,,,), // C.19.3.1 (C.20.3.1)
+	ENCODE_AS_UTF16       = FI_BITS(,,0,1,,,,), // C.19.3.2 (C.20.3.2)
+	ENCODE_WITH_ALPHABET  = FI_BITS(,,1,0,,,,), // C.19.3.3 (C.20.3.2)
+	ENCODE_WITH_ALGORITHM = FI_BITS(,,1,1,,,,)  // C.19.3.4 (C.20.3.4)
+}; // enum EncodingFormat
+
 class Value : public Serializable {
 public:
+	// Construction.
 	Value ()
 	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
 	  value_buf (0), value_buf_size (0) {}
 
 	virtual ~Value ();
 
-	// Assignment.
-	Value (const Value& src)
-	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
-	  value_buf (0), value_buf_size (0) {
-		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
-			// TODO: Need a more specific Exception.
-			throw Exception ();
-		}
-	}
+	Value (const Value& src);
 
 	Value (FI_ValueType type, size_t count, const void *buf)
-	: value_type (FI_VALUE_AS_NULL), value_count (0), value_size (0),
-	  value_buf (0), value_buf_size (0) {
-		if (!setValue(type, count, buf)) {
-			// TODO: Need a more specific Exception.
-			throw Exception ();
-		}
-	}
-
-	Value& operator = (const Value& src) {
-		if (!setValue(src.value_type, src.value_count, src.value_buf)) {
-			// TODO: Need a more specific Exception.
+	: value_buf (0), value_buf_size (0) {
+		if (!setBufferType(type, count)) {
+			// TODO: This Exception isn't specific enough.
 			throw Exception ();
 		}
 
-		return *this;
+		setBufferValue(buf);
 	}
 
-	bool setValue (FI_ValueType type, size_t count, const void *buf);
+	Value& operator = (const Value& src);
+
+	// XXX: For these purposes, "type" includes the count.
+	bool setBufferType (FI_ValueType type, size_t count);
+
+	void setBufferValue (const void *buf);
 
 	// Comparison.
 	bool operator < (const Value& rhs) const;
@@ -69,7 +66,11 @@ public:
 		return value_count;
 	}
 
-	const void *getValue () const {
+	const void *getBuffer () const {
+		return value_buf;
+	}
+
+	void *getBuffer () {
 		return value_buf;
 	}
 
@@ -81,7 +82,7 @@ public:
 
 private:
 	// Value buffer.
-	bool allocate_value_buf(FI_ValueType new_type, size_t new_count);
+	void allocateValueBuffer (size_t new_buf_size);
 
 	FI_ValueType value_type;
 	size_t value_count;
@@ -91,25 +92,19 @@ private:
 	size_t value_buf_size;
 
 	// Fast Infoset serialization support.
-	FI_Length getEncodedSize (Encoder& encoder) const;
-
 	void encodeOctets (Encoder& encoder, FI_Length len) const;
 	bool decodeOctets (Decoder& decoder, FI_Length len);
 
-	// C.14/C.19.
-	void write_bit1 (Encoder& encoder) const;
-	bool read_bit1 (Decoder& decoder);
-
-	// C.15/C.20.
-	void write_bit3 (Encoder& encoder) const;
-	bool read_bit3 (Decoder& decoder);
+	// C.14/C.19, C.15/C.20.
+	void write_bit1_or_3 (Encoder& encoder, bool is_bit1 = true) const;
+	bool read_bit1_or_3 (Decoder& decoder, bool is_bit1 = true);
 
 	// TODO: Come up with a reasonable protocol for foisting all this state
 	// on to the shared Encoder/Decoder objects.
 	DV_VocabTable *vocab_table;
 	bool add_value_to_table;
 
-	FI_ValueType next_value_type;
+	EncodingFormat saved_format;
 }; // class Value
 
 /*
@@ -131,7 +126,7 @@ template<typename T>
 const T *
 Value_cast(const Value& value)
 {
-	return static_cast<const T *>(value.getValue());
+	return static_cast<const T *>(value.getBuffer());
 }
 
 } // namespace FI
@@ -142,6 +137,10 @@ struct FI_tag_Value : public BTech::FI::Value {
 	FI_tag_Value () : Value () {}
 
 	// Cast any Value to a FI_Value.
+	static FI_Value *cast (Value& value) {
+		return static_cast<FI_Value *>(&value);
+	}
+
 	static const FI_Value *cast (const Value& value) {
 		return static_cast<const FI_Value *>(&value);
 	}

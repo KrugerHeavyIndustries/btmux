@@ -54,9 +54,11 @@ start_element(const FI_Name *e_name, ...)
 		const size_t a_count = va_arg(ap, size_t);
 		const void *const a_buf = va_arg(ap, const void *);
 
-		if (!fi_set_value(a_value, a_type, a_count, a_buf)) {
-			die("fi_set_value");
+		if (!fi_set_value_type(a_value, a_type, a_count)) {
+			die("fi_get_value_buffer");
 		}
+
+		fi_set_value(a_value, a_buf);
 
 		if (!fi_add_attribute(attributes, a_name, a_value)) {
 			die("fi_add_attribute");
@@ -84,9 +86,11 @@ static void
 characters(FI_ValueType type, size_t count, const void *buf)
 {
 	/* Characters.  */
-	if (!fi_set_value(a_value, type, count, buf)) {
-		die("fi_set_value");
+	if (!fi_set_value_type(a_value, type, count)) {
+		die("fi_set_value_type");
 	}
+
+	fi_set_value(a_value, buf);
 
 	if (!handler->characters(handler, a_value)) {
 		die_gen("generate::characters");

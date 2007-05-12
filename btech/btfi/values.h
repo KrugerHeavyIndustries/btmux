@@ -17,20 +17,6 @@ typedef struct FI_tag_UUID FI_UUID;	/* 128-bit (16 octet) UUID */
 
 struct FI_tag_UUID {
 	FI_Octet octets[16];
-
-#ifdef __cplusplus
-	bool operator < (const FI_UUID& rhs) const {
-		for (size_t ii = 0; ii < sizeof(octets); ii++) {
-			if (octets[ii] < rhs.octets[ii]) {
-				return true;
-			} else if (rhs.octets[ii] < octets[ii]) {
-				return false;
-			}
-		}
-
-		return false;
-	}
-#endif /* __cplusplus */
 }; /* FI_UUID */
 
 typedef enum {
@@ -57,10 +43,12 @@ void fi_destroy_value(FI_Value *obj);
 
 FI_ValueType fi_get_value_type(const FI_Value *obj);
 size_t fi_get_value_count(const FI_Value *obj);
+
 const void *fi_get_value(const FI_Value *obj);
 
-int fi_set_value(FI_Value *obj,
-                 FI_ValueType type, size_t count, const void *buf);
+int fi_set_value_type(FI_Value *obj, FI_ValueType type, size_t count);
+void fi_set_value(FI_Value *obj, const void *buf);
+void *fi_get_value_buffer(FI_Value *obj);
 
 #ifdef __cplusplus
 } // extern "C"
