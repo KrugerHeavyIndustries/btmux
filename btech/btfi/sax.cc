@@ -10,6 +10,7 @@
 #include "stream.h"
 #include "encalg.h"
 
+#include "Vocabulary.hh"
 #include "Codec.hh"
 #include "Document.hh"
 #include "Element.hh"
@@ -20,8 +21,6 @@
 using namespace BTech::FI;
 
 namespace {
-
-const char *const BT_NAMESPACE_URI = "http://btonline-btech.sourceforge.net";
 
 const FI_Length DEFAULT_BUFFER_SIZE = 8192; // good as any; ~2 pages/16 sectors
 
@@ -73,7 +72,7 @@ int gen_ch_characters(FI_ContentHandler *, const FI_Value *);
 } // anonymous namespace
 
 struct FI_tag_Generator {
-	FI_tag_Generator ();
+	FI_tag_Generator (FI_Vocabulary& vocab);
 	~FI_tag_Generator ();
 
 	FI_ContentHandler content_handler;
@@ -84,19 +83,16 @@ struct FI_tag_Generator {
 	FI_OctetStream *buffer;
 
 	Encoder encoder;
-	Vocabulary vocabulary;
+	FI_Vocabulary& vocabulary;
 
 	Document document;
 	Element element;
 	Characters characters;
-
-	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Generator
 
-FI_tag_Generator::FI_tag_Generator()
-: fpout (0), buffer (0),
-  element (document), characters (vocabulary.content_character_chunks),
-  BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
+FI_tag_Generator::FI_tag_Generator(FI_Vocabulary& vocab)
+: fpout (0), buffer (0), vocabulary (vocab),
+  element (document), characters (vocab.content_character_chunks)
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
 	if (!buffer) {
@@ -104,7 +100,7 @@ FI_tag_Generator::FI_tag_Generator()
 	}
 
 	encoder.setStream(buffer);
-	encoder.setVocabulary(vocabulary);
+	encoder.setVocabulary(vocab);
 
 	content_handler.startDocument = gen_ch_startDocument;
 	content_handler.endDocument = gen_ch_endDocument;
@@ -127,14 +123,14 @@ FI_tag_Generator::~FI_tag_Generator()
 }
 
 FI_Generator *
-fi_create_generator(void)
+fi_create_generator(FI_Vocabulary *vocab)
 {
 	if (!fi_init_encoding_algorithms()) {
 		return 0;
 	}
 
 	try {
-		return new FI_Generator ();
+		return new FI_Generator (*vocab);
 	} catch (const std::bad_alloc& e) {
 		return 0;
 	}
@@ -176,51 +172,6 @@ fi_generate_file(FI_Generator *gen, FILE *fpout)
 	return 1;
 }
 
-// Namespaces in XML 1.0 (Second Edition)
-// http://www.w3.org/TR/2006/REC-xml-names-20060816
-//
-// Section 6.2, paragraph 2:
-//
-// A default namespace declaration applies to all unprefixed element names
-// within its scope. Default namespace declarations do not apply directly to
-// attribute names; the interpretation of unprefixed attributes is determined
-// by the element on which they appear.
-
-FI_Name *
-fi_create_element_name(FI_Generator *gen, const char *name)
-{
-	try {
-		const Name
-		element_name (gen->vocabulary.local_names.getEntry(name),
-		              gen->BT_NAMESPACE);
-
-		const DN_VocabTable::TypedEntryRef element_ref
-		= gen->vocabulary.element_names.getEntry(element_name);
-
-		return new FI_Name (element_ref);
-	} catch (const Exception& e) {
-		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
-		return FI_VOCAB_INDEX_NULL;
-	} // FIXME: Catch all exceptions (at all C/C++ boundaries in API)
-}
-
-FI_Name *
-fi_create_attribute_name(FI_Generator *gen, const char *name)
-{
-	try {
-		const Name
-		attr_name (gen->vocabulary.local_names.getEntry(name));
-
-		const DN_VocabTable::TypedEntryRef attr_ref
-		= gen->vocabulary.attribute_names.getEntry(attr_name);
-
-		return new FI_Name (attr_ref);
-	} catch (const Exception& e) {
-		FI_SET_ERROR(gen->error_info, FI_ERROR_EXCEPTION);
-		return FI_VOCAB_INDEX_NULL;
-	} // FIXME: Catch all exceptions (at all C/C++ boundaries in API)
-}
-
 
 //
 // Parser API.
@@ -241,7 +192,7 @@ void parse_characters(FI_Parser *);
 } // anonymous namespace
 
 struct FI_tag_Parser {
-	FI_tag_Parser ();
+	FI_tag_Parser (FI_Vocabulary& vocab);
 	~FI_tag_Parser ();
 
 	FI_ContentHandler *content_handler;
@@ -252,21 +203,18 @@ struct FI_tag_Parser {
 	FI_OctetStream *buffer;
 
 	Decoder decoder;
-	Vocabulary vocabulary;
+	FI_Vocabulary& vocabulary;
 
 	Document document;
 	Element element;
 	Characters characters;
 
 	Comment comment;
-
-	const NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
 }; // FI_Parser
 
-FI_tag_Parser::FI_tag_Parser()
-: fpin (0), buffer (0),
-  element (document), characters (vocabulary.content_character_chunks),
-  BT_NAMESPACE (vocabulary.namespace_names.getEntry(BT_NAMESPACE_URI))
+FI_tag_Parser::FI_tag_Parser(FI_Vocabulary& vocab)
+: fpin (0), buffer (0), vocabulary (vocab),
+  element (document), characters (vocabulary.content_character_chunks)
 {
 	buffer = fi_create_stream(DEFAULT_BUFFER_SIZE);
 	if (!buffer) {
@@ -274,7 +222,7 @@ FI_tag_Parser::FI_tag_Parser()
 	}
 
 	decoder.setStream(buffer);
-	decoder.setVocabulary(vocabulary);
+	decoder.setVocabulary(vocab);
 
 	content_handler = 0;
 
@@ -289,14 +237,14 @@ FI_tag_Parser::~FI_tag_Parser()
 }
 
 FI_Parser *
-fi_create_parser(void)
+fi_create_parser(FI_Vocabulary *vocab)
 {
 	if (!fi_init_encoding_algorithms()) {
 		return 0;
 	}
 
 	try {
-		return new FI_Parser ();
+		return new FI_Parser (*vocab);
 	} catch (const std::bad_alloc& e) {
 		return 0;
 	}
@@ -501,7 +449,7 @@ gen_ch_startElement(FI_ContentHandler *handler,
 
 	// Write element header.
 	try {
-		gen->element.start(gen->BT_NAMESPACE);
+		gen->element.start(gen->vocabulary.BT_NAMESPACE);
 
 		gen->element.setName(*name);
 		gen->element.setAttributes(*attrs);
@@ -760,7 +708,7 @@ parse_endDocument(FI_Parser *parser)
 void
 parse_startElement(FI_Parser *parser)
 {
-	parser->element.start(parser->BT_NAMESPACE);
+	parser->element.start(parser->vocabulary.BT_NAMESPACE);
 
 	while (!parser->element.read(parser->decoder)) {
 		read_file_octets(parser);

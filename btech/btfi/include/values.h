@@ -51,7 +51,7 @@ void fi_set_value(FI_Value *obj, const void *buf);
 void *fi_get_value_buffer(FI_Value *obj);
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif /* __cplusplus */
 
 #endif /* !BTECH_FI_VALUES_H */

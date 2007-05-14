@@ -205,13 +205,20 @@ characters(FI_ContentHandler *handler, const FI_Value *value)
 void
 read_test(const char *const TEST_FILE)
 {
+	FI_Vocabulary *vocabulary;
+
 	/* Set up.  */
 	FILE *fpin = fopen(TEST_FILE, "rb");
 	if (!fpin) {
 		die("fopen");
 	}
 
-	parser = fi_create_parser();
+	vocabulary = fi_create_vocabulary();
+	if (!vocabulary) {
+		die("fi_create_vocabulary");
+	}
+
+	parser = fi_create_parser(vocabulary);
 	if (!parser) {
 		die("fi_create_parser");
 	}
@@ -245,6 +252,8 @@ read_test(const char *const TEST_FILE)
 
 	/* Clean up.  */
 	fi_destroy_parser(parser);
+
+	fi_destroy_vocabulary(vocabulary);
 
 	if (fclose(fpin) != 0) {
 		die("fclose");

@@ -5,6 +5,9 @@
 #ifndef BTECH_FI_VOCABULARY_HH
 #define BTECH_FI_VOCABULARY_HH
 
+#include "errors.h"
+#include "vocab.h"
+
 #include "VocabSimple.hh"
 #include "Name.hh"
 #include "Value.hh"
@@ -41,5 +44,14 @@ public:
 
 } // namespace FI
 } // namespace BTech
+
+// Some magic for C/C++ compatibility.
+struct FI_tag_Vocabulary : public BTech::FI::Vocabulary {
+	FI_tag_Vocabulary ();
+
+	FI_ErrorInfo error_info;
+
+	const BTech::FI::NSN_DS_VocabTable::TypedEntryRef BT_NAMESPACE;
+}; // FI_Vocabulary
 
 #endif // !BTECH_FI_VOCABULARY_HH

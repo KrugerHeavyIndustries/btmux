@@ -100,6 +100,8 @@ characters(FI_ValueType type, size_t count, const void *buf)
 void
 write_test(const char *const TEST_FILE)
 {
+	FI_Vocabulary *vocabulary;
+
 	FI_Name *en_how, *en_now;
 	FI_Name *an_brown, *an_cow, *an_now;
 
@@ -109,7 +111,12 @@ write_test(const char *const TEST_FILE)
 		die("fopen");
 	}
 
-	gen = fi_create_generator();
+	vocabulary = fi_create_vocabulary();
+	if (!vocabulary) {
+		die("fi_create_vocabulary");
+	}
+
+	gen = fi_create_generator(vocabulary);
 	if (!gen) {
 		die("fi_create_generator");
 	}
@@ -134,16 +141,16 @@ write_test(const char *const TEST_FILE)
 	}
 
 	/* Get all our FI_Name handles.  */
-	en_how = fi_create_element_name(gen, "how");
-	en_now = fi_create_element_name(gen, "now");
+	en_how = fi_create_element_name(vocabulary, "how");
+	en_now = fi_create_element_name(vocabulary, "now");
 
 	if (!en_how || !en_now) {
 		die_gen("fi_create_element_name");
 	}
 
-	an_brown = fi_create_attribute_name(gen, "brown");
-	an_cow = fi_create_attribute_name(gen, "cow");
-	an_now = fi_create_attribute_name(gen, "now");
+	an_brown = fi_create_attribute_name(vocabulary, "brown");
+	an_cow = fi_create_attribute_name(vocabulary, "cow");
+	an_now = fi_create_attribute_name(vocabulary, "now");
 
 	if (!an_brown || !an_cow || !an_now) {
 		die_gen("fi_create_attribute_name");
@@ -219,6 +226,8 @@ write_test(const char *const TEST_FILE)
 	fi_destroy_value(a_value);
 
 	fi_destroy_generator(gen);
+
+	fi_destroy_vocabulary(vocabulary);
 
 	if (fclose(fpout) != 0) {
 		die("fclose");

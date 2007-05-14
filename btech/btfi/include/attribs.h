@@ -30,7 +30,7 @@ const FI_Name *fi_get_attribute_name(const FI_Attributes *attrs, int idx);
 const FI_Value *fi_get_attribute_value(const FI_Attributes *attrs, int idx);
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif /* __cplusplus */
 
 #endif /* !BTECH_FI_ATTRIBS_H */

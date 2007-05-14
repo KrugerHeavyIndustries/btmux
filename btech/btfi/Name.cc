@@ -92,6 +92,12 @@ fi_destroy_name(FI_Name *name)
 	delete name;
 }
 
+const void *
+fi_get_interned_name(const FI_Name *name)
+{
+	return &(*name);
+}
+
 const char *
 fi_get_name_prefix(const FI_Name *name)
 {

@@ -18,6 +18,8 @@
 #include "values.h"
 #include "attribs.h"
 
+#include "vocab.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -51,7 +53,7 @@ struct FI_tag_ContentHandler {
 
 typedef struct FI_tag_Generator FI_Generator;
 
-FI_Generator *fi_create_generator(void);
+FI_Generator *fi_create_generator(FI_Vocabulary *vocab);
 void fi_destroy_generator(FI_Generator *gen);
 
 const FI_ErrorInfo *fi_get_generator_error(const FI_Generator *gen);
@@ -60,16 +62,13 @@ FI_ContentHandler *fi_getContentHandler(FI_Generator *gen);
 
 int fi_generate_file(FI_Generator *gen, FILE *fpout);
 
-FI_Name *fi_create_element_name(FI_Generator *gen, const char *name);
-FI_Name *fi_create_attribute_name(FI_Generator *gen, const char *name);
-
 /*
  * Parser.
  */
 
 typedef struct FI_tag_Parser FI_Parser;
 
-FI_Parser *fi_create_parser(void);
+FI_Parser *fi_create_parser(FI_Vocabulary *vocab);
 void fi_destroy_parser(FI_Parser *parser);
 
 const FI_ErrorInfo *fi_get_parser_error(const FI_Parser *parser);
@@ -79,7 +78,7 @@ void fi_setContentHandler(FI_Parser *parser, FI_ContentHandler *handler);
 int fi_parse_file(FI_Parser *parser, FILE *fpin);
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif /* __cplusplus */
 
 #endif /* !BTECH_FI_SAX_H */
