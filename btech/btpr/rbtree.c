@@ -64,7 +64,7 @@ void *rb_find(rbtree, void *key);
 int rb_exists(rbtree, void *key);
 void *rb_delete(rbtree, void *key);
 
-void rb_walk(rbtree, int, int (*)(void *, void *, int, void *), void *);
+int rb_walk(rbtree, int, int (*)(void *, void *, int, void *), void *);
 unsigned int rb_size(rbtree);
 void *rb_search(rbtree, int, void *);
 
@@ -745,20 +745,20 @@ void *rb_delete(rbtree bt, void *key)
     return data;
 }
 
-void rb_walk(rbtree bt, int how,
+int rb_walk(rbtree bt, int how,
         int (*callback) (void *, void *, int, void *), void *arg)
 {
     rbtree_node *last, *node;
     int depth = 0;
     if(!bt->head)
-        return;
+        return 1;
     last = NULL;
     node = bt->head;
     while (node != NULL) {
         if(last == node->parent) {
             if(how == WALK_PREORDER)
                 if(!(*callback) (node->key, node->data, depth, arg))
-                    return;
+                    return 0;
             if(node->left != NULL) {
                 depth++;
                 last = node;
@@ -769,7 +769,7 @@ void rb_walk(rbtree bt, int how,
         if(last == node->left || (last == node->parent && node->left == NULL)) {
             if(how == WALK_INORDER)
                 if(!(*callback) (node->key, node->data, depth, arg))
-                    return;
+                    return 0;
             if(node->right != NULL) {
                 depth++;
                 last = node;
@@ -779,11 +779,13 @@ void rb_walk(rbtree bt, int how,
         }
         if(how == WALK_POSTORDER)
             if(!(*callback) (node->key, node->data, depth, arg))
-                return;
+                return 0;
         depth--;
         last = node;
         node = node->parent;
     }
+
+    return 1;
 }
 
 unsigned int rb_size(rbtree bt)

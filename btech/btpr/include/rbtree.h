@@ -16,7 +16,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.      
  *
- * $Id: rbtree.h 573 2006-02-14 21:31:21Z murrayma $
+ * $Id: rbtree.h 1078 2007-05-13 20:22:14Z cu5 $
  */
 
 #ifndef __RB_TREE__
@@ -64,7 +64,7 @@ int rb_exists(rbtree, void *);
 void *rb_delete(rbtree, void *);
 void *rb_release(rbtree, void (*)(void *, void *, void *), void *);
 
-void rb_walk(rbtree, int, int (*)(void *, void *, int, void *), void *);
+int rb_walk(rbtree, int, int (*)(void *, void *, int, void *), void *);
 unsigned int rb_size(rbtree);
 void *rb_search(rbtree, int, void *);
 void *rb_index(rbtree, int);
