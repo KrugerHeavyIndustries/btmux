@@ -293,12 +293,23 @@ load_xcode_tree(FILE *f, size_t (*sizefunc)(GlueType))
 /*
  * EXPERIMENTAL: New btechdb.finf format.
  *
+ * Right now, it's a bunch of blobs with a dbref # "id" attribute and a magic
+ * integer "class" attribute.  Eventually, each basic type should get its own
+ * element type, and be filled with type-appropriate info.
+ *
+ * Suggestion: We could use an XML schema language for our structure spec,
+ * making it easier to import our Fast Infoset files into another tool.  Or,
+ * then again, maybe not.
+ *
  * <xcode xmlns="http://btonline-btech.sourceforge.net">
- * 	stuff goes here
+ * 	<blob id="<dbref #>" class="<GlueType #>">Base64 binary blob</blob>
+ * 	<!-- more blobs -->
  * </xcode>
  */
 
 #include "sax.h"
+
+static FI_Vocabulary *btdb_vocabulary = NULL;
 
 static FI_Generator *btdb_generator = NULL;
 static FI_ContentHandler *btdb_gen_handler = NULL;
@@ -306,7 +317,8 @@ static FI_ContentHandler *btdb_gen_handler = NULL;
 static FI_Attributes *btdb_attrs = NULL;
 
 typedef enum {
-	EN_XCODE
+	EN_XCODE,
+	EN_BLOB
 } ElementNameIndex;
 
 static struct {
@@ -315,13 +327,16 @@ static struct {
 	FI_Name *cached;
 } element_names[] = {
 	{ EN_XCODE, "xcode", NULL },
+	{ EN_BLOB, "blob", NULL },
 	{ -1, NULL, NULL }
 }; /* element_names[] */
 
 #define GET_EN(x) (element_names[(x)].cached)
 
 typedef enum {
-	AN_VERSION
+	AN_VERSION,
+	AN_ID,
+	AN_CLASS
 } AttrNameIndex;
 
 static struct {
@@ -330,12 +345,23 @@ static struct {
 	FI_Name *cached;
 } attr_names[] = {
 	{ AN_VERSION, "version", NULL },
+	{ AN_ID, "id", NULL },
+	{ AN_CLASS, "class", NULL },
 	{ -1, NULL, NULL }
 }; /* attr_names[] */
 
 #define GET_AN(x) (attr_names[(x)].cached)
 
+/*
+ * TODO: Future enhancement.  We only dump 6 or so different kinds of objects,
+ * each of fixed size.  So we can create the same number of FI_Value objects,
+ * pre-initialized to those sizes, and eliminate a lot of potential memory
+ * reallocation.  However, that would involve pulling in a lot of headers I'm
+ * not ready to pull in yet, to get the object sizes, or changes to interfaces
+ * in this file that I'm also not ready to implement yet. :-)
+ */
 typedef enum {
+	VAR_ANY,
 	VAR_INT_1
 } ValueVariableIndex;
 
@@ -345,13 +371,13 @@ static struct {
 	const size_t count;
 	FI_Value *cached;
 } value_vars[] = {
+	{ VAR_ANY, FI_VALUE_AS_OCTETS, 1, NULL },
 	{ VAR_INT_1, FI_VALUE_AS_INT, 1, NULL },
 	{ -1, FI_VALUE_AS_NULL, 0, NULL }
 }; /* values[] */
 
 #define GET_VAR(x) (value_vars[(x)].cached)
 
-/* This actually initializes the generator, not the parser.  Ironic.  */
 int
 init_btech_database_parser(void)
 {
@@ -359,9 +385,17 @@ init_btech_database_parser(void)
 	FI_Name *new_name;
 	FI_Value *new_var;
 
+	assert(!btdb_vocabulary);
+	btdb_vocabulary = fi_create_vocabulary();
+	if (!btdb_vocabulary) {
+		return 0;
+	}
+
+	/* Generator-specific.  */
 	assert(!btdb_generator);
-	btdb_generator = fi_create_generator();
+	btdb_generator = fi_create_generator(btdb_vocabulary);
 	if (!btdb_generator) {
+		fini_btech_database_parser();
 		return 0;
 	}
 
@@ -378,7 +412,7 @@ init_btech_database_parser(void)
 	for (ii = 0; element_names[ii].literal; ii++) {
 		assert(element_names[ii].idx == ii);
 
-		new_name = fi_create_element_name(btdb_generator,
+		new_name = fi_create_element_name(btdb_vocabulary,
 		                                  element_names[ii].literal);
 		if (!new_name) {
 			fini_btech_database_parser();
@@ -393,7 +427,7 @@ init_btech_database_parser(void)
 	for (ii = 0; attr_names[ii].literal; ii++) {
 		assert(attr_names[ii].idx == ii);
 
-		new_name = fi_create_attribute_name(btdb_generator,
+		new_name = fi_create_attribute_name(btdb_vocabulary,
 		                                    attr_names[ii].literal);
 		if (!new_name) {
 			fini_btech_database_parser();
@@ -430,11 +464,15 @@ init_btech_database_parser(void)
 	return 1;
 }
 
-/* This actually finalizes the generator, not the parser.  Ironic.  */
 int
 fini_btech_database_parser(void)
 {
 	int ii;
+
+	if (btdb_vocabulary) {
+		fi_destroy_vocabulary(btdb_vocabulary);
+		btdb_vocabulary = NULL;
+	}
 
 	if (btdb_generator) {
 		fi_destroy_generator(btdb_generator);
@@ -468,6 +506,8 @@ fini_btech_database_parser(void)
 }
 
 /* This will replace the wrapper in the final version.  */
+static int save_blob_walker(void *, void *, int, void *);
+
 static int
 real_save_btech_database(FILE *fpout)
 {
@@ -483,6 +523,7 @@ real_save_btech_database(FILE *fpout)
 		return 0;
 	}
 
+	/* Write <xcode>.  */
 	fi_clear_attributes(btdb_attrs);
 
 	version = 0;
@@ -490,7 +531,7 @@ real_save_btech_database(FILE *fpout)
 
 	if (!fi_add_attribute(btdb_attrs,
 	                      GET_AN(AN_VERSION), GET_VAR(VAR_INT_1))) {
-		fputs("FIXME: BTDB: fi_add_attributes() error\n", stderr);
+		fputs("FIXME: BTDB: fi_add_attribute() error\n", stderr);
 		return 0;
 	}
 
@@ -498,8 +539,15 @@ real_save_btech_database(FILE *fpout)
 	                                    GET_EN(EN_XCODE), btdb_attrs)) {
 		fputs("FIXME: BTDB: startElement() error\n", stderr);
 		return 0;
-	}                                       
+	}
 
+	/* Write <blob>s.  */
+	if (!rb_walk(xcode_tree, WALK_INORDER, save_blob_walker, NULL)) {
+		fputs("FIXME: BTDB: Failed to write blobs\n", stderr);
+		return 0;
+	}
+
+	/* Write </xcode>.  */
 	if (!btdb_gen_handler->endElement(btdb_gen_handler,
 	                                  GET_EN(EN_XCODE))) {
 		fputs("FIXME: BTDB: startElement() error\n", stderr);
@@ -515,40 +563,63 @@ real_save_btech_database(FILE *fpout)
 }
 
 /* This will replace the wrapper in the final version.  */
-static int btech_db_startElement(FI_ContentHandler *, const FI_Name *,
+static int btdb_startElement(FI_ContentHandler *, const FI_Name *,
                                  const FI_Attributes *);
-static int btech_db_endElement(FI_ContentHandler *, const FI_Name *);
+static int btdb_endElement(FI_ContentHandler *, const FI_Name *);
 
-static int btech_db_characters(FI_ContentHandler *, const FI_Value *);
+static int btdb_characters(FI_ContentHandler *, const FI_Value *);
 
-static FI_ContentHandler btech_db_content_handler = {
+static FI_ContentHandler btdb_content_handler = {
 	NULL /* startDocument */,
 	NULL /* endDocument */,
 
-	btech_db_startElement /* startElement */,
-	btech_db_endElement /* endElement */,
+	btdb_startElement /* startElement */,
+	btdb_endElement /* endElement */,
 
-	btech_db_characters /* characters */,
+	btdb_characters /* characters */,
 
 	NULL /* app_data_ptr */
-}; /* btech_db_content_handler */
+}; /* btdb_content_handler */
+
+static size_t depth_other_element;
+
+static int in_xcode_element;
+static int in_blob_element;
+static XCODE *blob_content;
+static size_t blob_content_offset;
 
 static int
 real_load_btech_database(FILE *fpin)
 {
 	FI_Parser *parser;
 
-	parser = fi_create_parser();
+	parser = fi_create_parser(btdb_vocabulary);
 	if (!parser) {
 		return 0;
 	}
 
-	fi_setContentHandler(parser, &btech_db_content_handler);
+	fi_setContentHandler(parser, &btdb_content_handler);
+
+	depth_other_element = 0;
+
+	in_xcode_element = 0;
+	in_blob_element = 0;
+	blob_content = NULL;
+	blob_content_offset = 0;
 
 	if (!fi_parse_file(parser, fpin)) {
 		fputs("FIXME: BTDB: fi_parse_file() error\n", stderr);
+
+		if (blob_content) {
+			free(blob_content);
+		}
+
 		fi_destroy_parser(parser);
 		return 0;
+	}
+
+	if (blob_content) {
+		free(blob_content);
 	}
 
 	fi_destroy_parser(parser);
@@ -583,15 +654,20 @@ save_btech_database(void)
 }
 
 /* We won't open the FILE ourselves in the final version.  */
+static size_t (*btdb_size_func)(GlueType);
+
 int
-load_btech_database(void)
+load_btech_database(size_t (*sizefunc)(GlueType))
 {
 	FILE *fpin;
+
+	assert(sizefunc);
+	btdb_size_func = sizefunc;
 
 	fpin = fopen(BTECHDB_NAME, "rb");
 	if (!fpin) {
 		fputs("FIXME: BTDB: fopen(fpin) error\n", stderr);
-		return 0;
+		return 1; /* non-essential database (FIXME later) */
 	}
 
 	if (!real_load_btech_database(fpin)) {
@@ -613,24 +689,350 @@ load_btech_database(void)
  * Parser event handlers.
  */
 
+static int check_xcode_element(const FI_Attributes *);
+static int init_blob_element(const FI_Attributes *);
+static int append_to_blob(const FI_Value *);
+static int end_of_blob(void);
+
 static int
-btech_db_startElement(FI_ContentHandler *handler, const FI_Name *name,
+btdb_startElement(FI_ContentHandler *handler, const FI_Name *name,
                       const FI_Attributes *attrs)
 {
-	fputs("FIXME: BTDB: START ELEMENT\n", stderr);
+	if (depth_other_element) {
+		/* Ignore contents of other elements.  */
+		assert(depth_other_element < (size_t)-1);
+		depth_other_element++;
+		return 1;
+	}
+
+	if (!in_xcode_element) {
+		if (!fi_names_equal(name, GET_EN(EN_XCODE))) {
+			/* Root element must be <xcode>.  */
+			fputs("FIXME: BTDB: Expected root <xcode>\n", stderr);
+			return 0;
+		}
+
+		if (!check_xcode_element(attrs)) {
+			/* Invalid <xcode>.  */
+			fputs("FIXME: BTDB: Bad <xcode>\n", stderr);
+			return 0;
+		}
+
+		/* Saw root-level <xcode>.  */
+		in_xcode_element = 1;
+		return 1;
+	}
+
+	if (fi_names_equal(name, GET_EN(EN_BLOB))) {
+		if (in_blob_element) {
+			/* Nested <blob> not allowed.  */
+			fputs("FIXME: BTDB: Nested <blob>\n", stderr);
+			return 0;
+		}
+
+		if (!init_blob_element(attrs)) {
+			/* Couldn't init <blob> state.  */
+			fputs("FIXME: BTDB: <blob>\n", stderr);
+			return 0;
+		}
+
+		/* Saw <blob>.  */
+		in_blob_element = 1;
+		return 1;
+	}
+
+	/* Ignore other non-root elements, for forward compatibility.  */
+	fputs("FIXME: BTDB: Warning: Unsupported element\n", stderr);
+
+	assert(depth_other_element < (size_t)-1);
+	depth_other_element++;
 	return 1;
 }
 
 static int
-btech_db_endElement(FI_ContentHandler *handler, const FI_Name *name)
+btdb_endElement(FI_ContentHandler *handler, const FI_Name *name)
 {
-	fputs("FIXME: BTDB: END ELEMENT\n", stderr);
+	if (depth_other_element) {
+		depth_other_element--;
+		return 1;
+	}
+
+	assert(in_xcode_element); /* <xcode> is our root element */
+
+	if (fi_names_equal(name, GET_EN(EN_XCODE))) {
+		/* Note the parser guarantees we only see 1 root element.  */
+		in_xcode_element = 0;
+		return 1;
+	}
+
+	if (!in_blob_element || !fi_names_equal(name, GET_EN(EN_BLOB))) {
+		/* Not a </blob>, and we can't handle anything else.  */
+		fputs("FIXME: BTDB: Expected </blob>\n", stderr);
+		return 0;
+	}
+
+	/* Add completely parsed blob to XCODE tree.  */
+	if (!end_of_blob()) {
+		fputs("FIXME: BTDB: </blob>\n", stderr);
+		return 0;
+	}
+
+	in_blob_element = 0;
 	return 1;
 }
 
 static int
-btech_db_characters(FI_ContentHandler *handler, const FI_Value *value)
+btdb_characters(FI_ContentHandler *handler, const FI_Value *value)
 {
-	fputs("FIXME: BTDB: CHARACTERS\n", stderr);
+	if (depth_other_element) {
+		/* Ignore contents of other elements.  */
+		return 1;
+	}
+
+	/* The parser should guarantee we only see characters inside of an
+	 * element; documents aren't allowed to have outside content.  */
+	assert(in_xcode_element);
+
+	if (!in_blob_element) {
+		/* Ignore top-level character data.  */
+		return 1;
+	}
+
+	/* Append content to current blob.  */
+	if (fi_get_value_type(value) != FI_VALUE_AS_OCTETS) {
+		/* Oops, not a blob after all.  */
+		fputs("FIXME: BTDB: Expected binary in <blob>\n", stderr);
+		return 0;
+	}
+
+	if (!append_to_blob(value)) {
+		/* Append failed.  */
+		fputs("FIXME: BTDB: Couldn't append blob contents\n", stderr);
+		return 0;
+	}
+
 	return 1;
+}
+
+
+/*
+ * Parsing/generating subroutines.
+ */
+
+/* <blob> generation.  */
+static int
+save_blob_walker(void *key, void *data, int depth, void *arg)
+{
+	const FI_Int32 id_val = (dbref)key;
+	const XCODE *const xcode_obj = data;
+
+	const FI_Int32 class_val = xcode_obj->type;
+	const size_t blob_size = xcode_obj->size;
+	const FI_Octet *const blob = (FI_Octet *)xcode_obj;
+
+	/* Write <blob>.  */
+	fi_clear_attributes(btdb_attrs);
+
+	fi_set_value(GET_VAR(VAR_INT_1), &id_val);
+
+	if (!fi_add_attribute(btdb_attrs,
+	                      GET_AN(AN_ID), GET_VAR(VAR_INT_1))) {
+		fputs("FIXME: BTDB: fi_add_attribute() error\n", stderr);
+		return 0;
+	}
+
+	fi_set_value(GET_VAR(VAR_INT_1), &class_val);
+
+	if (!fi_add_attribute(btdb_attrs,
+	                      GET_AN(AN_CLASS), GET_VAR(VAR_INT_1))) {
+		fputs("FIXME: BTDB: fi_add_attribute() error\n", stderr);
+		return 0;
+	}
+
+	if (!btdb_gen_handler->startElement(btdb_gen_handler,
+	                                    GET_EN(EN_BLOB), btdb_attrs)) {
+		fputs("FIXME: BTDB: startElement() error\n", stderr);
+		return 0;
+	}
+
+	/* Write blob content.  */
+	/*fprintf(stderr, "OCTETS[%u]\n", blob_size);*/
+
+	if (!fi_set_value_type(GET_VAR(VAR_ANY),
+	                       FI_VALUE_AS_OCTETS, blob_size)) {
+		fputs("FIXME: BTDB: fi_set_value_type() error\n", stderr);
+		return 0;
+	}
+
+	fi_set_value(GET_VAR(VAR_ANY), blob);
+
+	if (!btdb_gen_handler->characters(btdb_gen_handler,
+	                                  GET_VAR(VAR_ANY))) {
+		fputs("FIXME: BTDB: characters() error\n", stderr);
+		return 0;
+	}
+
+	/* Write </blob>.  */
+	if (!btdb_gen_handler->endElement(btdb_gen_handler,
+	                                  GET_EN(EN_BLOB))) {
+		fputs("FIXME: BTDB: startElement() error\n", stderr);
+		return 0;
+	}
+
+	return 1;
+}
+
+/* */
+static int
+check_xcode_element(const FI_Attributes *attrs)
+{
+	const int attrs_len = fi_get_attributes_length(attrs);
+
+	int ii;
+
+	for (ii = 0; ii < attrs_len; ii++) {
+		if (fi_names_equal(fi_get_attribute_name(attrs, ii),
+		                   GET_AN(AN_VERSION))) {
+			/* Parse version attribute.  */
+			const FI_Value *value;
+
+			FI_Int32 version;
+
+			value = fi_get_attribute_value(attrs, ii);
+			version = *(const FI_Int32 *)fi_get_value(value);
+
+			if (version != 0) {
+				fprintf(stderr, "FIXME: BTDB: Version mismatch: %d != %d\n",
+				        version, 0);
+				return 0;
+			}
+
+			break;
+		}
+	}
+
+	fputs("<xcode version=0>\n", stderr);
+	return 1;
+}
+
+/* */
+static int
+init_blob_element(const FI_Attributes *attrs)
+{
+	const int attrs_len = fi_get_attributes_length(attrs);
+
+	int ii;
+
+	FI_Int32 id_val = -1;
+	FI_Int32 class_val = -1;
+
+	/* TODO: The parser should ensure unique attributes.  */
+	for (ii = 0; ii < attrs_len; ii++) {
+		const FI_Name *const a_name = fi_get_attribute_name(attrs, ii);
+		const FI_Value *a_value;
+
+		if (fi_names_equal(a_name, GET_AN(AN_ID))) {
+			/* Parse "id" attribute (dbref).  */
+			a_value = fi_get_attribute_value(attrs, ii);
+
+			id_val = *(const FI_Int32 *)fi_get_value(a_value);
+
+			if (id_val < 0) {
+				fprintf(stderr, "FIXME: BTDB: Invalid value for 'id': %d\n", id_val);
+				return 0;
+			}
+		} else if (fi_names_equal(a_name, GET_AN(AN_CLASS))) {
+			/* Parse "class" attribute (GlueType).  */
+			a_value = fi_get_attribute_value(attrs, ii);
+
+			class_val = *(const FI_Int32 *)fi_get_value(a_value);
+
+			if (class_val < 0) {
+				fprintf(stderr, "FIXME: BTDB: Invalid value for 'class': %d\n", class_val);
+				return 0;
+			}
+		}
+	}
+
+	if (id_val < 0) {
+		fputs("FIXME: BTDB: <blob> missing 'id' attribute\n", stderr);
+		return 0;
+	}
+
+	if (class_val < 0) {
+		fputs("FIXME: BTDB: <blob> missing 'class' attribute\n", stderr);
+		return 0;
+	}
+
+	fprintf(stderr, "\t<blob id=%d class=%d>", id_val, class_val);
+
+	/*Create(blob_content, char, mem_size);*/
+	return 1;
+}
+
+/* */
+static int
+append_to_blob(const FI_Value *value)
+{
+	fputs("[blob]", stderr);
+	return 1;
+}
+
+/* */
+static int
+end_of_blob(void)
+{
+	/* Success, proceed to add to tree.  */
+	/* TODO: rb_insert() could conceivably fail.  */
+	/*rb_insert(xcode_tree, (void *)blob_content->key, blob_content);*/
+	fputs("</blob>\n", stderr);
+	return 1;
+}
+
+static int
+tmp_load_xcode_tree(void)
+{
+	dbref key;
+	GlueType type;
+	size_t file_size, mem_size;
+	XCODE *xcode_obj;
+
+	for (;;) {
+		/* Get key for next XCODE object.  */
+
+		/* Get type of next XCODE object.  We have a separate field,
+		 * rather than using the one from the XCODE object, so that we
+		 * aren't dependent on the size of the XCODE type.  */
+
+
+		/* Get XCODE object.  */
+		mem_size = btdb_size_func(type);
+
+		if (mem_size < 0) {
+			/* Encountered object of unknown type.  Bail out to
+			 * avoid data corruption.  */
+			return -1;
+		}
+
+		if (mem_size != file_size) {
+			/* FIXME: If there's a size mismatch, we should just
+			 * give up; the data structures are likely to be
+			 * incompatible anyway.  But whatever.  */
+			fprintf(stderr, "load_xcode_tree(): warning: #%d: size mismatch\n",
+			        key);
+		}
+
+		if (mem_size < file_size) {
+			/* Read part of saved data.  */
+		} else {
+			/* Read saved data.  */
+
+			/* Remaining part zero'd by Create().  */
+		}
+
+		xcode_obj->type = type;
+		xcode_obj->size = mem_size;
+	}
+
+	return 0;
 }

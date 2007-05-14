@@ -576,6 +576,11 @@ load_xcode(void)
 		exit(EXIT_FAILURE);
 	}
 
+	if (!load_btech_database(get_specialobjectsize)) {
+		/* TODO: We could be more graceful about this... */
+		exit(EXIT_FAILURE);
+	}
+
 	rb_walk(xcode_tree, WALK_INORDER, load_update1, fp);
 	rb_walk(xcode_tree, WALK_INORDER, load_update2, NULL);
 	rb_walk(xcode_tree, WALK_INORDER, load_update3, NULL);
@@ -667,8 +672,6 @@ void LoadSpecialObjects(void)
 	init_btechstats();
 	load_xcode();
 	zap_unneccessary_hcode();
-
-	load_btech_database();
 }
 
 static int
@@ -847,6 +850,11 @@ SaveSpecialObjects(int i)
 		exit(EXIT_FAILURE);
 	}
 
+	if (!save_btech_database()) {
+		/* TODO: We could be more graceful aobut this... */
+		exit(EXIT_FAILURE);
+	}
+
 	/* Then, check each xcode thing for stuff */
 	rb_walk(xcode_tree, WALK_INORDER, save_maps_func, fp);
 
@@ -878,8 +886,6 @@ SaveSpecialObjects(int i)
 #ifdef BT_ADVANCED_ECON
 	save_econdb(target, i);
 #endif
-
-	save_btech_database();
 }
 
 static int

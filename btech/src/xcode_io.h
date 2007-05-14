@@ -19,6 +19,6 @@ int load_xcode_tree(FILE *f, size_t (*sizefunc)(GlueType));
 int init_btech_database_parser(void);
 int fini_btech_database_parser(void);
 int save_btech_database(void);
-int load_btech_database(void);
+int load_btech_database(size_t (*sizefunc)(GlueType));
 
 #endif /* !BTECH_XCODE_IO_H */
