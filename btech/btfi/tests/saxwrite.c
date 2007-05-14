@@ -98,10 +98,8 @@ characters(FI_ValueType type, size_t count, const void *buf)
 }
 
 void
-write_test(const char *const TEST_FILE)
+write_test(FI_Vocabulary *const vocabulary, const char *const TEST_FILE)
 {
-	FI_Vocabulary *vocabulary;
-
 	FI_Name *en_how, *en_now;
 	FI_Name *an_brown, *an_cow, *an_now;
 
@@ -109,11 +107,6 @@ write_test(const char *const TEST_FILE)
 	FILE *fpout = fopen(TEST_FILE, "wb");
 	if (!fpout) {
 		die("fopen");
-	}
-
-	vocabulary = fi_create_vocabulary();
-	if (!vocabulary) {
-		die("fi_create_vocabulary");
 	}
 
 	gen = fi_create_generator(vocabulary);
@@ -226,8 +219,6 @@ write_test(const char *const TEST_FILE)
 	fi_destroy_value(a_value);
 
 	fi_destroy_generator(gen);
-
-	fi_destroy_vocabulary(vocabulary);
 
 	if (fclose(fpout) != 0) {
 		die("fclose");

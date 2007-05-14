@@ -48,13 +48,8 @@ DN_VocabTable::DynamicNameEntry::acquireIndex()
 	// table.
 	//
 	// Note that in the case of a parser, it doesn't matter what exact
-	// indexes are used for the name surrogate, as long as they have the
-	// same values. (Such indexes are not visible in any way.)
-	//
-	// However, specific to this API, the parser must be using entries with
-	// indexes, if there are any matching entries with indexes.  The
-	// simplest way to ensure this is to only use interned getEntry()
-	// components with names, never createEntry() components.
+	// indexes are used by the name surrogate, as long as they have the
+	// same literal values. (Such indexes are not visible in any way.)
 
 	if (value.pfx_part
 	    && (!value.pfx_part.hasIndex()
@@ -92,10 +87,10 @@ fi_destroy_name(FI_Name *name)
 	delete name;
 }
 
-const void *
-fi_get_interned_name(const FI_Name *name)
+int
+fi_names_equal(const FI_Name *name1, const FI_Name *name2)
 {
-	return &(*name);
+	return **name1 == **name2;
 }
 
 const char *

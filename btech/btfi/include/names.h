@@ -17,9 +17,7 @@ typedef struct FI_tag_Name FI_Name;
 
 void fi_destroy_name(FI_Name *name);
 
-/* Returns an opaque pointer to the interned name value.  Should be unique for
- * any given qualified name, which isn't necessarily true of FI_Name's.  */
-const void *fi_get_interned_name(const FI_Name *name);
+int fi_names_equal(const FI_Name *name1, const FI_Name *name2);
 
 const char *fi_get_name_prefix(const FI_Name *name);
 const char *fi_get_name_namespace_name(const FI_Name *name);

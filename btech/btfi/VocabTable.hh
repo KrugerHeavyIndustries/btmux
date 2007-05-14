@@ -120,6 +120,18 @@ public:
 			return entry->getIndex();
 		}
 
+		// Force the creation of an index (possibly not the only one)
+		// to an Entry.  This will call getIndex() to create the
+		// primary index if the Entry does not yet have one, otherwise
+		// it will force the acquisition of a secondary index.
+		FI_VocabIndex getNewIndex () const {
+			if (entry->hasIndex()) {
+				return entry->acquireIndex();
+			} else {
+				return entry->getIndex();
+			}
+		}
+
 		// Test whether the reference points anywhere.
 		operator const void * () const {
 			return entry;
@@ -209,8 +221,17 @@ protected:
 		virtual void resetIndex () {}
 
 	protected:
+		Entry (VocabTable& owner) : owner (owner) {}
+
+		// Acquire a new index for this Entry.
+		virtual FI_VocabIndex acquireIndex () {
+			return owner.acquireIndex(this);
+		}
+
 		virtual void addRef () {}
 		virtual void delRef () {}
+
+		VocabTable& owner;
 	}; // class VocabTable::Entry
 }; // class VocabTable
 
@@ -340,7 +361,8 @@ protected:
 
 		const EntryPoolPtr pool_ptr = entry_pool->createObject(value);
 
-		TypedEntry *const entry = new StaticTypedEntry (idx, pool_ptr);
+		TypedEntry *const entry = new StaticTypedEntry (*this,
+		                                                pool_ptr, idx);
 		pool_ptr.metadata() = entry;
 
 		if ((base_idx + vocabulary.size()) != idx
@@ -367,8 +389,9 @@ protected:
 		const_reference value;
 
 	protected:
-		TypedEntry (const EntryPoolPtr& pool_ptr)
-		: value (*pool_ptr), pool_ptr (pool_ptr) {}
+		TypedEntry (TypedVocabTable& owner,
+		            const EntryPoolPtr& pool_ptr)
+		: Entry (owner), value (*pool_ptr), pool_ptr (pool_ptr) {}
 
 		// Retain a reference to the pooled value.
 		const EntryPoolPtr pool_ptr;
@@ -376,19 +399,14 @@ protected:
 
 	/*
 	 * A TypedEntry implementation that statically assigns its index.
-	 * Intended for use with constants.  Note that the passed value will be
-	 * retained by reference, and needs to have sufficient lifetime.
-	 *
-	 * For example, you can't directly initialize CharString tables with a
-	 * string constant like "", because that actually creates a temporary
-	 * CharString copy, and passes a reference to the temporary, which
-	 * doesn't have a sufficient lifetime.
+	 * Intended for use with constants.
 	 */
 	class StaticTypedEntry : public TypedEntry {
 	public:
-		StaticTypedEntry (FI_VocabIndex idx,
-		                  const EntryPoolPtr& pool_ptr)
-		: TypedEntry (pool_ptr), static_idx (idx) {}
+		StaticTypedEntry (TypedVocabTable& owner,
+		                  const EntryPoolPtr& pool_ptr,
+		                  FI_VocabIndex idx)
+		: TypedEntry (owner, pool_ptr), static_idx (idx) {}
 
 		bool hasIndex () const {
 			return true;
@@ -423,25 +441,9 @@ public:
 	typedef typename TypedVocabTable::value_type value_type;
 	typedef typename TypedVocabTable::const_reference const_reference;
 
-	// Create a new TypedEntry for a value.  Will always return a new
-	// entry, rather than reusing an existing one.  The entry may be
-	// interned, just like with getEntry(), so this may also be slow.
-	virtual const TypedEntryRef createEntry (const_reference value) {
-		// Look for an existing entry.
-		EntryPoolPtr pool_ptr = findEntry(value);
-		if (!pool_ptr) {
-			// Add a new interned entry.
-			pool_ptr = entry_pool->createObject(value);
-			pool_ptr.metadata() = createEntryObject(pool_ptr);
-			return pool_ptr.metadata();
-		} else {
-			// Create new, uninterned entry.
-			return createEntryObject(pool_ptr);
-		}
-	}
-
-	// Get a TypedEntry for a value.  Can (but is not required to) return
-	// an existing entry with the same value.
+	// Get a TypedEntry for a value.  If there is an existing TypedEntry
+	// with the same value, it will return it, otherwise it will create a
+	// new TypedEntry (which will be used for all further instances).
 	//
 	// This may be relatively slow, so avoid calling it too much.  The
 	// suggested usage is to call it once for each known value, and cache
@@ -489,20 +491,23 @@ protected:
 	public:
 		DynamicTypedEntry (DynamicTypedVocabTable& owner,
 		                   const EntryPoolPtr& pool_ptr)
-		: TypedEntry (pool_ptr),
-		  owner (owner), has_cached_idx (false), ref_count (0) {}
+		: TypedEntry (owner, pool_ptr),
+		  has_cached_idx (false), ref_count (0) {}
 
 		bool hasIndex () const {
 			return has_cached_idx;
 		}
 
+		// Get this entry's index, if it already has one, otherwise
+		// acquire a new index.
+		//
+		// Note that the returned index may be FI_VOCAB_INDEX_NULL.
 		FI_VocabIndex getIndex () {
 			if (!has_cached_idx) {
 				cached_idx = acquireIndex();
 				has_cached_idx = true;
 			}
 
-			// Note that cached_idx may be FI_VOCAB_INDEX_NULL.
 			return cached_idx;
 		}
 
@@ -511,6 +516,8 @@ protected:
 		}
 
 	protected:
+		using TypedEntry::acquireIndex;
+
 		void addRef () {
 			ref_count++;
 		}
@@ -537,13 +544,7 @@ protected:
 			}
 		}
 
-		virtual FI_VocabIndex acquireIndex () {
-			return owner.acquireIndex(this);
-		}
-
 	private:
-		DynamicTypedVocabTable& owner;
-
 		bool has_cached_idx;
 		FI_VocabIndex cached_idx;
 

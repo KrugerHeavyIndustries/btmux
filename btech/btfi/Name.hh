@@ -27,25 +27,35 @@ public:
 	// first.
 	//
 	// Note that this comparison is by value, not by index.
-	bool operator < (const Name& rValue) const {
-		if (pfx_part < rValue.pfx_part) {
+	bool operator < (const Name& rhs) const {
+		if (pfx_part < rhs.pfx_part) {
 			// Lp < Rp
 			return true;
-		} else if (rValue.pfx_part < pfx_part) {
+		} else if (rhs.pfx_part < pfx_part) {
 			// Lp > Rp
 			return false;
 		}
 
-		if (nsn_part < rValue.nsn_part) {
+		if (nsn_part < rhs.nsn_part) {
 			// Ln < Rn
 			return true;
-		} else if (rValue.nsn_part < nsn_part) {
+		} else if (rhs.nsn_part < nsn_part) {
 			// Ln > Rn
 			return false;
 		}
 
 		// Ll < Rl ?
-		return local_part < rValue.local_part;
+		return local_part < rhs.local_part;
+	}
+
+	// Equality.  We consider two names equivalent if they have the same
+	// namespace and local part objects (after interning).
+	//
+	// Note that this comparison may consider some objects equal which are
+	// not equal according to < (less-than), and vice versa.
+	bool operator == (const Name& rhs) const {
+		return nsn_part == rhs.nsn_part
+		       && local_part == rhs.local_part;
 	}
 
 	const PFX_DS_VocabTable::TypedEntryRef pfx_part;

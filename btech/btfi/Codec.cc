@@ -807,8 +807,8 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		id = string_table.createEntry(CharString (reinterpret_cast<const char *>(r_buf), saved_len));
-		id.getIndex();
+		id = string_table.getEntry(CharString (reinterpret_cast<const char *>(r_buf), saved_len));
+		id.getNewIndex();
 		break;
 
 	default:
@@ -957,10 +957,10 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		name = name_table.createEntry(Name (saved_local_part,
-		                                    saved_nsn_part,
-		                                    saved_pfx_part));
-		name.getIndex();
+		name = name_table.getEntry(Name (saved_local_part,
+		                                 saved_nsn_part,
+		                                 saved_pfx_part));
+		name.getNewIndex();
 		break;
 	}
 
@@ -1105,10 +1105,10 @@ reparse:
 		}
 
 		// Enter literal into vocabulary table (7.13.7).
-		name = name_table.createEntry(Name (saved_local_part,
-		                                    saved_nsn_part,
-		                                    saved_pfx_part));
-		name.getIndex();
+		name = name_table.getEntry(Name (saved_local_part,
+		                                 saved_nsn_part,
+		                                 saved_pfx_part));
+		name.getNewIndex();
 		break;
 	}
 

@@ -557,7 +557,7 @@ Value::decodeOctets(Decoder& decoder, FI_Length len)
 	}
 
 	if (add_value_to_table) {
-		vocab_table->createEntry(*this).getIndex();
+		vocab_table->getEntry(*this).getNewIndex();
 	}
 
 	return true;

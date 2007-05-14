@@ -26,16 +26,16 @@ template<typename T, typename U>
 void
 test_max(T& table, const U& sample, FI_VocabIndex max = FI_ONE_MEG)
 {
-	for (FI_VocabIndex ii = table.createEntry(sample).getIndex();
-	     ii < max;
-	     ii++) {
-		if (table.createEntry(sample).getIndex() != (ii + 1)) {
-			die("VocabTable<T>::createEntry", "Unexpected index");
+	typename T::EntryRef ref = table.getEntry(sample);
+
+	for (FI_VocabIndex ii = ref.getNewIndex(); ii < max; ii++) {
+		if (ref.getNewIndex() != (ii + 1)) {
+			die("VocabTable::EntryRef::getNewIndex", "Unexpected index");
 		}
 	}
 
-	if (table.createEntry(sample).getIndex() != FI_VOCAB_INDEX_NULL) {
-		die("VocabTable<T>::add", "Didn't clamp at maximum index");
+	if (ref.getNewIndex() != FI_VOCAB_INDEX_NULL) {
+		die("VocabTable::EntryRef::getNewIndex", "Didn't clamp at maximum index");
 	}
 }
 
@@ -58,13 +58,13 @@ run_test()
 	//
 	ref1 = ra_vt1.getEntry("hello world");
 	ref2 = ra_vt2.getEntry("how now brown cow");
-	ref3 = ra_vt1.createEntry("hello world");
+	ref3 = ra_vt1.getEntry("hello world");
 
-	idx3 = ref3.getIndex();
 	idx1 = ref1.getIndex();
 	idx2 = ref2.getIndex();
+	idx3 = ref3.getNewIndex();
 
-	if (idx1 != 17 || idx2 != 16 || idx3 != 16) {
+	if (idx1 != 16 || idx2 != 16 || idx3 != 17) {
 		die("RA_VocabTable::getEntry(CharString)",
 		    "Incorrect indexes assigned");
 	}
@@ -81,7 +81,7 @@ run_test()
 	idx2 = ref2.getIndex();
 	idx3 = ref3.getIndex();
 
-	if (idx2 != 18 || idx3 != 17) {
+	if (idx2 != 18 || idx3 != 16) {
 		die("RA_VocabTable::getEntry(CharString)",
 		    "Incorrect indexes assigned");
 	}
@@ -151,7 +151,6 @@ run_test()
 	ref1 = ra_vt1.getEntry("bob's your uncle");
 	ref1 = 0;
 
-	// XXX: test_max() doesn't make sense when we can't createEntry().
 	//test_max(ea_vt1, 0, 256);
 	//ea_vt1.clear();
 
@@ -160,9 +159,9 @@ run_test()
 	//
 	ref1 = ds_vt1.getEntry("how");
 	ref2 = ds_vt2.getEntry("now://brown");
-	ref3 = ds_vt3.createEntry("cow");
+	ref3 = ds_vt3.getEntry("cow");
 
-	idx3 = ref3.getIndex();
+	idx3 = ref3.getNewIndex();
 	idx1 = ref1.getIndex();
 	idx2 = ref2.getIndex();
 
@@ -181,7 +180,7 @@ run_test()
 
 	if (ds_vt1.getEntry("how").getIndex() != idx1
 	    || ds_vt2.getEntry("now://brown").getIndex() != idx2
-	    || ds_vt3.createEntry("cow").getIndex() != (idx3 + 1)
+	    || ds_vt3.getEntry("cow").getNewIndex() != (idx3 + 1)
 	    || ds_vt3.getEntry("cow").getIndex() != idx3) {
 		die("DS_VocabTable::getEntry(CharString)",
 		    "Reverse mapping failed");
@@ -355,9 +354,9 @@ dv_table_test()
 
 	ref1 = dv_vt1.getEntry(an_octet_value);
 	ref2 = dv_vt2.getEntry(Value ());
-	ref3 = dv_vt3.createEntry(an_int32_value);
+	ref3 = dv_vt3.getEntry(an_int32_value);
 
-	idx3 = ref3.getIndex();
+	idx3 = ref3.getNewIndex();
 	idx1 = ref1.getIndex();
 	idx2 = ref2.getIndex();
 
@@ -376,7 +375,7 @@ dv_table_test()
 
 	if (dv_vt1.getEntry(an_octet_value).getIndex() != idx1
 	    || dv_vt2.getEntry(Value ()).getIndex() != idx2
-	    || dv_vt3.createEntry(an_int32_value).getIndex() != (idx3 + 1)
+	    || dv_vt3.getEntry(an_int32_value).getNewIndex() != (idx3 + 1)
 	    || dv_vt3.getEntry(an_int32_value).getIndex() != idx3) {
 		die("DV_VocabTable::getEntry(Value)",
 		    "Reverse mapping failed");

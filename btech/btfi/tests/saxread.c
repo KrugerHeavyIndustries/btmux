@@ -80,8 +80,10 @@ print_value_content(const FI_Value *value)
 		fputs("[Base64(", stdout);
 
 		for (ii = 0; ii < count; ii++) {
-			if (ii != 0) {
+			if (ii % 57) {
 				putchar(' ');
+			} else if (ii != 0 && (ii + 1) != count) {
+				putchar('\n');
 			}
 
 			printf("%02X", ((FI_Octet *)data_ptr)[ii]);
@@ -203,19 +205,14 @@ characters(FI_ContentHandler *handler, const FI_Value *value)
 }
 
 void
-read_test(const char *const TEST_FILE)
+read_test(FI_Vocabulary *const vocabulary, const char *const TEST_FILE)
 {
-	FI_Vocabulary *vocabulary;
+	FI_Name *e_name;
 
 	/* Set up.  */
 	FILE *fpin = fopen(TEST_FILE, "rb");
 	if (!fpin) {
 		die("fopen");
-	}
-
-	vocabulary = fi_create_vocabulary();
-	if (!vocabulary) {
-		die("fi_create_vocabulary");
 	}
 
 	parser = fi_create_parser(vocabulary);
@@ -246,6 +243,13 @@ read_test(const char *const TEST_FILE)
 	 *
 	 * Note that this isn't an exhaustive test of encoding algorithms.
 	 */
+
+	/* This tests name surrogate pre-creation.  */
+	e_name = fi_create_element_name(vocabulary, "now");
+	if (!e_name) {
+		die("fi_create_element_name");
+	}
+
 	if (!fi_parse_file(parser, fpin)) {
 		die_parser("fi_parse_file");
 	}
@@ -253,7 +257,7 @@ read_test(const char *const TEST_FILE)
 	/* Clean up.  */
 	fi_destroy_parser(parser);
 
-	fi_destroy_vocabulary(vocabulary);
+	fi_destroy_name(e_name);
 
 	if (fclose(fpin) != 0) {
 		die("fclose");
