@@ -25,8 +25,7 @@ ________________________________________
  S2: COMPILING AND RUNNING THE SOURCE
  ------------------------------------
  To compile the Battletech MUX source, 'cd' into your root BTMux dir and type
- './configure'. If you downloaded the Subversion trunk, you'll need to do
- a 'make -f Makefile.dist' prior to that.
+ './configure'.
 
  NOTE: If you'd like to change the default configuration values, issue a
  './configure --help' to see the various features that may be enabled or
