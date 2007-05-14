@@ -903,9 +903,12 @@ reparse:
 			} else {
 				if (has_nsn) {
 					// Go to namespace name part.
+					saved_pfx_part = 0;
 					sub_step = 3;
 				} else {
 					// Go directly to local name part.
+					saved_pfx_part = 0;
+					saved_nsn_part = 0;
 					sub_step = 4;
 				}
 			}
@@ -1051,9 +1054,12 @@ reparse:
 			} else {
 				if (has_nsn) {
 					// Go to namespace name part.
+					saved_pfx_part = 0;
 					sub_step = 3;
 				} else {
 					// Go directly to local name part.
+					saved_pfx_part = 0;
+					saved_nsn_part = 0;
 					sub_step = 4;
 				}
 			}
