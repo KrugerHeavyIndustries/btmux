@@ -571,11 +571,6 @@ load_xcode(void)
 		return;
 	}
 
-	if (load_xcode_tree(fp, get_specialobjectsize) < 0) {
-		/* TODO: We could be more graceful about this... */
-		exit(EXIT_FAILURE);
-	}
-
 	if (!load_btech_database(get_specialobjectsize)) {
 		/* TODO: We could be more graceful about this... */
 		exit(EXIT_FAILURE);
@@ -819,7 +814,7 @@ void
 SaveSpecialObjects(int i)
 {
 	FILE *fp;
-	int filemode, count;
+	int filemode;
 	int xcode_version = XCODE_MAGIC;
 	char target[LBUF_SIZE];
 
@@ -835,7 +830,12 @@ SaveSpecialObjects(int i)
 		break;
 	}
 
-	fp = my_open_file(target, "w", &filemode);
+	if (!save_btech_database()) {
+		/* TODO: We could be more graceful about this... */
+		exit(EXIT_FAILURE);
+	}
+
+	fp = my_open_file(target, "wb", &filemode);
 	if(!fp) {
 		log_perror("SAV", "FAIL", "Opening new hcode-save file", target);
 		SendDB("ERROR occured during opening of new hcode-savefile.");
@@ -843,17 +843,6 @@ SaveSpecialObjects(int i)
 	}
 
 	fwrite(&xcode_version, sizeof(xcode_version), 1, fp);
-
-	count = save_xcode_tree(fp);
-	if (count < 0) {
-		/* TODO: We could be more graceful about this... */
-		exit(EXIT_FAILURE);
-	}
-
-	if (!save_btech_database()) {
-		/* TODO: We could be more graceful aobut this... */
-		exit(EXIT_FAILURE);
-	}
 
 	/* Then, check each xcode thing for stuff */
 	rb_walk(xcode_tree, WALK_INORDER, save_maps_func, fp);
@@ -880,8 +869,8 @@ SaveSpecialObjects(int i)
 		}
 	}
 
-	if (count > 0)
-		SendDB(tprintf("Hcode saved. %d xcode entries dumped.", count));
+	/* TODO: This used to report the number of entries saved.  */
+	SendDB("Hcode saved.");
 
 #ifdef BT_ADVANCED_ECON
 	save_econdb(target, i);

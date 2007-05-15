@@ -1,296 +1,4 @@
 /*
- * The database format is as follows:
- *
- * XCODE_MAGIC
- *
- * 1st record:
- * 	dbref key
- * 	GlueType type
- * 	size_t size
- * 	char data[size]
- *
- * Nth record:
- * 	same form as 1st record
- *
- * last record:
- * 	dbref key = -1
- *
- * <non-XCODE records>
- *
- * Each record holds a single XCODE object.
- *
- * Based on:
- *
- * $Id: mux_tree.c,v 1.2 2005/06/23 22:02:14 av1-op Exp $
- *
- * Author: Markus Stenberg <fingon@iki.fi>
- *
- *  Copyright (c) 1996 Markus Stenberg
- *       All rights reserved
- *
- * Created: Mon Nov 25 11:41:43 1996 mstenber
- * Last modified: Mon Jun 22 07:27:06 1998 fingon
- */
-
-#include "config.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <assert.h>
-
-#include "create.h"
-
-#include "glue_types.h"
-#include "rbtree.h"
-
-#include "xcode_io.h"
-
-extern rbtree xcode_tree;
-
-
-/*
- * I/O utilities.
- */
-
-static int
-do_write(FILE *f, const void *buf, size_t size, const char *comment)
-{
-	if (size == 0) {
-		return 1;
-	}
-
-	if (fwrite(buf, size, 1, f) != 1) {
-		/* Always an error.  */
-		fprintf(stderr, "save_xcode_tree(): while writing %s: %s\n",
-		        comment, strerror(errno)); /* don't need strerror_r */
-		return -1;
-	}
-
-	return 1;
-}
-
-static int
-do_read(FILE *f, void *buf, size_t size, const char *comment)
-{
-	if (size == 0) {
-		return 1;
-	}
-
-	if (fread(buf, size, 1, f) != 1) {
-		if (!ferror(f)) {
-			/* End of file.  */
-			return 0;
-		}
-
-		/* Error.  */
-		fprintf(stderr, "load_xcode_tree(): while reading %s: %s\n",
-		        comment, strerror(errno)); /* don't need strerror_r */
-		return -1;
-	}
-
-	return 1;
-}
-
-static int
-do_skip(FILE *f, long amount, const char *comment)
-{
-	assert(amount >= 0);
-
-	if (amount == 0) {
-		return 1;
-	}
-
-	if (fseek(f, amount, SEEK_CUR) != 0) {
-		/* Always an error.  */
-		fprintf(stderr, "load_xcode_tree(): while seeking in %s: %s\n",
-		        comment, strerror(errno)); /* don't need strerror_r */
-		return -1;
-	}
-
-	return 1;
-}
-
-
-/*
- * Save tree.
- */
-
-typedef struct {
-	FILE *f;
-	int write_count;
-} save_walker_state;
-
-static int
-save_node_walker(void *key, void *data, int depth, void *arg)
-{
-	const dbref key_val = (dbref)key;
-	const XCODE *const xcode_obj = data;
-	save_walker_state *const state = arg;
-
-	/* Write key.  */
-	if (do_write(state->f, &key_val, sizeof(key_val), "key") < 1) {
-		/* Write failed.  */
-		state->write_count = -1;
-		return 0;
-	}
-
-	/* Write type.  */
-	if (do_write(state->f, &xcode_obj->type, sizeof(xcode_obj->type),
-	             "type") < 1) {
-		/* Write failed.  */
-		state->write_count = -1;
-		return 0;
-	}
-
-	/* Write size.  */
-	if (do_write(state->f, &xcode_obj->size, sizeof(xcode_obj->size),
-	             "size") < 1) {
-		/* Write failed.  */
-		state->write_count = -1;
-		return 0;
-	}
-
-	/* Write data.  */
-	if (do_write(state->f, xcode_obj, xcode_obj->size, "data") < 1) {
-		/* Write failed.  */
-		state->write_count = -1;
-		return 0;
-	}
-
-	state->write_count++;
-	return 1;
-}
-
-int
-save_xcode_tree(FILE *f)
-{
-	const dbref end_key = -1;
-
-	save_walker_state state;
-
-	state.f = f;
-	state.write_count = 0;
-
-	/* Dump XCODE objects.  */
-	rb_walk(xcode_tree, WALK_INORDER, save_node_walker, &state);
-	if (state.write_count < 0) {
-		/* A write failed.  */
-		return -1;
-	}
-
-	/* Write terminator.  */
-	if (do_write(f, &end_key, sizeof(end_key), "terminator") < 1) {
-		/* Write failed.  */
-		return -1;
-	}
-
-	return state.write_count;
-}
-
-
-/*
- * Read tree.
- */
-
-int
-load_xcode_tree(FILE *f, size_t (*sizefunc)(GlueType))
-{
-	int read_count = 0; /* TODO: worry about overflow? */
-
-	dbref key;
-	GlueType type;
-	size_t file_size, mem_size;
-	XCODE *xcode_obj;
-
-	for (;;) {
-		/* Get key for next XCODE object.  */
-		if (do_read(f, &key, sizeof(key), "key") < 1) {
-			/* Read failed.  */
-			return -1;
-		}
-
-		if (key < 0) {
-			/* End marker.  */
-			break;
-		}
-
-		/* Get type of next XCODE object.  We have a separate field,
-		 * rather than using the one from the XCODE object, so that we
-		 * aren't dependent on the size of the XCODE type.  */
-		if (do_read(f, &type, sizeof(type), "type") < 1) {
-			/* Read failed.  */
-			return -1;
-		}
-
-		/* Get size of XCODE record.  We have a separate field, rather
-		 * than using the one from the XCODE object, so that we aren't
-		 * dependent on the size of the XCODE type.  */
-		if (do_read(f, &file_size, sizeof(file_size), "size") < 1) {
-			/* Read failed.  */
-			return -1;
-		}
-
-		/* Get XCODE object.  */
-		mem_size = sizefunc(type);
-
-		if (mem_size < 0) {
-			/* Encountered object of unknown type.  Bail out to
-			 * avoid data corruption.  */
-			return -1;
-		}
-
-		if (mem_size != file_size) {
-			/* FIXME: If there's a size mismatch, we should just
-			 * give up; the data structures are likely to be
-			 * incompatible anyway.  But whatever.  */
-			fprintf(stderr, "load_xcode_tree(): warning: #%d: size mismatch\n",
-			        key);
-		}
-
-		Create(xcode_obj, char, mem_size);
-
-		if (mem_size < file_size) {
-			/* Read part of saved data.  */
-			if (do_read(f, xcode_obj, mem_size, "data") < 1) {
-				/* Read failed.  */
-				Free(xcode_obj);
-				return -1;
-			}
-
-			/* Skip remaining part.  */
-			if (do_skip(f, file_size - mem_size, "data") < 1) {
-				/* Seek failed.  */
-				Free(xcode_obj);
-				return -1;
-			}
-		} else {
-			/* Read saved data.  */
-			if (do_read(f, xcode_obj, mem_size, "data") < 1) {
-				/* Read failed.  */
-				Free(xcode_obj);
-				return -1;
-			}
-
-			/* Remaining part zero'd by Create().  */
-		}
-
-		xcode_obj->type = type;
-		xcode_obj->size = mem_size;
-
-		/* Success, proceed to add to tree.  */
-		/* TODO: rb_insert() could conceivably fail.  */
-		rb_insert(xcode_tree, (void *)key, xcode_obj);
-
-		read_count++;
-	}
-
-	return read_count;
-}
-
-
-/*
  * EXPERIMENTAL: New btechdb.finf format.
  *
  * Right now, it's a bunch of blobs with a dbref # "id" attribute and a magic
@@ -305,9 +13,32 @@ load_xcode_tree(FILE *f, size_t (*sizefunc)(GlueType))
  * 	<blob id="<dbref #>" class="<GlueType #>">Base64 binary blob</blob>
  * 	<!-- more blobs -->
  * </xcode>
+ *
+ * (Note that Fast Infoset doesn't store actual Base64-encoded binary, but the
+ * octets.  Base64 is simply the canonical textual representation, for
+ * exporting to traditional XML files.)
+ *
+ * The old XCODE hcode.db implementation was last maintained in r1088.
  */
 
+#include "config.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <assert.h>
+
+/*#include "create.h" -- temporarily not used */
+
+#include "glue_types.h"
+#include "rbtree.h"
+
 #include "sax.h"
+
+#include "xcode_io.h"
+
+extern rbtree xcode_tree;
 
 static FI_Vocabulary *btdb_vocabulary = NULL;
 
@@ -585,8 +316,13 @@ static size_t depth_other_element;
 
 static int in_xcode_element;
 static int in_blob_element;
+
+static dbref blob_key;
+static GlueType blob_type;
+
 static XCODE *blob_content;
-static size_t blob_content_offset;
+static char *blob_content_cursor;
+static size_t blob_content_size;
 
 static int
 real_load_btech_database(FILE *fpin)
@@ -604,8 +340,8 @@ real_load_btech_database(FILE *fpin)
 
 	in_xcode_element = 0;
 	in_blob_element = 0;
+
 	blob_content = NULL;
-	blob_content_offset = 0;
 
 	if (!fi_parse_file(parser, fpin)) {
 		fputs("FIXME: BTDB: fi_parse_file() error\n", stderr);
@@ -882,157 +618,138 @@ save_blob_walker(void *key, void *data, int depth, void *arg)
 	return 1;
 }
 
-/* */
+/* Validate <xcode> element.  */
 static int
 check_xcode_element(const FI_Attributes *attrs)
 {
-	const int attrs_len = fi_get_attributes_length(attrs);
-
 	int ii;
 
-	for (ii = 0; ii < attrs_len; ii++) {
-		if (fi_names_equal(fi_get_attribute_name(attrs, ii),
-		                   GET_AN(AN_VERSION))) {
-			/* Parse version attribute.  */
-			const FI_Value *value;
+	const FI_Value *value;
+	FI_Int32 version;
 
-			FI_Int32 version;
-
-			value = fi_get_attribute_value(attrs, ii);
-			version = *(const FI_Int32 *)fi_get_value(value);
-
-			if (version != 0) {
-				fprintf(stderr, "FIXME: BTDB: Version mismatch: %d != %d\n",
-				        version, 0);
-				return 0;
-			}
-
-			break;
-		}
+	/* Parse "version" attribute.  */
+	ii = fi_get_attribute_index(attrs, GET_AN(AN_VERSION));
+	if (ii == -1) {
+		fputs("FIXME: BTDB: <xcode> has no version\n", stderr);
+		return 0;
 	}
 
-	fputs("<xcode version=0>\n", stderr);
+	value = fi_get_attribute_value(attrs, ii);
+	version = *(const FI_Int32 *)fi_get_value(value);
+
+	if (version != 0) {
+		fprintf(stderr, "FIXME: BTDB: Version mismatch: %d != %d\n",
+		        version, 0);
+		return 0;
+	}
+
 	return 1;
 }
 
-/* */
+/* Initialize <blob> content.  */
 static int
 init_blob_element(const FI_Attributes *attrs)
 {
-	const int attrs_len = fi_get_attributes_length(attrs);
-
 	int ii;
 
-	FI_Int32 id_val = -1;
-	FI_Int32 class_val = -1;
+	const FI_Value *value;
 
-	/* TODO: The parser should ensure unique attributes.  */
-	for (ii = 0; ii < attrs_len; ii++) {
-		const FI_Name *const a_name = fi_get_attribute_name(attrs, ii);
-		const FI_Value *a_value;
-
-		if (fi_names_equal(a_name, GET_AN(AN_ID))) {
-			/* Parse "id" attribute (dbref).  */
-			a_value = fi_get_attribute_value(attrs, ii);
-
-			id_val = *(const FI_Int32 *)fi_get_value(a_value);
-
-			if (id_val < 0) {
-				fprintf(stderr, "FIXME: BTDB: Invalid value for 'id': %d\n", id_val);
-				return 0;
-			}
-		} else if (fi_names_equal(a_name, GET_AN(AN_CLASS))) {
-			/* Parse "class" attribute (GlueType).  */
-			a_value = fi_get_attribute_value(attrs, ii);
-
-			class_val = *(const FI_Int32 *)fi_get_value(a_value);
-
-			if (class_val < 0) {
-				fprintf(stderr, "FIXME: BTDB: Invalid value for 'class': %d\n", class_val);
-				return 0;
-			}
-		}
-	}
-
-	if (id_val < 0) {
-		fputs("FIXME: BTDB: <blob> missing 'id' attribute\n", stderr);
+	/* Parse "id" attribute (dbref).  */
+	ii = fi_get_attribute_index(attrs, GET_AN(AN_ID));
+	if (ii == -1) {
+		fputs("FIXME: BTDB: <blob> has no id\n", stderr);
 		return 0;
 	}
 
-	if (class_val < 0) {
-		fputs("FIXME: BTDB: <blob> missing 'class' attribute\n", stderr);
+	value = fi_get_attribute_value(attrs, ii);
+	blob_key = *(const FI_Int32 *)fi_get_value(value);
+
+	/* Parse "class" attribute (GlueType).  */
+	ii = fi_get_attribute_index(attrs, GET_AN(AN_CLASS));
+	if (ii == -1) {
+		fputs("FIXME: BTDB: <blob> has no class\n", stderr);
 		return 0;
 	}
 
-	fprintf(stderr, "\t<blob id=%d class=%d>", id_val, class_val);
+	value = fi_get_attribute_value(attrs, ii);
+	blob_type = *(const FI_Int32 *)fi_get_value(value);
 
-	/*Create(blob_content, char, mem_size);*/
+	/* Create the initial blob content.  */
+	assert(!blob_content);
+
+	blob_content_size = btdb_size_func(blob_type);
+
+	if (blob_content_size < sizeof(XCODE)) {
+		fputs("FIXME: BTDB: <blob> class unrecognized\n", stderr);
+		return 0;
+	}
+
+	/*
+	 * FIXME: We don't use Create() (and friends) because it calls exit()
+	 * on failures, which isn't what we want.  This is fine, because Free()
+	 * is just a wrapper around free(), but that's not guaranteed in the
+	 * future.  So we need to fix one or the other.
+	 */
+	blob_content_cursor = calloc(blob_content_size, 1);
+	if (!blob_content_cursor) {
+		fputs("FIXME: BTDB: Couldn't allocate XCODE object\n", stderr);
+		return 0;
+	}
+
+	blob_content = (XCODE *)blob_content_cursor;
 	return 1;
 }
 
-/* */
+/* Add to <blob> content.  */
 static int
 append_to_blob(const FI_Value *value)
 {
-	fputs("[blob]", stderr);
+	size_t diff_size, added_size;
+
+	/* TODO: Be a bit more liberal about this? */
+	if (fi_get_value_type(value) != FI_VALUE_AS_OCTETS) {
+		fputs("FIXME: BTDB: Non-binary content in blob\n", stderr);
+		return 0;
+	}
+
+	added_size = fi_get_value_count(value);
+	assert(added_size > 0); /* parser prevents empty characters */
+
+	diff_size = blob_content_size
+	            - (blob_content_cursor - (char *)blob_content);
+
+	if (diff_size < added_size) {
+		/* Silently drop excess data.  */
+		fputs("FIXME: BTDB: Warning: Excess blob content\n", stderr);
+		added_size = diff_size;
+	}
+
+	memcpy(blob_content_cursor, fi_get_value(value), added_size);
+	blob_content_cursor += added_size;
 	return 1;
 }
 
-/* */
+/* Add <blob> content to XCODE tree.  */
 static int
 end_of_blob(void)
 {
+	assert(blob_content);
+
 	/* Success, proceed to add to tree.  */
-	/* TODO: rb_insert() could conceivably fail.  */
-	/*rb_insert(xcode_tree, (void *)blob_content->key, blob_content);*/
-	fputs("</blob>\n", stderr);
-	return 1;
-}
-
-static int
-tmp_load_xcode_tree(void)
-{
-	dbref key;
-	GlueType type;
-	size_t file_size, mem_size;
-	XCODE *xcode_obj;
-
-	for (;;) {
-		/* Get key for next XCODE object.  */
-
-		/* Get type of next XCODE object.  We have a separate field,
-		 * rather than using the one from the XCODE object, so that we
-		 * aren't dependent on the size of the XCODE type.  */
-
-
-		/* Get XCODE object.  */
-		mem_size = btdb_size_func(type);
-
-		if (mem_size < 0) {
-			/* Encountered object of unknown type.  Bail out to
-			 * avoid data corruption.  */
-			return -1;
-		}
-
-		if (mem_size != file_size) {
-			/* FIXME: If there's a size mismatch, we should just
-			 * give up; the data structures are likely to be
-			 * incompatible anyway.  But whatever.  */
-			fprintf(stderr, "load_xcode_tree(): warning: #%d: size mismatch\n",
-			        key);
-		}
-
-		if (mem_size < file_size) {
-			/* Read part of saved data.  */
-		} else {
-			/* Read saved data.  */
-
-			/* Remaining part zero'd by Create().  */
-		}
-
-		xcode_obj->type = type;
-		xcode_obj->size = mem_size;
+	if ((blob_content_cursor - (char *)blob_content) < blob_content_size) {
+		fputs("FIXME: BTDB: Warning: Short blob content\n", stderr);
 	}
 
-	return 0;
+	if (blob_content->type != blob_type) {
+		fputs("FIXME: BTDB: Warning: Blob type mismatch\n", stderr);
+	}
+
+	blob_content->type = blob_type;
+	blob_content->size = blob_content_size;
+
+	/* TODO: rb_insert() could conceivably fail.  */
+	rb_insert(xcode_tree, (void *)blob_key, blob_content);
+
+	blob_content = NULL;
+	return 1;
 }
