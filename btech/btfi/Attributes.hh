@@ -22,6 +22,8 @@ protected:
 	virtual ~Attributes () {}
 
 public:
+	virtual int getIndex (const DN_VocabTable::TypedEntryRef& qName) const = 0;
+
 	virtual int getLength () const = 0;
 
 	virtual const DN_VocabTable::TypedEntryRef getName (int idx) const = 0;

@@ -13,6 +13,8 @@ extern void die(const char *);
 static FI_Parser *parser;
 static FI_ContentHandler handler;
 
+static FI_Name *a_name;
+
 static void
 die_parser(const char *cause)
 {
@@ -141,6 +143,8 @@ static int
 startElement(FI_ContentHandler *handler,
              const FI_Name *name, const FI_Attributes *attrs)
 {
+	const FI_Name *tmp_a_name;
+
 	int ii, max_ii;
 
 	if (is_open) {
@@ -153,6 +157,15 @@ startElement(FI_ContentHandler *handler,
 
 	max_ii = fi_get_attributes_length(attrs);
 	for (ii = 0; ii < max_ii; ii++) {
+		tmp_a_name = fi_get_attribute_name(attrs, ii);
+
+		if (fi_names_equal(tmp_a_name, a_name)) {
+			if (fi_get_attribute_index(attrs, a_name) != ii) {
+				/* Index mismatch! */
+				die("fi_get_attribute_index");
+			}
+		}
+
 		putchar(' ');
 		print_name(fi_get_attribute_name(attrs, ii));
 		putchar('=');
@@ -250,6 +263,11 @@ read_test(FI_Vocabulary *const vocabulary, const char *const TEST_FILE)
 		die("fi_create_element_name");
 	}
 
+	a_name = fi_create_attribute_name(vocabulary, "now");
+	if (!a_name) {
+		die("fi_create_attribute_name");
+	}
+
 	if (!fi_parse_file(parser, fpin)) {
 		die_parser("fi_parse_file");
 	}
@@ -258,6 +276,7 @@ read_test(FI_Vocabulary *const vocabulary, const char *const TEST_FILE)
 	fi_destroy_parser(parser);
 
 	fi_destroy_name(e_name);
+	fi_destroy_name(a_name);
 
 	if (fclose(fpin) != 0) {
 		die("fclose");

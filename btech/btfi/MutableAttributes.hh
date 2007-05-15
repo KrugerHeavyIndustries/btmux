@@ -7,6 +7,7 @@
 
 #include <utility>
 #include <vector>
+#include <map>
 
 #include "attribs.h"
 
@@ -21,16 +22,29 @@ namespace FI {
 class MutableAttributes : public Attributes {
 private:
 	typedef std::pair<DN_VocabTable::TypedEntryRef,Value> NameValue;
+	typedef std::pair<DN_VocabTable::TypedEntryRef,int> NameIndex;
+
+	typedef std::vector<NameValue> AttributeTable;
+	typedef std::map<DN_VocabTable::TypedEntryRef,int> NameIndexMap;
 
 public:
 	// Clear all attributes from this set.
 	void clear () {
+		name_index_map.clear();
 		attributes.clear();
 	}
 
 	// Add an attribute to this set.
 	bool add (const DN_VocabTable::TypedEntryRef& name,
 	          const Value& value) {
+		// TODO: Handle exceptions thrown here.
+		NameIndex name_index_item (name, attributes.size());
+
+		if (!name_index_map.insert(name_index_item).second) {
+			// Already have an attribute of that name.
+			throw IllegalStateException ();
+		}
+
 		attributes.push_back(NameValue (name, value));
 		return true;
 	}
@@ -38,6 +52,16 @@ public:
 	//
 	// Attributes implementation.
 	//
+
+	int getIndex (const DN_VocabTable::TypedEntryRef& qName) const {
+		NameIndexMap::const_iterator pp = name_index_map.find(qName);
+		if (pp == name_index_map.end()) {
+			// Not found.
+			return -1;
+		}
+
+		return pp->second;
+	}
 
 	int getLength () const {
 		return attributes.size();
@@ -88,7 +112,8 @@ public:
 	}
 
 private:
-	std::vector<NameValue> attributes;
+	NameIndexMap name_index_map;
+	AttributeTable attributes;
 }; // class MutableAttributes
 
 } // namespace FI

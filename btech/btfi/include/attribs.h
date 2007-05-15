@@ -26,6 +26,9 @@ int fi_add_attribute(FI_Attributes *attrs,
                      const FI_Name *name, const FI_Value *value);
 
 int fi_get_attributes_length(const FI_Attributes *attrs);
+
+int fi_get_attribute_index(const FI_Attributes *attrs, const FI_Name *name);
+
 const FI_Name *fi_get_attribute_name(const FI_Attributes *attrs, int idx);
 const FI_Value *fi_get_attribute_value(const FI_Attributes *attrs, int idx);
 

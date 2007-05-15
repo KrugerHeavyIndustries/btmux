@@ -54,6 +54,12 @@ fi_get_attributes_length(const FI_Attributes *attrs)
 	return attrs->getLength();
 }
 
+int
+fi_get_attribute_index(const FI_Attributes *attrs, const FI_Name *name)
+{
+	return attrs->getIndex(*name);
+}
+
 const FI_Name *
 fi_get_attribute_name(const FI_Attributes *attrs, int idx)
 {
