@@ -142,6 +142,7 @@ void cf_init(void)
 	mudconf.btech_perunit_xpmod = 1;
 	mudconf.btech_tsm_tow_bonus = 1;
 	mudconf.btech_tsm_sprint_bonus = 1;
+	mudconf.btech_cost_debug = 0;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1131,6 +1132,8 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_perunit_xpmod, 0},
 	{(char *) "btech_tsm_tow_bonus",
 	 cf_int, CA_GOD, &mudconf.btech_tsm_tow_bonus, 0},
+	{(char *) "btech_cost_debug",
+	 cf_int, CA_GOD, &mudconf.btech_cost_debug, 0},
 	{(char *) "btech_tsm_sprint_bonus",
 	 cf_int, CA_GOD, &mudconf.btech_tsm_sprint_bonus, 0},
 	{(char *) "btech_vtol_ice_causes_fire",

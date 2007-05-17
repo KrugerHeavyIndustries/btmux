@@ -2645,13 +2645,11 @@ void SetPartCost(int p, unsigned long long int cost)
 		cargocost[Cargo2I(p)] = cost;
 }
 
-#define COST_DEBUG 1
-
 void CalcFasaCost_AddPrice(float * total, char * desc, float value) {
    *total += value;
-   #if COST_DEBUG
-      SendDebug(tprintf("Addprice - %25s %8.0f", desc, value));
-   #endif
+	if(mudconf.btech_cost_debug)
+	      SendDebug(tprintf("Addprice - %25s %8.0f", desc, value));
+
 }
     
 int MechNumHeatsinksInEngine(MECH * mech) {
@@ -2990,7 +2988,8 @@ if (MechType(mech) != CLASS_BSUIT) {
 	ammoweapcount = FindAmmunition(mech, ammoweap, ammo, ammomax, modearray, 0);
 
 	if(ammoweapcount > 0 ) {
-		SendDebug("Ammo");
+		if(mudconf.btech_cost_debug)
+			SendDebug("Ammo Costs");
 		for (i = 0; i < ammoweapcount; i++) {
 		/* ArtemisIV ammo is X2 */
 		/* Interesting way to handle half_tons */
