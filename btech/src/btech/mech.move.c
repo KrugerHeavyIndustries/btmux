@@ -1325,6 +1325,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 							   MechType(mech) != CLASS_MW),
 			"Your vehicle's movement system is destroyed.");
 	DOCHECK(Fallen(mech), "You are currently prone and cannot move.");
+	DOCHECK(InWater(mech) && !(WaterBeast(mech)) && !(MechStatus2(mech) & SPRINTING), "You cannot start sprinting while in water!");
 	DOCHECK(WaterBeast(mech) &&
 			NotInWater(mech),
 			"You are regrettably unable to move at this time. We apologize for the inconvenience.");
