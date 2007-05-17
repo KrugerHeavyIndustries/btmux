@@ -1370,9 +1370,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechLOSBroadcast(wounded, "falls down from the sky!");
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
-		if(!Destroyed(wounded)) {
-			DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
-		}
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 1:
@@ -1416,9 +1414,9 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechLOSBroadcast(wounded, "falls from the sky!");
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
-		if(!Destroyed(wounded)) {
-			DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
-		}
+
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
+
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 4:
