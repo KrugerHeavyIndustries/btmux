@@ -54,7 +54,7 @@ libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libbtech_la_DEPENDENCIES = $(BTPR_LIBS) ../btfi/libbtfi.la
 am_libbtech_la_OBJECTS = coolmenu.lo debug.lo events.lo glue.hcode.lo \
-	glue.lo glue.scode.lo xcode_io.lo mech.lostracer.lo \
+	glue.lo glue.scode.lo btdb.lo xcode_io.lo mech.lostracer.lo \
 	mechfile.lo spath.lo tick.lo mt19937ar.lo aero.bomb.lo \
 	aero.move.lo artillery.lo autopilot_ai.lo autopilot_autogun.lo \
 	autopilot_commands.lo autopilot_core.lo autopilot_radio.lo \
@@ -211,7 +211,7 @@ AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
 @BTPR_PENN_TRUE@BTPR_LIBS = ../btpr/libbtpr.la
 lib_LTLIBRARIES = libbtech.la
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \
-	glue.scode.c xcode_io.c xcode_io.h \
+	glue.scode.c btdb.c btdb.h btdb_int.h xcode_io.c xcode_io.h \
 	mech.lostracer.c mechfile.c spath.c tick.c mt19937ar.c \
 	btech/aero.bomb.c btech/aero.move.c btech/artillery.c \
 	btech/autopilot_ai.c btech/autopilot_autogun.c \
@@ -370,6 +370,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/autopilot_core.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/autopilot_radio.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bsuit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/btdb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/btech.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/btechstats.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/btspath.Plo@am__quote@

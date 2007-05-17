@@ -50,7 +50,7 @@
 #include "p.mech.partnames.h"
 #include "debug.h"
 
-#include "xcode_io.h"
+#include "btdb.h"
 
 /* Special object parameters.  */
 SpecialObjectStruct SpecialObjects[] = {
@@ -571,7 +571,7 @@ load_xcode(void)
 		return;
 	}
 
-	if (!load_btech_database(get_specialobjectsize)) {
+	if (!load_btdb()) {
 		/* TODO: We could be more graceful about this... */
 		exit(EXIT_FAILURE);
 	}
@@ -632,8 +632,8 @@ void LoadSpecialObjects(void)
 	int type;
 	void *tmpdat;
 
+	init_btdb_state(get_specialobjectsize);
 	init_xcode_tree();
-	init_btech_database_parser();
 
 	muxevent_initialize();
 	muxevent_count_initialize();
@@ -830,7 +830,7 @@ SaveSpecialObjects(int i)
 		break;
 	}
 
-	if (!save_btech_database()) {
+	if (!save_btdb()) {
 		/* TODO: We could be more graceful about this... */
 		exit(EXIT_FAILURE);
 	}
