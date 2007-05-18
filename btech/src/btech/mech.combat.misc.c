@@ -244,7 +244,7 @@ char BOOM[BOOMLENGTH][80] = {
 	"----------------------------------------------------------------------------"
 };
 
-void DestroyMech(MECH * target, MECH * mech, int bc, const char *reason)
+void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 {
 	int loop;
 	MAP *mech_map;
@@ -262,15 +262,16 @@ void DestroyMech(MECH * target, MECH * mech, int bc, const char *reason)
 	else
 		ChannelEmitKill(target, target, reason);
 	if(mech) {
-		if(bc) {
+		
 			if(mech != target) {
 				mech_notify(mech, MECHALL, "You destroyed the target!");
 				MechLOSBroadcasti(target, mech, "has been destroyed by %s!");
 			} else
 				MechLOSBroadcast(target, "has been destroyed!");
+		if (showboom) {
+			for(loop = 0; loop < BOOMLENGTH; loop++)
+				mech_notify(target, MECHALL, BOOM[loop]);
 		}
-		for(loop = 0; loop < BOOMLENGTH; loop++)
-			mech_notify(target, MECHALL, BOOM[loop]);
 		switch (MechType(target)) {
 		case CLASS_MW:
 		case CLASS_BSUIT:
@@ -304,7 +305,7 @@ void DestroyMech(MECH * target, MECH * mech, int bc, const char *reason)
 			ctarget = getMech(a);
 			mech_notify(ctarget, MECHALL, "Due to your transport's destruction, your unit has been destroyed!");
 			mech_udisembark(a, ctarget, "");
-			DestroyMech(ctarget,mech,0, KILL_TYPE_NORMAL);
+			DestroyMech(ctarget,mech,1, KILL_TYPE_NORMAL);
 		}
 	
 	/* shut it down */

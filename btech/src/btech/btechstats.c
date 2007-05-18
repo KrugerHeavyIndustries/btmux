@@ -1024,7 +1024,7 @@ void headhitmwdamage(MECH * mech, MECH * attacker, int dam)
 			char_sbruise(s, playerBLD * 10);
 			store_stats(player, s, VALUES_HEALTH);
 			if(!Destroyed(mech)) {
-				DestroyMech(mech, attacker, 1, KILL_TYPE_PILOT);
+				DestroyMech(mech, attacker, 0, KILL_TYPE_MWDAMAGE);
 			}
 			KillMechContentsIfIC(mech->mynum);
 			return;
@@ -1067,7 +1067,7 @@ void mwlethaldam(MECH * mech, MECH * attacker, int dam)
 		char_sbruise(s, lethaldam);
 		store_stats(player, s, VALUES_HEALTH);
 		if(!Destroyed(mech)) {
-			DestroyMech(mech, attacker, 1, KILL_TYPE_PILOT);
+			DestroyMech(mech, attacker, 0, KILL_TYPE_MWDAMAGE);
 		}
 		KillMechContentsIfIC(mech->mynum);
 		return;

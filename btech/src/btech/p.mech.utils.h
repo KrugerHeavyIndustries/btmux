@@ -20,10 +20,14 @@ void MarkForLOSUpdate(MECH * mech);
 #define KILL_TYPE_HEAT "HEAT"
 /* Intentional kill types.  */
 #define KILL_TYPE_NORMAL "DESTROYED" /* all other kills; includes carrier destruction */
-#define KILL_TYPE_PILOT "PILOT"
-#define KILL_TYPE_MWDAMAGE "MWDAMAGE" /* Failed MW Conc rolls once too many */
+#define KILL_TYPE_PILOT "PILOT" /* Only happens on vehicles. Mainly crew death */
+#define KILL_TYPE_MWDAMAGE "MWDAMAGE" /* Failed MW Conc rolls once too many or one too many head hit */
 #define KILL_TYPE_BEHEADED "BEHEADED"
 #define KILL_TYPE_XLENGINE "XLENGINE"
+#define KILL_TYPE_FUELTANK "FUELTANK" /* Fuel Tank Crit Death */
+#define KILL_TYPE_COCKPIT "COCKPIT" /* Alot different than Pilot death. Cockpit Crit death */
+#define KILL_TYPE_POWERPLANT "POWERPLANT" /* Vehicle powerplant crit death */
+#define KILL_TYPE_SCHARGE "SCHARGE"  /* Super Charger overload */
 
 void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason);
 

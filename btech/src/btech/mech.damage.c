@@ -981,7 +981,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 		/* With one exception.. */
 		if(hitloc == COCKPIT && MechType(wounded) == CLASS_AERO) {
 			if(!Destroyed(wounded))
-				DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
+				DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
 			for(j = 0; j < FREQS; j++) {
 				wounded->freq[j] = 0;
 				wounded->freqmodes[j] = 0;

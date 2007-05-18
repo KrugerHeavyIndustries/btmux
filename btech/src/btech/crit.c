@@ -897,7 +897,7 @@ void DoVehicleFuelTankCrit(MECH * objMech, MECH * objAttacker)
 	MechFZ(objMech) = ZSCALE * MechZ(objMech);
 	MechSpeed(objMech) = 0.0;
 	MechVerticalSpeed(objMech) = 0.0;
-	DestroyMech(objMech, objAttacker, 0, KILL_TYPE_NORMAL);
+	DestroyMech(objMech, objAttacker, 1, KILL_TYPE_FUELTANK);
 	explode_unit(objMech, objAttacker);
 }
 
@@ -1370,7 +1370,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechLOSBroadcast(wounded, "falls down from the sky!");
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
-		DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
 		KillMechContentsIfIC(wounded->mynum);
 		break;
 	case 1:
@@ -1415,7 +1415,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 
-		DestroyMech(wounded, attacker, 1, KILL_TYPE_PILOT);
+		DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
 
 		KillMechContentsIfIC(wounded->mynum);
 		break;
@@ -1429,7 +1429,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
 		MechVerticalSpeed(wounded) = 0.0;
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_FUELTANK);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1440,7 +1440,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
 		MechVerticalSpeed(wounded) = 0.0;
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_POWERPLANT);
 		if(!(MechSections(wounded)[BSIDE].config & CASE_TECH))
 			explode_unit(wounded, attacker);
 		else
@@ -1529,7 +1529,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_FUELTANK);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1537,7 +1537,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_POWERPLANT);
 		if(!(MechSections(wounded)[BSIDE].config & CASE_TECH))
 			explode_unit(wounded, attacker);
 		else
@@ -1651,7 +1651,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_FUELTANK);
 		explode_unit(wounded, attacker);
 		break;
 	case 5:
@@ -1659,7 +1659,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
 			MechLOSBroadcast(wounded, "suddenly explodes!");
-		DestroyMech(wounded, attacker, 0, KILL_TYPE_NORMAL);
+		DestroyMech(wounded, attacker, 1, KILL_TYPE_POWERPLANT);
 		explode_unit(wounded, attacker);
 		break;
 	}
@@ -1858,7 +1858,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			mech_notify(wounded, MECHALL,
 						"Your cockpit is destroyed, your blood boils, and your body is fried! %cyYou're dead!%cn");
 			if(!Destroyed(wounded)) {
-				DestroyMech(wounded, attacker, 0, KILL_TYPE_PILOT);		
+				DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);		
 			}
 
 			if(LOS && attacker)

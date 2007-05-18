@@ -926,7 +926,7 @@ static void mech_scharge_event(MUXEVENT * e)
 				} else if(MechEngineHeat(mech) < 15) {
 					MechEngineHeat(mech) = 15;
 					mech_notify(mech, MECHALL, "Your engine is destroyed!!");
-					DestroyMech(mech, mech, 1, KILL_TYPE_NORMAL);
+					DestroyMech(mech, mech, 1, KILL_TYPE_SCHARGE);
 				}
 				count--;
 			}
@@ -934,7 +934,7 @@ static void mech_scharge_event(MUXEVENT * e)
 	}
 
 	if((MechType(mech) == CLASS_VTOL) || (MechType(mech) == CLASS_VEH_GROUND)) {
-		sprintf(msgbuf, " coughs think black smoke from its exhaust.");
+		sprintf(msgbuf, " coughs thick black smoke from its exhaust.");
 		MechLOSBroadcast(mech, msgbuf);
 		maxspeed = MechMaxSpeed(mech);
 		newmaxspeed = (maxspeed * .5);

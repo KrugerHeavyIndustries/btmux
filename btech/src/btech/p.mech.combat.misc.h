@@ -12,7 +12,7 @@ void heat_effect(MECH * mech, MECH * tempMech, int heatdam,
     int fromInferno);
 void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS);
 void KillMechContentsIfIC(dbref aRef);
-void DestroyMech(MECH * target, MECH * mech, int bc, const char *reason);
+void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason);
 char *short_hextarget(MECH * mech);
 
 #endif				/* _P_MECH_COMBAT_MISC_H */
