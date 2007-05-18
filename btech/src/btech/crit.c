@@ -1858,8 +1858,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			mech_notify(wounded, MECHALL,
 						"Your cockpit is destroyed, your blood boils, and your body is fried! %cyYou're dead!%cn");
 			if(!Destroyed(wounded)) {
-				Destroy(wounded);
-				ChannelEmitKill(wounded, attacker, KILL_TYPE_PILOT);
+				DestroyMech(wounded, attacker, 0, KILL_TYPE_PILOT);		
 			}
 
 			if(LOS && attacker)

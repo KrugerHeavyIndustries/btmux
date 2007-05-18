@@ -941,10 +941,9 @@ int handlemwconc(MECH * mech, int initial)
 
 				// This is here to avoid multi-triggers of AMECHDEST.
 				if(!Destroyed(mech))
-					ChannelEmitKill(mech, mech, KILL_TYPE_PILOT);
+					DestroyMech(mech, mech, 0, KILL_TYPE_MWDAMAGE);
 
-				MechPilot(mech) = -1;
-				Destroy(mech);
+				MechPilot(mech) = -1;	
 				MechSpeed(mech) = 0.;
 				MechDesiredSpeed(mech) = 0.;
 				return 0;

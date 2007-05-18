@@ -2008,8 +2008,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 					mech_notify(mech, MECHALL,
 								"You drive into the water and your vehicle becomes inoperable.");
-					Destroy(mech);
-					ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
+					DestroyMech(mech, mech, 1, KILL_TYPE_FLOOD);
 				}
 
 				return;
@@ -2077,8 +2076,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 			} else {
 				mech_notify(mech, MECHALL,
 							"You drive into the water and your vehicle becomes inoperable.");
-				Destroy(mech);
-				ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
+				DestroyMech(mech, mech, 1, KILL_TYPE_FLOOD);
 				return;
 			}
 			move_unit_back(mech, deltax, deltay, lastelevation, ot, le);
@@ -2201,8 +2199,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 					mech_notify(mech, MECHALL,
 								"You drive into the water and your vehicle becomes inoperable.");
-					Destroy(mech);
-					ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
+					DestroyMech(mech, mech, 1, KILL_TYPE_FLOOD);
 				}
 
 				return;
@@ -2270,8 +2267,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 			} else {
 				mech_notify(mech, MECHALL,
 							"You drive into the water and your vehicle becomes inoperable.");
-				Destroy(mech);
-				ChannelEmitKill(mech, mech, KILL_TYPE_FLOOD);
+				DestroyMech(mech, mech, 1, KILL_TYPE_FLOOD);
 				return;
 			}
 			move_unit_back(mech, deltax, deltay, lastelevation, ot, le);

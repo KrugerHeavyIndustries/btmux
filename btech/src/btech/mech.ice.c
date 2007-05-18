@@ -44,8 +44,7 @@ static void swim_except(MAP * map, MECH * mech, int x, int y, char *msg,
 							"Water renders your vehicle inoperable.");
 				MechLOSBroadcast(t,
 								 "fizzles and pops as water renders it inoperable.");
-				Destroy(t);
-				ChannelEmitKill(t, t, KILL_TYPE_FLOOD);
+				DestroyMech(t,t, 1, KILL_TYPE_FLOOD);
 			}
 		}
 	}
@@ -83,8 +82,7 @@ void drop_thru_ice(MECH * mech)
 		mech_notify(mech, MECHALL, "Water renders your vehicle inoperable.");
 		MechLOSBroadcast(mech,
 						 "fizzles and pops as water renders it inoperable.");
-		Destroy(mech);
-		ChannelEmitKill(mech, mech, KILL_TYPE_ICE);
+		DestroyMech(mech, mech, 1, KILL_TYPE_ICE);
 	}
 }
 

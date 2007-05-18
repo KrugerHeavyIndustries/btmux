@@ -21,6 +21,7 @@ void MarkForLOSUpdate(MECH * mech);
 /* Intentional kill types.  */
 #define KILL_TYPE_NORMAL "DESTROYED" /* all other kills; includes carrier destruction */
 #define KILL_TYPE_PILOT "PILOT"
+#define KILL_TYPE_MWDAMAGE "MWDAMAGE" /* Failed MW Conc rolls once too many */
 #define KILL_TYPE_BEHEADED "BEHEADED"
 #define KILL_TYPE_XLENGINE "XLENGINE"
 
