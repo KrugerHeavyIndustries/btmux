@@ -1368,7 +1368,6 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			mech_notify(attacker, MECHALL,
 						"You knock the VTOL out of the sky!");
 			MechLOSBroadcast(wounded, "falls down from the sky!");
-			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 		DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
 		KillMechContentsIfIC(wounded->mynum);
@@ -1412,7 +1411,6 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			mech_notify(attacker, MECHALL,
 						"You knock the VTOL out of the sky!");
 			MechLOSBroadcast(wounded, "falls from the sky!");
-			MechFalls(wounded, MechsElevation(wounded), 0);
 		}
 
 		DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
