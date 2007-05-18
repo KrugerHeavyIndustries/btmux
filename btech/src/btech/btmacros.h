@@ -519,7 +519,9 @@ MechStatus(a) &= ~LOCK_MODES
             mech_notify(a, MECHALL, "The mech was destroyed while pilot was unconscious!"); \
         } \
         Shutdown(a); \
+	StopBurning(a); \
 	StopStaggerCheck(a); \
+	MechCritStatus(a) &= ~JELLIED; \
         MechStatus(a) |= DESTROYED; \
         MechCritStatus(a) &= ~MECH_STUNNED; \
         StopBSuitSwarmers(FindObjectsData(a->mapindex),a,1); \
