@@ -382,7 +382,7 @@ int FindNormalBTH(MECH * mech,
 #ifdef BT_MOVEMENT_MODES
 		if(MechStatus2(target) & (SPRINTING | EVADING)) {
 			if(MechStatus2(target) & SPRINTING)
-				BTHADD("SprintingTarget", -4);
+				BTHADD("SprintingTarget", mudconf.btech_sprint_bth);
 			if(!Fallen(target) && MechStatus2(target) & EVADING)
 				BTHADD("EvadingTarget", 1);
 /*		BTHADD("EvadingTarget", (FindPilotPiloting(target) >= 6 ? 1 :

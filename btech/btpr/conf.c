@@ -84,6 +84,7 @@ btpr_cf_init(void)
 	mudconf.btech_perunit_xpmod = 1;
 	mudconf.btech_tsm_tow_bonus = 1;
 	mudconf.btech_tsm_sprint_bonus = 1;
+	mudconf.btech_sprint_bth = -4;
 	mudconf.btech_cost_debug = 0;
 #ifdef HUDINFO_SUPPORT
 	mudconf.hudinfo_show_mapinfo = 0;
