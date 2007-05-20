@@ -260,7 +260,7 @@ int is_under_repair(MECH * mech, int i)
 
 char *damages_func(MECH * mech)
 {
-	static char buffer[MBUF_SIZE];
+	static char buffer[LBUF_SIZE];
 	int i;
 
 	if(unit_is_fixable(mech))
