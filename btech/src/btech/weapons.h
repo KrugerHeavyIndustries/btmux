@@ -447,6 +447,7 @@ struct weapon_struct MechWeapons[] = {
 /* Prep work for unifying cluster hit tables */
 #define CLUSTER_HIT_2  {1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2} 
 #define CLUSTER_HIT_10 {3, 3, 4, 6, 6, 6, 6, 8, 8, 10, 10}
+#define CLUSTER_HIT_30 {10,10,12,18,18,18,18,24,24,30,30}
 
 struct missile_hit_table_struct MissileHitTable[] = {
     {"CL.LB10-XAC", 0, {3, 3, 4, 6, 6, 6, 6, 8, 8, 10, 10}},
@@ -521,8 +522,8 @@ struct missile_hit_table_struct MissileHitTable[] = {
     {"IS.NarcBeacon", 0, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
     {"CL.NarcBeacon", 0, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
     {"IS.MRM-10", 0, {2, 3, 4, 5, 6, 6, 6, 8, 8, 10, 10}},
-    {"IS.MRM-20", 0, {6, 6, 9, 12, 12, 12, 12, 16, 16, 20, 20}},
-    {"IS.MRM-30", 0, {10, 14, 16, 18, 18, 18, 20, 24, 28, 30, 30}},
+    {"IS.MRM-20", 0, { 6,  6,  9, 12, 12, 12, 12, 16, 16, 20, 20}},
+    {"IS.MRM-30", 0, {10, 10, 12, 18, 18, 18, 18, 24, 24, 30, 30}},
     {"IS.MRM-40", 0, {12, 12, 18, 24, 24, 24, 24, 32, 32, 40, 40}},
     {"IS.iNarcBeacon", 0, {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}},
     {"IS.RL-10", 0, {3, 4, 4, 5, 6, 6, 6, 8, 8, 10, 10}},
