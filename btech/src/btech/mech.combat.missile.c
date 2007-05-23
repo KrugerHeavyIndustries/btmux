@@ -302,7 +302,7 @@ int MissileHitTarget(MECH * mech,
 
 	if(roll < baseToHit)
 		return incoming;
-
+/*
 	for(i = 0; MissileHitTable[i].key >= 0; i++)
 		if((k = MissileHitTable[i].num_missiles[10]) <= incoming &&
 		   ((MechWeapons[MissileHitTable[i].key].special & STREAK) ==
@@ -312,6 +312,11 @@ int MissileHitTarget(MECH * mech,
 				j = i;
 				l = k;
 			}
+*/
+
+	for(j = 0; MissileHitTable[j].key != -1; j++)
+		if(MissileHitTable[j].key == weapindx)
+			break;
 
 	if(j < 0)
 		return 0;
