@@ -199,6 +199,7 @@
 #define ClearHexBit(array, offset) do { array[offset >> 3] = \
         array[offset >> 3] & ~(1 << (offset & 7)); } while (0)
 
+
 #ifdef DEBUG_AUTOGUN
     #define print_autogun_log(autopilot, args...) \
     do { \

@@ -885,8 +885,9 @@ int auto_calc_target_score(AUTO * autopilot, MECH * mech, MECH * target,
 	if(Uncon(target))
 		status_score += 100.0;
 
+/* Since the max bv is somewhat around 2000, lets put mechs in LOS on an even scale */
 	if(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)
-		status_score += 500.0;
+		status_score += 2000.0;
 
 	/* Add the individual scores and return the value */
 	target_score = (int) floor(range_score + speed_score + bv_score +
