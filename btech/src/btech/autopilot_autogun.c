@@ -1737,6 +1737,20 @@ void auto_gun_event(AUTO *autopilot)
 											  range_scores[(int) range]);
 				continue;
 			}
+			
+			/* No sense trying to fire Stinger missiles if the target isn't airborne/jumping */
+
+			if((GetPartAmmoMode(mech, temp_weapon_node->section, temp_weapon_node->critical) & STINGER_MODE) && target
+				&& !(Jumping(target) || OODing(target) || (FlyingT(target) && !Landed(target)))) {
+
+				temp_weapon_node =
+					(weapon_node *) rb_search(autopilot->profile[(int) range],
+											SEARCH_PREV,
+											&temp_weapon_node->
+											range_scores[(int) range]);
+				continue;
+			}
+	
 
 			/* Check heat levels, since the heat isn't updated untill we're done
 			 * we have to manage the heat ourselves */
