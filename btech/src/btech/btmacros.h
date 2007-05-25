@@ -521,6 +521,7 @@ MechStatus(a) &= ~LOCK_MODES
         Shutdown(a); \
 	StopBurning(a); \
 	StopStaggerCheck(a); \
+	StaggerDamage(a) = 0; \
 	MechCritStatus(a) &= ~JELLIED; \
         MechStatus(a) |= DESTROYED; \
         MechCritStatus(a) &= ~MECH_STUNNED; \
