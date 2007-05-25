@@ -1120,7 +1120,7 @@ void auto_gun_event(AUTO *autopilot)
 			 * appears somehow very quickly 10 seconds to hose the AI} */
 			autopilot->target = -1;
 			autopilot->target_score = 0;
-			autopilot->target_update_tick = 0;
+			autopilot->target_update_tick = 20;
 
 			/* Don't need the target list any more so lets destroy it */
 			rb_walk(targets, WALK_INORDER, &auto_targets_callback, NULL);
@@ -1231,6 +1231,13 @@ void auto_gun_event(AUTO *autopilot)
 		print_autogun_log(autopilot, "Autogun - Locking target #%d",
 						  autopilot->target);
 
+	}
+	
+	/* Primary target isn't in LOS. Let's re-run in 5s */
+	if(!(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)) {
+		autopilot->target = -1;
+		autopilot->target_update_tick = 25;
+		return;
 	}
 
 	/* Update autosensor */
