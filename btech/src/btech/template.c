@@ -2769,8 +2769,8 @@ char *payloadlist_func(MECH * mech)
 	int count, weap_count, ammo_count, section_loop, weap_loop, put_loop;
 	char payloadbuff[120];
 
-	unsigned short payload_items[8 * MAX_WEAPS_SECTION];
-	unsigned short payload_items_count[8 * MAX_WEAPS_SECTION];
+	short payload_items[8 * MAX_WEAPS_SECTION];
+	short payload_items_count[8 * MAX_WEAPS_SECTION];
 
 	/* Clear the buffer */
 	snprintf(buffer, MBUF_SIZE, "%s", "");
@@ -2781,7 +2781,7 @@ char *payloadlist_func(MECH * mech)
 
 	/* Initialize array */
 	for(put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
-		payload_items[put_loop] = 0;
+		payload_items[put_loop] = -1;
 		payload_items_count[put_loop] = 0;
 	}
 
@@ -2806,7 +2806,7 @@ char *payloadlist_func(MECH * mech)
 					payload_items_count[put_loop]++;
 					break;
 					/* Ok, see if there is no entry */
-				} else if(payload_items[put_loop] == 0) {
+				} else if(payload_items[put_loop] == -1) {
 					payload_items[put_loop] = weaparray[weap_loop];
 					payload_items_count[put_loop]++;
 					weap_count++;
@@ -2840,7 +2840,7 @@ char *payloadlist_func(MECH * mech)
 						payload_items_count[put_loop]++;
 						break;
 						/* Ok, see if there is no entry */
-					} else if(payload_items[put_loop] == 0) {
+					} else if(payload_items[put_loop] == -1) {
 						payload_items[put_loop] = temp_crit;
 						payload_items_count[put_loop]++;
 						ammo_count++;
