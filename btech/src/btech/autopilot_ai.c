@@ -1204,6 +1204,10 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 			 * to find the range between the child hex and end hex */
 			child_h_score = 100 * FindHexRange(x2, y2, x1, y1);
 
+			/* Lets attempt to avoid hexes that already have our friendlies in it (Stack Check) */
+			if(mechs_in_hex(map, map_x2, map_y2, 1, MechTeam(mech)) > 2) 
+				child_g_score +=50;
+
 			/* Now add in some modifiers for terrain */
 			switch (GetTerrain(map, map_x2, map_y2)) {
 			case LIGHT_FOREST:
