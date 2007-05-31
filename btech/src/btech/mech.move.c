@@ -1101,10 +1101,13 @@ void mech_thrash(dbref player, void *data, char *buffer)
 	}
 
 	/* Make our roll and recycle our limbs -- Removed. You gotta be prone anyways! */
-/*	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
+	/* Dunno who commented this out. This is what it should be. You make a pilot roll. if you miss, you take 1 level falling damage to
+	 * emulate hitting yourself */
+
+	if(!MadePilotSkillRoll_Advanced(mech, 0, 0)) {
 		MechFalls(mech, 1, 1);
 	}
-*/
+
 
 	for(i = 0; i < 4; i++) {
 		tempLoc = aLimbs[i];
