@@ -2727,32 +2727,169 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 	return (hitloc);
 }
 
-int FindAreaHitGroup(MECH * mech, MECH * target)
+/*
+ * Total Warfare, p. 119:
+ *
+ * Mechs have the following attack direction diagram:
+ *
+ *    FS
+ * FS    FS
+ * LS    RS
+ *    AS
+ *
+ * Vehicles have the following attack direction diagram (p. 192):
+ *
+ *    FS
+ * LS    RS
+ * LS    RS
+ *    AS
+ *
+ * Aerospace units use a diagram similar to that of vehicles.  The full rules
+ * start on p. 237, with additional rules for grounded units on p. 249.
+ *
+ * ProtoMechs, infantry, and buildings do not use attack direction.
+ *
+ * In a change from the previous implementation, we use the bearing from the
+ * target to the attacker, since this uses angles which seem more intuitive.
+ *
+ * Note that these arcs haven't been traditional in BTMUX usage.  Instead, the
+ * following rules had been adopted:
+ *
+ * FS: front 90 degrees
+ * AS: back 90 degrees
+ * LS: left 90 degrees
+ * RS: right 90 degree
+ *
+ * They had also previously claimed some "official" BT arcs which don't match
+ * the BMR.  We'll use these arcs for our "old" BT option instead:
+ *
+ *    FS
+ * FS    FS
+ * LS    RS
+ *    AS
+ *
+ * (The main difference between BMR and TW is that vehicles use the same arcs
+ * as mechs do in BMR.)
+ *
+ * The particular rules desired may be set using the "btech_hit_arcs"
+ * configuration option.  0 = TW rules (default), 1 = "classic" BTMUX rules,
+ * 2 = "official" BT rules.
+ *
+ * The main problem with the traditional BTMUX arcs is that they tend to
+ * over-emphasize rear area shots, and under-emphasize frontal shots, relative
+ * to what the original designs had been intended for.  This tended to
+ * over-emphasize the weakness of the rear area, relative to the TBS rules.
+ *
+ * The new arcs reduce the rear area on both mechs and vehicles by 33%, and
+ * reduce the front arc on vehicles also by 33%, while increasing the front arc
+ * on mechs by a whopping 100%.  Side arcs on vehicles will increase by 33%,
+ * while decreasing by 33% on mechs, and shifting towards the rear.
+ *
+ * I'm guessing the overall effect of these changes will be to lengthen
+ * battles, since more shots will tend to spread themselves out over the front
+ * side, at least on mechs.  This will also make it a bit harder for defenders
+ * to sponge specific arcs, as well as for attackers to target specific arcs.
+ *
+ * For vehicles, the reduction in rear arc vulnerability will probably be a net
+ * positive, but the front arc tends to be strongest, and that will also be
+ * reduced slightly in size.
+ *
+ * Note that this function is for hit location arcs, not firing arcs.  The
+ * current firing arc rules are correct, to the best of my knowledge.
+ *
+ * --Codicus Unitus (cu5)
+ */
+int
+FindAreaHitGroup(MECH *mech, MECH *target)
 {
-	int quadr;
+	int m_fs_hw, fs_hw;
+	int m_as_hw, as_hw;
 
-	quadr =
-		AcceptableDegree(FindBearing(MechFX(mech), MechFY(mech),
-									 MechFX(target),
-									 MechFY(target)) - MechFacing(target));
-#if 1
-	if((quadr >= 135) && (quadr <= 225))
-		return FRONT;
-	if((quadr < 45) || (quadr > 315))
-		return BACK;
-	if((quadr >= 45) && (quadr < 135))
-		return LEFTSIDE;
-	return RIGHTSIDE;
-#else
-	/* These are 'official' BT arcs */
-	if(quadr >= 120 && quadr <= 240)
-		return FRONT;
-	if(quadr < 30 || quadr > 330)
-		return BACK;
-	if(quadr >= 30 && quadr < 120)
-		return LEFTSIDE;
-	return RIGHTSIDE;
-#endif
+	int ad;
+
+	/*
+	 * Select rule set.  We compute this every time, to allow for dynamic
+	 * configuration changes (although we could hook the configuration
+	 * option instead and just do it once per change).
+	 *
+	 * The front side center is always 0 degrees, and the aft side center
+	 * is always 180 degrees.  We merely configure how wide those arcs are,
+	 * by setting the size of the half arc to each side of the center (the
+	 * "half-width").
+	 *
+	 * The left side and right side are simply the leftovers, and are
+	 * determined by whether an arc is less than or greater than 180.
+	 */
+	switch (mudconf.btech_hit_arcs) {
+	case 0: /* TW rules */
+	default:
+		m_fs_hw = 90;
+		m_as_hw = 30;
+
+		fs_hw = 30;
+		as_hw = 30;
+		break;
+
+	case 1: /* classic BTMUX rules */
+		m_fs_hw = 45;
+		m_as_hw = 45;
+
+		fs_hw = m_fs_hw;
+		as_hw = m_as_hw;
+		break;
+
+	case 2: /* BMR rules */
+		m_fs_hw = 90;
+		m_as_hw = 30;
+
+		fs_hw = m_fs_hw;
+		as_hw = m_as_hw;
+		break;
+	}
+
+	/* Compute attack direction.  */
+	ad = AcceptableDegree(FindBearing(MechFX(target), MechFY(target),
+	                                  MechFX(mech), MechFY(mech))
+	                      - MechFacing(target));
+
+	/* Determine hit group.  */
+	switch (MechType(target)) {
+	case CLASS_MECH:
+		/* Mech rules.  */
+		if (ad >= (360 - m_fs_hw) || ad <= (0 + m_fs_hw)) {
+			return FRONT;
+		} else if (ad >= (180 - m_as_hw) && ad <= (180 + m_as_hw)) {
+			return BACK;
+		} else if (ad >= 180) {
+			return LEFTSIDE;
+		} else {
+			return RIGHTSIDE;
+		}
+		break;
+
+	default:
+		/*
+		 * TODO: This function shouldn't really do anything at all for
+		 * most other types.  As a sensible default, use the vehicle
+		 * rules, which is no more broken than the old code.
+		 */
+		/* FALLTHROUGH */
+
+	case CLASS_VEH_GROUND:
+	case CLASS_VEH_NAVAL:
+	case CLASS_VTOL:
+		/* Vehicle rules.  */
+		if (ad >= (360 - fs_hw) || ad <= (0 + fs_hw)) {
+			return FRONT;
+		} else if (ad >= (180 - as_hw) && ad <= (180 + as_hw)) {
+			return BACK;
+		} else if (ad >= 180) {
+			return LEFTSIDE;
+		} else {
+			return RIGHTSIDE;
+		}
+		break;
+	}
 }
 
 int FindTargetHitLoc(MECH *mech, MECH *target, int *isrear, int *iscritical) {

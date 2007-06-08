@@ -41,6 +41,7 @@ btpr_cf_init(void)
 	mudconf.btech_dynspeed = 1;
 	mudconf.btech_stackpole = 1;
 	mudconf.btech_erange = 1;
+	mudconf.btech_hit_arcs = 0;
 	mudconf.btech_phys_use_pskill = 1;
 	mudconf.btech_newterrain = 0;
 	mudconf.btech_fasacrit = 0;

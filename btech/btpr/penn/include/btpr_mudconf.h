@@ -22,6 +22,7 @@ struct confdata {
     int btech_dynspeed;
     int btech_stackpole;        /* Mechs mushroom as a result of triple engine crits */
     int btech_erange;
+    int btech_hit_arcs;		/* hit arc rules (see FindAreaHitGroup()) */
     int btech_phys_use_pskill;  /* Use piloting skills for physical attacks */
     int btech_newterrain;	/* fasa terrain restrictions for wheeled */
     int btech_fasacrit;		/* fasa critsystem */

@@ -90,6 +90,7 @@ void cf_init(void)
 	mudconf.btech_stackpole = 1;
 	mudconf.btech_phys_use_pskill = 1;
 	mudconf.btech_erange = 1;
+	mudconf.btech_hit_arcs = 0;
 	mudconf.btech_dig_only_fs = 0;
 	mudconf.btech_digbonus = 3;
 	mudconf.btech_vcrit = 2;
@@ -1168,6 +1169,8 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_phys_use_pskill, 0},
 	{(char *) "btech_erange",
 	 cf_int, CA_GOD, &mudconf.btech_erange, 0},
+	{(char *) "btech_hit_arcs",
+	 cf_int, CA_GOD, &mudconf.btech_hit_arcs, 0},
 	{(char *) "btech_dig_only_fs",
 	 cf_int, CA_GOD, &mudconf.btech_dig_only_fs, 0},
 	{(char *) "btech_digbonus",
