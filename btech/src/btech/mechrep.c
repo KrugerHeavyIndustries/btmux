@@ -1109,6 +1109,11 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 	DOCHECK(argc <2, "MECHREP: Invalid Syntax. Try FireMode <Weapon#> <Mode>");
 
         weaptype = FindWeaponNumberOnMech_Advanced(mech, atoi(args[0]), &section, &critical, 0);
+	
+	if(weaptype < 0) {
+		notify(player, "Invalid Weapon #!");
+		return;
+	}
 
 	if(MechWeapons[weaptype].ammoperton == 0) {
 		                notify(player, "That weapon doesn't require ammo!");
