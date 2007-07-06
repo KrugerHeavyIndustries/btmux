@@ -1031,9 +1031,12 @@ void nonrecursive_commlink(int i)
 				dep--;			/* We're finished! */
 		}
 		if(iter_c++ == 100000) {
+/* Lets not spam MechErrors with this.. */
+/* 
 			SendError(tprintf
 					  ("#%d: Infinite loop in relay code (?) ; using backup recursive code (num_mechs:%d, maxdepth:%d, nowdepth:%d)",
 					   comm_mech[0]->mynum, comm_num_to_conn, maxdepth, dep));
+*/
 			comm_best = 9999;
 			for(i = 0; i < comm_num_to_conn; i++)
 				comm_done[i] = 0;
