@@ -877,14 +877,18 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 					int interactive, char *arg, char *unp_command,
 					char *cargs[], int ncargs)
 {
-	char *buf1, *buf2, tchar, *bp, *str, *buff, *s, *j, *new;
+	char *buf1 = NULL, *buf2 = NULL, tchar = '\x00', *bp = NULL, *str = NULL, 
+        *buff = NULL, *s = NULL, *j = NULL, *new = NULL;
 	char *args[MAX_ARG];
-	int nargs, i, fail, interp, key, xkey, aflags;
-	int length;
+	int nargs = 0, i = 0, fail = 0, interp = 0, key = 0, xkey = 0, aflags = 0;
+	int length = 0;
 	int hasswitch = 0;
-	dbref aowner;
+	dbref aowner = 0;
 	char *aargs[10];
-	ADDENT *add;
+	ADDENT *add = NULL;
+
+    memset(args, 0, sizeof(char *)*MAX_ARG);
+    memset(aargs, 0, sizeof(char *)*10);
 
 #define	Protect(x) (cmdp->perms & x)
 
@@ -1202,14 +1206,15 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 void process_command(dbref player, dbref cause, int interactive,
 					 char *command, char *args[], int nargs)
 {
-	char *p, *q, *arg, *lcbuf, *slashp, *cmdsave, *bp, *str;
-	int succ, aflags, i;
-	dbref exit, aowner;
-	CMDENT *cmdp;
-	char *macroout;
-	int macerr;
+	char *p = NULL, *q = NULL, *arg = NULL, *lcbuf = NULL, *slashp = NULL, 
+        *cmdsave = NULL, *bp  = NULL, *str = NULL;
+	int succ = 0, aflags = 0, i = 0;
+	dbref exit = 0, aowner= 0;
+	CMDENT *cmdp = NULL;
+	char *macroout = NULL;
+	int macerr = 0;
 	int eins = 1, null = 0;
-	int length;
+	int length = 0;
 
 	/*
 	 * Robustify player 

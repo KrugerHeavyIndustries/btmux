@@ -152,7 +152,7 @@ void signal_SEGV(int signo, siginfo_t * siginfo, void *ucontext)
 		switch (siginfo->si_code) {
 		case SEGV_MAPERR:
 			raw_broadcast(0,
-						  "Game: Invalid access of unamapped memory at %p. Restarting from Checkpoint.",
+						  "Game: Invalid access of unmapped memory at %p. Restarting from Checkpoint.",
 						  siginfo->si_addr);
 			break;
 		case SEGV_ACCERR:
