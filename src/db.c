@@ -1046,6 +1046,7 @@ static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
 		if(neg)
 			attrOwner = 0 - attrOwner;
 
+		*owner = attrOwner;
 		/*
 		 * If delimiter is not ':', just return attribute 
 		 */
