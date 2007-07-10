@@ -1192,7 +1192,7 @@ static int mech_disableweap_func(MECH * mech, dbref player, int index,
 	weaptype = Weapon2I(GetPartType(mech, section, critical));
 	DOCHECK0(!(MechWeapons[weaptype].special & GAUSS),
 			 "You can only disable Gauss weapons.");
-	DOCHECK0(weaptype == -4,
+	DOCHECK0(WpnIsRecycling(mech, section, critical),
 	                          "The weapon system chirps: 'That weapon is still recharging!'");
 
 	SetPartTempNuke(mech, section, critical, FAIL_DESTROYED);
