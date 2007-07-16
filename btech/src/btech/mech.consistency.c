@@ -276,6 +276,7 @@ static int engine_weight(MECH * mech)
 	int s = MechEngineSize(mech);
 	int i;
 
+
 	if(MechType(mech) != CLASS_MECH)
 		s -= susp_factor(mech);
 
@@ -307,8 +308,12 @@ static int engine_weight(MECH * mech)
 			return weight;
 		}
 
-	SendError(tprintf("Error in #%d (%s) : No engine found!", mech->mynum,
+	/* Hack ensues! Most hovers are 1/5th engine weight. Doesn't always register correctly. */
+	if(MechMove(mech) != MOVE_HOVER) {
+		SendError(tprintf("Error in #%d (%s) : No engine found!", mech->mynum,
 					  Name(mech->mynum)));
+	}
+
 	return 0;
 }
 
