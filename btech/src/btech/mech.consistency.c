@@ -211,6 +211,17 @@ extern int round_to_halfton(int weight)
 	return weight + (512 - over);
 }
 
+extern int round_to_quarterton(int weight)
+{
+	int over = weight % 256;
+	if(!over)
+		return weight;
+	if (over < 2)
+		return weight - over;
+	
+	return weight + (256 - over);
+}
+
 int crit_weight(MECH * mech, int t)
 {
 	int cl;
@@ -383,9 +394,9 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 	hs_eff = HS_Efficiency(mech);
 	cl = MechSpecials(mech) & CLAN_TECH;
 #define ADDENTRY(text,weight) \
-    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("      %6.1f", (float) (weight) / 1024.0));}; total += weight; }
+    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("      %6.2f", (float) (weight) / 1024.0));}; total += weight; }
 #define ADDENTRY_C(text,count,weight) \
-    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("%5d %6.1f", count, (float) (weight) / 1024.0)); }; total += weight; }
+    if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("%5d %6.2f", count, (float) (weight) / 1024.0)); }; total += weight; }
 	sprintf(buf, "%-12s(%d rating)",
 			MechSpecials(mech) & XL_TECH ? "Engine (XL)" : MechSpecials(mech)
 			& XXL_TECH ? "Engine (XXL)" : MechSpecials(mech) & CE_TECH ?
@@ -557,7 +568,7 @@ int mech_weight_sub_veh(dbref player, MECH * mech, int interactive)
 		if(MechMove(mech) == MOVE_HOVER && es < (MechTons(mech) * 1024 / 5))
 			ADDENTRY("Engine size fix (-> 1/5 hover wt.)",
 					 MechTons(mech) * 1024 / 5 - es);
-		ADDENTRY("Cockpit", round_to_halfton(MechTons(mech) * 1024 / 20));
+		ADDENTRY("Cockpit", round_to_quarterton(MechTons(mech) * 1024 / 20));
 		if(MechType(mech) == CLASS_VTOL ||
 		   MechMove(mech) == MOVE_HOVER || MechMove(mech) == MOVE_HULL ||
 		   MechMove(mech) == MOVE_SUB)
@@ -566,7 +577,7 @@ int mech_weight_sub_veh(dbref player, MECH * mech, int interactive)
 	}
 	PLOC(TURRET)
 		if(turr_stuff)
-		ADDENTRY("Turret", round_to_halfton(turr_stuff / 10));
+		ADDENTRY("Turret", round_to_quarterton((turr_stuff / 10)));
 	ADDENTRY(MechSpecials(mech) & REINFI_TECH ? "Internals (Reinforced)" :
 			 MechSpecials(mech) & COMPI_TECH ? "Internals (Composite)" :
 			 MechSpecials(mech) & ES_TECH ? "Internals (ES)" : "Internals",
