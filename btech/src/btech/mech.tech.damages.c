@@ -260,7 +260,8 @@ int is_under_repair(MECH * mech, int i)
 
 char *damages_func(MECH * mech)
 {
-	static char buffer[LBUF_SIZE];
+/* Give this a 32k buffer instead of 16k. Temporary fix. Think of something more intelligent to make this work better */
+	static char buffer[LBUF_SIZE*2];
 	int i;
 
 	if(unit_is_fixable(mech))
