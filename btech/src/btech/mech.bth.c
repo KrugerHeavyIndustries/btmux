@@ -36,7 +36,7 @@
 #define BTHEND(m)       SendBTHDebug(tprintf("%s.", buf))
 #endif
 
-int arc_override;
+extern int arc_override;
 
 int FindNormalBTH(MECH * mech,
 				  MAP * mech_map,

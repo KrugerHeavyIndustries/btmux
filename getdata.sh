@@ -4,7 +4,7 @@
 # Downloads data files to the game directory, then optionally 
 #
 
-SVNROOT="https://svn.sourceforge.net/svnroot/btonline-btech"
+SVNROOT="https://btonline-btech.svn.sourceforge.net/svnroot/btonline-btech"
 
 # XXX: Terminate on errors.  This is sorta a lazy hack, to avoid having to
 # check exit status and recover on each command.

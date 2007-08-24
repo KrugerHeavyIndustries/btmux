@@ -25,7 +25,7 @@
 #include "p.mech.los.h"
 #include "p.mech.utils.h"
 
-int pilot_override;
+extern dbref pilot_override;
 
 void Missile_Hit(MECH * mech,
 				 MECH * target,

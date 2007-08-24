@@ -17,8 +17,10 @@ typedef struct player_cache {
     struct player_cache *next;
 } PCACHE;
 
+/* Moved to the player_c.c file 
 rbtree pcache_tree;
 PCACHE *pcache_head;
+*/
 
 #define PF_DEAD     0x0001
 #define PF_REF      0x0002

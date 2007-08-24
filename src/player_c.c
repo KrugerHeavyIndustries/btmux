@@ -14,6 +14,9 @@
 #include "pcache.h"
 #include "rbtree.h"
 
+rbtree pcache_tree;
+PCACHE *pcache_head;
+
 int compare_pcache(dbref left, dbref right)
 {
 	return (left - right);
