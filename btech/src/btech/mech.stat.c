@@ -57,6 +57,8 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 					  rollstat.rolls[i], f1, f2, 10.0 * f2 - 10.0 * f1);
 	}
 	notify_printf(player, "Total rolls: %d", rollstat.totrolls);
+	
+/*	i = 0;
 
 	if(Wizard(player)) {
 	for(i = 0; i < 11; i++) {
@@ -87,6 +89,7 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 		totalhitrolls[0], missavg, totalhitrolls[1], hitavg, totalhitrolls[2], glanceavg, totalhitrolls[3]);
 	
 	}
+*/
 }
 
 /*

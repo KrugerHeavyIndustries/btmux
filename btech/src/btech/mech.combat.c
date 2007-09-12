@@ -1240,16 +1240,17 @@ void FireWeapon(MECH * mech,
 		RbaseToHit = baseToHit - 1; /* only time we modify it */
 	
 	if(!isarty) {
-		if(In_Character(mech->mynum)) {
-			if(roll < RbaseToHit && RbaseToHit < 13 && RbaseToHit > 1)
+/*		if(In_Character(mech->mynum)) {
+			if((roll < RbaseToHit) && (RbaseToHit < 13) && (RbaseToHit > 1))
 				rollstat.hitstats[RbaseToHit - 2][0]++; 
-			if(roll == RbaseToHit && mudconf.btech_glancing_blows && RbaseToHit < 13 && RbaseToHit > 1)
+			if((roll == RbaseToHit) && (mudconf.btech_glancing_blows) && (RbaseToHit < 13) && (RbaseToHit > 1))
 				rollstat.hitstats[RbaseToHit - 2][2]++;
-			if(roll >= RbaseToHit && !mudconf.btech_glancing_blows && RbaseToHit < 13 && RbaseToHit > 1)
+			if((roll >= RbaseToHit) && (!mudconf.btech_glancing_blows) && (RbaseToHit < 13) && (RbaseToHit > 1))
 				rollstat.hitstats[RbaseToHit - 2][1]++;
-			if(roll > RbaseToHit && mudconf.btech_glancing_blows && RbaseToHit < 13 && RbaseToHit > 1)
+			if((roll > RbaseToHit) && (mudconf.btech_glancing_blows) && (RbaseToHit < 13) && (RbaseToHit > 1))
 				rollstat.hitstats[RbaseToHit - 2][1]++;
 		}
+*/
 			MechFireBroadcast(mech, ishex ? NULL : target, mapx, mapy,
 							  mech_map, &MechWeapons[weapindx].name[3],
 							  (roll >= RbaseToHit) && range_ok);
