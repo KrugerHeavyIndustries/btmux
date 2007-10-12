@@ -65,6 +65,11 @@ struct char_value {
     {"Bruise", CHAR_VALUE, 0, 0},
     {"Lethal", CHAR_VALUE, 0, 0},
     {"Unused1", CHAR_VALUE, 0, 0},
+    {"ShotsFired", CHAR_VALUE, 0, 0},
+    {"ShotsMissed", CHAR_VALUE, 0, 0},
+    {"ShotsHit", CHAR_VALUE, 0, 0},
+    {"DamageTaken", CHAR_VALUE, 0, 0},
+    {"DamageGiven", CHAR_VALUE, 0, 0},
 
 /* Advantages */
     {"Ambidextrous", CHAR_ADVANTAGE, CHAR_ADV_BOOL, 0},

@@ -1274,6 +1274,8 @@ void FireWeapon(MECH * mech,
 	/* Time to decide if we've really hit them and wot to do */
 	MechStatus(mech) |= FIRED;
 
+	MechShotsFired(mech)++;
+
 	if(isarty) {
 		artillery_shoot(mech, mapx, mapy, weapindx,
 						GetPartAmmoMode(mech, section, critical),

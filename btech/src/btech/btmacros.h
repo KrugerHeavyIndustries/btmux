@@ -191,6 +191,11 @@
 #define MechScanRange(a)	(a)->ud.scan_range
 #define MechSections(a)	 	(a)->ud.sections
 #define MechSensor(a)		(a)->rd.sensor
+#define MechShotsFired(a)	(a)->rd.shots_fired
+#define MechShotsMissed(a)	(a)->rd.shots_missed
+#define MechShotsHit(a)		(a)->rd.shots_hit
+#define MechDamageTaken(a)	(a)->rd.damage_taken
+#define MechDamageInflicted(a)	(a)->rd.damage_inflicted
 #define MechSpecials(a)	 	(a)->rd.specials
 #define MechSpecials2(a) 	(a)->rd.specials2
 #define MechSpeed(a)		(a)->rd.speed

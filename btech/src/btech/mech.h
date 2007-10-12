@@ -877,6 +877,11 @@ typedef struct {
     int critstatus2;            /* Starting to fill up. More CritStatus */
     int unused[5];		/* Space for future expansion */
     float xpmod;		/* Used to modify XP values per unit. Will default loading to 1 */
+    int shots_fired;		/* Record how many shots we fired */
+    int shots_hit;		/* Record how many shots we hit */
+    int shots_missed;		/* Record how many shots we missed */
+    int damage_taken;		/* Record how much damage we took */
+    int damage_inflicted;	/* Record how much damage we inflicted */
 } mech_rd;
 
 typedef struct {

@@ -564,6 +564,11 @@ void DamageMech(MECH * wounded,
 		sprintf(notificationBuff,
 				"for %d points of damage in the structure.",
 				damage + (intDamage < 0 ? 0 : intDamage));
+	
+	if(attacker != wounded)
+		MechDamageInflicted(attacker) = MechDamageInflicted(attacker) + damage + (intDamage < 0 ? 0 : intDamage);
+	MechDamageTaken(wounded) = MechDamageTaken(wounded) + damage + (intDamage < 0 ? 0 : intDamage);
+
 	/*  if (LOS && attackPilot != -1) */
 	if(LOS) {
 		if(!was_transfer)
@@ -574,15 +579,14 @@ void DamageMech(MECH * wounded,
 						"%%cgDamage transfer.. %s%%c", notificationBuff);
 	}
 	if(MechType(wounded) == CLASS_MW && !was_transfer)
-		if(damage > 0)
+		if(damage > 0) 
 			if(!(damage =
 				 armor_effect(wounded, cause, hitloc, damage, intDamage)))
 				return;
 	mech_printf(wounded, MECHALL,
 				"%%ch%%cyYou have been hit %s%s%%c",
 				notificationBuff, was_transfer ? "(transfer)" : "");
-
-	/* Always a good policy :-> */
+			/* Always a good policy :-> */
 	if(damage > 0 && intDamage <= 0 && !was_transfer && !Fallen(wounded)) {
 		if(mudconf.btech_newstagger && MechType(wounded) == CLASS_MECH) {
 			StaggerDamage(wounded) += damage;
