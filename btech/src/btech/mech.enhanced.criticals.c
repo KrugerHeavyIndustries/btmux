@@ -529,7 +529,7 @@ void showWeaponDamageAndInfo(dbref player, MECH * mech, int section,
 		} else if(IsBallistic(wWeapIndex) || IsArtillery(wWeapIndex)) {
 			if(awDamage[1] > 0) {
 				notify_printf(player,
-							  "      %%cr%%chBarrel damage (%d hit%s): Jams on a %d or less.%%c",
+							  "      %cr%chBarrel damage (%d hit%s): Jams on a %d or less.%c",
 							  awDamage[1], awDamage[1] > 1 ? "s" : "",
 							  awDamage[1] + 1);
             }
