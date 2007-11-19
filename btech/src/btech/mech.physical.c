@@ -1456,7 +1456,8 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
         if (AttackType == PA_SWORD) {
             damage = (MechTons(mech) + 5) / weightdmg + 1;
         } else {
-            damage = (MechTons(mech) + weightdmg / 2) / weightdmg;
+	/* Round Down to nearest ton -- TW Page 145 */
+	    damage = floor(((((float) MechTons(mech)) / weightdmg) /2));
         }
 
         /* Calc in affect by TSM */
