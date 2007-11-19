@@ -866,6 +866,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 			return;
 		}
 		discard_mw(wounded);
+		return;
 	}
 	/* Ouch. They got toasted */
 	SetSectArmor(wounded, hitloc, 0);
