@@ -1422,7 +1422,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		mech_notify(wounded, MECHALL,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
-			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
+			MechLOSBroadcast(wounded, "'s fuel tank explodes in a ball of fire!");
 		MechZ(wounded) = MechElevation(wounded);
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
@@ -1433,7 +1433,7 @@ void HandleVTOLCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 	case 5:
 		/* Ammo/Power Plant Explodes */
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
-		MechLOSBroadcast(wounded, "suddenly explodes!");
+		MechLOSBroadcast(wounded, "'s power plant suddenly explodes!");
 		MechZ(wounded) = MechElevation(wounded);
 		MechFZ(wounded) = ZSCALE * MechZ(wounded);
 		MechSpeed(wounded) = 0.0;
@@ -1526,7 +1526,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
-			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
+			MechLOSBroadcast(wounded, "'s fule tank explodes in a ball of fire!");
 		DestroyMech(wounded, attacker, 1, KILL_TYPE_FUELTANK);
 		explode_unit(wounded, attacker);
 		break;
@@ -1534,7 +1534,7 @@ void HandleFasaVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		/* Ammo/Power Plant Explodes */
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
-			MechLOSBroadcast(wounded, "suddenly explodes!");
+			MechLOSBroadcast(wounded, "'s power plant suddenly explodes!");
 		DestroyMech(wounded, attacker, 1, KILL_TYPE_POWERPLANT);
 		if(!(MechSections(wounded)[BSIDE].config & CASE_TECH))
 			explode_unit(wounded, attacker);
@@ -1648,7 +1648,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		mech_notify(wounded, MECHALL,
 					"Your fuel tank explodes in a ball of fire!");
 		if(wounded != attacker)
-			MechLOSBroadcast(wounded, "explodes in a ball of fire!");
+			MechLOSBroadcast(wounded, "'s fuel tank explodes in a ball of fire!");
 		DestroyMech(wounded, attacker, 1, KILL_TYPE_FUELTANK);
 		explode_unit(wounded, attacker);
 		break;
@@ -1656,7 +1656,7 @@ void HandleVehicleCrit(MECH * wounded, MECH * attacker, int LOS,
 		/* Ammo/Power Plant Explodes */
 		mech_notify(wounded, MECHALL, "Your power plant explodes!");
 		if(wounded != attacker)
-			MechLOSBroadcast(wounded, "suddenly explodes!");
+			MechLOSBroadcast(wounded, "'s power plant suddenly explodes!");
 		DestroyMech(wounded, attacker, 1, KILL_TYPE_POWERPLANT);
 		explode_unit(wounded, attacker);
 		break;
