@@ -1457,7 +1457,7 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
             damage = (MechTons(mech) + 5) / weightdmg + 1;
         } else {
 	/* Round Down to nearest ton -- TW Page 145 */
-	    damage = floor(((((float) MechTons(mech)) / weightdmg) /2));
+	    damage = (int) floor((((float) MechTons(mech)) / weightdmg));
         }
 
         /* Calc in affect by TSM */
