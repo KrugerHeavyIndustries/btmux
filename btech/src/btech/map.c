@@ -263,7 +263,7 @@ int map_load(MAP * map, char *mapname)
 			free((char *) (map->map[i]));
 		free((char *) (map->map));
 	}
-	if(fscanf(fp, "%d %d\n", &height, &width) != 2 || height < 1 ||
+	if(fscanf(fp, "%d %d\n", &width, &height) != 2 || height < 1 ||
 	   height > MAPY || width < 1 || width > MAPX) {
 		SendError(tprintf("Map #%d: Invalid height and/or width",
 						  map->mynum));
@@ -393,7 +393,7 @@ void map_savemap(dbref player, void *data, char *buffer)
 	DOCHECK(!(fp =
 			  my_open_file(openfile, "w", &filemode)),
 			"Unable to open the map file!");
-	fprintf(fp, "%d %d\n", map->map_height, map->map_width);
+	fprintf(fp, "%d %d\n", map->map_width, map->map_height);
 	for(i = 0; i < map->map_height; i++) {
 		mapobj *mo;
 
