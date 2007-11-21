@@ -979,6 +979,7 @@ float terrain_speed(MECH * mech, float tempspeed, float maxspeed,
 	return tempspeed;
 }
 
+
 void UpdateSpeed(MECH * mech)
 {
 	float acc, tempspeed, maxspeed;
@@ -1044,7 +1045,11 @@ void UpdateSpeed(MECH * mech)
 				dif = (dif - 1) / 30;
 				dif = (dif + 2);	/* whee */
 				/* dif = 2 to 7 */
-				tempspeed = tempspeed * (10 - dif) / 10;
+				/* Hack to get turnmode tight to lower more speed */
+				if(GetTurnMode(mech))
+					tempspeed = tempspeed * (dif * 2) / 16;  /* Lower 25% to 88% */ 
+				else
+					tempspeed = tempspeed * (10 - dif) / 10; /* Lower 20-80% */
 			}
 		} else if(mudconf.btech_slowdown == 1) {
 			if(MechFacing(mech) != MechDesiredFacing(mech))
