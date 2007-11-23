@@ -330,29 +330,36 @@ int FindSwarmHitLocation(int *iscritical, int *isrear)
 	*iscritical = 1;
 
 	switch (Roll()) {
-	case 12:
 	case 2:
 		return HEAD;
 	case 3:
-	case 11:
 		*isrear = 1;
 		return CTORSO;
 	case 4:
 		*isrear = 1;
+		return RTORSO;
 	case 5:
 		return RTORSO;
-	case 10:
-		*isrear = 1;
-	case 9:
-		return LTORSO;
 	case 6:
 		return RARM;
-	case 8:
-		return LARM;
 	case 7:
 		return CTORSO;
+	case 8:
+		return LARM;
+	case 9:
+		return LTORSO;
+	case 10:
+		*isrear = 1;
+		return LTORSO;
+	case 11:
+		*isrear = 1;
+		return CTORSO;
+	case 12:
+		return HEAD;
+	default:
+		return CTORSO;
 	}
-	return HEAD;
+
 }
 
 /*
