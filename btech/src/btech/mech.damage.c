@@ -1113,3 +1113,27 @@ void mech_damage(dbref player, MECH * mech, char *buffer)
 	Missile_Hit(mech, mech, -1, -1, isrear, iscritical, 0, -1, -1,
 				clustersize, damage / clustersize, 1, 0, 0, 0);
 }
+
+void mech_damage_section(dbref player, MECH * mech, char *buffer)
+{
+	char *args[5];
+	int damage, isrear, iscritical, section;
+
+/* ARGS: <SECTION> <DAMAGE> <ISREAR> <ISCRITICAL> */
+
+	DOCHECK(mech_parseattributes(buffer, args, 5) != 4, "Invalid Arguments: <SECTION> <DAMAGE> <ISREAR> <ISCRITICAL>");
+
+	section = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
+
+	if(section == -1) {
+		invalid_section(player, mech);
+		return;
+	}
+	
+	DOCHECK(Readnum(damage, args[1]), "Invalid damage (Arg 2) amount! (Must be a number!)");
+	DOCHECK(Readnum(isrear, args[2]), "Isrear value (Arg 3) Invalid! (1 or 0)");
+	DOCHECK(Readnum(iscritical, args[3]), "Iscritical value (Arg 4) Invalid! (1 or 0)");
+	DOCHECK(damage <= 0 || damage > 1000, "Invalid damage (Arg 2 amount! (Must be >0 or <1000)");
+	DamageMech(mech,mech,0, -1, section, isrear, iscritical, damage, 0, 0, 0, -1, 0, 1);
+
+}

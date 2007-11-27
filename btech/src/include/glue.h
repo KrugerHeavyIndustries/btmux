@@ -422,6 +422,8 @@ CommandsStruct mechcommands[] = {
     {0, "@DAMAGE <NUM> <CLUSTERSIZE> <ISREAR> <ISCRITICAL>",
 	    "@Causes <NUM> pt of damage to be done to 'mech in <CLUSTERSIZE> point clusters (if <ISREAR> is 1, damage is done to rear arc ; if <ISCRITICAL> is 1, damage does crit-thru-armor)",
 	mech_damage},
+    {0, "@DAMAGESECTION <SECTION> <DAMAGE> <ISREAR> <ISCRITICAL>", "@Causes <DAMAGE> pts of damage to be done to unit's <SECTION>. <ISREAR> = 1 for REAR, <ISCRITICAL> = 1 for critical",
+    	mech_damage_section},
     {0, "@WEIGHT", "@Checks the weight allocated in the mech",
 	mech_weight},
     {4, "BOMB [list | drop <num> | aim]",
