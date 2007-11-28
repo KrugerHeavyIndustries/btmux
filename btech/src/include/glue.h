@@ -792,7 +792,7 @@ CommandsStruct mechrepcommands[] = {
 	"@Sets the mech type", mechrep_Rsettype},
     {0, "SETMOVE <TRACK | WHEEL | HOVER | VTOL | HULL | FOIL | FLY>",
 	"@Sets the mech movement type", mechrep_Rsetmove},
-    {0, "SETMAXSPEED <NUM>", "@Sets the max speed of the mech.",
+    {0, "SETMAXSPEED <NUM>", "@Sets the max speed of the mech.  <NUM> is MP (i.e. SETMAXPSEED 6 for a 4/6 unit)",
 	mechrep_Rsetspeed},
     {0, "SETHEATSINKS <NUM>", "@Sets the number of heat sinks.",
 	mechrep_Rsetheatsinks},
