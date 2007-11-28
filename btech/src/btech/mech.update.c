@@ -1047,7 +1047,7 @@ void UpdateSpeed(MECH * mech)
 				/* dif = 2 to 7 */
 				/* Hack to get turnmode tight to lower more speed */
 				if(GetTurnMode(mech))
-					tempspeed = tempspeed * (dif * 2) / 16;  /* Lower 25% to 88% */ 
+					tempspeed = (tempspeed * (10 - dif) / 10) - (MP1 * 0.4); 
 				else
 					tempspeed = tempspeed * (10 - dif) / 10; /* Lower 20-80% */
 			}
