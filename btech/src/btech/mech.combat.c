@@ -510,11 +510,15 @@ int FireWeaponNumber(dbref player,
 	DOCHECK0(argc > 3, "Invalid number of arguments!");
 
 	if((MechWeapons[weaptype].special & IDF) && MechSpotter(mech) != -1 &&
-	   MechTarget(mech) == -1 && MechTargY(mech) == -1 &&
-	   MechTargX(mech) == -1)
-		if(FireSpot(player, mech, mech_map, weapnum, weaptype, sight,
-					section, critical))
+	   MechTarget(mech) == -1) {
+		FireSpot(player, mech, mech_map, weapnum, weaptype, sight,
+					section, critical);
 			return 1;
+	}
+
+	/* We're set to look at a spotter, its a non-idf weapon. We should just not fire */
+	DOCHECK0((MechSpotter(mech) != -1) && !(MechWeapons[weaptype].special & IDF),
+			"The weapon system chirps: 'Somone is spotting for you. Remove your spotter to fire non-IDF weapons'");
 
 	switch (argc) {
 
