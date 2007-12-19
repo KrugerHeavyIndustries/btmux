@@ -835,6 +835,9 @@ void mech_charge(dbref player, void *data, char *buffer)
 
 	argc = mech_parseattributes(buffer, args, 2);
 
+	DOCHECK(MoveModeChange(mech), "You cannot charge while changing movement modes!");
+
+
 	switch (argc) {
 		// No arguments given with charge. Assume default target.
 	case 0:
