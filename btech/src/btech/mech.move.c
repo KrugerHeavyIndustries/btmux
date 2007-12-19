@@ -1447,6 +1447,8 @@ void mech_dodge(dbref player, void *data, char *buffer)
 	DOCHECK(!(HasBoolAdvantage(player, "dodge_maneuver"))
 			|| player != MechPilot(mech),
 			"You either are not the pilot of this mech, have no Dodge Maneuver adavantage, or both.");
+	DOCHECK(MechChargeTarget(mech) > 0, "You cannot dodge while charging!");
+
 	d |= MODE_DODGE | ((MechStatus2(mech) & DODGING) ? MODE_OFF : MODE_ON);
 	if(d & MODE_ON) {
 		if((i = MechFullNoRecycle(mech, CHECK_PHYS)) > 0) {
