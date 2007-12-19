@@ -1343,7 +1343,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 					|| SectIsDestroyed(mech, LLEG)),
 				"That's kind of hard while limping.");
 	
-	DOCHECK(MechChargeTarget(mech), "You are currently charging a target and unable to start sprinting!");
+	DOCHECK(MechChargeTarget(mech) > 0, "You are currently charging a target and unable to start sprinting!");
 
 	d |= MODE_SPRINT | ((MechStatus2(mech) & SPRINTING) ? MODE_OFF : MODE_ON);
 	if(d & MODE_ON) {
@@ -1394,7 +1394,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	DOCHECK(MechStatus2(mech) & (SPRINTING | DODGING),
 			"You cannot perform multiple movement modes!");
 	DOCHECK(MechSwarmTarget(mech) > 0, "You cannot evade while mounted!");
-	DOCHECK(MechChargeTarget(mech), "You cannot evade while charging!");
+	DOCHECK(MechChargeTarget(mech) > 0, "You cannot evade while charging!");
 	
 	if(MechType(mech) == CLASS_MECH)
 		DOCHECK(SectIsDestroyed(mech, RLEG) || SectIsDestroyed(mech, LLEG)
