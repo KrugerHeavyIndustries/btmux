@@ -453,6 +453,14 @@ void bsuit_swarm(dbref player, void *data, char *buffer)
 					GetMechToMechID(mech, target));
 	}
 
+                if(MechCritStatus(mech) & HIDDEN) {
+			mech_notify(mech, MECHALL,"You move too much and break your cover!");
+			MechLOSBroadcast(mech, "breaks from its cover.");
+			MechCritStatus(mech) &= ~(HIDDEN);
+			StopHiding(mech);
+		}
+
+
 	StartBSuitRecycle(mech, RECYCLE_SWARM);
 }
 
