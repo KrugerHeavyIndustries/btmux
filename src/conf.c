@@ -1038,7 +1038,7 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_explode_ammo, 0},
 	{(char *) "btech_explode_stop",
 	 cf_int, CA_GOD, &mudconf.btech_explode_stop, 0},
-	{(char *) "btech_failures",
+	{(char *) "btech_parts",
 	 cf_int, CA_GOD, &mudconf.btech_parts, 0},
 	{(char *) "btech_ic",
 	 cf_int, CA_GOD, &mudconf.btech_ic, 0},
