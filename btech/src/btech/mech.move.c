@@ -603,7 +603,8 @@ void mech_stand(dbref player, void *data, char *buffer)
 		break_thru_ice(mech);
 
 	if(tNeedsPSkill) {
-		if(!MadePilotSkillRoll(mech, standcarefulmod)) {
+		/* Changed to NoXP. Keeps people from doing pushups to gain Pilot XP */
+		if(!MadePilotSkillRoll_NoXP(mech, standcarefulmod, 0)) {
 			mech_notify(mech, MECHALL,
 						"You fail your attempt to stand and fall back on the ground");
 			MechFalls(mech, 1, 1);
