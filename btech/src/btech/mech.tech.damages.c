@@ -123,8 +123,7 @@ static int check_for_damage(MECH * mech, int loc)
 			else
 				DAMAGE3(ENHCRIT_MISC, loc, a);
 
-		} else if(IsWeapon(b) && GetWeaponCrits(mech, Weapon2I(b)) > 4 &&
-				  !PartIsDestroyed(mech, loc, a + 1))
+		} else if(IsWeapon(b) && !PartIsDestroyed(mech, loc, a))
 			DAMAGE3(REPAIRP_T, loc, a);
 		else
 			DAMAGE3(IsWeapon(b) ? REPAIRG : REPAIRP, loc, a);
