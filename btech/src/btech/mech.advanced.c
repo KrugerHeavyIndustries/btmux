@@ -1502,7 +1502,7 @@ void remove_inarc_pods_mech(dbref player, MECH * mech, char *buffer)
 
 	DOCHECK(((!GetSectInt(mech, RARM)) &&
 			 (!GetSectInt(mech, LARM))),
-			"You need atleast one functioning arm to remove iNarc pods!");
+			"You need at least one functioning arm to remove iNarc pods!");
 
 	if(wLoc == RARM) {
 		DOCHECK(!GetSectInt(mech, LARM),
@@ -1537,7 +1537,7 @@ void remove_inarc_pods_mech(dbref player, MECH * mech, char *buffer)
 
 		DOCHECK(!(wLAAvail ||
 				  wRAAvail),
-				"You need atleast one arm that is not recycling and does not have weapons recycling in it!");
+				"You need at least one arm that is not recycling and does not have weapons recycling in it!");
 
 		if(!wLAAvail)
 			wBTHModLARM = 1000;
