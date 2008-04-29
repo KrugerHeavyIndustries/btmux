@@ -1193,14 +1193,14 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 		if(MechSpecials(mech) & ECM_TECH) {
 			sprintf(tempbuff + strlen(tempbuff), "ECM(%s)  ",
-					(MechStatus2(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
+					(MechCritStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 					: ECMEnabled(mech) ? (ECMActive(mech) ? "%ch%cgECM%cn" :
 										  "%ch%crECM%cn") : ECCMEnabled(mech)
 					? "%ch%cgECCM%cn" : ECMCountered(mech) ? "%crOff%cn" :
 					"%cgOff%cn");
 		}
 
-		if(MechSpecials2(mech) & ANGEL_ECM_TECH) {
+		if(MechSpecials(mech) & ANGEL_ECM_TECH) {
 			sprintf(tempbuff + strlen(tempbuff), "AngelECM(%s)  ",
 					(!HasWorkingAngelECMSuite(mech)) ? "%ch%crXX%cn"
 					: AngelECMEnabled(mech) ? (AngelECMActive(mech) ?
@@ -1222,7 +1222,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 		if(MechSpecials2(mech) & STEALTH_ARMOR_TECH) {
 			sprintf(tempbuff + strlen(tempbuff), "SthArmor(%s)  ",
-					(MechStatus2(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
+					(MechCritStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 					: StealthArmorActive(mech) ? "%ch%cgOn%cn" : "%cgRdy%cn");
 		}
 

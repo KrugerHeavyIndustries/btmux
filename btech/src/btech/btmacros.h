@@ -766,9 +766,9 @@ if (FlyingT(mech)) { \
 
 /* Macro to check for ALL ECM types */
 #define HasWorkingECMSuite(mech)    (((MechSpecials(mech) & ECM_TECH) && \
-                                    !(MechStatus2(mech) & ECM_DESTROYED)) || \
+                                    !(MechCritStatus(mech) & ECM_DESTROYED)) || \
                                     ((MechSpecials2(mech) & ANGEL_ECM_TECH) && \
-                                    !(MechStatus2(mech) & ANGEL_ECM_DESTROYED)) || \
+                                    !(MechCritStatus(mech) & ANGEL_ECM_DESTROYED)) || \
                                     (MechInfantrySpecials(mech) & FC_INFILTRATORII_STEALTH_TECH))
 
 /* Angel ECM macros */
@@ -795,7 +795,7 @@ if (FlyingT(mech)) { \
 #define UnSetAngelECMProtected(mech) (MechStatus2(mech) &= ~ANGEL_ECM_PROTECTED)
 
 #define HasWorkingAngelECMSuite(mech)   ((MechSpecials2(mech) & ANGEL_ECM_TECH) && \
-                                        !(MechStatus2(mech) & ANGEL_ECM_DESTROYED))
+                                        !(MechCritStatus(mech) & ANGEL_ECM_DESTROYED))
 
 /* Stealth system macros */
 #define StealthArmorActive(mech)		(MechStatus2(mech) & STH_ARMOR_ON)
