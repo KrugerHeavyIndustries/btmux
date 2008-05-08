@@ -777,6 +777,16 @@ char *pos_part_name(MECH * mech, int index, int loop)
 	}
 	if(!(c = part_name(t, b)))
 		return "--?ErrorInTemplate?--";
+
+	/* LETS CHECK IF ITS A SPECIAL ENGINE */
+	if (t == Special(ENGINE) ) {
+		return (MechSpecials(mech) & LE_TECH ? "Engine (Light)" :
+			MechSpecials(mech) & CE_TECH ? "Engine (Compact)" :
+			MechSpecials(mech) & XXL_TECH ? "Engine (XXL)" :
+			MechSpecials(mech) & XL_TECH ? "Engine (XL)" :
+			"Engine");
+	}
+
 	return c;
 
 }
