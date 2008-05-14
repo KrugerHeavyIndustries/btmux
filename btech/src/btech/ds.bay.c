@@ -155,7 +155,7 @@ static void mech_enterbay_event(MUXEVENT * e)
 	/* whee */
 	ref = AeroBay(ds, bayn);
 	StopBSuitSwarmers(FindObjectsData(mech->mapindex), mech, 1);
-	mech_notify(mech, MECHALL, "You enter bay.");
+	mech_notify(mech, MECHALL, "You enter the bay.");
 	MechLOSBroadcast(mech, tprintf("has entered %s at %d,%d.",
 								   GetMechID(ds), MechX(mech), MechY(mech)));
 	MarkForLOSUpdate(mech);
