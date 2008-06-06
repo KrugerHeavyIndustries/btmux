@@ -132,6 +132,11 @@ static void describe_repairs(MUXEVENT * e)
 		sprintf(buf2 + strlen(buf2), "%5s Replacing suit", buf);
 		if(fail)
 			sprintf(buf2 + strlen(buf2), " (Failure)");
+	// Added Reseal description
+	case EVENT_REPAIR_RESE:
+		sprintf(buf2 + strlen(buf2), "%5s Reseal", buf);
+		if (fail)
+			sprintf(buf2 + strlen(buf2), " (Failure)");
 		break;
 	}
 
