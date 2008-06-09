@@ -523,6 +523,7 @@ MechStatus(a) &= ~LOCK_MODES
             MechStatus(a) &= ~(BLINDED|UNCONSCIOUS); \
             mech_notify(a, MECHALL, "The mech was destroyed while pilot was unconscious!"); \
         } \
+	MechStatus(A) &= ~BLINDED; \
         Shutdown(a); \
 	StopBurning(a); \
 	StopStaggerCheck(a); \
