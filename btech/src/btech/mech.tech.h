@@ -236,7 +236,7 @@ ECMD(tech_fix);
 #else
 #define AddPartsM(m,l,a,b,c) econ_change_items(IsDS(m) ? AeroBay(m,0) : Location(m->mynum), alias_part(m, a, l) , b, c)
 #endif
-#define AVCHECKM(m,a,b,c)    DOCHECK1(!PartAvailM(m,a,b,c), tprintf("Not enough %ss in store! You need to have atleast %d.",part_name(a,b),c));
+#define AVCHECKM(m,a,b,c)    DOCHECK1(!PartAvailM(m,a,b,c), tprintf("Not enough units of %s in store! You need to have at least %d.",part_name(a,b),c));
 
 #ifndef BT_COMPLEXREPAIRS
 #define alias_part(m,t) \
