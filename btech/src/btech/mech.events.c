@@ -23,7 +23,13 @@
 #undef WEAPON_RECYCLE_DEBUG
 
 void mech_heartbeat(MECH *mech) {
-    UpdateRecycling(mech);
+    UpdateRecycling(mech); 
+    // Aeros need to check fuel while sitting and hovering 
+    if(MechType(mech) == CLASS_AERO || MechType(mech) == CLASS_VTOL) {
+    	if(!Landed(mech) && (fabs(MechSpeed(mech)) == 0) && (fabs(MechVerticalSpeed(mech)) == 0) )
+ 		FuelCheck(mech);
+    }
+
     return;
 }
 
