@@ -1939,8 +1939,9 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 						 MechRTerrain(mech) ==
 						 BRIDGE ? bridge_w_elevation(mech) : MechElev(mech) >
 						 3 ? 1 : (MechElev(mech) - 2));
-
-			if(!MadePilotSkillRoll(mech, skillmod)) {
+//
+//Stupid Frontiers cheaters. No XP gains here.
+			if(!MadePilotSkillRoll_NoXP(mech, skillmod, 0)) {
 				mech_notify(mech, MECHALL,
 							"You slip in the water and fall down");
 				MechLOSBroadcast(mech, "slips in the water and falls down!");
