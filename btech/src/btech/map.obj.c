@@ -492,6 +492,7 @@ static void fire_spreading_event(MUXEVENT * e)
 	new_fire_hex_y[3] = -1;
 	FindMyCoord(map, new_smoke_hex_x[0], new_smoke_hex_y[0], 0,
 				map->winddir, &new_smoke_hex_x[3], &new_smoke_hex_y[3]);
+	
 #define Spr(n,ch) \
   if(Roll() >= ch && Number(1,60) <= map->windspeed) \
     { \
@@ -522,6 +523,10 @@ void add_decoration(MAP * map, int x, int y, int type, char data, int flaggo)
 	foo.x = x;
 	foo.y = y;
 	foo.datac = GetRTerrain(map, x, y);
+
+	if (foo.x < 0 || foo.y < 0 || foo.x > map->map_width || foo.y > map->map_height)
+		return;
+
 	/* if (foo.datac) */
 	{
 		mapobj *m, *m2;
