@@ -429,7 +429,7 @@ class DynamicTypedVocabTable : public TypedVocabTable<T> {
 protected:
 	class DynamicTypedEntry;
 
-	typedef TypedVocabTable<T> TypedVocabTable;
+	typedef FI::TypedVocabTable<T> TypedVocabTable;
 	typedef typename TypedVocabTable::TypedEntry TypedEntry;
 
 	typedef typename TypedVocabTable::EntryPool EntryPool;
