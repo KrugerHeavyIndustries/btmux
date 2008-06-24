@@ -1095,7 +1095,7 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 void CriticalStatus(dbref player, MECH * mech, int index)
 {
 	int loop, i;
-	char buffer[MBUF_SIZE];
+	char buffer[LBUF_SIZE];
 	int type, data, wFireMode;
 	int max_crits = CritsInLoc(mech, index);
 	char **foo;
@@ -1120,7 +1120,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 			strcat(buffer, " Ammo");
 
 			if(!PartIsNonfunctional(mech, index, loop)) {
-				sprintf(trash, " (%d)", data);
+				sprintf(trash, " (%d / %d)", data, FullAmmo(mech,index,loop));
 				strcat(buffer, trash);
 			}
 
