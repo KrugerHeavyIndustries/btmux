@@ -778,6 +778,11 @@ char *pos_part_name(MECH * mech, int index, int loop)
 	if(!(c = part_name(t, b)))
 		return "--?ErrorInTemplate?--";
 
+	if (t == Special(HEAT_SINK) ) {
+		return (MechSpecials(mech) & DOUBLE_HEAT_TECH ? "Double Heatsink" :
+			"Heatsink");
+	}
+
 	/* LETS CHECK IF ITS A SPECIAL ENGINE */
 	if (t == Special(ENGINE) ) {
 		return (MechSpecials(mech) & LE_TECH ? "Engine (Light)" :
