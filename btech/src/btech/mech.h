@@ -1013,7 +1013,7 @@ struct repair_data {
 #define ATTACKEMIT_MECH       0x00080000  /* (t) Units attacks sent to MechAttackEmits channel */
 #define UNIT_MOUNTED          0x00100000  /* (u) Unit has been mounted by a suit */
 #define UNIT_MOUNTING         0x00200000  /* (v) Unit is mounting another unit */
-/* UNUSED                     0x00400000     (w) */
+#define FORTIFIED             0x00400000  /* (w) */
 /* UNUSED                     0x00800000     (x) */
 /* UNUSED                     0x01000000     (y) */
 /* UNUSED                     0x02000000     (z) */

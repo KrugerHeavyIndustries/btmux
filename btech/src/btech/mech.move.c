@@ -683,6 +683,7 @@ void mech_heading(dbref player, void *data, char *buffer)
 	if(mech_parseattributes(buffer, args, 1) == 1) {
 		DOCHECK(MechMove(mech) == MOVE_NONE,
 				"This piece of equipment is stationary!");
+		DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 		DOCHECK(WaterBeast(mech) &&
 				NotInWater(mech),
 				"You are regrettably unable to move at this time. We apologize for the inconvenience.");
@@ -811,6 +812,7 @@ void mech_speed(dbref player, void *data, char *buffer)
 	int i;
 
 	cch(MECH_USUAL);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 	if(RollingT(mech)) {
 		DOCHECK(!Landed(mech), "Use thrust command instead!");
 	} else if(FlyingT(mech)) {
@@ -1137,6 +1139,7 @@ void mech_jump(dbref player, void *data, char *buffer)
 
 	mech_map = getMap(mech->mapindex);
 	cch(MECH_USUALO);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 #ifdef BT_MOVEMENT_MODES
 	DOCHECK(MoveModeLock(mech), "Movement modes disallow jumping.");
 #endif
@@ -1319,6 +1322,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 	DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
@@ -1373,6 +1377,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
@@ -1431,6 +1436,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
 	int d = 0, i;
 
 	cch(MECH_USUALO);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 	DOCHECK(OODing(mech), "While falling out of the sky?");	
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
@@ -1475,7 +1481,7 @@ void mech_hulldown(dbref player, void *data, char *buffer)
 	int argc;
 
 	cch(MECH_USUALO);
-
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
         DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(!MechIsQuad(mech), "Only QUADs can hulldown.");
 	DOCHECK(Fallen(mech), "You can't hulldown from a FALLEN position");

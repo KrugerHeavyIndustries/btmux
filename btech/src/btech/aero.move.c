@@ -173,6 +173,7 @@ void aero_takeoff(dbref player, void *data, char *buffer)
 			"The launch sequence has already been initiated!");
 	DOCHECK(i == NUM_LAND_TYPES, "This vehicle type cannot takeoff!");
 	cch(MECH_USUAL);
+	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
 	DOCHECK(!FlyingT(mech),
 			"Only VTOL, Aerospace fighters and Dropships can take off.");
 	DOCHECK(!Landed(mech), "You haven't landed!");

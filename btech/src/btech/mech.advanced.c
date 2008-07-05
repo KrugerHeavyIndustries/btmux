@@ -1122,6 +1122,7 @@ void mech_dig(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALO);
+	DOCHECK(Fortified(mech), "You are already fortified, there's no need to dig.");
 	DOCHECK(fabs(MechSpeed(mech)) > 0.0, "You are moving!");
 	DOCHECK(MechFacing(mech) != MechDesiredFacing(mech), "You are turning!");
 	DOCHECK(MechMove(mech) == MOVE_NONE, "You are stationary!");
