@@ -38,6 +38,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 	if(player != GOD)
 		cch(MECH_USUAL);
 	argc = mech_parseattributes(buffer, args, 1);
+	DOCHECK(Fortified(mech), "You cannot tow while fortified.");
 #ifdef BT_MOVEMENT_MODES
 	DOCHECK(MoveModeLock(mech),
 			"You cannot tow currently in this movement mode!");
@@ -50,6 +51,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 			!InLineOfSight(mech, target, MechX(target), MechY(target),
 						   FaMechRange(mech, target)),
 			"That target is not in your line of sight.");
+	DOCHECK(Fortified(target), "Your target is fortified and cannot be towed.");
 	DOCHECK(MechSpecials2(target) & CARRIER_TECH
 			&& !MechSpecials2(mech) & CARRIER_TECH,
 			"You cannot handle the mass on that carrier.");
