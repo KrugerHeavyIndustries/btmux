@@ -42,14 +42,14 @@ const char *repair_need_msgs[] = {
 	"Ranging system repairs on %s",
 	"Ammo feed repairs on %s",
 	"Replacement of %s",
-	"Reload of %s (%d rounds)",
+	"Reload of %s%s (%d rounds)",
 	"Repairs on armor (%d points)",
 	"Repairs on rear armor (%d points)",
 	"Repairs on internals (%d points)",
 	"Removal of section",
 	"Removal of %s",
 	"Removal of %s",
-	"Unload of %s (%d rounds)",
+	"Unload of %s%s(%d rounds)",
 	"Reseal",
 	"Replace suit",
 };
@@ -381,13 +381,15 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 			break;
 		case RELOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
-					pos_part_name(mech, v1, v2), FullAmmo(mech, v1,
-														  v2) -
-					GetPartData(mech, v1, v2));
+					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
+					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
+					FullAmmo(mech, v1, v2) - GetPartData(mech, v1, v2) );
 			break;
 		case UNLOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
-					pos_part_name(mech, v1, v2), GetPartData(mech, v1, v2));
+					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
+					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
+					GetPartData(mech, v1, v2));
 			break;
 		case FIXARMOR:
 		case FIXARMOR_R:
