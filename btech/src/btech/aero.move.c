@@ -403,7 +403,7 @@ void ds_BridgeHit(MECH * mech)
 		return;
 	if(In_Character(mech->mynum))
 		mech_notify(mech, MECHALL,
-					"SHIT! The shot seems to be coming straight for the bridge!");
+					"DUCK! The shot seems to be coming straight for the bridge!");
 	KillMechContentsIfIC(mech->mynum);
 }
 
