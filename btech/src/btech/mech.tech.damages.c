@@ -399,7 +399,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 			break;
 		}
 		j = is_under_repair(mech, i);
-		sprintf(buf2, "%%ch%s%-2d:%s %%cn%s%s", j ? "%cg" : "%cy", i + 1,
+		sprintf(buf2, "%%ch%s%-2d:%3s %%cn%s%s", j ? "%cg" : "%cy", i + 1,
 				ShortArmorSectionString(MechType(mech), MechMove(mech), v1),
 				buf, j ? " (*)" : "");
 		vsi(buf2);
