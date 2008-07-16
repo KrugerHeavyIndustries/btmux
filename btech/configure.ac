@@ -40,6 +40,32 @@ AC_ARG_ENABLE([hudinfo-support],
         AC_MSG_RESULT([yes])
     ]
 )
+
+AC_MSG_CHECKING([whether to enable the hardcoded cargo commands])
+AC_ARG_ENABLE([bt-cargocmds],
+    AS_HELP_STRING([--disable-bt-cargocmds],
+                   [Disable cargo commands [[default=enabled]]])
+    AS_HELP_STRING([ ], [ ]),
+    [
+        case "${enableval}" in
+            yes) 
+                AC_DEFINE([BT_CARGO_COMMANDS], [1], [Should the cargo commands be enabled])
+                AC_MSG_RESULT([yes])
+                ;;
+            no)
+                AC_MSG_RESULT([no])
+                ;;
+            *)
+                AC_MSG_ERROR(bad value "${enableval}" for cargocommands option)
+                ;;
+        esac
+    ],
+    [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([BT_CARGO_COMMANDS], [1], [Should the cargo commands be enabled])
+    ]
+)
+
                    
 AC_MSG_CHECKING([whether to enable the advanced econ system])
 AC_ARG_ENABLE([bt-advanced-econ],

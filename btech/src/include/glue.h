@@ -632,6 +632,7 @@ CommandsStruct mechcommands[] = {
     {0, "@MAGIC", "@Fixes the unfixable - skirt crits etc (wiz-only)",
 	tech_magic},
 
+#ifdef BT_CARGO_COMMANDS
     /* Cargo */
     HEADER("Cargo"),
 
@@ -643,6 +644,7 @@ CommandsStruct mechcommands[] = {
     {0, "UNLOADCARGO <NAME> <COUNT>",
 	    "Unloads <COUNT> <NAME>s to the bay.",
 	mech_unloadcargo},
+#endif
 
     /* Restricted commands */
     HEADER("@Restricted"),

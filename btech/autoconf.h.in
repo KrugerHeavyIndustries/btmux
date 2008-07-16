@@ -9,6 +9,9 @@
 /* Should the advanced econ system be enabled */
 #undef BT_ADVANCED_ECON
 
+/* Should the cargo commands be enabled */
+#undef BT_CARGO_COMMANDS
+
 /* Should complex repairs be enabled */
 #undef BT_COMPLEXREPAIRS
 
