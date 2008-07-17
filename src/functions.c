@@ -2134,6 +2134,16 @@ static void fun_version(char *buff, char **bufc, dbref player, dbref cause,
 	safe_str(mudstate.version, buff, bufc);
 }
 
+/*
+ * Doesn't actually do anything. Use this function for documenting things, similar to the @@ command.
+ */
+static void fun_double_at(char *buff, char **bufc, dbref player, dbref cause,
+						char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	// Don't do anything at all
+}
+
+
 static void fun_strlen(char *buff, char **bufc, dbref player, dbref cause,
 					   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -5530,6 +5540,8 @@ static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 FUN flist[] = {
+//      {"FUNCNAME", fun_function, args, ?, permissions},
+	{"@@", fun_double_at, 1, 0, CA_PUBLIC},
 	{"ABS", fun_abs, 1, 0, CA_PUBLIC},
 	{"ACOS", fun_acos, 1, 0, CA_PUBLIC},
 	{"ADD", fun_add, 0, FN_VARARGS, CA_PUBLIC},
