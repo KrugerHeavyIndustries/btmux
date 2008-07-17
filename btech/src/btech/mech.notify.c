@@ -544,11 +544,11 @@ void mech_set_channelfreq(dbref player, void *data, char *buffer)
 	int freq;
 	MECH *mech = (MECH *) data;
 	MECH *t;
+	// map pointer is NULL if in a carrier. Careful.
 	MAP *map = getMap(mech->mapindex);
 	int i, j;
 
 	/* UH, this is code that _pretends_ it works :-) */
-	cch(MECH_MAP);
 	skipws(buffer);
 	DOCHECK(!*buffer, "Invalid input!");
 	chn = toupper(*buffer) - 'A';
@@ -572,7 +572,7 @@ void mech_set_channelfreq(dbref player, void *data, char *buffer)
 	 * map that do not belong to the same team and checks their freqs
 	 * against the one set. If it matches it emits message
 	 */
-	if(freq > 0) {
+	if(freq > 0 && map) {
 		for(i = 0; i < map->first_free; i++) {
 			if(!(t = FindObjectsData(map->mechsOnMap[i])))
 				continue;
@@ -597,7 +597,6 @@ void mech_set_channeltitle(dbref player, void *data, char *buffer)
 	int chn = -1;
 	MECH *mech = (MECH *) data;
 
-	cch(MECH_MAP);
 	skipws(buffer);
 	DOCHECK(!*buffer, "Invalid input!");
 	chn = toupper(*buffer) - 'A';
@@ -655,7 +654,6 @@ void mech_set_channelmode(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 	char buf[SBUF_SIZE];
 
-	cch(MECH_MAP);
 	skipws(buffer);
 	DOCHECK(!*buffer, "Invalid input!");
 	chn = toupper(*buffer) - 'A';
