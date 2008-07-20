@@ -213,6 +213,10 @@ struct weapon_struct MechWeapons[] = {
         -1, -1, 1, 0, 100, -1, PULSE, 21, 31000, 0, 0},
 /* Missing PPC/ERPPC Capacitors */
 
+/* IS Energy Weapons that are tech-level less as per Total Warfare */
+    {"IS.SnubNosedPPC", VRT_IS_SNUBNOSEDPPC, TBEAM, 10, 10, 0, 9, 13, 15, 0, 6, 8, 9,
+        2, 0, 600, -1, SNUBPPC, 165, 300000, 0, 0},
+
 /* IS Level 1 Ballistic Weapons -- Verified 02/13/07 -- Power_Shaper */
     {"IS.AC/2", VRT_IS_AC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1, -1, 1,
         45, 600, -1, RFAC, 37, 75000, 5, 1000},

@@ -1425,16 +1425,16 @@ void FireWeapon(MECH * mech,
 }
 
 int determineDamageFromHit(MECH * mech,
-						   int wSection,
-						   int wCritSlot,
-						   MECH * hitMech,
-						   int hitX,
-						   int hitY,
-						   int weapindx,
-						   int wGattlingShots,
-						   int wBaseWeapDamage,
-						   int wAmmoMode, int type, int modifier,
-						   int isTempCalc)
+			   int wSection,
+			   int wCritSlot,
+			   MECH * hitMech,
+			   int hitX,
+			   int hitY,
+			   int weapindx,
+			   int wGattlingShots,
+			   int wBaseWeapDamage,
+			   int wAmmoMode, int type, int modifier,
+			   int isTempCalc)
 {
 	MAP *mech_map;
 	float fRange = 0.0;
@@ -1460,6 +1460,14 @@ int determineDamageFromHit(MECH * mech,
 			wWeapDamage = 10;
 		else if(fRange > MechWeapons[weapindx].shortrange)
 			wWeapDamage = 20;
+	}
+
+	/* If we're a snub ppc, damage gets altered by range. */
+	if(MechWeapons[weapindx].special & SNUBPPC) {
+		if(fRange > MechWeapons[weapindx].medrange)
+			wWeapDamage = 5;
+		else if(fRange > MechWeapons[weapindx].shortrange)
+			wWeapDamage = 8;
 	}
 
 	wWeapDamage -= getCritSubDamage(mech, wSection, wCritSlot);

@@ -522,6 +522,7 @@ struct weapon_struct {
 #define HVYGAUSS	0x08000000	/* Heavy Gauss */
 #define ROCKET		0x10000000	/* Rocket launchers. +1 to hit, one shot wonders */
 #define SPLIT_CRITS     0x20000000	/* Certain weapons can split crits. Mark them appropriately */
+#define SNUBPPC         0x40000000      /* Snub-nosed PPC */
 
 #define PCOMBAT		(PC_HEAT|PC_IMPA|PC_SHAR)
 

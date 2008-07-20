@@ -114,6 +114,7 @@
 #define VRT_CL_SPL		13	/* CL.SmallPulseLaser */
 #define VRT_IS_ERLL		25	/* IS.ERLargeLaser */
 #define VRT_IS_ERPPC		30	/* IS.ERPPC */
+#define VRT_IS_SNUBNOSEDPPC	30	/* IS.SnubNosedPPC */
 #define VRT_IS_FLAMER		10	/* IS.Flamer */
 #define VRT_IS_LL		25	/* IS.LargeLaser */
 #define VRT_IS_LPL		25	/* IS.LargePulseLaser */
