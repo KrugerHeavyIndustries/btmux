@@ -218,7 +218,7 @@ struct weapon_struct MechWeapons[] = {
         2, 0, 600, -1, SNUBPPC, 165, 300000, 0, 0},
     {"IS.LightPPC", VRT_IS_LIGHTPPC, TBEAM, 5, 5, 3, 6, 12, 18, 3, 4, 8, 10,
         2, 0, 300, -1, NONE, 88, 150000, 0, 0},
-    {"IS.LightPPC", VRT_IS_HEAVYPPC, TBEAM, 15, 15, 3, 6, 12, 18, 3, 4, 8, 10,
+    {"IS.HeavyPPC", VRT_IS_HEAVYPPC, TBEAM, 15, 15, 3, 6, 12, 18, 3, 4, 8, 10,
         4, 0, 1000, -1, NONE, 317, 250000, 0, 0},
 
 /* IS Level 1 Ballistic Weapons -- Verified 02/13/07 -- Power_Shaper */
