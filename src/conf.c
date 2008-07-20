@@ -159,7 +159,6 @@ void cf_init(void)
 	mudconf.namechange_days = 60;
 	mudconf.allow_chanlurking = 0;
 	mudconf.afterlife_dbref = 220;
-	mudconf.afterscen_dbref = 801;
 	mudconf.port = 6250;
 	mudconf.conc_port = 6251;
 	mudconf.init_size = 1000;
@@ -1045,8 +1044,6 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_ic, 0},
 	{(char *) "btech_afterlife_dbref",
 	 cf_int, CA_GOD, &mudconf.afterlife_dbref, 0},
-	{(char *) "btech_afterscen_dbref",
-	 cf_int, CA_GOD, &mudconf.afterscen_dbref, 0},
 	{(char *) "btech_vcrit",
 	 cf_int, CA_GOD, &mudconf.btech_vcrit, 0},
 	{(char *) "btech_dynspeed",
@@ -1135,6 +1132,8 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_perunit_xpmod, 0},
 	{(char *) "btech_tsm_tow_bonus",
 	 cf_int, CA_GOD, &mudconf.btech_tsm_tow_bonus, 0},
+	{(char *) "btech_heatcutoff",
+	 cf_int, CA_GOD, &mudconf.btech_heatcutoff, 0},
 	{(char *) "btech_cost_debug",
 	 cf_int, CA_GOD, &mudconf.btech_cost_debug, 0},
 	{(char *) "btech_sprint_bth",

@@ -95,13 +95,13 @@ struct confdata {
     int btech_explode_stop;	/* Allow or disallow explode stop */
     int btech_explode_time;	/* Number of tics self-destruction takes */
     int btech_ic;		/* Allow or disallow MechWarrior embark/disembark */
-    int btech_parts;
-    int btech_vcrit;
-    int btech_slowdown;
+    int btech_parts;		/* If 1, enable part brands. */
+    int btech_vcrit;		/* If below 2, vehicles don't crit at all. */
+    int btech_slowdown;		/* If 2, new slowdown code based on desired/current heading. 1 is a flat reduction. 0 is no slowdown. */
     int btech_fasaturn;
-    int btech_dynspeed;
+    int btech_dynspeed;		/* Factor in section loss and gravity for mech speed. */
     int btech_stackpole;        /* Mechs mushroom as a result of triple engine crits */
-    int btech_erange;
+    int btech_erange;		/* 1= Enable extended, extended weapon ranges. */
     int btech_hit_arcs;		/* hit arc rules (see FindAreaHitGroup()) */
     int btech_phys_use_pskill;  /* Use piloting skills for physical attacks */
     int namechange_days;
@@ -118,8 +118,8 @@ struct confdata {
     int btech_nofusionvtolfuel;	/* Fusion engine'd VTOLs don't use fuel */
     int btech_vhltacthreshold;	/* threshold for vehicle TACs. If it's <= 0, we ignore any armor level and do normal tacs, else we only TAC if the armor percent is <= to the value. */
     int btech_mechtacthreshold;	/* threshold for Mech TACs. If it's <= 0, we ignore any armor level and do normal tacs, else we only TAC if the armor percent is <= to the value. */
-    int btech_newcharge;
-    int btech_tl3_charge;
+    int btech_newcharge;	/* 1= use distance counter for charge damage. */
+    int btech_tl3_charge;	/* 1= New TL3 damage formula. Takes direction and speed into account. */
     int btech_tankfriendly;	/* Some tank friendly changes if fasacrit is too harsh */
     int btech_skidcliff;	/* skidroll to check for cliffs and falldamage for mechs  */
     int btech_xp_bthmod;	/* Use bth modifier in new xp code */
@@ -132,11 +132,11 @@ struct confdata {
     int btech_oldxpsystem;	/* Uses old xp system if 1 */
     int btech_xp_vrtmod;	/* Modifier for VRT weapons used if !0 */
     int btech_limitedrepairs;	/* If on then armor fixes and reloads in stalls only */
-    int btech_digbonus;
-    int btech_dig_only_fs;
-    int btech_xploss;
+    int btech_digbonus;		/* If shot would land on the FS hitgroup of a tank at >= your elevation, add this number to BTH. */
+    int btech_dig_only_fs;	/* Make the bonus apply to only shots that would hit the tank's FS hitgroup. */
+    int btech_xploss;		/* Percentage of XP to lose on dying. 1000 = none, 0 = all? */
     int btech_critlevel;	/* percentage of armor left before TAC occurs */
-    int btech_tankshield;
+    int btech_tankshield;	/* ???: Not really sure. */
     int btech_newstagger;	/* For the new round based stagger */
     int btech_extendedmovemod;	/* Whether to use MaxTech's extended target movement modifiers */
     int btech_stacking;		/* Whether to check for stacking, and how to penalize */
@@ -168,7 +168,6 @@ struct confdata {
     int hudinfo_enabled;	/* At runtime turn HUD on and off */
 #endif
     int afterlife_dbref;
-    int afterscen_dbref;
     int indent_desc;		/* Newlines before and after descs? */
     int name_spaces;		/* allow player names to have spaces */
     int show_unfindable_who;    /* should players set UNFINDABLE appear on who? */

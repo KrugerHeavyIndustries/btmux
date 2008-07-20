@@ -78,7 +78,6 @@
 
 /* Where dead pilots go */
 #define AFTERLIFE_DBREF mudconf.afterlife_dbref
-#define AFTERSCEN_DBREF mudconf.afterscen_dbref
 
 /* Where used MW templates go to wait for reincarnation (<g>) */
 #define USED_MW_STORE   mudconf.btech_usedmechstore

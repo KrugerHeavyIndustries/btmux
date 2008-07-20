@@ -16,7 +16,7 @@ struct confdata {
     int btech_explode_time;	/* Number of tics self-destruction takes */
     int btech_ic;		/* Allow or disallow MechWarrior embark/disembark */
     int btech_parts;
-    int btech_vcrit;
+    int btech_vcrit;		/* If below 2, vehicles don't crit at all. */
     int btech_slowdown;
     int btech_fasaturn;
     int btech_dynspeed;
