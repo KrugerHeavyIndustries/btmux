@@ -69,6 +69,7 @@ struct confdata {
     int btech_perunit_xpmod;	/* Allow per unit xp modifications */
     int btech_tsm_tow_bonus;	/* Give bonus to TSM units when towing, similiar to salvage tech (1=Yes, 0=No) */
     int btech_tsm_sprint_bonus;	/* 0= sprint and tsm don't stack 1= stack sprint and tsm */
+    int btech_heatcutoff;       /* 0= Don't allow use of the heatcutoff command */
     int btech_sprint_bth;	/* set to appropriate BTH on sprinting units (-4 is default) */
     int btech_cost_debug;	/* 1= Send info for btfasabasecost to MechDebugInfo channel */
 #ifdef HUDINFO_SUPPORT

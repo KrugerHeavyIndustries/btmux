@@ -304,6 +304,11 @@ void heat_cutoff(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
 
+	if(mudconf.btech_heatcutoff < 1) {
+		notify(player, "This command has been disabled.");
+		return;
+	}
+
 	cch(MECH_USUALSMO);
 	if(HeatcutoffChanging(mech)) {
 		notify(player,
