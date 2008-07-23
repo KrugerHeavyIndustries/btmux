@@ -38,7 +38,7 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 		return " Artemis IV";
 	if(mode & NARC_MODE)
 		return (MechWeapons[model].special & NARC) ? " Explosive" :
-			" Narc compatible";
+			" Narc";
 	if(mode & INARC_EXPLO_MODE)
 		return " iExplosive";
 	if(mode & INARC_HAYWIRE_MODE)
@@ -60,7 +60,7 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 	if(mode & MINE_MODE)
 		return " Mine";
 	if(mode & AC_AP_MODE)
-		return " ArmorPiercing";
+		return " Armor Piercing";
 	if(mode & AC_FLECHETTE_MODE)
 		return " Flechette";
 	if(mode & AC_INCENDIARY_MODE)
