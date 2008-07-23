@@ -1123,11 +1123,11 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 												  GetPartAmmoMode(mech, index,
 																  loop)));
 			strcat(buffer, " Ammo");
+		        if(!PartIsNonfunctional(mech, index, loop)) {
+                                sprintf(trash, " [%3.3d/%3.3d]", data, FullAmmo(mech,index,loop));
+                                strcat(buffer, trash);
+                        }
 
-			if(!PartIsNonfunctional(mech, index, loop)) {
-				sprintf(trash, " (%d / %d)", data, FullAmmo(mech,index,loop));
-				strcat(buffer, trash);
-			}
 
 		} else {
 			if(IsWeapon(type) && (wFireMode & OS_MODE))
