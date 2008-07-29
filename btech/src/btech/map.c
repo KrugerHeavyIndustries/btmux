@@ -579,6 +579,8 @@ void newfreemap(dbref key, void **data, int selector)
 		sprintf(new->mapname, "%s", "Default Map");
 		break;
 	case SPECIAL_FREE:
+		/* Seriously. We weren't clearing the map of mechas. Bad bad accounting!!! */
+		map_clearmechs(GOD, new, "");
 		del_mapobjs(new);
 		if(new->map) {
 			for(i = new->map_height - 1; i >= 0; i--)
