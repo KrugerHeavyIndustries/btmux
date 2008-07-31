@@ -1050,7 +1050,9 @@ void mech_thrash(dbref player, void *data, char *buffer)
 #else
 	damage = MechRealTons(mech) / 3;
 #endif /* REALWEIGHT_DAMAGE */
-	damage = (damage * limbs) / 4;
+
+	/* Rules say tonnage/3, not tonnage/3 * limbs  Page 151, Total Warfare*/
+	
 
 	mech_notify(mech, MECHALL,
 				"You start to flail your arms and legs like a wild man!");
