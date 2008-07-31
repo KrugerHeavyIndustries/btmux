@@ -1814,9 +1814,9 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 	if(!(MechStatus(mech) & COMBAT_SAFE)) {
 		if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW || seemsg)
 			mech_notify(mech, MECHPILOT,
-						"You try to avoid taking damage in the fall.");
+						"You try to avoid taking personal damage in the fall.");
 		else
-			mech_notify(mech, MECHPILOT, "You try to avoid taking damage.");
+			mech_notify(mech, MECHPILOT, "You try to avoid taking personal damage.");
 		if(!MadePilotSkillRoll(mech, levels)) {
 			if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW ||
 			   seemsg)
