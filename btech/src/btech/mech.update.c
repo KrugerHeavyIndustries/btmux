@@ -2822,12 +2822,20 @@ void UpdatePilotSkillRolls(MECH * mech)
 {
 	int makeroll = 0, grav = 0;
 	float maxspeed;
+	
+	int temp_tick = muxevent_tick;
 
-	if(((muxevent_tick % TURN) == 0) && !Fallen(mech) && !Jumping(mech) &&
+	/* If for some reason, we get here and muxevent_tick is odd all the time.... */
+	if ((temp_tick & 1) != 0 )
+		temp_tick++;
+	
+	
+	if(((temp_tick % TURN) == 0) && !Fallen(mech) && !Jumping(mech) &&
 	   !OODing(mech))
 		/* do this once a turn (30 secs), only if mech is standing */
 	{
 		maxspeed = MMaxSpeed(mech);
+
 
 		if(!Started(mech))
 			makeroll = 4;
@@ -2847,6 +2855,7 @@ void UpdatePilotSkillRolls(MECH * mech)
 				grav = 1;
 				makeroll = 1;
 			}
+
 		if(IsRunning(MechSpeed(mech), maxspeed) &&
 		   ((MechCritStatus(mech) & GYRO_DAMAGED) ||
 			(MechCritStatus(mech) & HIP_DAMAGED)))
@@ -2886,7 +2895,7 @@ void UpdatePilotSkillRolls(MECH * mech)
 		CheckDamage(mech);
 	else
 		MechTurnDamage(mech) = 0;
-	if((muxevent_tick % TURN) == 0) {
+	if((temp_tick % TURN) == 0) {
 		if(Started(mech) && MechMove(mech) != MOVE_NONE)
 			CheckGenericFail(mech, -1, NULL, NULL);
 	}
