@@ -1808,20 +1808,25 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 /* Rule Reference: BMR Revised, Page 16 ( Fall = Bruise if Pilot roll fails) */
 /* Rule Reference: Total Warfare, Page 41 ( Fall = Bruise if Pilot roll fails) */
 
-	if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW || seemsg)
-		mech_notify(mech, MECHPILOT,
-					"You try to avoid taking damage in the fall.");
-	else
-		mech_notify(mech, MECHPILOT, "You try to avoid taking damage.");
-	if(!MadePilotSkillRoll(mech, levels)) {
-		if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW ||
-		   seemsg)
+
+	if(!(MechStatus(mech) & COMBAT_SAFE)) {
+		if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW || seemsg)
 			mech_notify(mech, MECHPILOT,
-						"You take personal injury from the fall!");
+						"You try to avoid taking damage in the fall.");
 		else
-			mech_notify(mech, MECHPILOT, "You take personal injury!");
-		headhitmwdamage(mech, mech, 1);
+			mech_notify(mech, MECHPILOT, "You try to avoid taking damage.");
+		if(!MadePilotSkillRoll(mech, levels)) {
+			if(MechType(mech) == CLASS_MECH || MechType(mech) == CLASS_MW ||
+			   seemsg)
+				mech_notify(mech, MECHPILOT,
+							"You take personal injury from the fall!");
+			else
+				mech_notify(mech, MECHPILOT, "You take personal injury!");
+			headhitmwdamage(mech, mech, 1);
+		}
+
 	}
+
 	MechSpeed(mech) = 0;
 	MechDesiredSpeed(mech) = 0;
 	if(Jumping(mech)) {
@@ -1852,9 +1857,11 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 		MechStartFY(mech) = 0.0;
 		MechStartFZ(mech) = 0.0;
 		MechStatus(mech) |= LANDED;
-		if(MechMove(mech) == MOVE_VTOL)
-		     mech_notify(mech, MECHALL,"Your rotor has been destroyed!");
-		MechStatus(mech) |= FALLEN;
+		if(!(MechStatus(mech) & COMBAT_SAFE)) {
+			if(MechMove(mech) == MOVE_VTOL)
+			     mech_notify(mech, MECHALL,"Your rotor has been destroyed!");
+			 MechStatus(mech) |= FALLEN;
+		}
 		StopMoving(mech);
 	} else
 		MaybeMove(mech);
@@ -1918,21 +1925,23 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 
 	spread = damage / 5;
 
-	for(i = 0; i < spread; i++) {
-		hitloc = FindHitLocation(mech, hitGroup, &iscritical, &isrear);
-		DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical, 5, -1,
-				   -1, 0, -1, 0, 0);
-		MechFloods(mech);
-		water_extinguish_inferno(mech);
-	}
-	if(damage % 5) {
-		hitloc = FindHitLocation(mech, hitGroup, &iscritical, &isrear);
-		DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical,
-				   (damage % 5), -1, -1, 0, -1, 0, 0);
-		MechFloods(mech);
-		water_extinguish_inferno(mech);
-	}
+	if(!(MechStatus(mech) & COMBAT_SAFE)) {
+		for(i = 0; i < spread; i++) {
+			hitloc = FindHitLocation(mech, hitGroup, &iscritical, &isrear);
+			DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical, 5, -1,
+					   -1, 0, -1, 0, 0);
+			MechFloods(mech);
+			water_extinguish_inferno(mech);
+		}
+		if(damage % 5) {
+			hitloc = FindHitLocation(mech, hitGroup, &iscritical, &isrear);
+			DamageMech(mech, mech, 0, -1, hitloc, isrear, iscritical,
+					   (damage % 5), -1, -1, 0, -1, 0, 0);
+			MechFloods(mech);
+			water_extinguish_inferno(mech);
+		}
 
+	}
 	possible_mine_poof(mech, MINE_FALL);
 	MarkForLOSUpdate(mech);
 }
