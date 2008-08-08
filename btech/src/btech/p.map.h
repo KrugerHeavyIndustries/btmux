@@ -19,6 +19,7 @@ void map_addhex(dbref player, void *data, char *buffer);
 void map_mapemit(dbref player, void *data, char *buffer);
 int water_distance(MAP * map, int x, int y, int dir, int max);
 int map_load(MAP * map, char * mapname);
+int map_checkmapfile(MAP * map, char * mapname);
 void map_loadmap(dbref player, void *data, char *buffer);
 void map_savemap(dbref player, void *data, char *buffer);
 void map_setmapsize(dbref player, void *data, char *buffer);

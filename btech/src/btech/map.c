@@ -241,6 +241,52 @@ static void make_bridges(MAP * map)
 					SetTerrainBase(map, x, y, BRIDGE);
 }
 
+int map_checkmapfile(MAP * map, char *mapname)
+{
+	char openfile[50];
+	FILE *fp;
+        char row[MAPX * 2 + 3];
+        int i  = 0, height, width, filemode;
+
+
+	if(strlen(mapname) >= MAP_NAME_SIZE)
+		mapname[MAP_NAME_SIZE] = 0;
+	sprintf(openfile, "%s/%s", MAP_PATH, mapname);
+	fp = my_open_file(openfile, "r", &filemode);
+
+	if(!fp) {
+	        my_close_file(fp, &filemode);
+		return -1; // Bad map file 
+	}
+
+	if(fscanf(fp, "%d %d\n", &width, &height) != 2 || height < 1 ||
+		height > MAPY || width < 1 || width > MAPX) {
+			SendError(tprintf("Map #%d: Invalid height and or/width on %s", map->mynum, mapname));
+			my_close_file(fp, &filemode);
+			return -2; // Bad Height/Width
+	}
+
+	// Scan through the mapfile
+	for(i = 0; i < height; i++) {
+		if(feof(fp)
+			|| fgets(row, 2 * MAPX + 2, fp) == NULL ||
+			strlen(row) < (2 * width))
+			break;
+	}
+
+	if (i != height) {
+		SendError(tprintf("Map #%d: Mapfile possibly corrupt and/or height/width flipped. Height != what was read in %s", map->mynum, mapname));
+		my_close_file(fp, &filemode);
+		return -3;
+	}
+
+	// Everything is good if we get past the above
+
+        my_close_file(fp, &filemode);
+	return 1;
+
+}
+
 int map_load(MAP * map, char *mapname)
 {
 	char openfile[50];
@@ -255,7 +301,7 @@ int map_load(MAP * map, char *mapname)
 	sprintf(openfile, "%s/%s", MAP_PATH, mapname);
 	fp = my_open_file(openfile, "r", &filemode);
 	if(!fp) {
-		return -1;
+		return -1; // Bad map file
 	}
 	del_mapobjs(map);			/* Just in case */
 	if(map->map) {
@@ -343,15 +389,18 @@ void map_loadmap(dbref player, void *data, char *buffer)
 	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 			"Invalid number of arguments!");
 	notify_printf(player, "Loading %s", args[0]);
-	switch (map_load(map, args[0])) {
+	switch (map_checkmapfile(map, args[0])) {
 	case -1:
-		notify(player, "Map not found.");
+		notify(player, "#-1 Map not found.");
 		return;
 	case -2:
-		notify(player, "Map invalid.");
+		notify(player, "#-1 Map invalid - Bad Height/Width.");
 		return;
-	case 0:
-		notify(player, "Map loaded.");
+	case -3:
+		notify(player, "#-1 Map invalid - Height not loaded properly");
+		return;
+	case 1: 
+		map_load(map, args[0]);
 		break;
 	default:
 		notify(player, "Unknown error while loading map!");
@@ -512,6 +561,7 @@ void map_update(dbref obj, void *data)
 
 	/* Changed from % 25 to % 60. %60 never hit when muxevent_tick came here and was odd.
 	   % 25 should hit when its odd or even (25 75 125... when odd 50 100 150... when even */
+
 
 	if(!(muxevent_tick % 25)) {
 		oldl = map->maplight;

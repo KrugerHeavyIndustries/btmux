@@ -1432,14 +1432,18 @@ void fun_btloadmap(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!Good_obj(mapdbref), "#-1 INVALID TARGET");
 	map = getMap(mapdbref);
 	FUNCHECK(!map, "#-1 INVALID TARGET");
-	switch (map_load(map, fargs[1])) {
+	switch (map_checkmapfile(map, fargs[1])) {
 	case -1:
 		safe_str("#-1 MAP NOT FOUND", buff, bufc);
 		return;
 	case -2:
-		safe_str("#-1 INVALID MAP", buff, bufc);
+		safe_str("#-1 INVALID MAP HEIGHT/WIDTH", buff, bufc);
 		return;
-	case 0:
+	case -3:
+		safe_str("#-1 INVALID MAP HEIGHT NOT LOADED PROPERLY", buff, bufc);
+		return;
+	case 1:
+		map_load(map,fargs[1]);
 		break;
 	default:
 		safe_str("#-1 UNKNOWN ERROR", buff, bufc);
