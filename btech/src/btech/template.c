@@ -1172,7 +1172,7 @@ char *specialsabrev2[] = {
 	"CAMO",
 	"CART",
 	"WPRF",
-	"XLGRYO", "HDGYRO", "CGYRO",
+	"XLGYRO", "HDGYRO", "CGYRO",
 	"TCOMP",
 	NULL
 };
