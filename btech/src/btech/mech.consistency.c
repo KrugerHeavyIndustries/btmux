@@ -447,8 +447,12 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 			   MechSpecials2(mech) & LT_FF_ARMOR_TECH ? "Armor (Lt FF)" :
 			   MechSpecials(mech) & HARDA_TECH ? "Armor (Hardened)" :
 			   MechSpecials(mech) & FF_TECH ? "Armor (FF)" : "Armor", armor_o,
-			   ceil(armor /
-					(8. * (MechSpecials(mech) & HARDA_TECH ? 2 : 1))) * 512);
+			   round_to_halfton( armor * 1024 / (MechSpecials(mech) & HARDA_TECH ? 8 : 16) ));
+			   
+			  // ceil(armor /
+
+//					(8. * (MechSpecials(mech) & HARDA_TECH ? 2 : 1))) * 512);
+
 
 	if(MyMechNumOsinks(mech)) {
 		pile[Special(HEAT_SINK)] =
