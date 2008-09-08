@@ -281,15 +281,15 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 			mech_notify(target, MECHALL, "You have been destroyed!");
 			break;
 		}
-		mech_map = getMap(target->mapindex);
-		if((mudconf.btech_vtol_ice_causes_fire)
-		   && (MechSpecials(target) & ICE_TECH)
-		   && (MechType(target) == CLASS_VTOL)) {
-			MechLOSBroadcast(target, "explodes in a ball of flames!");
-			add_decoration(mech_map, MechX(target), MechY(target), TYPE_FIRE,
-						   FIRE, FIRE_DURATION);
+		if (target->mapindex != -1) {
+			mech_map = getMap(target->mapindex);
+			if((mudconf.btech_vtol_ice_causes_fire)
+			   && (MechSpecials(target) & ICE_TECH)
+			   && (MechType(target) == CLASS_VTOL)) {
+				MechLOSBroadcast(target, "explodes in a ball of flames!");
+				add_decoration(mech_map, MechX(target), MechY(target), TYPE_FIRE, FIRE, FIRE_DURATION);
+			}
 		}
-
 		if(MechCarrying(target) > 0) {
 			if((ttarget = getMech(MechCarrying(target)))) {
 				mech_notify(ttarget, MECHALL,
@@ -298,7 +298,7 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 			}
 		}
 	}
-
+	
 	/* destroy contents if they are units and the containter is IC*/
 	SAFE_DOLIST(a,b,Contents(target->mynum))
 		if(IsMech(a) && In_Character(a)) {
