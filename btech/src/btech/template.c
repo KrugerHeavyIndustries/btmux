@@ -1555,8 +1555,9 @@ static int dump_item(FILE * fp, MECH * mech, int x, int y)
 		fprintf(fp, "    %s		  { %s - - - }\n", crit,
 				get_parts_vlong_name(GetPartType(mech, x, y), 0));
 	else {
-		fprintf(fp, "    %s		  { %s - - %s}\n", crit,
+		fprintf(fp, "    %s		  { %s %s - %s}\n", crit,
 				get_parts_vlong_name(GetPartType(mech, x, y), 0),
+				GetPartData(mech, x , y ) ? tprintf("%d",GetPartData(mech, x, y)) : "-",
 				!mudconf.btech_parts ? "" : tprintf("%d ",
 													GetPartBrand(mech, x,
 																 y)));
@@ -2502,16 +2503,17 @@ int load_template(dbref player, MECH * mech, char *filename)
 																  critical));
 				}
 			} else {
-				GetPartData(mech, section, critical) = 0;
+				if ((line2 = one_arg(line2, buf)))
+					GetPartData(mech, section, critical) = atoi(buf);
+				else
+					GetPartData(mech, section, critical) = 0;
 				GetPartFireMode(mech, section, critical) = 0;
 				GetPartAmmoMode(mech, section, critical) = 0;
 				if((line2 = one_arg(line2, buf)))
 					if((line2 = one_arg(line2, buf))) {
-						line2 = one_arg(line2, buf);
 						if(mudconf.btech_parts)
 							if(atoi(buf)) {
-								SetPartBrand(mech, section, critical,
-											 atoi(buf));
+								SetPartBrand(mech, section, critical, atoi(buf));
 							}
 					}
 			}
