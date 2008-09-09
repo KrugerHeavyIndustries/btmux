@@ -1139,6 +1139,14 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 				strcat(buffer, " (Empty)");
 				if(wFireMode & WILL_JETTISON_MODE)
 					strcat(buffer, " (backpack)");
+
+			if(Special2I(type) == ARTEMIS_IV) {
+				char trash[50];
+				if(data) {
+					sprintf(trash, " [Controls Slot %d]", data + 1);
+					strcat(buffer, trash);
+				}
+			}
 		}
 
 		if(PartIsBroken(mech, index, loop) && type != EMPTY &&
