@@ -88,6 +88,8 @@ btpr_cf_init(void)
 	mudconf.btech_heatcutoff = 1;
 	mudconf.btech_sprint_bth = -4;
 	mudconf.btech_cost_debug = 0;
+	mudconf.btech_noisy_xpgain = 0;
+	mudconf.btech_xpgain_cap = 10;
 #ifdef HUDINFO_SUPPORT
 	mudconf.hudinfo_show_mapinfo = 0;
 #endif /* HUDINFO_SUPPORT */

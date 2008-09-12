@@ -146,6 +146,8 @@ void cf_init(void)
 	mudconf.btech_heatcutoff = 1;
 	mudconf.btech_sprint_bth = -4;
 	mudconf.btech_cost_debug = 0;
+	mudconf.btech_noisy_xpgain = 0;
+	mudconf.btech_xpgain_cap = 10;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1136,6 +1138,10 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_heatcutoff, 0},
 	{(char *) "btech_cost_debug",
 	 cf_int, CA_GOD, &mudconf.btech_cost_debug, 0},
+	{(char *) "btech_noisy_xpgain",
+	 cf_int, CA_GOD, &mudconf.btech_noisy_xpgain, 0},
+	{(char *) "btech_xpgain_cap",
+	 cf_int, CA_GOD, &mudconf.btech_xpgain_cap, 0},
 	{(char *) "btech_sprint_bth",
 	 cf_int, CA_GOD, &mudconf.btech_sprint_bth, 0},
 	{(char *) "btech_tsm_sprint_bonus",

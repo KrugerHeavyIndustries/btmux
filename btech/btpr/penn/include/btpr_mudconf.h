@@ -72,6 +72,7 @@ struct confdata {
     int btech_heatcutoff;       /* 0= Don't allow use of the heatcutoff command */
     int btech_sprint_bth;	/* set to appropriate BTH on sprinting units (-4 is default) */
     int btech_cost_debug;	/* 1= Send info for btfasabasecost to MechDebugInfo channel */
+    int btech_noisy_xpgain;	/* 1= Send extra XP gain info to MechXP channel */
 #ifdef HUDINFO_SUPPORT
     int hudinfo_show_mapinfo;	/* What kind of info we are willing to give */
 #endif

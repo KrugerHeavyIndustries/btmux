@@ -157,6 +157,8 @@ struct confdata {
     int btech_heatcutoff;	/* 0= The 'heatcutoff' command is disabled. */
     int btech_sprint_bth;	/* BTH to give for attacks against sprinting units (default is -4)*/
     int btech_cost_debug;	/* 1= Send info from btfasabasecost to MechDebugInfo */
+    int btech_noisy_xpgain;	/* 1 = Send XP Gain info to MechXP */
+    int btech_xpgain_cap;	/* Cap for Weapons XP Gain */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif
