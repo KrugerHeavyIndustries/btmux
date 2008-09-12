@@ -1424,7 +1424,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	if(mudconf.btech_xp_bthmod) {
 		if(!(bth >= 3 && bth <= 12)) {
 			if(mudconf.btech_noisy_xpgain) 
-				SendXP(tprintf("#%d in #%d 1 noxp #%d", pilot, mech->mynum, target->mynum));
+				SendXP(tprintf("#%d in #%d 1 noxp #%d", pilot, attacker->mynum, wounded->mynum));
 			return;				/* sure hits aren't interesting */
 		}
 		multiplier = 2 * multiplier * bth_modifier[bth - 3] / 36;
