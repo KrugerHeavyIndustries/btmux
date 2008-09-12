@@ -1422,8 +1422,11 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	multiplier = multiplier * mudconf.btech_xp_modifier;
 
 	if(mudconf.btech_xp_bthmod) {
-		if(!(bth >= 3 && bth <= 12))
+		if(!(bth >= 3 && bth <= 12)) {
+			if(mudconf.btech_noisy_xpgain) 
+				SendXP(tprintf("#%d in #%d 1 noxp #%d", pilot, mech->mynum, target->mynum));
 			return;				/* sure hits aren't interesting */
+		}
 		multiplier = 2 * multiplier * bth_modifier[bth - 3] / 36;
 	}
 
@@ -1488,11 +1491,15 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	strcpy(buf, Name(wounded->mynum));
 
 	// Emit XP gain over MechAttackXP
-	if(char_gainxp(pilot, skname, (int) xp))
+	if(char_gainxp(pilot, skname, (int) xp)) {
 		SendAttackXP(tprintf
 					 ("%s gained %d gun XP from feat of %f/100 difficulty "
 					  "(%d damage) against %s", Name(pilot), (int) xp, multiplier,
 					  damage, buf));
+		if(mudconf.btech_noisy_xpgain)
+			SendXP(tprintf("#%d in #%d %d damage #%d", pilot, attacker->mynum, damage, wounded->mynum));
+	}
+
 }								// end AccumulateGunXP()
 
 void AccumulateGunXPold(dbref pilot, MECH * attacker, MECH * wounded,
