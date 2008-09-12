@@ -1350,20 +1350,38 @@ int CountAmmoForWeapon(MECH * mech, int weapindx)
 	return wcAmmo;
 }
 
+/* Function taken from 3065. Credit to RebelST) */
 int FindArtemisForWeapon(MECH * mech, int section, int critical)
 {
-	int critloop;
-	int desired;
+        int critloop;
+        int desired;
 
-	desired = I2Special(ARTEMIS_IV);
-	for(critloop = 0; critloop < NUM_CRITICALS; critloop++)
-		if(GetPartType(mech, section, critloop) == desired &&
-		   !PartIsNonfunctional(mech, section, critloop)) {
-			if(GetPartData(mech, section, critloop) == critical)
-				return 1;
-		}
-	return 0;
+	
+        desired = I2Special(ARTEMIS_IV);
+        for(critloop = 0; critloop < NUM_CRITICALS; critloop++) {
+                if(GetPartType(mech, section, critloop) == desired && !PartIsNonfunctional(mech, section, critloop)) {
+                        if(GetPartData(mech, section, critloop) == critical)
+                                return 1;
+                }
+        }
+        if (MechType(mech) == CLASS_MECH && section == CTORSO) { // if it's mech, and torso missile, search in head
+                for (critloop = 0; critloop < 6; critloop++) {
+                        if (GetPartType(mech, HEAD, critloop) == desired && !PartIsNonfunctional(mech, HEAD, critloop)) {
+                                if (GetPartData(mech, HEAD, critloop) == critical)
+                                        return 1;
+                        }
+                }
+        } else if (MechType(mech) == CLASS_VEH_GROUND && section == TURRET) { // same thing for turret & aft
+                for (critloop = 0; critloop < NUM_CRITICALS; critloop++) {
+                        if (GetPartType(mech, BSIDE, critloop) == desired && !PartIsNonfunctional(mech, BSIDE, critloop)) {
+                                if (GetPartData(mech, BSIDE, critloop) == critical)
+                                        return 1;
+                        }
+                }
+        }
+        return 0;
 }
+
 
 int FindDestructiveAmmo(MECH * mech, int *section, int *critical)
 {

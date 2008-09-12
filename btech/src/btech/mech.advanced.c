@@ -269,9 +269,9 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 	DOCHECK0(isWeapAmmoFeedLocked(mech, section, critical),
 			 "That weapon's ammo feed mechanism is damaged!");
 
-	if(temp_nspec == -1)
+	if(temp_nspec == 1)
 		DOCHECK0(!FindArtemisForWeapon(mech, section, critical),
-				 "You have no Artemis system for that weapon.");
+				 "You do not have an Artemis system for that weapon.");
 
 	weaptype = Weapon2I(GetPartType(mech, section, critical));
 
