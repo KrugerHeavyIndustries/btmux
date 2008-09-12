@@ -1481,7 +1481,9 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	if(mudconf.btech_perunit_xpmod)
 		multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Mod. Defaults to 1 anyways */
 	
-	xp = BOUNDED(1, (int) (multiplier * damage / 100), 10);
+	/* Change the Cap to be variable depending on what a mux wants */
+
+	xp = BOUNDED(1, (int) (multiplier * damage / 100), mudconf.btech_xpgain_cap);
 
 	strcpy(buf, Name(wounded->mynum));
 
