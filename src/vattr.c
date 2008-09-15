@@ -99,6 +99,7 @@ void do_dbclean(dbref player, dbref cause, int key)
 	VATTR *vp;
 	dbref i;
 	int notfree;
+	int count = 0;
 
 	for(vp = (VATTR *) hash_firstentry(&mudstate.vattr_name_htab);
 		vp != NULL;
@@ -116,9 +117,10 @@ void do_dbclean(dbref player, dbref cause, int key)
 			anum_set(vp->number, NULL);
 			hashdelete(vp->name, &mudstate.vattr_name_htab);
 			free((char *) vp);
+			count++;
 		}
 	}
-	notify(player, "Database cleared of stale attribute entries.");
+	notify_printf(player, "Database cleared of %d stale attribute entries.", count);
 }
 
 void vattr_delete(char *name)
