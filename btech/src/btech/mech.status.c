@@ -1144,7 +1144,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 				if(Special2I(type) == ARTEMIS_IV) {
 					char trash[50];
 					if(data) {
-						sprintf(trash, " [Controls Slot %d]", data + 1);
+						sprintf(trash, " [Controls Slot %d]", data);
 						strcat(buffer, trash);
 					}
 				}

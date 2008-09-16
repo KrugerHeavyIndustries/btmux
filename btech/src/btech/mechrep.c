@@ -1490,7 +1490,6 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		notify(player, "C3 Slave Unit added to 'Mech.");
 		break;
 	case ARTEMIS_IV:
-		MechSections(mech)[index].criticals[subsect].data--;
 		MechSpecials(mech) |= ARTEMIS_IV_TECH;
 		notify(player, "Artemis IV Fire-Control System added to 'Mech.");
 		notify_printf(player,
