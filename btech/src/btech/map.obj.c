@@ -523,7 +523,7 @@ void add_decoration(MAP * map, int x, int y, int type, char data, int flaggo)
 	foo.x = x;
 	foo.y = y;
 
-	if (foo.x < 0 || foo.y < 0 || foo.x > map->map_width || foo.y > map->map_height)
+	if (foo.x < 0 || foo.y < 0 || foo.x >= map->map_width || foo.y >= map->map_height)
 		return;
 
 	foo.datac = GetRTerrain(map, x, y);
