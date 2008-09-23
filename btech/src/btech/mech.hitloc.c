@@ -258,28 +258,30 @@ int ModifyHeadHit(int hitGroup, MECH *mech) {
         return newloc;
     }
 
-    if (newloc != HEAD) {
+    if (newloc != HEAD && (mudconf.btech_exile_stun_code == 1)) {// set exile_stun_code >1 to disable 'stun' part
 
         mech_notify(mech, MECHALL, "%ch%cyCRITICAL HIT!%c");
         mech_notify(mech, MECHALL,
                 "The cockpit violently shakes from a grazing blow! "
                 "You are momentarily stunned!");
 
-        if (CrewStunning(mech)) {
-            StopCrewStunning(mech);
-        }
 
-        MechLOSBroadcast(mech,
-                "significantly slows down and starts wobbling!");
+	        if (CrewStunning(mech)) {
+        	    StopCrewStunning(mech);
+	        }
 
-        MechCritStatus(mech) |= MECH_STUNNED;
+        	MechLOSBroadcast(mech,
+                	"significantly slows down and starts wobbling!");
 
-        if (MechSpeed(mech) > WalkingSpeed(MechMaxSpeed(mech))) {
-            MechDesiredSpeed(mech) = WalkingSpeed(MechMaxSpeed(mech));
-        }
+	        MechCritStatus(mech) |= MECH_STUNNED;
 
-        MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK, 0);
-    }
+        	if (MechSpeed(mech) > WalkingSpeed(MechMaxSpeed(mech))) {
+	            MechDesiredSpeed(mech) = WalkingSpeed(MechMaxSpeed(mech));
+	        }
+
+        	MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK, 0);
+	    }
+	 
     return newloc;
 }
 

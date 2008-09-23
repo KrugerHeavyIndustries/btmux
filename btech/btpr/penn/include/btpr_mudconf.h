@@ -59,7 +59,7 @@ struct confdata {
     int btech_stackdamage;	/* Damage modifier for btech_stacking=2 */
     int btech_mw_losmap;	/* Whether MechWarriors always get a losmap */
     int btech_seismic_see_stopped; /* Whether you see stopped mechs on seismic */
-    int btech_exile_stun_code;      /* Should we use the Exile Head Hit Stun code */
+    int btech_exile_stun_code;      /* Should we use the Exile Head Hit Stun code . Set to 2 to not actually stun, but reassign headhits*/
     int btech_roll_on_backwalk;     /* wheter a piloting roll should be made to walk backwards over elevation changes */
     int btech_usedmechstore;	/* DBref for the dead mechs to spool into upon IC death */
     int btech_idf_requires_spotter; /* Requires spotter for IDF firing */
