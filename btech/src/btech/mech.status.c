@@ -1225,7 +1225,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 					"%cgOff%cn");
 		}
 
-		if(MechSpecials(mech) & ANGEL_ECM_TECH) {
+		if(MechSpecials2(mech) & ANGEL_ECM_TECH) {
 			sprintf(tempbuff + strlen(tempbuff), "AngelECM(%s)  ",
 					(!HasWorkingAngelECMSuite(mech)) ? "%ch%crXX%cn"
 					: AngelECMEnabled(mech) ? (AngelECMActive(mech) ?
