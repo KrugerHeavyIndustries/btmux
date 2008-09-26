@@ -140,6 +140,7 @@ void mech_spot(dbref player, void *data, char *buffer)
 		return;
 	}
 	if(!strcasecmp(targetID, MechIDS(mech, 0))) {
+	        DOCHECK(MechFullNoRecycle(mech, CHECK_BOTH), "You have weapons recycling!");
 		MechSpotter(mech) = mech->mynum;
 		mech_notify(mech, MECHALL, "You are now set as a spotter.");
 		return;
