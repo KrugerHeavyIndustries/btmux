@@ -230,6 +230,7 @@ void mech_fliparms(dbref player, void *data, char *buffer)
 /* Parameters:
    <player,mech,buffer> = parent's input
    nspecisspec, nspec
+   6 = Artemis
 	 5 = check that it's a TAMMO weapon and has the specified spec
    4 = check that weapon's SRM (or SSRM)
    3 = check that weapon's NARC beacon
@@ -269,16 +270,20 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 	DOCHECK0(isWeapAmmoFeedLocked(mech, section, critical),
 			 "That weapon's ammo feed mechanism is damaged!");
 
-	if(temp_nspec == 1)
+	if(temp_nspecisspec == 6) {
 		DOCHECK0(!FindArtemisForWeapon(mech, section, critical),
 				 "You do not have an Artemis system for that weapon.");
+		}
+		
 
 	weaptype = Weapon2I(GetPartType(mech, section, critical));
 
 	DOCHECK0(MechWeapons[weaptype].special & ROCKET,
 			 "Rocket launchers' mode cannot be altered!");
 
-	if((temp_nspecisspec == 5 && (MechWeapons[weaptype].type == TAMMO)
+	if((temp_nspecisspec == 6 && (MechWeapons[weaptype].type == TMISSILE)) ||
+	   (temp_nspecisspec == 5 && (MechWeapons[weaptype].type == TAMMO)
+
 		&& !(MechWeapons[weaptype].special & temp_nspec)) ||
 	   (temp_nspecisspec == 4 && (MechWeapons[weaptype].type == TMISSILE)
 		&& !(MechWeapons[weaptype].type & (IDF | DAR))) ||
@@ -657,7 +662,7 @@ void mech_artemis(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, -1, TMISSILE, ARTEMIS_MODE,
+	mech_toggle_mode_sub(player, mech, buffer, 6, TMISSILE, ARTEMIS_MODE,
 						 0,
 						 "Weapon %d has been set to fire Artemis IV compatible missiles.",
 						 "Weapon %d has been set to fire normal missiles",
