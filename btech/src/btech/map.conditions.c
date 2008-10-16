@@ -271,6 +271,13 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 							            : KILL_TYPE_NORMAL);
 					}
 					break;
+				case ECM:
+					if(!(MechCritStatus(wounded) & ECM_DESTROYED)) {
+						MechCritStatus(wounded) |= ECM_DESTROYED;
+						mech_notify(wounded, MECHALL, "Your ECM system has been destroyed!");
+						checkECM(wounded);
+					}
+					break;
 				case TARGETING_COMPUTER:
 					if(!MechCritStatus(wounded) & TC_DESTROYED) {
 						if(attacker)
