@@ -662,8 +662,8 @@ void move_mech(MECH * mech)
 			NewHexEntered(mech, mech_map, newx, newy, last_z);
 
 		if(MechX(mech) == x && MechY(mech) == y) {
-
-			MarkForLOSUpdate(mech);
+// Removed MarkForLOSUpdate.. Moved to NewHexEntered to clear potential false positives. 
+//			MarkForLOSUpdate(mech);
 			MechFloods(mech);
 			water_extinguish_inferno(mech);
 			steppable_base_check(mech, x, y);
@@ -2692,6 +2692,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 		   (MechTerrain(mech) == FIRE))
 			checkVehicleInFire(mech, 1);
 	}
+	MarkForLOSUpdate(mech);
 }
 
 void CheckDamage(MECH * wounded)
