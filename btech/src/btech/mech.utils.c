@@ -1855,12 +1855,13 @@ void do_magic(MECH * mech)
 		do_sub_magic(&opp, 0);
 	MechNumOsinks(mech) = MechNumOsinks(&opp);
 	for(i = 0; i < NUM_SECTIONS; i++) {
-		if(MechType(mech) == CLASS_MECH) {
+		
 			for(j = 0; j < CritsInLoc(mech, i); j++) {
 				if(PartIsDestroyed(mech, i, j)) {
 					if(!PartIsDestroyed(&opp, i, j)) {
 						if(!IsAmmo((t = GetPartType(mech, i, j)))) {
 							if(!IsWeapon(t))
+								if(MechType(mech) == CLASS_MECH) 
 								HandleMechCrit(&opp, NULL, 0, i, j, t,
 											   GetPartData(mech, i, j));
 						}
@@ -1877,8 +1878,8 @@ void do_magic(MECH * mech)
 						~(OS_USED | ROCKET_FIRED | IS_JETTISONED_MODE);
 				}
 			}
-		}
-
+		
+		
 		MechSections(mech)[i].config &= ~STABILIZERS_DESTROYED;
 
 		if(SectIsDestroyed(mech, i))
