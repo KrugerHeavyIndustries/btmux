@@ -1701,6 +1701,7 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 			// this is the (map, mech, x, y, z) or (map, x, y, z, mech) condition
 			if(strspn(fargs[1], NUMBERS) < 1) {
 				// mech first
+				FUNCHECK(atoi(fargs[1]),"#-1 INVALID MECH");
 				mechAdb = match_thing(player, fargs[1]);
 				FUNCHECK(strspn(fargs[2], NUMBERS) < 1, "#-1 INVALID COORDS");
 				xA = atoi(fargs[2]);
