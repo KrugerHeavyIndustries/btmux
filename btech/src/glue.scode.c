@@ -1687,8 +1687,8 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 		FUNCHECK(!IsMech(mechAdb), "#-1 INVALID MECH");
 		FUNCHECK(!(mechA = getMech(mechAdb)), "#-1 INVALID MECH");
 		FUNCHECK(mechA->mapindex != mapdb, "#-1 MECH NOT ON MAP");
-		FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-				 || yA > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xA < 0 || yA < 0 || xA >= map->map_width
+				 || yA >= map->map_height, "#-1 INVALID COORDS");
 		MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 		safe_tprintf_str(buff, bufc, "%f",
 						 FindRange(MechFX(mechA), MechFY(mechA),
@@ -1701,7 +1701,6 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 			// this is the (map, mech, x, y, z) or (map, x, y, z, mech) condition
 			if(strspn(fargs[1], NUMBERS) < 1) {
 				// mech first
-				FUNCHECK(atoi(fargs[1]),"#-1 INVALID MECH");
 				mechAdb = match_thing(player, fargs[1]);
 				FUNCHECK(strspn(fargs[2], NUMBERS) < 1, "#-1 INVALID COORDS");
 				xA = atoi(fargs[2]);
@@ -1724,8 +1723,8 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 			FUNCHECK(!IsMech(mechAdb), "#-1 INVALID MECH");
 			FUNCHECK(!(mechA = getMech(mechAdb)), "#-1 INVALID MECH");
 			FUNCHECK(mechA->mapindex != mapdb, "#-1 MECH NOT ON MAP");
-			FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-					 || yA > map->map_height, "#-1 INVALID COORDS");
+			FUNCHECK(xA < 0 || yA < 0 || xA >= map->map_width
+					 || yA >= map->map_height, "#-1 INVALID COORDS");
 			MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 			safe_tprintf_str(buff, bufc, "%f",
 							 FindRange(MechFX(mechA), MechFY(mechA),
@@ -1737,19 +1736,19 @@ void fun_btgetrange(char *buff, char **bufc, dbref player, dbref cause,
 		xA = atoi(fargs[1]);
 		FUNCHECK(strspn(fargs[2], NUMBERS) < 1, "#-1 INVALID COORDS");
 		yA = atoi(fargs[2]);
-		FUNCHECK(xA < 0 || yA < 0 || xA > map->map_width
-				 || yA > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xA < 0 || yA < 0 || xA >= map->map_width
+				 || yA >= map->map_height, "#-1 INVALID COORDS");
 		FUNCHECK(strspn(fargs[3], NUMBERS) < 1, "#-1 INVALID COORDS");
 		xB = atoi(fargs[3]);
 		FUNCHECK(strspn(fargs[4], NUMBERS) < 1, "#-1 INVALID COORDS");
 		yB = atoi(fargs[4]);
-		FUNCHECK(xB < 0 || yB < 0 || xB > map->map_width
-				 || yB > map->map_height, "#-1 INVALID COORDS");
+		FUNCHECK(xB < 0 || yB < 0 || xB >= map->map_width
+				 || yB >= map->map_height, "#-1 INVALID COORDS");
 		MapCoordToRealCoord(xA, yA, &fxA, &fyA);
 		MapCoordToRealCoord(xB, yB, &fxB, &fyB);
 		safe_tprintf_str(buff, bufc, "%f",
 						 FindRange(fxA, fyA, Elevation(map, xA, yA) * ZSCALE,
-								   fxB, fyB, Elevation(map, xB, yB)));
+								   fxB, fyB, Elevation(map, xB, yB) * ZSCALE));
 		return;
 	case 7:
 		FUNCHECK(strspn(fargs[1], NUMBERS) < 1, "#-1 INVALID COORDS");
