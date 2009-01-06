@@ -77,6 +77,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 	DOCHECK(MechCritStatus(target) & HIDDEN,
 			"You cannot pickup hiding targets....");
 	DOCHECK(Burning(target), "You can't tow a burning unit!");
+	DOCHECK(OODing(target), "You can't tow a unit that is still OODing. Wait until it lands!");
 	if(MechType(target) == CLASS_MW) {
 		pickup_mw(mech, target);
 		return;
