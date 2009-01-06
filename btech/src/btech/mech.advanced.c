@@ -827,6 +827,7 @@ static void mech_masc_event(MUXEVENT * e)
 	}
 
 	/* Let the MUX know both hips gone */
+	MechCritStatus(mech) |= HIP_DAMAGED;
 	MechCritStatus(mech) |= HIP_DESTROYED;
 
 	/* Reset the Speeds, this sets all 3 of them */
