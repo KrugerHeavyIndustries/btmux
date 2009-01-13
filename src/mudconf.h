@@ -312,6 +312,8 @@ struct confdata {
 #endif
     int room_parent;
     int exit_parent;
+    int player_parent;
+    int player_zone;
 };
 
 extern CONFDATA mudconf;

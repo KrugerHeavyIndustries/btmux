@@ -324,10 +324,16 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 		s_Parent(obj, mudconf.room_parent);
 	else if(objtype == TYPE_EXIT && mudconf.exit_parent > 0)
 		s_Parent(obj, mudconf.exit_parent);
+	else if(objtype == TYPE_PLAYER && mudconf.player_parent > 0)
+		s_Parent(obj, mudconf.player_parent);
 	else
 		s_Parent(obj, NOTHING);
 
-	s_Zone(obj, Zone(player));
+	if (objtype == TYPE_PLAYER && mudconf.player_zone > 0)
+		s_Zone(obj, mudconf.player_zone);
+	else
+		s_Zone(obj, Zone(player));
+
 	s_Flags(obj, objtype | f1);
 	s_Flags2(obj, f2);
 	s_Flags3(obj, f3);
@@ -349,8 +355,7 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 		atr_add_raw(obj, A_QUOTA, buff);
 		atr_add_raw(obj, A_RQUOTA, buff);
 		add_player_name(obj, Name(obj));
-		free_sbuf(buff);
-		s_Zone(obj, NOTHING);
+		free_sbuf(buff);	
 	}
 	make_freelist();
 	return obj;

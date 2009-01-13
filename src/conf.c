@@ -428,6 +428,8 @@ void cf_init(void)
 #endif
 	mudconf.exit_parent = 0;
 	mudconf.room_parent = 0;
+	mudconf.player_parent = 0;
+	mudconf.player_zone = 0;
 }
 
 /*
@@ -1614,6 +1616,10 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.exit_parent, 0},
 	{(char *) "room_parent",
 	 cf_int, CA_GOD, &mudconf.room_parent, 0},
+	{(char *) "player_parent",
+	 cf_int, CA_GOD, &mudconf.player_parent, 0},
+	{(char *) "player_zone",
+	 cf_int, CA_GOD, &mudconf.player_zone, 0},
 	{NULL, NULL, 0, NULL, 0}
 };
 
