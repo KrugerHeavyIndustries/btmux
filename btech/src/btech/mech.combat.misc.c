@@ -257,6 +257,18 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 		return;
 	}
 	//global_kill_cheat = 1;
+	
+	// Destroy Contents Right Away
+	if(mudconf.btech_transported_unit_death) {	
+		SAFE_DOLIST(a,b,Contents(target->mynum))
+			if(IsMech(a) && In_Character(a)) {
+				ctarget = getMech(a);
+				mech_notify(ctarget, MECHALL, "Due to your transport's destruction, your unit has been destroyed!");
+				mech_udisembark(a,ctarget,"");
+				DestroyMech(ctarget,mech, 1, KILL_TYPE_TRANSPORT);
+			}
+	}
+
 	if(mech && target)
 		ChannelEmitKill(target, mech, reason);
 	else
@@ -298,15 +310,6 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 			}
 		}
 	}
-	
-	/* destroy contents if they are units and the containter is IC*/
-	SAFE_DOLIST(a,b,Contents(target->mynum))
-		if(IsMech(a) && In_Character(a)) {
-			ctarget = getMech(a);
-			mech_notify(ctarget, MECHALL, "Due to your transport's destruction, your unit has been destroyed!");
-			mech_udisembark(a, ctarget, "");
-			DestroyMech(ctarget,mech,1, KILL_TYPE_NORMAL);
-		}
 	
 	/* shut it down */
 	if(mech) {

@@ -159,6 +159,7 @@ struct confdata {
     int btech_cost_debug;	/* 1= Send info from btfasabasecost to MechDebugInfo */
     int btech_noisy_xpgain;	/* 1 = Send XP Gain info to MechXP */
     int btech_xpgain_cap;	/* Cap for Weapons XP Gain */
+    int btech_transported_unit_death; /* 1=Destroy units in a transport automatically. (Via AMECHDEST) 0=Don't. */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

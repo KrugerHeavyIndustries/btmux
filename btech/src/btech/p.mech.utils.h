@@ -28,6 +28,7 @@ void MarkForLOSUpdate(MECH * mech);
 #define KILL_TYPE_COCKPIT "COCKPIT" /* Alot different than Pilot death. Cockpit Crit death */
 #define KILL_TYPE_POWERPLANT "POWERPLANT" /* Vehicle powerplant crit death */
 #define KILL_TYPE_SCHARGE "SCHARGE"  /* Super Charger overload */
+#define KILL_TYPE_TRANSPORT "TRANSPORT" /* The Transport containing the unit died */
 
 void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason);
 

@@ -90,6 +90,7 @@ btpr_cf_init(void)
 	mudconf.btech_cost_debug = 0;
 	mudconf.btech_noisy_xpgain = 0;
 	mudconf.btech_xpgain_cap = 10;
+	mudconf.btech_transported_unit_death = 1;
 #ifdef HUDINFO_SUPPORT
 	mudconf.hudinfo_show_mapinfo = 0;
 #endif /* HUDINFO_SUPPORT */
