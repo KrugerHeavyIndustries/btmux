@@ -2091,19 +2091,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		}
 
 		/* Now see how much damage the second unit will do */
-		if(mudconf.btech_newcharge)
-			mech_damage = (((((float)
-							  MechChargeDistance(target)) * MP1) -
-							MechSpeed(mech) * cos((MechFacing(target) -
-												   MechFacing(mech)) * (M_PI /
-																		180.)))
-						   * MP_PER_KPH) * (MechRealTons(target) + 5) / 10;
-		else
-			mech_damage =
-				((MechSpeed(target) -
-				  MechSpeed(mech) * cos((MechFacing(target) -
-										 MechFacing(mech)) * (M_PI / 180.))) *
-				 MP_PER_KPH) * (MechRealTons(target) + 5) / 10;
+		mech_damage = (MechRealTons(target) + 5) /10;
 
 		if(HasBoolAdvantage(MechPilot(target), "melee_specialist"))
 			mech_damage++;
