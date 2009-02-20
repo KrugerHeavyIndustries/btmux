@@ -275,6 +275,8 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 					if(!(MechCritStatus(wounded) & ECM_DESTROYED)) {
 						MechCritStatus(wounded) |= ECM_DESTROYED;
 						mech_notify(wounded, MECHALL, "Your ECM system has been destroyed!");
+			                        DisableECM(wounded);
+			                        DisableECCM(wounded);
 						checkECM(wounded);
 					}
 					break;
