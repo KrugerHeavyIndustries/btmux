@@ -355,7 +355,8 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 		atr_add_raw(obj, A_QUOTA, buff);
 		atr_add_raw(obj, A_RQUOTA, buff);
 		add_player_name(obj, Name(obj));
-		free_sbuf(buff);	
+		free_sbuf(buff);
+		s_Pennies(obj, 1000); /* Give the player some starting cash */
 	}
 	make_freelist();
 	return obj;
