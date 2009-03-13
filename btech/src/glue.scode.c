@@ -934,6 +934,27 @@ void fun_btdesignex(char *buff, char **bufc, dbref player, dbref cause,
 		safe_tprintf_str(buff, bufc, "0");
 }
 
+
+void fun_btsectstatus(char *buff, char **bufc, dbref player, dbref cause,
+                                          char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+        /* fargs[0] = id of the mech
+         * fargs[1] = location to show
+         */
+        dbref it;
+        char *sectstr;
+        MECH *mech;
+
+        FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+        it = match_thing(player, fargs[0]);
+        FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
+        FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
+        FUNCHECK(!(mech = FindObjectsData(it)), "#-1");
+        sectstr = sectstatus_func(mech, fargs[1]);      /* fargs[1] unguaranteed ! */
+        safe_tprintf_str(buff, bufc, sectstr);
+}
+
+
 void fun_btdamages(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

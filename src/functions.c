@@ -48,6 +48,7 @@ extern void fun_btsetxcodevalue();
 extern void fun_btstores();
 extern void fun_btunderrepair();
 extern void fun_btdamages();
+extern void fun_btsectstatus();
 extern void fun_btcritstatus();
 extern void fun_btarmorstatus();
 extern void fun_btsetarmorstatus();
@@ -5564,6 +5565,7 @@ FUN flist[] = {
 	{"BTCHARLIST", fun_btcharlist, 1, FN_VARARGS, CA_WIZARD},
 	{"BTCRITSLOT", fun_btcritslot, 0, FN_VARARGS, CA_WIZARD},
 	{"BTCRITSLOT_REF", fun_btcritslot_ref, 0, FN_VARARGS, CA_WIZARD},
+	{"BTSECTSTATUS", fun_btsectstatus, 2, 0, CA_WIZARD},
 	{"BTCRITSTATUS", fun_btcritstatus, 2, 0, CA_WIZARD},
 	{"BTCRITSTATUS_REF", fun_btcritstatus_ref, 2, 0, CA_WIZARD},
 	{"BTDAMAGEMECH", fun_btdamagemech, 7, 0, CA_WIZARD},

@@ -52,6 +52,7 @@ char *part_name_long(int type, int brand);
 char *pos_part_name(MECH * mech, int index, int loop);
 void mech_weaponspecs(dbref player, void *data, char *buffer);
 char *critstatus_func(MECH * mech, char *arg);
+char *sectstatus_func(MECH * mech, char *arg);
 char *armorstatus_func(MECH * mech, char *arg);
 char *weaponstatus_func(MECH * mech, char *arg);
 char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum, char *buf_flag);

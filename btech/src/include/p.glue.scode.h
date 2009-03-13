@@ -42,6 +42,8 @@ void fun_btdamages(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btcritstatus(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
+void fun_btsectstatus(char *buff, char **bufc, dbref player, dbref cause,
+    char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btarmorstatus(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 

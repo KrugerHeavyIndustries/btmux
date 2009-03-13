@@ -868,6 +868,25 @@ void mech_weaponspecs(dbref player, void *data, char *buffer)
 	KillCoolMenu(c);
 }
 
+char *sectstatus_func(MECH * mech, char *arg)
+{
+/* Show if Section is destroyed or not
+ * 1 = Section Exists
+ * 0 = Section Destroyed
+*/
+	static char buffer[MBUF_SIZE];
+	int index;
+
+	if(!arg || !*arg)
+		return "#-1 INVALID SECTION";
+
+	index = ArmorSectionFromString(MechType(mech), MechMove(mech), arg);
+	if(index == -1)
+		return "#-1 INVALID SECTION";
+	
+	return !(SectIsDestroyed(mech, index));
+}
+
 char *critstatus_func(MECH * mech, char *arg)
 {
 	static char buffer[MBUF_SIZE];
