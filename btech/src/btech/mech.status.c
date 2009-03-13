@@ -883,8 +883,10 @@ char *sectstatus_func(MECH * mech, char *arg)
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), arg);
 	if(index == -1)
 		return "#-1 INVALID SECTION";
-	
-	return !(SectIsDestroyed(mech, index));
+        
+	sprintf(buffer, "%d", !(SectIsDestroyed(mech,index)));
+
+	return buffer;
 }
 
 char *critstatus_func(MECH * mech, char *arg)
