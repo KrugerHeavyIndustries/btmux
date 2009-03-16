@@ -1030,13 +1030,13 @@ static void dump_users(DESC * e, char *match, int key)
 														 d->last_time) : 0),
 						flist, d->doing);
 			} else {
-				sprintf(buf, "%-16s%9s %4s  %s\r\n",
+				sprintf(buf, "%-16s%9s %4s  %s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
 									  HIDDEN_IDLESECS ? (mudstate.now -
 														 d->last_time) : 0),
-						d->doing);
+						d->doing, ANSI_NORMAL);
 			}
 			queue_string(e, buf);
 		}
