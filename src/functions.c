@@ -4048,6 +4048,33 @@ static void fun_iter(char *buff, char **bufc, dbref player, dbref cause,
 	free_lbuf(curr);
 }
 
+static void fun_sum(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	char *curr, *str, *cp, *dp, sep;
+	double sum;
+
+	evarargs_preamble("SUM", 2);
+	dp = cp = curr = alloc_lbuf("fun_sum");
+	str = fargs[0];
+	exec(curr, &dp, 0, player, cause, EV_STRIP | EV_FCHECK | EV_EVAL, &str,
+		cargs, ncargs);
+	*dp = '\0';
+	cp = trim_space_sep(cp, sep);
+	
+	if(!*cp) {
+		free_lbuf(curr);
+		return;
+	}
+
+	sum = 0;
+	while (cp) {
+		sum+= atof(split_token(&cp,sep));
+	}
+	fval(buff,bufc, sum);
+	free_lbuf(curr);
+}
+
 static void fun_list(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -5833,6 +5860,7 @@ FUN flist[] = {
 	{"SUB", fun_sub, 2, 0, CA_PUBLIC},
 	{"SUBEVAL", fun_subeval, 1, 0, CA_PUBLIC},
 	{"SUBJ", fun_subj, 1, 0, CA_PUBLIC},
+	{"SUM", fun_sum,  0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
 	{"SWITCH", fun_switch, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
 	{"TAN", fun_tan, 1, 0, CA_PUBLIC},
 	{"T", fun_t, 1, 0, CA_PUBLIC},
