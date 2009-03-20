@@ -1022,13 +1022,13 @@ static void dump_users(DESC * e, char *match, int key)
 						d->input_tot, d->output_size, d->output_lost,
 						d->output_tot);
 			} else if(Wizard_Who(e->player)) {
-				sprintf(buf, "%-16s%9s %4s%-3s%s\r\n",
+				sprintf(buf, "%-16s%9s %4s%-3s%s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
 									  HIDDEN_IDLESECS ? (mudstate.now -
 														 d->last_time) : 0),
-						flist, d->doing);
+						flist, d->doing, ANSI_NORMAL);
 			} else {
 				sprintf(buf, "%-16s%9s %4s  %s%s\r\n",
 						trimmed_name(d->player),
