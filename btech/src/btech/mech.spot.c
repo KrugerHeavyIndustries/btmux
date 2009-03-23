@@ -227,6 +227,8 @@ int FireSpot(dbref player,
 		LOS = InLineOfSight(spotter, target, mapx, mapy, spot_range);
 		DOCHECKMP1(!LOS, "You spotter does not have a target in LOS!");
 		range = FaMechRange(mech, target);
+		DOCHECK0(InWater(target) && !(InWater(mech)),"You can't fire into water with that weapon from here.");
+
 		spotTerrain =
 			IsArtillery(weapontype) ? 2 : 1 + AddTerrainMod(spotter,
 															target,
