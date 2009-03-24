@@ -335,6 +335,14 @@ void do_alias(dbref player, dbref cause, int key, char *name, char *alias)
 	}
 }
 
+void do_pagelock(dbref player, dbref cause, int key, char *name, char *keytext)
+{
+/* So we can do a seperate pagelock command and still keep '@Lock' restricted */
+
+	do_lock(player, cause, A_LPAGE, name, keytext);
+}
+
+
 /*
  * ---------------------------------------------------------------------------
  * * do_lock: Set a lock on an object or attribute.
