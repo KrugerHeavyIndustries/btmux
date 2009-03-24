@@ -422,6 +422,13 @@ void do_lock(dbref player, dbref cause, int key, char *name, char *keytext)
 	free_boolexp(okey);
 }
 
+void do_pageunlock(dbref player, dbref cause, int key, char *name)
+{
+/* Added to get around '@lock' restrictions */
+
+	do_unlock(player, cause, A_LPAGE, name);
+}
+
 /*
  * ---------------------------------------------------------------------------
  * * Remove a lock from an object of attribute.

@@ -543,6 +543,8 @@ CMDENT command_table[] = {
 	 CS_TWO_ARG | CS_ARGV | CS_INTERP, do_open},
 	{(char *) "@pagelock", NULL, CA_NO_SLAVE, 0, CS_TWO_ARG | CS_INTERP,
 	 do_pagelock},
+	{(char *) "@pageunlock", NULL, CA_NO_SLAVE, 0, CS_ONE_ARG | CS_INTERP,
+	 do_pageunlock},
 	{(char *) "@parent", NULL, CA_NO_SLAVE | CA_GBL_BUILD | CA_NO_GUEST, 0,
 	 CS_TWO_ARG, do_parent},
 	{(char *) "@password", NULL, CA_NO_GUEST, PASS_MINE, CS_TWO_ARG,
