@@ -572,6 +572,7 @@ MechStatus(a) &= ~LOCK_MODES
 #define SendCustom(msg...)          send_channel("MechCustom",msg)
 #define SendDB(msg...)              send_channel("DBInfo",msg)
 #define SendDebug(msg...)           send_channel("MechDebugInfo",msg)
+#define SendDeath(msg...)	    send_channel("MechDeaths",msg)
 #define SendEcon(msg...)            send_channel("MechEconInfo",msg)
 #define SendError(msg...)           send_channel("MechErrors",msg)
 #define SendEvent(msg...)           send_channel("EventInfo",msg)

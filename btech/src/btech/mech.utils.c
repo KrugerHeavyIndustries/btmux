@@ -2528,9 +2528,13 @@ void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason)
 	if (reason) {
 		SendDebug(tprintf("#%d has been killed by #%d (%s)",
 		                  mech->mynum, attacker->mynum, reason));
+		SendDeath(tprintf("#%d has been killed by #%d (%s)",
+				  mech->mynum, attacker->mynum, reason));
 	} else {
 		SendDebug(tprintf("#%d has been killed by #%d",
 		                  mech->mynum, attacker->mynum));
+		SendDeath(tprintf("#%d has been killed by #%d",
+				  mech->mynum, attacker->mynum));
 	}
 
 	if (IsDS(mech)) {
