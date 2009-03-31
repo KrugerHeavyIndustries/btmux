@@ -2527,14 +2527,14 @@ void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason)
 
 	if (reason) {
 		SendDebug(tprintf("#%d [%s] has been killed by #%d [%s] (%s)",
-		                  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(mech), reason));
+		                  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(attacker), reason));
 		SendDeath(tprintf("#%d [%s] has been killed by #%d [%s] (%s)",
-				  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(mech), reason));
+				  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(attacker), reason));
 	} else {
 		SendDebug(tprintf("#%d [%s] has been killed by #%d [%s]",
-		                  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(mech)));
+		                  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(attacker)));
 		SendDeath(tprintf("#%d [%s] has been killed by #%d [%s]",
-				  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(mech)));
+				  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(attacker)));
 	}
 
 	if (IsDS(mech)) {
