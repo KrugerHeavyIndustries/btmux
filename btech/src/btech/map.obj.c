@@ -1163,7 +1163,7 @@ void steppable_base_check(MECH * mech, int x, int y)
 		return;
 	if(!(nmap = getMap(o->obj)))
 		return;
-	if(BuildIsInvis(nmap))
+	if(BuildIsDSS(nmap))
 		return;
 	if(BuildIsHidden(nmap) && !MadePerceptionRoll(mech, 0))
 		return;

@@ -100,6 +100,7 @@
 #define BuildIsHidden(map) (map->buildflag & (BUILDFLAG_DSS|BUILDFLAG_HID))
 #define BuildIsSafe(map)   (map->buildflag & BUILDFLAG_NOB)
 #define BuildIsInvis(map)  (map->buildflag & BUILDFLAG_HID)
+#define BuildIsDSS(map)	   (map->buildflag & BUILDFLAG_DSS)
 
 #define MapUnderSpecialRules(map)   ((map)->flags & MAPFLAG_SPEC)
 #define MapGravityMod(map)          (map)->grav
