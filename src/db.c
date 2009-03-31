@@ -584,7 +584,7 @@ void do_attribute(dbref player, dbref cause, int key, char *aname,
 
 	va = (VATTR *) vattr_find(buff);
 	if(!va) {
-		notify(player, "No such user-named attribute.");
+		notify_printf(player, "No such user-named attribute: %s",buff);
 		free_sbuf(buff);
 		return;
 	}
@@ -632,7 +632,7 @@ void do_attribute(dbref player, dbref cause, int key, char *aname,
 			sp = strtok(NULL, " ");
 		}
 		if(success && !Quiet(player))
-			notify(player, "Attribute access changed.");
+			notify_printf(player, "Attribute access for %s changed to %s.",va->name,value);
 		break;
 
 	case ATTRIB_RENAME:
