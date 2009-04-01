@@ -638,6 +638,8 @@ static char *ccode(MECH * m, int i, int obs, int team)
 		}
 		sprintf(buf, "%%ch%%c%c", ToLower(radio_colorstr[t - 1]));
 	} else {
+		if (team > 15)
+			team = team % 15;
 		for(ii = 0; ii < 15; ii++) {
 			if(team == obs_team_color[ii].team)
 				sprintf(buf, "%s", obs_team_color[ii].ccode);
