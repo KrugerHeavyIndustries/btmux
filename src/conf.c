@@ -149,6 +149,7 @@ void cf_init(void)
 	mudconf.btech_noisy_xpgain = 0;
 	mudconf.btech_xpgain_cap = 10;
 	mudconf.btech_transported_unit_death = 1;
+	mudconf.btech_mwpickup_action = 1;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1147,6 +1148,8 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_xpgain_cap, 0},
 	{(char *) "btech_transported_unit_death",
 	 cf_int, CA_GOD, &mudconf.btech_transported_unit_death, 0},
+	{(char *) "btech_mwpickup_action",
+	 cf_int, CA_GOD, &mudconf.btech_mwpickup_action, 0},
 	{(char *) "btech_sprint_bth",
 	 cf_int, CA_GOD, &mudconf.btech_sprint_bth, 0},
 	{(char *) "btech_tsm_sprint_bonus",

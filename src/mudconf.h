@@ -160,6 +160,7 @@ struct confdata {
     int btech_noisy_xpgain;	/* 1 = Send XP Gain info to MechXP */
     int btech_xpgain_cap;	/* Cap for Weapons XP Gain */
     int btech_transported_unit_death; /* 1=Destroy units in a transport automatically. (Via AMECHDEST) 0=Don't. */
+    int btech_mwpickup_action;  /* 0 = 3030 style (Slave MW, @unlock, quiet @tel), 1 = TELE_LOUD (Triggers aenter), no slave, no @unlock */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

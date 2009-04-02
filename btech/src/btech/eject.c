@@ -42,18 +42,18 @@ int tele_contents(dbref from, dbref to, int flag)
 
 	SAFE_DOLIST(i, tmpnext, Contents(from))
 		if((flag & TELE_ALL) || !Wiz(i)) {
-		if((flag & TELE_SLAVE) && !Wiz(i)) {
-			s_Slave(i);
-			silly_atr_set(i, A_LOCK, "");
+			if((flag & TELE_SLAVE) && !Wiz(i)) {
+				s_Slave(i);
+				silly_atr_set(i, A_LOCK, "");
+			}
+			if(flag & TELE_XP && !Wiz(i))
+				lower_xp(i, mudconf.btech_xploss);
+			if(flag & TELE_LOUD)
+				loud_teleport(i, to);
+			else
+				hush_teleport(i, to);
+			count++;
 		}
-		if(flag & TELE_XP && !Wiz(i))
-			lower_xp(i, mudconf.btech_xploss);
-		if(flag & TELE_LOUD)
-			loud_teleport(i, to);
-		else
-			hush_teleport(i, to);
-		count++;
-	}
 	return count;
 }
 
@@ -101,9 +101,15 @@ void pickup_mw(MECH * mech, MECH * target)
 	mech_printf(mech, MECHALL,
 				"You pick up the stray mechwarrior from the field.");
 	if(MechTeam(target) != MechTeam(mech))
-		tele_contents(target->mynum, mech->mynum, TELE_ALL | TELE_SLAVE);
+		if(mudconf.btech_mwpickup_action)
+			tele_contents(target->mynum, mech->mynum, TELE_ALL | TELE_LOUD);
+		else
+			tele_contents(target->mynum, mech->mynum, TELE_ALL | TELE_SLAVE);
 	else
-		tele_contents(target->mynum, mech->mynum, TELE_ALL);
+		if(mudconf.btech_mwpickup_action)
+			tele_contents(target->mynum, mech->mynum, TELE_ALL | TELE_LOUD);
+		else
+			tele_contents(target->mynum, mech->mynum, TELE_ALL);
 	discard_mw(target);
 }
 
