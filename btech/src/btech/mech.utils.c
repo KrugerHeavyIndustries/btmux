@@ -2525,6 +2525,11 @@ void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason)
 	if (!attacker)
 		attacker = mech;
 
+	/* Very Rare Occassion where using btsetxcodevalue(mech,mechdamage,) triggers this, we'll just ignore */
+	if ((mech->mynum == attacker->mynum) && !Good_obj(mech->mynum))
+		return;
+
+
 	if (reason) {
 		SendDebug(tprintf("#%d [%s] has been killed by #%d [%s] (%s)",
 		                  mech->mynum, MechType_Ref(mech), attacker->mynum, MechType_Ref(attacker), reason));
