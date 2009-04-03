@@ -871,6 +871,7 @@ void mech_weaponspecs(dbref player, void *data, char *buffer)
 char *sectstatus_func(MECH * mech, char *arg)
 {
 /* Show if Section is destroyed or not
+ * -1 = Section Flooded
  * 1 = Section Exists
  * 0 = Section Destroyed
 */
@@ -883,8 +884,8 @@ char *sectstatus_func(MECH * mech, char *arg)
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), arg);
 	if(index == -1)
 		return "#-1 INVALID SECTION";
-        
-	sprintf(buffer, "%d", !(SectIsDestroyed(mech,index)));
+	
+	sprintf(buffer, "%d", SectIsFlooded(mech,index) ? -1 : !(SectIsDestroyed(mech,index)));
 
 	return buffer;
 }
