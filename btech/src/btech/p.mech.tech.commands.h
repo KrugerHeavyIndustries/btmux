@@ -46,6 +46,7 @@ int unit_is_fixable(MECH * mech);
 void tech_reattach(dbref player, void *data, char *buffer);
 void tech_reseal(dbref player, void *data, char *buffer);
 void tech_magic(dbref player, void *data, char *buffer);
+void tech_fixextra(dbref player, void *data, char *buffer);
 void tech_replacesuit(dbref player, void *data, char *buffer);
 
 #endif				/* _P_MECH_TECH_COMMANDS_H */

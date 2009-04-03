@@ -1822,6 +1822,30 @@ void do_sub_magic(MECH * mech, int loud)
    section(s) / basetohit
  */
 
+void do_fixextra (MECH * mech)
+{
+
+	int i, j;
+
+        for(i = 0; i < NUM_SECTIONS; i++) {
+		if(SectIsFlooded(mech, i))
+			UnSetSectFlooded(mech, i);
+                for(j = 0; j < CritsInLoc(mech, i); j++) {
+			if(!IsAmmo(GetPartType(mech, i, j))) {
+				if(!PartIsBroken(mech,i,j) && !PartIsDestroyed(mech, i, j))	
+					mech_RepairPart(mech, i, j);
+				else {
+					UnDisablePart(mech, i, j);
+					mech_RepairPart(mech, i, j);
+				}
+			} else {
+				UnDisablePart(mech, i, j);
+				mech_FillPartAmmo(mech, i, j);
+			}
+		}
+	}
+}
+
 void do_magic(MECH * mech)
 {
 	MECH opp;

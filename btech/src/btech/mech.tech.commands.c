@@ -796,6 +796,15 @@ TECHCOMMANDH(tech_reseal)
 			   EVENT_REPAIR_RESE, "You start resealing the section.");
 }
 
+TECHCOMMANDH(tech_fixextra)
+{
+	TECHCOMMANDB;
+
+	TECHCOMMANDC;
+	notify(player, "Fixed extra stuff - reseals, ammo feeds, etc.");
+	do_fixextra(mech);
+}
+
 TECHCOMMANDH(tech_magic)
 {
 	TECHCOMMANDB;

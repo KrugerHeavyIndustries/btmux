@@ -133,6 +133,7 @@ ECMD(mech_stores);
 ECMD(mech_domystuff);
 ECMD(mech_unloadcargo);
 ECMD(tech_magic);
+ECMD(tech_fixextra);
 ECMD(mech_inferno);
 ECMD(mech_swarm);
 ECMD(mech_swarm1);
@@ -631,6 +632,8 @@ CommandsStruct mechcommands[] = {
 
     {0, "@MAGIC", "@Fixes the unfixable - skirt crits etc (wiz-only)",
 	tech_magic},
+    {0, "@FIXEXTRA", "@fixes extra stuff, like reseal, ammo feeds, etc",
+        tech_fixextra},
 
 #ifdef BT_CARGO_COMMANDS
     /* Cargo */

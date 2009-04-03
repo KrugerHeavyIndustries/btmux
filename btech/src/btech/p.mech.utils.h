@@ -114,6 +114,7 @@ int MechNumHeatsinksInEngine(MECH * mech);
 /* Tech/Repair functions */
 void do_sub_magic(MECH * mech, int loud);
 void do_magic(MECH * mech);
+void do_fixextra(MECH * mech);
 void mech_RepairPart(MECH * mech, int loc, int pos);
 int no_locations_destroyed(MECH * mech);
 void mech_ReAttach(MECH * mech, int loc);
