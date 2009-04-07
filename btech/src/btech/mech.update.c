@@ -1510,22 +1510,22 @@ void UpdateHeat(MECH * mech)
 			}
 		}
 
-	if(MechHeat(mech) >= 19) {
-		if(inheat < 19) {
+	if(MechHeat(mech) >= 19.) {
+		if(inheat < 19.) {
 			mech_notify(mech, MECHALL,
 			"%ch%cr=====================================\n"
 			      "Your Excess Heat indicator turns RED!\n"
 			      "=====================================%c");
 		}
-	} else if(MechHeat(mech) >= 14) {
-		if(inheat >= 19 || inheat < 14) {
+	} else if(MechHeat(mech) >= 14.) {
+		if(inheat >= 19. || inheat < 14.) {
 			mech_notify(mech, MECHALL,
 			"%ch%cy=======================================\n"
 			      "Your Excess Heat indicator turns YELLOW\n"
 			      "=======================================%c");
 		}
 	} else {
-		if(inheat >= 14) {
+		if(inheat >= 14.) {
 			mech_notify(mech, MECHALL,
 			"%cg======================================\n"
 			   "Your Excess Heat indicator turns GREEN\n"
