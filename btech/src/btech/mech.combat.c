@@ -348,6 +348,7 @@ void mech_fireweapon(dbref player, void *data, char *buffer)
 
 	mech_map = getMap(mech->mapindex);
 	cch(MECH_USUALO);
+	DOCHECK(WeaponsHold(mech), "Currently in weapons hold. Unable to fire weapons.");
 	argc = mech_parseattributes(buffer, args, 5);
 	DOCHECK(argc < 1, "Not enough arguments to the function");
 	weapnum = atoi(args[0]);

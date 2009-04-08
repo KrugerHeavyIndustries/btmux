@@ -260,6 +260,10 @@ void Mech_ShowFlags(dbref player, MECH * mech, int spaces, int level)
 		strcpy(buf + spaces, "%ch%cgFORTIFIED%cn");
 		notify(player, buf);
 	}
+	if(WeaponsHold(mech)) {
+		strcpy(buf + spaces, "%ch%crWEAPONS HOLD%cn");
+		notify(player, buf);
+	}
 	if(Fallen(mech)) {
 		switch (MechMove(mech)) {
 		case MOVE_BIPED:
