@@ -913,7 +913,7 @@ static char *trimmed_site(char *name)
 static void dump_users(DESC * e, char *match, int key)
 {
 	DESC *d;
-	int count, rcount;
+	int count, rcount, ucount;
 	char *buf, *fp, *sp, flist[4], slist[4];
 	dbref room_it;
 
@@ -947,6 +947,7 @@ static void dump_users(DESC * e, char *match, int key)
 	}
 	count = 0;
 	rcount = 0;
+	ucount = 0;
 	DESC_ITER_CONN(d) {
 		if((!mudconf.show_unfindable_who || !Hidden(d->player)) ||
 		   (e->flags & DS_CONNECTED) & Wizard_Who(e->player)) {
@@ -1039,18 +1040,25 @@ static void dump_users(DESC * e, char *match, int key)
 						d->doing, ANSI_NORMAL);
 			}
 			queue_string(e, buf);
+		} else {
+		ucount++;
 		}
 	}
 	count = rcount;				/* previous mode was .. disgusting. */
 	/*
 	 * sometimes I like the ternary operator.... 
 	 */
-
-	sprintf(buf, "%d Player%slogged in, %d record, %s maximum.\r\n", count,
-			(count == 1) ? " " : "s ", mudstate.record_players,
+	if (ucount)
+		sprintf(buf, "%d Visible Player%slogged in, (%d %s hidden), %d record, %s maximum.\r\n", count,
+			(count == 1) ? " " : "s ", ucount, (ucount == 1) ? "is" : "are", mudstate.record_players,
 			(mudconf.max_players == -1) ? "no" : tprintf("%d",
 														 mudconf.
 														 max_players));
+	else
+		sprintf(buf, "%d Player%slogged in, %d record, %s maximum.\r\n", count,
+			(count == 1) ? " " : "s ", mudstate.record_players,
+			(mudconf.max_players == -1) ? "no" : tprintf("%d", mudconf.max_players));
+
 	queue_string(e, buf);
 
 
