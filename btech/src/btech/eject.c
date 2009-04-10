@@ -153,6 +153,7 @@ static void char_eject(dbref player, MECH * mech)
 	MechLOSBroadcast(m, tprintf("ejected from %s!", GetMechID(mech)));
 	s_In_Character(suit);
 	initialize_pc(player, m);
+	silly_atr_set(m->mynum, A_PILOTNUM, tprintf("#%d", player));
 	MechPilot(m) = player;
 	MechTeam(m) = MechTeam(mech);
 #ifdef COPY_CHANS_ON_EJECT
@@ -249,6 +250,7 @@ static void char_disembark(dbref player, MECH * mech)
 	s_In_Character(suit);
 	initialize_pc(player, m);
 	MechPilot(m) = player;
+	silly_atr_set(m->mynum, A_PILOTNUM, tprintf("#%d",player));
 	MechTeam(m) = MechTeam(mech);
 #ifdef COPY_CHANS_ON_EJECT
 	memcpy(m->freq, mech->freq, FREQS * sizeof(m->freq[0]));
