@@ -573,11 +573,12 @@ void mech_stand(dbref player, void *data, char *buffer)
 			return;
 		} else if(strcmp(args[0], "anyway") == 0) {
 			standanyway = 1;
-		} else if(strcmp(args[0], "careful") == 0) {
+		} else if((strcmp(args[0], "careful") == 0) && mudconf.btech_standcareful) {
 			standcarefulmod = -2;
 		} else {
-			notify(player, "Unknown argument! use 'stand check', "
-				   "'stand anyway', or 'stand careful'");
+			notify_printf(player, "Unknown argument! use 'stand check'%s",
+				   mudconf.btech_standcareful ? ", 'stand careful' or 'stand anyway'" 
+				   			      : " or 'stand anyway'");
 			for(i = 0; i < 2; i++) {
 				if(args[i])
 					free(args[i]);

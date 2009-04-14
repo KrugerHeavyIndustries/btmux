@@ -75,6 +75,7 @@ struct confdata {
     int btech_noisy_xpgain;	/* 1= Send extra XP gain info to MechXP channel */
     int btech_transported_unit_death; /* 1=Destroy units in a transport automatically. (Via AMECHDEST) 0=Don't. */
     int btech_mwpickup_action;	/* 0 = 3030 style (Slave MW, @unlock, quiet @tel), 1 = TELE_LOUD (Triggers aenter), no slave, no @unlock */
+    int btech_standcareful;	/* 0 = Don't allow (FASA rules), 1 Allow (-2 BTH to stand, double time if successful */
 #ifdef HUDINFO_SUPPORT
     int hudinfo_show_mapinfo;	/* What kind of info we are willing to give */
 #endif
