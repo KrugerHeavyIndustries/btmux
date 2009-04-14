@@ -122,11 +122,11 @@ void tech_status(dbref player, time_t dat)
 		un = (dat - mudstate.now) / TECH_TICK;
 		sprintf(buf, "You have %d %s%s of repairs pending", un, TECH_UNIT,
 				un != 1 ? "s" : "");
-		if(un >= MAX_TECHTIME)
+		if(un >= mudconf.btech_maxtechtime)
 			sprintf(buf + strlen(buf),
 					" and you're too tired to do more efficiently.");
 		else {
-			un = MAX_TECHTIME - un;
+			un = mudconf.btech_maxtechtime - un;
 			sprintf(buf + strlen(buf),
 					" and you're ready to do at least %d more %s%s of work.",
 					un, TECH_UNIT, un == 1 ? "" : "s");

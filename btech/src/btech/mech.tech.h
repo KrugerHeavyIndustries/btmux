@@ -22,7 +22,6 @@
 #include "mech.events.h"
 
 /* In minutes */
-#define MAX_TECHTIME 600
 #if 1
 #define TECH_TICK     60
 #define TECH_UNIT "minute"
