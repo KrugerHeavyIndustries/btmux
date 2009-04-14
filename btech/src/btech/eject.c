@@ -63,6 +63,8 @@ static void mech_discard_event(MUXEVENT * e)
 	MECH *mech = (MECH *) e->data;
 	dbref i = mech->mynum;
 
+        /* We'll silently move the mech off, but lets trigger the aleave/oleave/leave of the loc as well before we do anything fancy */
+	did_it(i, Location(i), A_LEAVE, NULL, A_OLEAVE, NULL, A_OXLEAVE, (char **) NULL, 0);
 	c_Hardcode(i);
 	handle_xcode(GOD, i, 1, 0);
 	s_Going(i);
