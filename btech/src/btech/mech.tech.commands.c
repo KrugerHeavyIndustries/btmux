@@ -220,6 +220,8 @@ TECHCOMMANDH(tech_removegun)
 			"Someone's tinkering with it already!");
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no additional removals are possible!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	/* Ok.. Everything's valid (we hope). */
 	if(tech_weapon_roll(player, mech, REMOVEG_DIFFICULTY) < 0) {
 		START
@@ -270,6 +272,8 @@ TECHCOMMANDH(tech_removepart)
 			"Someone's scrapping that section - no additional removals are possible!");
 	DOCHECK(!CanScrapPart(mech, loc, part),
 			"Someone's tinkering with it already!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	/* Ok.. Everything's valid (we hope). */
 	START("You start removing the part..");
 	if(tech_roll(player, mech, REMOVEP_DIFFICULTY) < 0) {
@@ -327,6 +331,8 @@ TECHCOMMANDH(tech_removesection)
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping it already!");
 	DOCHECK(!CanScrapLoc(mech, loc), "Someone's tinkering with it already!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	/* Ok.. Everything's valid (we hope). */
 	if(tech_roll(player, mech, REMOVES_DIFFICULTY) < 0)
 		mod = 3;
@@ -354,6 +360,8 @@ TECHCOMMANDH(tech_replacegun)
 	DOCHECK(!PartIsNonfunctional(mech, loc, part), "That gun isn't hurtin'!");
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no repairs are possible!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	if(brand) {
 		ob = GetPartBrand(mech, loc, part);
 		SetPartBrand(mech, loc, part, brand);
@@ -406,6 +414,8 @@ TECHCOMMANDH(tech_repairgun)
 		notify(player, "That gun isn't hurtin'!");
 		return;
 	}
+        
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	DOTECH_LOCPOS(REPAIR_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,
 																	  loc,
@@ -441,6 +451,8 @@ TECHCOMMANDH(tech_fixenhcrit)
 		notify(player, "That gun isn't damaged!");
 		return;
 	}
+        
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	DOTECH_LOCPOS(ENHCRIT_DIFFICULTY,
 				  repairenhcrit_fail,
@@ -475,6 +487,8 @@ TECHCOMMANDH(tech_replacepart)
 			"Someone's repairing that part already!");
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no repairs are possible!");
+        DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOCPOS(REPLACE_DIFFICULTY +
 				  PARTTYPE_DIFFICULTY(GetPartType(mech, loc, part)),
 				  replacep_fail, replacep_succ, replace_econ,
@@ -506,6 +520,8 @@ TECHCOMMANDH(tech_repairpart)
 			"Someone's repairing that part already!");
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no repairs are possible!");
+        DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOCPOS(REPAIR_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech,
 																	  loc,
 																	  part)),
@@ -571,6 +587,9 @@ TECHCOMMANDH(tech_reload)
 		GetPartAmmoMode(mech, loc, part) |= t;
 	}
 	change = 0;
+        
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOCPOS_VAL(RELOAD_DIFFICULTY, reload_fail, reload_succ,
 					  reload_econ, &change, RELOAD_TIME, mech,
 					  PACK_LOCPOS_E(loc, part, change),
@@ -604,6 +623,8 @@ TECHCOMMANDH(tech_unload)
 		change = 2;
 	else
 		change = 1;
+        DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	if(tech_roll(player, mech, REMOVES_DIFFICULTY) < 0)
 		mod = 3;
 	START("You start unloading the ammo compartment..");
@@ -641,7 +662,8 @@ TECHCOMMANDH(tech_fixarmor)
 	from = MIN(to, from);
 	DOCHECK(from == to, "The location doesn't need armor repair!");
 	change = to - from;
-	ochange = change;
+	ochange = change;	
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 	DOTECH_LOC_VAL_S(FIXARMOR_DIFFICULTY, fixarmor_fail, fixarmor_succ,
 					 fixarmor_econ, &change, FIXARMOR_TIME * ochange, loc,
 					 EVENT_REPAIR_FIX, mech, "You start fixing the armor..");
@@ -668,6 +690,8 @@ TECHCOMMANDH(tech_fixinternal)
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no repairs are possible!");
 	ochange = change;
+        DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOC_VAL_S(FIXINTERNAL_DIFFICULTY, fixinternal_fail,
 					 fixinternal_succ, fixinternal_econ, &change,
 					 FIXINTERNAL_TIME * ochange, loc, EVENT_REPAIR_FIX, mech,
@@ -732,6 +756,8 @@ TECHCOMMANDH(tech_reattach)
 			"Someone's attaching that section already!");
 	DOCHECK(!unit_is_fixable(mech),
 			"You see nothing to reattach it to (read:unit is cored).");
+        DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOC(REATTACH_DIFFICULTY, reattach_fail, reattach_succ,
 			   reattach_econ, REATTACH_TIME, mech, loc,
 			   muxevent_tickmech_reattach, EVENT_REPAIR_REAT,
@@ -767,6 +793,8 @@ TECHCOMMANDH(tech_replacesuit)
 			"Someone's already rebuilding that suit!");
 	DOCHECK(wSuits <= 0,
 			"You are unable to replace the suits here! None of the buggers are still alive!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOC(REPLACESUIT_DIFFICULTY, replacesuit_fail, replacesuit_succ,
 			   replacesuit_econ, REPLACESUIT_TIME, mech, loc,
 			   muxevent_tickmech_replacesuit, EVENT_REPAIR_REPSUIT,
@@ -791,6 +819,8 @@ TECHCOMMANDH(tech_reseal)
 			"You need to reattach adjacent locations first!");
 	DOCHECK(SomeoneResealing(mech, loc),
 			"Someone's sealing that section already!");
+	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
+
 	DOTECH_LOC(RESEAL_DIFFICULTY, reseal_fail, reseal_succ, reseal_econ,
 			   RESEAL_TIME, mech, loc, muxevent_tickmech_reseal,
 			   EVENT_REPAIR_RESE, "You start resealing the section.");

@@ -15,6 +15,7 @@
 /* mech.tech.c */
 int game_lag(void);
 int game_lag_time(int i);
+int player_techtime(dbref player);
 int tech_roll(dbref player, MECH * mech, int diff);
 int tech_weapon_roll(dbref player, MECH * mech, int diff);
 void tech_status(dbref player, time_t dat);

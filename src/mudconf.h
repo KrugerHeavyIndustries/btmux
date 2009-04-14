@@ -162,6 +162,7 @@ struct confdata {
     int btech_transported_unit_death; /* 1=Destroy units in a transport automatically. (Via AMECHDEST) 0=Don't. */
     int btech_mwpickup_action;  /* 0 = 3030 style (Slave MW, @unlock, quiet @tel), 1 = TELE_LOUD (Triggers aenter), no slave, no @unlock */
     int btech_standcareful;     /* 0 = Don't allow (FASA rules), 1 Allow (-2 BTH to stand, double time if successful */
+    int btech_maxtechtime;      /* Max Tech Time allowed, in minutes */
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif

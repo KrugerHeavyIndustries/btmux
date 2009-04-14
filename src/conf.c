@@ -151,6 +151,7 @@ void cf_init(void)
 	mudconf.btech_transported_unit_death = 1;
 	mudconf.btech_mwpickup_action = 1;
 	mudconf.btech_standcareful = 1;
+	mudconf.btech_maxtechtime = 600;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1153,6 +1154,8 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_mwpickup_action, 0},
 	{(char *) "btech_standcareful",
 	 cf_int, CA_GOD, &mudconf.btech_standcareful, 0},
+	{(char *) "btech_maxtechtime",
+	 cf_int, CA_GOD, &mudconf.btech_maxtechtime, 0},
 	{(char *) "btech_sprint_bth",
 	 cf_int, CA_GOD, &mudconf.btech_sprint_bth, 0},
 	{(char *) "btech_tsm_sprint_bonus",

@@ -28,6 +28,29 @@ int game_lag_time(int i)
 	return (100 + game_lag()) * i / 100;
 }
 
+int player_techtime(dbref player)
+{
+/* Returns tech time, in minutes, for given player */
+
+        time_t techtime;
+        char *tt_attr;
+	int tused;
+
+        tt_attr = silly_atr_get(player, A_TECHTIME);
+
+        if (tt_attr) {
+                techtime = (time_t) atoi(tt_attr);
+                if (techtime < mudstate.now)
+                        techtime = mudstate.now;
+                } else {
+                        techtime = mudstate.now;
+        }
+
+        tused = ( techtime - mudstate.now ) / TECH_TICK;
+
+        return tused;
+}
+
 int tech_roll(dbref player, MECH * mech, int diff)
 {
 	int s;
