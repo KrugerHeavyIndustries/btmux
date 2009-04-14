@@ -28,17 +28,6 @@
 /* Define if you want part-specific weights for cargo */
 #define BT_PART_WEIGHTS
 
-/* 
- * Define if you want 'mech frequencies *not* to be copied to MechWarriors
- *  but would rather see a random frequency. 
- */
-/* \todo If COPY_CHANS_ON_EJECT isn't defined, assume RANDOM_CHAN_ON_EJECT.
- * this makes a little more sense and is less configuration 
- */
-/*
- * #define RANDOM_CHAN_ON_EJECT 
- */
-
 /* Define for heatsink on/off msgs when using heatcutoff */
 /* #define HEATCUTOFF_DEBUG */
 

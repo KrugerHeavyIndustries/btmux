@@ -158,15 +158,19 @@ static void char_eject(dbref player, MECH * mech)
 	silly_atr_set(m->mynum, A_PILOTNUM, tprintf("#%d", player));
 	MechPilot(m) = player;
 	MechTeam(m) = MechTeam(mech);
+/* MUDCONF THIS LATER (and to not copy digital)
 #ifdef COPY_CHANS_ON_EJECT
 	memcpy(m->freq, mech->freq, FREQS * sizeof(m->freq[0]));
 	memcpy(m->freqmodes, mech->freqmodes, FREQS * sizeof(m->freqmodes[0]));
 #else
 #ifdef RANDOM_CHAN_ON_EJECT
+
+*/
 	m->freq[0] = random() % 1000000;
 	notify_printf(player, "Emergency radio channel set to %d.", m->freq[0]);
+/* #endif
 #endif
-#endif
+*/
 	notify(player, "You eject from the unit!");
 	if(MechType(mech) == CLASS_MECH) {
 		DestroyPart(mech, HEAD, 2);
@@ -254,15 +258,18 @@ static void char_disembark(dbref player, MECH * mech)
 	MechPilot(m) = player;
 	silly_atr_set(m->mynum, A_PILOTNUM, tprintf("#%d",player));
 	MechTeam(m) = MechTeam(mech);
+/* MUDCONF THIS LATER AND FIX (to not copy digital)
 #ifdef COPY_CHANS_ON_EJECT
 	memcpy(m->freq, mech->freq, FREQS * sizeof(m->freq[0]));
 	memcpy(m->freqmodes, mech->freqmodes, FREQS * sizeof(m->freqmodes[0]));
 #else
 #ifdef RANDOM_CHAN_ON_EJECT
+*/
 	m->freq[0] = random() % 1000000;
 	notify_printf(player, "Emergency radio channel set to %d.", m->freq[0]);
+/* #endif
 #endif
-#endif
+*/
 	mymap = getMap(m->mapindex);
 	if((MechZ(m) > (Elevation(mymap, MechX(m), MechY(m)) + 1)) &&
 	   (MechZ(m) > 0)) {
@@ -727,15 +734,18 @@ void autoeject(dbref player, MECH * mech, int tIsBSuit)
 	initialize_pc(player, m);
 	MechPilot(m) = player;
 	MechTeam(m) = MechTeam(mech);
+/* MUDCONF THIS LATER (and fix not copying digital) 
 #ifdef COPY_CHANS_ON_EJECT
 	memcpy(m->freq, mech->freq, FREQS * sizeof(m->freq[0]));
 	memcpy(m->freqmodes, mech->freqmodes, FREQS * sizeof(m->freqmodes[0]));
 #else
 #ifdef RANDOM_CHAN_ON_EJECT
+*/
 	m->freq[0] = random() % 1000000;
 	notify(player, tprintf("Emergency radio channel set to %d.", m->freq[0]));
+/* #endif
 #endif
-#endif
+*/
 
 	if(tIsBSuit) {
 		MechLOSBroadcast(m, "climbs out of one of the destroyed suits!");

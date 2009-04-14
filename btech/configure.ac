@@ -167,32 +167,6 @@ AC_ARG_ENABLE([bt-scaled-infrared],
     ]
 )
 
-
-AC_MSG_CHECKING([whether to copy freqs to MW on disembark])
-AC_ARG_ENABLE([bt-mwfreqs],
-    AS_HELP_STRING([--disable-bt-mwfreqs],
-                   [Disable MW freq copying [[default=enabled]]])
-    AS_HELP_STRING([ ], [ ]),
-    [
-        case "${enableval}" in
-            yes) 
-                AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
-                AC_MSG_RESULT([yes])
-                ;;
-            no)
-                AC_MSG_RESULT([no])
-                ;;
-            *)
-                AC_MSG_ERROR(bad value "${enableval}" for bt-mwfreqs option)
-                ;;
-        esac
-    ],
-    [
-        AC_MSG_RESULT([yes])
-        AC_DEFINE([COPY_CHANS_ON_EJECT], [1], [Should copying freqs to MWs be enabled])
-    ]
-)
-
 AC_MSG_CHECKING([whether to enable complex repairs])
 AC_ARG_ENABLE([bt-complexrepairs],
     AS_HELP_STRING([--enable-bt-complexrepairs],
