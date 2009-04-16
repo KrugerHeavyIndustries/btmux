@@ -1196,6 +1196,26 @@ void fun_bttechstatus(char *buff, char **bufc, dbref player, dbref cause,
 	safe_tprintf_str(buff, bufc, "%s", infostr ? infostr : "#-1 ERROR");
 }
 
+void fun_btupdatelinks(char *buff, char **bufc, dbref player, dbref cause,
+					 char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	/*
+	 * fargs[0] = dbref of MAP object
+	 */
+
+	dbref it;
+	MAP *map;
+
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	it = match_thing(player, fargs[0]);
+	FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 CANT FIND");
+	FUNCHECK(!IsMap(it), "#-1 NOT A MAP");
+	FUNCHECK(!(map = FindObjectsData(it)), "#-1 UNABLE TO GET MAPDATA");
+  	recursively_updatelinks(NOTHING, it);
+
+
+}
+
 void fun_bthexemit(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

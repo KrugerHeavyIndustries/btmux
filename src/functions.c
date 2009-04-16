@@ -75,6 +75,7 @@ extern void fun_bthexemit();
 extern void fun_btgetweight();
 extern void fun_btpartweight();
 extern void fun_btaddstores();
+extern void fun_btupdatelinks();
 extern void fun_btremovestores();
 extern void fun_bttechtime();
 extern void fun_btcritslot();
@@ -5656,6 +5657,7 @@ FUN flist[] = {
 	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD},
 	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER},
 	{"BTUNITFIXABLE", fun_btunitfixable, 1, 0, CA_WIZARD},
+	{"BTUPDATELINKS", fun_btupdatelinks, 1, 0, CA_WIZARD},
 /*AAA*/	{"BTWEAPONS", fun_btweapons, 1, 0, CA_WIZARD},
 	{"BTWEAPONSTATUS", fun_btweaponstatus, 0, FN_VARARGS, CA_WIZARD},
 	{"BTWEAPONSTATUS_REF", fun_btweaponstatus_ref, 0, FN_VARARGS, CA_WIZARD},
