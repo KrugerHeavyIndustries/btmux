@@ -142,6 +142,7 @@ void del_mapobj(MAP * map, mapobj * mapob, int type, int zap)
 	/* Delete the specified mapobj */
 	struct mapobj_struct *tmp;
 
+	MAP *tmap;
 	if(!(map->flags & MAPFLAG_MAPO))
 		return;
 	if(map->mapobj[type] != mapob) {
@@ -159,6 +160,11 @@ void del_mapobj(MAP * map, mapobj * mapob, int type, int zap)
 			SetTerrain(map, mapob->x, mapob->y, mapob->datac);
 		if(zap)
 			StopDec(mapob);
+	}
+	if(type == TYPE_BUILD) {
+		
+		tmap = getMap(mapob->obj);
+		tmap->onmap = 0;
 	}
 	mapob->next = free_mapobjs;
 	free_mapobjs = mapob;
