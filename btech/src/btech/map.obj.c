@@ -163,8 +163,8 @@ void del_mapobj(MAP * map, mapobj * mapob, int type, int zap)
 	}
 	if(type == TYPE_BUILD) {
 		
-		tmap = getMap(mapob->obj);
-		tmap->onmap = 0;
+		if(tmap = getMap(mapob->obj))
+			tmap->onmap = 0;
 	}
 	mapob->next = free_mapobjs;
 	free_mapobjs = mapob;
