@@ -284,14 +284,16 @@ int ImproperLZ(MECH * mech, int x, int y)
 	MAP *map = getMap(mech->mapindex);
 
 	if(GetRTerrain(map, x, y) != GRASSLAND && GetRTerrain(map, x, y) != ROAD)
-		return INVALID_TERRAIN;
+		if(mudconf.btech_blzmapmode == 0)
+			return INVALID_TERRAIN;
 
 	improper_lz_status = 0;
 	improper_lz_height = Elevation(map, x, y);
 	visit_neighbor_hexes(map, x, y, ImproperLZ_callback);
-
+	
 	if(improper_lz_status != 6)
-		return UNEVEN_TERRAIN;
+		if(mudconf.btech_blzmapmode == 0)
+			return UNEVEN_TERRAIN;
 	if(is_blocked_lz(mech, map, x, y))
 		return BLOCKED_LZ;
 	return NO_ERROR;
