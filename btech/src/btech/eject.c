@@ -304,7 +304,7 @@ void mech_disembark(dbref player, void *data, char *buffer)
 	DOCHECK(!mudconf.btech_ic, "This MUX isn't in character!");
 	DOCHECK(!In_Character(Location(mech->mynum)),
 			"Your location isn't in character!");
-	DOCHECK(Started(mech) && (MechPilot(mech) == player),
+	DOCHECK((Started(mech) || Starting(mech)) && (MechPilot(mech) == player),
 			"While it's running!? Don't be daft.");
 	DOCHECK(fabs(MechSpeed(mech)) > 25.,
 			"Are you suicidal ? That thing is moving too fast !");
