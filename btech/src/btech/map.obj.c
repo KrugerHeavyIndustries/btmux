@@ -699,8 +699,9 @@ int is_blocked_lz(MECH * mech, MAP * map, int x, int y)
 
 	MapCoordToRealCoord(x, y, &fx, &fy);
 	for(o = first_mapobj(map, TYPE_B_LZ); o; o = next_mapobj(o)) {
-		if(abs(x - o->x) > o->datai || abs(y - o->y) > o->datai)
-			continue;
+// comment this out...That makes it a square BLZ, not round
+//		if(abs(x - o->x) > o->datai || abs(y - o->y) > o->datai)
+//			continue;
 		if(o->datac && o->datac == MechTeam(mech))
 			continue;
 		MapCoordToRealCoord(o->x, o->y, &tx, &ty);

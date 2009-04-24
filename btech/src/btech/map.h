@@ -118,7 +118,7 @@ typedef struct mapobj_struct {
     short x, y;
     dbref obj;
     char type;
-    char datac;
+    int datac;
     short datas;
     int datai;
     struct mapobj_struct *next;
