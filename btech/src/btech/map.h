@@ -120,7 +120,7 @@ typedef struct mapobj_struct {
     char type;
     int datac;
     short datas;
-    char datai;
+    int datai;
     struct mapobj_struct *next;
 } mapobj;
 
