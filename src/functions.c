@@ -3762,8 +3762,8 @@ static void fun_before(char *buff, char **bufc, dbref player, dbref cause,
 static void fun_max(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
-	int i, j, got_one;
-	double max;
+	int i, got_one;
+	double max, j;
 
 	max = 0;
 	for(i = 0, got_one = 0; i < nfargs; i++) {
@@ -3786,8 +3786,8 @@ static void fun_max(char *buff, char **bufc, dbref player, dbref cause,
 static void fun_min(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
-	int i, j, got_one;
-	double min;
+	int i, got_one;
+	double min, j;
 
 	min = 0;
 	for(i = 0, got_one = 0; i < nfargs; i++) {
