@@ -385,17 +385,22 @@ int crittable(MECH * mech, int loc, int tres)
 	/* Calculate percentage of armor remaining */
 	d = (100 * GetSectArmor(mech, loc)) / GetSectOArmor(mech, loc);
 
-	/* Are we below the threshold? */
-	if(d < tres)
-		return 1;
+	/* Are we below the threshold? Okay, then lets give it a 1 in 12 chance to TAC */
+	if(d < tres) 
+		if(Number(1,12) == 6)
+			return 1;
+	/* Full Up Armor? Okay, 1 in 71 chance for that 'lucky' TAC */
 	if(d == 100) {
 		if(Number(1, 71) == 23)
 			return 1;
 		return 0;
 	}
-	if(d < (100 - ((100 - tres) / 2)))
-		if(Number(1, 11) == 6)
-			return 1;
+	/* WTF is this? Seriously?  This would mean, if the thres was 40%...
+	 * Anything below 70% is a 1 in 11 chance? That's stupid. Lets just make the TAC
+	 * threshold, the TAC threshold and leave it at that */
+//	if(d < (100 - ((100 - tres) / 2)))
+//		if(Number(1, 11) == 6)
+//			return 1;
 	return 0;
 }								/* end crittable() */
 
