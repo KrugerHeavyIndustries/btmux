@@ -1248,24 +1248,30 @@ static void hud_conditions(DESC * d, MECH * mech, char *msgclass, char *args)
 	MAP *map = getMap(mech->mapindex);
 	char res[200];
 	char lt;
-
-	switch (map->maplight) {
-	case 0:
-		lt = 'N';
-		break;
-	case 1:
-		lt = 'T';
-		break;
-	case 2:
-		lt = 'D';
-		break;
-	default:
-		lt = '?';
-		SendError(tprintf("Unknown light type %d on map #%d",
+	
+	if(map)	{
+		switch (map->maplight) {
+		case 0:
+			lt = 'N';
+			break;
+		case 1:
+			lt = 'T';
+			break;
+		case 2:
+			lt = 'D';
+			break;
+		default:
+			lt = '?';
+			SendError(tprintf("Unknown light type %d on map #%d",
 						  map->maplight, map->mynum));
+			break;
+		}
+	}
+	else {
+		/* map is bad. somehow switched to -1 */
+		lt = '?';
 		break;
 	}
-
 	sprintf(res, "%c,%d,%d,%d,%s", lt, map->mapvis, map->grav,
 			map->temp, hud_getmapflags(map));
 	hudinfo_notify(d, msgclass, "R", res);
