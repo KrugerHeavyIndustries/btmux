@@ -616,14 +616,14 @@ int cargoweight[] = {
 	8,							/* Medical_Supplies */
 	306,						/* Computers */
 	204,						/* Explosives */
-	5,							/* ES_Internal */
-	2,							/* FF_Armor */
+	32,							/* ES_Internal */
+	57,							/* FF_Armor */
 	512,						/* XL_Engine */
 	342,						/* Double_Heatsink */
 	512,						/* ICE_Engine */
 	51,							/* Electric */
-	5,							/* Internal */
-	3,							/* Armor */
+	64,							/* Internal */
+	64,							/* Armor */
 	102,						/* Actuator */
 	10,							/* Aero_Fuel */
 	20,							/* DS_Fuel */
