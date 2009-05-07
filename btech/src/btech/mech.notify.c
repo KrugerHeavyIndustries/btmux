@@ -1584,10 +1584,12 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 	char buff[50];
 
 /* Stat recording */
-	if(IsHit)
-		MechShotsHit(mech)++;
-	else
-		MechShotsMissed(mech)++;
+	if(target) { /* only if we have a mecha */
+		if(IsHit)
+			MechShotsHit(mech)++;
+		else
+			MechShotsMissed(mech)++;
+	}
 
 	possibly_see_mech(mech);
 	if(target) {
