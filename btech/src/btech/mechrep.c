@@ -1840,7 +1840,7 @@ void mechrep_setcargospace(dbref player, void *data, char *buffer)
 	DOCHECK(argc != 2, "Invalid number of arguements!");
 
 	cargo = (atoi(args[0]) * 50);
-	DOCHECK(cargo < 0 || cargo > 100000, "Doesn't that seem excessive?");
+	DOCHECK(cargo < 0 || cargo > 250000, "Doesn't that seem excessive?");
 	CargoSpace(mech) = cargo;
 
 	max = (atoi(args[1]));
