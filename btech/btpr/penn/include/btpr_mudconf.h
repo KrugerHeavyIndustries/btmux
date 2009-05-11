@@ -78,6 +78,8 @@ struct confdata {
     int btech_standcareful;	/* 0 = Don't allow (FASA rules), 1 Allow (-2 BTH to stand, double time if successful */
     int btech_maxtechtime;	/* Max Tech Time allowed, in minutes */
     int btech_blzmapmode;    /* 0 = Regular tacmap for non-aeros <blzs with terrain blockouts> (Default and usual), 1 = Just BLZs <no terrain blockers> */
+    int btech_extended_piloting; /* 0 = No (Drive, Piloting-Bmech, etc) 1 = Yes (Piloting-Tracked, Piloting-Biped, etc.) */
+    int btech_extended_gunnery; /* 0 = No (Gunnery-Bmech, Gunnery-Aero, etc) 1 = Yes (Gunnery-Laser, Gunnery-Missile, etc.) */
 #ifdef HUDINFO_SUPPORT
     int hudinfo_show_mapinfo;	/* What kind of info we are willing to give */
 #endif

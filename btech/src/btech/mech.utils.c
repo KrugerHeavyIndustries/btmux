@@ -408,109 +408,111 @@ int InWeaponArc(MECH * mech, float x, float y)
 
 char *FindGunnerySkillName(MECH * mech, int weapindx)
 {
-#ifndef BT_EXILE_MW3STATS
-	switch (MechType(mech)) {
-	case CLASS_BSUIT:
-		return "Gunnery-BSuit";
-	case CLASS_MECH:
-		return "Gunnery-Battlemech";
-	case CLASS_VEH_GROUND:
-	case CLASS_VEH_NAVAL:
-		return "Gunnery-Conventional";
-	case CLASS_VTOL:
-	case CLASS_AERO:
-		return "Gunnery-Aerospace";
-	case CLASS_SPHEROID_DS:
-	case CLASS_DS:
-		return "Gunnery-Spacecraft";
-	case CLASS_MW:
-		if(weapindx >= 0) {
-			if(!strcmp(MechWeapons[weapindx].name, "PC.Sword"))
-				return "Blade";
-			if(!strcmp(MechWeapons[weapindx].name, "PC.Vibroblade"))
-				return "Blade";
-		}
-		return "Small_Arms";
-	}
-#else
-	if(weapindx < 0)
-		return NULL;
-	if(MechType(mech) == CLASS_MW) {
-		if(weapindx >= 0) {
-			if(!strcmp(MechWeapons[weapindx].name, "PC.Blade"))
-				return "Blade";
-			if(!strcmp(MechWeapons[weapindx].name, "PC.Vibroblade"))
-				return "Blade";
-			if(!strcmp(MechWeapons[weapindx].name, "PC.Blazer"))
-				return "Support_Weapons";
-			if(!strcmp(MechWeapons[weapindx].name, "PC.HeavyGyrojetGun"))
-				return "Support_Weapons";
+	if(!mudconf.btech_extended_gunnery) {
+		switch (MechType(mech)) {
+		case CLASS_BSUIT:
+			return "Gunnery-BSuit";
+		case CLASS_MECH:
+			return "Gunnery-Battlemech";
+		case CLASS_VEH_GROUND:
+		case CLASS_VEH_NAVAL:
+			return "Gunnery-Conventional";
+		case CLASS_VTOL:
+		case CLASS_AERO:
+			return "Gunnery-Aerospace";
+		case CLASS_SPHEROID_DS:
+		case CLASS_DS:
+			return "Gunnery-Spacecraft";
+		case CLASS_MW:
+			if(weapindx >= 0) {
+				if(!strcmp(MechWeapons[weapindx].name, "PC.Sword"))
+					return "Blade";
+				if(!strcmp(MechWeapons[weapindx].name, "PC.Vibroblade"))
+					return "Blade";
+			}
 			return "Small_Arms";
 		}
-	} else if(IsArtillery(weapindx))
-		return "Gunnery-Artillery";
-	else if(IsMissile(weapindx))
-		return "Gunnery-Missile";
-	else if(IsBallistic(weapindx))
-		return "Gunnery-Ballistic";
-	else if(IsEnergy(weapindx))
-		return "Gunnery-Laser";
-	else if(IsFlamer(weapindx))
-		return "Gunnery-Flamer";
-#endif
+	} else {
+
+		if(weapindx < 0)
+			return NULL;
+		if(MechType(mech) == CLASS_MW) {
+			if(weapindx >= 0) {
+				if(!strcmp(MechWeapons[weapindx].name, "PC.Blade"))
+					return "Blade";
+				if(!strcmp(MechWeapons[weapindx].name, "PC.Vibroblade"))
+					return "Blade";
+				if(!strcmp(MechWeapons[weapindx].name, "PC.Blazer"))
+					return "Support_Weapons";
+				if(!strcmp(MechWeapons[weapindx].name, "PC.HeavyGyrojetGun"))
+					return "Support_Weapons";
+				return "Small_Arms";
+			}
+		} else if(IsArtillery(weapindx))
+			return "Gunnery-Artillery";
+		else if(IsMissile(weapindx))
+			return "Gunnery-Missile";
+		else if(IsBallistic(weapindx))
+			return "Gunnery-Ballistic";
+		else if(IsEnergy(weapindx))
+			return "Gunnery-Laser";
+		else if(IsFlamer(weapindx))
+			return "Gunnery-Flamer";
+	}
 	return NULL;
 }
 
 char *FindPilotingSkillName(MECH * mech)
 {
-#ifndef BT_EXILE_MW3STATS
-	switch (MechType(mech)) {
-	case CLASS_MW:
-		return "Running";
-	case CLASS_BSUIT:
-		return "Piloting-BSuit";
-	case CLASS_MECH:
-		return "Piloting-Battlemech";
-	case CLASS_VEH_GROUND:
-	case CLASS_VEH_NAVAL:
-		return "Drive";
-	case CLASS_VTOL:
-	case CLASS_AERO:
-		return "Piloting-Aerospace";
-	case CLASS_SPHEROID_DS:
-	case CLASS_DS:
-		return "Piloting-Spacecraft";
+	if(!mudconf.btech_extended_piloting) {
+		switch (MechType(mech)) {
+		case CLASS_MW:
+			return "Running";
+		case CLASS_BSUIT:
+			return "Piloting-BSuit";
+		case CLASS_MECH:
+			return "Piloting-Battlemech";
+		case CLASS_VEH_GROUND:
+		case CLASS_VEH_NAVAL:
+			return "Drive";
+		case CLASS_VTOL:
+		case CLASS_AERO:
+			return "Piloting-Aerospace";
+		case CLASS_SPHEROID_DS:
+		case CLASS_DS:
+			return "Piloting-Spacecraft";
+		}
+	} else {
+
+		if(MechType(mech) == CLASS_MW && MechRTerrain(mech) == WATER)
+			return "Swimming";
+		switch (MechType(mech)) {
+		case CLASS_MW:
+			return "Running";
+		case CLASS_BSUIT:
+			return "Piloting-Bsuit";
+		case CLASS_VEH_NAVAL:
+			return "Piloting-Naval";
+		case CLASS_DS:
+		case CLASS_SPHEROID_DS:
+			return "Piloting-Spacecraft";
+		case CLASS_VTOL:
+		case CLASS_AERO:
+			return "Piloting-Aerospace";
+		}
+		switch (MechMove(mech)) {
+		case MOVE_BIPED:
+			return "Piloting-Biped";
+		case MOVE_QUAD:
+			return "Piloting-Quad";
+		case MOVE_TRACK:
+			return "Piloting-Tracked";
+		case MOVE_HOVER:
+			return "Piloting-Hover";
+		case MOVE_WHEEL:
+			return "Piloting-Wheeled";
+		}
 	}
-#else
-	if(MechType(mech) == CLASS_MW && MechRTerrain(mech) == WATER)
-		return "Swimming";
-	switch (MechType(mech)) {
-	case CLASS_MW:
-		return "Running";
-	case CLASS_BSUIT:
-		return "Piloting-Bsuit";
-	case CLASS_VEH_NAVAL:
-		return "Piloting-Naval";
-	case CLASS_DS:
-	case CLASS_SPHEROID_DS:
-		return "Piloting-Spacecraft";
-	case CLASS_VTOL:
-	case CLASS_AERO:
-		return "Piloting-Aerospace";
-	}
-	switch (MechMove(mech)) {
-	case MOVE_BIPED:
-		return "Piloting-Biped";
-	case MOVE_QUAD:
-		return "Piloting-Quad";
-	case MOVE_TRACK:
-		return "Piloting-Tracked";
-	case MOVE_HOVER:
-		return "Piloting-Hover";
-	case MOVE_WHEEL:
-		return "Piloting-Wheeled";
-	}
-#endif
 	return NULL;
 }
 

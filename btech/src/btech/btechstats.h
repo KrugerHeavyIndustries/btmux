@@ -117,15 +117,16 @@ struct char_value {
     {"Cryptography", CHAR_SKILL, CHAR_MENTAL | CAREER_TECH, 50},
     {"Demolitions", CHAR_SKILL, CHAR_MENTAL, 50},
     {"Disguise", CHAR_SKILL, CHAR_MENTAL | CAREER_RECON, 50},
-#ifndef BT_EXILE_MW3STATS
+/*Expanded Piloting Skills */
     {"Drive", CHAR_SKILL, CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Drive-Naval", CHAR_SKILL, CHAR_PHYSICAL, 3000},
-#endif
+/*End Expand */
     {"Engineering", CHAR_SKILL, CHAR_MENTAL | CAREER_TECH, 50},
     {"Escape_Artist", CHAR_SKILL, CHAR_PHYSICAL | CAREER_RECON, 50},
     {"Forgery", CHAR_SKILL, CHAR_MENTAL, 50},
     {"Gambling", CHAR_SKILL, CHAR_MENTAL, 50},
-#ifndef BT_EXILE_MW3STATS
+
+/*Standard Gunnery Skills */
     {"Gunnery-Aerospace", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_AERO, 1000},
     {"Gunnery-Artillery", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_ARTILLERY, 500},
     {"Gunnery-Battlemech", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_BMECH, 3000},
@@ -133,14 +134,12 @@ struct char_value {
     {"Gunnery-Conventional", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Gunnery-Spacecraft", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_DROPSHIP, 50},
     {"Gunnery-Spotting", CHAR_SKILL, CHAR_PHYSICAL | CAREER_ARTILLERY, 50},
-#else
-    {"Gunnery-Artillery", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 500},
+/* Expanded Gunnery Skills*/
     {"Gunnery-Ballistic", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 2500},
     {"Gunnery-Flamer", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 500},
     {"Gunnery-Laser", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 2500},
     {"Gunnery-Missile", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 2500},
-    {"Gunnery-Spotting", CHAR_SKILL, SK_XP | CHAR_PHYSICAL, 250},
-#endif
+
     {"Impersonation", CHAR_SKILL, CHAR_SOCIAL, 50},
     {"Interrogation", CHAR_SKILL, CHAR_SOCIAL | CAREER_RECON, 50},
     {"Jump_Pack", CHAR_SKILL, CHAR_ATHLETIC, 50},
@@ -149,23 +148,20 @@ struct char_value {
     {"Navigation", CHAR_SKILL, CHAR_MENTAL, 25},
     {"Negotiation", CHAR_SKILL, CHAR_SOCIAL, 25},
     {"Perception", CHAR_SKILL, CHAR_MENTAL | CAREER_RECON, 150},
-#ifndef BT_EXILE_MW3STATS
-    {"Piloting-Aerospace", CHAR_SKILL, CHAR_PHYSICAL | CAREER_AERO, 2500},
-    {"Piloting-Battlemech", CHAR_SKILL, CHAR_PHYSICAL | CAREER_BMECH, 3000},
-    {"Piloting-Battlesuit", CHAR_SKILL, CHAR_ATHLETIC, 3000},
-    {"Piloting-BSuit", CHAR_SKILL, CHAR_PHYSICAL, 3000},
-    {"Piloting-Spacecraft", CHAR_SKILL, CHAR_PHYSICAL | CAREER_DROPSHIP, 50},
-#else
-    {"Piloting-Aerospace", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_AERO, 3000},
+
+    {"Piloting-Aerospace", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_AERO, 2500},
+    {"Piloting-Battlemech", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_BMECH, 3000},
+    {"Piloting-BSuit", CHAR_SKILL, SK_XP | CHAR_ATHLETIC, 3000},
+    {"Piloting-Spacecraft", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_DROPSHIP, 50},
+
+/* Added skills for 'expanded' skill sets */
     {"Piloting-Biped", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_BMECH, 3000},
-    {"Piloting-BSuit", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Piloting-Hover", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Piloting-Naval", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Piloting-Quad", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_BMECH, 3000},
-    {"Piloting-Spacecraft", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_DROPSHIP, 3000},
     {"Piloting-Tracked", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
     {"Piloting-Wheeled", CHAR_SKILL, SK_XP | CHAR_PHYSICAL | CAREER_CAVALRY, 3000},
-#endif
+/* End add */
     {"Protocol", CHAR_SKILL, CHAR_SOCIAL, 50},
     {"Quickdraw", CHAR_SKILL, CHAR_PHYSICAL, 50},
     {"Research", CHAR_SKILL, CHAR_MENTAL | CAREER_TECH, 100},

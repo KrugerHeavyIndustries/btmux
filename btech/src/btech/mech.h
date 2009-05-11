@@ -136,8 +136,6 @@
 #define IsCoolant(a)        (strstr(MechWeapons[a].name, "Coolant"))
 #define IsAcid(a)           (strstr(MechWeapons[a].name, "Acid"))
 
-#ifdef BT_EXILE_MW3STATS
-#endif
 
 #define GunRangeWithCheck(mech,sec,a) (SectionUnderwater(mech,sec) > 0 ? GunWaterRange(a) : IsArtillery(a)?(ARTILLERY_MAPSHEET_SIZE * MechWeapons[a].longrange):(MechWeapons[a].longrange))
 #define EGunRangeWithCheck(mech,sec,a) ((SectionUnderwater(mech,sec) > 0) ? EGunWaterRange(a) : (mudconf.btech_erange && (MechWeapons[a].medrange * 2) > GunRange(a)) ? (MechWeapons[a].medrange * 2) : GunRange(a))

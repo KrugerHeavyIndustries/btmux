@@ -153,6 +153,8 @@ void cf_init(void)
 	mudconf.btech_standcareful = 1;
 	mudconf.btech_maxtechtime = 600;
 	mudconf.btech_blzmapmode = 0;
+        mudconf.btech_extended_piloting = 1;
+	mudconf.btech_extended_gunnery = 1;
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1168,6 +1170,10 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_inferno_penalty, 0},
 	{(char *) "btech_blzmapmode", 
 	 cf_int, CA_GOD, &mudconf.btech_blzmapmode, 0},
+	{(char *) "btech_extended_piloting",
+	 cf_int, CA_GOD, &mudconf.btech_extended_piloting, 0},
+	{(char *) "btech_extended_gunnery",
+	 cf_int, CA_GOD, &mudconf.btech_extended_gunnery, 0},
 #ifdef BT_FREETECHTIME
 	{(char *) "btech_freetechtime",
 	 cf_int, CA_GOD, &mudconf.btech_freetechtime, 0},
