@@ -275,6 +275,7 @@ void mech_firetic(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALO);
+	DOCHECK(WeaponsHold(mech), "Currently in weapons hold. Unable to fire weapons.");
 	firetic_sub(player, mech, buffer);
 }
 
