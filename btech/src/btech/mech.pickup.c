@@ -107,6 +107,12 @@ void mech_pickup(dbref player, void *data, char *buffer)
 	DOCHECK(MechTeam(mech) != MechTeam(target) &&
 			Started(target), "You can't pick that up!");
 
+/* Not on the same team, unit is !destroyed, don't allow.. Prevents picking up from heat shutdown, etc */
+/* Allow Team 0 (Administrative Team for Box Drops, etc) */
+	DOCHECK((MechTeam(mech) != MechTeam(target)) &&
+			(!Destroyed(target) && !Started(target) && MechTeam(target) != 0), 
+			"You can't pick that up!");
+
 	if(Moving(target) && !Falling(target) && !OODing(target))
 		StopMoving(target);
 
