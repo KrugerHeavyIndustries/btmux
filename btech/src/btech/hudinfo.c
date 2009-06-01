@@ -1228,16 +1228,20 @@ static char *hud_getmapflags(MAP * map)
 {
 	static char res[5];
 	char *p = res;
+	
+	if(map) {
+		if(map->flags & MAPFLAG_VACUUM)
+			*p++ = 'V';
+		if(map->flags & MAPFLAG_UNDERGROUND)
+			*p++ = 'U';
+		if(map->flags & MAPFLAG_DARK)
+			*p++ = 'D';
 
-	if(map->flags & MAPFLAG_VACUUM)
-		*p++ = 'V';
-	if(map->flags & MAPFLAG_UNDERGROUND)
-		*p++ = 'U';
-	if(map->flags & MAPFLAG_DARK)
-		*p++ = 'D';
-
-	if(p == res)
+		if(p == res)
+			*p++ = '-';
+	} else {
 		*p++ = '-';
+	}
 
 	*p = '\0';
 	return res;
