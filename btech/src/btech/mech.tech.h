@@ -32,7 +32,7 @@
 
 /* Tech skill modifiers ; + = bad, - = good */
 #define PARTTYPE_DIFFICULTY(a) (1)
-#define WEAPTYPE_DIFFICULTY(a) ((int) (sqrt(MechWeapons[Weapon2I(a)].criticals)*1.5-1.1))
+#define WEAPTYPE_DIFFICULTY(a) ((int) (sqrt((MechWeapons[Weapon2I(a)].criticals*1.5)-1.1)))
 #define REPAIR_DIFFICULTY     0
 #define REPLACE_DIFFICULTY     1
 #define RELOAD_DIFFICULTY      1
