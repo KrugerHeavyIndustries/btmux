@@ -984,6 +984,14 @@ static int get_building_cf(dbref d, int *i1, int *i2)
 	return map->cf;
 }
 
+static int get_building_regen_factor(dbref d)
+{
+	MAP *map;
+	if(!(map = getMap(d)))
+		return 0;
+	return map->regen_factor;
+}
+
 int get_cf(dbref d)
 {
 	int cf, max = 0;
@@ -1012,7 +1020,7 @@ static void building_regen_event(MUXEVENT * e)
 
 	if(!get_building_cf(d, &cf, &max))
 		return;
-	cf = MIN(cf + BUILDING_REPAIR_AMOUNT, max);
+	cf = MIN(cf + get_building_regen_factor(d), max);
 	set_building_cf(d, cf, max);
 	if(cf != max)
 		OBJEVENT(d, EVENT_BREGEN, building_regen_event,

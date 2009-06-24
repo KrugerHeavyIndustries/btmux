@@ -604,6 +604,7 @@ void initialize_map_empty(MAP * new, dbref key)
 	new->mynum = key;
 	new->map_width = DEFAULT_MAP_WIDTH;
 	new->map_height = DEFAULT_MAP_HEIGHT;
+	new->regen_factor = 1; /* Default the building regen to 1 */
 	Create(new->map, unsigned char *, new->map_height);
 
 	for(i = 0; i < new->map_height; i++)

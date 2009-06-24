@@ -190,6 +190,7 @@ typedef struct {
     short moves;                        /* Cheat to prevent idle CPU hoggage */
     short movemod;
     int sensorflags;
+    int regen_factor;			/* Amount of CF to possibly regen per cycle */
 } MAP;
 
 /* Used by navigate_sketch_map */

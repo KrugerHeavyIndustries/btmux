@@ -505,6 +505,7 @@ static GMV xcode_data[] = {
 	MaEntry("cloudbase", cloudbase, TYPE_SHORT),
 	MaEntry("flags", flags, TYPE_BV),
 	MaEntry("sensorflags", sensorflags, TYPE_BV),
+	MaEntry("regen_factor", regen_factor, TYPE_INT),
 
 	TuEntry("arcs", arcs, TYPE_INT),
 	TuEntry("parent", parent, TYPE_DBREF),

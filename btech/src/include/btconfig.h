@@ -119,7 +119,6 @@
 #define BUILDINGS_REPAIR_THEMSELVES
 #define BUILDINGS_REBUILD_FROM_DESTRUCTION
 
-#define BUILDING_REPAIR_AMOUNT     1
 #define BUILDING_REPAIR_DELAY    120    /* 1 pt / 1 min */
 
 /* Howlong to wait before rebuilding cf0'd buildings. */
