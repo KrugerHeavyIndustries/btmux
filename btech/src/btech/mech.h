@@ -726,15 +726,16 @@ struct section_struct {
 #define MOVENEMENT_LAST		10
 
 /* Mech Preferences list */
-#define MECHPREF_PKILL          0x01    /* Kill MWs anyway */
-#define MECHPREF_SLWARN         0x02    /* Warn when lit by slite */
-#define MECHPREF_AUTOFALL       0x04    /* Jump off cliffs (don't try to avoid) */
-#define MECHPREF_NOARMORWARN    0x08    /* Don't warn when armor is getting low */
-#define MECHPREF_NOAMMOWARN     0x10    /* Don't warn when ammo is getting low */
-#define MECHPREF_STANDANYWAY    0x20    /* Try to stand even when BTH too high */
-#define MECHPREF_AUTOCON_SD     0x40    /* Autocon on non-started units */
-#define MECHPREF_NOFRIENDLYFIRE 0x80    /* Disallow firing on teammates */
-#define MECHPREF_TURNMODE       0x100   /* Tight or Normal for Maneuvering Ace */
+#define MECHPREF_PKILL          0x00000001    /* Kill MWs anyway */
+#define MECHPREF_SLWARN         0x00000002    /* Warn when lit by slite */
+#define MECHPREF_AUTOFALL       0x00000004    /* Jump off cliffs (don't try to avoid) */
+#define MECHPREF_NOARMORWARN    0x00000008    /* Don't warn when armor is getting low */
+#define MECHPREF_NOAMMOWARN     0x00000010    /* Don't warn when ammo is getting low */
+#define MECHPREF_STANDANYWAY    0x00000020    /* Try to stand even when BTH too high */
+#define MECHPREF_AUTOCON_SD     0x00000040    /* Autocon on non-started units */
+#define MECHPREF_NOFRIENDLYFIRE 0x00000080    /* Disallow firing on teammates */
+#define MECHPREF_TURNMODE       0x00000100   /* Tight or Normal for Maneuvering Ace */
+#define MECHPREF_BTHDEBUG       0x00000200   /* Show BTH Debug or not (Can Get Spammy) */
 
 typedef struct {
     char mech_name[31];		/* Holds the 30 char ID for the mech */
@@ -794,7 +795,7 @@ typedef struct {
     float chargedist;		/* # of hexes moved since 'charge' command */
     char staggerstamp;		/* When in last turn this 'mech staggered */
 
-    short mech_prefs;		/* Mech preferences */
+    int mech_prefs;		/* Mech preferences */
     short jumplength;		/* in real coords (for jump and goto) */
     short goingx, goingy;	/* in map coords (for jump and goto) */
     short desiredfacing;	/* You are turning if this != facing */

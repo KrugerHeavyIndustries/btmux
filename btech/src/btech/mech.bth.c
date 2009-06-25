@@ -31,8 +31,8 @@
 #define BTHADD(desc,n)  baseToHit += n;
 #define BTHEND(m)
 #else
-#define BTHBASE(m,t,n)  do { if (t) sprintf(buf, "#%d -> #%d: Base %d", m->mynum, t->mynum, n); else sprintf(buf, "#%d -> (hex): Base %d", m->mynum, n); baseToHit = n; } while (0)
-#define BTHADD(desc,n)  do { i = n ; if (i) { sprintf(buf+strlen(buf), ", %s: %s%d", desc, i>0 ? "+" : "", i); baseToHit += i; } } while (0)
+#define BTHBASE(m,t,n)  do { if (t) sprintf(buf, "#%d -> #%d: Base %d", m->mynum, t->mynum, n); else sprintf(buf, "#%d -> (hex): Base %d", m->mynum, n); baseToHit = n; sprintf(bthbuf, "Base %d", n); } while (0)
+#define BTHADD(desc,n)  do { i = n ; if (i) { sprintf(buf+strlen(buf), ", %s: %s%d", desc, i>0 ? "+" : "", i); sprintf(bthbuf+strlen(bthbuf), ", %s: %s%d", desc, i>0 ? "+" : "", i);  baseToHit += i; } } while (0)
 #define BTHEND(m)       SendBTHDebug(tprintf("%s.", buf))
 #endif
 
@@ -57,6 +57,7 @@ int FindNormalBTH(MECH * mech,
 	char buf[LBUF_SIZE];
 	int i;
 #endif
+	char bthbuf[LBUF_SIZE];
 	int j, rbth = 0;
 	float enemyX, enemyY, enemyZ;
 	int wRangeBracket = RANGE_TOFAR;
@@ -408,6 +409,8 @@ int FindNormalBTH(MECH * mech,
 	/* Check for damage */
 	BTHADD("CritDamage", getCritAddedBTH(mech, section, critical,
 										 wRangeBracket));
+	if(MechBTHDebug(mech))
+		notify_printf(MechPilot(mech),"BTHDebug: %s",bthbuf);
 
 	BTHEND(mech);
 	return baseToHit;

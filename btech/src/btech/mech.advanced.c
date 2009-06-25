@@ -1759,26 +1759,21 @@ void mech_safety(dbref player, void *data, char *buffer)
 #define MECHPREF_FLAG_NEGATIVE  0x02
 
 static struct mechpref_info {
-	unsigned char bit;
+	int bit;
 	unsigned char flags;
 	char *name;
 	char *msg;
 } mech_preferences[] = {
-	{
-	MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety",
-			"MechWarrior Safeties flipped"}, {
-	MECHPREF_SLWARN, 0, "SLWarn",
-			"The warning when lit by searchlight is now"}, {
-	MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall",
-			"Suicidal jumps off cliffs toggled"}, {
-	MECHPREF_NOARMORWARN, MECHPREF_FLAG_INVERTED, "ArmorWarn",
-			"Low-armor warnings turned"}, {
-	MECHPREF_NOAMMOWARN, MECHPREF_FLAG_INVERTED, "AmmoWarn",
-			"Warning when running out of Ammunition switched"}, {
-	MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown",
-			"Autocon on shutdown units turned"}, {
-        MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety",
-			"Friendly Fire Safeties flipped"},};
+	{ MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety", "MechWarrior Safeties flipped"},
+	{ MECHPREF_SLWARN, 0			, "SLWarn", "The warning when lit by searchlight is now"},
+	{ MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall", "Suicidal jumps off cliffs toggled"}, 
+	{ MECHPREF_NOARMORWARN, MECHPREF_FLAG_INVERTED, "ArmorWarn", "Low-armor warnings turned"}, 
+	{ MECHPREF_NOAMMOWARN, MECHPREF_FLAG_INVERTED, "AmmoWarn", "Warning when running out of Ammunition switched"}, 
+	{ MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown", "Autocon on shutdown units turned"}, 
+	{ MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety", "Friendly Fire Safeties flipped"}, 
+	{ MECHPREF_BTHDEBUG, MECHPREF_FLAG_NEGATIVE, "BTHDebug","BTH Debugging is now"}
+	
+	};
 #define NUM_MECHPREFERENCES (sizeof(mech_preferences) / sizeof(struct mechpref_info))
 
 static MECH *target_mech;

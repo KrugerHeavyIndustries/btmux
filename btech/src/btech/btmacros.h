@@ -180,6 +180,7 @@
 #define MechFailStand(a)	(!(MechPrefs(a) & MECHPREF_NOFAILSTAND))
 #define MechAutoconSD(a)	(MechPrefs(a) & MECHPREF_AUTOCON_SD)
 #define MechNoFriendlyFire(a)	(MechPrefs(a) & MECHPREF_NOFRIENDLYFIRE)
+#define MechBTHDebug(a)		(MechPrefs(a) & MECHPREF_BTHDEBUG)
 #define MechWalkXPFactor(a) 	(a)->rd.wxf
 #define MechPilot(a)		(a)->pd.pilot
 #define MechPilotSkillBase(a) 	(a)->rd.pilotskillbase
