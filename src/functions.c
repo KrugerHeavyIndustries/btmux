@@ -96,6 +96,7 @@ extern void fun_btengrate_ref();
 extern void fun_btweapstat();
 extern void fun_btnumrepjobs();
 extern void fun_btsetxy();
+extern void fun_btsettons();
 extern void fun_btmapemit();
 extern void fun_btparttype();
 extern void fun_btticweaps();
@@ -5643,6 +5644,7 @@ FUN flist[] = {
 #ifdef BT_ADVANCED_ECON
 	{"BTSETPARTCOST", fun_btsetpartcost, 2, 0, CA_WIZARD},
 #endif
+	{"BTSETTONS", fun_btsettons, 2, 0, CA_WIZARD},
 	{"BTSETXCODEVALUE", fun_btsetxcodevalue, 3, 0, CA_WIZARD},
 	{"BTSETXY", fun_btsetxy, 0, FN_VARARGS, CA_WIZARD},
 	{"BTSHOWCRITSTATUS_REF", fun_btshowcritstatus_ref, 3, 0, CA_WIZARD},

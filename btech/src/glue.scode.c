@@ -2115,6 +2115,25 @@ void fun_btnumrepjobs(char *buff, char **bufc, dbref player, dbref cause,
 	safe_tprintf_str(buff, bufc, "%d", damage_last);
 }
 
+void fun_btsettons(char *buff, char**bufc, dbref player, dbref cause,
+				 char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	MECH *mech;
+	dbref it ;
+	int x;
+
+	it = match_thing(player,fargs[0]);
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	FUNCHECK(!Good_obj(it), "#-1 INVALID TARGET");
+
+	mech = getMech(it);
+	x = atoi(fargs[1]);
+	MechTons(mech) = x;
+
+	update_oweight(mech, x * 1024);
+	safe_tprintf_str(buff, bufc, "%d", x);
+}
+	
 void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
