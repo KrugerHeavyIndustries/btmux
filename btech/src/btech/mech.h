@@ -1015,7 +1015,7 @@ struct repair_data {
 #define UNIT_MOUNTING         0x00200000  /* (v) Unit is mounting another unit */
 #define FORTIFIED             0x00400000  /* (w) */
 #define WEAPONS_HOLD	      0x00800000  /* (x) Unit is unable to fire */
-/* UNUSED                     0x01000000     (y) */
+#define NO_GUN_XP             0x01000000  /* (y) Don't give gun xp if we fire at this */
 /* UNUSED                     0x02000000     (z) */
 /* UNUSED                     0x04000000     (A) */
 /* UNUSED                     0x08000000     (B) */

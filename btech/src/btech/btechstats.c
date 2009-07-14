@@ -1385,6 +1385,9 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	if(!In_Character(attacker->mynum))
 		return;
 
+	if(NoGunXP(wounded)) /* No Gun XP for shooting this (Boxes, etc) */
+		return;
+
 	if(!RGotGPilot(attacker))
 		return;
 

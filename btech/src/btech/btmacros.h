@@ -473,6 +473,7 @@ do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_ti
 #define Fallen(a)            (MechStatus(a) & FALLEN)
 #define Fortified(a)	     (MechStatus2(a) & FORTIFIED)
 #define WeaponsHold(a)	     (MechStatus2(a) & WEAPONS_HOLD)
+#define NoGunXP(a)		     (MechStatus2(a) & NO_GUN_XP)
 #define Immobile(a)          ( !Started(a) || Uncon(a) || Fortified(a) || Blinded(a) || (MechMove(a) == MOVE_NONE) || ((MechStatus(a) & FALLEN) && ( (MechType(a) != CLASS_MECH) && (MechType(a) != CLASS_MW) )) )
 #define Landed(a)            (MechStatus(a) & LANDED)
 #define Towed(a)             (MechStatus(a) & TOWED)
