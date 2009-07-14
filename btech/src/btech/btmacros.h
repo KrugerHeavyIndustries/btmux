@@ -594,6 +594,8 @@ MechStatus(a) &= ~LOCK_MODES
 #define SendFreqs(msg...)           send_channel("MechFreqs",msg)
 #define SendPilotXP(msg...)         send_channel("MechPilotXP",msg)
 #define SendTechXP(msg...)          send_channel("MechTechXP",msg)
+#define SendTAC(msg...)         send_channel("TACInfo",msg)
+
 
 /*
  * This is the prototype for functions

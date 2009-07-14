@@ -386,13 +386,19 @@ int crittable(MECH * mech, int loc, int tres)
 	d = (100 * GetSectArmor(mech, loc)) / GetSectOArmor(mech, loc);
 
 	/* Are we below the threshold? Okay, then lets give it a 1 in 12 chance to TAC */
-	if(d < tres) 
-		if(Number(1,12) == 6)
-			return 1;
+	if(d < tres) {
+	   SendTAC(tprintf("%d was below thresh (d: %d, tres: %d)",mech->mynum, d, tres));
+		if(Number(1,12) == 6) {
+		      SendTAC(tprintf("%d is pretty unlucky. Needed 6. Rolled: 6. You're getting tac'd!",mech->mynum));
+   			return 1;
+			}
+   }
 	/* Full Up Armor? Okay, 1 in 71 chance for that 'lucky' TAC */
 	if(d == 100) {
-		if(Number(1, 71) == 23)
-			return 1;
+		if(Number(1, 71) == 23) {
+		      SendTAC(tprintf("%d has full armor, but you suck. 1-71 and you got a 23? Who the eff are you, MJ?",mech->mynum));
+			   return 1;
+			}
 		return 0;
 	}
 	/* WTF is this? Seriously?  This would mean, if the thres was 40%...
@@ -431,6 +437,7 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 		case LEFTSIDE:
 			switch (roll) {
 			case 2:
+			   SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindFasaHitLocation()",mech->mynum));
 				*iscritical = 1;
 				return LTORSO;
 			case 3:
@@ -458,6 +465,7 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 		case RIGHTSIDE:
 			switch (roll) {
 			case 2:
+			   SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindFasaHitLocation()",mech->mynum));
 				*iscritical = 1;
 				return RTORSO;
 			case 3:
@@ -486,6 +494,7 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 		case BACK:
 			switch (roll) {
 			case 2:
+            SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindFasaHitLocation()",mech->mynum));			            
 				*iscritical = 1;
 				return CTORSO;
 			case 3:
@@ -2175,8 +2184,8 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 		if(MechSpecials(mech) & CRITPROOF_TECH)
 			return FindHitLocation_CritProof(mech, hitGroup, iscritical,
 											 isrear);
-		else if(mudconf.btech_fasacrit)
-			return FindFasaHitLocation(mech, hitGroup, iscritical, isrear);
+		else if(mudconf.btech_fasacrit) 
+   			return FindFasaHitLocation(mech, hitGroup, iscritical, isrear);
 		break;
 	}
 
@@ -2196,8 +2205,10 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 		case LEFTSIDE:
 			switch (roll) {
 			case 2:
-				if(crittable(mech, LTORSO, 60))
+				if(crittable(mech, LTORSO, 60)) {
+				   SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindHitLocation()",mech->mynum));
 					*iscritical = 1;
+					}
 				return LTORSO;
 			case 3:
 				return LLEG;
@@ -2224,8 +2235,10 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 		case RIGHTSIDE:
 			switch (roll) {
 			case 2:
-				if(crittable(mech, RTORSO, 60))
+				if(crittable(mech, RTORSO, 60)) {
+				   SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindHitLocation()",mech->mynum));
 					*iscritical = 1;
+					}
 				return RTORSO;
 			case 3:
 				return RLEG;
@@ -2253,8 +2266,10 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 		case BACK:
 			switch (roll) {
 			case 2:
-				if(crittable(mech, CTORSO, 60))
+				if(crittable(mech, CTORSO, 60)) {
+   				SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindHitLocation()",mech->mynum));
 					*iscritical = 1;
+					}
 				return CTORSO;
 			case 3:
 			case 4:
