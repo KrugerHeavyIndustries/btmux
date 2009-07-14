@@ -2536,6 +2536,39 @@ static void fun_atan(char *buff, char **bufc, dbref player, dbref cause,
 	fval(buff, bufc, atan(atof(fargs[0])));
 }
 
+static void fun_circumcenter(char *buff, char **bufc, dbref player, dbref cause,
+					   char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+// Find the CircumCenter of 3 points. Borrowed from Delphi code.
+
+	double x1,x2,x3,y1,y2,y3;
+	double formA, formB, formC, formD, formE, formF, formG;
+	double xcenter, ycenter;
+
+	x1 = atof(fargs[0]);
+	x2 = atof(fargs[2]);
+	x3 = atof(fargs[4]);
+	y1 = atof(fargs[1]);
+	y2 = atof(fargs[3]);
+	y3 = atof(fargs[5]);
+
+	formA = x2 - x1;
+	formB = y2 - y1;
+	formC = x3 - x1;
+	formD = y3 - y1;
+	formE = formA * (x1 + x2) + formB * (y1 + y2);
+	formF = formC * (x1 + x3) + formD * (y1 + y3);
+	formG = 2.0 * (formA * (y3 - y2) - formB * (x3 - x2));
+
+	if (formG == 0.0) {
+		safe_str("#-1", buff, bufc);
+	} else {
+		xcenter = (formD * formE - formB * formF ) / formG ;
+		ycenter = (formA * formF - formC * formE ) / formG ;
+		safe_tprintf_str(buff, bufc, "%d %d", (int) xcenter, (int) ycenter);
+	}
+}
+
 static void fun_dist2d(char *buff, char **bufc, dbref player, dbref cause,
 					   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -5670,6 +5703,7 @@ FUN flist[] = {
 	{"CEIL", fun_ceil, 1, 0, CA_PUBLIC},
 	{"CENTER", fun_center, 0, FN_VARARGS, CA_PUBLIC},
 	{"CHILDREN", fun_children, 1, 0, CA_PUBLIC},
+	{"CIRCUMCENTER", fun_circumcenter, 6, 0, CA_PUBLIC},
 	{"COBJ", fun_cobj, 1, 0, CA_PUBLIC},
 	{"COLORPAIRS", fun_colorpairs, 1, 0, CA_PUBLIC},
 	{"COLUMNS", fun_columns, 0, FN_VARARGS, CA_PUBLIC},
