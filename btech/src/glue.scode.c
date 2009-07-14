@@ -2127,6 +2127,7 @@ void fun_btsettons(char *buff, char**bufc, dbref player, dbref cause,
 	FUNCHECK(!Good_obj(it), "#-1 INVALID TARGET");
 
 	mech = getMech(it);
+	FUNCHECK(!mech, "#-1 NOT A MECH");
 	x = atoi(fargs[1]);
 	MechTons(mech) = x;
 
