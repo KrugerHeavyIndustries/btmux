@@ -2536,6 +2536,105 @@ static void fun_atan(char *buff, char **bufc, dbref player, dbref cause,
 	fval(buff, bufc, atan(atof(fargs[0])));
 }
 
+static void fun_cart2hex(char *buff, char **bufc, dbref player, dbref cause,
+					   char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	float x, y;
+        int x_count, y_count;
+	int hex_x, hex_y;
+	float cart_x, cart_y;
+	float root3 = sqrt(3) * 322.5;
+	float alpha = root3 / 6 ;
+	float angle_alpha = sqrt(3) /6;
+
+	cart_x = atof(fargs[0]);
+	cart_y = atof(fargs[1]);
+
+        if(cart_x < alpha ) {
+                /* Special case: we are in section IV of x-column 0 or off the map */
+                hex_x = cart_x < 0 ? -1 : 0;
+                hex_y = floor(cart_y / 322.5);
+		safe_tprintf_str(buff, bufc, "%d %d", hex_x, hex_y);
+                return;
+        }
+
+        /* 'shift' the map to the left so the repeatable box starts at 0 */
+        cart_x -= alpha;
+
+        /* Figure out the x-coordinate of the 'repeatable box' we're in. */
+        x_count = cart_x / root3;
+        /* And the offset inside the box, from the left edge. */
+        x = cart_x - x_count * root3;
+
+        /* The repbox holds two x-columns, we want the real X coordinate. */
+        x_count *= 2;
+
+        /* Do the same for the y-coordinate; this is easy */
+        y_count = floor(cart_y / 322.5);
+        y = cart_y - y_count * 322.5;
+
+        if(x < 2 * alpha) {
+
+                /* Clean in area I. Nothing to do */
+
+        } else if(x >= 3 * alpha && x < 5 * alpha) {
+                /* Clean in either area II or III. Up x one, and y if in the lower
+                   half of the box. */
+                x_count++;
+                if(y >= 161.25)
+                        /* Area II */
+                        y_count++;
+
+        } else if(x >= 2 * alpha && x < 3 * alpha) {
+                /* Any of areas I, II and III. */
+               if(y >= 161.25) {
+                        /* Area I or II */
+                        if(2 * angle_alpha * (322.5 - y) <= x - 2 * alpha) {
+                                /* Area II, up both */
+                                x_count++;
+                                y_count++;
+                        }
+                } else {
+                        /* Area I or III */
+                        if(2 * angle_alpha * y <= x - 2 * alpha)
+                                /* Area III, up only x */
+                                x_count++;
+                }
+        } else if(y >= 161.25) {
+                /* Area II or IV. Up x at least one, maybe two, and y maybe one. */
+                x_count++;
+                if(2 * angle_alpha * (y - 161.25) > (x - 5.0 * alpha))
+                        /* Area II */
+                        y_count++;
+                else
+                        /* Area IV */
+                        x_count++;
+        } else {
+                /* Area III or IV, up x at least one, maybe two */
+                x_count++;
+                if(2 * angle_alpha * y > root3 - x)
+                        /* Area IV */
+                        x_count++;
+        }
+
+        hex_x = x_count;
+        hex_y = y_count;
+
+	safe_tprintf_str(buff, bufc, "%d %d", hex_x, hex_y);
+
+}
+
+static void fun_hex2cart(char *buff, char **bufc, dbref player, dbref cause,
+					   char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	float cart_x, cart_y;
+
+	cart_x = (2.f + 3.f * atof(fargs[0])) * ((sqrt(3) * 322.5) /6) ;
+	cart_y = ((atoi(fargs[0]) % 2) ? 0 : 161.25 ) + (atof(fargs[1]) * 322.5 );
+
+	safe_tprintf_str(buff, bufc, "%f %f", cart_x, cart_y);
+
+}
 static void fun_circumcenter(char *buff, char **bufc, dbref player, dbref cause,
 					   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -5698,6 +5797,7 @@ FUN flist[] = {
 	{"BTWEAPONSTATUS_REF", fun_btweaponstatus_ref, 0, FN_VARARGS, CA_WIZARD},
 	{"BTWEAPSTAT", fun_btweapstat, 2, 0, CA_WIZARD},
 	{"CAPSTR", fun_capstr, -1, 0, CA_PUBLIC},
+	{"CART2HEX", fun_cart2hex, 2, 0, CA_PUBLIC},
 	{"CASE", fun_case, 0, FN_VARARGS | FN_NO_EVAL, CA_PUBLIC},
 	{"CAT", fun_cat, 0, FN_VARARGS, CA_PUBLIC},
 	{"CEIL", fun_ceil, 1, 0, CA_PUBLIC},
@@ -5766,6 +5866,7 @@ FUN flist[] = {
 	{"HASFLAG", fun_hasflag, 2, 0, CA_PUBLIC},
 	{"HASPOWER", fun_haspower, 2, 0, CA_PUBLIC},
 	{"HASTYPE", fun_hastype, 2, 0, CA_PUBLIC},
+	{"HEX2CART", fun_hex2cart, 2, 0, CA_PUBLIC},
 	{"HOME", fun_home, 1, 0, CA_PUBLIC},
 	{"IDLE", fun_idle, 1, 0, CA_PUBLIC},
 	{"IFELSE", fun_ifelse, 3, FN_NO_EVAL, CA_PUBLIC},
