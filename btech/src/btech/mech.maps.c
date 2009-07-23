@@ -1623,6 +1623,8 @@ static void mech_enter_event(MUXEVENT * e)
 	MAP *map = getMap(mech->mapindex), *newmap;
 	int target = (int) e->data2;
 	int x, y;
+	int obj_x, obj_y;
+
 
 	if(!(mapo = find_entrance_by_xy(map, MechX(mech), MechY(mech))))
 		return;
@@ -1658,11 +1660,15 @@ static void mech_enter_event(MUXEVENT * e)
 	}
 	if(MechCarrying(mech) > 0)
 		tmpm = getMech(MechCarrying(mech));
+	obj_x = MechX(mech);
+	obj_y = MechY(mech);
 	mech_Rsetmapindex(GOD, (void *) mech, tprintf("%d", (int) mapo->obj));
 	mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", x, y));
 	MechLOSBroadcast(mech, tprintf("has entered %s at %d,%d.",
-								   structure_name(mapo), MechX(mech),
-								   MechY(mech)));
+								   structure_name(mapo), obj_x, obj_y));
+	if(tmpm)
+		MechLOSBroadcast(tmpm, tprintf("has entered %s at %d,%d.",
+								   structure_name(mapo), obj_x, obj_y));
 	loud_teleport(mech->mynum, mapo->obj);
 	if(tmpm) {
 		mech_Rsetmapindex(GOD, (void *) tmpm, tprintf("%d", (int) mapo->obj));
