@@ -215,14 +215,14 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 	FindRangeAndBearingToCenter(mech, &rtc, &btc);
 
 	sprintf(response,
-			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s",
+			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s,%s",
 			MechIDS(mech, 0), MechX(mech), MechY(mech), MechZ(mech),
 			MechFacing(mech), MechDesiredFacing(mech),
 			MechSpeed(mech), MechDesiredSpeed(mech),
 			(int) (10 * MechPlusHeat(mech)),
 			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
-			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy);
+			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy,MechTarget(mech) != -1 ? MechID(getMech(MechTarget(mech))):"-");
 
 	hudinfo_notify(d, msgclass, "R", response);
 }
