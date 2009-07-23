@@ -1220,7 +1220,6 @@ int MadePerceptionRoll(MECH * mech, int modifier)
 		MechPer(mech) = char_getskilltarget(pilot, "Perception", 2);
 	if(Roll() < (MechPer(mech) + modifier))
 		return 0;
-	char_gainxp(pilot, "Perception", 1);
 	if(char_gainxp(pilot, "Perception", 1))
 		SendXP(tprintf("%s gained 1 perception XP", Name(pilot)));
 	return 1;
