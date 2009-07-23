@@ -1542,7 +1542,6 @@ int do_command(DESC * d, char *command)
         return 1;
     }
 
-    d->last_time = mudstate.now;
 
 	/*
 	 * Split off the command from the arguments 
@@ -1565,7 +1564,8 @@ int do_command(DESC * d, char *command)
 
 	if(mudconf.hudinfo_enabled > 0 && d->flags & DS_CONNECTED
 	   && !strcmp(command, "hudinfo")) {
-		d->command_count++;
+	   // hudinfo shouldn't increment the command count...
+		//d->command_count++;
 		mudstate.curr_player = d->player;
 		mudstate.curr_enactor = d->player;
 		mudstate.debug_cmd = "hudinfo";
@@ -1575,6 +1575,9 @@ int do_command(DESC * d, char *command)
 	}
 #endif
 
+   // moved this here so hudinfo doesn't spank a user's idle time or commands - jf
+   d->last_time = mudstate.now;
+   
     cp = (NAMETAB *) hashfind(command, &mudstate.logout_cmd_htab);
 
     if(*arg)
