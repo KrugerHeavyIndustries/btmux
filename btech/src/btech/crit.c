@@ -1935,7 +1935,10 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				   !(MechStatus(wounded) & DESTROYED) && attacker)
 					mech_notify(attacker, MECHALL,
 								"You destroy the engine!");
-				DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
+				if(unit_is_fixable(mech))
+					DestroyMech(wounded, attacker, 1, KILL_TYPE_ENGINE);
+				else
+					DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 			}
 			break;
 		case TARGETING_COMPUTER:
