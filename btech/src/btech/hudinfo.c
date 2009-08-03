@@ -1275,8 +1275,12 @@ static void hud_conditions(DESC * d, MECH * mech, char *msgclass, char *args)
 		/* map is bad. somehow switched to -1 */
 		lt = '?';
 	}
-	sprintf(res, "%c,%d,%d,%d,%s", lt, map->mapvis, map->grav,
+	if(map)
+		sprintf(res, "%c,%d,%d,%d,%s", lt, map->mapvis, map->grav,
 			map->temp, hud_getmapflags(map));
+	else
+		sprintf(res, "%c,%c,%c,%c,%c", lt, lt, lt, lt, lt);
+
 	hudinfo_notify(d, msgclass, "R", res);
 }
 
