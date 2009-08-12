@@ -189,6 +189,8 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 	int btc;
 	float rtc;
 	MECH *t;
+	char *targetID;
+	char myID[LBUF_SIZE];
 
 	if(FlyingT(mech) && !AeroFreeFuel(mech))
 		sprintf(fuel, "%d", AeroFuel(mech));
@@ -214,18 +216,21 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 	};
 
 	FindRangeAndBearingToCenter(mech, &rtc, &btc);
-	t = getMech(MechTarget(mech));
+	snprintf(myID,LBUF_SIZE,"%c%c",MechID(mech)[0],MechID(mech)[1]);
 
+	t = getMech(MechTarget(mech));
+	if(t)
+		targetID = MechIDS(t, MechSeemsFriend(mech,t));
 	sprintf(response,
 			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s,%s",
-			MechIDS(mech, 0), MechX(mech), MechY(mech), MechZ(mech),
+			myID, MechX(mech), MechY(mech), MechZ(mech),
 			MechFacing(mech), MechDesiredFacing(mech),
 			MechSpeed(mech), MechDesiredSpeed(mech),
 			(int) (10 * MechPlusHeat(mech)),
 			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
 			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy,
-			MechTarget(mech) != -1 ? MechIDS(t,MechSeemsFriend(mech, t)):"-"); 
+			MechTarget(mech) != -1 ? targetID:"-"); 
 
 	hudinfo_notify(d, msgclass, "R", response);
 }
