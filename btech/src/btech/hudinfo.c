@@ -222,7 +222,8 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 			(int) (10 * MechPlusHeat(mech)),
 			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
-			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy,MechTarget(mech) != -1 ? MechID(getMech(MechTarget(mech))):"-");
+			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy,
+			MechTarget(mech) != -1 ? MechIDS(getMech(MechTarget(mech)),0):"-"); 
 
 	hudinfo_notify(d, msgclass, "R", response);
 }
