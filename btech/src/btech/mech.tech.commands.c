@@ -361,11 +361,11 @@ TECHCOMMANDH(tech_replacegun)
 	DOCHECK(SomeoneScrappingLoc(mech, loc),
 			"Someone's scrapping that section - no repairs are possible!");
 	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
-
-	if(brand) {
-		ob = GetPartBrand(mech, loc, part);
-		SetPartBrand(mech, loc, part, brand);
-	}
+/* Lets not change Brands here. We'll do it in the muxevent_tickmech replacegun */
+//	if(brand) {
+//		ob = GetPartBrand(mech, loc, part);
+//		SetPartBrand(mech, loc, part, brand);
+//	}
 	DOTECH_LOCPOS(REPLACE_DIFFICULTY +
 				  WEAPTYPE_DIFFICULTY(GetPartType(mech, loc, part)),
 				  replaceg_fail, replaceg_succ, replace_econ,
@@ -375,8 +375,8 @@ TECHCOMMANDH(tech_replacegun)
 				  mech, PACK_LOCPOS_E(loc, part, brand),
 				  muxevent_tickmech_replacegun, EVENT_REPAIR_REPLG,
 				  "You start replacing the gun..", 1);
-	if(brand)
-		SetPartBrand(mech, loc, part, ob);
+//	if(brand)
+//		SetPartBrand(mech, loc, part, ob);
 }
 
 TECHCOMMANDH(tech_repairgun)
