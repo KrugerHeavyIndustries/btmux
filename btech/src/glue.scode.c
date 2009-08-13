@@ -1440,7 +1440,10 @@ void fun_btticweaps(char *buff, char **bufc, dbref player, dbref cause, char *fa
 	FUNCHECK(it == NOTHING || !Examinable(player, it), "#-1 NOT A MECH");
 	FUNCHECK(!IsMech(it), "#-1 NOT A MECH");
 	FUNCHECK(!(mech = FindObjectsData(it)), "#-1");
+	FUNCHECK(!isdigit(fargs[1][0]), "#-1 TIC MUST BE NUMERIC");
+
 	ticnum = atoi(fargs[1]);
+	FUNCHECK(!(ticnum >= 0 && ticnum < NUM_TICS), "#-1 INVALID TIC NUMBER");
 
 	for( j = 0; j < MAX_WEAPONS_PER_MECH; j++) {
 		k = j / SINGLE_TICLONG_SIZE;
