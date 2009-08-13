@@ -1366,11 +1366,11 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 	char *args[4];
 	int argc;
 	int index;
-	int temp;
+	int temp=0;
 
 	MECHREP_COMMON(1);
 	argc = mech_parseattributes(buffer, args, 4);
-	DOCHECK(argc <= 2, "Invalid number of arguments!");
+	DOCHECK(argc < 2, "Invalid number of arguments!");
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
 	
 	if(index == -1) {
@@ -1378,9 +1378,10 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 		invalid_section(player, mech);
 		return;
 	}
-	
-	temp = atoi(args[2]);
-	DOCHECK(temp < 0, "Illegal value for armor!");
+	if(argc > 2) {
+		temp = atoi(args[2]);
+		DOCHECK(temp < 0, "Illegal value for armor!");
+	}
 	
 	switch (args[1][0]) {
 	case 'A':
@@ -1400,7 +1401,7 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 		/* criticals */
 		temp--;
 		if(temp >= 0 && temp < NUM_CRITICALS) {
-			MechSections(mech)[index].criticals[temp].data = 0;
+			mech_RepairPart(mech, index, temp);
 			notify(player, "Critical location repaired!");
 		} else {
 			notify(player, "Critical Location out of range!");
@@ -1416,6 +1417,12 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 			notify(player,
 				   "Only the center, rear and left torso have rear armor!");
 		}
+		break;
+	case 'S':
+	case 's':
+		/* reattach */
+		mech_ReAttach(mech, index);
+		notify(player, "Section reattached.");
 		break;
 	default:
 		notify(player, "Illegal Type-> must be ARMOR, INTERNAL, CRIT, REAR");
