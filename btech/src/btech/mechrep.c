@@ -1358,13 +1358,48 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 	}
 }
 
+
+/*
+ * Logic for the 'restock' mechrep command.
+ */
+void mechrep_Rrestock(dbref player, void *data, char *buffer)
+{
+        char *args[2];
+        int argc;
+        int index;
+        int subsect;
+
+        MECHREP_COMMON(1);
+        argc = mech_parseattributes(buffer, args, 2);
+        DOCHECK(argc < 2, "Invalid number of arguments!");
+
+        index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
+
+        if(index == -1) {
+                // Invalid section entered. Emit error and valid sections.
+                invalid_section(player, mech);
+                return;
+        }
+
+        subsect = atoi(args[1]);
+        subsect--;                                      /* from 1 based to 0 based */
+        DOCHECK(subsect < 0 ||
+                        subsect >= CritsInLoc(mech, index), "Critslot out of range!");
+        if(MechWeapons[Ammo2I(GetPartType(mech,index,subsect))].ammoperton == 0)
+                notify(player, "That weapon doesn't require ammo!");
+        else {
+                MechSections(mech)[index].criticals[subsect].data = FullAmmo(mech, index, subsect);
+                notify(player, "Weapon restocked!");
+        }
+}
+
 /*
  * Logic for the 'repair' mechrep command.
  */
 void mechrep_Rrepair(dbref player, void *data, char *buffer)
 {
 	char *args[4];
-	int argc;
+	int argc;	
 	int index;
 	int temp=0;
 
