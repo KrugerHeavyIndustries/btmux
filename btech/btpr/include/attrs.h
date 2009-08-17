@@ -13,6 +13,9 @@
 #define	A_FAIL		3	/* Invoker fail message */
 #define	A_AFAIL		13	/* Failure action list */
 #define	A_LOCK		42	/* Object lock */
+#define A_LEAVE         50      /* Invoker leave message */
+#define A_OLEAVE        51      /* Others leave message in src */
+#define A_ALEAVE        52      /* Leave action list */
 #define	A_LENTER	59	/* ENTER lock */
 #define A_MECHPREFID	146	/* Preferred Mech ID on map */
 #define A_MAPCOLOR	147	/* ANSIMAP color scheme */
