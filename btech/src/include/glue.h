@@ -904,6 +904,7 @@ CommandsStruct turretcommands[] = {
 ECMD(debug_memory);
 ECMD(debug_setvrt);
 ECMD(debug_setxplevel);
+ECMD(debug_setwbv);
 
 CommandsStruct debugcommands[] = {
     {0, "EVENTSTATS", "@Shows event statistics", debug_EventTypes},
@@ -919,6 +920,9 @@ CommandsStruct debugcommands[] = {
     {0, "SETXPLEVEL <SKILL> <NUM>",
 	    "@Sets the XP threshold for skill <skill> to <num>",
 	debug_setxplevel},
+    {0, "SETWBV <WEAPON> <NUM>",
+            "Sets the BattleValue for weapon <WEAPON> to <NUM",
+        debug_setwbv},
     {0, "SHUTDOWN <MAP#>", "@Shutdown all mechs on the map and clear it.",
 	debug_shutdown},
 

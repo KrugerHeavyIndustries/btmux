@@ -202,3 +202,21 @@ void debug_setvrt(dbref player, void *data, char *buffer)
     log_error(LOG_WIZARD, "WIZ", "CHANGE", "VRT for %s set to %d by #%d", 
 						 MechWeapons[Weapon2I(id)].name, vrt, player);
 }
+
+
+void debug_setwbv(dbref player, void *data, char *buffer)
+{
+	char *args[3];
+	int bv;
+	int id, brand;
+
+	DOCHECK(mech_parseattributes(buffer, args, 3) != 2, "Invalid arguments!");
+	DOCHECK(Readnum(bv, args[1]), "Invalid value!");
+	DOCHECK(bv <0, "BV needs to be >=0");
+	DOCHECK(!find_matching_vlong_part(args[0], NULL, &id, &brand),
+			"That is no weapon!");
+	DOCHECK(!IsWeapon(id), "That is no weapon!");
+	MechWeapons[Weapon2I(id)].battlevalue = bv;
+	notify_printf(player, "BV for %s set to %d.",
+				  MechWeapons[Weapon2I(id)].name, bv);
+}
