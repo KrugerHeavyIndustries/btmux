@@ -380,16 +380,20 @@ int char_getxpbycode(dbref player, int code)
 	return s->xp[code] % XP_MAX;
 }
 
-int char_gainxpbycode(dbref player, int code, int amount)
+int char_gainxpbycode(dbref player, int code, int amount, int override)
 {
 	PSTATS *s;
 
 	if(code < 0)
 		return 0;
 	s = retrieve_stats(player, VALUES_SKILLS | VALUES_ATTRS);
-	if(!((mudstate.now > (s->last_use[code] + 30)) ||
-		 (char_values[code].flag & SK_XP)))
-		return 0;
+/* allow override of setting xp quickly. useful in chargen situations and only settable via that
+ * Regular skill gains still check SK_XP and last used within 30s to keep from spamming 
+ */
+	if(override == 0)
+		if(!((mudstate.now > (s->last_use[code] + 30)) ||
+			 (char_values[code].flag & SK_XP)))
+			return 0;
 	s->last_use[code] = mudstate.now;
 	s->xp[code] += amount;
 	s->xp[code] =
@@ -400,7 +404,7 @@ int char_gainxpbycode(dbref player, int code, int amount)
 
 int char_gainxp(dbref player, char *skill, int amount)
 {
-	return char_gainxpbycode(player, char_getvaluecode(skill), amount);
+	return char_gainxpbycode(player, char_getvaluecode(skill), amount,0);
 }
 
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud)
@@ -1659,41 +1663,67 @@ void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
 	if(flaggo) {
 		FUNCHECK(char_values[targetcode].type != CHAR_SKILL,
 				 "#-1 ONLY SKILLS CAN HAVE FLAG");
-		if(flaggo == 1) {
-			/* Need to do some evil frobbage here */
-			char_setvaluebycode(target, targetcode, 0);
-			targetvalue =
-				char_getskilltargetbycode(target, targetcode,
-										  0) - targetvalue;
-		} else {
-			if(flaggo != 3) {
-				/* Add exp */
-				char_gainxpbycode(target, targetcode, targetvalue);
-				SendXP(tprintf("#%d added %d more %s XP to #%d", player,
-							   targetvalue, char_values[targetcode].name,
-							   target));
-				safe_tprintf_str(buff, bufc, "%s gained %d more %s XP.",
-								 Name(target), targetvalue,
-								 char_values[targetcode].name);
-			} else {
-				/* Set the xp instead */
-				char_gainxpbycode(target, targetcode,
-								  targetvalue - char_getxpbycode(target,
-																 targetcode));
-				SendXP(tprintf
-					   ("#%d set #%d's %s XP to %d", player, target,
-						char_values[targetcode].name, targetvalue));
-				safe_tprintf_str(buff, bufc, "%s's %s XP set to %d.",
-								 Name(target), char_values[targetcode].name,
-								 targetvalue);
-			}
-			return;
-		}
 	}
-	char_setvaluebycode(target, targetcode, targetvalue);
-	safe_tprintf_str(buff, bufc, "%s's %s set to %d", Name(target),
-					 char_values[targetcode].name, char_getvaluebycode(target,
-																	   targetcode));
+		switch(flaggo) {
+			case 0:
+				/* this is the # of skill points in said skill
+				 * Also Known as Level. This is not the + value
+				 * I.e. Setting someone to Level 2 Gun-Bmech with A Physical Attribute of 7+
+				 * will give you a 5+ in Gun-Bmech */
+				char_setvaluebycode(target, targetcode, targetvalue);
+				safe_tprintf_str(buff, bufc, "%s's %s set to %d", Name(target),
+								char_values[targetcode].name, char_getvaluebycode(target, targetcode));
+				break;
+
+			case 1: 
+				/* This is the + value of said skill
+				 * Also known as the ToHit Roll. This is not the 'Skill Level'
+				 * I.e. Setting someone's Gun-Bmech with this to 5 with a Physical Attribute of 7+
+				 * will give you Level 2 Gun-Bmech (5+) */
+				
+			
+				char_setvaluebycode(target, targetcode, 0)
+				targetvalue =
+					char_getskilltargetbycode(target, targetcode,
+											  0) - targetvalue;
+
+				/* Handle a wierd code race issue. target shouldn't be negative in this case anyways */			
+				if (targetvalue >= 0) {
+					char_setvaluebycode(target,targetcode,targetvalue);
+				}
+				else {
+					char_setvaluebycode(target,targetcode,0);
+				}
+					
+				safe_tprintf_str(buff, bufc, "%s's %s set to %d", Name(target),
+							char_values[targetcode].name, targetvalue >=0 ? char_getvaluebycode(target, targetcode) : 0);
+		
+				break;
+			
+			case 3: 
+				/* Set the XP Amount for this skill */
+				char_gainxpbycode(target, targetcode, targetvalue - char_getxpbycode(target, targetcode), 1);
+
+				SendXP(tprintf("%d set %d's %s XP to %d", player, target,
+						char_values[targetcode].name, targetvalue));
+				safe_tprintf_str(buff, bufc, "%s's %s XP set to %d.", Name(target), char_values[targetcode].name,
+						targetvalue);
+
+				break;
+			
+			default:
+				/* Any other flaggo value will addxp for the skill */
+ 				char_gainxpbycode(target, targetcode, targetvalue,1);
+                                SendXP(tprintf("#%d added %d more %s XP to #%d", player,
+                                                          targetvalue, char_values[targetcode].name,
+                                                          target));
+                                safe_tprintf_str(buff, bufc, "%s gained %d more %s XP.",
+                                                                Name(target), targetvalue,
+                                                                char_values[targetcode].name);
+
+				break;
+		}
+	
 }
 
 /* ----------------------------------------------------------------------

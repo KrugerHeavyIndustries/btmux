@@ -27,7 +27,7 @@ void char_setvalue(dbref player, char *name, int value);
 int char_getskilltargetbycode(dbref player, int code, int modifier);
 int char_getskilltarget(dbref player, char *name, int modifier);
 int char_getxpbycode(dbref player, int code);
-int char_gainxpbycode(dbref player, int code, int amount);
+int char_gainxpbycode(dbref player, int code, int amount, int override);
 int char_gainxp(dbref player, char *skill, int amount);
 int char_getskillsuccess(dbref player, char *name, int modifier, int loud);
 int char_getskillmargsucc(dbref player, char *name, int modifier);
