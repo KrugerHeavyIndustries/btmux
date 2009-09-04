@@ -1755,8 +1755,8 @@ void fun_btcharlist(char *buff, char **bufc, dbref player, dbref cause,
 		if(type == char_values[i].type) {
 			if(nfargs == 2 && type != CHAR_ATTRIBUTE) {
 				int targetcode = char_getvaluecode(char_values[i].name);
-				if(char_getvaluebycode(target, targetcode) == 0)
-					continue;
+				if(char_getvaluebycode(target, targetcode) == 0 && (type == CHAR_SKILL && char_getxpbycode(target,targetcode) == 0))
+						continue;
 			}
 			if(first)
 				first = 0;
