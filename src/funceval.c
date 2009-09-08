@@ -1,5 +1,5 @@
 /*
- * funceval.c - MUX function handlers 
+ * funceval.c - MUX function handlers
  */
 
 #include "copyright.h"
@@ -55,7 +55,7 @@ extern int list2arr(char *[], int, char *, int);
 extern struct comuser *select_user(struct channel *, dbref);
 
 /*
- * This is for functions that take an optional delimiter character 
+ * This is for functions that take an optional delimiter character
  */
 
 #define varargs_preamble(xname,xnargs)					\
@@ -198,7 +198,7 @@ void fun_beep(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * This function was originally taken from PennMUSH 1.50 
+ * This function was originally taken from PennMUSH 1.50
  */
 
 void fun_ansi(char *buff, char **bufc, dbref player, dbref cause,
@@ -209,17 +209,17 @@ void fun_ansi(char *buff, char **bufc, dbref player, dbref cause,
 	while (*s) {
 		switch (*s) {
 		case 'h':				/*
-								 * hilite 
+								 * hilite
 								 */
 			safe_str(ANSI_HILITE, buff, bufc);
 			break;
 		case 'i':				/*
-								 * inverse 
+								 * inverse
 								 */
 			safe_str(ANSI_INVERSE, buff, bufc);
 			break;
 		case 'f':				/*
-								 * flash 
+								 * flash
 								 */
 			safe_str(ANSI_BLINK, buff, bufc);
 			break;
@@ -227,87 +227,87 @@ void fun_ansi(char *buff, char **bufc, dbref player, dbref cause,
 			safe_str(ANSI_UNDER, buff, bufc);
 			break;
 		case 'n':				/*
-								 * normal 
+								 * normal
 								 */
 			safe_str(ANSI_NORMAL, buff, bufc);
 			break;
 		case 'x':				/*
-								 * black fg 
+								 * black fg
 								 */
 			safe_str(ANSI_BLACK, buff, bufc);
 			break;
 		case 'r':				/*
-								 * red fg 
+								 * red fg
 								 */
 			safe_str(ANSI_RED, buff, bufc);
 			break;
 		case 'g':				/*
-								 * green fg 
+								 * green fg
 								 */
 			safe_str(ANSI_GREEN, buff, bufc);
 			break;
 		case 'y':				/*
-								 * yellow fg 
+								 * yellow fg
 								 */
 			safe_str(ANSI_YELLOW, buff, bufc);
 			break;
 		case 'b':				/*
-								 * blue fg 
+								 * blue fg
 								 */
 			safe_str(ANSI_BLUE, buff, bufc);
 			break;
 		case 'm':				/*
-								 * magenta fg 
+								 * magenta fg
 								 */
 			safe_str(ANSI_MAGENTA, buff, bufc);
 			break;
 		case 'c':				/*
-								 * cyan fg 
+								 * cyan fg
 								 */
 			safe_str(ANSI_CYAN, buff, bufc);
 			break;
 		case 'w':				/*
-								 * white fg 
+								 * white fg
 								 */
 			safe_str(ANSI_WHITE, buff, bufc);
 			break;
 		case 'X':				/*
-								 * black bg 
+								 * black bg
 								 */
 			safe_str(ANSI_BBLACK, buff, bufc);
 			break;
 		case 'R':				/*
-								 * red bg 
+								 * red bg
 								 */
 			safe_str(ANSI_BRED, buff, bufc);
 			break;
 		case 'G':				/*
-								 * green bg 
+								 * green bg
 								 */
 			safe_str(ANSI_BGREEN, buff, bufc);
 			break;
 		case 'Y':				/*
-								 * yellow bg 
+								 * yellow bg
 								 */
 			safe_str(ANSI_BYELLOW, buff, bufc);
 			break;
 		case 'B':				/*
-								 * blue bg 
+								 * blue bg
 								 */
 			safe_str(ANSI_BBLUE, buff, bufc);
 			break;
 		case 'M':				/*
-								 * magenta bg 
+								 * magenta bg
 								 */
 			safe_str(ANSI_BMAGENTA, buff, bufc);
 			break;
 		case 'C':				/*
-								 * cyan bg 
+								 * cyan bg
 								 */
 			safe_str(ANSI_BCYAN, buff, bufc);
 			break;
 		case 'W':				/*
-								 * white bg 
+								 * white bg
 								 */
 			safe_str(ANSI_BWHITE, buff, bufc);
 			break;
@@ -418,7 +418,7 @@ void fun_create(char *buff, char **bufc, dbref player, dbref cause,
 		}
 		if(fargs[1] && *fargs[1]) {
 			cost = atoi(fargs[1]);
-			if(cost < mudconf.createmin || cost > mudconf.createmax) {
+			if(!Wizard(player) && (cost < mudconf.createmin || cost > mudconf.createmax)) {
 				safe_str("#-1 COST OUT OF RANGE", buff, bufc);
 				return;
 			}
@@ -473,14 +473,14 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 	ATTR *attr, *attr2;
 
 	/*
-	 * obj/attr form? 
+	 * obj/attr form?
 	 */
 
 	if(parse_attrib(player, fargs[0], &thing, &atr)) {
 		if(atr != NOTHING) {
 
 			/*
-			 * must specify flag name 
+			 * must specify flag name
 			 */
 
 			if(!fargs[1] || !*fargs[1]) {
@@ -488,7 +488,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 				safe_str("#-1 UNSPECIFIED PARAMETER", buff, bufc);
 			}
 			/*
-			 * are we clearing? 
+			 * are we clearing?
 			 */
 
 			clear = 0;
@@ -497,7 +497,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 				clear = 1;
 			}
 			/*
-			 * valid attribute flag? 
+			 * valid attribute flag?
 			 */
 
 			flagvalue =
@@ -507,7 +507,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 				return;
 			}
 			/*
-			 * make sure attribute is present 
+			 * make sure attribute is present
 			 */
 
 			if(!atr_get_info(thing, atr, &aowner, &aflags)) {
@@ -515,7 +515,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 				return;
 			}
 			/*
-			 * can we write to attribute? 
+			 * can we write to attribute?
 			 */
 
 			attr = atr_num(atr);
@@ -524,7 +524,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 				return;
 			}
 			/*
-			 * just do it! 
+			 * just do it!
 			 */
 
 			if(clear)
@@ -538,7 +538,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 		}
 	}
 	/*
-	 * find thing 
+	 * find thing
 	 */
 
 	if((thing = match_controlled(player, fargs[0])) == NOTHING) {
@@ -546,7 +546,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * check for attr set first 
+	 * check for attr set first
 	 */
 	for(p = fargs[1]; *p && (*p != ':'); p++);
 
@@ -570,7 +570,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 		buff2 = alloc_lbuf("fun_set");
 
 		/*
-		 * check for _ 
+		 * check for _
 		 */
 		if(*p == '_') {
 			StringCopy(buff2, p + 1);
@@ -591,7 +591,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 			}
 		}
 		/*
-		 * set it 
+		 * set it
 		 */
 
 		set_attr_internal(player, thing, atr, p, 0, buff, bufc);
@@ -599,18 +599,18 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * set/clear a flag 
+	 * set/clear a flag
 	 */
 	flag_set(thing, player, fargs[1], 0);
 }
 #endif
 
 /*
- * Code for encrypt() and decrypt() was taken from the DarkZone server 
+ * Code for encrypt() and decrypt() was taken from the DarkZone server
  */
 
 /*
- * Copy over only alphanumeric chars 
+ * Copy over only alphanumeric chars
  */
 static char *crunch_code(char *code)
 {
@@ -653,7 +653,7 @@ static char *crypt_code(char *code, char *text, int type)
 	/*
 	 * Encryption: Simply go through each character of the text, get its
 	 * * * * ascii value, subtract start, add the ascii value (less
-	 * start) * of * * the code, mod the result, add start. Continue  
+	 * start) * of * * the code, mod the result, add start. Continue
 	 */
 	while (*p) {
 		if((*p < start) || (*p > end)) {
@@ -672,7 +672,7 @@ static char *crypt_code(char *code, char *text, int type)
 }
 
 /*
- * Borrowed from DarkZone 
+ * Borrowed from DarkZone
  */
 void fun_zwho(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -740,7 +740,7 @@ void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from DarkZone 
+ * Borrowed from DarkZone
  */
 void fun_inzone(char *buff, char **bufc, dbref player, dbref cause,
 				char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -774,7 +774,7 @@ void fun_inzone(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from DarkZone 
+ * Borrowed from DarkZone
  */
 void fun_children(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -889,7 +889,7 @@ void fun_stripansi(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_zfun(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -913,7 +913,7 @@ void fun_zfun(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 
 	/*
-	 * find the user function attribute 
+	 * find the user function attribute
 	 */
 	attrib = get_atr(upcasestr(fargs[0]));
 	if(!attrib) {
@@ -977,7 +977,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 			}
 			if(*p == ESC_CHAR) {
 				/*
-				 * Start of ANSI code. Skip to end. 
+				 * Start of ANSI code. Skip to end.
 				 */
 				isansi = 1;
 				while (*p && !isalpha(*p))
@@ -997,7 +997,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 		spaces = number - strlen((char *) strip_ansi_r(new,objstring,strlen(objstring)));
 
 		/*
-		 * Sanitize number of spaces 
+		 * Sanitize number of spaces
 		 */
 
 		if(spaces > LBUF_SIZE) {
@@ -1016,7 +1016,7 @@ void fun_columns(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Code for objmem and playmem borrowed from PennMUSH 1.50 
+ * Code for objmem and playmem borrowed from PennMUSH 1.50
  */
 static int mem_usage(dbref thing)
 {
@@ -1075,7 +1075,7 @@ void fun_playmem(char *buff, char **bufc, dbref player, dbref cause,
 
 /*
  * Code for andflags() and orflags() borrowed from PennMUSH 1.50.
- * type = 0 for orflags, 1 for andflags. 
+ * type = 0 for orflags, 1 for andflags.
  */
 static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 {
@@ -1095,8 +1095,8 @@ static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 	for(s = fstr; *s; s++) {
 
 		/*
-		 * Check for a negation sign. If we find it, we note it and 
-		 * * * * * increment the pointer to the next character. 
+		 * Check for a negation sign. If we find it, we note it and
+		 * * * * * increment the pointer to the next character.
 		 */
 
 		if(*s == '!') {
@@ -1118,7 +1118,7 @@ static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 			 * Either we got a '!' that wasn't followed by a * *
 			 * * letter, or * we couldn't find that flag. For
 			 * AND, * * * since we've failed * a check, we can
-			 * return * * false.  * Otherwise we just go on. 
+			 * return * * false.  * Otherwise we just go on.
 			 */
 
 			if(type == 1)
@@ -1129,7 +1129,7 @@ static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 		} else {
 
 			/*
-			 * does the object have this flag? 
+			 * does the object have this flag?
 			 */
 
 			if((Flags(it) & fset.word1) || (Flags2(it) & fset.word2) ||
@@ -1147,28 +1147,28 @@ static int handle_flaglists(dbref player, char *name, char *fstr, int type)
 			if((type == 1) && ((negate && temp) || (!negate && !temp))) {
 
 				/*
-				 * Too bad there's no NXOR function... * At * 
-				 * 
+				 * Too bad there's no NXOR function... * At *
+				 *
 				 * *  * * this point we've either got a flag
 				 * and * we * * don't want * it, or we don't
 				 * have a  * flag * * and we want it. Since
-				 * it's * AND,  * we * * return false. 
+				 * it's * AND,  * we * * return false.
 				 */
 				return 0;
 
 			} else if((type == 0) && ((!negate && temp) || (negate && !temp))) {
 
 				/*
-				 * We've found something we want, in an OR. * 
-				 * 
+				 * We've found something we want, in an OR. *
+				 *
 				 * *  * * We OR a * true with the current
-				 * value. 
+				 * value.
 				 */
 
 				ret |= 1;
 			}
 			/*
-			 * Otherwise, we don't need to do anything. 
+			 * Otherwise, we don't need to do anything.
 			 */
 		}
 	}
@@ -1198,7 +1198,7 @@ void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause,
 	char *q = buf;
 	int isansi = 0;
 	char new[LBUF_SIZE];
-	
+
 	number = atoi(fargs[1]);
 	strncpy(new, fargs[0], LBUF_SIZE-1);
 	if(number > strlen((char *) strip_ansi_r(new,fargs[0],strlen(fargs[0]))))
@@ -1214,7 +1214,7 @@ void fun_strtrunc(char *buff, char **bufc, dbref player, dbref cause,
 		}
 		if(*p == ESC_CHAR) {
 			/*
-			 * Start of ANSI code. Skip to end. 
+			 * Start of ANSI code. Skip to end.
 			 */
 			isansi = 1;
 			while (*p && !isalpha(*p))
@@ -1285,7 +1285,7 @@ void fun_dec(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Mail functions borrowed from DarkZone 
+ * Mail functions borrowed from DarkZone
  */
 void fun_mail(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1295,11 +1295,11 @@ void fun_mail(char *buff, char **bufc, dbref player, dbref cause,
 	 * * * returns * message <num> for privs. 2.  mail(player)  -->
 	 * returns  * *  * number of * messages for <player>. 3.
 	 * mail(player, num)  -->  * * * returns message <num> * for
-	 * <player>. 
+	 * <player>.
 	 */
 	/*
 	 * It can now take one more format: 4.  mail() --> returns number of
-	 * * * * * messages for executor 
+	 * * * * * messages for executor
 	 */
 
 	struct mail *mp;
@@ -1307,7 +1307,7 @@ void fun_mail(char *buff, char **bufc, dbref player, dbref cause,
 	int num, rc, uc, cc;
 
 	/*
-	 * make sure we have the right number of arguments 
+	 * make sure we have the right number of arguments
 	 */
 	if((nfargs != 0) && (nfargs != 1) && (nfargs != 2)) {
 		safe_str("#-1 FUNCTION (MAIL) EXPECTS 0 OR 1 OR 2 ARGUMENTS", buff,
@@ -1323,7 +1323,7 @@ void fun_mail(char *buff, char **bufc, dbref player, dbref cause,
 		if(!is_number(fargs[0])) {
 			/*
 			 * handle the case of wanting to count the number of
-			 * * * * messages 
+			 * * * * messages
 			 */
 			if((playerask = lookup_player(player, fargs[0], 1)) == NOTHING) {
 				safe_str("#-1 NO SUCH PLAYER", buff, bufc);
@@ -1361,7 +1361,7 @@ void fun_mail(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * ran off the end of the list without finding anything 
+	 * ran off the end of the list without finding anything
 	 */
 	safe_str("#-1 NO SUCH MESSAGE", buff, bufc);
 }
@@ -1372,14 +1372,14 @@ void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause,
 	/*
 	 * This function can take these formats: 1) mailfrom(<num>) 2) * * *
 	 * * mailfrom(<player>,<num>) It returns the dbref of the player the
-	 * * * * mail is * from 
+	 * * * * mail is * from
 	 */
 	struct mail *mp;
 	dbref playerask;
 	int num;
 
 	/*
-	 * make sure we have the right number of arguments 
+	 * make sure we have the right number of arguments
 	 */
 	if((nfargs != 1) && (nfargs != 2)) {
 		safe_str("#-1 FUNCTION (MAILFROM) EXPECTS 1 OR 2 ARGUMENTS", buff,
@@ -1410,7 +1410,7 @@ void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * ran off the end of the list without finding anything 
+	 * ran off the end of the list without finding anything
 	 */
 	safe_str("#-1 NO SUCH MESSAGE", buff, bufc);
 }
@@ -1422,7 +1422,7 @@ void fun_mailfrom(char *buff, char **bufc, dbref player, dbref cause,
 
 /*
  * Hasattr (and hasattrp, which is derived from hasattr) borrowed from
- * * TinyMUSH 2.2. 
+ * * TinyMUSH 2.2.
  */
 
 void fun_hasattr(char *buff, char **bufc, dbref player, dbref cause,
@@ -1504,7 +1504,7 @@ void fun_hasattrp(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * default(), edefault(), and udefault() borrowed from TinyMUSH 2.2 
+ * default(), edefault(), and udefault() borrowed from TinyMUSH 2.2
  */
 void fun_default(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1521,9 +1521,9 @@ void fun_default(char *buff, char **bufc, dbref player, dbref cause,
 	*bp = '\0';
 
 	/*
-	 * First we check to see that the attribute exists on the object. * * 
-	 * 
-	 * *  * * If so, we grab it and use it. 
+	 * First we check to see that the attribute exists on the object. * *
+	 *
+	 * *  * * If so, we grab it and use it.
 	 */
 
 	if(objname != NULL) {
@@ -1546,9 +1546,9 @@ void fun_default(char *buff, char **bufc, dbref player, dbref cause,
 		free_lbuf(objname);
 	}
 	/*
-	 * If we've hit this point, we've not gotten anything useful, so * we 
-	 * 
-	 * *  * *  * * go and evaluate the default. 
+	 * If we've hit this point, we've not gotten anything useful, so * we
+	 *
+	 * *  * *  * * go and evaluate the default.
 	 */
 
 	str = fargs[1];
@@ -1571,9 +1571,9 @@ void fun_edefault(char *buff, char **bufc, dbref player, dbref cause,
 	*bp = '\0';
 
 	/*
-	 * First we check to see that the attribute exists on the object. * * 
-	 * 
-	 * *  * * If so, we grab it and use it. 
+	 * First we check to see that the attribute exists on the object. * *
+	 *
+	 * *  * * If so, we grab it and use it.
 	 */
 
 	if(objname != NULL) {
@@ -1598,9 +1598,9 @@ void fun_edefault(char *buff, char **bufc, dbref player, dbref cause,
 		free_lbuf(objname);
 	}
 	/*
-	 * If we've hit this point, we've not gotten anything useful, so * we 
-	 * 
-	 * *  * *  * * go and evaluate the default. 
+	 * If we've hit this point, we've not gotten anything useful, so * we
+	 *
+	 * *  * *  * * go and evaluate the default.
 	 */
 
 	str = fargs[1];
@@ -1617,7 +1617,7 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause,
 	char *objname, *atext, *bp, *str;
 
 	if(nfargs < 2)				/*
-								 * must have at least two arguments 
+								 * must have at least two arguments
 								 */
 		return;
 
@@ -1628,9 +1628,9 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause,
 	*bp = '\0';
 
 	/*
-	 * First we check to see that the attribute exists on the object. * * 
-	 * 
-	 * *  * * If so, we grab it and use it. 
+	 * First we check to see that the attribute exists on the object. * *
+	 *
+	 * *  * * If so, we grab it and use it.
 	 */
 
 	if(objname != NULL) {
@@ -1662,9 +1662,9 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause,
 		free_lbuf(objname);
 	}
 	/*
-	 * If we've hit this point, we've not gotten anything useful, so * we 
-	 * 
-	 * *  * *  * * go and evaluate the default. 
+	 * If we've hit this point, we've not gotten anything useful, so * we
+	 *
+	 * *  * *  * * go and evaluate the default.
 	 */
 
 	str = fargs[1];
@@ -1678,7 +1678,7 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_findable(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1700,7 +1700,7 @@ void fun_findable(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_isword(char *buff, char **bufc, dbref player, dbref cause,
 				char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1725,7 +1725,7 @@ void fun_isword(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_visible(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1766,7 +1766,7 @@ void fun_visible(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_elements(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1779,7 +1779,7 @@ void fun_elements(char *buff, char **bufc, dbref player, dbref cause,
 	oldp = *bufc;
 
 	/*
-	 * Turn the first list into an array. 
+	 * Turn the first list into an array.
 	 */
 
 	wordlist = alloc_lbuf("fun_elements.wordlist");
@@ -1789,9 +1789,9 @@ void fun_elements(char *buff, char **bufc, dbref player, dbref cause,
 	s = trim_space_sep(fargs[1], ' ');
 
 	/*
-	 * Go through the second list, grabbing the numbers and finding the * 
-	 * 
-	 * *  * *  * * corresponding elements. 
+	 * Go through the second list, grabbing the numbers and finding the *
+	 *
+	 * *  * *  * * corresponding elements.
 	 */
 
 	do {
@@ -1816,7 +1816,7 @@ void fun_elements(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_grab(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1826,7 +1826,7 @@ void fun_grab(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("GRAB", 3);
 
 	/*
-	 * Walk the wordstring, until we find the word we want. 
+	 * Walk the wordstring, until we find the word we want.
 	 */
 
 	s = trim_space_sep(fargs[0], sep);
@@ -1865,7 +1865,7 @@ void fun_graball(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_scramble(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -1897,12 +1897,12 @@ void fun_scramble(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 static void swap(char **p, char **q)
 {
 	/*
-	 * swaps two points to strings 
+	 * swaps two points to strings
 	 */
 
 	char *temp;
@@ -1934,7 +1934,7 @@ void fun_shuffle(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * sortby() code borrowed from TinyMUSH 2.2 
+ * sortby() code borrowed from TinyMUSH 2.2
  */
 
 static char ucomp_buff[LBUF_SIZE];
@@ -1944,9 +1944,9 @@ static dbref ucomp_player;
 static int u_comp(const void *s1, const void *s2)
 {
 	/*
-	 * Note that this function is for use in conjunction with our own * * 
-	 * 
-	 * *  * * sane_qsort routine, NOT with the standard library qsort! 
+	 * Note that this function is for use in conjunction with our own * *
+	 *
+	 * *  * * sane_qsort routine, NOT with the standard library qsort!
 	 */
 
 	char *result, *tbuf, *elems[2], *bp, *str;
@@ -1981,7 +1981,7 @@ static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 	 * Andrew Molitor's qsort, which doesn't require transitivity between
 	 * * * * * comparisons (essential for preventing crashes due to *
 	 * boneheads * * * who write comparison functions where a > b doesn't
-	 * * mean b < a).  
+	 * * mean b < a).
 	 */
 
 	int i, last;
@@ -1992,10 +1992,10 @@ static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 		return;
 
 	/*
-	 * Pick something at random at swap it into the leftmost slot   
+	 * Pick something at random at swap it into the leftmost slot
 	 */
 	/*
-	 * This is the pivot, we'll put it back in the right spot later 
+	 * This is the pivot, we'll put it back in the right spot later
 	 */
 
 	i = random() % (1 + (right - left));
@@ -2007,10 +2007,10 @@ static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 	for(i = left + 1; i <= right; i++) {
 
 		/*
-		 * Walk the array, looking for stuff that's less than our 
+		 * Walk the array, looking for stuff that's less than our
 		 */
 		/*
-		 * pivot. If it is, swap it with the next thing along     
+		 * pivot. If it is, swap it with the next thing along
 		 */
 
 		if((*compare) (array[i], array[left]) < 0) {
@@ -2025,10 +2025,10 @@ static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 	}
 
 	/*
-	 * Now we put the pivot back, it's now in the right spot, we never 
+	 * Now we put the pivot back, it's now in the right spot, we never
 	 */
 	/*
-	 * need to look at it again, trust me.                             
+	 * need to look at it again, trust me.
 	 */
 
 	tmp = array[last];
@@ -2036,10 +2036,10 @@ static void sane_qsort(void *array[], int left, int right, int (*compare) ())
 	array[left] = tmp;
 
 	/*
-	 * At this point everything underneath the 'last' index is < the 
+	 * At this point everything underneath the 'last' index is < the
 	 */
 	/*
-	 * entry at 'last' and everything above it is not < it.          
+	 * entry at 'last' and everything above it is not < it.
 	 */
 
 	if((last - left) < (right - last)) {
@@ -2095,7 +2095,7 @@ void fun_sortby(char *buff, char **bufc, dbref player, dbref cause,
 	nptrs = list2arr(ptrs, LBUF_SIZE / 2, list, sep);
 
 	if(nptrs > 1)				/*
-								 * pointless to sort less than 2 elements 
+								 * pointless to sort less than 2 elements
 								 */
 		sane_qsort((void *) ptrs, 0, nptrs - 1, u_comp);
 
@@ -2110,7 +2110,7 @@ void fun_sortby(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from TinyMUSH 2.2 
+ * Borrowed from TinyMUSH 2.2
  */
 void fun_last(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2119,7 +2119,7 @@ void fun_last(char *buff, char **bufc, dbref player, dbref cause,
 	int len, i;
 
 	/*
-	 * If we are passed an empty arglist return a null string 
+	 * If we are passed an empty arglist return a null string
 	 */
 
 	if(nfargs == 0) {
@@ -2127,11 +2127,11 @@ void fun_last(char *buff, char **bufc, dbref player, dbref cause,
 	}
 	varargs_preamble("LAST", 2);
 	s = trim_space_sep(fargs[0], sep);	/*
-										 * trim leading spaces 
+										 * trim leading spaces
 										 */
 
 	/*
-	 * If we're dealing with spaces, trim off the trailing stuff 
+	 * If we're dealing with spaces, trim off the trailing stuff
 	 */
 
 	if(sep == ' ') {
@@ -2148,7 +2148,7 @@ void fun_last(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from TinyMUSH 2.2 
+ * Borrowed from TinyMUSH 2.2
  */
 void fun_matchall(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2160,9 +2160,9 @@ void fun_matchall(char *buff, char **bufc, dbref player, dbref cause,
 	old = *bufc;
 
 	/*
-	 * Check each word individually, returning the word number of all * * 
-	 * 
-	 * *  * * that match. If none match, return 0. 
+	 * Check each word individually, returning the word number of all * *
+	 *
+	 * *  * * that match. If none match, return 0.
 	 */
 
 	wcount = 1;
@@ -2188,7 +2188,7 @@ void fun_matchall(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from TinyMUSH 2.2 
+ * Borrowed from TinyMUSH 2.2
  */
 void fun_ports(char *buff, char **bufc, dbref player, dbref cause,
 			   char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2212,7 +2212,7 @@ void fun_ports(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_mix(char *buff, char **bufc, dbref player, dbref cause,
 			 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2226,7 +2226,7 @@ void fun_mix(char *buff, char **bufc, dbref player, dbref cause,
 	oldp = *bufc;
 
 	/*
-	 * Get the attribute, check the permissions. 
+	 * Get the attribute, check the permissions.
 	 */
 
 	if(parse_attrib(player, fargs[0], &thing, &anum)) {
@@ -2250,7 +2250,7 @@ void fun_mix(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * process the two lists, one element at a time. 
+	 * process the two lists, one element at a time.
 	 */
 
 	cp1 = trim_space_sep(fargs[1], sep);
@@ -2285,7 +2285,7 @@ void fun_mix(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from TinyMUSH 2.2 
+ * Borrowed from TinyMUSH 2.2
  */
 void fun_foreach(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2375,7 +2375,7 @@ void fun_foreach(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Borrowed from TinyMUSH 2.2 
+ * Borrowed from TinyMUSH 2.2
  */
 void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 			   char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2395,7 +2395,7 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("MUNGE", 4);
 
 	/*
-	 * Find our object and attribute 
+	 * Find our object and attribute
 	 */
 
 	if(parse_attrib(player, fargs[0], &thing, &anum)) {
@@ -2419,7 +2419,7 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * Copy our lists and chop them up. 
+	 * Copy our lists and chop them up.
 	 */
 
 	list1 = alloc_lbuf("fun_munge.list1");
@@ -2437,7 +2437,7 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * Call the u-function with the first list as %0. 
+	 * Call the u-function with the first list as %0.
 	 */
 
 	bp = rlist = alloc_lbuf("fun_munge");
@@ -2447,10 +2447,10 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 	*bp = '\0';
 
 	/*
-	 * Now that we have our result, put it back into array form. Search * 
-	 * 
-	 * *  * *  * * through list1 until we find the element position, then 
-	 * copy  * the * * * corresponding element from list2. 
+	 * Now that we have our result, put it back into array form. Search *
+	 *
+	 * *  * *  * * through list1 until we find the element position, then
+	 * copy  * the * * * corresponding element from list2.
 	 */
 
 	nresults = list2arr(results, LBUF_SIZE / 2, rlist, sep);
@@ -2473,15 +2473,15 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * die() code borrowed from PennMUSH 1.50 
+ * die() code borrowed from PennMUSH 1.50
  */
 int getrandom(int x)
 {
 	/*
 	 * In order to be perfectly anal about not introducing any further *
 	 * * * sources * of statistical bias, we're going to call random() *
-	 * until * * we get a number * less than the greatest representable * 
-	 * multiple * of  * x. We'll then return * n mod x. 
+	 * until * * we get a number * less than the greatest representable *
+	 * multiple * of  * x. We'll then return * n mod x.
 	 */
 	long n;
 
@@ -2528,19 +2528,19 @@ void fun_die(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_lit(char *buff, char **bufc, dbref player, dbref cause,
 			 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	/*
-	 * Just returns the argument, literally 
+	 * Just returns the argument, literally
 	 */
 	safe_str(fargs[0], buff, bufc);
 }
 
 /*
- * shl() and shr() borrowed from PennMUSH 1.50 
+ * shl() and shr() borrowed from PennMUSH 1.50
  */
 void fun_shl(char *buff, char **bufc, dbref player, dbref cause,
 			 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2567,7 +2567,7 @@ void fun_shr(char *buff, char **bufc, dbref player, dbref cause,
  */
 
 /*
- * Vector functions borrowed from PennMUSH 1.50 
+ * Vector functions borrowed from PennMUSH 1.50
  */
 #define MAXDIM	20
 
@@ -2582,7 +2582,7 @@ void fun_vadd(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("VADD", 3);
 
 	/*
-	 * split the list up, or return if the list is empty 
+	 * split the list up, or return if the list is empty
 	 */
 	if(!fargs[0] || !*fargs[0] || !fargs[1] || !*fargs[1]) {
 		return;
@@ -2599,7 +2599,7 @@ void fun_vadd(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * add it 
+	 * add it
 	 */
 	for(i = 0; i < n; i++) {
 		sprintf(vres[i], "%f", atof(v1[i]) + atof(v2[i]));
@@ -2620,7 +2620,7 @@ void fun_vsub(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("VSUB", 3);
 
 	/*
-	 * split the list up, or return if the list is empty 
+	 * split the list up, or return if the list is empty
 	 */
 	if(!fargs[0] || !*fargs[0] || !fargs[1] || !*fargs[1]) {
 		return;
@@ -2637,7 +2637,7 @@ void fun_vsub(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * sub it 
+	 * sub it
 	 */
 	for(i = 0; i < n; i++) {
 		sprintf(vres[i], "%f", atof(v1[i]) - atof(v2[i]));
@@ -2659,7 +2659,7 @@ void fun_vmul(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("VMUL", 3);
 
 	/*
-	 * split the list up, or return if the list is empty 
+	 * split the list up, or return if the list is empty
 	 */
 	if(!fargs[0] || !*fargs[0] || !fargs[1] || !*fargs[1]) {
 		return;
@@ -2677,7 +2677,7 @@ void fun_vmul(char *buff, char **bufc, dbref player, dbref cause,
 	}
 	/*
 	 * multiply it - if n or m is 1, it's scalar multiplication by a * *
-	 * * vector, otherwise it's a dot-product 
+	 * * vector, otherwise it's a dot-product
 	 */
 
 	if(n == 1) {
@@ -2695,7 +2695,7 @@ void fun_vmul(char *buff, char **bufc, dbref player, dbref cause,
 		}
 	} else {
 		/*
-		 * dot product 
+		 * dot product
 		 */
 		scalar = 0;
 		for(i = 0; i < n; i++) {
@@ -2721,7 +2721,7 @@ void fun_vmag(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("VMAG", 2);
 
 	/*
-	 * split the list up, or return if the list is empty 
+	 * split the list up, or return if the list is empty
 	 */
 	if(!fargs[0] || !*fargs[0]) {
 		return;
@@ -2733,7 +2733,7 @@ void fun_vmag(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * calculate the magnitude 
+	 * calculate the magnitude
 	 */
 	for(i = 0; i < n; i++) {
 		tmp = atof(v1[i]);
@@ -2758,7 +2758,7 @@ void fun_vunit(char *buff, char **bufc, dbref player, dbref cause,
 	varargs_preamble("VUNIT", 2);
 
 	/*
-	 * split the list up, or return if the list is empty 
+	 * split the list up, or return if the list is empty
 	 */
 	if(!fargs[0] || !*fargs[0]) {
 		return;
@@ -2770,7 +2770,7 @@ void fun_vunit(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * calculate the magnitude 
+	 * calculate the magnitude
 	 */
 	for(i = 0; i < n; i++) {
 		tmp = atof(v1[i]);
@@ -2815,14 +2815,14 @@ void fun_strcat(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * grep() and grepi() code borrowed from PennMUSH 1.50 
+ * grep() and grepi() code borrowed from PennMUSH 1.50
  */
 char *grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
 				int len, int insensitive)
 {
 	/*
 	 * returns a list of attributes which match <pattern> on <thing> * *
-	 * * * whose contents have <lookfor> 
+	 * * * whose contents have <lookfor>
 	 */
 	dbref aowner;
 	char *tbuf1, *buf, *text, *attrib;
@@ -2878,7 +2878,7 @@ void fun_grep(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * make sure there's an attribute and a pattern 
+	 * make sure there's an attribute and a pattern
 	 */
 	if(!fargs[1] || !*fargs[1]) {
 		safe_str("#-1 NO SUCH ATTRIBUTE", buff, bufc);
@@ -2908,7 +2908,7 @@ void fun_grepi(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	/*
-	 * make sure there's an attribute and a pattern 
+	 * make sure there's an attribute and a pattern
 	 */
 	if(!fargs[1] || !*fargs[1]) {
 		safe_str("#-1 NO SUCH ATTRIBUTE", buff, bufc);
@@ -2924,14 +2924,14 @@ void fun_grepi(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_art(char *buff, char **bufc, dbref player, dbref cause,
 			 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 
 	/*
-	 * checks a word and returns the appropriate article, "a" or "an" 
+	 * checks a word and returns the appropriate article, "a" or "an"
 	 */
 	char c = tolower(*fargs[0]);
 
@@ -2942,7 +2942,7 @@ void fun_art(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_alphamax(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2965,7 +2965,7 @@ void fun_alphamax(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_alphamin(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -2988,7 +2988,7 @@ void fun_alphamin(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 
 void fun_valid(char *buff, char **bufc, dbref player, dbref cause,
@@ -3009,7 +3009,7 @@ void fun_valid(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_hastype(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -3048,7 +3048,7 @@ void fun_hastype(char *buff, char **bufc, dbref player, dbref cause,
 }
 
 /*
- * Borrowed from PennMUSH 1.50 
+ * Borrowed from PennMUSH 1.50
  */
 void fun_lparent(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
@@ -3502,7 +3502,7 @@ void fun_setlock(char *buff, char **bufc, dbref player, dbref cause,
 	} else {
 
 		/*
-		 * everything ok, do it 
+		 * everything ok, do it
 		 */
 
 		atr_add_raw(thing, switchkey, unparse_boolexp_quiet(player, okey));
