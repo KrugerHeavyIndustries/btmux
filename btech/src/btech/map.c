@@ -261,7 +261,7 @@ int map_checkmapfile(MAP * map, char *mapname)
 
 	if(fscanf(fp, "%d %d\n", &width, &height) != 2 || height < 1 ||
 		height > MAPY || width < 1 || width > MAPX) {
-			SendError(tprintf("Map #%d: Invalid height and or/width on %s", map->mynum, mapname));
+			SendMapError(tprintf("Map #%d: Invalid height and or/width on %s", map->mynum, mapname));
 			my_close_file(fp, &filemode);
 			return -2; // Bad Height/Width
 	}
@@ -275,7 +275,7 @@ int map_checkmapfile(MAP * map, char *mapname)
 	}
 
 	if (i != height) {
-		SendError(tprintf("Map #%d: Mapfile possibly corrupt and/or height/width flipped. Height != what was read in %s", map->mynum, mapname));
+		SendMapError(tprintf("Map #%d: Mapfile possibly corrupt and/or height/width flipped. Height != what was read in %s", map->mynum, mapname));
 		my_close_file(fp, &filemode);
 		return -3;
 	}
@@ -311,7 +311,7 @@ int map_load(MAP * map, char *mapname)
 	}
 	if(fscanf(fp, "%d %d\n", &width, &height) != 2 || height < 1 ||
 	   height > MAPY || width < 1 || width > MAPX) {
-		SendError(tprintf("Map #%d: Invalid height and/or width",
+		SendMapError(tprintf("Map #%d: Invalid height and/or width",
 						  map->mynum));
 		width = DEFAULT_MAP_WIDTH;
 		height = DEFAULT_MAP_HEIGHT;
@@ -344,7 +344,7 @@ int map_load(MAP * map, char *mapname)
 				break;
 			}
 			if(!strcmp(GetTerrainName_base(terr), "Unknown")) {
-				SendError(tprintf
+				SendMapError(tprintf
 						  ("Map #%d: Invalid terrain at %d,%d: '%c'",
 						   map->mynum, j, i, terr));
 				terr = GRASSLAND;
@@ -353,7 +353,7 @@ int map_load(MAP * map, char *mapname)
 		}
 	}
 	if(i != height) {
-		SendError(tprintf("Error: EOF reached prematurely. "
+		SendMapError(tprintf("Error: EOF reached prematurely. "
 						  "(x%d != %d || y%d != %d)", j, width, i, height));
 		my_close_file(fp, &filemode);
 		return -2;
@@ -514,7 +514,7 @@ void map_setmapsize(dbref player, void *data, char *buffer)
 		Create(map[i], unsigned char, x);
 
 	if(failed)
-		SendError("Memory allocation failed in setmapsize!");
+		SendMapError("Memory allocation failed in setmapsize!");
 	else {
 		/* Initialize the hexes in the new map to blank */
 		for(i = 0; i < y; i++)
