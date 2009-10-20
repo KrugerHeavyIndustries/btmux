@@ -254,6 +254,11 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 	dbref a,b;
 
 	if(Destroyed(target)) {
+		if(reason == KILL_TYPE_HEAD_TARGET)
+			/* Need some logic in here to detect for beheadings 'after the fact' */
+			/* I.e. Mechas that got engine flooded, or XL death */
+			/* For now, just exit */
+			return;
 		return;
 	}
 	//global_kill_cheat = 1;

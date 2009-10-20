@@ -30,6 +30,7 @@ void MarkForLOSUpdate(MECH * mech);
 #define KILL_TYPE_SCHARGE 	"SCHARGE"  	/* Super Charger overload */
 #define KILL_TYPE_TRANSPORT 	"TRANSPORT" 	/* The Transport containing the unit died */
 #define KILL_TYPE_ENGINE 	"ENGINE" 	/* Unit engined, standard fusion death */
+#define KILL_TYPE_HEAD_TARGET	"HEAD-TARGET"	/* Head was taken off, using TARGET */
 
 void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason);
 

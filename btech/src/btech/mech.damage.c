@@ -373,6 +373,13 @@ void DamageMech(MECH * wounded,
 		return;
 	}
 
+/* Rare case something passes through. We're in WEAPONS_HOLD. Don't even allow it */
+	if( MechStatus2(attacker) & WEAPONS_HOLD) {
+		if(wounded != attacker)
+			mech_notify(attacker, MECHALL, 
+						"You are currently in weapons hold!");
+	}
+
 	/* See if we have suits on us. If we get hit in any rear torso or the left/right front
 	 * torsos, there's a chance the bsuits on us will suck up the damage. In fasa rules, there's
 	 * no roll, but that's foolish if there's only one suits. 3030 rules are there's a 20 percent
@@ -956,7 +963,11 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 		else if(hitloc == CTORSO || hitloc == HEAD) {
 			if(!Destroyed(wounded))
 				if(hitloc == HEAD)
-					DestroyMech(wounded, attacker, 1, KILL_TYPE_BEHEADED);
+					if(MechAim(attacker) == HEAD) {
+						DestroyMech(wounded, attacker, 1, KILL_TYPE_HEAD_TARGET);
+					} else {
+						DestroyMech(wounded, attacker, 1, KILL_TYPE_BEHEADED);
+					}
 				else
 					DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
 			/* If it's the head or a MW's CT, kill the contents if IC */
