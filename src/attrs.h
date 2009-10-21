@@ -197,6 +197,7 @@
 #define A_HOURLY        246
 #define A_AMECHDEST     247
 #define A_AMINETRIGGER  248
+#define A_AAEROLAND	249
 
 /* #define FREE 250 Was A_VRNKL_URL */
 /* #define FREE 251 Was A_HTDESC */

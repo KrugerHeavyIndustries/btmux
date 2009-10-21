@@ -48,6 +48,11 @@ did_it(dbref player, dbref thing,
 		btshim_did_it(player, thing, "AMINETRIGGER", NULL, 0);
 		break;
 
+	case A_AAEROLAND:
+		assert(args == NULL && nargs == 0);
+		btshim_did_it(player, thing, "AAEROLAND", NULL, 0);
+		break;
+
 	default:
 		fprintf(stderr,
 		        "warning: did_it(): attribute %d unsupported\n",

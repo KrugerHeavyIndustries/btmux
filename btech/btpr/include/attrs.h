@@ -54,5 +54,5 @@
 #define A_PCEQUIP       245	/* PCombat equipment */
 #define A_AMECHDEST     247
 #define A_AMINETRIGGER  248
-
+#define A_AAEROLAND	249
 #endif

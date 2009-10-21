@@ -381,6 +381,7 @@ void aero_land(dbref player, void *data, char *buffer)
 	MechStartFX(mech) = 0.0;
 	MechStartFY(mech) = 0.0;
 	MechStartFZ(mech) = 0.0;
+	did_it(mech->mynum, mech->mynum, 0, NULL, 0, NULL, A_AAEROLAND, (char **) NULL, 0);
 	possible_mine_poof(mech, MINE_LAND);
 }
 
