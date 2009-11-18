@@ -2799,7 +2799,7 @@ char *payloadlist_func(MECH * mech)
 
 		/* Loop through all the weapons found and store their values */
 		for(weap_loop = 0; weap_loop < count; weap_loop++) {
-
+			if(!(PartIsBroken(mech, section_loop, critical[weap_loop]))) {
 			/* Loop to put weapons in the temp array and keep count */
 			for(put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
 
@@ -2816,7 +2816,7 @@ char *payloadlist_func(MECH * mech)
 				}
 
 			}					/* End of put loop */
-
+		} /* end destroyed check */
 		}						/* End of weap count loop */
 
 	}							/* End of section loop */
@@ -2832,7 +2832,7 @@ char *payloadlist_func(MECH * mech)
 
 			/* Is it Ammo? */
 			if(IsAmmo(temp_crit)) {
-
+				if(!PartIsDestroyed(mech, section_loop, count)) {
 				/* Loop to put weapons in the temp array and keep count */
 				for(put_loop = weap_count; put_loop < 8 * MAX_WEAPS_SECTION;
 					put_loop++) {
@@ -2850,9 +2850,10 @@ char *payloadlist_func(MECH * mech)
 					}
 
 				}				/* End of put loop */
-
+				} /*end part is destroyed check */
 			}
 			/* End of is it Ammo if Statement */
+		
 		}						/* End of Crit Slot Loop */
 
 	}							/* End of Section Loop */
@@ -2912,7 +2913,7 @@ char *partlist_func(MECH * mech)
 		partlist_count[put_loop] = 0;
 	}
 
-	/* Get the weapons for each sections */
+	/* Get the parts for each sections */
 	for(section_loop = 0; section_loop < NUM_SECTIONS; section_loop++) {
 
 		/* Loop through all the crits in a section */
@@ -2920,14 +2921,16 @@ char *partlist_func(MECH * mech)
 
 			/* Get the Part at that spot */
 			temp_crit = GetPartType(mech, section_loop, count);
+			if(PartIsDestroyed(mech, section_loop, count))
+				continue;
 
 /*	Things we don't need */
 			if(IsAmmo(temp_crit)) 
-				break;
+				continue;
 			if(IsWeapon(temp_crit))
-				break;
+				continue;
 			if(temp_crit < 1)
-				break;
+				continue;
 
 			switch(Special2I(temp_crit)) {
 				case ENDO_STEEL:
