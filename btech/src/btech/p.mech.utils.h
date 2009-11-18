@@ -147,6 +147,9 @@ void CalcFasaCost_DoLegMath(MECH * mech, int loc, float * total);
 void CalcFasaCost_DoArmMath(MECH * mech, int loc, float * total);
 void CalcFasaCost_AddPrice(float *total, char * desc, float value);
 unsigned long long int CalcFasaCost(MECH * mech);
+char *UnitPartsList(MECH * mech, int mode);
+int mech_armorpoints(MECH * mech);
+int mech_intpoints(MECH * mech);
 #endif
 #ifdef BT_CALCULATE_BV
 int FindAverageGunnery(MECH * mech);

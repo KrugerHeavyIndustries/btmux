@@ -2884,3 +2884,155 @@ char *payloadlist_func(MECH * mech)
 
 	return buffer;
 }
+
+//Borrowed from payload_func 
+char *partlist_func(MECH * mech)
+{
+	static char buffer[LBUF_SIZE];
+	int critical[MAX_WEAPS_SECTION];
+
+	int temp_crit;
+
+	int count, part_count, section_loop, put_loop, act_count;
+	char partlistbuff[120];
+
+	short partlist_items[8 * MAX_WEAPS_SECTION];
+	short partlist_count[8 * MAX_WEAPS_SECTION];
+
+	/* Clear the buffer */
+	snprintf(buffer, LBUF_SIZE, "%s", "");
+
+	/* Count each 'unique' item */
+	part_count = 0;
+	act_count = 0;
+
+	/* Initialize array */
+	for(put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION; put_loop++) {
+		partlist_items[put_loop] = -1;
+		partlist_count[put_loop] = 0;
+	}
+
+	/* Get the weapons for each sections */
+	for(section_loop = 0; section_loop < NUM_SECTIONS; section_loop++) {
+
+		/* Loop through all the crits in a section */
+		for(count = 0; count < MAX_WEAPS_SECTION; count++) {
+
+			/* Get the Part at that spot */
+			temp_crit = GetPartType(mech, section_loop, count);
+
+/*	Things we don't need */
+			if(IsAmmo(temp_crit)) 
+				break;
+			if(IsWeapon(temp_crit))
+				break;
+			if(temp_crit < 1)
+				break;
+
+			switch(Special2I(temp_crit)) {
+				case ENDO_STEEL:
+				case LT_FERRO_FIBROUS:
+				case HVY_FERRO_FIBROUS:
+					continue;
+				default:
+					break;
+			}
+				/* Loop to put parts in the temp array and keep count */
+				for(put_loop = 0; put_loop < 8 * MAX_WEAPS_SECTION;
+					put_loop++) {
+
+					/* Check to see if there is already an entry */
+					if(partlist_items[put_loop] == temp_crit) {
+						partlist_count[put_loop]++;
+						break;
+						/* Ok, see if there is no entry */
+					} else if(partlist_items[put_loop] == -1) {
+						partlist_items[put_loop] = temp_crit;
+						partlist_count[put_loop]++;
+						part_count++;
+						break;
+					}
+
+				}				/* End of put loop */
+
+		}						/* End of Crit Slot Loop */
+
+	}							/* End of Section Loop */
+
+	/* Final loop to print out the full part list to the buffer and return it */
+	for(put_loop = 0; put_loop < (part_count); put_loop++) {
+
+		switch(Special2I(partlist_items[put_loop])) {
+			case LOWER_ACTUATOR:
+			case UPPER_ACTUATOR:
+			case SHOULDER_OR_HIP:
+			case HAND_OR_FOOT_ACTUATOR:
+				act_count = act_count + partlist_count[put_loop];
+				break;
+			case ENGINE:
+				sprintf(partlistbuff, "%s:%d", MechSpecials(mech) & LE_TECH ? "Light_Engine" :
+							MechSpecials(mech) & CE_TECH ? "Compact_Engine" :
+							MechSpecials(mech) & XXL_TECH ? "XXL_Engine" :
+							MechSpecials(mech) & XL_TECH ? "XL_Engine" : 
+							MechSpecials(mech) & ICE_TECH ? "ICE_Engine" :"Engine",
+								partlist_count[put_loop]);
+			
+				/* If we are not at the end, then put a | as a spacer */
+				if(put_loop < (part_count - 1)) {
+				strncat(partlistbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
+				}
+
+				/* Adding it to the main buffer */
+				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
+				break;
+			case GYRO:
+				sprintf(partlistbuff, "%s:%d", MechSpecials2(mech) & XLGYRO_TECH ? "XL_Gyro" :
+							MechSpecials2(mech) & HDGYRO_TECH ? "HeavyDuty_Gyro" : "Gyro",
+								partlist_count[put_loop]);
+
+				/* If we are not at the end, then put a | as a spacer */
+				if(put_loop < (part_count - 1)) {
+				strncat(partlistbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
+				}
+
+				/* Adding it to the main buffer */
+				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
+				break;
+			case HEAT_SINK:
+				sprintf(partlistbuff, "%s:%d", MechSpecials2(mech) & COMPACT_HS_TECH ? "Compact_HeatSink" :
+							MechSpecials(mech) & (DOUBLE_HEAT_TECH | CLAN_TECH) ? "Double_HeatSink" : "HeatSink",
+								partlist_count[put_loop]);
+
+				/* If we are not at the end, then put a | as a spacer */
+				if(put_loop < (part_count - 1)) {
+				strncat(partlistbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
+				}
+
+				/* Adding it to the main buffer */
+				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
+				break;
+			default:
+				sprintf(partlistbuff, "%s:%d",
+					partname_func(partlist_items[put_loop], 'V')
+					,partlist_count[put_loop]);
+
+
+			/* If we are not at the end, then put a | as a spacer */
+			if(put_loop < (part_count - 1)) {
+				strncat(partlistbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
+			}
+
+			/* Adding it to the main buffer */
+			strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
+
+			break;
+			}
+		
+	} /* end printing loop */
+	if (act_count) {
+		sprintf(partlistbuff,"|Actuator:%d",act_count);
+		strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) -1 );
+	}
+
+	return buffer;
+}

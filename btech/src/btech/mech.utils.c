@@ -64,6 +64,32 @@ const char *mechtypename(MECH * foo)
 	return mechtypenames[(int) MechType(foo)];
 }
 
+int mech_armorpoints(MECH * mech)
+{
+       int i;
+       int points = 0;
+
+       for(i = 0; i < NUM_SECTIONS; i++) {
+               points += GetSectArmor(mech, i);
+               points += GetSectRArmor(mech, i);
+       }
+
+       return points;
+}
+
+int mech_intpoints(MECH * mech)
+{
+       int i;
+       int points = 0;
+
+       for(i = 0; i < NUM_SECTIONS; i++) {
+               points += GetSectInt(mech,i);
+       }
+
+       return points;
+}
+
+
 int MNumber(MECH * mech, int low, int high)
 {
 	if((muxevent_tick / RANDOM_TICK) != MechLastRndU(mech)) {
@@ -3321,8 +3347,8 @@ int FindAverageGunnery(MECH * mech) {
 				SendDebug(tprintf
 						  ("Armoradd : %d ArmorRadd : %d Internadd : %d",
 						   debug1 / 100, debug2 / 100, debug3 / 100));
-				if(mechspec2 & TORSOCOCKPIT_TECH && i == CTORSO)
-					SendDebug(tprintf("TorsoCockpit Armoradd : %d", debug4));
+//				if(mechspec2 & TORSOCOCKPIT_TECH && i == CTORSO)
+//					SendDebug(tprintf("TorsoCockpit Armoradd : %d", debug4));
 #endif
 
 				debug1 = debug2 = debug3 = debug4 = 0;
@@ -3963,3 +3989,40 @@ mul = pow(((((MMaxSpeed(mech) / MP1) + (type == CLASS_AERO || type == CLASS_DS ?
 
 			return 0;
 		}
+
+/* Parts needed for a Unit.  Basic premise is to scan a template
+ * Grab Weapon crits...Tally Up Armor, Internals, crits and special crits
+ * Very Similiar to BV Calcs, without the Calcs
+ * Arguments:
+ * [0] Mech_Template
+ * [1] Mode
+ * 	0 = Parts On Unit
+ * 	1 = Parts Need to Fix Unit
+ */
+
+char *UnitPartsList(MECH * mech, int mode)
+{
+
+	static char sbuff[LBUF_SIZE];
+	char *weapstring;
+
+	memset(sbuff, '\0', sizeof(sbuff));
+
+	strncat(sbuff, tprintf("%s:%d|",MechSpecials2(mech) & STEALTH_ARMOR_TECH ? "ST_ARMOR"
+					: MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? "HVY_FF_ARMOR"
+					: MechSpecials2(mech) & LT_FF_ARMOR_TECH ? "LT_FF_ARMOR"
+					: MechSpecials2(mech) & HARDA_TECH ? "HD_ARMOR"
+					: MechSpecials(mech) & FF_TECH ? "FF_ARMOR" : "ARMOR", mech_armorpoints(mech)), LBUF_SIZE);
+
+	strncat(sbuff, tprintf("%s:%d|",MechSpecials(mech) & REINFI_TECH ? "RE_INTERNALS"
+					: MechSpecials(mech) & COMPI_TECH ? "CO_INTERNALS"
+					: MechSpecials(mech) & ES_TECH ? "ES_INTERNAL" : "INTERNAL", mech_intpoints(mech)), LBUF_SIZE);
+
+	strncat(sbuff,tprintf("%s|", payloadlist_func(mech)), LBUF_SIZE);
+
+	strncat(sbuff,tprintf("%s", partlist_func(mech)), LBUF_SIZE);
+
+
+	return sbuff;
+}
+

@@ -55,4 +55,5 @@ void DumpMechSpecialObjects(dbref player);
 void DumpWeapons(dbref player);
 char *techlist_func(MECH * mech);
 char *payloadlist_func(MECH * mech);
+char *partlist_func(MECH * mech);
 #endif				/* _P_TEMPLATE_H */

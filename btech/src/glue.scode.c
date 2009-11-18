@@ -2040,6 +2040,43 @@ void fun_btfasabasecost_ref(char *buff, char **bufc, dbref player,
 #endif
 }
 
+void fun_btunitpartslist_ref(char *buff, char **bufc, dbref player,
+							dbref cause, char *fargs[], int nfargs,
+							char *cargs[], int ncargs)
+{
+	MECH *mech;
+	char *partstr;
+
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	FUNCHECK(!(mech = load_refmech(fargs[0])), "#-1 INVALID REF");
+
+	partstr = UnitPartsList(mech, 0);
+
+
+	safe_tprintf_str(buff,bufc, "%s", partstr);
+}
+
+void fun_btunitpartslist(char *buff, char **bufc, dbref player, 
+							dbref cause, char *fargs[], int nfargs,
+							char * cargs[], int ncargs)
+{
+
+	dbref mechdb;
+	MECH *mech;
+	char *partstr;
+
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	mechdb = match_thing(player, fargs[0]);
+	FUNCHECK(mechdb == NOTHING
+			 || !Examinable(player, mechdb), "#-1 NOT A MECH");
+	FUNCHECK(!IsMech(mechdb), "#-1 NOT A MECH");
+	FUNCHECK(!(mech = getMech(mechdb)), "#-1");
+
+	partstr = UnitPartsList(mech, 0);
+	
+	safe_tprintf_str(buff,bufc, "%s", partstr);
+}
+
 void fun_btweapstat(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

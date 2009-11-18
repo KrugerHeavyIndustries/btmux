@@ -106,6 +106,8 @@ extern void fun_btsetpartcost();
 extern void fun_btfasabasecost_ref();
 #endif
 extern void fun_btunitfixable();
+extern void fun_btunitpartslist();
+extern void fun_btunitpartslist_ref();
 extern void fun_btlistblz();
 extern void fun_bthexinblz();
 extern void fun_btcharlist();
@@ -5791,6 +5793,8 @@ FUN flist[] = {
 	{"BTTICWEAPS", fun_btticweaps, 2, 0, CA_WIZARD},
 	{"BTUNDERREPAIR", fun_btunderrepair, 1, 0, CA_BUILDER},
 	{"BTUNITFIXABLE", fun_btunitfixable, 1, 0, CA_WIZARD},
+	{"BTUNITPARTSLIST", fun_btunitpartslist, 1, 0, CA_WIZARD},
+	{"BTUNITPARTSLIST_REF", fun_btunitpartslist_ref, 1, 0, CA_WIZARD},
 	{"BTUPDATELINKS", fun_btupdatelinks, 1, 0, CA_WIZARD},
 /*AAA*/	{"BTWEAPONS", fun_btweapons, 1, 0, CA_WIZARD},
 	{"BTWEAPONSTATUS", fun_btweaponstatus, 0, FN_VARARGS, CA_WIZARD},
