@@ -261,7 +261,7 @@ struct weapon_struct MechWeapons[] = {
     {"IS.UltraAC/5", VRT_IS_UAC5, TAMMO, 1, 5, 2, 6, 13, 20, 0, -1, -1, -1,
         5, 20, 900, -1, ULTRA, 113, 200000, 14, 9000},
     {"IS.UltraAC/10", VRT_IS_UAC10, TAMMO, 4, 10, 0, 6, 12, 18, 0, -1, -1,
-        -1, 7, 10, 1300, -1, ULTRA, 253, 320000, 29, 1200},
+        -1, 7, 10, 1300, -1, ULTRA, 253, 320000, 29, 12000},
     {"IS.UltraAC/20", VRT_IS_UAC20, TAMMO, 8, 20, 0, 3, 7, 10, 0, -1, -1,
         -1, 10, 5, 1500, -1, ULTRA | SPLIT_CRITS, 282, 480000, 32, 20000},
     {"IS.ArrowIVSystem", VRT_IS_ARROWIV, TARTILLERY, 10, 20, 0, 0, 0, 5, 0,
