@@ -36,5 +36,7 @@ void check_stagger_event(MUXEVENT * event);
 void mech_movemode_event(MUXEVENT * e);
 #endif
 int calcStaggerBTHMod(MECH * mech);
+int calcNewStaggerBTHMod(MECH * mech, int staggerLevel);
+void mech_staggercheck_heartbeat(MECH * mech);
 
 #endif				/* _P_MECH_EVENTS_H */

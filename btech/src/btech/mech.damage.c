@@ -354,6 +354,8 @@ void DamageMech(MECH * wounded,
 	MECH *mechSwarmer;
 	int tSnapTowLines = 0;
 	MECH *towTarget;
+	damageNode *damagePointer;
+
 
 	/* if:
 	   damage = -1 && intDamage>0
@@ -596,7 +598,35 @@ void DamageMech(MECH * wounded,
 			/* Always a good policy :-> */
 	if(damage > 0 && intDamage <= 0 && !was_transfer && !Fallen(wounded)) {
 		if(mudconf.btech_newstagger && MechType(wounded) == CLASS_MECH) {
-			StaggerDamage(wounded) += damage;
+
+		  // So now that stagger isn't completely retarded, here's how it works
+		  // you take damage and every point of damage gets added to a linked list in the
+		  // mech struct's RS object (mech->rd). This damage is a linked list, and each node
+		  // contains the time of the damage, the amount, the attacker's dbref and a link to 
+		  // the next damage. if the node->next is NULL, you're at the end of the list.
+
+
+		  // Let's do this right. Get the damageNode, walk to the end, add the new damage
+		  damagePointer = (wounded)->rd.staggerDamageList;
+
+		  if(damagePointer == NULL) {
+		    (wounded)->rd.staggerDamageList = malloc(sizeof(damageNode));
+		    (wounded)->rd.staggerDamageList->amount = damage;
+		    (wounded)->rd.staggerDamageList->occuredAt = mudstate.now;
+		    (wounded)->rd.staggerDamageList->attackerNum = attacker->mynum;
+		    (wounded)->rd.staggerDamageList->next = NULL;
+		  } else {
+		    // walk down to the last node on the list
+  		    while(damagePointer->next != NULL) {
+		      damagePointer = damagePointer->next;
+  		    }
+		    // set the last node equal to our new damage pointer
+		    damagePointer->next = malloc(sizeof(damageNode));
+		    damagePointer->next->amount = damage;
+		    damagePointer->next->occuredAt = mudstate.now;
+		    damagePointer->next->attackerNum = attacker->mynum;
+		    damagePointer->next->next = NULL;
+		      }
 		} else {
 			MechTurnDamage(wounded) += damage;
 		}

@@ -54,6 +54,9 @@ struct confdata {
     int btech_critlevel;	/* percentage of armor left before TAC occurs */
     int btech_tankshield;
     int btech_newstagger;	/* For the new round based stagger */
+    int btech_newstaggertons;
+    int btech_newstaggertime;
+    int btech_staggertime;      /* For new stagger */
     int btech_extendedmovemod;	/* Whether to use MaxTech's extended target movement modifiers */
     int btech_stacking;		/* Whether to check for stacking, and how to penalize */
     int btech_stackdamage;	/* Damage modifier for btech_stacking=2 */

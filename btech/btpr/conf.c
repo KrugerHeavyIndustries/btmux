@@ -69,7 +69,9 @@ btpr_cf_init(void)
 	mudconf.btech_xploss = 666;
 	mudconf.btech_critlevel = 100;
 	mudconf.btech_tankshield = 0;
-	mudconf.btech_newstagger = 0;
+	mudconf.btech_newstagger = 1;
+	mudconf.btech_newstaggertons = 1;
+	mudconf.btech_staggertime = 5;
 	mudconf.btech_extendedmovemod = 1;
 	mudconf.btech_stacking = 2;
 	mudconf.btech_stackdamage = 100;

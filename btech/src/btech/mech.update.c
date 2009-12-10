@@ -2695,6 +2695,68 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 	MarkForLOSUpdate(mech);
 }
 
+// This method will clear any damage that has happened for staggerLevel * 20 
+// If you are on staggerLevel = 1, this is 20-39 points of damage.
+void RemoveStaggerDamage(MECH * mech, int staggerLevel)
+{
+  struct damageNode *damage;
+  struct damageNode *old;
+  int remove = staggerLevel * 20;
+  int sum = 0;
+  
+  damage = (mech)->rd.staggerDamageList;
+
+  while(sum < remove && damage != NULL) {
+    sum += damage->amount;
+    old = damage;
+    (mech)->rd.staggerDamageList = damage->next;
+    damage = damage->next;
+    free(old);
+  }
+
+}
+
+// This method will clear any damage that has happened <oneTurn> or more seconds ago
+void ClearStaggerDamage(MECH * mech)
+{
+  int oneTurn = 60;
+  time_t now = mudstate.now;
+  struct damageNode *damage;
+  struct damageNode *old;
+
+  damage = (mech)->rd.staggerDamageList;
+  while(damage != NULL) {
+    if(now - damage->occuredAt >= oneTurn) {
+      old = damage;
+      (mech)->rd.staggerDamageList = damage->next;
+      // is this scary? can we just free() the data? I think so.
+      free(old);
+      damage = (mech)->rd.staggerDamageList;
+    }
+    else {
+      // we can stop the while loop here. linked list explicitly maintains order
+      break;
+    }
+  }
+}
+
+int CurrentStaggerDamage(MECH * mech)
+{
+  int sum = 0;
+  time_t now = mudstate.now;
+  int oneTurn = 60;
+  struct damageNode *damage;
+
+  damage = (mech)->rd.staggerDamageList;
+    while(damage != NULL) {
+      if(now - damage->occuredAt <= oneTurn) {
+        sum += damage->amount;
+      }
+      damage = damage->next;
+    }
+  return sum;
+}
+
 void CheckDamage(MECH * wounded)
 {
 	/* should be called from UpdatePilotSkillRolls */
@@ -2703,95 +2765,7 @@ void CheckDamage(MECH * wounded)
 	int staggerLevel = 0;
 	int headingChange = 0;
 
-	if(mudconf.btech_newstagger) {
-
-		/* phase out post-stagger assistance - see check_stagger_event() */
-		if(StaggerDamage(wounded) < 0) {
-			StaggerDamage(wounded) += 1;
-			return;
-		}
-		if(StaggerDamage(wounded) == 0) {
-			return;
-		}
-
-		staggerLevel = StaggerLevel(wounded);
-
-		if(Fallen(wounded) || (MechType(wounded) != CLASS_MECH)) {
-			if(CheckingStaggerDamage(wounded) || (StaggerDamage(wounded) > 0))
-				StopStaggerCheck(wounded);
-
-			return;
-		}
-
-		if(!CheckingStaggerDamage(wounded)) {
-			if((Jumping(wounded) && (staggerLevel < 1)) || !Jumping(wounded))
-				StartStaggerCheck(wounded);
-		}
-
-		if(staggerLevel < 1) {
-			return;
-		}
-
-		SendDebug(tprintf("For %d. StaggerDamage: %d. StaggerLevel: %d.",
-						  wounded->mynum, StaggerDamage(wounded),
-						  StaggerLevel(wounded)));
-
-		if(LastStaggerNotify(wounded) < staggerLevel) {
-			LastStaggerNotify(wounded) = staggerLevel;
-
-			if(Jumping(wounded) || OODing(wounded)) {
-				switch (staggerLevel) {
-				case 1:
-					mech_notify(wounded, MECHALL,
-								"%cy%chThe damage causes you to spin a little in your flight path.%cn");
-					headingChange = 15;
-					break;
-
-				case 2:
-					mech_notify(wounded, MECHALL,
-								"%crThe damage spins you but you maintain your flight!%cn");
-					MechLOSBroadcast(wounded,
-									 "turns slightly from the damage!");
-					headingChange = 45;
-					break;
-
-				default:
-					mech_notify(wounded, MECHALL,
-								"%cr%chThe damage causes you to spin completely around!%cn");
-					MechLOSBroadcast(wounded,
-									 "spins around from the damage!");
-					headingChange = 180;
-					break;
-				}
-
-				SetFacing(wounded,
-						  AcceptableDegree((MechFacing(wounded) +
-										   headingChange) * (Roll() >=
-															  6 ? 1 : -1)));
-			} else {
-				switch (staggerLevel) {
-				case 1:
-					mech_notify(wounded, MECHALL,
-								"%cy%chThe damage causes you to stagger a little.%cn");
-					break;
-
-				case 2:
-					mech_notify(wounded, MECHALL,
-								"%crThe damage causes you to stagger even more!%cn");
-					MechLOSBroadcast(wounded,
-									 "starts to stagger from the damage!");
-					break;
-
-				default:
-					mech_notify(wounded, MECHALL,
-								"%cr%chThe damage causes you to stagger violently while attempting to keep your footing!%cn");
-					MechLOSBroadcast(wounded,
-									 "staggers back and forth attempting to keep its footing!");
-					break;
-				}
-			}
-		}
-	} else {
+	if(!mudconf.btech_newstagger) {
 		if(!IsDS(wounded) && MechTurnDamage(wounded) >= 20 &&
 		   (!MechStaggeredLastTurn(wounded) ||
 			MechStaggerStamp(wounded) == now)) {

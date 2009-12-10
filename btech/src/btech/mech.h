@@ -777,6 +777,15 @@ typedef struct {
     char carmaxton;             /* Max Tonnage variable for carrier sizing */
 } mech_ud;
 
+
+typedef struct damageNode {
+  int amount;
+  time_t occuredAt;
+  struct damageNode *next;
+  dbref attackerNum;
+} damageNode;
+
+
 typedef struct {
     char jumptop;		/* How many MPs we've left for vertical stuff? */
     char aim;			/* section of target aimed at */
@@ -883,6 +892,9 @@ typedef struct {
     int damage_taken;		/* Record how much damage we took */
     int damage_inflicted;	/* Record how much damage we inflicted */
     int units_killed;		/* Record how many units we killed */
+    struct damageNode *staggerDamageList;      /* The damage we've taken, in linked list form, so we can calc damages - JF */
+    time_t lastStaggerCheck;
+
 } mech_rd;
 
 typedef struct {

@@ -1707,7 +1707,9 @@ void LandMech(MECH * mech)
 
 	MechFloods(mech);
 	water_extinguish_inferno(mech);
-	StopStaggerCheck(mech);
+	// this is only for non-new-stagger
+	if(!mudconf.btech_newstagger)
+	  StopStaggerCheck(mech);
 }
 
 /* Flooding code. Once we're in water, this is checked
