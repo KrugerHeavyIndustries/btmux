@@ -889,7 +889,7 @@ typedef struct {
     char pilotstatus;		/* damage pilot has taken */
     char terrain;		/* Terrain I am in */
     char elev;			/* Elevation I am at */
-    short hexes_walked;		/* Hexes walked counter */
+    float hexes_walked;		/* Hexes walked counter */
     short facing;		/* 0-359.. */
     short x, y, z;		/* hex quantized x,y,z on the map in MP (hexes) */
     short last_x, last_y;	/* last hex entered */

@@ -671,7 +671,7 @@ void move_mech(MECH * mech)
 			/* Pilot XP */
 			if(In_Character(mech->mynum)) {
 				MechHexes(mech)++;
-				if(!(MechHexes(mech) % PIL_XP_EVERY_N_STEPS))
+				if(!( (int) MechHexes(mech) % PIL_XP_EVERY_N_STEPS))
 					if(RGotPilot(mech))
 						AccumulatePilXP(MechPilot(mech), mech, 1, 0);
 			}
