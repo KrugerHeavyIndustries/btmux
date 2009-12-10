@@ -197,6 +197,7 @@
 #define MechShotsHit(a)		(a)->rd.shots_hit
 #define MechDamageTaken(a)	(a)->rd.damage_taken
 #define MechDamageInflicted(a)	(a)->rd.damage_inflicted
+#define MechUnitsKilled(a)	(a)->rd.units_killed
 #define MechSpecials(a)	 	(a)->rd.specials
 #define MechSpecials2(a) 	(a)->rd.specials2
 #define MechSpeed(a)		(a)->rd.speed

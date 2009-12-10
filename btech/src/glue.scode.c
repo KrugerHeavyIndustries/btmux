@@ -525,6 +525,7 @@ static GMV xcode_data[] = {
 	MeEntry("shots_hit", MechShotsHit, TYPE_INT),
 	MeEntry("damage_taken", MechDamageTaken, TYPE_INT),
 	MeEntry("damage_inflicted", MechDamageInflicted, TYPE_INT),
+	MeEntry("units_killed", MechUnitsKilled, TYPE_INT),
 
 	{-1, NULL, 0, TYPE_STRING}
 };

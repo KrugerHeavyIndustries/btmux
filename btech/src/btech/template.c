@@ -2636,6 +2636,7 @@ int load_template(dbref player, MECH * mech, char *filename)
 #endif
 	update_specials(mech);
 	MechXPMod(mech) = 1.0; /* Default it to 1 (no mod effect at all) */
+	MechUnitsKilled(mech) = 0; /* Clear the mechs killed */
 	mech_int_check(mech, 1);
 	x = mech_weight_sub(GOD, mech, 0);
 	y = MechTons(mech) * 1024;

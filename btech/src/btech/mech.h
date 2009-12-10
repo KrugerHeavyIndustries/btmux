@@ -882,6 +882,7 @@ typedef struct {
     int shots_missed;		/* Record how many shots we missed */
     int damage_taken;		/* Record how much damage we took */
     int damage_inflicted;	/* Record how much damage we inflicted */
+    int units_killed;		/* Record how many units we killed */
 } mech_rd;
 
 typedef struct {

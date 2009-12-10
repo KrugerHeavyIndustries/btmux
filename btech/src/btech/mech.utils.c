@@ -2581,6 +2581,8 @@ void ChannelEmitKill(MECH * mech, MECH * attacker, const char *reason)
 	if ((mech->mynum == attacker->mynum) && !Good_obj(mech->mynum))
 		return;
 
+	if (mech != attacker)
+		MechUnitsKilled(attacker) = MechUnitsKilled(attacker) + 1;
 
 	if (reason) {
 		SendDebug(tprintf("#%d [%s] has been killed by #%d [%s] (%s)",
