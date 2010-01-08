@@ -966,11 +966,20 @@ void auto_com_event(MUXEVENT * muxevent)
 static void speed_up_if_neccessary(AUTO * a, MECH * mech, int tx, int ty,
 								   int bearing)
 {
+	MAP *map;
+
+	map = getMap(mech);
+
+	if(!map)
+		return;
 
 	if(bearing < 0 || abs((int) MechDesiredSpeed(mech)) < 2)
 		if(bearing < 0 || abs(bearing - MechFacing(mech)) <= 30)
 			if(MechX(mech) != tx || MechY(mech) != ty) {
-				ai_set_speed(mech, a, MMaxSpeed(mech));
+				if(GetRTerrain(map, MechX(mech), MechY(mech)) == WATER)
+					ai_set_speed(mech, a, WalkingSpeed(MMaxSpeed(mech)));
+				else
+					ai_set_speed(mech, a, MMaxSpeed(mech));
 			}
 }
 
