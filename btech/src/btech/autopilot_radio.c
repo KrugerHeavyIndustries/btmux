@@ -341,6 +341,7 @@ void auto_radio_command_enterbase(AUTO * autopilot, MECH * mech,
 
 	char buffer[SBUF_SIZE];
 
+	Clear(autopilot);
 	if(argc - 1) {
 		snprintf(buffer, SBUF_SIZE, "enterbase %s", args[1]);
 		snprintf(mesg, LBUF_SIZE, "entering base (%s side)", args[1]);
@@ -349,7 +350,7 @@ void auto_radio_command_enterbase(AUTO * autopilot, MECH * mech,
 		snprintf(mesg, LBUF_SIZE, "entering base");
 	}
 
-	Clear(autopilot);
+
 	auto_addcommand(autopilot->mynum, autopilot, buffer);
 	auto_engage(autopilot->mynum, autopilot, "");
 
