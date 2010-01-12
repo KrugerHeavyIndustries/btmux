@@ -968,7 +968,7 @@ static void speed_up_if_neccessary(AUTO * a, MECH * mech, int tx, int ty,
 {
 	MAP *map;
 
-	*map = getMap(mech->mapindex);
+	map = getMap(mech->mapindex);
 
 	if(!map)
 		return;
