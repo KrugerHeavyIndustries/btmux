@@ -40,13 +40,13 @@
 /* Various delays for the autopilot */
 #define AUTOPILOT_NC_DELAY              1       /* Generic command wait time before executing */
 
-#define AUTOPILOT_GOTO_TICK             3       /* How often to check any GOTO event */
-#define AUTOPILOT_LEAVE_TICK            5       /* How often to check if we've left 
+#define AUTOPILOT_GOTO_TICK             4       /* How often to check any GOTO event */
+#define AUTOPILOT_LEAVE_TICK            6       /* How often to check if we've left 
                                                    the bay/hangar */
 #define AUTOPILOT_WAITFOE_TICK          4
-#define AUTOPILOT_PURSUE_TICK           3
+#define AUTOPILOT_PURSUE_TICK           4
 
-#define AUTOPILOT_FOLLOW_TICK           3
+#define AUTOPILOT_FOLLOW_TICK           4
 #define AUTOPILOT_FOLLOW_UPDATE_TICK    10  /* When should we update the target hex */
 
 #define AUTOPILOT_CHASETARG_UPDATE_TICK 30  /* When should we update chasetarg */
