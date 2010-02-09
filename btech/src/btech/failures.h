@@ -175,7 +175,7 @@ struct failure_data failures[] = {
 
     {"%ch%crFuel at critical point!! Shutting down weapon to vent heat!%cn",
 	0, FailureWeaponSpike, FAIL_SHORTED, 0},
-    {"%ch%crEjection nozzel gums up!  Please wait while pressure is applied!%cn",
+    {"%ch%crEjection nozzle gums up!  Please wait while pressure is applied!%cn",
 	0, FailureWeaponJammed, FAIL_JAMMED, 0},
     {"%ch%crFuel canisters explode!  No fuel left to burn!%cn", 0,
 	FailureWeaponSpike, FAIL_EMPTY, 0},
