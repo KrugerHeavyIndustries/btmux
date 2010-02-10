@@ -81,6 +81,10 @@ int Sensor_CanSee(MECH * mech, MECH * target, int *flag, int arc,
 	int i, j = 0, sn;
 	MAP *map = getMap(mech->mapindex);
 
+	/* Make sure we're okay */
+	if (!map || !mech )
+		return;
+
 	if(!(*flag & MECHLOSFLAG_SEEC2))
 		return 0;
 	if(target && (MechCritStatus(target) & INVISIBLE))
