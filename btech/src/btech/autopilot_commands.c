@@ -2270,6 +2270,14 @@ void auto_enter_event(MUXEVENT * muxevent)
 
 	}
 
+	/* New map so we're done */
+        if(mech->mapindex != autopilot->mapindex) {
+	        autopilot->mapindex = mech->mapindex;
+	        auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
+	        return;
+        }
+
+
 	/* Is there anything even to enter here */
 	if(!(map_object = find_entrance_by_xy(map, MechX(mech), MechY(mech)))) {
 
@@ -2351,14 +2359,6 @@ void auto_enter_event(MUXEVENT * muxevent)
 
 	}
 	free(argument);
-
-	/* New map so we're done */
-	if(mech->mapindex != autopilot->mapindex) {
-
-		autopilot->mapindex = mech->mapindex;
-		auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
-		return;
-	}
 
 	if(MechDesiredSpeed(mech) != 0.0)
 		ai_set_speed(mech, autopilot, 0);
