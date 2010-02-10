@@ -255,15 +255,18 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 	}
 	/* Then, we check the hex before target hex */
 #ifdef BT_PARTIAL
-	if(coordcount >= 2)
-		if(dopartials) {
-			if(MechZ(target) >= MechZ(mech) &&
-			   (Elevation(map, coords[coordcount - 2].x,
-						  coords[coordcount - 2].y) == (MechZ(target) + 1)))
-				new_flag |= MECHLOSFLAG_PARTIAL;
-			if(MechZ(target) == -1 && MechRTerrain(target) == WATER)
-				new_flag |= MECHLOSFLAG_PARTIAL;
-		}
+/* Sanity Check for map edge */
+	if(coords.x >=2 && coords.y >=2) {
+		if(coordcount >= 2)
+			if(dopartials) {
+				if(MechZ(target) >= MechZ(mech) &&
+				   (Elevation(map, coords[coordcount - 2].x,
+							  coords[coordcount - 2].y) == (MechZ(target) + 1)))
+					new_flag |= MECHLOSFLAG_PARTIAL;
+				if(MechZ(target) == -1 && MechRTerrain(target) == WATER)
+					new_flag |= MECHLOSFLAG_PARTIAL;
+			}
+	}
 #endif
 
 	water_count = BOUNDED(0, water_count, MECHLOSMAX_WATER - 1);
