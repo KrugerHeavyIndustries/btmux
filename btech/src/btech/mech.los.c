@@ -255,8 +255,8 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 	}
 	/* Then, we check the hex before target hex */
 #ifdef BT_PARTIAL
-/* Sanity Check for Array Boundry */
-	if((coordcount - 2) < 0) {
+
+
 		if(coordcount >= 2)
 			if(dopartials) {
 				if(MechZ(target) >= MechZ(mech) &&
@@ -266,7 +266,7 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 				if(MechZ(target) == -1 && MechRTerrain(target) == WATER)
 					new_flag |= MECHLOSFLAG_PARTIAL;
 			}
-	}
+
 #endif
 
 	water_count = BOUNDED(0, water_count, MECHLOSMAX_WATER - 1);
