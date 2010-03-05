@@ -255,8 +255,8 @@ int CalculateLOSFlag(MECH * mech, MECH * target, MAP * map, int x, int y,
 	}
 	/* Then, we check the hex before target hex */
 #ifdef BT_PARTIAL
-/* Sanity Check for map edge */
-	if(coords[coordcount - 2].x <0 && coords[coordcount - 2 ].y <0) {
+/* Sanity Check for Array Boundry */
+	if((coordcount - 2) < 0) {
 		if(coordcount >= 2)
 			if(dopartials) {
 				if(MechZ(target) >= MechZ(mech) &&
