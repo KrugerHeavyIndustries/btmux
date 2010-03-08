@@ -573,10 +573,13 @@ void DamageMech(MECH * wounded,
 		sprintf(notificationBuff,
 				"for %d points of damage in the structure.",
 				damage + (intDamage < 0 ? 0 : intDamage));
-	
-	if(attacker != wounded)
-		MechDamageInflicted(attacker) = MechDamageInflicted(attacker) + damage + (intDamage < 0 ? 0 : intDamage);
-	MechDamageTaken(wounded) = MechDamageTaken(wounded) + damage + (intDamage < 0 ? 0 : intDamage);
+
+	/* Only count initial damage. Transfer is just gonna do that, transfer, not damage again */
+	if (!was_transfer) {	
+		if(attacker != wounded)
+			MechDamageInflicted(attacker) = MechDamageInflicted(attacker) + damage + (intDamage < 0 ? 0 : intDamage);
+		MechDamageTaken(wounded) = MechDamageTaken(wounded) + damage + (intDamage < 0 ? 0 : intDamage);
+	}
 
 	/*  if (LOS && attackPilot != -1) */
 	if(LOS) {
