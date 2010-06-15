@@ -511,6 +511,8 @@ MechStatus(a) &= ~LOCK_MODES
 		MechStatus2(a) &= ~(ECM_ENABLED|ECCM_ENABLED|PER_ECM_ENABLED|PER_ECCM_ENABLED|ANGEL_ECM_ENABLED|ANGEL_ECCM_ENABLED|NULLSIGSYS_ON|STH_ARMOR_ON);\
 		MechDesiredSpeed(a) = 0.0; }; \
 		MechPilot(a) = -1; MechTarget(a) = -1; StopStartup(a); \
+	        MechStatus2(a) &= ~SLITE_ON; \
+	        MechCritStatus(a) &= ~SLITE_LIT; \
 		StopMoveMode(a); MechStatus2(a) &= ~(MOVE_MODES); \
 		StopJump(a); StopMoving(a); MechMASCCounter(a) = 0; \
 		StopStand(a); StopStabilization(a); StopTakeOff(a); \
