@@ -697,11 +697,14 @@ int AttackMovementMods(MECH * mech)
 	if(!Jumping(mech) && (Stabilizing(mech) || Standing(mech)))
 		return 2;
 
-	if(fabs(MechSpeed(mech)) > fabs(MechDesiredSpeed(mech)))
-		speed = MechSpeed(mech);
-	else
-		speed = MechDesiredSpeed(mech);
+//	if(fabs(MechSpeed(mech)) > fabs(MechDesiredSpeed(mech)))
+//		speed = MechSpeed(mech);
+//	else
+//		speed = MechDesiredSpeed(mech);
+// Lets just make this MechSpeed (the actual speed). Using DesiredSpeed is somewhat flawed
 
+	speed = MechSpeed(mech);
+	
 	if(mudconf.btech_fasaturn)
 		if(MechFacing(mech) != MechDesiredFacing(mech))
 			base++;
