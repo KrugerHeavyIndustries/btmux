@@ -189,7 +189,7 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 	int btc;
 	float rtc;
 	MECH *t;
-	char *targetID;
+	char *targetID = alloc_sbuf("targetID");;
 	char myID[LBUF_SIZE];
 
 	if(FlyingT(mech) && !AeroFreeFuel(mech))
