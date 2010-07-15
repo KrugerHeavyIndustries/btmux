@@ -219,8 +219,17 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 	snprintf(myID,LBUF_SIZE,"%c%c",MechID(mech)[0],MechID(mech)[1]);
 
 	t = getMech(MechTarget(mech));
-	if(t)
-		targetID = MechIDS(t, MechSeemsFriend(mech,t));
+	if(Hardcode(MechTarget(mech))) {
+		if(t)
+			targetID = MechIDS(t, MechSeemsFriend(mech,t));
+		else
+			strcpy(targetID, "-");
+	}
+	else {
+		strcpy(targetID, "-");
+	}
+	
+
 	sprintf(response,
 			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s,%s",
 			myID, MechX(mech), MechY(mech), MechZ(mech),
