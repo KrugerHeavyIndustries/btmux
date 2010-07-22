@@ -533,6 +533,7 @@ static GMV xcode_data[] = {
 
 
 /* This is a MUX only function. We should do something for penn later -- PS */
+#ifndef BTPR_PENN
 void fun_zmechs(char *buff, char **bufc, dbref player, dbref cause,
                           char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
@@ -567,7 +568,7 @@ void fun_zmechs(char *buff, char **bufc, dbref player, dbref cause,
 			}
                 }
 }
-
+#endif
 
 void fun_btsetxcodevalue(char *buff, char **bufc, dbref player, dbref cause,
 						 char *fargs[], int nfargs, char *cargs[], int ncargs)
