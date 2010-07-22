@@ -71,7 +71,7 @@ extern void fun_btid2db();
 extern void fun_bthexlos();
 extern void fun_btlosm2m();
 extern void fun_bthexemit();
-
+extern void fun_zmechs();
 extern void fun_btgetweight();
 extern void fun_btpartweight();
 extern void fun_btaddstores();
@@ -6036,6 +6036,7 @@ FUN flist[] = {
 	{"XGET", fun_xget, 2, 0, CA_PUBLIC},
 	{"XOR", fun_xor, 0, FN_VARARGS, CA_PUBLIC},
 	{"ZFUN", fun_zfun, 0, FN_VARARGS, CA_PUBLIC},
+	{"ZMECHS", fun_zmechs, 1, 0, CA_PUBLIC},
 	{"ZOBJECTS", fun_zobjects, 1, 0, CA_PUBLIC},
 	{"ZONE", fun_zone, 1, 0, CA_PUBLIC},
 	{"ZPLAYERS", fun_zplayers, 1, 0, CA_PUBLIC},
