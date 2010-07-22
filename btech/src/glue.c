@@ -418,6 +418,8 @@ load_update1(void *key, void *data, int depth, void *arg)
 		MechC3iNetworkSize(mech) = -1;
 		MechHeatLast(mech) = 0;
 		MechCommLast(mech) = 0;
+		// ClearStaggerDamage
+		mech->rd.staggerDamageList = NULL;
 		if(!(MechXPMod(mech)))
 			MechXPMod(mech) = 1;		
 		for(i = 0; i < FREQS; i++)
