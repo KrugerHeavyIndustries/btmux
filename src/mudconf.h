@@ -104,6 +104,7 @@ struct confdata {
     int btech_erange;		/* 1= Enable extended, extended weapon ranges. */
     int btech_hit_arcs;		/* hit arc rules (see FindAreaHitGroup()) */
     int btech_phys_use_pskill;  /* Use piloting skills for physical attacks */
+    int registeredonly;		/* Only all logins with the REGISTERED flag. Middle ground between @disable logins and Full Allow */
     int namechange_days;
     int allow_chanlurking;	/* 'last' and 'who' on 'off' channels ? */
     int btech_newterrain;	/* fasa terrain restrictions for wheeled */

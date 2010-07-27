@@ -167,6 +167,7 @@ void cf_init(void)
 	mudconf.hudinfo_show_mapinfo = 0;
 	mudconf.hudinfo_enabled;
 #endif
+	mudconf.registeredonly = 0;
 	mudconf.namechange_days = 60;
 	mudconf.allow_chanlurking = 0;
 	mudconf.afterlife_dbref = 220;
@@ -1103,6 +1104,8 @@ CONF conftable[] = {
 	  cf_int, CA_GOD, &mudconf.btech_newstaggertons, 0},
 	{ (char *) "btech_newstaggertime",
 	  cf_int, CA_GOD, &mudconf.btech_newstaggertime, 0},
+	{ (char *) "registeredonly",
+	  cf_int, CA_GOD, &mudconf.registeredonly, 0},
 	{(char *) "namechange_days",
 	 cf_int, CA_GOD, &mudconf.namechange_days, 0},
 	{(char *) "allow_chanlurking",

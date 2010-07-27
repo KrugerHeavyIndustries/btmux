@@ -560,6 +560,9 @@ static void announce_connect(dbref player, DESC * d)
 		if(!(mudconf.control_flags & CF_LOGIN)) {
 			raw_notify(player, "*** Logins are disabled.");
 		}
+		if(mudconf.registeredonly) {
+			raw_notify(player, "*** Only players with the Registered FLAG are allowed to login.");
+		}
 	}
 	buf = atr_get(player, A_LPAGE, &aowner, &aflags);
 	if(buf && *buf) {
@@ -1283,14 +1286,15 @@ static int check_connect(DESC * d, char *msg)
 				return 0;
 			}
 		} else if(((mudconf.control_flags & CF_LOGIN) &&
-				   (nplayers < mudconf.max_players)) || WizRoy(player) ||
-				  God(player)) {
+				   (nplayers < mudconf.max_players)) && ((mudconf.registeredonly == Registered(player)) || !mudconf.registeredonly)
+				   || WizRoy(player) || God(player)) {
+		
 
 			if(!strncmp(command, "cd", 2) && (Wizard(player) || God(player)))
 				s_Flags(player, Flags(player) | DARK);
 
 			/*
-			 * Logins are enabled, or wiz or god 
+			 * Logins are enabled, or wiz or god and registered player if needed 
 			 */
 
 			STARTLOG(LOG_LOGIN, "CON", "LOGIN") {
@@ -1351,6 +1355,11 @@ static int check_connect(DESC * d, char *msg)
 					 player, FC_CONN_DOWN, mudconf.downmotd_msg, command,
 					 user, password, cmdsave);
 			return 0;
+		} else if(mudconf.registeredonly && mudconf.registeredonly != Registered(player)) {
+			failconn("CON", "Connect", "Registered Only", d, R_GAMEDOWN,
+					player, FC_CONN_DOWN, mudconf.downmotd_msg, command,
+					user, password, cmdsave);
+			return 0;
 		} else {
 			failconn("CON", "Connect", "Game Full", d, R_GAMEFULL, player,
 					 FC_CONN_FULL, mudconf.fullmotd_msg, command, user,
@@ -1369,6 +1378,15 @@ static int check_connect(DESC * d, char *msg)
 					 user, password, cmdsave);
 			return 0;
 		}
+		/* Enforce registered only -- Wiz would @pcreate and set registered instead of a login screen create*/
+
+		if(mudconf.registeredonly) {
+			failconn("CRE", "Create", "Registered Only", d, R_GAMEDOWN,
+					NOTHING, FC_CONN_DOWN, mudconf.downmotd_msg, command,
+					user, password, cmdsave);
+			return 0;
+		}
+
 		/*
 		 * Enforce max #players 
 		 */

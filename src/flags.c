@@ -305,7 +305,7 @@ FLAGENT gen_flags[] = {
 	{"HAVEN", HAVEN, 'H',
 	 0, 0, fh_any}
 	,
-	{"HEAD", HEAD_FLAG, '?',
+	{"REGISTERED", REGISTERED_FLAG, '?',
 	 FLAG_WORD2, 0, fh_wiz}
 	,
 	{"BLIND", BLIND, '(',
