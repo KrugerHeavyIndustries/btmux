@@ -522,6 +522,10 @@ void mech_drop(dbref player, void *data, char *buffer)
 	MechFloods(mech);
 	water_extinguish_inferno(mech);
 
+	// as per ps, prone clears stagger
+	if(mudconf.btech_newstagger)
+	  ClearAllStaggerDamage(mech);
+
 	possible_mine_poof(mech, MINE_STEP);
 }
 
@@ -1806,6 +1810,10 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 	/* get rid of our swarmers */
 	if(CountSwarmers(mech))
 		StopBSuitSwarmers(FindObjectsData(mech->mapindex), mech, 0);
+
+	/* Clear stagger damage if we use new stagger*/
+	if(mudconf.btech_newstagger)
+	  ClearAllStaggerDamage(mech);
 
 	/* damage pilot */
 	MechCocoon(mech) = 0;

@@ -24,9 +24,9 @@
 
 void mech_heartbeat(MECH *mech) {
     UpdateRecycling(mech); 
-    if(mudconf.btech_newstagger == 1 && MechType(mech) == CLASS_MECH) {
-      // no sense checking if a fallen mech will fall down again!
-      if(!Fallen(mech)) {
+    if(mudconf.btech_newstagger >= 1 && MechType(mech) == CLASS_MECH) {
+      // no sense checking if a fallen mech will fall down again, and let's not let jumping mechs stagger.
+      if(!Fallen(mech) && !Jumping(mech)) {
 	mech_staggercheck_heartbeat(mech);
       }
       ClearStaggerDamage(mech);
@@ -44,60 +44,32 @@ void mech_staggercheck_heartbeat(MECH * mech)
 {
   time_t now = mudstate.now;
   int curStaggerDamage = 0;
+  int prevStaggerDamage = 0;
   int staggerLevel = 0;
   int headingChange = 0;
 
-  // update this to use a staggerTime in the conf
+  // if we've not checked stagger since last time... ruhroh!
   if(now - (mech)->rd.lastStaggerCheck >= mudconf.btech_newstaggertime ) {
     (mech)->rd.lastStaggerCheck = now;
-    // Holy spam. Removed.
-    //SendDebug(tprintf("Triggered stagger check for %d.", mech->mynum));
+
+    // curStagger is stuff we haven't rolled against
+    // prevStagger is stuf we have
+    // stuff we have adds to the difficulty, but doesn't get rolled against
     curStaggerDamage = CurrentStaggerDamage(mech);
+    prevStaggerDamage = CurrentCountedStaggerDamage(mech);
     if(curStaggerDamage < 20)
       return;
     else {
       staggerLevel = curStaggerDamage / 20;
-      RemoveStaggerDamage(mech,staggerLevel);
-      SendDebug(tprintf("For %d. StaggerDamage: %d. StaggerLevel: %d.",
-			mech->mynum, curStaggerDamage,
-			staggerLevel));
       
-      if(Jumping(mech) || OODing(mech)) {
-	// As per PS - let's not actually do diddly squat during jump
-	/*
-	switch (staggerLevel) {
-	case 1:
-	  mech_notify(mech, MECHALL,
-		      "%cy%chThe damage causes you to spin a little in your flight path.%cn");
-	  MechLOSBroadcast(mech, "turns slightly in midair!");
-	  headingChange = 15;
-	  break;
-
-	case 2:
-	  mech_notify(mech, MECHALL,
-		      "%crThe damage spins you but you maintain your flight!%cn");
-	  MechLOSBroadcast(mech,
-			   "veers rapidly in another direction!");
-	  headingChange = 45;
-	  break;
-
-	default:
-	  mech_notify(mech, MECHALL,
-		      "%cr%chThe damage causes you to spin completely around!%cn");
-	  MechLOSBroadcast(mech,
-			   "spins around from the damage!");
-	  headingChange = 180;
-	  break;
-	
-	}
-	
-
-	SetFacing(mech,
-		  AcceptableDegree((MechFacing(mech) +
-				    headingChange) * (Roll() >= 6 ? 1 : -1)));
-	*/
-       } else {
-
+      // Dont need to remove stagger anymore, it clears on fall, 
+      // unless we're using mudconf.btech_newstagger = 2
+      if(mudconf.btech_newstagger == 2)
+	RemoveStaggerDamage(mech,staggerLevel);
+      else {
+	MarkStaggerDamage(mech,staggerLevel);
+        staggerLevel = (curStaggerDamage+prevStaggerDamage) / 20;
+      }
 	switch (staggerLevel) {
 	case 1:
 	  mech_notify(mech, MECHALL,
@@ -119,8 +91,9 @@ void mech_staggercheck_heartbeat(MECH * mech)
 			   "staggers back and forth attempting to keep its footing!");
 	  break;
 	}
-	RemoveStaggerDamage(mech,staggerLevel);
-	// do the actual staggering here - we shouldn't stagger if we are in midair, just spin.
+
+
+	// do the actual staggering here
 	mech_notify(mech, MECHALL, "You stagger from the damage!");
 
 	if(!MadePilotSkillRoll(mech, calcNewStaggerBTHMod(mech, staggerLevel))) {
@@ -132,8 +105,6 @@ void mech_staggercheck_heartbeat(MECH * mech)
 
       }
     }
-  
-  }
 }
 
 int calcNewStaggerBTHMod(MECH * mech, int staggerLevel)

@@ -35,6 +35,7 @@ int SkidMod(float Speed);
 void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
     int last_z);
 void RemoveStaggerDamage(MECH * mech, int staggerLevel);
+void ClearAllStaggerDamage(MECH * mech);
 void ClearStaggerDamage(MECH * mech);
 int CurrentStaggerDamage(MECH * mech);
 void CheckDamage(MECH * wounded);

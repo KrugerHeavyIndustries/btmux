@@ -617,6 +617,7 @@ void DamageMech(MECH * wounded,
 		    (wounded)->rd.staggerDamageList->amount = damage;
 		    (wounded)->rd.staggerDamageList->occuredAt = mudstate.now;
 		    (wounded)->rd.staggerDamageList->attackerNum = attacker->mynum;
+		    (wounded)->rd.staggerDamageList->counted = 0;
 		    (wounded)->rd.staggerDamageList->next = NULL;
 		  } else {
 		    // walk down to the last node on the list
@@ -628,6 +629,7 @@ void DamageMech(MECH * wounded,
 		    damagePointer->next->amount = damage;
 		    damagePointer->next->occuredAt = mudstate.now;
 		    damagePointer->next->attackerNum = attacker->mynum;
+		    damagePointer->next->counted = 0;
 		    damagePointer->next->next = NULL;
 		      }
 		} else {

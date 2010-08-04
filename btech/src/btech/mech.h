@@ -783,6 +783,7 @@ typedef struct damageNode {
   time_t occuredAt;
   struct damageNode *next;
   dbref attackerNum;
+  int counted;
 } damageNode;
 
 

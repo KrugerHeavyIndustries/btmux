@@ -2695,6 +2695,25 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 	MarkForLOSUpdate(mech);
 }
 
+void MarkStaggerDamage(MECH * mech, int staggerLevel)
+{
+  struct damageNode *damage;
+  int remove = staggerLevel * 20;
+  int sum = 0;
+
+  damage = (mech)->rd.staggerDamageList;
+  while(sum < remove && damage != NULL) {
+    // don't recount damage
+    if(damage->counted == 1) {
+      damage = damage->next;
+      continue;
+    }
+    sum += damage->amount;
+    damage->counted = 1;
+    damage = damage->next;
+  }
+}
+
 // This method will clear any damage that has happened for staggerLevel * 20 
 // If you are on staggerLevel = 1, this is 20-39 points of damage.
 void RemoveStaggerDamage(MECH * mech, int staggerLevel)
@@ -2714,6 +2733,18 @@ void RemoveStaggerDamage(MECH * mech, int staggerLevel)
     free(old);
   }
 
+}
+void ClearAllStaggerDamage(MECH * mech)
+{
+  struct damageNode *damage;
+  struct damageNode *old;
+  damage = (mech)->rd.staggerDamageList;
+  while(damage != NULL) {
+    old = damage;
+    (mech)->rd.staggerDamageList = damage->next;
+    free(old);
+    damage = (mech)->rd.staggerDamageList;
+  }
 }
 
 // This method will clear any damage that has happened <oneTurn> or more seconds ago
@@ -2750,10 +2781,31 @@ int CurrentStaggerDamage(MECH * mech)
   damage = (mech)->rd.staggerDamageList;
     while(damage != NULL) {
       if(now - damage->occuredAt <= oneTurn) {
-        sum += damage->amount;
+	if(damage->counted == 0) {
+	  sum += damage->amount;
+	}
       }
       damage = damage->next;
     }
+  return sum;
+}
+
+int CurrentCountedStaggerDamage(MECH * mech)
+{
+  int sum=0;
+  time_t now = mudstate.now;
+  int oneTurn = 60;
+  struct damageNode *damage;
+  
+  damage = (mech)->rd.staggerDamageList;
+  while(damage != NULL) {
+    if(now - damage->occuredAt <= oneTurn) {
+      if(damage->counted) {
+	sum += damage->amount;
+      }
+    }
+    damage=damage->next;
+  }
   return sum;
 }
 
