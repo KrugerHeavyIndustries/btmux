@@ -37,8 +37,8 @@ static int chances[11] = { 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1 };
 
 void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 {
-	int i;
-	float f1, f2;
+	int i, j, chancetotal;
+	float f1, f2,chanceperc, optimalrolls;
 	int hitstatstotal;
 	float hitavg, missavg, glanceavg;
 	int totalhitrolls[3] = {0,0,0};
@@ -49,12 +49,18 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 	}
 	for(i = 0; i < 11; i++) {
 		if(i == 0) {
-			notify(player, "#    Rolls Optimal% Present% Diff. in 1000");
+			notify(player, "#    Rolls %Current  Optimal Rolls %Optimal  %Hit Chance  %Miss Chance");
 		}
 		f1 = (float) chances[i] * 100.0 / 36.0;
 		f2 = (float) rollstat.rolls[i] * 100.0 / rollstat.totrolls;
-		notify_printf(player, "%-3d %6d %8.3f %8.3f %13.3f", i + 2,
-					  rollstat.rolls[i], f1, f2, 10.0 * f2 - 10.0 * f1);
+		chancetotal = 0;
+		for(j = i; j < 11; j++) {
+			chancetotal = chancetotal+ chances[j];
+		}
+		chanceperc = (float) chancetotal / 36.0 * 100;
+		optimalrolls = f1 / 100 * rollstat.totrolls;
+		notify_printf(player, "%-3d %6d %8.3f %14d %8.3f %12.3f %13.3f", i + 2,
+					  rollstat.rolls[i], f2, (int) optimalrolls, f1, chanceperc, 100.0 - chanceperc);
 	}
 	notify_printf(player, "Total rolls: %d", rollstat.totrolls);
 	
