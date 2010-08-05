@@ -1175,6 +1175,8 @@ void mech_jump(dbref player, void *data, char *buffer)
 			"Realize the ceiling in this grotto is a bit to low for that!");
 	DOCHECK(OODing(mech), "You can't jump while orbital dropping!");
 
+	DOCHECK(MechSwarmTarget(mech) > 0, "Perhaps you should dismount your ride first!");
+
 	if(Staggering(mech)) {
 		mech_notify(mech, MECHALL,
 					"The damage inhibits your coordination...");
