@@ -133,7 +133,7 @@ void vehicle_extinquish_fire(dbref player, MECH * mech, char *buffer)
 	DOCHECK(Extinguishing(mech),
 			"You're already trying to put out the fire!");
 
-	mech_notify(mech, MECHALL, "You begin to exitinguish the fires!");
+	mech_notify(mech, MECHALL, "You begin to extinguish the fires!");
 
 	MECHEVENT(mech, EVENT_VEHICLE_EXTINGUISH,
 			  vehicle_extinquish_fire_event, VEHICLE_EXTINGUISH_TICK, 0);

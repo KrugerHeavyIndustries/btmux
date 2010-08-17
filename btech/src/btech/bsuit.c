@@ -626,7 +626,7 @@ void bsuit_attackleg(dbref player, void *data, char *buffer)
 					GetMechToMechID(mech, target));
 
 		MechLOSBroadcasti(mech, target,
-						  "attacks to climb %s's legs, but fails miserably!");
+						  "attempts to climb %s's legs, but fails miserably!");
 	}
 
 	StartBSuitRecycle(mech, RECYCLE_ATTACKLEG);
