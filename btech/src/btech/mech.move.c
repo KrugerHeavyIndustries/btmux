@@ -345,8 +345,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 											  ? 0.5 : 0.0) +
 											 (MechStatus(mech) &
 											  SCHARGE_ENABLED ? 0.5 : 0.0) +
-											 (!MoveModeChange(mech)
-											  && MechStatus2(mech) & SPRINTING
+											 (MechStatus2(mech) & SPRINTING
 											  ? 0.5 : 0.0));
 
 		if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) && (MechHeat(mech) >= 9.)) { 
