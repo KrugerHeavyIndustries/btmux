@@ -388,17 +388,18 @@ int FindNormalBTH(MECH * mech,
 				BTHADD("SprintingTarget", mudconf.btech_sprint_bth);
 			if(!Fallen(target) && MechStatus2(target) & EVADING)
 				BTHADD("EvadingTarget", 1);
+// Lets not penalize the mech any further (or reward) while its changing movement modes
 /*		BTHADD("EvadingTarget", (FindPilotPiloting(target) >= 6 ? 1 :
 					 FindPilotPiloting(target) >= 4 ? 2 :
 					 FindPilotPiloting(target) >= 2 ? 3 : 4) +
-			(HasBoolAdvantage(MechPilot(target), "speed_demon") ? 1 : 0)); */
+			(HasBoolAdvantage(MechPilot(target), "speed_demon") ? 1 : 0)); 
 		} else if(MoveModeChange(target)) {
 			int i = MoveModeData(target);
 			if(i & MODE_SPRINT)
 				BTHADD("SprintingTargetChanging", -4);
 			if(i & MODE_EVADE)
 				BTHADD("EvadingTargetChanging", 1);
-/*		BTHADD("EvadingTarget", (FindPilotPiloting(target) >= 6 ? 1 :
+		BTHADD("EvadingTarget", (FindPilotPiloting(target) >= 6 ? 1 :
 					 FindPilotPiloting(target) >= 4 ? 2 :
 					 FindPilotPiloting(target) >= 2 ? 3 : 4) +
 			(HasBoolAdvantage(MechPilot(target), "speed_demon") ? 1 : 0)); */
