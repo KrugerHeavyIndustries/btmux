@@ -482,7 +482,8 @@ do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_ti
 #define PerformingAction(a)  (MechStatus(a) & PERFORMING_ACTION)
 #define StopPerformingAction(a) (MechStatus(a) &= ~PERFORMING_ACTION)
 
-#define MakeMechFall(a)      MechStatus(a) |= FALLEN;FallCentersTorso(a);MarkForLOSUpdate(a);MechFloods(a);StopStand(a);StopHullDown(a);MechStatus(a) &= ~HULLDOWN;
+#define MakeMechFall(a)      MechStatus(a) |= FALLEN;FallCentersTorso(a);MarkForLOSUpdate(a);MechFloods(a);StopStand(a);StopHullDown(a);MechStatus(a) &= ~HULLDOWN;if(mudconf.btech_newstagger) {ClearAllStaggerDamage(a);};
+	  
 #define FallCentersTorso(a)  MechStatus(a) &= ~(TORSO_RIGHT|TORSO_LEFT|FLIPPED_ARMS)
 #define MakeMechStand(a)     MechStatus(a) &= ~FALLEN;MarkForLOSUpdate(a)
 #define StandMechTime(a)     (30 / BOUNDED(1,(MechMaxSpeed(a)/MP2),30))
