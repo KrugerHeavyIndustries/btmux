@@ -841,7 +841,6 @@ void mech_masc(dbref player, void *data, char *buffer)
 	cch(MECH_USUALMO);
 	DOCHECK(!(MechSpecials(mech) & MASC_TECH),
 			"Your toy ain't prepared for what you're askin' it!");
-	DOCHECK(MMaxSpeed(mech) < MP1, "Uh huh.");
 	if(MechStatus(mech) & MASC_ENABLED) {
 		mech_notify(mech, MECHALL, "MASC has been turned off.");
 		MechStatus(mech) &= ~MASC_ENABLED;
@@ -850,6 +849,7 @@ void mech_masc(dbref player, void *data, char *buffer)
 		MECHEVENT(mech, EVENT_MASC_REGEN, mech_mascr_event, MASC_TICK, 0);
 		return;
 	}
+	DOCHECK(MMaxSpeed(mech) < MP1, "You can't move. How is MASC going to work?");
 	mech_notify(mech, MECHALL, "MASC has been turned on.");
 	MechStatus(mech) |= MASC_ENABLED;
 	StopMascR(mech);
@@ -955,7 +955,6 @@ void mech_scharge(dbref player, void *data, char *buffer)
 	cch(MECH_USUALMO);
 	DOCHECK(!(MechSpecials2(mech) & SUPERCHARGER_TECH),
 			"Your toy ain't prepared for what you're askin' it!");
-	DOCHECK(MMaxSpeed(mech) < MP1, "Uh huh.");
 	if(MechStatus(mech) & SCHARGE_ENABLED) {
 		mech_notify(mech, MECHALL, "Supercharger has been turned off.");
 		MechStatus(mech) &= ~SCHARGE_ENABLED;
@@ -965,6 +964,7 @@ void mech_scharge(dbref player, void *data, char *buffer)
 				  SCHARGE_TICK, 0);
 		return;
 	}
+	DOCHECK(MMaxSpeed(mech) < MP1, "How much can you Supercharge if you can't move?");
 	mech_notify(mech, MECHALL, "Supercharger has been turned on.");
 	MechStatus(mech) |= SCHARGE_ENABLED;
 	StopSChargeR(mech);
