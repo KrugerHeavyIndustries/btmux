@@ -47,7 +47,8 @@ int tele_contents(dbref from, dbref to, int flag)
 				silly_atr_set(i, A_LOCK, "");
 			}
 			if(flag & TELE_XP && !Wiz(i))
-				lower_xp(i, mudconf.btech_xploss);
+					if(!(Quiet(from))
+					lower_xp(i, mudconf.btech_xploss);
 			if(flag & TELE_LOUD)
 				loud_teleport(i, to);
 			else
