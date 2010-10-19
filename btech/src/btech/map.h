@@ -54,6 +54,7 @@
 #define TFIRE '>'
 #define SMOKE ':'
 #define WALL '='
+#define DESERT '}'
 
 #define BRIDGE '/'
 #define SNOW   '+'

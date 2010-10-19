@@ -117,6 +117,8 @@ const char *GetTerrainName_base(int t)
 		return "Smoke";
 	case WALL:
 		return "Wall";
+	case DESERT:
+		return "Desert";
 	}
 	return "Unknown";
 }
