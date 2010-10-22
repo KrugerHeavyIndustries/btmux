@@ -342,6 +342,7 @@ static inline char TerrainColorChar(char terrain, int elev)
 		return custom_color_str[BUILDING_IDX];
 	case ROAD:
 		return custom_color_str[ROAD_IDX];
+	case DESERT:
 	case ROUGH:
 		return custom_color_str[ROUGH_IDX];
 	case MOUNTAINS:
