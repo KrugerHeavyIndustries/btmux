@@ -739,6 +739,37 @@ void fun_zrooms(char *buff, char **bufc, dbref player, dbref cause,
                 }
 }
 
+void fun_zexits(char *buff, char **bufc, dbref player, dbref cause,
+                          char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+        dbref it = match_thing(player, fargs[0]);
+        dbref i;
+        int len = 0;
+
+        if(!mudconf.have_zones || (!Controls(player, it) && !WizRoy(player))) {
+                safe_str("#-1 NO PERMISSION TO USE", buff, bufc);
+                return;
+        }
+        for(i = 0; i < mudstate.db_top; i++)
+                if(Typeof(i) == TYPE_EXIT) {
+                        if(Zone(i) == it) {
+                                if(len) {
+                                        static char smbuf[SBUF_SIZE];
+
+                                        sprintf(smbuf, " #%d", i);
+                                        if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
+                                                safe_str(" #-1", buff, bufc);
+                                                return;
+                                        }
+                                        safe_str(smbuf, buff, bufc);
+                                        len += strlen(smbuf);
+                                } else {
+                                        safe_tprintf_str(buff, bufc, "#%d", i);
+                                        len = strlen(buff);
+                                }
+                        }
+                }
+}
 
 void fun_zobjects(char *buff, char **bufc, dbref player, dbref cause,
                           char *fargs[], int nfargs, char *cargs[], int ncargs)

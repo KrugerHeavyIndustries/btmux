@@ -150,6 +150,7 @@ extern void fun_hasattr();
 extern void fun_hasattrp();
 extern void fun_zwho();
 extern void fun_zrooms();
+extern void fun_zexits();
 extern void fun_zobjects();
 extern void fun_zplayers();
 extern void fun_inzone();
@@ -6035,6 +6036,7 @@ FUN flist[] = {
 	{"WORDS", fun_words, 0, FN_VARARGS, CA_PUBLIC},
 	{"XGET", fun_xget, 2, 0, CA_PUBLIC},
 	{"XOR", fun_xor, 0, FN_VARARGS, CA_PUBLIC},
+	{"ZEXITS", fun_zexits, 1, 0, CA_PUBLIC},
 	{"ZFUN", fun_zfun, 0, FN_VARARGS, CA_PUBLIC},
 	{"ZMECHS", fun_zmechs, 1, 0, CA_PUBLIC},
 	{"ZOBJECTS", fun_zobjects, 1, 0, CA_PUBLIC},
