@@ -928,8 +928,10 @@ int common_checks(dbref player, MECH * mech, int flag)
 		/* INSERT UNSUPPORTED TYPES HERE */
 		/* ----------------------------- */
 
-		if(MechType(mech) == CLASS_AERO)
+/*
+  		if(MechType(mech) == CLASS_AERO)
 			return 0;
+*/
 		/* ----------------------------- */
 	}
 
