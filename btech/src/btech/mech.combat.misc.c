@@ -324,7 +324,13 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 	}
 	if(MechType(target) == CLASS_MW) {
 		if(In_Character(target->mynum)) {
-			KillMechContentsIfIC(target->mynum);
+			if(mudconf.btech_xploss_for_mw) {
+				KillMechContentsIfIC(target->mynum);
+			}
+			else
+			{
+				tele_contents(target->mynum, AFTERLIFE_DBREF, TELE_LOUD);
+			}
 			discard_mw(target);
 		}
 	}
