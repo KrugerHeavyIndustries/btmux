@@ -937,7 +937,7 @@ void fun_btstores_short(char *buff, char **bufc, dbref player, dbref cause,
                                         safe_str("|", buff, bufc);
                                 x = pile[b][p];
                                 safe_tprintf_str(buff, bufc, "%s:%d",
-                                                                 part_name(p, b), x);
+                                                                 short_sorted[i]->longy, x);
                         }
                 }
         }
