@@ -46,6 +46,7 @@ extern void fun_btgetxcodevalue();
 extern void fun_btmakepilotroll();
 extern void fun_btsetxcodevalue();
 extern void fun_btstores();
+extern void fun_btstores_short();
 extern void fun_btunderrepair();
 extern void fun_btdamages();
 extern void fun_btsectstatus();
@@ -5788,6 +5789,7 @@ FUN flist[] = {
 	{"BTSHOWSTATUS_REF", fun_btshowstatus_ref, 2, 0, CA_WIZARD},
 	{"BTSHOWWSPECS_REF", fun_btshowwspecs_ref, 2, 0, CA_WIZARD},
 	{"BTSTORES", fun_btstores, 0, FN_VARARGS, CA_WIZARD},
+	{"BTSTORES_SHORT", fun_btstores_short, 0, FN_VARARGS, CA_WIZARD},
 	{"BTTECHLIST", fun_bttechlist, 1, 0, CA_WIZARD},
 	{"BTTECHLIST_REF", fun_bttechlist_ref, 1, 0, CA_WIZARD},
 	{"BTTECHSTATUS", fun_bttechstatus, 1, 0, CA_WIZARD},

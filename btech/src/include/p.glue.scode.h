@@ -31,6 +31,8 @@ void fun_btunderrepair(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btstores(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
+void fun_btstores_short(char *buff, char **bufc, dbref player, dbref cause,
+    char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btmapterr(char *buff, char **bufc, dbref player, dbref cause,
     char *fargs[], int nfargs, char *cargs[], int ncargs);
 void fun_btmapelev(char *buff, char **bufc, dbref player, dbref cause,

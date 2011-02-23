@@ -895,6 +895,54 @@ void fun_btstores(char *buff, char **bufc, dbref player, dbref cause,
 	}
 }
 
+
+void fun_btstores_short(char *buff, char **bufc, dbref player, dbref cause,
+                                  char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	/* same as fun_btstores, except we return the shorter part name */
+        /* fargs[0] = id of the bay/mech */
+        /* fargs[1] = (optional) name of the part */
+        dbref it;
+        int i = -1, x = 0;
+        int p, b;
+        int pile[BRANDCOUNT + 1][NUM_ITEMS];
+        char *t;
+
+        FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+        FUNCHECK(nfargs < 1 || nfargs > 2,
+                         "#-1 FUNCTION (BTSTORES) EXPECTS 1 OR 2 ARGUMENTS");
+        it = match_thing(player, fargs[0]);
+        FUNCHECK(!Good_obj(it), "#-1 INVALID TARGET");
+        if(nfargs > 1) {
+                i = -1;
+                if(!find_matching_long_part(fargs[1], &i, &p, &b)) {
+                        i = -1;
+                        FUNCHECK(!find_matching_vlong_part(fargs[1], &i, &p, &b),
+                                         "#-1 INVALID PART NAME");
+                }
+                safe_tprintf_str(buff, bufc, "%d", econ_find_items(it, p, b));
+        } else {
+                memset(pile, 0, sizeof(pile));
+                t = silly_atr_get(it, A_ECONPARTS);
+                while (*t) {
+                        if(*t == '[')
+                                if((sscanf(t, "[%d,%d,%d]", &i, &p, &b)) == 3)
+                                        pile[p][i] += b;
+                        t++;
+                }
+                for(i = 0; i < object_count; i++) {
+                        UNPACK_PART(short_sorted[i]->index, p, b);
+                        if(pile[b][p]) {
+                                if(x)
+                                        safe_str("|", buff, bufc);
+                                x = pile[b][p];
+                                safe_tprintf_str(buff, bufc, "%s:%d",
+                                                                 part_name(p, b), x);
+                        }
+                }
+        }
+}
+
 void fun_btmapterr(char *buff, char **bufc, dbref player, dbref cause,
 				   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
