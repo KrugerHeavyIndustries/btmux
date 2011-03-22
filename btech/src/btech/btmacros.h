@@ -488,7 +488,7 @@ do { if (Started(a) && !Destroyed(a) && a->rd.last_weapon_recycle != muxevent_ti
 #define MakeMechStand(a)     MechStatus(a) &= ~FALLEN;MarkForLOSUpdate(a)
 #define StandMechTime(a)     (30 / BOUNDED(1,(MechMaxSpeed(a)/MP2),30))
 #define StopLock(a)          muxevent_remove_type_data(EVENT_LOCK, (void *) a);\
-MechStatus(a) &= ~LOCK_MODES
+MechStatus(a) &= ~LOCK_MODES; MechAim(a) = NUM_SECTIONS;
 #define SearchlightChanging(a)	muxevent_count_type_data(EVENT_SLITECHANGING, (void *) a)
 #define HeatcutoffChanging(a)	muxevent_count_type_data(EVENT_HEATCUTOFFCHANGING, (void *) a)
 
