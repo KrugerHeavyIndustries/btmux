@@ -1666,17 +1666,17 @@ int do_command(DESC * d, char *command)
  */
 
 int site_check(struct sockaddr_storage *saddr, int saddr_len,
-			   SITE * site_list)
+                           SITE * site_list)
 {
-	SITE *this;
-#ifdef XXX
-	for(this = site_list; this; this = this->next) {
-		if((host.s_addr & this->mask.s_addr) == this->saddr.s_addr)
-			return this->flag;
-	}
-#endif
-	return 0;
+        SITE *this;
+        for(this = site_list; this; this = this->next) {
+          if( (((struct sockaddr_in *) saddr)->sin_addr.s_addr & this->mask.s_addr) == this->address.s_addr) {
+            return this->flag;
+          }
+        }
+        return 0;
 }
+
 
 /*
  * --------------------------------------------------------------------------
