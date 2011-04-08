@@ -16,6 +16,7 @@
 #include <sys/file.h>
 
 #include "mech.h"
+#include "mine.h"
 #include "create.h"
 #include "mech.events.h"
 #include "map.los.h"
@@ -742,7 +743,8 @@ static inline void sketch_tac_row(char *pos, int left_offset,
 static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 						   int sy, int wx, int wy, int dispcols,
 						   int top_offset, int left_offset, int docolour,
-						   int dohexlos)
+						   int dohexlos, int dounderlying)
+
 {
 #if 0
 	static char const hexrow[2][76] = {
@@ -798,7 +800,7 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 
 	for(y = MAX(0, -sy); y < wy; y++) {
 		for(x = MAX(0, -sx); x < wx; x++) {
-			int terr, elev, losflag = MAPLOSHEX_SEE | MAPLOSHEX_SEEN;
+			int terr, elev, rterr, losflag = MAPLOSHEX_SEE | MAPLOSHEX_SEEN;
 			char *base;
 			char topchar, botchar;
 
@@ -838,6 +840,18 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 					botchar = '~';
 				}
 				break;
+
+	                        case SMOKE:
+                        	case FIRE:
+                                if (dounderlying) {
+                                  rterr=GetRTerrain(map, sx+x, sy+y);
+                                  topchar= terr;
+                                  botchar= rterr;
+                                } else {
+                                  topchar = terr;
+                                  botchar = terr;
+                                }
+                                break;
 
 			case HIGHWATER:
 				topchar = '~';
@@ -1119,6 +1133,71 @@ static void sketch_tac_dslz(char *buf, MAP * map, MECH * mech, int sx,
 	}
 }
 
+static void
+sketch_tac_mines(char *buf, MAP *map, MECH *mech, int sx, int sy, int wx,
+                  int wy, int dispcols, int top_offset, int left_offset) {
+        char *pos = buf + top_offset * dispcols + left_offset;
+        int y, x;
+        int oddcol1 = is_oddcol(sx);
+        float fx, fy, fz, hex_range;
+        mapobj *o;
+
+        wx = MIN(wx, map->map_width - sx);
+        wy = MIN(wy, map->map_height - sy);
+        for(y = MAX(0, -sy); y < wy; y++) {
+                int ty = sy + y;
+                for(x = MAX(0, -sx); x < wx; x++) {
+                        int tx = sx + x;
+                        int oddcolx = is_oddcol(tx);
+                        int elev = Elevation(map, tx, ty);
+                        char *base = pos + tac_hex_offset(x, y, dispcols,
+                                                          oddcol1);
+                        char c;
+
+                        /*
+                         * Copy the elevation up to the top of the hex
+                         * so we can draw a bottom hex edge on every hex.
+                         */
+                        c = base[dispcols + 1];
+                        if (base[0] == '*') {
+                                base[0] = '*';
+                                base[1] = '*';
+                        } else if (isdigit((unsigned char) c)) {
+                                base[1] = c;
+                        }
+
+
+                        /*
+                         * For each hex on the map check to see if there is
+                         * a mine. If so and we see the hex, we see the mine.
+                         * Mines are shown with '<>'.  Optionally, if
+                         * commented code is used the mine strength, but
+                         * not type, is displayed in the bottom of the hex.
+                         * Hide triggers so they can be used unbeknownst to players
+                         */
+                         for (o = map->mapobj[TYPE_MINE]; o; o = o->next)
+                           if (o->x == tx && o->y == ty)
+                             break;
+                         base[dispcols]=' ';
+                         base[dispcols+1]=' ';
+                         if (o) {
+                              MapCoordToRealCoord(tx, ty, &fx, &fy);
+                              fz=ZSCALE * Elevation(map, tx, ty);
+                              hex_range=FindRange(MechFX(mech),MechFY(mech),
+                                         MechFZ(mech),fx,fy,fz);
+                         if ( (o->datac != MINE_TRIGGER) &&
+                               InLineOfSight_NB(mech,NULL, tx,ty,hex_range) ) {
+                         /*     base[dispcols]=(o->datas/10) + '0'; */
+                         /*     base[dispcols+1]=(o->datas%10) + '0'; */
+                              base[dispcols]='<'; 
+                              base[dispcols+1]='>'; 
+
+                         }
+                        }
+                }
+        }
+}
+
 /*
  * Colourize a sketch tac map.  Uses dynmaically allocated buffers
  * which are overwritten on each call.
@@ -1296,6 +1375,8 @@ static char **colourize_tac_map(char const *sketch, int dispcols,
  *    8 = show mech cliffs
  *   16 = show tank cliffs
  *   32 = show DS LZ's
+ *   64 = show underlying terrain
+ *  128 = show minefields and strength
  *
  * If navigate mode, wx and wy should be equal and odd.  Navigate maps
  * cannot have top or side labels.
@@ -1306,6 +1387,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 				   int wx, int wy, int labels, int dohexlos)
 {
 	int docolour = Ansimap(player);
+        int dounderlying=labels & 64;
 	int dispcols;
 	int disprows;
 	int mapcols;
@@ -1382,7 +1464,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 	 * Create a sketch tac map including terrain and elevation.
 	 */
 	sketch_tac_map(sketch_buf, map, mech, sx, sy, wx, wy, dispcols,
-				   top_offset, left_offset, docolour, dohexlos);
+				   top_offset, left_offset, docolour, dohexlos,dounderlying);
 
 	/*
 	 * Draw the top and side labels.
@@ -1444,6 +1526,17 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 		}
 		sketch_tac_dslz(sketch_buf, map, mech, sx, sy, wx, wy, dispcols,
 						top_offset, left_offset, 2, docolour);
+        } else if (labels & 128) {
+                if (mech != NULL) {
+                       sketch_tac_ownmech(sketch_buf, map, mech, sx, sy, wx, wy, 
+						dispcols, top_offset, left_offset);
+                       sketch_tac_mines(sketch_buf, map, mech, sx, sy, wx, wy,
+						dispcols, top_offset, left_offset);
+                       sketch_tac_mechs(sketch_buf, map, mech, sx, sy, wx, wy,
+                         dispcols, top_offset, left_offset, docolour, labels);
+
+                }
+
 	} else if(mech != NULL) {
 		sketch_tac_mechs(sketch_buf, map, mech, sx, sy, wx, wy, dispcols,
 						 top_offset, left_offset, docolour, labels);
@@ -1559,6 +1652,14 @@ void mech_tacmap(dbref player, void *data, char *buffer)
 		case 'b':
 			flags |= 32;
 			break;
+
+                case 'u':
+                        flags |= 64; /* Show underlying terrain */
+                 	break;
+
+        	case 'm':
+            		flags |= 128; /* Show mines */
+            		break;
 
 		default:
 			notify(player, "Invalid tactical map flag.");
