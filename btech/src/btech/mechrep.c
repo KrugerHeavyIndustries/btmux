@@ -1307,6 +1307,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					SMOKE_MODE;
 				break;
+			case 'Z':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					INARC_NEMESIS_MODE;
+				break;
 			case 'X':
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					INARC_EXPLO_MODE;
