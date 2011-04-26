@@ -304,6 +304,14 @@ char *cargo[] = {
 	"HeavyDuty_Gyro",
 	"Compact_Gyro",
 	"Compact_HeatSink",
+	"Ammo_LRM_Stinger",
+	"Ammo_AC2_Caseless",
+	"Ammo_AC5_Caseless",
+	"Ammo_AC10_Caseless",
+	"Ammo_AC20_Caseless",
+	"Ammo_LAC2_Caseless",
+	"Ammo_LAC5_Caseless",
+	"Ammo_LRM_Sguided",
 	"SearchLight",
 #ifdef BT_COMPLEXREPAIRS
 	"Sensors_10",
@@ -729,6 +737,14 @@ int cargoweight[] = {
 	2048,						/* HeavyDuty_Gyro */
 	2048,						/* Compact_Gyro */
 	2048,						/* Compact_HeatSink */
+	1024,						/* Ammo_LRM_Stinger */
+	1024,						/* Ammo_AC2_Caseless */
+	1024,						/* Ammo_AC5_Caseless */
+	1024,						/* Ammo_AC10_Caseless */
+	1024,						/* Ammo_AC20_Caseless */
+	1024,						/* Ammo_LAC2_Caseless */
+	1024,						/* Ammo_LAC5_Caseless */
+	1024,						/* Ammo_LRM_Sguided */
 	204,						/* SearchLight */
 #ifdef BT_COMPLEXREPAIRS
 	102,						/* Sensors_10 */
