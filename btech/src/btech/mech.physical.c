@@ -344,8 +344,9 @@ void mech_punch(dbref player, void *data, char *buffer)
 
 	// If the directive is true, use the pilot's piloting skill. If not, we
 	// use a constant BTH of 4.
-	if(mudconf.btech_phys_use_pskill)
-		ltohit = rtohit = FindPilotPiloting(mech) - 1;
+	if(mudconf.btech_phys_use_pskill) 
+	 	rtohit = ltohit = FindPilotPiloting(mech);
+
 
 	// Manipulate punching var to contain only the arms we're punching with.
 	if(get_arm_args(&punching, &argc, &args, mech, have_punch, "")) {
