@@ -3036,7 +3036,7 @@ if (MechType(mech) != CLASS_BSUIT) {
 	armor_tons = armor_tons / 1024;
 
     	int armor_cost_point = (MechSpecials(mech) & FF_TECH ? 20000 : MechSpecials2(mech) & 
-    		STEALTH_ARMOR_TECH ? 50830 : MechSpecials(mech) &
+    		STEALTH_ARMOR_TECH ? 50000 : MechSpecials(mech) &
     		HARDA_TECH ? 15000 : MechSpecials2(mech) & LT_FF_ARMOR_TECH ?
     		 15000 : MechSpecials2(mech) & HVY_FF_ARMOR_TECH ? 25000 :
     		 10000);
