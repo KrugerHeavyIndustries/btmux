@@ -134,6 +134,7 @@ struct weapon_struct MechWeapons[] = {
 	-1, 1, 25, 200, -1, DFM | NOSPA, 1000},
     {"IS.SR_DFM-6", VRT_IS_SR_DFM6, TMISSILE, 4, 3, 0, 2, 4, 6, 0, -1, -1,
 	-1, 2, 15, 300, -1, DFM | NOSPA, 1000},
+/* Technically, we use ammo mode for these CASELESS weapons */
     {"IS.CaselessAC/2", VRT_IS_CAC2, TAMMO, 1, 2, 4, 8, 16, 24, 0, -1, -1,
 	-1, 1, 67, 600, -1, NOSPA | CASELESS, 1000},
     {"IS.CaselessAC/5", VRT_IS_CAC5, TAMMO, 1, 5, 3, 6, 12, 18, 0, -1, -1,
@@ -142,6 +143,7 @@ struct weapon_struct MechWeapons[] = {
 	-1, -1, 6, 15, 1200, -1, NOSPA | CASELESS, 1000},
     {"IS.CaselessAC/20", VRT_IS_CAC20, TAMMO, 7, 20, 0, 3, 6, 9, 9, 0, -1,
 	-1, -1, 8, 1400, -1, NOSPA | CASELESS, 1000},
+/* End Caseless */
     {"IS.HyperAC/2", VRT_IS_HAC2, TAMMO, 1, 2, 3, 10, 20, 35, 0, -1, -1,
 	-1, 4, 30, 800, -1, NOSPA | HYPER, 1000},
     {"IS.HyperAC/5", VRT_IS_HAC5, TAMMO, 3, 5, 0, 8, 16, 28, 0, -1, -1, -1,
