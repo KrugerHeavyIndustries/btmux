@@ -369,10 +369,11 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 					"It explodes for %d points damage.",
 					MechWeapons[Weapon2I(critType)].explosiondamage);
 
-		if(LOS && wounded != attacker && attacker)
-			mech_notify(attacker, MECHALL,
-						"Your target is covered in a large electrical discharge.");
-
+		if(!Destroyed(wounded)) {
+			sprintf(msgbuf, "'s %s is covered in a large electrical discharge!", locname);
+			MechLOSBroadcast(wounded, msgbuf);
+		}
+                 
 		DestroyWeapon(wounded, hitloc, critType, wFirstCrit, wMaxCrits,
 					  wMaxCrits);
 
@@ -426,9 +427,10 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 						"%%ch%%crYour hotloaded launcher explodes for %d points of damage!%%cn",
 						damage);
 
-			if(LOS && wounded != attacker && attacker)
-				MechLOSBroadcast(wounded,
-								 "loses a launcher in a brilliant explosion!");
+			if(!Destroyed(wounded)) {
+				sprintf(msgbuf, " loses a launcher in a brilliant explosion!", locname);
+				MechLOSBroadcast(wounded, msgbuf);
+			}
 
 			DestroyWeapon(wounded, hitloc, critType, wFirstCrit, wMaxCrits,
 						  wMaxCrits);
@@ -456,7 +458,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 						"%%ch%%crThe incendiary ammunition in your launcher ignites for %d points of damage!%%cn",
 						MechWeapons[Weapon2I(critType)].damage);
 
-			if(LOS && wounded != attacker && attacker) {
+			if(!Destroyed(wounded)) {
 				sprintf(msgbuf,
 						"'s %s is engulfed in a brilliant blue flame!",
 						locname);
