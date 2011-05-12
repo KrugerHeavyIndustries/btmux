@@ -1669,7 +1669,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				   int critHit, int critType, int critData)
 {
 	MECH *mech = wounded;
-	int weapindx, damage, loop, destroycrit, weapon_slot;
+	int weapindx, damage, loop, destroycrit, weapon_slot, wFirstCrit;
 	int temp;
 	char locname[30];
 	char msgbuf[MBUF_SIZE];
@@ -1889,8 +1889,9 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			break;
 		case HEAT_SINK:
 			if(MechHasDHS(mech)) {
+				wFirstCrit=FindFirstWeaponCrit(wounded, hitloc, critHit, 0,critType, HS_Size(mech));
 				MechRealNumsinks(wounded) -= 2;
-				DestroyWeapon(wounded, hitloc, critType, critHit, 1,
+				DestroyWeapon(wounded, hitloc, critType, wFirstCrit, 1,
 							  HS_Size(mech));
 				destroycrit = 0;
 			} else
