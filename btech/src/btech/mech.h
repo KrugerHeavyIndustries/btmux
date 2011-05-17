@@ -209,6 +209,8 @@
 #define INFILTRATORII_STEALTH_UNIT   45
 #define SUPERCHARGER                 46
 #define DUAL_SAW                     47
+#define SPLIT_CRIT_LEFT		     48
+#define SPLIT_CRIT_RIGHT	     49
 
 #define LBX2_AMMO               0
 #define LBX5_AMMO               1

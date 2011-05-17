@@ -107,6 +107,8 @@ char *internals[] = {
 	"InfiltratorIIStealthUnit",
 	"SuperCharger",
 	"Dual_Saw",
+	"SplitCrit_Left",
+	"SplitCrit_Right",
 	NULL
 };
 
