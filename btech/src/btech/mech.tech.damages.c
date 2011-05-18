@@ -343,8 +343,10 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 	int i, j, v1, v2;
 	char buf[MBUF_SIZE];
 	char buf2[MBUF_SIZE];
+	char buf3[MBUF_SIZE];
 	int isds;
 	int fix_time = 0;
+	int fix_bth = 0;
 
 	TECHCOMMANDD;
 	if(unit_is_fixable(mech))
@@ -358,37 +360,45 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 	addline();
 	cent(tprintf("Damage for %s", GetMechID(mech)));
 	addline();
+	vsi("   Fix# Time  BTH Loc Description");
 	for(i = 0; i < damage_last; i++) {
 		v1 = damage_table[i][1];
 		v2 = damage_table[i][2];
 		switch (damage_table[i][0]) {
 		case REATTACH:
+			fix_bth = FindTechSkill(player, mech) + REATTACH_DIFFICULTY;
 			fix_time = REATTACH_TIME;
                         strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
 			break;
 		case DETACH:
+			fix_bth = FindTechSkill(player, mech) + REMOVES_DIFFICULTY;
 			fix_time = REMOVES_TIME;
                         strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
 			break;
 		case RESEAL:
+			fix_bth = FindTechSkill(player, mech) + RESEAL_DIFFICULTY;
 			fix_time = RESEAL_TIME;
                         strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
 			break;
 		case REPLACESUIT:
 			strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
 			fix_time = REPLACESUIT_TIME;
+			fix_bth = FindTechSkill(player, mech) + REPLACESUIT_DIFFICULTY;
 			break;
 		case REPAIRP:
+			fix_bth = FindTechSkill(player, mech) + REPLACE_DIFFICULTY;
 			fix_time = REPLACEPART_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRP_T:	
+                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
 			fix_time = REPAIRGUN_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRG:
+			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
 			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
@@ -400,16 +410,19 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case ENHCRIT_AMMOB:
 		case ENHCRIT_RANGING:
 		case ENHCRIT_AMMOM:
+                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + ENHCRIT_DIFFICULTY;
 			fix_time = REPAIRENHCRIT_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
                         break;
 		case SCRAPP:
+			fix_bth = FindTechSkill(player, mech) + REMOVEP_DIFFICULTY;
 			fix_time = REMOVEP_TIME;
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
 			break;
 		case SCRAPG:
+			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REMOVEG_DIFFICULTY;
 			fix_time = REMOVEG_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
@@ -420,6 +433,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
 					FullAmmo(mech, v1, v2) - GetPartData(mech, v1, v2) );
 			fix_time = RELOAD_TIME;
+			fix_bth = FindTechSkill(player, mech) + RELOAD_DIFFICULTY;
 			break;
 		case UNLOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
@@ -427,6 +441,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
 					GetPartData(mech, v1, v2));
 			fix_time = RELOAD_TIME;
+			fix_bth = FindTechSkill(player, mech) + RELOAD_DIFFICULTY;
 			break;
 		case FIXARMOR:
 		case FIXARMOR_R:
@@ -444,17 +459,26 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 				       (MechSpecials2(mech) & LT_FF_ARMOR_TECH) ? " Light Ferrofibrous" : 
 				       (MechInfantrySpecials(mech) & CS_PURIFIER_STEALTH_TECH) ? " Purifier Stealth" : ""),
 					damage_table[i][2]);
+			fix_bth = FindTechSkill(player, mech) + (damage_table[i][0] == FIXINTERNAL ? FIXINTERNAL_DIFFICULTY : FIXARMOR_DIFFICULTY);
 			fix_time = damage_table[i][0] == FIXINTERNAL ? FIXINTERNAL_TIME * damage_table[i][2] : FIXARMOR_TIME * damage_table[i][2];
 			break;
 		}
 		j = is_under_repair(mech, i);
-		sprintf(buf2, "%%ch%s%-2d:%3s %%cn%s%s", j ? "%cg" : "%cy", i + 1,
+		if(j) {
+			sprintf(buf3, "%4s %4s", "N/A", "N/A");
+		} else {
+			sprintf(buf3, "%4d %4d", fix_time, fix_bth);
+		}
+		sprintf(buf2, "%%ch%s%3s %3d %9s %3s %s%%cn", j ? "%cg" : "%cy", j ? "(*)" :"",
+				i + 1,
+				buf3,
 				ShortArmorSectionString(MechType(mech), MechMove(mech), v1),
-				buf, j ? " (*)" : tprintf(" [ %dm ]",fix_time));
+				buf, j ? " (*)" : "");
 		vsi(buf2);
 	}
 	addline();
 	vsi("(*) / %ch%cgGreen%cn = Job already done. %ch%cyYellow%cn = To be done.");
+	vsi("Time = Normal Time (in minutes) to complete fix. BTH = Your BTH to fix.");
 	addline();
 	ShowCoolMenu(player, c);
 	KillCoolMenu(c);
