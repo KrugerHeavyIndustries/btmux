@@ -44,7 +44,7 @@ const char *repair_need_msgs[] = {
 	"Replacement of %s",
 	"Reload of %s%s (%d rounds)",
 	"Repairs on%s armor (%d points)",
-	"Repairs on%s rear armor (%d points)",
+	"Repairs on rear%s armor (%d points)",
 	"Repairs on%s internals (%d points)",
 	"Removal of section",
 	"Removal of %s",
