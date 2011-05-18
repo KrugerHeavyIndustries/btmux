@@ -65,6 +65,9 @@ const char *repair_need_msgs[] = {
    damage_table[damage_last++][2]=c;\
  } while (0)
 
+#define ClanMod(num) \
+  MAX(1, (((num) / ((MechSpecials(mech) & CLAN_TECH) ? 2 : 1))))
+
 static int check_for_damage(MECH * mech, int loc)
 {
 	int a, b, c, d;
@@ -341,6 +344,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 	char buf[MBUF_SIZE];
 	char buf2[MBUF_SIZE];
 	int isds;
+	int fix_time = 0;
 
 	TECHCOMMANDD;
 	if(unit_is_fixable(mech))
@@ -359,14 +363,36 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		v2 = damage_table[i][2];
 		switch (damage_table[i][0]) {
 		case REATTACH:
+			fix_time = REATTACH_TIME;
+                        strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
+			break;
 		case DETACH:
+			fix_time = REMOVES_TIME;
+                        strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
+			break;
 		case RESEAL:
+			fix_time = RESEAL_TIME;
+                        strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
+			break;
 		case REPLACESUIT:
 			strcpy(buf, repair_need_msgs[(int) damage_table[i][0]]);
+			fix_time = REPLACESUIT_TIME;
 			break;
 		case REPAIRP:
-		case REPAIRP_T:
+			fix_time = REPLACEPART_TIME;
+                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                                        pos_part_name(mech, v1, v2));
+                        break;
+		case REPAIRP_T:	
+			fix_time = REPAIRGUN_TIME;
+                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                                        pos_part_name(mech, v1, v2));
+                        break;
 		case REPAIRG:
+			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
+                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                                        pos_part_name(mech, v1, v2));
+                        break;
 		case ENHCRIT_MISC:
 		case ENHCRIT_FOCUS:
 		case ENHCRIT_CRYSTAL:
@@ -374,8 +400,17 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case ENHCRIT_AMMOB:
 		case ENHCRIT_RANGING:
 		case ENHCRIT_AMMOM:
+			fix_time = REPAIRENHCRIT_TIME;
+                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+					pos_part_name(mech, v1, v2));
+                        break;
 		case SCRAPP:
+			fix_time = REMOVEP_TIME;
+			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+					pos_part_name(mech, v1, v2));
+			break;
 		case SCRAPG:
+			fix_time = REMOVEG_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
 			break;
@@ -384,24 +419,27 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
 					FullAmmo(mech, v1, v2) - GetPartData(mech, v1, v2) );
+			fix_time = RELOAD_TIME;
 			break;
 		case UNLOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
 					GetPartData(mech, v1, v2));
+			fix_time = RELOAD_TIME;
 			break;
 		case FIXARMOR:
 		case FIXARMOR_R:
 		case FIXINTERNAL:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					damage_table[i][2]);
+			fix_time = damage_table[i][0] == FIXINTERNAL ? FIXINTERNAL_TIME * damage_table[i][2] : FIXARMOR_TIME * damage_table[i][2];
 			break;
 		}
 		j = is_under_repair(mech, i);
 		sprintf(buf2, "%%ch%s%-2d:%3s %%cn%s%s", j ? "%cg" : "%cy", i + 1,
 				ShortArmorSectionString(MechType(mech), MechMove(mech), v1),
-				buf, j ? " (*)" : "");
+				buf, j ? " (*)" : tprintf(" [ %dm ]",fix_time));
 		vsi(buf2);
 	}
 	addline();
