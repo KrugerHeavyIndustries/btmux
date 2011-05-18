@@ -43,9 +43,9 @@ const char *repair_need_msgs[] = {
 	"Ammo feed repairs on %s",
 	"Replacement of %s",
 	"Reload of %s%s (%d rounds)",
-	"Repairs on armor (%d points)",
-	"Repairs on rear armor (%d points)",
-	"Repairs on internals (%d points)",
+	"Repairs on%s armor (%d points)",
+	"Repairs on%s rear armor (%d points)",
+	"Repairs on%s internals (%d points)",
 	"Removal of section",
 	"Removal of %s",
 	"Removal of %s",
@@ -432,6 +432,17 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case FIXARMOR_R:
 		case FIXINTERNAL:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+					damage_table[i][0] == FIXINTERNAL ? 
+					((MechSpecials(mech) & ES_TECH) ? " Endosteel" :
+					(MechSpecials(mech) & REINFI_TECH) ? " Reinforced" : 
+					(MechSpecials(mech) & COMPI_TECH) ? " Composite" :
+							            "" ) :
+				       ((MechSpecials(mech) & FF_TECH) ? " Ferrofibrous":
+				       (MechSpecials(mech) & HARDA_TECH) ? " Hardened" :
+				       (MechSpecials2(mech) & STEALTH_ARMOR_TECH) ? " Stealth" :
+				       (MechSpecials2(mech) & HVY_FF_ARMOR_TECH) ? " Heavy Ferrofibrous" :
+				       (MechSpecials2(mech) & LT_FF_ARMOR_TECH) ? " Light Ferrofibrous" : 
+				       (MechInfantrySpecials(mech) & CS_PURIFIER_STEALTH_TECH) ? " Purifier Stealth" : ""),
 					damage_table[i][2]);
 			fix_time = damage_table[i][0] == FIXINTERNAL ? FIXINTERNAL_TIME * damage_table[i][2] : FIXARMOR_TIME * damage_table[i][2];
 			break;
