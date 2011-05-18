@@ -100,6 +100,8 @@ btpr_cf_init(void)
 	mudconf.btech_extended_piloting = 1;
 	mudconf.btech_extended_gunnery = 1;
 	mudconf.btech_xploss_for_mw = 1;
+	mudconf.btech_variable_techtime = 0;
+	mudconf.btech_techtime_mod = 0;
 #ifdef HUDINFO_SUPPORT
 	mudconf.hudinfo_show_mapinfo = 0;
 #endif /* HUDINFO_SUPPORT */

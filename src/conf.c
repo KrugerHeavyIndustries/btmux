@@ -158,6 +158,9 @@ void cf_init(void)
         mudconf.btech_extended_piloting = 1;
 	mudconf.btech_extended_gunnery = 1;
 	mudconf.btech_xploss_for_mw = 1;
+	mudconf.btech_variable_techtime = 0;
+	mudconf.btech_techtime_mod = 0;
+
 #ifdef BT_FREETECHTIME
 	mudconf.btech_freetechtime = 0;
 #endif
@@ -1186,6 +1189,10 @@ CONF conftable[] = {
 	 cf_int, CA_GOD, &mudconf.btech_extended_gunnery, 0},
 	{(char *) "btech_xploss_for_mw",
 	 cf_int, CA_GOD, &mudconf.btech_xploss_for_mw, 0},
+	{(char *) "btech_variable_techtime",
+	 cf_int, CA_GOD, &mudconf.btech_variable_techtime,0},
+	{(char *) "btech_techtime_mod",
+	 cf_int, CA_GOD, &mudconf.btech_techtime_mod,0},
 #ifdef BT_FREETECHTIME
 	{(char *) "btech_freetechtime",
 	 cf_int, CA_GOD, &mudconf.btech_freetechtime, 0},

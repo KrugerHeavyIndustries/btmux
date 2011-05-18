@@ -170,6 +170,9 @@ struct confdata {
     int btech_extended_piloting; /* 0 = No (Drive, Piloting-Bmech, etc) 1 = Yes (Piloting-Tracked, Piloting-Biped, etc.) */
     int btech_extended_gunnery; /* 0 = No (Gunnery-Bmech, Gunnery-Aero, etc) 1 = Yes (Gunnery-Laser, Gunnery-Missile, etc.) */
     int btech_xploss_for_mw;	 /* 0 = No (Mechwarrior death !=XP Loss.) 1 = Yes (Default. MW death = XPLOSS if IC) */
+    int btech_variable_techtime; /* 0 = No (Normal Techtime) 1 = Yes (Techtime is modded by btech_techtime_mod per roll above tofix) */
+    int btech_techtime_mod; /* BTH: 6, Roll 7 would be 1 * techtime_mod , BTH 6, Roll 8, would 2 be 2 *, etc. Lowers techtime based on 'good' rolls */
+
 #ifdef BT_FREETECHTIME
     int btech_freetechtime;	/* Near instant repair times */
 #endif
