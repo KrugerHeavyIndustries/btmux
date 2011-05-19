@@ -386,7 +386,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 			fix_bth = FindTechSkill(player, mech) + REPLACESUIT_DIFFICULTY;
 			break;
 		case REPAIRP:
-			fix_bth = FindTechSkill(player, mech) + REPLACE_DIFFICULTY;
+			fix_bth = FindTechSkill(player, mech) + REPLACE_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech, v1, v2));
 			fix_time = REPLACEPART_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
