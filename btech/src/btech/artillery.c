@@ -115,7 +115,7 @@ void artillery_shoot(MECH * mech, int targx, int targy, int windex,
 	s->ishit = ishit;
 	s->shooter = mech->mynum;
 	s->map = mech->mapindex;
-	MechLOSBroadcast(mech, tprintf("shoots %s towards %s!",
+	MechLOSBroadcast(mech, tprintf("shoots %s towards the %s!",
 								   artillery_type(s),
 								   artillery_direction(s)));
 	MapCoordToRealCoord(s->from_x, s->from_y, &fx, &fy);

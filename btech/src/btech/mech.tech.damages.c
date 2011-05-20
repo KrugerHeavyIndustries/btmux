@@ -347,6 +347,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 	int isds;
 	int fix_time = 0;
 	int fix_bth = 0;
+	int extra_hard = 1;
 
 	TECHCOMMANDD;
 	if(unit_is_fixable(mech))
@@ -392,13 +393,13 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRP_T:	
-                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
+                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
 			fix_time = REPAIRGUN_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRG:
-			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
+			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
 			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
