@@ -472,7 +472,7 @@ TECHCOMMANDH(tech_replacepart)
 
 	TECHCOMMANDC;
 
-	int base, roll , rollmod, fixtime, base_fixtime, parttype, oparttype;
+	int base, roll , rollmod, fixtime, base_fixtime, parttype, oparttype, fail_fixtime;
 
 	my_parsepart(&loc, &part);
 	DOCHECK((t =
@@ -506,21 +506,21 @@ TECHCOMMANDH(tech_replacepart)
 	
 
 	DOCHECK(econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
-			tprintf("Not enough units of %s in store.",part_name(mech,parttype)));
+			tprintf("Not enough units of %s in store.",part_name(parttype,GetPartBrand(mech,loc,part))));
 
 	notify_printf(player,"You start replacing the part...");
 	base = FindTechSkill(player,mech);
 	rollmod = REPLACE_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech, loc, part));
 	roll = tech_roll(player,mech, rollmod);
 	base_fixtime = REPLACEPART_TIME;
+	fail_fixtime = (REPLACEPART_TIME * 3 )/ 2;
 
 	if(roll < 0) {
 		notify_printf(player,"Your attempt is unsuccessful, but you try to save the part...");
 		rollmod = rollmod + 3;
 		roll = tech_roll(player,mech,rollmod);
-		base_fixtime = (base_fixtime * 3 )/ 2;
 		if(roll < 0) {
-			fixtime = base_fixtime;
+			fixtime = fail_fixtime;
 			notify_printf(player,"You muck around, wasting the part for good...");
 			/* part goes , 1.5 * techtime*/
 			econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
@@ -530,9 +530,9 @@ TECHCOMMANDH(tech_replacepart)
 		} else {
 			notify_printf(player,"You manage to save the part...");
 			/* part doesn't go. 1.5 * techtime, but lets mod the fix time if applicable*/
-			fixtime = mudconf.btech_variable_techtime ? base_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : base_fixtime ;
-			if(base_fixtime - fixtime)
-				notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "%s!");
+			fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
+			if(fail_fixtime - fixtime)
+				notify_printf(player,"Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "%s!");
 			tech_addtechtime(player, fixtime);
 			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPL, very_fake_func, (void *) mech, (void *) (PACK_LOCPOS(loc,part) + player * PLAYERPOS));
 		}
