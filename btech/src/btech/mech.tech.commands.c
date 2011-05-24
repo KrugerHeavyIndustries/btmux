@@ -344,6 +344,8 @@ TECHCOMMANDH(tech_removesection)
 TECHCOMMANDH(tech_replacegun)
 {
 	int brand = 0, ob = 0;
+        
+	int base, roll , rollmod, fixtime, base_fixtime, parttype, oparttype, fail_fixtime;
 
 	TECHCOMMANDB;
 	TECHCOMMANDC;
@@ -366,6 +368,65 @@ TECHCOMMANDH(tech_replacegun)
 		ob = GetPartBrand(mech, loc, part);
 		SetPartBrand(mech, loc, part, brand);
 	}
+
+
+/*        oparttype=GetPartType(mech,loc,part);
+        parttype =   (IsActuator(oparttype) ? Cargo(S_ACTUATOR) :
+           (oparttype == Special(ENGINE) ?
+               ((MechSpecials(mech) & XL_TECH) ? Cargo(XL_ENGINE) :
+                    (MechSpecials(mech) & ICE_TECH) ? Cargo(IC_ENGINE) :
+                         (MechSpecials(mech) & XXL_TECH) ? Cargo(XXL_ENGINE) :
+                              (MechSpecials(mech) & CE_TECH) ? Cargo(COMP_ENGINE) :
+                                   (MechSpecials(mech) & LE_TECH) ? Cargo(LIGHT_ENGINE) : oparttype) :
+                                      (oparttype == Special(HEAT_SINK) && MechHasDHS(mech) ? Cargo(DOUBLE_HEAT_SINK) : oparttype)));
+*/
+	parttype = oparttype = GetPartType(mech,loc,part);
+
+
+        DOCHECK(econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
+                        tprintf("Not enough units of %s in store.",part_name(parttype,GetPartBrand(mech,loc,part))));
+
+        notify_printf(player,"You start replacing the gun...");
+        base = char_getskilltarget(player, "technician-weapons", 0);
+        rollmod = REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech, loc, part));
+        roll = tech_weapon_roll(player,mech, rollmod);
+        base_fixtime = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc, part))));
+        fail_fixtime = (base_fixtime * 3 )/ 2;
+
+        if(roll < 0) {
+                notify_printf(player,"Your attempt is unsuccessful, but you try to save the gun...");
+                rollmod = 0;
+                roll = tech_roll(player,mech,rollmod);
+                if(roll < 0) {
+                        fixtime = fail_fixtime;
+                        notify_printf(player,"You muck around, wasting the gun for good...");
+                        /* part goes , 1.5 * techtime*/
+                        econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
+                        tech_addtechtime(player, fixtime);
+                        muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPLG, very_fake_func, (void *) mech, (void *) (PACK_LOCPOS_E(loc,part,brand) + player * PLAYERPOS));
+
+                } else {
+                        notify_printf(player,"You manage to save the gun...");
+                        /* part doesn't go. 1.5 * techtime, but lets mod the fix time if applicable*/
+                        /* We should really MIN(100,mod * roll) for the subtract to cap this out */
+                        fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
+                        if(fail_fixtime - fixtime)
+                                notify_printf(player,"Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "%s!");
+                        tech_addtechtime(player, fixtime);
+                        muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPLG, very_fake_func, (void *) mech, (void *) (PACK_LOCPOS_E(loc,part,brand) + player * PLAYERPOS));
+                }
+
+        } else {
+                fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
+                if(base_fixtime - fixtime)
+                        notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
+
+                econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
+                tech_addtechtime(player, fixtime);
+                muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPLG, muxevent_tickmech_replacegun, (void *) mech, (void *) (PACK_LOCPOS_E(loc,part,brand) + player * PLAYERPOS));
+        }
+
+/*
 	DOTECH_LOCPOS(REPLACE_DIFFICULTY +
 				  WEAPTYPE_DIFFICULTY(GetPartType(mech, loc, part)),
 				  replaceg_fail, replaceg_succ, replace_econ,
@@ -375,6 +436,8 @@ TECHCOMMANDH(tech_replacegun)
 				  mech, PACK_LOCPOS_E(loc, part, brand),
 				  muxevent_tickmech_replacegun, EVENT_REPAIR_REPLG,
 				  "You start replacing the gun..", 1);
+
+*/
 	if(brand)
 		SetPartBrand(mech, loc, part, ob);
 }
@@ -493,6 +556,7 @@ TECHCOMMANDH(tech_replacepart)
         DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 
+/* little cheating here to get the proper part, since we aren't doing complex repairs */
 	oparttype=GetPartType(mech,loc,part);
 	parttype =   (IsActuator(oparttype) ? Cargo(S_ACTUATOR) : 
 	   (oparttype == Special(ENGINE) ? 
@@ -530,6 +594,7 @@ TECHCOMMANDH(tech_replacepart)
 		} else {
 			notify_printf(player,"You manage to save the part...");
 			/* part doesn't go. 1.5 * techtime, but lets mod the fix time if applicable*/
+			/* We should really MIN(100,mod * roll) for the subtract to cap this out */
 			fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
 			if(fail_fixtime - fixtime)
 				notify_printf(player,"Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "%s!");
