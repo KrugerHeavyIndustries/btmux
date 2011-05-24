@@ -582,17 +582,17 @@ TECHCOMMANDH(tech_repairpart)
         DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	
-	if(repair_econ(player,mech,loc,part) < 0)
-		return;
 
-/*
+
+
+
 	DOTECH_LOCPOS(REPAIR_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech,
 																	  loc,
 																	  part)),
 				  repairp_fail, repairp_succ, repair_econ, REPAIRPART_TIME,
 				  mech, PACK_LOCPOS(loc, part), muxevent_tickmech_repairpart,
 				  EVENT_REPAIR_REPAP, "You start repairing the part..", 0);
-*/
+
 }
 
 TECHCOMMANDH(tech_toggletype)
