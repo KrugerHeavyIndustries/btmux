@@ -409,7 +409,10 @@ TECHCOMMANDH(tech_replacegun)
                         notify_printf(player,"You manage to save the gun...");
                         /* part doesn't go. 1.5 * techtime, but lets mod the fix time if applicable*/
                         /* We should really MIN(100,mod * roll) for the subtract to cap this out */
-                        fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
+			if(roll == 0)
+				fixtime = fail_fixtime;
+			else
+				fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
                         if(fail_fixtime - fixtime)
                                 notify_printf(player,"Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "%s!");
                         tech_addtechtime(player, fixtime);
@@ -417,7 +420,10 @@ TECHCOMMANDH(tech_replacegun)
                 }
 
         } else {
-                fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
+		if(roll == 0)
+			fixtime = base_fixtime;
+		else
+			fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
                 if(base_fixtime - fixtime)
                         notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
 
@@ -595,7 +601,10 @@ TECHCOMMANDH(tech_replacepart)
 			notify_printf(player,"You manage to save the part...");
 			/* part doesn't go. 1.5 * techtime, but lets mod the fix time if applicable*/
 			/* We should really MIN(100,mod * roll) for the subtract to cap this out */
-			fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
+			if (roll == 0)
+				fixtime = fail_fixtime;
+			else
+				fixtime = mudconf.btech_variable_techtime ? fail_fixtime / (1000 / (100 - roll ? mudconf.btech_techtime_mod * roll : 0)) : fail_fixtime ;
 			if(fail_fixtime - fixtime)
 				notify_printf(player,"Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "%s!");
 			tech_addtechtime(player, fixtime);
@@ -603,7 +612,10 @@ TECHCOMMANDH(tech_replacepart)
 		}
 
 	} else {
-		fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
+		if (roll == 0)
+			fixtime = base_fixtime;
+		else
+			fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
 		if(base_fixtime - fixtime)
 			notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
 		
