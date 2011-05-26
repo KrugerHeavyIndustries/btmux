@@ -383,7 +383,7 @@ TECHCOMMANDH(tech_replacegun)
 	parttype = oparttype = GetPartType(mech,loc,part);
 
 
-        DOCHECK(econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
+        DOCHECK(IsAmmo(GetPartType(mech,loc,part)) ? 0 : econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
                         tprintf("Not enough units of %s in store.",part_name(parttype,GetPartBrand(mech,loc,part))));
 
         notify_printf(player,"You start replacing the gun...");
@@ -401,7 +401,8 @@ TECHCOMMANDH(tech_replacegun)
                         fixtime = fail_fixtime;
                         notify_printf(player,"You muck around, wasting the gun for good...");
                         /* part goes , 1.5 * techtime*/
-                        econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
+			if(!(IsAmmo(GetPartType(mech,loc,part))))
+				econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
                         tech_addtechtime(player, fixtime);
                         muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPLG, very_fake_func, (void *) mech, (void *) (PACK_LOCPOS_E(loc,part,brand) + player * PLAYERPOS));
 
@@ -426,8 +427,8 @@ TECHCOMMANDH(tech_replacegun)
 			fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
                 if(base_fixtime - fixtime)
                         notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
-
-                econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
+		if(!(IsAmmo(GetPartType(mech,loc,part))))
+	                econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
                 tech_addtechtime(player, fixtime);
                 muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPLG, muxevent_tickmech_replacegun, (void *) mech, (void *) (PACK_LOCPOS_E(loc,part,brand) + player * PLAYERPOS));
         }
@@ -575,7 +576,7 @@ TECHCOMMANDH(tech_replacepart)
 
 	
 
-	DOCHECK(econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
+	DOCHECK(IsAmmo(GetPartType(mech,loc,part)) ? 0 : econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
 			tprintf("Not enough units of %s in store.",part_name(parttype,GetPartBrand(mech,loc,part))));
 
 	notify_printf(player,"You start replacing the part...");
