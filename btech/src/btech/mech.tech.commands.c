@@ -395,7 +395,7 @@ TECHCOMMANDH(tech_replacegun)
 
         if(roll < 0) {
                 notify_printf(player,"Your attempt is unsuccessful, but you try to save the gun...");
-                rollmod = 0;
+                rollmod = REPLACE_DIFFICULTY;
                 roll = tech_roll(player,mech,rollmod);
                 if(roll < 0) {
                         fixtime = fail_fixtime;
@@ -587,7 +587,7 @@ TECHCOMMANDH(tech_replacepart)
 
 	if(roll < 0) {
 		notify_printf(player,"Your attempt is unsuccessful, but you try to save the part...");
-		rollmod = rollmod + 3;
+		rollmod = rollmod + 1;
 		roll = tech_roll(player,mech,rollmod);
 		if(roll < 0) {
 			fixtime = fail_fixtime;
