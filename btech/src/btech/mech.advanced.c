@@ -300,36 +300,58 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 									  critical) & ARTILLERY_MODES) &&
 					 !(GetPartAmmoMode(mech, section, critical) & temp_mode),
 					 "That weapon has already been set to fire special rounds!");
-
-		if(temp_firemode) {
-			if(GetPartFireMode(mech, section, critical) & temp_mode) {
-				GetPartFireMode(mech, section, critical) &= ~temp_mode;
+           /* Fitz - Group RAC/INARC select: Handle clearing RAC and INARC modes first */ 
+   		if ((temp_nspec == RAC) && !temp_mode) {
+			if (!(GetPartFireMode(mech, section, critical) & RAC_MODES)) {
 				mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
-				return 0;
+			} else {
+				GetPartFireMode(mech, section, critical) &= ~FIRE_MODES;
+				mech_notify(mech, MECHALL, tprintf(temp_onmsg, index));
 			}
-		} else {
-			if(GetPartAmmoMode(mech, section, critical) & temp_mode) {
-				GetPartAmmoMode(mech, section, critical) &= ~temp_mode;
-				mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
-				return 0;
-			}
-		}
-
-		if(temp_firemode) {
-			GetPartFireMode(mech, section, critical) &= ~FIRE_MODES;
-			GetPartFireMode(mech, section, critical) |= temp_mode;
-		} else {
-			GetPartAmmoMode(mech, section, critical) &= ~AMMO_MODES;
-			GetPartAmmoMode(mech, section, critical) |= temp_mode;
-		}
-
-		mech_notify(mech, MECHALL, tprintf(temp_onmsg, index));
-
 		return 0;
-	}
+		} else if ((temp_nspec == INARC) && !temp_mode) {
+			if (!(GetPartAmmoMode(mech, section, critical) & INARC_MODES)) {
+				mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
+			} else {
+				GetPartAmmoMode(mech, section, critical) &= ~AMMO_MODES;
+				mech_notify(mech, MECHALL, tprintf(temp_onmsg, index));
+			}
+		return 0;
+		} else {
 
-	notify(player, temp_cant);
-	return 0;
+			if(temp_firemode) {
+				if(GetPartFireMode(mech, section, critical) & temp_mode) {
+					if (temp_nspec != RAC) { /* Fitz - Keep RAC type weapons on new setting if already there */
+						GetPartFireMode(mech, section, critical) &= ~temp_mode;
+					}
+					mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
+					return 0;
+				}
+			} else {
+				if(GetPartAmmoMode(mech, section, critical) & temp_mode) {
+					if (temp_nspec != INARC) { /* Fitz - Keep INARC type weapons on new setting if already there */
+						GetPartAmmoMode(mech, section, critical) &= ~temp_mode;
+					}
+					mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
+					return 0;
+				}
+			}
+
+			if(temp_firemode) {
+				GetPartFireMode(mech, section, critical) &= ~FIRE_MODES;
+				GetPartFireMode(mech, section, critical) |= temp_mode;
+			} else {
+				GetPartAmmoMode(mech, section, critical) &= ~AMMO_MODES;
+				GetPartAmmoMode(mech, section, critical) |= temp_mode;
+			}
+	
+			mech_notify(mech, MECHALL, tprintf(temp_onmsg, index));
+	
+			return 0;
+			}
+		}if (temp_nspec != RAC) /* Keep RAC type weapons on this setting */
+		notify(player, temp_cant);
+		return 0;
 }
 
 static void mech_toggle_mode_sub(dbref player, MECH * mech, char *buffer,
@@ -386,57 +408,45 @@ void mech_inarc_ammo_toggle(dbref player, void *data, char *buffer)
 
 	wcArgs = mech_parseattributes(buffer, args, 2);
 
-	DOCHECK(wcArgs < 1, "Please specify a weapon number.");
-	DOCHECK(Readnum(wWeapNum, args[0]), tprintf("Invalid value: %s",
-												args[0]));
-
-	wWeapType = FindWeaponNumberOnMech(mech, wWeapNum, &wSection, &wCritSlot);
-
-	DOCHECK(wWeapType == -1,
-			"The weapons system chirps: 'Illegal Weapon Number!'");
-	DOCHECK(wWeapType == -2,
-			"The weapons system chirps: 'That Weapon has been destroyed!'");
-	DOCHECK(wWeapType == -3,
-			"The weapon system chirps: 'That weapon is still reloading!'");
-	DOCHECK(wWeapType == -4,
-			"The weapon system chirps: 'That weapon is still recharging!'");
-	DOCHECK(!(MechWeapons[wWeapType].special & INARC),
-			"The weapon system chirps: 'That weapon is not an iNARC launcher!'");
-	DOCHECK(isWeapAmmoFeedLocked(mech, wSection, wCritSlot),
-			"That weapon's ammo feed mechanism is damaged!");
-
-	/* Change our modes... */
-
-	GetPartAmmoMode(mech, wSection, wCritSlot) &= ~AMMO_MODES;
-
 	if(wcArgs < 2)
-		strcpy(strMode, "Homing");
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, 0, 0,
+						 "Weapon %d has been set to fire INARC Homing pods",
+						 "Weapon %d is already set to fire INARC Homing pods",
+						 "That weapon is not an INARC launcher!");
 	else {
 		switch (toupper(args[1][0])) {
 		case 'X':
-			strcpy(strMode, "Explosive");
-			GetPartAmmoMode(mech, wSection, wCritSlot) |= INARC_EXPLO_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, INARC_EXPLO_MODE, 0,
+						 "Weapon %d has been set to fire INARC Explosive pods",
+						 "Weapon %d is already set to fire INARC Explosive pods",
+						 "That weapon is not an INARC launcher!");
 			break;
 		case 'Y':
-			strcpy(strMode, "Haywire");
-			GetPartAmmoMode(mech, wSection, wCritSlot) |= INARC_HAYWIRE_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, INARC_HAYWIRE_MODE, 0,
+						 "Weapon %d has been set to fire INARC Haywire pods",
+						 "Weapon %d is already set to fire INARC Haywire pods",
+						 "That weapon is not an INARC launcher!");
 			break;
 		case 'E':
-			strcpy(strMode, "ECM");
-			GetPartAmmoMode(mech, wSection, wCritSlot) |= INARC_ECM_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, INARC_ECM_MODE, 0,
+						 "Weapon %d has been set to fire INARC ECM pods",
+						 "Weapon %d is already set to fire INARC ECM pods",
+						 "That weapon is not an INARC launcher!");
 			break;
 		case 'Z':
-			strcpy(strMode, "Nemesis");
-			GetPartAmmoMode(mech, wSection, wCritSlot) |= INARC_NEMESIS_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, INARC_NEMESIS_MODE, 0,
+						 "Weapon %d has been set to fire INARC Nemesis pods",
+						 "Weapon %d is already set to fire INARC Nemesis pods",
+						 "That weapon is not an INARC launcher!");
 			break;
 		default:
-			strcpy(strMode, "Homing");
+			mech_toggle_mode_sub(player, mech, buffer, 1, INARC, 0, 0,
+						 "Weapon %d has been set to fire INARC Homing pods",
+						 "Weapon %d is already set to fire INARC Homing pods",
+						 "That weapon is not an INARC launcher!");
 			break;
 		}
 	}
-
-	mech_printf(mech, MECHALL,
-				"Weapon %d set to fire iNARC %s pods.", wWeapNum, strMode);
 }
 
 void mech_explosive(dbref player, void *data, char *buffer)
@@ -548,57 +558,42 @@ void mech_rac(dbref player, void *data, char *buffer)
 	char *args[2];
 	char strMode[30];
 
-	cch(MECH_USUALO);
-
 	wcArgs = mech_parseattributes(buffer, args, 2);
 
-	DOCHECK(wcArgs < 1, "Please specify a weapon number.");
-	DOCHECK(Readnum(wWeapNum, args[0]), tprintf("Invalid value: %s",
-												args[0]));
-
-	wWeapType = FindWeaponNumberOnMech(mech, wWeapNum, &wSection, &wCritSlot);
-
-	DOCHECK(wWeapType == -1,
-			"The weapons system chirps: 'Illegal Weapon Number!'");
-	DOCHECK(wWeapType == -2,
-			"The weapons system chirps: 'That Weapon has been destroyed!'");
-	DOCHECK(wWeapType == -3,
-			"The weapon system chirps: 'That weapon is still reloading!'");
-	DOCHECK(wWeapType == -4,
-			"The weapon system chirps: 'That weapon is still recharging!'");
-	DOCHECK(!(MechWeapons[wWeapType].special & RAC),
-			"The weapon system chirps: 'That weapon is not an Rotary AC!'");
-
-	/* Change our modes... */
-
-	GetPartFireMode(mech, wSection, wCritSlot) &= ~FIRE_MODES;
-	GetPartFireMode(mech, wSection, wCritSlot) &=
-		~(RAC_TWOSHOT_MODE | RAC_FOURSHOT_MODE | RAC_SIXSHOT_MODE);
-
 	if(wcArgs < 2)
-		strcpy(strMode, "one shot");
+	mech_toggle_mode_sub(player, mech, buffer, 1, RAC, 0, 1,
+					 "Weapon %d has been set to fire one shot at a time.",
+					 "Weapon %d is already set to fire one shot at a time.",
+					 "That weapon is not a RotaryAC!");
 	else {
 		switch (args[1][0]) {
 		case '2':
-			strcpy(strMode, "two shots");
-			GetPartFireMode(mech, wSection, wCritSlot) |= RAC_TWOSHOT_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, RAC, RAC_TWOSHOT_MODE, 1,
+					 "Weapon %d has been set to fire two shots at a time.",
+					 "Weapon %d is already set to fire two shots at a time.",
+					 "That weapon is not a RotaryAC!");
 			break;
 		case '4':
-			strcpy(strMode, "four shots");
-			GetPartFireMode(mech, wSection, wCritSlot) |= RAC_FOURSHOT_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, RAC, RAC_FOURSHOT_MODE, 1,
+					 "Weapon %d has been set to fire four shots at a time.",
+					 "Weapon %d is already set to fire four shots at a time.",
+					 "That weapon is not a RotaryAC!");
 			break;
 		case '6':
-			strcpy(strMode, "six shots");
-			GetPartFireMode(mech, wSection, wCritSlot) |= RAC_SIXSHOT_MODE;
+			mech_toggle_mode_sub(player, mech, buffer, 1, RAC, RAC_SIXSHOT_MODE, 1,
+					 "Weapon %d has been set to fire six shots at a time.",
+					 "Weapon %d is already set to fire six shots at a time.",
+					 "That weapon is not a RotaryAC!");
 			break;
 		default:
-			strcpy(strMode, "one shot");
+			mech_toggle_mode_sub(player, mech, buffer, 1, RAC, 0, 1,
+					 "Weapon %d has been set to fire one shot at a time.",
+					 "Weapon %d is already set to fire one shot at a time.",
+					 "That weapon is not a RotaryAC!");
 			break;
 		}
 	}
 
-	mech_printf(mech, MECHALL,
-				"Weapon %d set to fire %s at a time.", wWeapNum, strMode);
 }
 
 static int mech_unjamammo_func(MECH * mech, dbref player, int index, int high)
@@ -750,7 +745,7 @@ void mech_smoke(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, 0, TARTILLERY, SMOKE_MODE,
+	mech_toggle_mode_sub(player, mech, buffer, 4, 0, SMOKE_MODE,
 						 0, "Weapon %d has been set to fire smoke rounds.",
 						 "Weapon %d has been set to fire normal rounds",
 						 "Invalid weapon type!");
@@ -761,7 +756,7 @@ void mech_mine(dbref player, void *data, char *buffer)
 	MECH *mech = (MECH *) data;
 
 	cch(MECH_USUALMO);
-	mech_toggle_mode_sub(player, mech, buffer, 0, TARTILLERY, MINE_MODE, 0,
+	mech_toggle_mode_sub(player, mech, buffer, 4, 0, MINE_MODE, 0,
 						 "Weapon %d has been set to fire mine rounds.",
 						 "Weapon %d has been set to fire normal rounds",
 						 "Invalid weapon type!");
