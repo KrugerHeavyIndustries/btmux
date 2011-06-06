@@ -2953,7 +2953,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     int engine_basecost = (MechSpecials(mech) & CE_TECH ? 10000 :
         MechSpecials(mech) & LE_TECH ? 15000 :
     	MechSpecials(mech) & XL_TECH ? 20000 :
-    	MechSpecials(mech) & XXL_TECH ? 100000 :
+    	MechSpecials(mech) & XXL_TECH ? 20000 :
     	MechSpecials(mech) & ICE_TECH ? 1250 : 5000);
     	    
     engine_size = MechEngineSize(mech);   
@@ -2967,8 +2967,7 @@ if (MechType(mech) != CLASS_BSUIT) {
     	engine_size = engine_size - susp_factor(mech);
     }
     	/* Don't forget to Round up! */ 
-    	int engine_price = ceil((engine_basecost * engine_size * MechTons(mech)) / 75.0);
-    	    
+    	int engine_price = ceil(((unsigned long long int) engine_basecost * (unsigned long long int) engine_size * (unsigned long long int) MechTons(mech)) / 75ULL);
     	CalcFasaCost_AddPrice(&total, "Engine", engine_price);
     
     /* Jump Jets 
