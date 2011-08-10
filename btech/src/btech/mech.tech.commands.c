@@ -889,6 +889,11 @@ TECHCOMMANDH(tech_reattach)
 	TECHCOMMANDB;
 
 	TECHCOMMANDC;
+
+	int internal_stock = 0;
+	int electric_stock = 0;
+        int base, roll , rollmod, fixtime, base_fixtime, fail_fixtime;
+
 	my_parsepart(&loc, NULL);
 	DOCHECK(MechType(mech) == CLASS_BSUIT,
 			"You can't reattach a Battlesuit! Use 'replacesuit'!");
@@ -901,10 +906,63 @@ TECHCOMMANDH(tech_reattach)
 			"You see nothing to reattach it to (read:unit is cored).");
         DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
-	DOTECH_LOC(REATTACH_DIFFICULTY, reattach_fail, reattach_succ,
-			   reattach_econ, REATTACH_TIME, mech, loc,
-			   muxevent_tickmech_reattach, EVENT_REPAIR_REAT,
-			   "You start replacing the section..");
+	internal_stock = econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), ProperInternal(mech), 0);
+	electric_stock = econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), Cargo(S_ELECTRONIC), 0);
+
+	DOCHECK(internal_stock < GetSectOInt(mech, loc),tprintf("Not enough %ss in stock. You need %d more.",part_name(ProperInternal(mech),0),GetSectOInt(mech,loc) - internal_stock));
+	DOCHECK(electric_stock < GetSectOInt(mech, loc),tprintf("Not enough Electrics in stock. You need %d more.",GetSectOInt(mech,loc) - electric_stock));
+
+	notify_printf(player, "You start replacing the section...");
+	base = FindTechSkill(player,mech);
+	rollmod = REATTACH_DIFFICULTY;
+	roll = tech_roll(player, mech, rollmod);
+	base_fixtime = REATTACH_TIME;
+	fail_fixtime = (base_fixtime * 3)/ 2;
+
+	if(roll < 0) {
+		notify_printf(player, "Your attempt is unsuccessful, but you try to save the section...");
+		rollmod = REATTACH_DIFFICULTY;
+		roll = tech_roll(player,mech,rollmod);
+		if(roll < 0) {
+			fixtime = fail_fixtime;
+			notify_printf(player,"You muck around, wasting the section for good...");
+			/* TODO: maybe save X% of materials like before? */
+			econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),ProperInternal(mech),0, 0 - (GetSectOInt(mech,loc)));
+			econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),Cargo(S_ELECTRONIC), 0, 0 - (GetSectOInt(mech,loc)));
+			tech_addtechtime(player, fixtime);
+			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, very_fake_func, (void *) mech, (void *) (loc + player + PLAYERPOS));
+
+		} else {
+			notify_printf(player,"You manage to replace the section...");
+			/* it's a saving roll, so it is what it is */
+			if(roll == 0)
+				fixtime = fail_fixtime;
+			else
+				fixtime = mudconf.btech_variable_techtime ? (fail_fixtime* 10) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))): fail_fixtime;
+			if(fail_fixtime - fixtime)
+				notify_printf(player, "Your skill manages to save %d minute%s", fail_fixtime - fixtime, fail_fixtime - fixtime == 1 ? "!" : "s!");
+                        econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),ProperInternal(mech),0, 0 - (GetSectOInt(mech,loc)));
+                        econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),Cargo(S_ELECTRONIC), 0, 0 - (GetSectOInt(mech,loc)));
+			tech_addtechtime(player, fixtime);
+			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, muxevent_tickmech_reattach, (void *) mech, (void *) (loc + player + PLAYERPOS));
+		}
+	} else {
+		if(roll == 0)
+			fixtime = base_fixtime;
+		else
+			fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
+		if(base_fixtime - fixtime)
+			notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
+		econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),ProperInternal(mech),0, 0 - (GetSectOInt(mech,loc)));
+		econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),Cargo(S_ELECTRONIC), 0, 0 - (GetSectOInt(mech,loc)));
+		tech_addtechtime(player, fixtime);
+		muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REAT, muxevent_tickmech_reattach, (void *) mech, (void *) (loc + player * PLAYERPOS));
+	}
+
+//	DOTECH_LOC(REATTACH_DIFFICULTY, reattach_fail, reattach_succ,
+//			   reattach_econ, REATTACH_TIME, mech, loc,
+//			   muxevent_tickmech_reattach, EVENT_REPAIR_REAT,
+//			   "You start replacing the section..");
 }
 
 TECHCOMMANDH(tech_replacesuit)
