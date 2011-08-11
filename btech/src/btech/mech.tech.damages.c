@@ -393,13 +393,15 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRP_T:	
-                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
+			if(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))) < 5)
+				extra_hard = 0;
+                        fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
 			fix_time = REPAIRGUN_TIME;
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
-		case REPAIRG:
-			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
+		case REPAIRG:                
+			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
 			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
@@ -442,7 +444,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
 					GetPartData(mech, v1, v2));
 			fix_time = RELOAD_TIME;
-			fix_bth = FindTechSkill(player, mech) + RELOAD_DIFFICULTY;
+			fix_bth = FindTechSkill(player, mech) + REMOVES_DIFFICULTY;
 			break;
 		case FIXARMOR:
 		case FIXARMOR_R:
