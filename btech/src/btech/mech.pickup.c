@@ -391,7 +391,10 @@ void mech_dropoff(dbref player, void *data, char *buffer)
 			MechLOSBroadcast(target, "falls through the sky.");
 			MECHEVENT(target, EVENT_FALL, mech_fall_event, FALL_TICK, -1);
 		} else {
-			MechZ(target) = Elevation(newmap, MechX(mech), MechY(mech));
+			if( GetTerrain(newmap, MechX(mech), MechY(mech)) == ICE)
+				MechZ(target) = 0;
+			else
+				MechZ(target) = Elevation(newmap, MechX(mech), MechY(mech));
 		}
 	}
 	correct_speed(mech);
