@@ -930,7 +930,7 @@ TECHCOMMANDH(tech_reattach)
 			econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),ProperInternal(mech),0, 0 - (GetSectOInt(mech,loc)));
 			econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),Cargo(S_ELECTRONIC), 0, 0 - (GetSectOInt(mech,loc)));
 			tech_addtechtime(player, fixtime);
-			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, very_fake_func, (void *) mech, (void *) (loc + player + PLAYERPOS));
+			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, very_fake_func, (void *) mech, (void *) (loc + player * PLAYERPOS));
 
 		} else {
 			notify_printf(player,"You manage to replace the section...");
@@ -944,7 +944,7 @@ TECHCOMMANDH(tech_reattach)
                         econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),ProperInternal(mech),0, 0 - (GetSectOInt(mech,loc)));
                         econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum),Cargo(S_ELECTRONIC), 0, 0 - (GetSectOInt(mech,loc)));
 			tech_addtechtime(player, fixtime);
-			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, muxevent_tickmech_reattach, (void *) mech, (void *) (loc + player + PLAYERPOS));
+			muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0 ,EVENT_REPAIR_REAT, muxevent_tickmech_reattach, (void *) mech, (void *) (loc + player * PLAYERPOS));
 		}
 	} else {
 		if(roll == 0)
