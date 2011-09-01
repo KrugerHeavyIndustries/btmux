@@ -87,6 +87,7 @@ struct confdata {
     int btech_xploss_for_mw;	/* 0 = No (Mechwarrior death !=XP Loss.) 1 = Yes (Default. MW death = XPLOSS if IC) */
     int btech_variable_techtime; /* 0 = No (Normal Techtime) 1 = Yes (Techtime is modded by btech_techtime_mod per roll above tofix) */
     int btech_techtime_mod; /* BTH: 6, Roll 7 would be 1 * techtime_mod , BTH 6, Roll 8, would 2 be 2 *, etc. Lowers techtime based on 'good' rolls */
+    int btech_statengine_obj; /* Object to send stats on hits/crits to. Defaults to -1 (off) */
 #ifdef HUDINFO_SUPPORT
     int hudinfo_show_mapinfo;	/* What kind of info we are willing to give */
 #endif
