@@ -106,7 +106,7 @@ void Missile_Hit(MECH * mech,
 			DamageMech(target, mech, LOS, GunPilot(mech), hitloc, isrear,
 					   iscritical, pc_to_dam_conversion(target, weapindx,
 														this_damage), 0,
-					   weapindx, bth, -1, 0, tIsSwarmAttack);
+					   weapindx, bth, weapindx, ammoMode, tIsSwarmAttack);
 		} else {
 			hex_hit(mech, hitX, hitY, weapindx, ammoMode, this_damage, 1);
 		}
