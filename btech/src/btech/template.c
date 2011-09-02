@@ -109,6 +109,7 @@ char *internals[] = {
 	"Dual_Saw",
 	"SplitCrit_Left",
 	"SplitCrit_Right",
+	"Hardpoint",
 	NULL
 };
 

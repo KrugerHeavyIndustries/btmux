@@ -211,6 +211,7 @@
 #define DUAL_SAW                     47
 #define SPLIT_CRIT_LEFT		     48
 #define SPLIT_CRIT_RIGHT	     49
+#define HARDPOINT		     50
 
 #define LBX2_AMMO               0
 #define LBX5_AMMO               1
