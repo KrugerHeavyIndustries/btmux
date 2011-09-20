@@ -75,6 +75,7 @@
 #define MAPFLAG_BRIDGESCS       64      /* (g) We can't destroy bridges on this map */
 #define MAPFLAG_NOBRIDGIFY      128     /* (h) We shouldn't convert roads into bridges */
 #define MAPFLAG_NOFRIENDLYFIRE  256     /* (i) We can't shoot friendlies AT ALL on this map */
+#define MAPFLAG_NOPHYSICALS	512	/* (j) No Physicals allowed on this map (Mainly for Clan) */
 
 #define TYPE_FIRE  0		/* Fire - datas = counter until next spread, datac = stuff to burn */
 #define TYPE_SMOKE 1		/* Smoke - datas = time until it gets lost */
@@ -114,6 +115,8 @@
 #define MapBridgesCS(map)           ((map)->flags & MAPFLAG_BRIDGESCS)
 #define MapNoBridgify(map)          ((map)->flags & MAPFLAG_NOBRIDGIFY)
 #define MapNoFriendlyFire(map)      ((map)->flags & MAPFLAG_NOFRIENDLYFIRE)
+#define MapNoPhysicals(map)	    ((map)->flags & MAPFLAG_NOPHYSICALS);
+
 
 typedef struct mapobj_struct {
     short x, y;
