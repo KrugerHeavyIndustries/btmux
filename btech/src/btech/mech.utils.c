@@ -2796,7 +2796,8 @@ unsigned long long int CalcFasaCost(MECH * mech)
 	int temp;
 	int engine_size = 0;
 	int has_sword = 0;
-	
+	int clan_case_sections[NUM_SECTIONS];
+
 	if(!mech)
 		return -1;
 
@@ -3176,6 +3177,9 @@ if (MechType(mech) != CLASS_BSUIT) {
 						break;
 				}
 				if(IsAmmo(part)) 
+				/* Need Something in here to do CASE for CLAN mechs */
+					if(ClanMech(mech))
+						clan_case_sections[i] = 1;
 					continue;
 				if(IsWeapon(part))
 					continue;
@@ -3201,6 +3205,14 @@ if (MechType(mech) != CLASS_BSUIT) {
 
 		 }
 
+
+	/* Clan Case */
+	if(ClanMech(mech)) {
+		for(i = 0; i < NUM_SECTIONS; i++) {
+			if(clan_case_sections[i] == 1)
+				CalcFasaCost_AddPrice(&total, "Clan CASE Section", 50000);
+		}
+	}
 
 	if(MechType(mech) != CLASS_MECH && MechType(mech) != CLASS_BSUIT) {
 		switch (MechMove(mech)) {
@@ -3231,13 +3243,12 @@ if (MechType(mech) != CLASS_BSUIT) {
 	    // down to be competitive with other unit types.
 	    mod = 0.75;
 	} else {
-	    // The standard mech modifier.
+	    // The standard mech size cost modifier. 20 ton mech, for example is Cost * .20 
 		mod = (float) 1 + (float) ((float) MechTons(mech) / (float) 100);
 	}
 
 	if (MechIsOmniMech(mech)) {
-		SendDebug(tprintf("Mech is Omni, multiplying %lld by .25", total));
-		total *= .25;
+		CalcFasaCost_AddPrice(&total, "OmniMech", (int) ( (float) total * .25));
 	}
 
 #if COST_DEBUG
