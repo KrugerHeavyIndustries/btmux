@@ -701,6 +701,19 @@ void DamageMech(MECH * wounded,
 			cause_armordamage(wounded, attacker, LOS, attackPilot, isrear,
 							  iscritical, hitloc, damage, &crits, wWeapIndx,
 							  wAmmoMode);
+		/* for Stat Engine */
+		/* STATHIT|MAP|ATTACKER PILOT DBREF|WOUNDED PILOT DBREF|ATTACKER MECHREF|WOUNDED MECHREF|ATTACKER MECH DBREF|WOUNDED MECH DBREF|BTH OF SHOT|HITLOC|WEAPON NAME|Armor Damage|Internal Damage */
+		/* The last part in the function is how we're handling transfer damage. We're going to check how much internal is left, do some math, and only count the applied damage */
+		/* As the transfer damage will come back and send to another section via DamageMech calls */
+		/* We're going to skip wWeapindx = -1 for now as well. Those are physicals (currently) and self inflicted */
+		/* May make physicals -2, -3, -4, etc, but I'd rather not do all that logic. Maybe change to -2 and just add a 'PHYSICAL'...Though kick vs punch would be neat */
+		/* LIGHTBULB:
+		 * Make a 'special/physical' weapons table. We'll send the wWeapindx as a negative num. If its negative, (lower then -1 which will stay as selfdamage) we'll
+		 * check a 'Physical Weapons Table' and abs() the value and pick the name out from there */
+		if(mudconf.btech_statengine_obj > 0 && wWeapIndx != -1)
+			notify_with_cause(mudconf.btech_statengine_obj, GOD, tprintf("STATHIT|#%d|#%d|#%d|%s|%s|#%d|#%d|%d|%s%s|%s|%d|%d",
+			attacker->mapindex,MechPilot(attacker),MechPilot(wounded), MechType_Ref(attacker),MechType_Ref(wounded),attacker->mynum,wounded->mynum,bth,isrear ? "Rear " : "", hitloc != -1 ? locationBuff : "NONE",&MechWeapons[wWeapIndx].name[0],damage-intDamage,GetSectInt(wounded,hitloc) < intDamage ? intDamage-(intDamage-GetSectInt(wounded,hitloc)) : intDamage));
+
 		if(intDamage >= 0)
 			MechFloodsLoc(wounded, hitloc, MechZ(wounded));
 		if(intDamage > 0 && !is_aero(wounded)) {
