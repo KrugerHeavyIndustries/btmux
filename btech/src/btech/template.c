@@ -49,12 +49,12 @@
 
 char *load_cmds[] = {
 	"Reference", "Type", "Move_Type", "Tons", "Tac_Range",
-	"LRS_Range", "Radio_Range", "Scan_Range", "Heat_Sinks",
+	"LRS_Range", "Radio_Range", "Scan_Range",  "Heat_Sinks",
 	"Max_Speed", "Specials", "Armor", "Internals", "Rear",
 	"Config", "Computer", "Name", "Jump_Speed", "Radio",
 	"SI", "Fuel", "Comment", "RadioType",
 	"Mech_BV", "Cargo_Space", "Max_Suits", "InfantrySpecials",
-	"Max_Ton",
+	"Max_Ton", "HSEngOverRide",
 	NULL
 };
 
@@ -107,6 +107,7 @@ char *internals[] = {
 	"InfiltratorIIStealthUnit",
 	"SuperCharger",
 	"Dual_Saw",
+	"Light_BAP",
 	"SplitCrit_Left",
 	"SplitCrit_Right",
 	"Hardpoint",
@@ -162,6 +163,7 @@ int internalsweight[] = {
 	102,						/* InfiltratorStealthUnit */
 	102,						/* InfiltratorIIStealthUnit */
 	1024,						/* Dual_Saw */
+	512,						/* Light_BAP */
 };
 #endif /* BT_PART_WEIGHTS */
 
@@ -1127,7 +1129,7 @@ char *specials[] = {
 	"SalvageTech",
 	"CargoTech",
 	"SearchLight",
-	"LoaderTech",
+	"LightBAP",
 	"AntiAircraft",
 	"NoSensors",
 	"SS_Ability",
@@ -1148,7 +1150,7 @@ char *specials[] = {
 
 char *specialsabrev[] = {
 	"TSM", "CLAMS", "ISAMS", "DHS", "MASC", "CLTECH", "FA", "C3M", "C3S",
-	"AIV", "ECM", "BAP", "SAL", "CAR", "SL", "LOAD", "AA", "NOSEN", "SS",
+	"AIV", "ECM", "BAP", "SAL", "CAR", "SL", "LBAP", "AA", "NOSEN", "SS",
 	"FF", "ES", "XL", "ICE", "LIFT", "LENG", "XXL", "CENG", "RINT", "CINT",
 	"HARM", "CP",
 	NULL
@@ -1773,6 +1775,7 @@ int save_template(dbref player, MECH * mech, char *reference, char *filename)
 
 	SILLY_OUTPUT(DEFAULT_COMPUTER, MechComputer(mech), "Computer");
 	SILLY_OUTPUT(DEFAULT_RADIO, MechRadio(mech), "Radio");
+	SILLY_OUTPUT(0,MechHSEngOverRide(mech), "HSEngOverRide");
 	SILLY_OUTPUT((MechSpecials(mech) & ICE_TECH) ? 0 : DEFAULT_HEATSINKS,
 				 MechRealNumsinks(mech), "Heat_Sinks");
 	SILLY_OUTPUT(generic_radio_type(MechRadio(mech),
@@ -1796,7 +1799,7 @@ int save_template(dbref player, MECH * mech, char *reference, char *filename)
 	x &=						/* Calculated at load-time */
 		~(BEAGLE_PROBE_TECH | TRIPLE_MYOMER_TECH | MASC_TECH | ECM_TECH |
 		  C3_SLAVE_TECH | C3_MASTER_TECH | ARTEMIS_IV_TECH | ES_TECH |
-		  FF_TECH);
+		  FF_TECH | LIGHT_BAP_TECH);
 
 	if(MechType(mech) == CLASS_MECH)
 		x &= ~(XL_TECH | XXL_TECH | CE_TECH | LE_TECH);
@@ -2025,7 +2028,7 @@ void update_specials(MECH * mech)
 	MechSpecials(mech) &=
 		~(BEAGLE_PROBE_TECH | TRIPLE_MYOMER_TECH | MASC_TECH | ECM_TECH |
 		  C3_SLAVE_TECH | C3_MASTER_TECH | ARTEMIS_IV_TECH | ES_TECH |
-		  FF_TECH | IS_ANTI_MISSILE_TECH | CL_ANTI_MISSILE_TECH);
+		  FF_TECH | IS_ANTI_MISSILE_TECH | CL_ANTI_MISSILE_TECH | LIGHT_BAP_TECH);
 	if(MechType(mech) == CLASS_MECH)
 		MechSpecials(mech) &= ~(XL_TECH | XXL_TECH | CE_TECH | LE_TECH);
 
@@ -2060,6 +2063,7 @@ void update_specials(MECH * mech)
 				case item: if (!PartIsNonfunctional(mech, x, y)) MechSpecials(mech) |= name ; break
 					TECH(ARTEMIS_IV, ARTEMIS_IV_TECH);
 					TECHU(BEAGLE_PROBE, BEAGLE_PROBE_TECH);
+					TECHU(LIGHT_BAP, LIGHT_BAP_TECH);
 					TECH(ECM, ECM_TECH);
 					TECH2(TAG, TAG_TECH);
 					TECHU(C3_SLAVE, C3_SLAVE_TECH);
@@ -2287,8 +2291,8 @@ int load_template(dbref player, MECH * mech, char *filename)
 	} else {
 		ptr++;
 	}
-	strncpy(MechType_Ref(mech), ptr, 15);
-	MechType_Ref(mech)[14] = '\0';
+	strncpy(MechType_Ref(mech), ptr, 25);
+	MechType_Ref(mech)[24] = '\0';
 
 	silly_atr_set(mech->mynum, A_MECHREF, MechType_Ref(mech));
 	MechRadioType(mech) = 0;
@@ -2592,6 +2596,9 @@ int load_template(dbref player, MECH * mech, char *filename)
 			break;
 		case 27:				/* Carmaxton */
 			CarMaxTon(mech) = atoi(read_desc(fp, ptr));
+			break;
+		case 28:
+			MechHSEngOverRide(mech) = atoi(read_desc(fp,ptr));
 			break;
 		}
 	}

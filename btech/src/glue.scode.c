@@ -111,8 +111,8 @@ char *mechIDfunc(int mode, MECH * mech)
 static char *mech_getset_ref(int mode, MECH * mech, char *data)
 {
 	if(mode) {
-		strncpy(MechType_Ref(mech), data, 14);
-		MechType_Ref(mech)[14] = '\0';
+		strncpy(MechType_Ref(mech), data, 24);
+		MechType_Ref(mech)[24] = '\0';
 		return NULL;
 	} else
 		return MechType_Ref(mech);
@@ -431,6 +431,7 @@ static GMV xcode_data[] = {
 	MeEntry("disabled_hs", MechDisabledHS, TYPE_INT_RO),
 	MeEntry("overheat", MechHeat, TYPE_FLOAT),
 	MeEntry("dissheat", MechMinusHeat, TYPE_FLOAT),
+	MeEntry("hsengoverride", MechHSEngOverRide, TYPE_INT),
 	MeEntry("heatsinks", MechRealNumsinks, TYPE_CHAR_RO),
 	MeEntry("last_startup", MechLastStartup, TYPE_INT),
 	MeEntry("C3iNetworkSize", MechC3iNetworkSize, TYPE_INT_RO),

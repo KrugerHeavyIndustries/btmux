@@ -47,6 +47,10 @@ void sendECMNotification(MECH * objMech, int wMsgType)
 		   !(MechCritStatus(objMech) & BLOODHOUND_DESTROYED))
 			mech_notify(objMech, MECHALL,
 						"Your Bloodhound Active Probe is inoperative!");
+		if(MechSpecials(objMech) & LIGHT_BAP_TECH &&
+		   !(MechCritStatus2(objMech) & LIGHT_BAP_DESTROYED))
+		   	mech_notify(objMech, MECHALL,
+						"Your Light Beagle Active Probe is inoperative!");
 		if(IsC3(objMech))
 			mech_notify(objMech, MECHALL, "Your C3 network is inoperative!");
 		if(IsC3i(objMech))
@@ -70,6 +74,10 @@ void sendECMNotification(MECH * objMech, int wMsgType)
 		   !(MechCritStatus(objMech) & BLOODHOUND_DESTROYED))
 			mech_notify(objMech, MECHALL,
 						"Your Bloodhound Active Probe is operational again!");
+		if(MechSpecials(objMech) & LIGHT_BAP_TECH &&
+		   !(MechCritStatus2(objMech) & LIGHT_BAP_DESTROYED))
+		   	mech_notify(objMech, MECHALL,
+						"Your Light Beagle Active Probe is operational again!");
 		if(IsC3(objMech))
 			mech_notify(objMech, MECHALL,
 						"Your C3 network is operational again!");

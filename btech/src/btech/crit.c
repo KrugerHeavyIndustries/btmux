@@ -1798,6 +1798,9 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			case BLOODHOUND_PROBE:
 				strcpy(partBuf, "Bloodhound Active Probe");
 				break;
+			case LIGHT_BAP:
+				strcpy(partBuf, "Light Beagle Active Probe");
+				break;
 			case ARTEMIS_IV:
 				strcpy(partBuf, "ArtemisIV system");
 				break;
@@ -2227,7 +2230,39 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				MarkForLOSUpdate(wounded);
 			}
 			break;
-		case ARTEMIS_IV:
+		case LIGHT_BAP:
+			MechCritStatus2(wounded) |= LIGHT_BAP_DESTROYED;
+			MechSpecials(wounded) &= ~LIGHT_BAP_TECH;
+			mech_notify(wounded, MECHALL,
+						"Your Light Beagle Active Probe has been destroyed!");
+
+			if(((sensors[(short) MechSensor(wounded)[0]].required_special
+				 == LIGHT_BAP_TECH) &&
+				(sensors[(short) MechSensor(wounded)[0]].specials_set
+				 == 1)) ||
+			   ((sensors[(short) MechSensor(wounded)[1]].required_special
+				 == LIGHT_BAP_TECH) &&
+				(sensors[(short) MechSensor(wounded)[1]].specials_set
+				 == 1))) {
+
+				if((sensors[(short)
+							MechSensor(wounded)[0]].required_special ==
+					LIGHT_BAP_TECH) &&
+				   (sensors[(short) MechSensor(wounded)[0]].specials_set
+					== 1))
+					MechSensor(wounded)[0] = 0;
+
+				if((sensors[(short)
+							MechSensor(wounded)[1]].required_special ==
+					LIGHT_BAP_TECH) &&
+				   (sensors[(short) MechSensor(wounded)[1]].specials_set
+					== 1))
+					MechSensor(wounded)[1] = 0;
+
+				MarkForLOSUpdate(wounded);
+			}
+			break;
+	case ARTEMIS_IV:
 			weapon_slot = GetPartData(wounded, hitloc, critHit);
 			if(weapon_slot > NUM_CRITICALS) {
 				SendError(tprintf("Artemis IV error on mech %d",

@@ -209,9 +209,10 @@
 #define INFILTRATORII_STEALTH_UNIT   45
 #define SUPERCHARGER                 46
 #define DUAL_SAW                     47
-#define SPLIT_CRIT_LEFT		     48
-#define SPLIT_CRIT_RIGHT	     49
-#define HARDPOINT		     50
+#define LIGHT_BAP		     48
+#define SPLIT_CRIT_LEFT		     49
+#define SPLIT_CRIT_RIGHT	     50
+#define HARDPOINT		     51
 
 #define LBX2_AMMO               0
 #define LBX5_AMMO               1
@@ -742,13 +743,14 @@ struct section_struct {
 
 typedef struct {
     char mech_name[31];		/* Holds the 30 char ID for the mech */
-    char mech_type[15];		/* Holds the mechref for the mech */
+    char mech_type[25];		/* Holds the mechref for the mech */
     char type;			/* The type of this unit */
     char move;			/* The movement type of this unit */
     char tac_range;		/* Tactical range for sensors */
     char lrs_range;		/* Long range for sensors */
     char scan_range;		/* Range for scanners */
     char numsinks;		/* number of heatsinks (also engine */
+    int hsengoverride;		/* # of Heatsinks in Engine Override. Default to zero */
     char computer;		/* Partially replaces tac/lrs/scan/radiorange */
     char radio;
     unsigned char radioinfo;
@@ -1124,7 +1126,7 @@ struct repair_data {
 #define SALVAGE_TECH		0x1000	/* 2x 'mech carrying capacity */
 #define CARGO_TECH		0x2000	/* 2x cargo carrying capacity */
 #define SLITE_TECH		0x4000
-#define LOADER_TECH		0x8000
+#define LIGHT_BAP_TECH		0x8000  /* Removed the Loader_Tech... */
 #define AA_TECH			0x10000
 #define NS_TECH			0x20000
 #define SS_ABILITY		0x40000	/* Has sixth sense */
@@ -1143,7 +1145,8 @@ struct repair_data {
 /* 0x80000000 can not be used. */
 
 /*critstatus2 element */
-#define HDGYRO_DAMAGED          0x01        /* HDGYRO is damaged */
+#define HDGYRO_DAMAGED          0x01        /* (a) HDGYRO is damaged */
+#define LIGHT_BAP_DESTROYED	0x02	    /* (b) LIGHT_BAP Sensor Destroyed */
 
 /* specials2 element: used to tell quickly what type of tech the mech has */
 #define STEALTH_ARMOR_TECH      0x01        /* Stealth armor */

@@ -671,6 +671,8 @@ static char *hud_advtech(MECH * mech)
 		*p++ = 'E';
 	if(spec & BEAGLE_PROBE_TECH)
 		*p++ = 'B';
+	if(spec & LIGHT_BAP_TECH)
+		*p++ = 'b';
 	if(spec & MASC_TECH)
 		*p++ = 'M';
 	if(spec & AA_TECH)

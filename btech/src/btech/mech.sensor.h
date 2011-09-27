@@ -155,6 +155,11 @@ SensorStruct sensors[] = {
 	    "Nothing (except range)",
 	"Ultimate sensor in close-range detection (slightly varying BTH, but ignores partial/woods/water)"},
 
+/* Don't need special see/hit. just ranges for lbap*/
+    {"Light Beagle ActiveProbe", "A", 1, 3, 0, bap_see, bap_csee, bap_tohit, -1,
+    	    -1, LIGHT_BAP_TECH, 1, SENSOR_ATTR_NONE, "<=3",
+	    "Nothing (except range)",
+	"Short range, but ultimate sensor in close-range detection (slightly varying BTH, but ignores partial/woods/water)"},
 
     {"Bloodhound ActiveProbe", "H", 1, 8, 0, blood_see, blood_csee,
 	    blood_tohit, -1,

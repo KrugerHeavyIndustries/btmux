@@ -651,8 +651,8 @@ int load_mechdata(MECH * mech, char *id)
 	if(filename)
 		fp = fopen(filename, "r");
 	TEMPLATE_GERR(!fp, tprintf("Unable to open file %s (%s)!", filename, id));
-	strncpy(MechType_Ref(mech), id, 15);
-	MechType_Ref(mech)[14] = '\0';
+	strncpy(MechType_Ref(mech), id, 25);
+	MechType_Ref(mech)[24] = '\0';
 	TEMPLATE_GERR(fscanf(fp, "%d %d %d %d %d %f %f %d\n", &i1, &i2, &i3,
 						 &i4, &i5, &MechMaxSpeed(mech), &MechJumpSpeed(mech),
 						 &i6) < 8,
@@ -1554,6 +1554,10 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		MechSpecials(mech) |= BEAGLE_PROBE_TECH;
 		notify(player, "Beagle Active Probe added to 'Mech.");
 		break;
+	case LIGHT_BAP:
+		MechSpecials(mech) |= LIGHT_BAP_TECH;
+		notify(player, "Light Beagle Active Probe added to 'Mech.");
+		break;
 	case TAG:
 		MechSpecials2(mech) |= TAG_TECH;
 		notify(player, "TAG added to 'Mech.");
@@ -1627,6 +1631,8 @@ void mechrep_Rshowtech(dbref player, void *data, char *buffer)
 		notify(player, "Artemis IV Fire-Control System");
 	if(MechSpecials(mech) & ECM_TECH)
 		notify(player, "Guardian ECM Suite");
+	if(MechSpecials(mech) & LIGHT_BAP_TECH)
+		notify(player, "Light Beagle Active Probe");
 	if(MechSpecials2(mech) & ANGEL_ECM_TECH)
 		notify(player, "Angel ECM Suite");
 	if(MechSpecials(mech) & BEAGLE_PROBE_TECH)

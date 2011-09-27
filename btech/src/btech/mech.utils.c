@@ -1801,6 +1801,8 @@ void do_sub_magic(MECH * mech, int loud)
 				jjs++;
 				break;
 			}
+	if(MechHSEngOverRide(mech))
+		inthses = MechHSEngOverRide(mech);
 	hses +=
 		MIN(MechRealNumsinks(mech) * shs_size / hs_eff, inthses * shs_size);
 	if(jjs > maxjjs) {
@@ -2002,6 +2004,7 @@ void mech_RepairPart(MECH * mech, int loc, int pos)
 		case ANGELECM:
 		case NULL_SIGNATURE_SYSTEM:
 		case BEAGLE_PROBE:
+		case LIGHT_BAP:
 		case ARTEMIS_IV:
 		case TAG:
 		case BLOODHOUND_PROBE:
@@ -3139,6 +3142,9 @@ if (MechType(mech) != CLASS_BSUIT) {
 						continue;
 					case BEAGLE_PROBE:
 						CalcFasaCost_AddPrice(&total, "BAP", 100000);
+						continue;
+					case LIGHT_BAP:
+						CalcFasaCost_AddPrice(&total, "LightBAP", 50000);
 						continue;
 					case BLOODHOUND_PROBE:
 						bloodhound_count++;

@@ -271,6 +271,8 @@ int crit_weight(MECH * mech, int t)
 		return 1024 * (cl ? 4 : MechType(mech) == CLASS_MECH ? 3 : 6) / 4;
 	case CASE:
 		return 512;
+	case LIGHT_BAP:
+		return 512;
 	case JUMP_JET:
 		if(MechTons(mech) <= 55)
 			return 512;

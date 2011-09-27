@@ -159,6 +159,7 @@
 #define MMaxSpeed(a)		((float) MechCargoMaxSpeed((a),(float) MechMaxSpeed((a))))
 #define MechMaxSuits(a)	(a)->rd.maxsuits
 #define MechMinusHeat(a)	(a)->rd.minus_heat
+#define MechHSEngOverRide(a)	(a)->ud.hsengoverride
 #define MechMove(a)		(a)->ud.move
 #define MechIsQuad(a)			(MechMove(a) == MOVE_QUAD)
 #define MechIsBiped(a)			(MechMove(a) == MOVE_BIPED)
