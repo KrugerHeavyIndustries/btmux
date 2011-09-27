@@ -1683,6 +1683,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 															(wounded)));
 	char partBuf[100];
 
+	int fCrit;
 	MAP *map = FindObjectsData(wounded->mapindex);
 
 	ArmorStringFromIndex(hitloc, locname, MechType(wounded),
@@ -1889,6 +1890,20 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				mech_notify(wounded, MECHALL,
 							"Your sensors have been destroyed!");
 			}
+			break;
+		case SPLIT_CRIT_LEFT:
+                case SPLIT_CRIT_RIGHT:
+                        fCrit = GetPartData(wounded, hitloc, critHit);
+                        temp = ReverseSplitCritLoc(wounded, hitloc, critHit);
+                        if (temp < 0) {
+                                mech_printf(wounded, MECHALL, "ERROR: Could not find split weapon parent location. Loc:%d Crit:%d temp:%d fCrit:%d",
+                                        hitloc, critHit, temp, fCrit);
+                                break; // sanity check
+                        }
+			destroycrit = 0;
+                        if (handleWeaponCrit(attacker, wounded, temp, fCrit, GetPartType(wounded, temp, fCrit), LOS))
+                                 break;
+                        scoreEnhancedWeaponCriticalHit(wounded, attacker, LOS, temp, fCrit);
 			break;
 		case HEAT_SINK:
 			if(MechHasDHS(mech)) {

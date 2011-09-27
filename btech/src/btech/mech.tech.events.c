@@ -75,12 +75,24 @@ void muxevent_tickmech_removegun(MUXEVENT * e)
 	int earg = (int) (e->data2) % PLAYERPOS;
 	int loc, pos, i, extra;
 	char buf[MBUF_SIZE];
+	int count = 0, nloc, ncrit, stype;
+	int size;
 
 	UNPACK_LOCPOS_E(earg, loc, pos, extra);
-	for(i = pos;
-		i < (pos + GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc,
-															 pos)))); i++)
+
+	size = GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc, pos)));
+	for( i = pos; i < MIN(NUM_CRITICALS, pos + size); i++) {
 		DestroyPart(mech, loc, i);
+		count++;
+	}
+	if (count < size && MechType(mech) == CLASS_MECH) { // got split crits
+		if (GetSplitData(mech, loc, pos, &nloc, &ncrit, &stype)) {
+			for (i = ncrit; i < (size - count); i++) {
+				DestroyPart(mech, nloc, i);
+			}
+		}
+	}
+
 	ArmorStringFromIndex(loc, buf, MechType(mech), MechMove(mech));
 	if(extra == 2 && (e->function != very_fake_func)) {
 #ifndef BT_COMPLEXREPAIRS
@@ -327,17 +339,32 @@ void muxevent_tickmech_replacegun(MUXEVENT * e)
 	int earg = (int) (e->data2) % PLAYERPOS;
 	int loc, pos, i, brand;
 	char buf[MBUF_SIZE];
+	int count = 0, nloc, ncrit, stype;
+	int size;
 
 	UNPACK_LOCPOS_E(earg, loc, pos, brand);
-	for(i = pos;
-		i < (pos + GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc,
-															 pos)))); i++) {
+
+	size = GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc, pos)));
+	for ( i = pos; i < MIN(NUM_CRITICALS, pos + size); i++) {
 		mech_RepairPart(mech, loc, i);
 		ClearTempNuke(mech, loc, i);
 		if(brand) {
 			SetPartBrand(mech, loc, i, brand);
 		}
+		count++;
 	}
+	if (count < size && MechType(mech) == CLASS_MECH) { // got split crits
+		if (GetSplitData(mech, loc, pos, &nloc, &ncrit, &stype)) {
+			for ( i = ncrit; i < (size - count); i++) {
+				mech_RepairPart(mech, nloc, i);
+				ClearTempNuke(mech, nloc, i);
+				if(brand) {
+					SetPartBrand(mech, nloc, i, brand);
+				}
+			}
+		}
+	}
+
 	ArmorStringFromIndex(loc, buf, MechType(mech), MechMove(mech));
 	do {
 		int i = 0;
@@ -358,14 +385,26 @@ void muxevent_tickmech_repairgun(MUXEVENT * e)
 	int earg = (int) (e->data2) % PLAYERPOS;
 	int loc, pos, i;
 	char buf[MBUF_SIZE];
+	int count = 0, nloc, ncrit, stype;
+	int size;
 
 	UNPACK_LOCPOS(earg, loc, pos);
-	for(i = pos;
-		i < (pos + GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc,
-															 pos)))); i++) {
+
+	size = GetWeaponCrits(mech, Weapon2I(GetPartType(mech, loc, pos)));
+	for (i = pos; i < MIN(NUM_CRITICALS, pos + size); i++) {
 		mech_RepairPart(mech, loc, i);
 		ClearTempNuke(mech, loc, i);
+		count++;
 	}
+	if (count < size && MechType(mech) == CLASS_MECH) { // got split crits
+		if (GetSplitData(mech, loc, pos, &nloc, &ncrit, &stype)) {
+			for (i = ncrit; i < (size - count); i++) {
+				mech_RepairPart(mech, nloc, i);
+				ClearTempNuke(mech, nloc, i);
+			}
+		}
+	}
+	
 	ArmorStringFromIndex(loc, buf, MechType(mech), MechMove(mech));
 	do {
 		int i = 0;

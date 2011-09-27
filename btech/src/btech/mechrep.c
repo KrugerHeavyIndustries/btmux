@@ -1053,50 +1053,47 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 
 	weapnumcrits = GetWeaponCrits(mech, weapindex);
 
+// Add < 9 for split weap help
 	/* Check to see if player gives enough crits and start adding if so. */
-	if(argc < weapnumcrits) {
-		notify_printf(player,
-					  "Not enough critical slots specified! (Given: %i, Needed: %i)",
-					  argc, weapnumcrits);
-	} else if(argc > weapnumcrits) {
-		notify_printf(player,
-					  "Too many critical slots specified! (Given: %i, Needed: %i)",
-					  argc, weapnumcrits);
-	} else {
-		for(loop = 0; loop < GetWeaponCrits(mech, weapindex); loop++) {
-			temp = atoi(args[2 + loop]);
-			temp--;				/* From 1 based to 0 based */
-			DOCHECK(temp < 0 ||
-					temp > NUM_CRITICALS, "Bad critical location!");
-			MechSections(mech)[index].criticals[temp].type =
-				(I2Weapon(weapindex));
-			MechSections(mech)[index].criticals[temp].firemode = 0;
-			MechSections(mech)[index].criticals[temp].ammomode = 0;
+        if(argc < weapnumcrits && weapnumcrits < 9) {
+                notify_printf(player, "Not enough critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits);
+        } else if(argc > weapnumcrits) {
+                notify_printf(player, "Too many critical slots specified! (Given: %i, Needed: %i)", argc, weapnumcrits);
+        } else {
+                if (argc < weapnumcrits) // notify player of split crit
+                        notify_printf(player, "Weapon will be split! %d additional crits needed.", weapnumcrits - argc);
+                for(loop = 0; loop < argc; loop++) {
+                        temp = atoi(args[2 + loop]);
+                        temp--;                         /* From 1 based to 0 based */
+                        DOCHECK(temp < 0 || temp > NUM_CRITICALS, "Bad critical location!");
+                        MechSections(mech)[index].criticals[temp].type = (I2Weapon(weapindex));
+                        MechSections(mech)[index].criticals[temp].firemode = 0;
+                        MechSections(mech)[index].criticals[temp].ammomode = 0;
 
-			/* If this is a Rocket Launcher, use isrocket to set the OS flag */
-			if(MechWeapons[weapindex].special & ROCKET)
-				isrocket = 1;
+                        /* If this is a Rocket Launcher, use isrocket to set the OS flag */
+//                      if(MechWeapons[weapindex].special & ROCKET)
+//                              isrocket = 1;
 
-			if(isrear)
-				MechSections(mech)[index].criticals[temp].firemode |=
-					REAR_MOUNT;
+                        if(isrear)
+                                MechSections(mech)[index].criticals[temp].firemode |= REAR_MOUNT;
+                        if(istc)
+                                MechSections(mech)[index].criticals[temp].firemode |= ON_TC;
+                        /* Rockets are OS too */ // NOT! -=RST
+                        if(isoneshot)
+                                MechSections(mech)[index].criticals[temp].firemode |= OS_MODE;
+                }
+                if(IsAMS(weapindex)) {
+	                      if(MechWeapons[weapindex].special & CLAT)
+                                MechSpecials(mech) |= CL_ANTI_MISSILE_TECH;
+                        else
+                                MechSpecials(mech) |= IS_ANTI_MISSILE_TECH;
+       
+                }
+                notify_printf(player, "Weapon added.");
+        }
+}                                                               /* end mechrep_Raddweap() */
 
-			if(istc)
-				MechSections(mech)[index].criticals[temp].firemode |= ON_TC;
 
-			/* Rockets are OS too */
-			if(isoneshot || isrocket)
-				MechSections(mech)[index].criticals[temp].firemode |= OS_MODE;
-		}
-		if(IsAMS(weapindex)) {
-			if(MechWeapons[weapindex].special & CLAT)
-				MechSpecials(mech) |= CL_ANTI_MISSILE_TECH;
-			else
-				MechSpecials(mech) |= IS_ANTI_MISSILE_TECH;
-		}
-		notify_printf(player, "Weapon added.");
-	}
-}								/* end mechrep_Raddweap() */
 
 void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 {
@@ -1573,6 +1570,10 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 	case TARGETING_COMPUTER:	
 		MechSpecials2(mech) |= TCOMP_TECH;
 		notify(player, "Targeting Computer added to 'Mech.");
+		break;
+	case SPLIT_CRIT_LEFT:
+	case SPLIT_CRIT_RIGHT:
+		MechSections(mech)[index].criticals[subsect].data--;
 		break;
 	}	
 	ArmorStringFromIndex(index, location, MechType(mech), MechMove(mech));

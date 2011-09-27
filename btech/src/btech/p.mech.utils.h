@@ -99,6 +99,9 @@ int FindAmmoForWeapon(MECH * mech, int weapindx, int start, int *section,
     int *critical);
 int CountAmmoForWeapon(MECH * mech, int weapindx);
 int FindArtemisForWeapon(MECH * mech, int section, int critical);
+int ReverseSplitCritLoc(MECH * mech, int sect, int crit);
+int FindSplitCrits(MECH * mech, int sect, int type, int crit);
+int GetSplitData(MECH * mech, int sect, int data, int *ssect, int *scrit, int *stype);
 int FindDestructiveAmmo(MECH * mech, int *section, int *critical);
 int FindInfernoAmmo(MECH * mech, int *section, int *critical);
 int FindRoundsForWeapon(MECH * mech, int weapindx);

@@ -756,6 +756,7 @@ char *pos_part_name(MECH * mech, int index, int loop)
 {
 	int t, b;
 	char *c;
+	int newloop, newindex;
 
 	if(index < 0 || index >= NUM_SECTIONS || loop < 0 ||
 	   loop >= NUM_CRITICALS) {
@@ -775,12 +776,19 @@ char *pos_part_name(MECH * mech, int index, int loop)
 			return "Hip";
 		return "Shoulder";
 	}
-	if(!(c = part_name(t, b)))
-		return "--?ErrorInTemplate?--";
 
 	if (t == Special(HEAT_SINK) ) {
 		return (MechSpecials(mech) & DOUBLE_HEAT_TECH ? "Double Heatsink" :
 			"Heatsink");
+	}
+
+        if (t == Special(SPLIT_CRIT_RIGHT) || t == Special(SPLIT_CRIT_LEFT)) { // we got a split crit
+	                newindex = ReverseSplitCritLoc(mech, index, loop);
+	                newloop = GetPartData(mech, index, loop);
+	                if (newindex >= 0) {
+	                        t = GetPartType(mech, newindex, newloop);
+	                        b = GetPartBrand(mech, newindex, newloop);
+	                }
 	}
 
 	/* LETS CHECK IF ITS A SPECIAL ENGINE */
@@ -791,6 +799,9 @@ char *pos_part_name(MECH * mech, int index, int loop)
 			MechSpecials(mech) & XL_TECH ? "Engine (XL)" :
 			"Engine");
 	}
+
+	if(!(c = part_name(t, b)))
+		return "--?ErrorInTemplate?--";
 
 	return c;
 

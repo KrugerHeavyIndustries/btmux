@@ -985,64 +985,63 @@ int FindTargetXY(MECH * mech, float *x, float *y, float *z)
 
 int global_silence = 0;
 
+// Added i < 9 for Split crit tests 
 #define UGLYTEST \
-	  if (num_crits) \
-	    { \
-	      if (num_crits != (i = GetWeaponCrits (mech, lastweap))) \
-		{ \
-		  if (whine && !global_silence) \
-		    SendError (tprintf ("Error in the numcriticals for weapon on #%d! (Should be: %d, is: %d)", mech->mynum, i, num_crits)); \
-		  return -1; \
+	if (num_crits) { \
+		if (num_crits != (i = GetWeaponCrits (mech, lastweap)) && i < 9) { \
+			if (whine && !global_silence) \
+				SendError (tprintf ("Error in the numcriticals for weapon on #%d! (Should be: %d, is: %d)", mech->mynum, i, num_crits)); \
+			return -1; \
 		} \
-	      num_crits = 0; \
-	    }
+		num_crits = 0; \
+	}
+
 
 /* ASSERTION: Weapons must be located next to each other in criticals */
 
 /* This is a hacked function. Sorry. */
 
-int FindWeapons_Advanced(MECH * mech, int index, unsigned char *weaparray,
-						 unsigned char *weapdataarray, int *critical,
-						 int whine)
-{
-	int loop;
-	int weapcount = 0;
-	int temp, data, lastweap = -1;
-	int num_crits = 0, i;
 
-	for(loop = 0; loop < MAX_WEAPS_SECTION; loop++) {
-		temp = GetPartType(mech, index, loop);
-		data = GetPartData(mech, index, loop);
-		if(IsWeapon(temp)) {
-			temp = Weapon2I(temp);
-			if(weapcount == 0) {
-				lastweap = temp;
-				weapdataarray[weapcount] = data;
-				weaparray[weapcount] = temp;
-				critical[weapcount] = loop;
-				weapcount++;
-				num_crits = 1;
-				continue;
-			}
-			if(!num_crits || temp != lastweap ||
-			   (num_crits == GetWeaponCrits(mech, temp))) {
-				UGLYTEST;
-				weaparray[weapcount] = temp;
-				weapdataarray[weapcount] = data;
-				critical[weapcount] = loop;
-				lastweap = temp;
-				num_crits = 1;
-				weapcount++;
-			} else
-				num_crits++;
-		} else
-			UGLYTEST;
-	}
-	UGLYTEST;
-	return (weapcount);
+int FindWeapons_Advanced(MECH * mech, int index, unsigned char *weaparray, unsigned char *weapdataarray, int *critical, int whine)
+{
+        int loop;
+        int weapcount = 0;
+        int temp, data, lastweap = -1;
+        int num_crits = 0, i;
+
+        for(loop = 0; loop < MAX_WEAPS_SECTION; loop++) {
+                temp = GetPartType(mech, index, loop);
+                data = GetPartData(mech, index, loop);
+                if(IsWeapon(temp)) {
+                        temp = Weapon2I(temp);
+                        if(weapcount == 0) {
+                                lastweap = temp;
+                                weapdataarray[weapcount] = data;
+                                weaparray[weapcount] = temp;
+                                critical[weapcount] = loop;
+                                weapcount++;
+                                num_crits = 1;
+                                continue;
+                        }
+                        if(!num_crits || temp != lastweap || (num_crits == GetWeaponCrits(mech, temp))) {
+                                UGLYTEST;
+                                weaparray[weapcount] = temp;
+                                weapdataarray[weapcount] = data;
+                                critical[weapcount] = loop;
+                                lastweap = temp;
+                                num_crits = 1;
+                                weapcount++;
+                        } else
+                                num_crits++;
+                } else
+                        UGLYTEST;
+        }
+        UGLYTEST;
+        return (weapcount);
 }
 
-int FindAmmunition(MECH * mech, unsigned char *weaparray,
+int 
+FindAmmunition(MECH * mech, unsigned char *weaparray,
 				   unsigned short *ammoarray, unsigned short *ammomaxarray,
 				   unsigned int *modearray, int returnall)
 {
@@ -1406,6 +1405,87 @@ int FindArtemisForWeapon(MECH * mech, int section, int critical)
                                         return 1;
                         }
                 }
+        }
+        return 0;
+}
+
+
+
+int ReverseSplitCritLoc(MECH * mech, int sect, int crit)
+{
+        if (MechType(mech) != CLASS_MECH)
+                return -1;
+
+        switch(sect) {
+                case LARM:
+                case LLEG:
+                        return LTORSO;
+                case RARM:
+                case RLEG:
+                        return RTORSO;
+                case RTORSO:
+                        return RARM;
+                case LTORSO:
+                        return LARM;
+                case CTORSO:
+                        return (Special2I(GetPartType(mech, sect, crit)) == SPLIT_CRIT_RIGHT ? RTORSO : LTORSO);
+        }
+        return -1;
+}
+
+int FindSplitCrits(MECH * mech, int sect, int type, int crit)
+{
+        int i;
+
+        for (i = 0; i < CritsInLoc(mech, sect); i++)
+                if (GetPartType(mech, sect, i) == type && GetPartData(mech, sect, i) == crit)
+                        return i;
+
+        return -1;
+}
+int GetSplitData(MECH * mech, int sect, int data, int *ssect, int *scrit, int *stype)
+{
+        switch(sect) {
+                case RARM: // right arm goes to right torso
+                        *stype = I2Special(SPLIT_CRIT_RIGHT);
+                        if ((*scrit = FindSplitCrits(mech, RTORSO, *stype, data)) >= 0) {
+                                *ssect = RTORSO;
+                                return 1;
+                        }
+                        break;
+                case LARM: // left arm goes to left torso
+                        *stype = I2Special(SPLIT_CRIT_LEFT);
+                        if ((*scrit = FindSplitCrits(mech, LTORSO, *stype, data)) >= 0) {
+                                *ssect = LTORSO;
+                                return 1;
+                        }
+                        break;
+                case RTORSO: // torso more complex, need to go thru arm, leg, torso
+                        *stype = I2Special(SPLIT_CRIT_RIGHT);
+                        if ((*scrit = FindSplitCrits(mech, CTORSO, *stype, data)) >= 0) {
+                                *ssect = CTORSO;
+                                return 1;
+                        } else if ((*scrit = FindSplitCrits(mech, RARM, *stype, data)) >= 0) {
+                                *ssect = RARM;
+                                return 1;
+                        } else if ((*scrit = FindSplitCrits(mech, RLEG, *stype, data)) >= 0) {
+                                *ssect = RLEG;
+                                return 1;
+                        }
+                        break;
+                case LTORSO: // same for left torso
+                        *stype = I2Special(SPLIT_CRIT_LEFT);
+                        if ((*scrit = FindSplitCrits(mech, CTORSO, *stype, data)) >= 0) {
+                                *ssect = CTORSO;
+                                return 1;
+                        } else if ((*scrit = FindSplitCrits(mech, LARM, *stype, data)) >= 0) {
+                                *ssect = LARM;
+                                return 1;
+                        } else if ((*scrit = FindSplitCrits(mech, LLEG, *stype, data)) >= 0) {
+                                *ssect = LLEG;
+                                return 1;
+                        }
+                        break;
         }
         return 0;
 }
@@ -3977,36 +4057,45 @@ mul = pow(((((MMaxSpeed(mech) / MP1) + (type == CLASS_AERO || type == CLASS_DS ?
    Returns 2 if fully damaged.
    Returns -(# of crits) if partially damaged.
    remember that values 3 means the weapon IS NOT destroyed.  */
-		int WeaponIsNonfunctional(MECH * mech, int section, int crit,
-								  int numcrits) {
-			int sum = 0, disabled = 0, dested = 0;
+int WeaponIsNonfunctional(MECH * mech, int section, int crit, int numcrits) {
+	int sum = 0, disabled = 0, dested = 0;
+	int count = 0, nloc, ncrit, stype;
+	int i;
 
-			if(numcrits <= 0)
-				numcrits =
-					GetWeaponCrits(mech,
-								   Weapon2I(GetPartType
-											(mech, section, crit)));
+	if(numcrits <= 0)
+		numcrits = GetWeaponCrits(mech, Weapon2I(GetPartType(mech, section, crit)));
 
-			while (sum < numcrits) {
-				if(PartIsDestroyed(mech, section, crit + sum))
+
+	for ( i = crit; i < MIN(NUM_CRITICALS, crit+ numcrits); i++) {
+		if(PartIsDestroyed(mech, section, i))
+			dested++;
+		else if (PartIsDisabled(mech, section, i))
+			disabled++;
+		count++;
+	}
+
+	if (count < numcrits && MechType(mech) == CLASS_MECH) {
+		if (GetSplitData(mech, section, crit, &nloc, &ncrit, &stype)) {
+			for (i = ncrit; i < (numcrits - count); i++) {
+				if(PartIsDestroyed(mech, nloc, i))
 					dested++;
-				else if(PartIsDisabled(mech, section, crit + sum))
+				else if(PartIsDisabled(mech, nloc, i))
 					disabled++;
-				sum++;
 			}
-
-			if(disabled > 0)
-				return 1;
-
-			if((numcrits == 1 && (dested || disabled)) ||
-			   (numcrits > 1 && (dested + disabled) >= numcrits / 2))
-				return 2;
-
-			if(dested)
-				return 0 - (dested + disabled);
-
-			return 0;
 		}
+	}
+
+	if(disabled > 0)
+		return 1;
+
+	if((numcrits == 1 && (dested || disabled)) || (numcrits > 1 && (dested + disabled) >= numcrits / 2))
+		return 2;
+
+	if(dested)
+		return 0 - (dested + disabled);
+
+	return 0;
+}
 
 /* Parts needed for a Unit.  Basic premise is to scan a template
  * Grab Weapon crits...Tally Up Armor, Internals, crits and special crits

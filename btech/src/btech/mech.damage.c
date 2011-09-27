@@ -799,27 +799,41 @@ void DamageMech(MECH * wounded,
 void DestroyWeapon(MECH * wounded, int hitloc, int type, int startCrit,
 				   int numcrits, int totalcrits)
 {
-	int i;
-	char sum = 0;
-	char destroyed = 0;
+        int i;
+        char sum = totalcrits;
+        char destroyed = numcrits;
+        int checkloc;
+        int newcrit;
+        int split;
+	int disable = 0; //Hax for later destroying all crits or disabling
 
-	for(i = startCrit; i < NUM_CRITICALS; i++) {
-		if(GetPartType(wounded, hitloc, i) == type) {
-			if(PartIsDamaged(wounded, hitloc, i)) {
-				DestroyPart(wounded, hitloc, i);
-			} else if(destroyed < numcrits) {
-				DestroyPart(wounded, hitloc, i);
-				destroyed++;
-			} else {
-				BreakPart(wounded, hitloc, i);
-			}
-
-			sum++;
-
-			if(sum == totalcrits)
-				return;
-		}
-	}
+        for(i = startCrit; i < NUM_CRITICALS; i++) {
+                if(GetPartType(wounded, hitloc, i) == type) {
+                        if(PartIsDamaged(wounded, hitloc, i)) {
+                                if (disable)
+                                        DisablePart(wounded, hitloc, i);
+                                else
+                                        DestroyPart(wounded, hitloc, i);
+                        } else if(destroyed) {
+                                if (disable)
+                                        DisablePart(wounded, hitloc, i);
+                                else
+                                        DestroyPart(wounded, hitloc, i);
+                                destroyed--;
+                        } else {
+                                BreakPart(wounded, hitloc, i);
+                        }
+                        sum--;
+//                      if(sum == totalcrits)
+                        if (!sum)
+                                return;
+                }
+        }
+        // if we've gotten here, then sum != total crits, but we've run outta crits in this location, so it must be a split crit.
+        if (MechType(wounded) != CLASS_MECH)
+                return; // sanity check
+        if (GetSplitData(wounded, hitloc, startCrit, &checkloc, &newcrit, &split))
+                DestroyWeapon(wounded, checkloc, split, newcrit, destroyed, sum);
 }
 
 int CountWeaponsInLoc(MECH * mech, int loc)

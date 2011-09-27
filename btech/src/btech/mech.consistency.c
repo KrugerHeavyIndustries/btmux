@@ -374,6 +374,7 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 	char buf[MBUF_SIZE];
 	int ints_c, ints_tot;
 	float gyro_calc = -1;
+	int t, temp;
 
 	bzero(pile, sizeof(pile));
 	if(interactive > 0) {
@@ -388,9 +389,20 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 		armor += MyGetSectOArmor(mech, i);
 		armor += MyGetSectORArmor(mech, i);
 		PLOC(i)
-			for(j = 0; j < NUM_CRITICALS; j++)
-			if(interactive >= 0 || !IsAmmo(GetPartType(mech, i, j)))
-				pile[GetPartType(mech, i, j)] += AmmoMod(mech, i, j);
+			for(j = 0; j < NUM_CRITICALS; j++) {
+				t = GetPartType(mech, i, j);
+				if(interactive >= 0 || !IsAmmo(t)) {
+					// Handle Split Crits
+					if(Special2I(t) == SPLIT_CRIT_RIGHT || Special2I(t) == SPLIT_CRIT_LEFT)	{
+						temp = ReverseSplitCritLoc(mech, i, j);
+						if (temp >= 0) {
+							t = GetPartType(mech, temp, GetPartData(mech, i, j));
+							pile[t] += AmmoMod(mech, temp, GetPartData(mech, i, j));
+						}
+					} else
+						pile[t] += AmmoMod(mech, i, j);
+				}
+			}
 	}
 	shs_size = HS_Size(mech);
 	hs_eff = HS_Efficiency(mech);
