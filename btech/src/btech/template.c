@@ -1502,6 +1502,7 @@ char *part_figure_out_sname(int i)
 	((MechWeapons[Weapon2I(t)].type == TBEAM || MechWeapons[Weapon2I(t)].type == TAMMO) && \
 	strcmp(&MechWeapons[Weapon2I(t)].name[3], "Flamer") && \
 	strcmp(&MechWeapons[Weapon2I(t)].name[3], "MachineGun") && \
+	strcmp(&MechWeapons[Weapon2I(t)].name[3], "LightMachineGun") && \
 	strcmp(&MechWeapons[Weapon2I(t)].name[3], "HeavyMachineGun") && \
 	!(MechWeapons[Weapon2I(t)].special & PCOMBAT))
 
