@@ -18,6 +18,8 @@
 #define VRT_CL_LRM20		30	/* CL.LRM-20 */
 #define VRT_CL_LRM5		15	/* CL.LRM-5 */
 #define VRT_CL_MG		 7	/* CL.MachineGun */
+#define VRT_CL_LMG		 7	/* CL.LightMachineGun */
+#define VRT_CL_HMG		 7	/* CL.HeavyMachineGun */
 #define VRT_CL_NARC		30	/* CL.NarcBeacon */
 #define VRT_CL_SRM2		15	/* CL.SRM-2 */
 #define VRT_CL_SRM4		15	/* CL.SRM-4 */
