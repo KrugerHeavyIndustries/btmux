@@ -322,8 +322,8 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
  */
 
 enum {
-	CACHE_MAXNAME = 24,
-	MECH_MAXREF = 14
+	CACHE_MAXNAME = 34,
+	MECH_MAXREF = 24
 };
 
 struct tmpldirent {
