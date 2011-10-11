@@ -288,6 +288,7 @@ extern void decompile_flags(dbref, dbref, char *);
 #define H_Listen(x)     ((Flags2(x) & HAS_LISTEN) != 0)
 #define Registered(x)	((Flags2(x) & REGISTERED_FLAG) !=0)
 
+#define s_Opaque(x)	s_Flags((x), Flags(x) | OPAQUE)
 #define s_Slave(x)      s_Flags2((x), Flags2(x) | SLAVE)
 #define s_Fixed(x)      s_Flags2((x), Flags2(x) | FIXED)
 #define s_Halted(x)     s_Flags((x), Flags(x) | HALT)

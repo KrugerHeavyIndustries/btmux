@@ -19,6 +19,7 @@
 #define	HALT		0x00001000	/* object cannot perform actions */
 #define	GOING		0x00004000	/* object is available for recycling */
 #define	PUPPET		0x00020000	/* Relays ALL messages to owner */
+#define OPAQUE 		0x00800000  /* Can't see inside */
 #define	INHERIT		0x02000000	/* Gets owner's privs. (i.e. Wiz) */
 #define	ROBOT		0x08000000	/* Player is a ROBOT */
 #define ROYALTY		0x20000000	/* Sees like a wiz, but ca't modify */
@@ -84,6 +85,7 @@ extern int btpr_can_examine(dbref, dbref) __attribute__ ((pure));
 #define Connected(x)		(isPlayer(x) && btpr_has_flag2((x), CONNECTED))
 #define Slave(x)		(btpr_has_flag2((x), SLAVE))
 
+#define s_Opaque(x)		(btpr_set_flag((x), OPAQUE))
 #define s_Slave(x)		(btpr_set_flag2((x), SLAVE))
 #define s_Going(x)		(btpr_set_flag((x), GOING))
 #define s_Hardcode(x)		(btpr_set_flag2((x), HARDCODE))

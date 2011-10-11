@@ -225,6 +225,7 @@ static void char_disembark(dbref player, MECH * mech)
 	suit = create_object(tprintf("MechWarrior - %s", Name(player)));
 	silly_atr_set(suit, A_XTYPE, "MECH");
 	s_Hardcode(suit);
+	s_Opaque(suit);
 	handle_xcode(GOD, suit, 0, 1);
 	d = silly_atr_get(player, A_MWTEMPLATE);
 	if(!(m = getMech(suit))) {
