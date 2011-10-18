@@ -1361,8 +1361,9 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 	if((MechSpecials(mech) & AA_TECH) ||
 	   (MechSpecials(mech) & BEAGLE_PROBE_TECH) ||
-	   (MechSpecials2(mech) & BLOODHOUND_PROBE_TECH) ||
-	   (MechSpecials(mech) & LIGHT_BAP_TECH)) {
+	   (MechSpecials2(mech) & BLOODHOUND_PROBE_TECH) ) {
+	   /*||
+	   (MechSpecials(mech) & LIGHT_BAP_TECH)) { */
 
 		strcpy(tempbuff, "AdvSensors:");
 
@@ -1375,8 +1376,8 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		if(MechSpecials2(mech) & BLOODHOUND_PROBE_TECH)
 			sprintf(tempbuff + strlen(tempbuff), " BloodhoundProbe");
 		
-		if(MechSpecials(mech) & LIGHT_BAP_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " LightBAP");
+//		if(MechSpecials(mech) & LIGHT_BAP_TECH)
+//			sprintf(tempbuff + strlen(tempbuff), " LightBAP");
 
 		notify(player, tempbuff);
 		tempbuff[0] = 0;
