@@ -778,7 +778,7 @@ char *pos_part_name(MECH * mech, int index, int loop)
 	}
 
 	if (t == Special(HEAT_SINK) ) {
-		return (MechSpecials(mech) & DOUBLE_HEAT_TECH ? "Double Heatsink" :
+		return ((MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH) ? "Double Heatsink" :
 			"Heatsink");
 	}
 
