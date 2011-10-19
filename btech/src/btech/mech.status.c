@@ -126,7 +126,7 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 {
 	MECH *tempMech = NULL;
 	MAP *map = FindObjectsData(mech->mapindex);
-	char buff[100];
+	char buff[SBUF_SIZE];
 	char mech_name[100];
 	char mech_ref[100];
 	char move_type[50];
