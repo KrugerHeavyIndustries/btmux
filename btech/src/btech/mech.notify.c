@@ -1583,7 +1583,7 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 	float fx, fy, fz;
 	int mapx, mapy;
 	MECH *tempMech;
-	char buff[50];
+	char buff[SBUF_SIZE];
 
 /* Stat recording */
 	if(target) { /* only if we have a mecha */
