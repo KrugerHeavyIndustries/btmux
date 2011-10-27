@@ -192,7 +192,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 			if(IsAmmo(critType)) {
 				GetPartData(wounded, hitloc, i) = 0;
 			}
-			if(!(PartIsNonfunctional(wounded, hitloc, i)) && (IsSpecial(critType))) {
+			if((IsSpecial(critType))) {
 				switch (Special2I(critType)) {
 				case UPPER_ACTUATOR:
 				case LOWER_ACTUATOR:
