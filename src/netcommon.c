@@ -933,13 +933,13 @@ static void dump_users(DESC * e, char *match, int key)
 		queue_string(e,
 					 "     Characters Input----  Characters Output---\r\n");
 	}
-	queue_string(e, "Player Name        On For Idle ");
+	queue_string(e, "Player Name         On For  Idle ");
 	if(key == CMD_SESSION) {
 		queue_string(e,
 					 "Port Pend  Lost     Total  Pend  Lost     Total\r\n");
 	} else if((e->flags & DS_CONNECTED) && (Wizard_Who(e->player)) &&
 			  (key == CMD_WHO)) {
-		queue_string(e, "  Room    Cmds   Host\r\n");
+		queue_string(e, "     Room    Cmds Host\r\n");
 	} else {
 		if(Wizard_Who(e->player))
 			queue_string(e, "  ");
@@ -948,6 +948,7 @@ static void dump_users(DESC * e, char *match, int key)
 		queue_string(e, mudstate.doing_hdr);
 		queue_string(e, "\r\n");
 	}
+//	queue_string(e,"------------------------------------------------------------------------------\r\n");
 	count = 0;
 	rcount = 0;
 	ucount = 0;
@@ -1007,16 +1008,16 @@ static void dump_users(DESC * e, char *match, int key)
 
 			if((e->flags & DS_CONNECTED) && Wizard_Who(e->player) &&
 			   (key == CMD_WHO)) {
-				sprintf(buf, "%-16s%9s %4s%-3s#%-6d%5d%3s%-25s\r\n",
+				sprintf(buf, "%-16s%10s %5s%-3s#%6d %7d %-25s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2(mudstate.now - d->last_time), flist,
-						Location(d->player), d->command_count, slist,
+						Location(d->player), d->command_count,
 						trimmed_site(((d->username[0] !=
 									   '\0') ? tprintf("%s@%s", d->username,
 													   d->addr) : d->addr)));
 			} else if(key == CMD_SESSION) {
-				sprintf(buf, "%-16s%9s %4s%5d%5d%6d%10d%6d%6d%10d\r\n",
+				sprintf(buf, "%-16s%10s %5s%5d%5d%6d%10d%6d%6d%10d\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
@@ -1026,7 +1027,7 @@ static void dump_users(DESC * e, char *match, int key)
 						d->input_tot, d->output_size, d->output_lost,
 						d->output_tot);
 			} else if(Wizard_Who(e->player)) {
-				sprintf(buf, "%-16s%9s %4s%-3s%s%s\r\n",
+				sprintf(buf, "%-16s%10s %5s%-3s%s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
@@ -1034,7 +1035,7 @@ static void dump_users(DESC * e, char *match, int key)
 														 d->last_time) : 0),
 						flist, d->doing, ANSI_NORMAL);
 			} else {
-				sprintf(buf, "%-16s%9s %4s  %s%s\r\n",
+				sprintf(buf, "%-16s%10s %5s  %s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
