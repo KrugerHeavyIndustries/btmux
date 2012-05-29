@@ -1212,6 +1212,20 @@ char *infantry_specials[] = {
 	NULL
 };
 
+char *infspecialsabrev[] = {
+        "SWARM",
+        "MFRIEND",
+        "ALEG",
+	"PSTEALTH",
+	"KSTEALTH",
+        "ASTEALTH",
+        "ISTEALTH",
+        "2STEALTH",
+        "MJPACK",
+        "CJPACK",
+        NULL
+};
+
 int compare_array(char *list[], char *command)
 {
 	int x;
@@ -2723,19 +2737,26 @@ void DumpWeapons(dbref player)
 char *techlist_func(MECH * mech)
 {
 	static char buffer[MBUF_SIZE];
-	char bufa[SBUF_SIZE], bufb[SBUF_SIZE];
+	char bufa[SBUF_SIZE], bufb[SBUF_SIZE], bufc[SBUF_SIZE];
 	int i, ii, part = 0, axe = 0, mace = 0, sword = 0, saw = 0, hascase = 0;
 
 	snprintf(bufa, SBUF_SIZE, "%s",
 			 BuildBitString(specialsabrev, MechSpecials(mech)));
 	snprintf(bufb, SBUF_SIZE, "%s",
 			 BuildBitString(specialsabrev2, MechSpecials2(mech)));
-	snprintf(buffer, MBUF_SIZE, "%s %s", bufa, bufb);
+
+        if(MechType(mech) == CLASS_BSUIT) {
+		snprintf(bufc, SBUF_SIZE, "%s",
+			BuildBitString(infspecialsabrev, MechInfantrySpecials(mech)));
+		snprintf(buffer, MBUF_SIZE, "%s %s %s", bufa, bufb, bufc);
+        }
+        else
+		snprintf(buffer, MBUF_SIZE, "%s %s", bufa, bufb);
 
 	if(!
 	   (strstr(buffer, "XL") || strstr(buffer, "XXL")
 		|| strstr(buffer, "LENG") || strstr(buffer, "ICE")
-		|| strstr(buffer, "CENG")))
+		|| strstr(buffer, "CENG")) && (MechType(mech) != CLASS_BSUIT))
 		strcat(buffer, " FUS ");
 	for(i = 0; i < NUM_SECTIONS; i++)
 		for(ii = 0; ii < NUM_CRITICALS; ii++) {
