@@ -1086,6 +1086,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	DOCHECKMA(Jumping(target),
 			  "You can't perform physical attacks on airborne mechs!");
 
+	DOCHECKMA(MapNoPhysical(mech_map),"You cannot perform physical attacks here!");
+
     DOCHECKMA(MechTeam(target) == MechTeam(mech) && 
             MechNoFriendlyFire(mech),
             "You can't attack a teammate with FFSafeties on!");
