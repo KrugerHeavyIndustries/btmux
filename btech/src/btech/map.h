@@ -115,7 +115,7 @@
 #define MapBridgesCS(map)           ((map)->flags & MAPFLAG_BRIDGESCS)
 #define MapNoBridgify(map)          ((map)->flags & MAPFLAG_NOBRIDGIFY)
 #define MapNoFriendlyFire(map)      ((map)->flags & MAPFLAG_NOFRIENDLYFIRE)
-#define MapNoPhysicals(map)	    ((map)->flags & MAPFLAG_NOPHYSICALS);
+#define MapNoPhysicals(map)	    ((map)->flags & MAPFLAG_NOPHYSICALS)
 
 
 typedef struct mapobj_struct {
