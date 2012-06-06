@@ -374,6 +374,10 @@ static char *hud_getammomode(MECH * mech, int mode)
 		*p++ = 'T';
 	if(mode & AC_CASELESS_MODE)
 		*p++ = 'U';
+	if(mode & ATM_ER_MODE)
+		*p++ = 'R';
+	if(mode & ATM_HE_MODE)
+		*p++ = 'X';
 
 	if(p == amode)
 		*p++ = '-';
@@ -467,8 +471,6 @@ static int get_weaponmodes(int weapindx, char *firemodes, char *ammomodes,
 		}
 		strcat(damagetype, "B");
 
-		if(spec & CASELESS)
-			strcat(damagetype, "C");
 		if(spec & HYPER)
 			strcat(damagetype, "Y");
 		if(spec & RAC)
