@@ -371,9 +371,17 @@
 #define LAC2_CASELESS_AMMO	146
 #define LAC5_CASELESS_AMMO	147
 #define AMMO_LRM_SGUIDED	148
+#define AMMO_ATM3_ER		149
+#define AMMO_ATM3_HE		150
+#define AMMO_ATM6_ER		151
+#define AMMO_ATM6_HE		152
+#define AMMO_ATM9_ER		153
+#define AMMO_ATM9_HE		154
+#define AMMO_ATM12_ER		155
+#define AMMO_ATM12_HE		156
 
 #ifdef BT_COMPLEXREPAIRS
-#define TON_SENSORS_FIRST       149
+#define TON_SENSORS_FIRST       157
 #define TON_SENSORS_LAST        (TON_SENSORS_FIRST + 9)
 
 #define TON_MYOMER_FIRST        (TON_SENSORS_LAST + 1)
@@ -511,7 +519,7 @@ struct weapon_struct {
 #define PC_SHAR		0x00004000	/* Shrapnel / slash (various kinds of weapons) */
 #define AMS		0x00008000	/* AntiMissileSystem */
 #define NOBOOM		0x00010000	/* No ammo boom */
-#define CASELESS	0x00020000	/* Caseless AC */
+#define ATM		0x00020000	/* Was Caseless. Now ATM Missile */
 #define DFM		0x00040000	/* DFM - 2 worst rolls outta 3 for missiles */
 #define ELRM		0x00080000	/* ELRM - 2 worst rolls outta 3 for missiles under */
 #define MRM		0x00100000	/* MRM - +1 BTH */
@@ -646,12 +654,16 @@ struct critical_slot {
 #define STINGER_MODE            0x00020000  /* (T) AntiAir LRM */
 #define AC_CASELESS_MODE	0x00040000  /* (U) autocannon firing caseless rounds */
 #define SGUIDED_MODE		0x00080000  /* (G) LRM's loaded with Semi-Guided rounds (benefits only if unit is lit by 'TAG' */
+#define ATM_ER_MODE		0x00100000  /* (R) ATM's in Extended Range mode */
+#define ATM_HE_MODE		0x00200000  /* (X) ATM's in High Explosive Mode */
 
 #define ARTILLERY_MODES		(CLUSTER_MODE|MINE_MODE|SMOKE_MODE)
 #define INARC_MODES		(INARC_EXPLO_MODE|INARC_HAYWIRE_MODE|INARC_ECM_MODE|INARC_NEMESIS_MODE)
 #define MISSILE_MODES		(ARTEMIS_MODE|NARC_MODE|INFERNO_MODE|SWARM_MODE|SWARM1_MODE|STINGER_MODE|SGUIDED_MODE)
 #define AC_MODES		(AC_AP_MODE|AC_FLECHETTE_MODE|AC_INCENDIARY_MODE|AC_PRECISION_MODE|AC_CASELESS_MODE)
-#define AMMO_MODES		(LBX_MODE|AC_MODES|MISSILE_MODES|INARC_MODES|ARTILLERY_MODES)
+#define ATM_MODES		(ATM_ER_MODE|ATM_HE_MODE)
+#define AMMO_MODES		(LBX_MODE|AC_MODES|MISSILE_MODES|INARC_MODES|ARTILLERY_MODES|ATM_MODES)
+
 
 /* Enhanced critical damage flags */
 #define WEAP_DAM_MODERATE	0x00000001	/* +1 to hit */
@@ -1134,7 +1146,7 @@ struct repair_data {
 #define ES_TECH			0x100000	/* Has endo-steel internals */
 #define XL_TECH			0x200000
 #define ICE_TECH		0x400000	/* ICE engine */
-#define LIFTER_TECH		0x800000
+#define FORCE_SHS		0x800000	/* Was Lifter */
 #define LE_TECH			0x1000000	/* Light engine */
 #define XXL_TECH		0x2000000
 #define CE_TECH			0x4000000
