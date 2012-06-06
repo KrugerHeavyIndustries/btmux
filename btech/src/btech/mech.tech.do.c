@@ -92,6 +92,8 @@ static struct {
 	'T', "stinger", STINGER_MODE, TMISSILE, -1, IDF, DAR}, {
 	'U', "caseless", AC_CASELESS_MODE, TAMMO, -1, RFAC, 0}, {
 	'G', "semiguided", SGUIDED_MODE, TMISSILE, -1, IDF, DAR}, {
+	'H', "highexplosive", ATM_HE_MODE, TMISSILE, -1, IDF, DAR}, {
+	'V', "extendedrange", ATM_ER_MODE, TMISSILE, -1, IDF, DAR}, {
 	0, NULL, 0, 0, 0, 0, 0}
 };
 

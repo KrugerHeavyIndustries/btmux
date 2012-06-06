@@ -1211,6 +1211,14 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 			        MechSections(mech)[section].criticals[critical].ammomode |=
 				        SGUIDED_MODE;
 				break;
+			case 'H':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					ATM_HE_MODE;
+				break;
+			case 'V':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					ATM_ER_MODE;
+				break;
 			case '-':
 				MechSections(mech)[section].criticals[critical].ammomode = 0;
 				MechSections(mech)[section].criticals[critical].firemode = 0;
@@ -1347,6 +1355,14 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 			case 'G':
 				MechSections(mech)[index].criticals[subsect].ammomode |=
 					SGUIDED_MODE;
+				break;
+			case 'H':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					ATM_HE_MODE;
+				break;
+			case 'V':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					ATM_ER_MODE;
 				break;
 			case '-':
 				MechSections(mech)[index].criticals[subsect].ammomode = 0;

@@ -73,6 +73,10 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 		return " Caseless";
 	if(mode & SGUIDED_MODE)
 		return " Sguided";
+	if(mode & ATM_ER_MODE)
+		return " ExtendedRange";
+	if(mode & ATM_HE_MODE)
+		return " HighExplosive";
 	return "";
 }
 
@@ -120,6 +124,10 @@ char GetWeaponAmmoModeLetter_Model_Mode(int model, int mode)
 		return 'U';
 	if(mode & SGUIDED_MODE)
 		return 'G';
+	if(mode & ATM_ER_MODE)
+		return 'R';
+	if(mode & ATM_HE_MODE)
+		return 'X';
 	return ' ';
 }
 

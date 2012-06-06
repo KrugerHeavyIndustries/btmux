@@ -140,6 +140,8 @@ ECMD(mech_swarm1);
 ECMD(mech_dig);
 ECMD(mech_vector);
 ECMD(mech_sguided);
+ECMD(mech_atmrange);
+ECMD(mech_atmexplosive);
 ECMD(f_map_loadmap);
 
 ECMD(f_draw);
@@ -320,9 +322,11 @@ CommandsStruct mechcommands[] = {
 	mech_inferno},
     {0, "LBX <weapnum>", "Sets weapon to and from LBX Mode.", mech_lbx},
     {0, "NARC <weapnum>", "Sets weapon to and from NARC Mode.", mech_narc},
-    {0, "SGUIDED <weapnum", "Sets weapon to and from Sguide Mode", mech_sguided},
-    {0, "STINGER <weaponum", "Sets weapon to and from Stinger Mode.", 
+    {0, "SGUIDED <weapnum>", "Sets weapon to and from Sguide Mode", mech_sguided},
+    {0, "STINGER <weaponum>", "Sets weapon to and from Stinger Mode.", 
         mech_stinger},
+    {0, "ATMRANGE <weapnum>", "Sets weapon to and from Extended Range Mode", mech_atmrange},
+    {0, "ATMEXPLOSIVE <weapnum>", "Sets weapon to and from High Explosive Mode", mech_atmexplosive},
     {0, "PRECISION <weapnum>",
 	    "Sets/Unsets the autocannon to fire precision rounds.",
 	mech_precision},

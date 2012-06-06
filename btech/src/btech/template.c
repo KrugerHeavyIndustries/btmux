@@ -317,6 +317,14 @@ char *cargo[] = {
 	"Ammo_LAC2_Caseless",
 	"Ammo_LAC5_Caseless",
 	"Ammo_LRM_Sguided",
+	"Ammo_ATM3_ER",
+	"Ammo_ATM3_HE",
+	"Ammo_ATM6_ER",
+	"Ammo_ATM6_HE",
+	"Ammo_ATM9_ER",
+	"Ammo_ATM9_HE",
+	"Ammo_ATM12_ER",
+	"Ammo_ATM12_HE",
 	"SearchLight",
 #ifdef BT_COMPLEXREPAIRS
 	"Sensors_10",
@@ -751,6 +759,14 @@ int cargoweight[] = {
 	1024,						/* Ammo_LAC5_Caseless */
 	1024,						/* Ammo_LRM_Sguided */
 	204,						/* SearchLight */
+	1024,						/* ATM3 ER*/
+	1024,						/* ATM3 HE */
+	1024,						/* ATM6 ER */
+	1024,						/* ATM6 HE */
+	1024,						/* ATM9 ER */
+	1024,						/* ATM9 HE */
+	1024,						/* ATM12 HE */
+	1024,						/* ATM12 ER */
 #ifdef BT_COMPLEXREPAIRS
 	102,						/* Sensors_10 */
 	204,						/* Sensors_20 */
@@ -1109,6 +1125,10 @@ char *crit_ammo_modes[] = {
 	"Incendiary",
 	"Precision",
 	"Stinger",
+	"Caseless",
+	"Sguided",
+	"ExtendedRange",
+	"HighExplosive",
 	NULL
 };
 
@@ -1137,7 +1157,7 @@ char *specials[] = {
 	"EndoSteel_Tech",
 	"XLEngine_Tech",
 	"ICEEngine_Tech",
-	"LifterTech",
+	"ForceSingleHS",
 	"LightEngine_Tech",
 	"XXL_Tech",
 	"CompactEngine_Tech",
@@ -1151,7 +1171,7 @@ char *specials[] = {
 char *specialsabrev[] = {
 	"TSM", "CLAMS", "ISAMS", "DHS", "MASC", "CLTECH", "FA", "C3M", "C3S",
 	"AIV", "ECM", "BAP", "SAL", "CAR", "SL", "LBAP", "AA", "NOSEN", "SS",
-	"FF", "ES", "XL", "ICE", "LIFT", "LENG", "XXL", "CENG", "RINT", "CINT",
+	"FF", "ES", "XL", "ICE", "SHS", "LENG", "XXL", "CENG", "RINT", "CINT",
 	"HARM", "CP",
 	NULL
 };
@@ -1213,18 +1233,19 @@ char *infantry_specials[] = {
 };
 
 char *infspecialsabrev[] = {
-        "SWARM",
-        "MFRIEND",
-        "ALEG",
+	"SWARM",
+	"MFRIEND",
+	"ALEG",
 	"PSTEALTH",
 	"KSTEALTH",
-        "ASTEALTH",
-        "ISTEALTH",
-        "2STEALTH",
-        "MJPACK",
-        "CJPACK",
-        NULL
+	"ASTEALTH",
+	"ISTEALTH",
+	"2STEALTH",
+	"MJPACK",
+	"CJPACK",
+	NULL
 };
+
 
 int compare_array(char *list[], char *command)
 {
@@ -2744,20 +2765,23 @@ char *techlist_func(MECH * mech)
 			 BuildBitString(specialsabrev, MechSpecials(mech)));
 	snprintf(bufb, SBUF_SIZE, "%s",
 			 BuildBitString(specialsabrev2, MechSpecials2(mech)));
+	snprintf(buffer, MBUF_SIZE, "%s %s", bufa, bufb);
 
-        if(MechType(mech) == CLASS_BSUIT) {
+	if(MechType(mech) == CLASS_BSUIT) {
 		snprintf(bufc, SBUF_SIZE, "%s",
 			BuildBitString(infspecialsabrev, MechInfantrySpecials(mech)));
 		snprintf(buffer, MBUF_SIZE, "%s %s %s", bufa, bufb, bufc);
-        }
-        else
+	}
+	else
 		snprintf(buffer, MBUF_SIZE, "%s %s", bufa, bufb);
+
 
 	if(!
 	   (strstr(buffer, "XL") || strstr(buffer, "XXL")
 		|| strstr(buffer, "LENG") || strstr(buffer, "ICE")
-		|| strstr(buffer, "CENG")) && (MechType(mech) != CLASS_BSUIT))
+ 		|| strstr(buffer, "CENG")) && (MechType(mech) != CLASS_BSUIT))
 		strcat(buffer, " FUS ");
+
 	for(i = 0; i < NUM_SECTIONS; i++)
 		for(ii = 0; ii < NUM_CRITICALS; ii++) {
 			part = GetPartType(mech, i, ii);
