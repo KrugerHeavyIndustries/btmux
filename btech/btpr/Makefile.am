@@ -2,6 +2,10 @@ if BTPR_PENN
 MAYBE_PENN = -I$(srcdir)/penn/include
 endif
 
+if BTPR_MUX2
+MAYBE_MUX2 = -I$(srcdir)/mux2/include
+endif
+
 AM_CPPFLAGS = $(MAYBE_PENN) -I$(srcdir)/include
 
 noinst_LTLIBRARIES = libbtpr.la

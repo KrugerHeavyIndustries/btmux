@@ -7,4 +7,8 @@ if BTPR_PENN
 MAYBE_BTPR = btpr
 endif
 
+if BTPR_MUX2
+MAYBE_BTPR = btpr
+endif
+
 SUBDIRS = $(MAYBE_BTPR) btfi src

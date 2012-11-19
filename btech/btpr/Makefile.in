@@ -182,6 +182,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @BTPR_PENN_TRUE@MAYBE_PENN = -I$(srcdir)/penn/include
 AM_CPPFLAGS = $(MAYBE_PENN) -I$(srcdir)/include
+@BTPR_MUX2_TRUE@MAYBE_MUX2 = -I$(srcdir)/mux2/include
+AM_CPPFLAGS = $(MAYBE_MUX2) -I$(srcdir)/include
 noinst_LTLIBRARIES = libbtpr.la
 libbtpr_la_SOURCES = event.c \
 	comsys.c conf.c db.c dllist.c eval.c game.c flags.c functions.c log.c \

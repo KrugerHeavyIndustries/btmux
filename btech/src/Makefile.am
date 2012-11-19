@@ -11,6 +11,12 @@ BTPR_INCLUDE = -I$(btpr_dir)/penn/include -I$(btpr_dir)/include
 BTPR_LIBS = ../btpr/libbtpr.la
 endif
 
+if BTPR_MUX2
+AM_LDFLAGS = -Wl,-Bsymbolic
+BTPR_INCLUDE = -I$(btpr_dir)/mux2/include -I$(btpr_dir)/include
+BTPR_LIBS = ../btpr/libbtpr.la
+endif
+
 lib_LTLIBRARIES = libbtech.la
 
 libbtech_la_SOURCES = coolmenu.c debug.c events.c glue.hcode.c glue.c \

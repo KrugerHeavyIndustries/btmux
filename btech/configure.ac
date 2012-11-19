@@ -243,7 +243,7 @@ dnl Select our BTPR type.
 AC_ARG_WITH([btpr],
             AS_HELP_STRING([--with-btpr=LAYER],
                            [Select the BTPR layer to use. LAYER is one of:
-                            mux1, penn. Default is mux1.]),
+                            mux1, penn, mux2. Default is mux1.]),
             [ac_cv_use_btpr=${withval}], [ac_cv_use_btpr=mux1])
 
 AC_MSG_CHECKING([which BTPR layer to use])
@@ -256,6 +256,9 @@ mux1)
 penn)   AC_MSG_RESULT([using PennMUSH])
         AC_DEFINE([BTPR_PENN], [], [Use PennMUSH BTPR layer])
         ;;
+mux2)	AC_MSG_RESULT([using TinyMUX 2.x])
+	AC_DEFINE([BTPR_MUX2], [], [Use TinyMUX 2.x BTPR layer])
+	;;
 *)
         AC_MSG_ERROR([bad argument to --with-btpr: ${ac_cv_use_btpr}])
         ;;
@@ -264,6 +267,7 @@ esac
 AC_SUBST([btpr_dir], ["\$(top_srcdir)/btpr"])
 AM_CONDITIONAL([BTPR_MUX1], [test ${ac_cv_use_btpr} = mux1])
 AM_CONDITIONAL([BTPR_PENN], [test ${ac_cv_use_btpr} = penn])
+AM_CONDITIONAL([BTPR_MUX2], [test ${ac_cv_use_btpr} = mux2])
 
 #######################
 # Configuration tests #
