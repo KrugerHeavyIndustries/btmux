@@ -3384,6 +3384,219 @@ int FindAverageGunnery(MECH * mech) {
 
 #define LAZY_SKILLMUL(n)  (n < LOW_SKILL ? LOW_SKILL : n >= HIGH_SKILL - 1 ? HIGH_SKILL - 1 : n)
 
+void Calc_AddOffBV(float * offbv, char * desc, float value) {
+        *offbv += value;
+        SendDebug(tprintf("AddOffBV %25s %8.2f", desc, value));
+}
+
+void Calc_AddDefBV(float * defbv, char * desc, float value) {
+        *defbv += value;
+        SendDebug(tprintf("AddDefBV %25s %8.2f", desc, value));
+}
+
+void Calc_SubDefBV(float * defbv, char * desc, float value) {
+        *defbv -= value;
+        SendDebug(tprintf("SubDefBV %25s-%8.2f", desc, value));
+}
+
+/* Calculate Defensive BV 2.0 per Total Warfare Rules */
+float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
+        float defbv = 0.0;
+        float engine_mod = 0.0;
+        int i;
+        int ii;
+        int part;
+        int ecm_count = 0;
+        int bap_count = 0;
+        int jump_mp = 0;
+        int run_mp = 0;
+        int run_mp_unmod = 0;
+        int move_mod = 0;
+        float speed_factor = 0.0;
+        float def_factor = 0.0;
+
+
+/* ARMOR
+ * Total Armor Factor (Points) * 2.5 * Armor Type Modifier
+ * Commercial Armor Modifier = 0.5 (Currently not implemented)
+ * All Other Armor Modifier  = 1.0
+ */
+        Calc_AddDefBV(&defbv, "Armor", mech_armorpoints(mech) * 2.5 * 1.0);
+
+/* INTERNAL/ENGINE
+ * Total Internal Points * 1.5 * Internal Type Modifier * Engine Type Modifier
+ * Industrial Internal Modifier = 0.5 (Current not implemented)
+ * All Other Internal Modifier  = 1.0
+ * Light Engine Modifier            = 0.75
+ * IS XL/XXL Engine Modifier        = 0.50
+ * Clan XL Engine Modifier          = 0.75
+ * Standard/Compact Engine Modifier = 1.00
+ *
+ * Vehicles Engine Modifier = 1.00
+ */
+        engine_mod = 1.00;
+
+        if(MechSpecials(mech) & LE_TECH)
+                engine_mod = 0.75;
+
+        if(MechSpecials(mech) & XL_TECH) {
+                if(MechSpecials(mech) & CLAN_TECH)
+                        engine_mod = 0.75;
+                else
+                        engine_mod = 0.50;
+                }
+
+        if(MechSpecials(mech) & XXL_TECH)
+                engine_mod = 0.50;
+
+        if(MechType(mech) != CLASS_MECH)
+                engine_mod = 1.00;
+
+        Calc_AddDefBV(&defbv,"Internal/Engine", mech_intpoints(mech) * 1.5 * 1.0 * engine_mod);
+
+/* GYRO
+ * Mechs Only
+ * Mech Tonnage * Mech Gyro Modifier
+ * Heavy Duty Modifier = 1.0
+ * Everything Else     = 0.5
+ */
+        if (MechType(mech) == CLASS_MECH )
+                Calc_AddDefBV(&defbv, "Gyro (Mech Only)", MechTons(mech) * (MechSpecials2(mech) & HDGYRO_TECH ? 1.0 : 0.5));
+
+
+/* DEFENSIVE ITEMS/WEAPONS
+ * All Defensive items at their BV value (ECM, A-Pod, B-Pod, BAP, AMS, etc)
+ */
+
+        for (i = 0; i < NUM_SECTIONS; i++ ) {
+                for (ii = 0; ii < NUM_CRITICALS; ii++) {
+                        part = GetPartType(mech, i, ii);
+                        if(IsSpecial(part)) {
+                                switch(Special2I(part)) {
+                                case ECM:
+                                        /* Checking for a full System. Mechas are 2 crits per full system */
+                                        ecm_count++;
+                                        break;
+                                case BEAGLE_PROBE:
+                                        /* Checking for a full System. Mechas are 2 crits per full system */
+                                        bap_count++;
+                                        break;
+                                default:
+                                        break;
+                                }
+                        }
+
+
+                        /* TODO: Weapons and Ammo +/- BV mods */
+
+
+                } /* End Critical For loop */
+
+        } /* End Section For Loop */
+
+/* TODO: Angel ECM, Bloodhound */
+
+        if((((ecm_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((ecm_count > 0) && (MechType(mech) != CLASS_MECH)))
+        { /* ECM is 2 crits for mechas. One System = 61 BV */
+
+                Calc_AddDefBV(&defbv, "ECM", 61.0);
+        }
+
+        if((((bap_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((bap_count > 0) && (MechType(mech) != CLASS_MECH)))
+        { /* BAP is 2 crits for mechas. One System = 10 BV */
+
+                Calc_AddDefBV(&defbv, "BAP", 10.0);
+        }
+
+
+
+
+
+
+/* UNIT TYPE MODIFIER */
+/* Mainly for vehicles. Chart on Techmanual, Page 316 */
+/* We're doing a reverse on the values to make the addtion easy */
+
+        if(MechMove(mech) == MOVE_TRACK )
+                Calc_SubDefBV(&defbv, "UnitType Tracked", defbv * 0.1);
+
+        if(MechMove(mech) == MOVE_WHEEL )
+                Calc_SubDefBV(&defbv, "UnitType Wheeled", defbv * 0.2);
+
+        if(MechMove(mech) == MOVE_HOVER )
+                Calc_SubDefBV(&defbv, "UnitType Hover", defbv * 0.3);
+
+        if((MechMove(mech) == MOVE_SUB || MechMove(mech) == MOVE_FOIL || MechMove(mech) == MOVE_HULL))
+                if(MechMove(mech) != MOVE_HOVER)
+                        Calc_SubDefBV(&defbv, "UnitType Naval", defbv * 0.4);
+
+        if(MechMove(mech) == MOVE_VTOL)
+                Calc_SubDefBV(&defbv, "UnitType VTOL", defbv * 0.3);
+
+/* TODO: Airship, Aero (DS is 1.0, no need) */
+
+/* Defensive Factor
+ * Highest target movement modifier. See Techmanual Page 315 for chart.
+ */
+
+        /* Based off Standard calcs for Movement Modification (BTH+)
+         */
+
+        /* Determine base mp */
+        jump_mp = (int) (MechJumpSpeed(mech) / MP1 );
+        run_mp_unmod = run_mp = (int) (MMaxSpeed(mech) / MP1);
+
+        if (MechSpecials(mech) & TRIPLE_MYOMER_TECH)
+                run_mp = run_mp + 2;
+
+        if (MechSpecials(mech) & MASC_TECH) {
+                if(MechSpecials2(mech) & SUPERCHARGER_TECH) {
+                        run_mp = ((run_mp * 2) /3) * 2.5; /* walk mp * 2.5, round down */
+                }
+                run_mp = ((run_mp * 2) /3) *2; /* 2x walk mp */
+        }
+        else if(MechSpecials2(mech) & SUPERCHARGER_TECH) {
+                run_mp = ((run_mp * 2) /3) *2; /* 2x walk mp */
+
+        }
+
+        /* Determine move_mod */
+
+        if (run_mp > 24)
+                move_mod = 6;
+        if (run_mp > 17 && run_mp < 25)
+                move_mod = 5;
+        if (run_mp > 9 && run_mp < 18)
+                move_mod = 4;
+        if (run_mp > 6 && run_mp < 10)
+                move_mod = 3;
+        if (run_mp > 4 && run_mp < 7)
+                move_mod = 2;
+        if (run_mp >2 && run_mp < 5)
+                move_mod = 1;
+        if (run_mp == 1 || run_mp == 2)
+                move_mod = 0;
+
+        if(MechType(mech) == CLASS_BSUIT || MechType(mech) == CLASS_VTOL || MechType(mech) == CLASS_AERO)
+                /* vtol/aero/suit = +1 move mod */
+                move_mod++;
+
+        if (jump_mp > run_mp)
+                move_mod++;
+
+/* TODO: Add Stealth/Camo/BA adjustments (TechManual, p315) */
+
+        def_factor = (move_mod * .1);
+
+        Calc_AddDefBV(&defbv, "MoveMod", defbv * def_factor);
+
+        defbv = roundf((defbv * 100.0)) / 100.0;
+/* END DEFENSIVE BV */
+        return defbv;
+
+}
+
+
 		int CalculateBV(MECH * mech, int gunstat, int pilstat) {
 			int defbv = 0, offbv = 0, i, ii, temp, temp2, deduct =
 				0, offweapbv = 0, defweapbv = 0, armor = 0, intern =
