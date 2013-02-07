@@ -3406,6 +3406,7 @@ float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
         int i;
         int ii;
         int part;
+	int weapindx;
         int ecm_count = 0;
         int bap_count = 0;
         int jump_mp = 0;
@@ -3484,26 +3485,77 @@ float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
                                 default:
                                         break;
                                 }
-                        }
+                        } /* End IfSpecial */
 
+                        if(IsAmmo(part)) {
+                                weapindx = Ammo2WeaponI(part);
+                                if(MechWeapons[weapindx].special & AMS) {
+					Calc_AddDefBV(&defbv, "AMS Ammo", MechWeapons[weapindx].ammo_bv);
+                                }
+                                if(MechType(mech) == CLASS_MECH) {
+                                        if ( (i == CTORSO || i == LLEG || i == RLEG || i == HEAD) && (MechSpecials(mech) & CLAN_TECH)) {
 
-                        /* TODO: Weapons and Ammo +/- BV mods */
+                                                        Calc_SubDefBV(&defbv, "Explosive Ammo", 15.0);
 
+                                        } else if ( (MechSpecials(mech) & (XL_TECH | XXL_TECH))) {
+
+                                                        Calc_SubDefBV(&defbv, "Exp Ammo in XL/XXL", 15.0);
+
+                                        } else if ( ( i == CTORSO || i == LLEG || i == RLEG || i == HEAD) || !(MechSections(mech)[i].config & CASE_TECH)) {
+
+                                                        Calc_SubDefBV(&defbv, "Exp Ammo Fusion/!CASE", 15.0);
+                                        }
+
+                                }
+                        } /* End IsAmmo */
+
+			  if(IsWeapon(part)) {
+                                weapindx = Weapon2I(part);
+                                if(MechWeapons[weapindx].special & A_POD) {
+                                        Calc_AddDefBV(&defbv,"A POD", MechWeapons[weapindx].battlevalue);
+                                }
+                                if(MechWeapons[weapindx].special & AMS) {
+                                        Calc_AddDefBV(&defbv,"AMS", MechWeapons[weapindx].battlevalue);
+                                }
+        /*                      if(MechWeapons[weapindx].special & B_POD) {
+                                        Calc_AddDefBV(&defbv,"B POD", MechWeapons[weapindx].battlevalue);
+                                }
+        */
+                                if ( (i == CTORSO || i == LLEG || i == RLEG || i == HEAD) && (MechSpecials(mech) & CLAN_TECH)) {
+                                        if(MechWeapons[weapindx].special & GAUSS) {
+                                                Calc_SubDefBV(&defbv, "Gauss Crit", 1.0);
+                                        }
+                                } else if ( (MechSpecials(mech) & (XL_TECH | XXL_TECH))) {
+                                        if(MechWeapons[weapindx].special & GAUSS) {
+                                                Calc_SubDefBV(&defbv, "Gauss Crit XL/XXL", 1.0);
+                                        }
+                                } else if ( ( i == CTORSO || i == LLEG || i == RLEG || i == HEAD) && !(MechSections(mech)[i].config & CASE_TECH)) {
+                                        if(MechWeapons[weapindx].special & GAUSS) {
+                                                Calc_SubDefBV(&defbv, "Gauss Crit !Case", 1.0);
+                                        }
+                                } else if ( ((( i == RARM) && !(MechSections(mech)[RTORSO].config & CASE_TECH))
+                                        ||   (( i == LARM) && !(MechSections(mech)[LTORSO].config & CASE_TECH)))
+                                        && !(MechSpecials(mech) & (XL_TECH | XXL_TECH))) {
+                                        if(MechWeapons[weapindx].special & GAUSS) {
+                                                Calc_SubDefBV(&defbv, "Gauss Crit Fusion/!Case", 1.0);
+                                        }
+                                }
+                        } /* End IsWeapon */
 
                 } /* End Critical For loop */
 
         } /* End Section For Loop */
 
-/* TODO: Angel ECM, Bloodhound */
+/* TODO: Angel ECM, Bloodhound, Light_BAP */
 
-        if((((ecm_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((ecm_count > 0) && (MechType(mech) != CLASS_MECH)))
-        { /* ECM is 2 crits for mechas. One System = 61 BV */
+        if((((ecm_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((ecm_count > 0) && (MechType(mech) != CLASS_MECH)) || ((ecm_count > 0) && (MechType(mech) == CLASS_MECH) && (MechSpecials(mech) & CLAN_TECH)))
+        { /* ECM is 2 crits for mechas, one Crit for Clan Mechas. One System = 61 BV */
 
                 Calc_AddDefBV(&defbv, "ECM", 61.0);
         }
 
-        if((((bap_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((bap_count > 0) && (MechType(mech) != CLASS_MECH)))
-        { /* BAP is 2 crits for mechas. One System = 10 BV */
+        if((((bap_count / 2) > 0) && (MechType(mech) == CLASS_MECH)) || ((bap_count > 0) && (MechType(mech) != CLASS_MECH)) || ((bap_count > 0) && (MechType(mech) == CLASS_MECH) && (MechSpecials(mech) & CLAN_TECH)))
+        { /* BAP is 2 crits for mechas, one Crit for Clan Mechas. One System = 10 BV */
 
                 Calc_AddDefBV(&defbv, "BAP", 10.0);
         }
