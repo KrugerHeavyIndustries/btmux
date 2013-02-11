@@ -756,6 +756,8 @@ struct section_struct {
 typedef struct {
     char mech_name[31];		/* Holds the 30 char ID for the mech */
     char mech_type[25];		/* Holds the mechref for the mech */
+    char unit_era[25];		/* Era Per 'Catalyst Master Unit list' of Unit */
+    char unit_tro[25];		/* TRO/RecordSheet where mech is from */
     char type;			/* The type of this unit */
     char move;			/* The movement type of this unit */
     char tac_range;		/* Tactical range for sensors */

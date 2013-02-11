@@ -54,7 +54,7 @@ char *load_cmds[] = {
 	"Config", "Computer", "Name", "Jump_Speed", "Radio",
 	"SI", "Fuel", "Comment", "RadioType",
 	"Mech_BV", "Cargo_Space", "Max_Suits", "InfantrySpecials",
-	"Max_Ton", "HSEngOverRide",
+	"Max_Ton", "HSEngOverRide", "Unit_Era", "Unit_TRO",
 	NULL
 };
 
@@ -1784,6 +1784,8 @@ int save_template(dbref player, MECH * mech, char *reference, char *filename)
 	fprintf(fp, "Reference        { %s }\n", reference);
 	fprintf(fp, "Type             { %s }\n",
 			mech_types[(short) MechType(mech)]);
+	fprintf(fp, "Unit_Era         { %s }\n", MechUnitEra(mech)),
+	fprintf(fp, "Unit_TRO         { %s }\n", MechUnitTRO(mech)),
 	fprintf(fp, "Move_Type        { %s }\n",
 			move_types[(short) MechMove(mech)]);
 	fprintf(fp, "Tons             { %d }\n", MechTons(mech));
@@ -2635,6 +2637,18 @@ int load_template(dbref player, MECH * mech, char *filename)
 			break;
 		case 28:
 			MechHSEngOverRide(mech) = atoi(read_desc(fp,ptr));
+			break;
+		case 29:
+			tmpc = read_desc(fp, ptr);
+			if(strlen(tmpc) == 1) /* just the \0 */
+				tmpc = "Undefined";
+			strcpy(MechUnitEra(mech), tmpc);
+			break;
+		case 30:
+			tmpc = read_desc(fp, ptr);
+			if(strlen(tmpc) == 1) /* just the \0 */
+				tmpc = "Undefined";
+			strcpy(MechUnitTRO(mech), tmpc);
 			break;
 		}
 	}

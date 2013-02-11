@@ -236,6 +236,8 @@
 #define MechType(a)		(a)->ud.type
 #define MechType_Name(a)	(a)->ud.mech_name
 #define MechType_Ref(a)	 	(a)->ud.mech_type
+#define MechUnitEra(a)		(a)->ud.unit_era
+#define MechUnitTRO(a)		(a)->ud.unit_tro
 #define MechVFacing(a)	 	AcceptableDegree(MechFacing(a) + MechLateral(a))
 #define MechVerticalSpeed(a) 	(a)->rd.verticalspeed
 #define MechVisMod(a)	 	(a)->rd.vis_mod

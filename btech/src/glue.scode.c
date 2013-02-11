@@ -407,6 +407,8 @@ static GMV xcode_data[] = {
 	{GTYPE_MECH, "id", mechIDfunc, TYPE_STRFUNC},
 	MeEntryS("mechname", MechType_Name, TYPE_STRING, 31),
 	MeEntry("maxspeed", MechMaxSpeed, TYPE_FLOAT),
+	MeEntryS("unit_era", MechUnitEra, TYPE_STRING, 31),
+	MeEntryS("unit_tro", MechUnitTRO, TYPE_STRING, 31),
 	MeEntry("templatesp",TemplateMaxSpeed,TYPE_FLOAT),
 	MeEntry("pilotnum", MechPilot, TYPE_DBREF),
 	MeEntry("xpmod", MechXPMod, TYPE_FLOAT),
@@ -2633,20 +2635,14 @@ void fun_btlistblz(char *buff, char **bufc, dbref player, dbref cause,
 	mapdb = match_thing(player, fargs[0]);
 	FUNCHECK(!Good_obj(mapdb), "#-1 INVALID MAP");
 	FUNCHECK(!(map = getMap(mapdb)), "#-1 INVALID MAP");
-
-	for(i = 0; i < NUM_MAPOBJTYPES; i++)
-		for(tmp = first_mapobj(map, i); tmp; tmp = next_mapobj(tmp))
-			if(i == TYPE_B_LZ) {
-				count++;
-				if(count == 1)
-					strcount +=
-						snprintf(buf + strcount, MBUF_SIZE - strcount,
-								 "%d %d %d", tmp->x, tmp->y, tmp->datai);
-				else
-					strcount +=
-						snprintf(buf + strcount, MBUF_SIZE - strcount,
-								 "|%d %d %d", tmp->x, tmp->y, tmp->datai);
-			}
+	for(tmp = first_mapobj(map, i); tmp; tmp = next_mapobj(tmp))
+		if(i == TYPE_B_LZ) {
+			count++;
+			if(count == 1)
+				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "%d %d %d", tmp->x, tmp->y, tmp->datai);
+			else
+				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "|%d %d %d", tmp->x, tmp->y, tmp->datai);
+		}
 	safe_tprintf_str(buff, bufc, buf);
 }
 
