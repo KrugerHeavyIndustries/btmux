@@ -153,6 +153,7 @@ void Calc_AddOffBV(float *offbv, char * desc, float value);
 void Calc_AddDefBV(float *defbv, char * desc, float value);
 void Calc_SubDefBV(float *defbv, char * desc, float value);
 float Calculate_Defensive_BV(MECH *mech, int gunstat, int pilstat);
+float Calculate_Offensive_BV(MECH *mech, int gunstat, int pilstat);
 unsigned long long int CalcFasaCost(MECH * mech);
 char *UnitPartsList(MECH * mech, int mode);
 int mech_armorpoints(MECH * mech);

@@ -3410,10 +3410,9 @@ float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
         int ecm_count = 0;
         int bap_count = 0;
         int jump_mp = 0;
-        int run_mp = 0;
-        int run_mp_unmod = 0;
         int move_mod = 0;
-        float speed_factor = 0.0;
+	int run_mp = 0;
+	int run_mp_unmod = 0;
         float def_factor = 0.0;
 
 
@@ -3646,6 +3645,87 @@ float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
 /* END DEFENSIVE BV */
         return defbv;
 
+}
+
+/* Calculate Offensive BV 2.0 per Total Warfare Rules */
+float Calculate_Offensive_BV(MECH * mech, int gunstat, int pilstat) {
+	float offbv = 0.0;
+	int heat_efficiency;
+	int heat_sinks;
+	int jump_mp;
+	int i, ii, j;
+	int weapindx;
+	int count;
+	int tablecount = 0;
+        unsigned char weaparray[MAX_WEAPS_SECTION];
+        unsigned char weapdata[MAX_WEAPS_SECTION];
+        int critical[MAX_WEAPS_SECTION];
+	int weaptable[64];
+	int heattable[64];
+	int bvtable[64];
+	int wt, bt, ht;
+	int heatcount = 0;
+	int weapbv = 0;
+
+/* First Find Heat Efficiency */
+	
+	jump_mp = (int) (MechJumpSpeed(mech) / MP1 );
+        heat_sinks = MechActiveNumsinks(mech);
+        heat_efficiency = 6 + heat_sinks - (jump_mp> 2 ? jump_mp : 2);
+
+/* Let's Gather Weapons First*/
+        for(i = 0; i < NUM_SECTIONS; i++) {
+                count = FindWeapons(mech, i, weaparray, weapdata, critical);
+                if(count <=0) {
+                        continue;
+                }
+
+		for(ii = 0; ii < count; ii++) {
+
+/* Exclude Defensive Weapons */
+			if(MechWeapons[weaparray[ii]].special & AMS)
+				continue;
+		
+			weaptable[tablecount] = weaparray[ii];
+/* TODO: Modify Ultra/RAC/Streak/Oneshot HEAT values. TC/Oneshot/Rear/Artemis BV Values */
+			heattable[tablecount] = MechWeapons[weaparray[ii]].heat;
+			bvtable[tablecount] = MechWeapons[weaparray[ii]].battlevalue;
+			tablecount++;
+		}
+	}
+
+/* Sort our temp tables by BV (highest first) */
+
+	for( i = 0; i < (tablecount - 1); i++) {
+		for (j = 0; j < tablecount - i - 1; j++) {
+			if(bvtable[j] > bvtable[j+1])
+			{
+				wt = weaptable[j];
+				ht = heattable[j];
+				bt = bvtable[j];
+				weaptable[j] = weaptable[j+1];
+				heattable[j] = heattable[j+1];
+				bvtable[j] = bvtable[j+1];
+				weaptable[j+1] = wt;
+				heattable[j+1] = ht;
+				bvtable[j+1] = bt;
+			}
+		}
+	}
+
+/* Go through temp tables, adding BV. Half BV if > heat efficiency */
+	for (i = (tablecount - 1); i >= 0; i--) {
+		if(heatcount + heattable[i] > heat_efficiency) 
+			Calc_AddOffBV(&offbv,MechWeapons[weaptable[i]].name,(bvtable[i])/2);
+		else
+			Calc_AddOffBV(&offbv,MechWeapons[weaptable[i]].name,bvtable[i]);
+		heatcount = heatcount + heattable[i];
+	}
+
+
+
+/* END OFFENSIVE BV */
+	return offbv;
 }
 
 
