@@ -2654,6 +2654,15 @@ int load_template(dbref player, MECH * mech, char *filename)
 	}
 	fclose(fp);
 	MechEngineSizeV(mech) = MechEngineSizeC(mech);
+	/* So we're not getting 'blank' ERA/TRO values, we'll default to 'Undefined' */
+	if(strlen(MechUnitEra(mech)) == 0 ) {
+		tmpc = "Undefined";
+		strcpy(MechUnitEra(mech), tmpc);
+	}
+	if(strlen(MechUnitTRO(mech)) == 0 ) {
+		tmpc = "Undefined";
+		strcpy(MechUnitTRO(mech), tmpc);
+	}		
 #define Set(a,b) \
 		if (!(a)) a = b
 	if(!(MechSpecials(mech) & ICE_TECH))
