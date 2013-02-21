@@ -1173,11 +1173,8 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 				if(wFireMode & WILL_JETTISON_MODE)
 					strcat(buffer, " (backpack)");
 
-			if (IsWeapon(type) && (wFireMode & REAR_MOUNT))
-				{
-					strcat(buffer, pos_part_name(mech, index, loop));
+			if (IsWeapon(type) && (wFireMode & REAR_MOUNT))	
 					strcat(buffer, " (R)");
-				}
 			if(!PartIsNonfunctional(mech, index, loop)) {
 				if(Special2I(type) == ARTEMIS_IV) {
 					char trash[50];
