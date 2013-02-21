@@ -781,7 +781,7 @@ char *pos_part_name(MECH * mech, int index, int loop)
 		return ((MechSpecials(mech) & DOUBLE_HEAT_TECH || MechSpecials(mech) & CLAN_TECH) ? "Double Heatsink" :
 			"Heatsink");
 	}
-/*
+
         if (t == Special(SPLIT_CRIT_RIGHT) || t == Special(SPLIT_CRIT_LEFT)) { 
 	                newindex = ReverseSplitCritLoc(mech, index, loop);
 	                newloop = GetPartData(mech, index, loop);
@@ -790,7 +790,7 @@ char *pos_part_name(MECH * mech, int index, int loop)
 	                        b = GetPartBrand(mech, newindex, newloop);
 	                }
 	}
-*/
+
 	/* LETS CHECK IF ITS A SPECIAL ENGINE */
 	if (t == Special(ENGINE) ) {
 		return (MechSpecials(mech) & LE_TECH ? "Engine (Light)" :
