@@ -43,6 +43,10 @@
 #define VRT_IS_LRM15		25	/* IS.LRM-15 */
 #define VRT_IS_LRM20		30	/* IS.LRM-20 */
 #define VRT_IS_LRM5		15	/* IS.LRM-5 */
+#define VRT_IS_MML3		30	/* IS.MML-3 SR */
+#define VRT_IS_MML5		30	/* IS.MML-5 SR */
+#define VRT_IS_MML7		30	/* IS.MML-7 SR */
+#define VRT_IS_MML9		30	/* IS.MML-9 SR */
 #define VRT_IS_LONGTOM		60	/* IS.LongTom */
 #define VRT_IS_MG		 7	/* IS.MachineGun */
 #define VRT_IS_NARC		30	/* IS.NarcBeacon */

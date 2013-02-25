@@ -327,7 +327,7 @@ struct weapon_struct MechWeapons[] = {
     {"IS.LightAC/2", VRT_IS_LAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1, -1,
         1, 45, 400, -1, RFAC, 30, 100000, 3, 2000},
     {"IS.LightAC/5", VRT_IS_LAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1, -1,
-        1, 20, 400, -1, RFAC, 62, 150000, 5, 5000},
+        2, 20, 400, -1, RFAC, 62, 150000, 5, 5000},
     {"IS.LongTomCannon", VRT_IS_LONGTOMC, TARTILLERY, 20, 20, 4, 6, 13, 20, 0, -1, -1,
         -1, 15, 5, 2000, -1, IDF | DAR, 348, 650000, 48, 20000},
     {"IS.SniperCannon", VRT_IS_SNIPERC, TARTILLERY, 10, 10, 2, 4, 8, 12, 0, -1, -1, -1,
@@ -336,6 +336,17 @@ struct weapon_struct MechWeapons[] = {
         7, 20, 1000, -1, IDF | DAR, 58, 200000, 7, 10000},
     {"IS.HeavyMachineGun", VRT_IS_HMG, TAMMO, 0, 2, 0, 2, 4, 6, 0, -1, -1,
             -1, 1, 100, 100, -1, GMG, 6, 7500, 1, 1000},
+
+/* IS MML Missiles */
+    {"IS.MML-3", VRT_IS_MML3, TMISSILE, 2, 1, 0, 3, 6, 9, 0, -1, -1, -1, 
+    	2, 33, 150, -1, IDF, 29, 45000, 4, 27000},
+/* MML is 30k for LRM Ammo (40/24/17/13), 27K for SRM (33/20/14/11 shots) */
+    {"IS.MML-5", VRT_IS_MML5, TMISSILE, 3, 1, 0, 3, 6, 9, 0, -1, -1, -1,
+    	3, 20, 300, -1, IDF, 45, 75000, 6, 27000},
+    {"IS.MML-7", VRT_IS_MML7, TMISSILE, 4, 1, 0, 3, 6, 9, 0, -1, -1, -1,
+    	4, 14, 450, -1, IDF, 67, 105000, 8, 27000},
+    {"IS.MML-9", VRT_IS_MML9, TMISSILE, 5, 1, 0, 3, 6, 9, 0, -1, -1 ,-1,
+    	5, 11, 600, -1, IDF, 86, 125000, 11, 27000},
 
 /* IS Level 1 Missile Weapons */
     {"IS.LRM-5", VRT_IS_LRM5, TMISSILE, 2, 1, 6, 7, 14, 21, 0, -1, -1, -1,

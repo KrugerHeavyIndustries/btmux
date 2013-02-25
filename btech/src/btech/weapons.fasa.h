@@ -186,3 +186,7 @@
 #define VRT_IS_IFLAM       30  /* IS.InfantryFlamer */
 #define VRT_IS_ISRM        30  /* IS.InfantrySRM */
 #define VRT_IS_ILRM        30  /* IS.InfantryLRM */
+#define VRT_IS_MML3	   30 /* IS.MML-3 SR */
+#define VRT_IS_MML5	   30 /* IS.MML-5 SR */
+#define VRT_IS_MML7	   30 /* IS.MML-7 SR */
+#define VRT_IS_MML9	   30 /* IS.MML-9 SR */
