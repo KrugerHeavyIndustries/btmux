@@ -327,7 +327,7 @@ struct weapon_struct MechWeapons[] = {
     {"IS.LightAC/2", VRT_IS_LAC2, TAMMO, 1, 2, 0, 6, 12, 18, 0, -1, -1, -1,
         1, 45, 400, -1, RFAC, 30, 100000, 3, 2000},
     {"IS.LightAC/5", VRT_IS_LAC5, TAMMO, 1, 5, 0, 5, 10, 15, 0, -1, -1, -1,
-        2, 20, 400, -1, RFAC, 62, 150000, 5, 5000},
+        2, 20, 500, -1, RFAC, 62, 150000, 5, 5000},
     {"IS.LongTomCannon", VRT_IS_LONGTOMC, TARTILLERY, 20, 20, 4, 6, 13, 20, 0, -1, -1,
         -1, 15, 5, 2000, -1, IDF | DAR, 348, 650000, 48, 20000},
     {"IS.SniperCannon", VRT_IS_SNIPERC, TARTILLERY, 10, 10, 2, 4, 8, 12, 0, -1, -1, -1,
