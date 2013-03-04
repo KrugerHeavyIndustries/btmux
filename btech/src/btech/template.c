@@ -1203,6 +1203,7 @@ char *specials2[] = {
 	"HDGyro_Tech",
 	"CompactGyro_Tech",
 	"TargComp_Tech",
+	"ImrpovedJJ_Tech",
 	NULL
 };
 
