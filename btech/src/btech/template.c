@@ -1202,8 +1202,7 @@ char *specials2[] = {
 	"XLGyro_Tech",
 	"HDGyro_Tech",
 	"CompactGyro_Tech",
-	"TargComp_Tech",
-	"ImrpovedJJ_Tech",
+	"TargComp_Tech",	
 	NULL
 };
 
@@ -2188,11 +2187,21 @@ void update_specials(MECH * mech)
 					MechSpecials2(mech) |= spec
 
 	ITech(ff_count, (cl ? 7 : 14), FF_TECH);
+	if((ff_count > 0) && (ff_count < (cl ? 7 : 14)) )
+		SendError(tprintf("%s (#%d) is missing FF Crits %d/%d!",MechType_Ref(mech),mech->mynum,ff_count,(cl ? 7 : 14)));
 	ITech(es_count, (cl ? 7 : 14), ES_TECH);
+	if((es_count > 0) && (es_count < (cl ? 7 : 14)) )
+		SendError(tprintf("%s (#%d) is missing ES Crits %d/%d!",MechType_Ref(mech),mech->mynum,es_count,(cl ? 7 : 14)));
 	ITech(tsm_count, 6, TRIPLE_MYOMER_TECH);
+	if((tsm_count > 0) && (tsm_count < 6) )
+		SendError(tprintf("%s (#%d) is missing TSM Crits %d/6!",MechType_Ref(mech),mech->mynum,tsm_count));
 	ITech2(wcAngel, 2, ANGEL_ECM_TECH);
 	ITech2(wcHvyFF, 21, HVY_FF_ARMOR_TECH);
+	if((wcHvyFF > 0) && (wcHvyFF < 21) )
+		SendError(tprintf("%s (#%d) is missing HvyFF Crits %d/21!",MechType_Ref(mech),mech->mynum,wcHvyFF));
 	ITech2(wcLtFF, 7, LT_FF_ARMOR_TECH);
+	if((wcLtFF > 0) && (wcLtFF < 7) )
+		SendError(tprintf("%s (#%d) is missing LtFF Crits %2/7!",MechType_Ref(mech),mech->mynum,wcLtFF));
 	ITech2(wcC3i, 2, C3I_TECH);
 	ITech2(wcBloodhound, 2, BLOODHOUND_PROBE_TECH);
 
@@ -2713,6 +2722,7 @@ int load_template(dbref player, MECH * mech, char *filename)
 		Set(MechTacRange(mech), MechComputersTacRange(mech));
 	}
 #if 1							/* Don't know if we're ready for this yet - aw, what the hell :) */
+	MechSpecials(mech) &= ~FLIPABLE_ARMS;
 	if(MechType(mech) == CLASS_MECH)
 		if((GetPartType(mech, LARM, 2) != Special(LOWER_ACTUATOR)) &&
 		   (GetPartType(mech, RARM, 2) != Special(LOWER_ACTUATOR)) &&
