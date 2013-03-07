@@ -800,6 +800,11 @@ char *pos_part_name(MECH * mech, int index, int loop)
 			"Engine");
 	}
 
+	if (t == Special(JUMP_JET) ) {
+		return (MechSpecials2(mech) & IMPROVED_JJ_TECH ? "JumpJet (Improved)" :
+			"Jumpjet");
+	}
+
 	if(!(c = part_name(t, b)))
 		return "--?ErrorInTemplate?--";
 

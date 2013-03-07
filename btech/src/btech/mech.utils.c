@@ -1865,7 +1865,7 @@ void do_sub_magic(MECH * mech, int loud)
 	int i, j;
 	int inthses = MechEngineSize(mech) / 25;
 	int dest_hses = 0;
-	int maxjjs = (int) ((float) MechMaxSpeed(mech) * MP_PER_KPH * 2 / 3);
+	int maxjjs = (int) ((float) MechMaxSpeed(mech) * MP_PER_KPH * ((!MechSpecials2(mech) & IMPROVED_JJ_TECH) ? (2 / 3) : 1)) ;
 
 	if(MechSpecials(mech) & ICE_TECH)
 		inthses = 0;
@@ -1885,6 +1885,11 @@ void do_sub_magic(MECH * mech, int loud)
 		inthses = MechHSEngOverRide(mech);
 	hses +=
 		MIN(MechRealNumsinks(mech) * shs_size / hs_eff, inthses * shs_size);
+
+	/* Improved are 2 crits per Jump MP */
+	if((MechSpecials2(mech) & IMPROVED_JJ_TECH))
+		jjs = jjs / 2;
+
 	if(jjs > maxjjs) {
 		if(loud)
 			SendError(tprintf
@@ -3060,7 +3065,7 @@ if (MechType(mech) != CLASS_BSUIT) {
      * Mechanical: Tonnage * (Jumping MP) * 150
      */
     	int num_jjs = MechJumpSpeed(mech) * MP_PER_KPH;
-    	int jj_price = MechTons(mech) * pow(num_jjs, 2) * 200.0;
+    	int jj_price = MechTons(mech) * pow(num_jjs, 2) * (MechSpecials2(mech) & IMPROVED_JJ_TECH ? 500.0 :200.0);
     	if (num_jjs > 0)
     		CalcFasaCost_AddPrice(&total, "Jumpjets", jj_price);
     

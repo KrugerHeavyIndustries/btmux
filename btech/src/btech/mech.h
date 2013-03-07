@@ -1170,7 +1170,7 @@ struct repair_data {
 #define NULLSIGSYS_TECH         0x10        /* Null signature system */
 #define C3I_TECH                0x20        /* Improved C3 */
 #define SUPERCHARGER_TECH       0x40        /* Not yet implemented */
-#define IMPROVED_JJ_TECH        0x80        /* Not yet implemented */
+#define IMPROVED_JJ_TECH        0x80        
 #define MECHANICAL_JJ_TECH      0x100       /* Not yet implemented */
 #define COMPACT_HS_TECH         0x200       /* Not yet implemented */
 #define LASER_HS_TECH           0x400       /* Not yet implemented */

@@ -1927,6 +1927,12 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 						locname);
 				MechLOSBroadcast(wounded, msgbuf);
 			}
+			/* IMPROVED JJ CHECK HERE. SIMILIAR TO DHS */
+			if((MechSpecials2(mech) & IMPROVED_JJ_TECH)) {
+				wFirstCrit=FindFirstWeaponCrit(wounded, hitloc, critHit, 0, critType, 2);
+				DestroyWeapon(wounded, hitloc, critType, wFirstCrit, 1, 2);
+				destroycrit = 0;
+			}
 			MechJumpSpeed(wounded) -= MP1;
 			if(MechJumpSpeed(wounded) < 0)
 				MechJumpSpeed(wounded) = 0;
