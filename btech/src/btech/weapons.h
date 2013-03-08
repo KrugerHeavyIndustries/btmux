@@ -440,7 +440,7 @@ struct weapon_struct MechWeapons[] = {
 
     /* new FM stuff */
     {"IS.MagshotGaussRifle", VRT_IS_MGR, TAMMO, 0, 2, 0, 3, 6, 9, 0, -1,
-	-1, -1, 1, 20, 50, 5, GAUSS, 10},
+	-1, -1, 2, 50, 50, 3, GAUSS, 15, 8500, 2, 1000},
 
     /* Exile Munch Weapons */
     {"IS.CoolantGun", VRT_IS_COOLANTGUN, TAMMO, 0, 3, 0, 1, 2, 3, 0, -1, -1,
