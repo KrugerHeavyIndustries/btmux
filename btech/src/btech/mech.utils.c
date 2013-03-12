@@ -1915,6 +1915,9 @@ void do_sub_magic(MECH * mech, int loud)
 	} else
 		MechRealNumsinks(mech) = wanths;
 	MechNumOsinks(mech) = wanths_f;
+
+	if((MechNumOsinks(mech) * shs_size / hs_eff - (MechSpecials(mech) & ICE_TECH ? 0 : 10) * shs_size) < 0)
+		SendError(tprintf("Error in #%d (%s): HS less then max possible in engine!", mech->mynum, MechType_Ref(mech)));
 }
 
 #define CV(fun) fun(mech) = fun(&opp)
