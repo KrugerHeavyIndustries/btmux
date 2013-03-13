@@ -256,7 +256,8 @@ int crit_weight(MECH * mech, int t)
 		return 1280 * (MechType(mech) == CLASS_MECH ? 1 : 2);
 	case ANGELECM:
 	case BLOODHOUND_PROBE:
-		return 1024 * (MechType(mech) == CLASS_MECH ? 1 : 2);
+		/* Bloodhound is 2 tons for 3 crits */
+		return 1024 * (MechType(mech) == CLASS_MECH ? 2 : 6) / 3;
 	case C3_MASTER:
 		return 1024 * (MechType(mech) == CLASS_MECH ? 1 : 5);
 	case SWORD:

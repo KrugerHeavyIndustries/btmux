@@ -2193,7 +2193,7 @@ void update_specials(MECH * mech)
 	ITech2(wcHvyFF, 21, HVY_FF_ARMOR_TECH);
 	ITech2(wcLtFF, 7, LT_FF_ARMOR_TECH);
 	ITech2(wcC3i, 2, C3I_TECH);
-	ITech2(wcBloodhound, 2, BLOODHOUND_PROBE_TECH);
+	ITech2(wcBloodhound, 3, BLOODHOUND_PROBE_TECH);
 
 	if(MechType(mech) == CLASS_MECH) {
 	/* Be 'noisy' about some crits/techs */
