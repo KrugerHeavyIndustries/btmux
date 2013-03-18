@@ -2210,7 +2210,7 @@ void update_specials(MECH * mech)
                  SendError(tprintf("%s (#%d) is missing HvyFF Crits %d/21!",MechType_Ref(mech),mech->mynum,wcHvyFF));
 
         if((wcLtFF > 0) && (wcLtFF < 7) )
-	                SendError(tprintf("%s (#%d) is missing LtFF Crits %2/7!",MechType_Ref(mech),mech->mynum,wcLtFF));
+	                SendError(tprintf("%s (#%d) is missing LtFF Crits %d/7!",MechType_Ref(mech),mech->mynum,wcLtFF));
 
 	}
 
