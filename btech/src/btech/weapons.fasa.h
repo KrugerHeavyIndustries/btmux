@@ -137,6 +137,7 @@
 #define VRT_IS_XSPL		30	/* IS.X-SmallPulseLaser */
 #define VRT_IS_HFLAMER		30	/* IS.HeavyFlamer */
 #define VRT_IS_HMG		30	/* IS.HeavyMachineGun */
+#define VRT_IS_PRIFLE		30	/* IS.PlasmaRifle */
 #define VRT_IS_LAC2		30	/* IS.LightAC/2 */
 #define VRT_IS_LAC5		30	/* IS.LightAC/5 */
 #define VRT_CL_ERLPL		30	/* CL.ERLargePulseLaser */

@@ -337,6 +337,11 @@ struct weapon_struct MechWeapons[] = {
     {"IS.HeavyMachineGun", VRT_IS_HMG, TAMMO, 0, 2, 0, 2, 4, 6, 0, -1, -1,
             -1, 1, 100, 100, -1, GMG, 6, 7500, 1, 1000},
 
+
+/* IS Plasma Rifle */
+    {"IS.PlasmaRifle", VRT_IS_PRIFLE, TAMMO, 10, 10, 0, 5, 10, 15, 0, -1, -1,
+        -1, 2, 10, 600, -1, NOBOOM, 210, 260000, 86, 10000},
+
 /* IS MML Missiles */
     {"IS.MML-3", VRT_IS_MML3, TMISSILE, 2, 1, 0, 3, 6, 9, 0, -1, -1, -1, 
     	2, 33, 150, -1, IDF, 29, 45000, 4, 27000},
