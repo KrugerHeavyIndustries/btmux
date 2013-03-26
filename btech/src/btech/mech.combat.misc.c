@@ -204,6 +204,22 @@ void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS)
 	water_extinguish_inferno(hitMech); /* They could be in -2 standing or -1 prone.. Shooter just wastes his missiles! */
 }
 
+void Plasma_Hit(MECH * mech, MECH * hitMech, int LOS)
+{
+/* For now, lets just worry about IS.PlasmaRifles
+ * They are 1D6 Heat to mechs and 2D6 damage to anything else (clustered into 5)
+ * We'll handle the cluster damage in HitMech
+*/
+
+	float heatadd = 0;
+
+
+	if(MechType(hitMech) == CLASS_MECH) {
+		heatadd = (float) (Number(1,6));
+		MechWeapHeat(hitMech) += heatadd;
+
+}
+
 //extern int global_kill_cheat;
 void KillMechContentsIfIC(dbref aRef)
 {

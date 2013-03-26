@@ -11,6 +11,7 @@ void ammo_expedinture_check(MECH * mech, int weapindx, int ns);
 void heat_effect(MECH * mech, MECH * tempMech, int heatdam,
     int fromInferno);
 void Inferno_Hit(MECH * mech, MECH * hitMech, int missiles, int LOS);
+void Plasma_Hit(MECH * mech, MECH * hitMech, int LOS);
 void KillMechContentsIfIC(dbref aRef);
 void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason);
 char *short_hextarget(MECH * mech);

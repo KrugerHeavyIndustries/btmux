@@ -789,6 +789,13 @@ void DamageMech(MECH * wounded,
 		}
 	}
 
+
+/* For now, only check IS PlasmaRifles. Can use this for Clan PlasmaCannon later */
+	if(strstr(MechWeapons[wWeapIndx].name, "IS.PlasmaRifle")) {
+		if(MechType(wounded) == CLASS_MECH)
+			Plasma_Hit(attacker, wounded, LOS);	
+	}
+
 	/* Check to see if we blow up ammo that's dumping. */
 	if(tBlowDumpingAmmo) {
 		BlowDumpingAmmo(wounded, attacker, hitloc);
