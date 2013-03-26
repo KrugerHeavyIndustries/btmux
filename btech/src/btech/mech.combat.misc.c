@@ -217,7 +217,7 @@ void Plasma_Hit(MECH * mech, MECH * hitMech, int LOS)
 	if(MechType(hitMech) == CLASS_MECH) {
 		heatadd = (float) (Number(1,6));
 		MechWeapHeat(hitMech) += heatadd;
-
+	}
 }
 
 //extern int global_kill_cheat;
