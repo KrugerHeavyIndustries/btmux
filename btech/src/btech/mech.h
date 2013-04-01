@@ -1189,7 +1189,7 @@ struct repair_data {
 #define HDGYRO_TECH             0x400000
 #define CGYRO_TECH              0x800000
 #define TCOMP_TECH		0x1000000
-
+#define SMALLCOCKPIT_TECH	0x2000000
 
 /* Infantry specials */
 #define INF_SWARM_TECH			0x01	/* Infantry/BSuits can swarm unfriendlies */

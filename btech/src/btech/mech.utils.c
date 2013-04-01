@@ -644,6 +644,9 @@ int MadePilotSkillRoll(MECH * mech, int mods)
 int MechPilotSkillRoll_BTH(MECH * mech, int mods)
 {
 	mods += FindSPilotPiloting(mech) + MechPilotSkillBase(mech);
+	if(MechSpecials2(mech) & SMALLCOCKPIT_TECH)
+		mods++;
+
 	if(In_Character(mech->mynum) && Location(MechPilot(mech)) != mech->mynum)
 		mods += 5;
 	return mods;
@@ -2921,7 +2924,10 @@ unsigned long long int CalcFasaCost(MECH * mech)
 				else
 				EI is 400000 (Clan Tech)
 #endif
-      CalcFasaCost_AddPrice(&total, "Cockpit", 200000);
+	if(MechSpecials2(mech) & SMALLCOCKPIT_TECH)
+		CalcFasaCost_AddPrice(&total, "Small Cockpit", 175000);
+	else
+		CalcFasaCost_AddPrice(&total, "Cockpit", 200000);
 
 /* Start MECH Life Support ( Tech Manual (p278) ) */
 	      CalcFasaCost_AddPrice(&total, "LifeSupport", 50000);

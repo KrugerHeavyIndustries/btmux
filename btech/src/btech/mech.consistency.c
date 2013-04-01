@@ -421,7 +421,11 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 	PLOC(CTORSO)
 		ADDENTRY(buf, engine_weight(mech));
 	PLOC(HEAD)
-		ADDENTRY("Cockpit", 3 * 1024);
+		if(MechSpecials2(mech) & SMALLCOCKPIT_TECH) {
+			ADDENTRY("Cockpit (Small)", 2 * 1024);
+		} else {
+			ADDENTRY("Cockpit", 3 * 1024);
+		}
 	PLOC(CTORSO)
 		/* Store the base-line gyro weight */
 		gyro_calc = (MechEngineSize(mech) / 100.0);
