@@ -3414,7 +3414,7 @@ void Calc_SubDefBV(float * defbv, char * desc, float value) {
 }
 
 /* Calculate Defensive BV 2.0 per Total Warfare Rules */
-float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
+float Calculate_Defensive_BV(MECH * mech) {
         float defbv = 0.0;
         float engine_mod = 0.0;
         int i;
@@ -3662,7 +3662,7 @@ float Calculate_Defensive_BV(MECH * mech, int gunstat, int pilstat) {
 }
 
 /* Calculate Offensive BV 2.0 per Total Warfare Rules */
-float Calculate_Offensive_BV(MECH * mech, int gunstat, int pilstat) {
+float Calculate_Offensive_BV(MECH * mech) {
 	float offbv = 0.0;
 	int heat_efficiency;
 	int heat_sinks;

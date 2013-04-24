@@ -1984,6 +1984,16 @@ void fun_btgetbv_ref(char *buff, char **bufc, dbref player, dbref cause,
 	safe_tprintf_str(buff, bufc, "%d", MechBV(mech));
 }
 
+void fun_btgetdbv_ref(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	MECH *mech;
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENEID");
+	FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
+
+	safe_tprintf_str(buff,bufc,"%f.2", Calculate_Defensive_BV(mech));
+}
+
 void fun_bttechlist(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {

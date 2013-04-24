@@ -43,9 +43,10 @@ static int doweird = 0;
 static char *weirdbuf;
 
 #define PHY_AXE		1
-#define PHY_SWORD   2
-#define PHY_MACE    3
-#define PHY_SAW     4
+#define PHY_SWORD	2
+#define PHY_MACE	3
+#define PHY_SAW		4
+#define PHY_CLAW	5
 
 void DisplayTarget(dbref player, MECH * mech)
 {
@@ -1468,7 +1469,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
         + (MechSections(mech)[(a)].recycle%WEAPON_TICK)) : "%cgRdy%c")
 
 #define SHOW(part,loc) \
-		sprintf(tempbuff + strlen(tempbuff), "%s: %s  ", part, loc)
+		sprintf(tempbuff + strlen(tempbuff), "%s: %s ", part, loc)
 
 		SHOW(MechIsQuad(mech) ? "FLLEG" : "LARM", SHOWSECTSTAT(LARM));
 		SHOW(MechIsQuad(mech) ? "FRLEG" : "RARM", SHOWSECTSTAT(RARM));
@@ -1486,6 +1487,12 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 		if(hasPhysical(mech, RARM, PHY_SWORD))
 			SHOW("Sword[RA]", SHOWPHYSTATUS(RARM, PHY_SWORD));
+
+		if(hasPhysical(mech, LARM, PHY_CLAW))
+			SHOW("Claw[LA]", SHOWPHYSTATUS(LARM, PHY_CLAW));
+
+		if(hasPhysical(mech, RARM, PHY_CLAW))
+			SHOW("Claw[RA]", SHOWPHYSTATUS(RARM, PHY_CLAW));
 
 		if(hasPhysical(mech, LARM, PHY_MACE))
 			SHOW("Mace[LA]", SHOWPHYSTATUS(LARM, PHY_MACE));
@@ -2756,6 +2763,11 @@ int hasPhysical(MECH * objMech, int wLoc, int wPhysType)
 		wSize = MechTons(objMech) / 15;
 		break;
 
+	case PHY_CLAW:
+		wType = CLAW;
+		wSize = MechTons(objMech) /15;
+		break;
+
 	case PHY_SWORD:
 		wType = SWORD;
 		wSize = MechTons(objMech) / 15;
@@ -2792,6 +2804,11 @@ int canUsePhysical(MECH * objMech, int wLoc, int wPhysType)
 		else if(!OkayCritSectS2(objMech, wLoc, 3, HAND_OR_FOOT_ACTUATOR))
 			tRet = 0;
 		break;
+
+	case PHY_CLAW:
+		if(SectIsDestroyed(objMech, wLoc))
+			tRet = 0;
+                break;
 
 	case PHY_MACE:
 		if(SectIsDestroyed(objMech, LARM) || SectIsDestroyed(objMech, RARM))

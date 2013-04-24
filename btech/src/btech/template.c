@@ -2803,7 +2803,7 @@ char *techlist_func(MECH * mech)
 {
 	static char buffer[MBUF_SIZE];
 	char bufa[SBUF_SIZE], bufb[SBUF_SIZE], bufc[SBUF_SIZE];
-	int i, ii, part = 0, axe = 0, mace = 0, sword = 0, saw = 0, hascase = 0;
+	int i, ii, part = 0, axe = 0, mace = 0, sword = 0, saw = 0, claw = 0, hascase = 0;
 
 	snprintf(bufa, SBUF_SIZE, "%s",
 			 BuildBitString(specialsabrev, MechSpecials(mech)));
@@ -2832,6 +2832,10 @@ char *techlist_func(MECH * mech)
 			if(part == I2Special(AXE) && !axe) {
 				axe = 1;
 				strcat(buffer, " AXE");
+			}
+			if(part == I2Special(CLAW) && !claw) {
+				claw = 1;
+				strcat(buffer, " CLAW");
 			}
 			if(part == I2Special(MACE) && !mace) {
 				mace = 1;

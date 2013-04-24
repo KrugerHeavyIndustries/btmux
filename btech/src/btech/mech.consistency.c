@@ -242,6 +242,7 @@ int crit_weight(MECH * mech, int t)
 		return 1024 / HS_Size(mech);
 	case TARGETING_COMPUTER:
 	case AXE:
+	case CLAW:
 	case MACE:
 		return 1024;
 	case DUAL_SAW:
