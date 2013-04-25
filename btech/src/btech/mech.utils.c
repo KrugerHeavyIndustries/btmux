@@ -3400,17 +3400,20 @@ int FindAverageGunnery(MECH * mech) {
 
 void Calc_AddOffBV(float * offbv, char * desc, float value) {
         *offbv += value;
-        SendDebug(tprintf("AddOffBV %25s %8.2f", desc, value));
+	if(mudconf.btech_cost_debug)
+	        SendDebug(tprintf("AddOffBV %25s %8.2f", desc, value));
 }
 
 void Calc_AddDefBV(float * defbv, char * desc, float value) {
         *defbv += value;
-        SendDebug(tprintf("AddDefBV %25s %8.2f", desc, value));
+        if(mudconf.btech_cost_debug)
+		SendDebug(tprintf("AddDefBV %25s %8.2f", desc, value));
 }
 
 void Calc_SubDefBV(float * defbv, char * desc, float value) {
         *defbv -= value;
-        SendDebug(tprintf("SubDefBV %25s-%8.2f", desc, value));
+	if(mudconf.btech_cost_debug)
+	        SendDebug(tprintf("SubDefBV %25s-%8.2f", desc, value));
 }
 
 /* Calculate Defensive BV 2.0 per Total Warfare Rules */

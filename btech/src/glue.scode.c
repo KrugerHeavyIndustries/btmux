@@ -1991,7 +1991,7 @@ void fun_btgetdbv_ref(char *buff, char **bufc, dbref player, dbref cause,
 	FUNCHECK(!WizR(player), "#-1 PERMISSION DENEID");
 	FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
 
-	safe_tprintf_str(buff,bufc,"%f.2", Calculate_Defensive_BV(mech));
+	safe_tprintf_str(buff,bufc,"%.2f", Calculate_Defensive_BV(mech));
 }
 
 void fun_bttechlist(char *buff, char **bufc, dbref player, dbref cause,
