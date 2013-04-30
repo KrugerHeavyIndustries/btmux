@@ -1828,9 +1828,14 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				break;
 			}					// end switch() - Part Names
 		}						// end if()
-
-		mech_printf(wounded, MECHALL,
+		
+		if(IsWeapon(critType)) {
+			mech_printf(wounded, MECHALL, "Part of your non-working %s has been hit!", &MechWeapons[Weapon2I(critType)].name[3]);
+		}
+		else {
+			mech_printf(wounded, MECHALL,
 					"Part of your non-working %s has been hit!", partBuf);
+		}
 		DestroyPart(wounded, hitloc, critHit);
 		return 1;
 	}
