@@ -1988,10 +1988,37 @@ void fun_btgetdbv_ref(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	MECH *mech;
-	FUNCHECK(!WizR(player), "#-1 PERMISSION DENEID");
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
 	FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
 
 	safe_tprintf_str(buff,bufc,"%.2f", Calculate_Defensive_BV(mech));
+}
+
+void fun_btgetobv_ref(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	MECH *mech;
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
+
+	safe_tprintf_str(buff,bufc,"%.2f", Calculate_Offensive_BV(mech));
+
+}
+
+void fun_btgetbv2_ref(char *buff, char **bufc, dbref player, dbref cause,
+					char *fargs[], int nfargs, char *cargs[], int ncargs)
+{
+	MECH *mech;
+	float obv;
+	float dbv;
+
+	FUNCHECK(!WizR(player), "#-1 PERMISSION DENIED");
+	FUNCHECK((mech = load_refmech(fargs[0])) == NULL, "#-1 NO SUCH MECH");
+
+	dbv = Calculate_Defensive_BV(mech);
+	obv = Calculate_Offensive_BV(mech);
+
+	safe_tprintf_str(buff,bufc,"%.2f", dbv+obv);
 }
 
 void fun_bttechlist(char *buff, char **bufc, dbref player, dbref cause,

@@ -87,6 +87,9 @@ extern void fun_btgetrealmaxspeed();
 extern void fun_btgetbv();
 extern void fun_btgetbv_ref();
 extern void fun_btgetdbv_ref();
+extern void fun_btgetobv_ref();
+extern void fun_btgetbv2_ref();
+extern void fun_btgetbv2();
 extern void fun_bttechlist();
 extern void fun_bttechlist_ref();
 extern void fun_btpayload_ref();
@@ -5746,7 +5749,9 @@ FUN flist[] = {
 #endif
 	{"BTGETBV", fun_btgetbv, 1, 0, CA_WIZARD},
 	{"BTGETBV_REF", fun_btgetbv_ref, 1, 0, CA_WIZARD},
+	{"BTGETBV2_REF", fun_btgetbv2_ref, 1, 0, CA_WIZARD},
 	{"BTGETDBV_REF", fun_btgetdbv_ref, 1, 0, CA_WIZARD},
+	{"BTGETOBV_REF", fun_btgetobv_ref, 1, 0, CA_WIZARD},
 	{"BTGETCHARVALUE", fun_btgetcharvalue, 3, 0, CA_WIZARD},
 #ifdef BT_ADVANCED_ECON
 	{"BTGETPARTCOST", fun_btgetpartcost, 1, 0, CA_WIZARD},
