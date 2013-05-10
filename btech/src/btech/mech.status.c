@@ -2811,13 +2811,11 @@ int canUsePhysical(MECH * objMech, int wLoc, int wPhysType)
                 break;
 
 	case PHY_MACE:
-		if(SectIsDestroyed(objMech, LARM) || SectIsDestroyed(objMech, RARM))
+		if(SectIsDestroyed(objMech, wLoc))
 			tRet = 0;
-		else if((!OkayCritSectS2(objMech, LARM, 0, SHOULDER_OR_HIP)) ||
-				(!OkayCritSectS2(objMech, RARM, 0, SHOULDER_OR_HIP)))
+		else if(!OkayCritSectS2(objMech, wLoc, 0, SHOULDER_OR_HIP))
 			tRet = 0;
-		else if((!OkayCritSectS2(objMech, LARM, 3, HAND_OR_FOOT_ACTUATOR))
-				|| (!OkayCritSectS2(objMech, RARM, 3, HAND_OR_FOOT_ACTUATOR)))
+		else if(!OkayCritSectS2(objMech, wLoc, 3, HAND_OR_FOOT_ACTUATOR))
 			tRet = 0;
 		break;
 
