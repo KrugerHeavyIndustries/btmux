@@ -52,6 +52,11 @@ did_it(dbref player, dbref thing,
 		assert(args == NULL && nargs == 0);
 		btshim_did_it(player, thing, "AAEROLAND", NULL, 0);
 		break;
+	
+	case A_AOODLAND:
+		assert(args == NULL && nargs == 0);
+		btshmim_did_it(player, thing, "AOODLAND", NULL, 0);
+		break;
 
 	default:
 		fprintf(stderr,

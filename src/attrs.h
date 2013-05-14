@@ -198,8 +198,9 @@
 #define A_AMECHDEST     247
 #define A_AMINETRIGGER  248
 #define A_AAEROLAND	249
+#define A_AOODLAND	250
 
-/* #define FREE 250 Was A_VRNKL_URL */
+
 /* #define FREE 251 Was A_HTDESC */
 
 #define A_VLIST         252

@@ -63,6 +63,8 @@ void mech_ood_event(MUXEVENT * e)
 	/* Time to hit da ground */
 	mech_notify(mech, MECHALL, "Your unit touches down!");
 
+        did_it(mech->mynum, mech->mynum, 0, NULL, 0, NULL, A_AOODLAND, (char **) NULL, 0);
+
 	if(MechStatus(mech) & COMBAT_SAFE) {
 		/* If we're combat safe, we land regardless, since we're not gonna take any damage */
 		MechCocoon(mech) = 0;

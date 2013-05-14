@@ -188,6 +188,7 @@ ATTR attr[] = {
 	{"Okill", A_OKILL, AF_ODARK, NULL},
 	{"Amechdest", A_AMECHDEST, AF_MDARK, NULL},
 	{"Aaeroland", A_AAEROLAND, AF_MDARK, NULL},
+	{"Aoodland", A_AOODLAND, AF_MDARK, NULL},
 	{"Aminetrigger", A_AMINETRIGGER, AF_MDARK, NULL},
 	{"Oleave", A_OLEAVE, AF_ODARK, NULL},
 	{"Olfail", A_OLFAIL, AF_ODARK | AF_NOPROG, NULL},
