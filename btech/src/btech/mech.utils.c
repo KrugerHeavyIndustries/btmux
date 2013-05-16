@@ -3431,7 +3431,7 @@ float Calculate_Defensive_BV(MECH * mech) {
 	int run_mp = 0;
 	int run_mp_unmod = 0;
         float def_factor = 0.0;
-
+	char buff[50];
 
 /* ARMOR
  * Total Armor Factor (Points) * 2.5 * Armor Type Modifier
@@ -3615,7 +3615,8 @@ float Calculate_Defensive_BV(MECH * mech) {
         run_mp_unmod = run_mp = (int) (MMaxSpeed(mech) / MP1);
 
         if (MechSpecials(mech) & TRIPLE_MYOMER_TECH)
-                run_mp = run_mp + 2;
+                run_mp = ceil((rint((MMaxSpeed(mech) / 1.5) / MP1) + 1) * 1.5);
+
 
         if (MechSpecials(mech) & MASC_TECH) {
                 if(MechSpecials2(mech) & SUPERCHARGER_TECH) {
@@ -3652,11 +3653,16 @@ float Calculate_Defensive_BV(MECH * mech) {
         if (jump_mp > run_mp)
                 move_mod++;
 
-/* TODO: Add Stealth/Camo/BA adjustments (TechManual, p315) */
+/* TODO: Add Camo/BA adjustments (TechManual, p315) */
+
+	if(MechSpecials(mech) & STEALTH_ARMOR_TECH)
+		move_mod = move_mod + 2 ;
 
         def_factor = (move_mod * .1);
 
-        Calc_AddDefBV(&defbv, "MoveMod", defbv * def_factor);
+        snprintf(buff, 50, "MoveMod (MP: %d MM: %d)", run_mp, move_mod);
+	
+	Calc_AddDefBV(&defbv, buff, defbv * def_factor);
 
         defbv = roundf((defbv * 100.0)) / 100.0;
 /* END DEFENSIVE BV */
@@ -3739,6 +3745,15 @@ float Calculate_Offensive_BV(MECH * mech) {
 		heatcount = heatcount + heattable[i];
 	}
 
+/* TODO: Physical Weapons */
+
+/* TODO: Ammo */
+
+/* TODO: Add Tonnage */
+
+	Calc_AddOffBV(&offbv,"MechTonnage",MechTons(mech));
+
+/* TODO: Speed Factor */
 
 
 /* END OFFENSIVE BV */
