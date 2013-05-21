@@ -623,14 +623,18 @@ void mech_claw(dbref player, void *data, char *buffer)
 	// For each arm we're using, check to make sure it's good to punch with
 	// and carry out the roll if it is. 
 	if(using & P_LEFT) {
-			PhysicalAttack(mech, 10, ltohit, PA_CLAW, argc, args,
+			PhysicalAttack(mech, 7, ltohit, PA_CLAW, argc, args,
 						   mech_map, LARM);
 	}
 
 	if(using & P_RIGHT) {
-			PhysicalAttack(mech, 10, rtohit, PA_CLAW, argc, args,
+			PhysicalAttack(mech, 7, rtohit, PA_CLAW, argc, args,
 						   mech_map, RARM);
 	}
+ 
+        // We don't have a claw
+	DOCHECKMA(!using, "You do not have any claws! Try punching/clubbing instead!");
+		
 }								// end mech_claw()
 
 
@@ -1021,6 +1025,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
      * club because it checks for both limbs */
     if ((AttackType == PA_PUNCH) || (AttackType == PA_KICK) || 
             (AttackType == PA_AXE) || (AttackType == PA_SWORD) ||
+	    (AttackType == PA_CLAW) ||
             (AttackType == PA_MACE) || (AttackType == PA_SAW)) {
 
         if (PartIsNonfunctional(mech, sect, 1) ||
@@ -1340,6 +1345,10 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	// Maces get a +2 BTH.
 	if(AttackType == PA_MACE)
 		baseToHit += 2;
+
+	// Claws get a +1 BTH.
+	if(AttackType == PA_CLAW)
+		baseToHit += 1;
 
 	// If we're axing or chopping a bsuit, add +3 to BTH, else (punching) +5.
 	if(AttackType != PA_PUNCH &&
