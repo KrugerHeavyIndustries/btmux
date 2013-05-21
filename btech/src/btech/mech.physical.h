@@ -22,6 +22,7 @@
 #define PA_MACE  6
 #define PA_TRIP  7
 #define PA_SAW   8
+#define PA_CLAW  9
 
 #define P_LEFT  1
 #define P_RIGHT 2

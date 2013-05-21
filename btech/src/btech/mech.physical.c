@@ -107,6 +107,9 @@ char *phys_form(int AttackType, int add_s)
 		case PA_SAW:
 			verb = "saws";
 			break;
+		case PA_CLAW:
+			verb = "claws";
+			break;
 			// Ohboy, we're using some funky, unknown physical.
 		default:
 			verb = "??bugs??";
@@ -137,6 +140,9 @@ char *phys_form(int AttackType, int add_s)
 			break;
 		case PA_SAW:
 			verb = "saw";
+			break;
+		case PA_CLAW:
+			verb = "claw";
 			break;
 			// Ohboy, we're using some funky, unknown physical.
 		default:
@@ -174,6 +180,11 @@ static int have_punch(MECH * mech, int loc)
 int have_axe(MECH * mech, int loc)
 {
 	return FindObj(mech, loc, I2Special(AXE)) >= (MechTons(mech) / 15);
+}
+
+int have_claw(MECH * mech, int loc)
+{
+	return FindObj(mech, loc, I2Special(CLAW)) >= (MechTons(mech) / 15);
 }
 
 /**
@@ -573,6 +584,57 @@ void mech_saw(dbref player, void *data, char *buffer)
 }								// end mech_saw()
 
 /**
+ * Mech punch routines.
+ */
+void mech_claw(dbref player, void *data, char *buffer)
+{
+	MECH *mech = (MECH *) data;
+	MAP *mech_map = getMap(mech->mapindex);
+	char *argl[5];
+	char **args = argl;
+	int argc, ltohit = 4, rtohit = 4;
+	int using = P_LEFT | P_RIGHT;
+
+	// Carry out the common checks (started, on map, etc.)
+	cch(MECH_USUALO);
+	// Make sure we have arms to claw with.
+	ARM_PHYS_CHECK("claw");
+	// Disallow quads from clawing.
+	QUAD_CHECK("claw");
+
+	argc = mech_parseattributes(buffer, args, 5);
+
+	// If the directive is true, use the pilot's piloting skill. If not, we
+	// use a constant BTH of 4.
+	if(mudconf.btech_phys_use_pskill) 
+	 	rtohit = ltohit = FindPilotPiloting(mech);
+
+
+	// Manipulate punching var to contain only the arms we're punching with.
+	if(get_arm_args(&using, &argc, &args, mech, have_claw, "a claw")) {
+		return;
+	}
+	// Carry out our standard physical checks. This happens in PhysicalAttack
+	// but the player gets double-spammed since PhysicalAttack can be called
+	// twice in here. So, we add the check before.
+	if(!phys_common_checks(mech))
+		return;
+
+	// For each arm we're using, check to make sure it's good to punch with
+	// and carry out the roll if it is. 
+	if(using & P_LEFT) {
+			PhysicalAttack(mech, 10, ltohit, PA_CLAW, argc, args,
+						   mech_map, LARM);
+	}
+
+	if(using & P_RIGHT) {
+			PhysicalAttack(mech, 10, rtohit, PA_CLAW, argc, args,
+						   mech_map, RARM);
+	}
+}								// end mech_claw()
+
+
+/**
  * Check our arms to see if they can mace.
  */
 int mace_checkArm(MECH * mech, int arm)
@@ -951,7 +1013,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	// Since we can punch with two arms, often back to back, we want to run
 	// these generic checks in mech_punch() -BEFORE- PhysicalAttack() is called
 	// twice (if we have two working arms).
-	if(AttackType != PA_PUNCH)
+	if(AttackType != PA_PUNCH || AttackType != PA_CLAW)
 		if(!phys_common_checks(mech))
 			return;
 

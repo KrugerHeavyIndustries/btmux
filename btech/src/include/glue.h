@@ -571,6 +571,7 @@ CommandsStruct mechcommands[] = {
 	"Charges a target. '-' removes charge command.", mech_charge},
     {1, "CHOP [R | L | B] [<TARGET-ID>]", "Chops target with a sword",
 	mech_sword},
+    {1, "CLAW [R | L |B] [<TARGET-ID>]", "Claws a target", mech_claw},
     {1, "CLUB [<TARGET-ID>]", "Clubs a target with a tree", mech_club},
     {1, "MACE [<TARGET-ID>]", "Maces your target", mech_mace},
     {1, "SAW [<TARGET-ID>]", "Saws a target with a Dual Saw", mech_saw},    
