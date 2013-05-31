@@ -1017,9 +1017,13 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	// Since we can punch with two arms, often back to back, we want to run
 	// these generic checks in mech_punch() -BEFORE- PhysicalAttack() is called
 	// twice (if we have two working arms).
-	if(AttackType != PA_PUNCH || AttackType != PA_CLAW)
+	if(AttackType == PA_PUNCH || AttackType == PA_CLAW)
+	{
+		// Do Nothing
+	} else {
 		if(!phys_common_checks(mech))
 			return;
+	}
 
     /* BTH Adjustments for crits to limbs - seperate one for 
      * club because it checks for both limbs */
