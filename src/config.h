@@ -33,8 +33,8 @@
 
 #include "debug.h"
 
-typedef int	dbref;
-typedef int	FLAG;
+typedef long    dbref;
+typedef long	FLAG;
 typedef int     POWER;
 typedef char	boolexp_type;
 typedef char	IBUF[16];

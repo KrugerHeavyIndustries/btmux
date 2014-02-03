@@ -67,10 +67,10 @@ void bind_signals()
         sighandler_stack.ss_flags = 0;
         memset(sighandler_stack.ss_sp, 0, ALT_STACK_SIZE);
         dperror(sigaltstack(&sighandler_stack, &regular_stack) <0);
-        dprintk("Current stack at 0x%x with length 0x%x and flags 0x%x", 
-                (unsigned int)regular_stack.ss_sp, regular_stack.ss_size, regular_stack.ss_flags);
-        dprintk("Signal stack at 0x%x with length 0x%x and flags 0x%x", 
-                (unsigned int)sighandler_stack.ss_sp, sighandler_stack.ss_size, sighandler_stack.ss_flags);
+        dprintk("Current stack at 0x%lx with length 0x%lx and flags 0x%x", 
+                (unsigned long)regular_stack.ss_sp, regular_stack.ss_size, regular_stack.ss_flags);
+        dprintk("Signal stack at 0x%lx with length 0x%lx and flags 0x%x", 
+                (unsigned long)sighandler_stack.ss_sp, sighandler_stack.ss_size, sighandler_stack.ss_flags);
         saSEGV.sa_flags |= SA_ONSTACK;
         saBUS.sa_flags |= SA_ONSTACK;
     } else {

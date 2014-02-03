@@ -22,8 +22,8 @@
 
 #include "debug.h"
 
-typedef int	dbref;
-typedef int	FLAG;
+typedef long    dbref;
+typedef long	FLAG;
 typedef int     POWER;
 
 /* TEST_MALLOC:	Defining this makes a malloc that keeps track of the number

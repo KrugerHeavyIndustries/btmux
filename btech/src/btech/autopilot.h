@@ -308,10 +308,10 @@ typedef struct astar_node_t {
     short y;
     short x_parent;
     short y_parent;
-    int g_score;
-    int h_score;
-    int f_score;
-    int hexoffset;
+    long g_score;
+    long h_score;
+    long f_score;
+    long hexoffset;
 } astar_node;
 
 /* Weaplist node for storing info about weapons on the mech */

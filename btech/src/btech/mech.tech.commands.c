@@ -47,7 +47,7 @@ static int tmp_part;
 static void tech_check_locpart(MUXEVENT * e)
 {
 	int loc, pos;
-	int l = (int) e->data2;
+	long l = (long) e->data2;
 
 	UNPACK_LOCPOS(l, loc, pos);
 	if(loc == tmp_loc && pos == tmp_part)
@@ -56,9 +56,9 @@ static void tech_check_locpart(MUXEVENT * e)
 
 static void tech_check_loc(MUXEVENT * e)
 {
-	int loc;
+	long loc;
 
-	loc = (((int) e->data2) % 16);
+	loc = (((long) e->data2) % 16);
 	if(loc == tmp_loc)
 		tmp_flag++;
 }

@@ -114,7 +114,7 @@ void mmdb_close(struct mmdb_t *mmdb)
 	msync(mmdb->base, mmdb->length, MS_SYNC);
 	munmap(mmdb->base, mmdb->length);
 	ftruncate(mmdb->fd, mmdb->ppos - mmdb->base);
-	dprintk("truncating to %d bytes.", mmdb->ppos - mmdb->base);
+	dprintk("truncating to %ld bytes.", mmdb->ppos - mmdb->base);
 	close(mmdb->fd);
 	mmdb->fd = 0;
 	memset(mmdb, 0, sizeof(struct mmdb_t));

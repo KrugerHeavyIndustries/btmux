@@ -77,7 +77,7 @@ void FailureRadioStatic(MECH * mech, int weapnum, int weaptype,
 static void mech_rrec_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int val = (int) e->data2;
+	long val = (long) e->data2;
 
 	MechRadioRange(mech) += val;
 	if(!Destroyed(mech) && val == MechRadioRange(mech))
@@ -87,7 +87,7 @@ static void mech_rrec_event(MUXEVENT * e)
 static void mech_srec_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int val = (int) e->data2;
+	long val = (long) e->data2;
 	int vt = val / 256;
 
 	switch (vt) {
@@ -117,7 +117,7 @@ void FailureRadioShort(MECH * mech, int weapnum, int weaptype, int section,
 {
 	MECHEVENT(mech, EVENT_MRECOVERY, mech_rrec_event, Number(30, Number(40,
 																		200)),
-			  (int) MechRadioRange(mech));
+			  (long) MechRadioRange(mech));
 	MechRadioRange(mech) = 0;
 }
 
@@ -129,7 +129,7 @@ void FailureRadioRange(MECH * mech, int weapnum, int weaptype, int section,
 	mod = MIN(MechRadioRange(mech) - 1, mod);
 	MECHEVENT(mech, EVENT_MRECOVERY, mech_rrec_event, Number(30, Number(40,
 																		200)),
-			  (int) mod);
+			  (long) mod);
 	MechRadioRange(mech) -= mod;
 }
 
@@ -152,32 +152,32 @@ void FailureComputerScanner(MECH * mech, int weapnum, int weaptype,
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event, Number(30,
 																 Number(40,
 																		200)),
-				  (int) MechTacRange(mech));
+				  (long) MechTacRange(mech));
 		MechTacRange(mech) = 0;
 		break;
 	case 2:
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event, Number(30,
 																 Number(40,
 																		200)),
-				  MechLRSRange(mech) + 256);
+				  (long) (MechLRSRange(mech) + 256));
 		MechLRSRange(mech) = 0;
 		break;
 	case 4:
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event, Number(30,
 																 Number(40,
 																		200)),
-				  MechScanRange(mech) + 512);
+				  (long) (MechScanRange(mech) + 512));
 		MechScanRange(mech) = 0;
 		break;
 	case 7:
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event, Number(30,
 																 Number(40,
 																		200)),
-				  (int) MechTacRange(mech));
+				  (long) MechTacRange(mech));
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event,
-				  Number(30, Number(40, 200)), MechLRSRange(mech) + 256);
+				  Number(30, Number(40, 200)), (long) (MechLRSRange(mech) + 256));
 		MECHEVENT(mech, EVENT_MRECOVERY, mech_srec_event,
-				  Number(30, Number(40, 200)), MechScanRange(mech) + 512);
+				  Number(30, Number(40, 200)), (long) (MechScanRange(mech) + 512));
 		MechTacRange(mech) = 0;
 		MechLRSRange(mech) = 0;
 		MechScanRange(mech) = 0;

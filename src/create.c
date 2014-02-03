@@ -411,11 +411,11 @@ void do_dig(dbref player, dbref cause, int key, char *name, char *args[],
 
 	buff = alloc_sbuf("do_dig");
 	if((nargs >= 1) && args[0] && *args[0]) {
-		sprintf(buff, "%d", room);
+		sprintf(buff, "%ld", room);
 		open_exit(player, Location(player), args[0], buff);
 	}
 	if((nargs >= 2) && args[1] && *args[1]) {
-		sprintf(buff, "%d", Location(player));
+		sprintf(buff, "%ld", Location(player));
 		open_exit(player, room, args[1], buff);
 	}
 	free_sbuf(buff);

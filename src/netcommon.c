@@ -399,7 +399,7 @@ void welcome_user(DESC * d)
 
 void set_lastsite(DESC * d, char *lastsite)
 {
-    int i, j;
+    long i, j;
     char buf[LBUF_SIZE];
 
     if(d->player) {
@@ -521,7 +521,7 @@ static void announce_connect(dbref player, DESC * d)
 	dbref loc, aowner, temp;
 	dbref zone, obj;
 
-	int aflags, num, key, count;
+	long aflags; int num, key, count;
 	char *buf, *time_str;
 	DESC *dtemp;
 
@@ -675,7 +675,7 @@ static void announce_connect(dbref player, DESC * d)
 void announce_disconnect(dbref player, DESC * d, const char *reason)
 {
 	dbref loc, aowner, temp, zone, obj;
-	int num, aflags, key;
+	int num, key; long aflags;
 	char *buf, *atr_temp;
 	DESC *dtemp;
 	char *argv[1];
@@ -1008,7 +1008,7 @@ static void dump_users(DESC * e, char *match, int key)
 
 			if((e->flags & DS_CONNECTED) && Wizard_Who(e->player) &&
 			   (key == CMD_WHO)) {
-				sprintf(buf, "%-16s%10s %5s%-3s#%6d %7d %-25s\r\n",
+				sprintf(buf, "%-16s%10s %5s%-3s#%6ld %7d %-25s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2(mudstate.now - d->last_time), flist,
@@ -1212,7 +1212,7 @@ static int check_connect(DESC * d, char *msg)
 {
 	char *command, *user, *password, *buff, *cmdsave;
 	dbref player, aowner;
-	int aflags, nplayers;
+	long aflags; int nplayers;
 	DESC *d2;
 	char *p;
 
@@ -1802,7 +1802,7 @@ void run_command(DESC * d, char *command)
 	if(!Staff(d->player)) {
 		if(d->quota <= 0) {
 			queue_string(d, "quota exceed, dropping command.\n");
-			dprintk("aborting execution of %s for #%d.", command, d->player);
+			dprintk("aborting execution of %s for #%ld.", command, d->player);
 			return;
 		}
 		d->quota--;

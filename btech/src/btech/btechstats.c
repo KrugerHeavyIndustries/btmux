@@ -206,7 +206,7 @@ int char_getvaluecode(char *name)
 	if((ip = hashfind(tmpbuf, &playervaluehash)) == NULL)
 		ip = hashfind(tmpbuf, &playervaluehash2);
 	free_sbuf(tmpbuf);
-	return ((int) ip) - 1;
+	return ((long) ip) - 1;
 }
 
 /********************/
@@ -500,7 +500,7 @@ int char_getattrsavesucc(dbref player, char *name)
 void init_btechstats(void)
 {
 	char *tmpbuf, *tmpc1, *tmpc2;
-	int i, j;
+	long i; int j;
 
 	hashinit(&playervaluehash, 20 * HASH_FACTOR);
 	hashinit(&playervaluehash2, 20 * HASH_FACTOR);

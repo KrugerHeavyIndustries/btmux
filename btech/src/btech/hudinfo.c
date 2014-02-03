@@ -1208,7 +1208,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 		strcpy(mapid, "-1");
 		strcpy(mapname, "-1");
 	} else {
-		sprintf(mapid, "%d", map->mynum);
+		sprintf(mapid, "%ld", map->mynum);
 		sprintf(mapname, "%s", map->mapname);
 	};
 

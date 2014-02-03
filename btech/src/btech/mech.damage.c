@@ -931,7 +931,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 	
 	/* Prevent the rare occurance of a section getting destroyed twice */
 	if(SectIsDestroyed(wounded, hitloc)) {
-		fprintf(stderr, "Double-desting section %d on mech #%d\n",
+		fprintf(stderr, "Double-desting section %d on mech #%ld\n",
 				hitloc, wounded->mynum);
 		if(IsDS(wounded))
 			return;

@@ -92,7 +92,7 @@ static int xml_db_write_object(FILE * f, dbref i, int db_format, int flags)
 	char *got, *as;
 	dbref aowner;
 	long sub;
-	int ca, aflags, save, j;
+	int ca, save, j; long aflags;
 	BOOLEXP *tempbool;
 
 	fprintf(f, "\t<Object dbref=\"%ld\">\n", (long) i);
@@ -175,7 +175,7 @@ static int xml_db_write_mux(FILE * f, dbref i, int db_format, int flags)
 	char *got, *as;
 	dbref aowner;
 	long sub;
-	int ca, aflags, save, j;
+	int ca, save, j; long aflags;
 	BOOLEXP *tempbool;
 
 	fprintf(f, "\t<Object dbref=\"%ld\">\n", (long) i);

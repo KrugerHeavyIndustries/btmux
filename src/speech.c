@@ -325,7 +325,7 @@ static void page_return(dbref player, dbref target, const char *tag, int anum,
 						const char *dflt)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *str, *str2, *buf, *bp;
 	struct tm *tp;
 	time_t t;
@@ -437,7 +437,7 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 	int ismessage = 0;
 	int count = 0;
 	int n = 0;
-	int aflags = 0;
+	long aflags = 0;
 
 	buf1 = alloc_lbuf("page_return_list");
 	bp = buf1;

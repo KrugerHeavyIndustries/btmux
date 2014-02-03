@@ -31,7 +31,7 @@
 #define BTHADD(desc,n)  baseToHit += n;
 #define BTHEND(m)
 #else
-#define BTHBASE(m,t,n)  do { if (t) sprintf(buf, "#%d -> #%d: Base %d", m->mynum, t->mynum, n); else sprintf(buf, "#%d -> (hex): Base %d", m->mynum, n); baseToHit = n; sprintf(bthbuf, "Base %d", n); } while (0)
+#define BTHBASE(m,t,n)  do { if (t) sprintf(buf, "#%ld -> #%ld: Base %d", m->mynum, t->mynum, n); else sprintf(buf, "#%ld -> (hex): Base %d", m->mynum, n); baseToHit = n; sprintf(bthbuf, "Base %d", n); } while (0)
 #define BTHADD(desc,n)  do { i = n ; if (i) { sprintf(buf+strlen(buf), ", %s: %s%d", desc, i>0 ? "+" : "", i); sprintf(bthbuf+strlen(bthbuf), ", %s: %s%d", desc, i>0 ? "+" : "", i);  baseToHit += i; } } while (0)
 #define BTHEND(m)       SendBTHDebug(tprintf("%s.", buf))
 #endif

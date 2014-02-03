@@ -131,7 +131,7 @@ extern void display_flagtab(dbref);
 extern void flag_set(dbref, dbref, char *, int);
 extern char *flag_description(dbref, dbref);
 extern FLAGENT *find_flag(dbref, char *);
-extern char *decode_flags(dbref, FLAG, int, int);
+extern char *decode_flags(dbref, FLAG, long, long);
 extern int has_flag(dbref, dbref, char *);
 extern char *unparse_object(dbref, dbref, int);
 extern char *unparse_object_numonly(dbref);

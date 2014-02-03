@@ -638,7 +638,7 @@ static void mech_hide_event(MUXEVENT * e)
 	MECH *t;
 	MAP *map = getMap(mech->mapindex);
 	int fail = 0, i;
-	int tic = (int) e->data2;
+	long tic = (long) e->data2;
 
 	if(!map)
 		return;

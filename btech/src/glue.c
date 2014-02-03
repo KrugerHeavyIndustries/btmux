@@ -84,7 +84,7 @@ void list_hashstat(dbref player, const char *tab_name, HASHTAB * htab);
 void raw_notify(dbref player, const char *msg);
 
 /*************PERSONAL PROTOS*****************/
-void *NewSpecialObject(int id, int type);
+void *NewSpecialObject(long id, int type);
 void *FindObjectsData(dbref key);
 static void DoSpecialObjectHelp(dbref player, char *type, int id, int loc,
                                 int powerneeded, int objid, char *arg);
@@ -600,7 +600,7 @@ load_xcode(void)
 	heartbeat_init();
 }
 
-static int zappable_node;
+static long int zappable_node;
 
 static int
 zap_check(void *key, void *data, int depth, void *arg)
@@ -921,11 +921,11 @@ UpdateSpecialObjects(void)
 }
 
 void *
-NewSpecialObject(int id, int type)
+NewSpecialObject(long id, int type)
 {
 	XCODE *xcode_obj;
 
-	int i;
+	long i;
 
 	if(SpecialObjects[type].datasize) {
 		Create(xcode_obj, char, (i = SpecialObjects[type].datasize));

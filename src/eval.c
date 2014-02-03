@@ -249,7 +249,7 @@ int get_gender(dbref player)
 {
 	char first, *atr_gotten;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	atr_gotten = atr_pget(player, A_SEX, &aowner, &aflags);
 	first = *atr_gotten;
@@ -351,7 +351,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 	char savec, ch, *str;
 	char *realbuff = NULL, *realbp = NULL;
 	dbref aowner;
-	int at_space, nfargs, gender, i, j, alldone, aflags, feval;
+	int at_space, nfargs, gender, i, j, alldone, feval; long aflags;
 	int is_trace, is_top, save_count;
 	int ansi;
 	FUN *fp;
@@ -738,7 +738,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 								 * Invoker DB number 
 								 */
 				tbuf = alloc_sbuf("exec.invoker");
-				sprintf(tbuf, "#%d", cause);
+				sprintf(tbuf, "#%ld", cause);
 				safe_str(tbuf, buff, bufc);
 				free_sbuf(tbuf);
 				break;
@@ -746,7 +746,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 								 * Executor DB number 
 								 */
 				tbuf = alloc_sbuf("exec.executor");
-				sprintf(tbuf, "#%d", player);
+				sprintf(tbuf, "#%ld", player);
 				safe_str(tbuf, buff, bufc);
 				free_sbuf(tbuf);
 				break;
@@ -762,7 +762,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 			case 'l':
 				if(!(eval & EV_NO_LOCATION)) {
 					tbuf = alloc_sbuf("exec.exloc");
-					sprintf(tbuf, "#%d", where_is(cause));
+					sprintf(tbuf, "#%ld", where_is(cause));
 					safe_str(tbuf, buff, bufc);
 					free_sbuf(tbuf);
 				}

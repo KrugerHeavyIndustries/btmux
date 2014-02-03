@@ -195,7 +195,7 @@ static int atr_match1(dbref thing, dbref parent, dbref player, char type,
 					  char *str, int check_exclude, int hash_insert)
 {
 	dbref aowner;
-	int match, attr, aflags, i;
+	int match, attr, i; long aflags;
 	char buff[LBUF_SIZE], *s, *as;
 	char *args[10];
 	ATTR *ap;
@@ -328,7 +328,7 @@ int atr_match(dbref thing, dbref player, char type, char *str,
  */
 int check_filter(dbref object, dbref player, int filter, const char *msg)
 {
-	int aflags;
+	long aflags;
 	dbref aowner;
 	char *buf, *nbuf, *cp, *dp, *str;
 
@@ -358,7 +358,7 @@ int check_filter(dbref object, dbref player, int filter, const char *msg)
 static char *add_prefix(dbref object, dbref player, int prefix,
 						const char *msg, const char *dflt)
 {
-	int aflags;
+	long aflags;
 	dbref aowner;
 	char *buf, *nbuf, *cp, *bp, *str;
 
@@ -405,7 +405,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 	char *msg_ns, *mp, *tbuff, *tp, *buff, *colbuf = NULL;
 	char *args[10];
 	dbref aowner, targetloc, recip, obj;
-	int i, nargs, aflags, has_neighbors, pass_listen;
+	int i, nargs, has_neighbors, pass_listen; long aflags;
 	int check_listens, pass_uselock, is_audible;
 	FWDLIST *fp;
 
@@ -446,7 +446,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 			tbuff = alloc_sbuf("notify_checked.nospoof");
 			safe_chr('[', msg_ns, &mp);
 			safe_str(Name(sender), msg_ns, &mp);
-			sprintf(tbuff, "(#%d)", sender);
+			sprintf(tbuff, "(#%ld)", sender);
 			safe_str(tbuff, msg_ns, &mp);
 
 			if(sender != Owner(sender)) {
@@ -455,7 +455,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 				safe_chr('}', msg_ns, &mp);
 			}
 			if(sender != mudstate.curr_enactor) {
-				sprintf(tbuff, "<-(#%d)", mudstate.curr_enactor);
+				sprintf(tbuff, "<-(#%ld)", mudstate.curr_enactor);
 				safe_str(tbuff, msg_ns, &mp);
 			}
 			safe_str((char *) "] ", msg_ns, &mp);
@@ -1150,7 +1150,7 @@ int Hearer(dbref thing)
 {
 	char *as, *buff, *s;
 	dbref aowner;
-	int attr, aflags;
+	int attr; long aflags;
 	ATTR *ap;
 
 	if(mudstate.inpipe && (thing == mudstate.poutobj))
@@ -1208,7 +1208,7 @@ void do_readcache(dbref player, dbref cause, int key)
 static void process_preload(void)
 {
 	dbref thing, parent, aowner;
-	int aflags, lev, i;
+	long aflags; int lev, i;
 	char *tstr;
 	FWDLIST *fp;
 

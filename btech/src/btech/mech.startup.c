@@ -114,7 +114,7 @@ char *naval_bootmsgs[BOOTCOUNT] = {
 static void mech_startup_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int timer = (int) e->data2;
+	long timer = (long) e->data2;
 	MAP *mech_map;
 	int i;
 
@@ -266,7 +266,7 @@ void mech_startup(dbref player, void *data, char *buffer)
 	MECHEVENT(mech, EVENT_STARTUP, mech_startup_event, (n ||
 														MechType(mech) ==
 														CLASS_MW) ? 1 : SSLEN,
-			  MechType(mech) == CLASS_MW ? BOOTCOUNT - 1 : n);
+			  (long) (MechType(mech) == CLASS_MW ? BOOTCOUNT - 1 : n));
 }
 
 void mech_shutdown(dbref player, void *data, char *buffer)

@@ -192,7 +192,7 @@ void move_mech(MECH * mech)
 		mech_shutdown(MechPilot(mech), (void *) mech, "");
 
 		snprintf(message_buffer, MBUF_SIZE,
-				 "move_mech:invalid map:Mech: %d Index: %d", mech->mynum,
+				 "move_mech:invalid map:Mech: %ld Index: %ld", mech->mynum,
 				 mech->mapindex);
 		SendError(message_buffer);
 		mech->mapindex = -1;
@@ -215,7 +215,7 @@ void move_mech(MECH * mech)
 		mech_shutdown(MechPilot(mech), (void *) mech, "");
 
 		snprintf(message_buffer, MBUF_SIZE,
-				 "move_mech:invalid map:Mech: %d Index: %d", mech->mynum,
+				 "move_mech:invalid map:Mech: %ld Index: %ld", mech->mynum,
 				 mech->mapindex);
 		SendError(message_buffer);
 
@@ -611,7 +611,7 @@ void move_mech(MECH * mech)
 
 				mech_shutdown(MechPilot(mech), (void *) mech, "");
 				snprintf(message_buffer, MBUF_SIZE,
-						 "move_mech:invalid map:Mech: %d Index: %d",
+						 "move_mech:invalid map:Mech: %ld Index: %ld",
 						 mech->mynum, mech->mapindex);
 				SendError(message_buffer);
 				mech->mapindex = -1;

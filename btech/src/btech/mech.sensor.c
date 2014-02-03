@@ -637,7 +637,7 @@ static int tmp_found;
 
 static void sensor_check(MUXEVENT * e)
 {
-	int d = ((int) e->data2);
+	long d = ((long) e->data2);
 
 	tmp_prim = d / NUM_SENSORS;
 	tmp_sec = d % NUM_SENSORS;
@@ -681,7 +681,7 @@ static void show_sensor(dbref player, MECH * mech, int verbose)
 
 static void mech_sensorchange_event(MUXEVENT * e)
 {
-	int d = (int) e->data2;
+	long d = (long) e->data2;
 	MECH *mech = (MECH *) e->data;
 	int prim = d / NUM_SENSORS;
 	int sec = d % NUM_SENSORS;

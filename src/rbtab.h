@@ -50,10 +50,10 @@ void nhashreset(RBTAB *);
 void *nhash_nextentry(RBTAB * htab);
 void *nhash_firstentry(RBTAB * htab);
 char *nhashinfo(const char *, RBTAB *);
-void *nhashfind(int, RBTAB *);
-int nhashadd(int, void *, RBTAB *);
-void nhashdelete(int, RBTAB *);
+void *nhashfind(long, RBTAB *);
+int nhashadd(long, void *, RBTAB *);
+void nhashdelete(long, RBTAB *);
 void nhashflush(RBTAB *, int);
-int nhashrepl(int, void *, RBTAB *);
+int nhashrepl(long, void *, RBTAB *);
 extern NAMETAB powers_nametab[];
 #endif

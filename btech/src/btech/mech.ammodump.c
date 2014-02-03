@@ -21,7 +21,7 @@
 static void mech_dump_event(MUXEVENT * ev)
 {
 	MECH *mech = (MECH *) ev->data;
-	int arg = (int) ev->data2;
+	long arg = (long) ev->data2;
 	int loc;
 	int i, l;
 	int d, e = 0;
@@ -113,7 +113,7 @@ void mech_dump(dbref player, void *data, char *buffer)
 	int loc;
 	int i, l, count = 0, d;
 	char buf[MBUF_SIZE];
-	int type = 0;
+	long type = 0;
 
 	cch(MECH_USUAL);
 	argc = mech_parseattributes(buffer, args, 2);

@@ -19,7 +19,7 @@
 static void tag_recycle_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int data = (int) e->data2;
+	long data = (long) e->data2;
 	MECH *target;
 
 	if(isTAGDestroyed(mech))

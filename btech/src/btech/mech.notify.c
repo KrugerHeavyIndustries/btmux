@@ -1243,8 +1243,8 @@ void sendchannelstuff(MECH * mech, int freq, char *msg)
 				} else if(a && Location(a->mynum) != tempMech->mynum) {
 					/* Check to see if the AI is still in the same mech */
 					snprintf(ai_buf, LBUF_SIZE,
-							 "Autopilot #%d (Location: #%d) "
-							 "reported on Mech #%d but not in the proper location",
+							 "Autopilot #%ld (Location: #%ld) "
+							 "reported on Mech #%ld but not in the proper location",
 							 a->mynum, Location(a->mynum), tempMech->mynum);
 					SendAI(ai_buf);
 				} else if(a && !ECMDisturbed(tempMech)) {

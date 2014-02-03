@@ -127,7 +127,7 @@ void fun_cwho(char *buff, char **bufc, dbref player, dbref cause,
 		/*      if (Connected(user->who)) */
 		{
 			if(len) {
-				sprintf(smbuf, " #%d", user->who);
+				sprintf(smbuf, " #%ld", user->who);
 				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 					safe_str(" #-1", buff, bufc);
 					return;
@@ -135,7 +135,7 @@ void fun_cwho(char *buff, char **bufc, dbref player, dbref cause,
 				safe_str(smbuf, buff, bufc);
 				len += strlen(smbuf);
 			} else {
-				safe_tprintf_str(buff, bufc, "#%d", user->who);
+				safe_tprintf_str(buff, bufc, "#%ld", user->who);
 				len = strlen(buff);
 			}
 		}
@@ -443,7 +443,7 @@ static void set_attr_internal(dbref player, dbref thing, int attrnum,
 							  char **bufc)
 {
 	dbref aowner;
-	int aflags, could_hear;
+	long aflags; int could_hear;
 	ATTR *attr;
 
 	attr = atr_num(attrnum);
@@ -469,7 +469,7 @@ void fun_set(char *buff, char **bufc, dbref player, dbref cause,
 {
 	dbref thing, thing2, aowner;
 	char *p, *buff2;
-	int atr, atr2, aflags, clear, flagvalue, could_hear;
+	int atr, atr2, clear, flagvalue, could_hear; long aflags;
 	ATTR *attr, *attr2;
 
 	/*
@@ -691,7 +691,7 @@ void fun_zwho(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%d", i);
+					sprintf(smbuf, " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -699,7 +699,7 @@ void fun_zwho(char *buff, char **bufc, dbref player, dbref cause,
 					safe_str(smbuf, buff, bufc);
 					len += strlen(smbuf);
 				} else {
-					safe_tprintf_str(buff, bufc, "#%d", i);
+					safe_tprintf_str(buff, bufc, "#%ld", i);
 					len = strlen(buff);
 				}
 			}
@@ -724,7 +724,7 @@ void fun_zrooms(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%d", i);
+                                        sprintf(smbuf, " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -732,7 +732,7 @@ void fun_zrooms(char *buff, char **bufc, dbref player, dbref cause,
                                         safe_str(smbuf, buff, bufc);
                                         len += strlen(smbuf);
                                 } else {
-                                        safe_tprintf_str(buff, bufc, "#%d", i);
+                                        safe_tprintf_str(buff, bufc, "#%ld", i);
                                         len = strlen(buff);
                                 }
                         }
@@ -756,7 +756,7 @@ void fun_zexits(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%d", i);
+                                        sprintf(smbuf, " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -764,7 +764,7 @@ void fun_zexits(char *buff, char **bufc, dbref player, dbref cause,
                                         safe_str(smbuf, buff, bufc);
                                         len += strlen(smbuf);
                                 } else {
-                                        safe_tprintf_str(buff, bufc, "#%d", i);
+                                        safe_tprintf_str(buff, bufc, "#%ld", i);
                                         len = strlen(buff);
                                 }
                         }
@@ -788,7 +788,7 @@ void fun_zobjects(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%d", i);
+                                        sprintf(smbuf, " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -796,7 +796,7 @@ void fun_zobjects(char *buff, char **bufc, dbref player, dbref cause,
                                         safe_str(smbuf, buff, bufc);
                                         len += strlen(smbuf);
                                 } else {
-                                        safe_tprintf_str(buff, bufc, "#%d", i);
+                                        safe_tprintf_str(buff, bufc, "#%ld", i);
                                         len = strlen(buff);
                                 }
                         }
@@ -823,7 +823,7 @@ void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%d", i);
+					sprintf(smbuf, " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -831,7 +831,7 @@ void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause,
 					safe_str(smbuf, buff, bufc);
 					len += strlen(smbuf);
 				} else {
-					safe_tprintf_str(buff, bufc, "#%d", i);
+					safe_tprintf_str(buff, bufc, "#%ld", i);
 					len = strlen(buff);
 				}
 			}
@@ -857,7 +857,7 @@ void fun_inzone(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%d", i);
+					sprintf(smbuf, " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -865,7 +865,7 @@ void fun_inzone(char *buff, char **bufc, dbref player, dbref cause,
 					safe_str(smbuf, buff, bufc);
 					len += strlen(smbuf);
 				} else {
-					safe_tprintf_str(buff, bufc, "#%d", i);
+					safe_tprintf_str(buff, bufc, "#%ld", i);
 					len = strlen(buff);
 				}
 			}
@@ -890,7 +890,7 @@ void fun_children(char *buff, char **bufc, dbref player, dbref cause,
 			if(len) {
 				static char smbuf[SBUF_SIZE];
 
-				sprintf(smbuf, " #%d", i);
+				sprintf(smbuf, " #%ld", i);
 				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 					safe_str(" #-1", buff, bufc);
 					return;
@@ -898,7 +898,7 @@ void fun_children(char *buff, char **bufc, dbref player, dbref cause,
 				safe_str(smbuf, buff, bufc);
 				len += strlen(smbuf);
 			} else {
-				safe_tprintf_str(buff, bufc, "#%d", i);
+				safe_tprintf_str(buff, bufc, "#%ld", i);
 				len = strlen(buff);
 			}
 		}
@@ -993,7 +993,7 @@ void fun_zfun(char *buff, char **bufc, dbref player, dbref cause,
 			  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	int attrib;
 	char *tbuf1, *str;
 
@@ -1527,7 +1527,7 @@ void fun_hasattr(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int aflags;
+	long aflags;
 	ATTR *attr;
 	char *tbuf;
 
@@ -1561,7 +1561,7 @@ void fun_hasattrp(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int aflags;
+	long aflags;
 	ATTR *attr;
 	char *tbuf;
 
@@ -1608,7 +1608,7 @@ void fun_default(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, aflags;
+	int attrib; long aflags;
 	ATTR *attr;
 	char *objname, *atr_gotten, *bp, *str;
 
@@ -1658,7 +1658,7 @@ void fun_edefault(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, aflags;
+	int attrib; long aflags;
 	ATTR *attr;
 	char *objname, *atr_gotten, *bp, *str;
 
@@ -1710,7 +1710,7 @@ void fun_udefault(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int aflags, anum;
+	long aflags; int anum;
 	ATTR *ap;
 	char *objname, *atext, *bp, *str;
 
@@ -1829,7 +1829,7 @@ void fun_visible(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref it, thing, aowner;
-	int aflags, atr;
+	long aflags; int atr;
 	ATTR *ap;
 
 	if((it = match_thing(player, fargs[0])) == NOTHING) {
@@ -2155,7 +2155,7 @@ void fun_sortby(char *buff, char **bufc, dbref player, dbref cause,
 				char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	char *atext, *list, *ptrs[LBUF_SIZE / 2], sep;
-	int nptrs, aflags, anum;
+	int nptrs, anum; long aflags;
 	dbref thing, aowner;
 	ATTR *ap;
 
@@ -2316,7 +2316,7 @@ void fun_mix(char *buff, char **bufc, dbref player, dbref cause,
 			 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum;
+	long aflags; int anum;
 	ATTR *ap;
 	char *atext, *os[2], *oldp, *str, *cp1, *cp2, *atextbuf, sep;
 
@@ -2389,7 +2389,7 @@ void fun_foreach(char *buff, char **bufc, dbref player, dbref cause,
 				 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum, flag = 0;
+	long aflags; int anum, flag = 0;
 	ATTR *ap;
 	char *atext, *atextbuf, *str, *cp, *bp;
 	char cbuf[2], prev = '\0';
@@ -2479,7 +2479,7 @@ void fun_munge(char *buff, char **bufc, dbref player, dbref cause,
 			   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum, nptrs1, nptrs2, nresults, i, j;
+	long aflags; int anum, nptrs1, nptrs2, nresults, i, j;
 	ATTR *ap;
 	char *list1, *list2, *rlist;
 	char *ptrs1[LBUF_SIZE / 2], *ptrs2[LBUF_SIZE / 2],
@@ -2926,7 +2926,7 @@ char *grep_util(dbref player, dbref thing, char *pattern, char *lookfor,
 	char *tbuf1, *buf, *text, *attrib;
 	char *bp, *bufc;
 	int found;
-	int ca, aflags;
+	int ca; long aflags;
 
 	tbuf1 = alloc_lbuf("grep_util");
 	bufc = buf = alloc_lbuf("grep_util.parse_attrib");
@@ -3163,12 +3163,12 @@ void fun_lparent(char *buff, char **bufc, dbref player, dbref cause,
 		safe_str("#-1 PERMISSION DENIED", buff, bufc);
 		return;
 	}
-	sprintf(tbuf1, "#%d", it);
+	sprintf(tbuf1, "#%ld", it);
 	safe_str(tbuf1, buff, bufc);
 	par = Parent(it);
 
 	while (Good_obj(par) && Examinable(player, it)) {
-		sprintf(tbuf1, " #%d", par);
+		sprintf(tbuf1, " #%ld", par);
 		safe_str(tbuf1, buff, bufc);
 		it = par;
 		par = Parent(par);
@@ -3524,7 +3524,7 @@ void fun_setlock(char *buff, char **bufc, dbref player, dbref cause,
 {
 	int switchkey = 0;
 	dbref thing, aowner;
-	int atr, aflags;
+	int atr; long aflags;
 	ATTR *ap;
 	struct boolexp *okey;
 

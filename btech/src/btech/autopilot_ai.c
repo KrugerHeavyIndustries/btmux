@@ -116,7 +116,7 @@ char *AI_Info(MECH * m, AUTO * a)
 {
 	static char buf[MBUF_SIZE];
 
-	sprintf(buf, "Unit#%d on #%d [A#%d]:", m->mynum, m->mapindex, a->mynum);
+	sprintf(buf, "Unit#%ld on #%ld [A#%ld]:", m->mynum, m->mapindex, a->mynum);
 	return buf;
 }
 
@@ -1005,7 +1005,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 	short map_x1, map_y1, map_x2, map_y2;	/* The actual map 'hexes' */
 	int i;
 	int child_g_score, child_h_score;	/* the score values for the child hexes */
-	int hexoffset;				/* temp int to pass around as the hexoffset */
+	long hexoffset;				/* temp int to pass around as the hexoffset */
 
 	/* Our lists using Hag's rbtree */
 	/* Using two rbtree's to store the open_list so we can sort two

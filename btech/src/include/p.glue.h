@@ -22,7 +22,7 @@ void LoadSpecialObjects(void);
 void ChangeSpecialObjects(int i);
 void SaveSpecialObjects(int i);
 void UpdateSpecialObjects(void);
-void *NewSpecialObject(int id, int type);
+void *NewSpecialObject(long id, int type);
 void CreateNewSpecialObject(dbref player, dbref key);
 void DisposeSpecialObject(dbref player, dbref key);
 void Dump_Mech(dbref player, int type, char *typestr);

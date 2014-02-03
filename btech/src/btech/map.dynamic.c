@@ -167,7 +167,7 @@ void mech_map_consistency_check(MECH * mech)
 	if(!map) {
 		if(mech->mapindex > 0) {
 			mech->mapindex = -1;
-			fprintf(stderr, "#%d on nonexistent map - removing..\n",
+			fprintf(stderr, "#%ld on nonexistent map - removing..\n",
 					mech->mynum);
 		}
 		return;
@@ -176,12 +176,12 @@ void mech_map_consistency_check(MECH * mech)
 		/* Invalid: possible corruption of data, therefore un-hosing it */
 		mech->mapindex = -1;
 		mech_remove_from_all_maps(mech);
-		fprintf(stderr, "#%d on invalid map - removing.. (#1)\n",
+		fprintf(stderr, "#%ld on invalid map - removing.. (#1)\n",
 				mech->mynum);
 		return;
 	}
 	if(map->mechsOnMap[mech->mapnumber] != mech->mynum) {
-		fprintf(stderr, "#%d on invalid map - removing .. (#2) -- mapindex: %d mapnumber: %d mechsOnMap: %d\n",
+		fprintf(stderr, "#%ld on invalid map - removing .. (#2) -- mapindex: %ld mapnumber: %d mechsOnMap: %ld\n",
 				mech->mynum, mech->mapindex, mech->mapnumber, map->mechsOnMap[mech->mapnumber]);
 		mech->mapindex = -1;
 		mech_remove_from_all_maps(mech);
@@ -206,7 +206,7 @@ void eliminate_empties(MAP * map)
 	if(count == (oldcount = map->first_free))
 		return;
 	fprintf(stderr,
-			"Map #%d contains empty entries ; removing %d (%d->%d)\n",
+			"Map #%ld contains empty entries ; removing %d (%d->%d)\n",
 			map->mynum, oldcount - count, oldcount, count);
 	if(i < 0)
 		return;
@@ -218,7 +218,7 @@ void eliminate_empties(MAP * map)
 	ReCreate(map->mechflags, char, count);
 
 	map->first_free = count;
-	sprintf(tempbuf, "%d", map->mynum);
+	sprintf(tempbuf, "%ld", map->mynum);
 	mech_Rfixstuff(GOD, NULL, tempbuf);
 }
 

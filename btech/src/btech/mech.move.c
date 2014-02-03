@@ -71,7 +71,7 @@ void mech_lateral(dbref player, void *data, char *buffer)
 /* Rule Reference: Total Warfare, Page 67 (VTOL/Hover Lateral, though doesn't say intentional) */
 
 	MECH *mech = (MECH *) data;
-	int i;
+	long i;
 
 	cch(MECH_USUALO);
 
@@ -1303,7 +1303,7 @@ void mech_jump(dbref player, void *data, char *buffer)
 static void mech_hulldown_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int type = (int) e->data2;
+	long type = (long) e->data2;
 
 	if(!ChangingHulldown(mech))
 		return;
@@ -1327,7 +1327,7 @@ static void mech_hulldown_event(MUXEVENT * e)
 void mech_sprint(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	int d = 0, i;
+	long d = 0; int i;
 
 	cch(MECH_USUALO);
 	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
@@ -1382,7 +1382,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 void mech_evade(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	int d = 0, i;
+	long d = 0; int i;
 
 	cch(MECH_USUALO);
 	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
@@ -1441,7 +1441,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 void mech_dodge(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	int d = 0, i;
+	long d = 0; int i;
 
 	cch(MECH_USUALO);
 	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");

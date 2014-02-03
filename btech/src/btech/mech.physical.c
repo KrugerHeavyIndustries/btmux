@@ -2323,7 +2323,7 @@ void ChargeMech(MECH * mech, MECH * target)
 			MechDesiredSpeed(mech) = 0;
 
 			/* Emit the damage for debugging purposes */
-			snprintf(emit_buff, LBUF_SIZE, "#%i charges #%i (%i/%i) Distance:"
+			snprintf(emit_buff, LBUF_SIZE, "#%li charges #%li (%i/%i) Distance:"
 					 " %.2f DI: %i DR: %i", mech->mynum, target->mynum,
 					 mech_baseToHit, mech_roll, MechChargeDistance(mech),
 					 inflicted_damage, received_damage);
@@ -2410,7 +2410,7 @@ void ChargeMech(MECH * mech, MECH * target)
 			MechDesiredSpeed(target) = 0;
 
 			/* Emit the damage for debugging purposes */
-			snprintf(emit_buff, LBUF_SIZE, "#%i charges #%i (%i/%i) Distance:"
+			snprintf(emit_buff, LBUF_SIZE, "#%li charges #%li (%i/%i) Distance:"
 					 " %.2f DI: %i DR: %i", target->mynum, mech->mynum,
 					 targ_baseToHit, targ_roll, MechChargeDistance(target),
 					 inflicted_damage, received_damage);
@@ -2638,7 +2638,7 @@ void ChargeMech(MECH * mech, MECH * target)
 		MechDesiredSpeed(mech) = 0;
 
 		/* Emit the damage for debugging purposes */
-		snprintf(emit_buff, LBUF_SIZE, "#%i charges #%i (%i/%i) Distance:"
+		snprintf(emit_buff, LBUF_SIZE, "#%li charges #%li (%i/%i) Distance:"
 				 " %.2f DI: %i DR: %i", mech->mynum, target->mynum, baseToHit,
 				 roll, MechChargeDistance(mech), inflicted_damage,
 				 received_damage);

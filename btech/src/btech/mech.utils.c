@@ -3284,7 +3284,7 @@ if (MechType(mech) != CLASS_BSUIT) {
 				if(IsWeapon(part))
 					continue;
 
-                                int indiv_part_cost = GetPartCost(part);
+                                long indiv_part_cost = GetPartCost(part);
                                 if (MechType(mech) != CLASS_MECH && IsWeapon(part)) {
                                     indiv_part_cost *= MechWeapons[part-1].criticals;
                                     //SendDebug(tprintf("Part#: %s(%d) Crits: %d", MechWeapons[part-1].name, part-1, MechWeapons[part-1].criticals));
@@ -4423,7 +4423,7 @@ mul = pow(((((MMaxSpeed(mech) / MP1) + (type == CLASS_AERO || type == CLASS_DS ?
 						 || StealthArmorActive(mech)) ? -1 : factor);
 			}
 			snprintf(buf, LBUF_SIZE,
-					 "HeatFactor : Invalid heat factor calculation on #%d.",
+					 "HeatFactor : Invalid heat factor calculation on #%ld.",
 					 mech->mynum);
 			SendDebug(buf);
 		}

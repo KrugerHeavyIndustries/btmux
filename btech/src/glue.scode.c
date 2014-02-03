@@ -556,7 +556,7 @@ void fun_zmechs(char *buff, char **bufc, dbref player, dbref cause,
 	                                if(len) {
         	                                static char smbuf[SBUF_SIZE];
 
-                	                        sprintf(smbuf, " #%d", i);
+                	                        sprintf(smbuf, " #%ld", i);
                         	                if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                 	                safe_str(" #-1", buff, bufc);
                                         	        return;
@@ -595,7 +595,7 @@ void fun_btsetxcodevalue(char *buff, char **bufc, dbref player, dbref cause,
 		if(!strcasecmp(fargs[1], xcode_data[i].name) &&
 		   xcode_data[i].gtype == spec &&
 		   (scode_in_out[xcode_data[i].type] & 2)) {
-			bar = (void *) ((int) foo + xcode_data[i].rel_addr);
+			bar = (void *) ((long) foo + xcode_data[i].rel_addr);
 			switch (xcode_data[i].type) {
 			case TYPE_STRFUNC_BD:
 			case TYPE_STRFUNC_S:
@@ -637,7 +637,7 @@ void fun_btsetxcodevalue(char *buff, char **bufc, dbref player, dbref cause,
 
 static char *RetrieveValue(void *data, int i)
 {
-	void *bar = (void *) ((int) data + xcode_data[i].rel_addr);
+	void *bar = (void *) ((long) data + xcode_data[i].rel_addr);
 	static char buf[LBUF_SIZE];
 	char *(*tempfun) ();
 
@@ -652,7 +652,7 @@ static char *RetrieveValue(void *data, int i)
 		break;
 	case TYPE_DBREF:
 	case TYPE_DBREF_RO:
-		sprintf(buf, "%d", (dbref) * ((dbref *) bar));
+		sprintf(buf, "%ld", (dbref) * ((dbref *) bar));
 		break;
 	case TYPE_CHAR:
 	case TYPE_CHAR_RO:
@@ -756,7 +756,7 @@ void set_xcodestuff(dbref player, void *data, char *buffer)
 	DOCHECK(!xcode_data[i].name,
 			"Error: No matching xcode value for this type of object found.");
 	bar =
-		(void *) ((int) FindObjectsData(Location(player)) +
+		(void *) ((long) FindObjectsData(Location(player)) +
 				  xcode_data[i].rel_addr);
 	switch (xcode_data[i].type) {
 	case TYPE_STRFUNC_BD:
@@ -2348,7 +2348,7 @@ void fun_btsetxy(char *buff, char **bufc, dbref player, dbref cause,
     if (MechCarrying(mech) > 0)
         towee = getMech(MechCarrying(mech));
 
-	snprintf(buffer, MBUF_SIZE, "%d", mapdb);
+	snprintf(buffer, MBUF_SIZE, "%ld", mapdb);
 	mech_Rsetmapindex(GOD, (void *) mech, buffer);
 
     if (towee)
@@ -2676,9 +2676,9 @@ void fun_btlistblz(char *buff, char **bufc, dbref player, dbref cause,
 		if(i == TYPE_B_LZ) {
 			count++;
 			if(count == 1)
-				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "%d %d %d", tmp->x, tmp->y, tmp->datai);
+				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "%d %d %ld", tmp->x, tmp->y, tmp->datai);
 			else
-				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "|%d %d %d", tmp->x, tmp->y, tmp->datai);
+				strcount += snprintf(buf + strcount, MBUF_SIZE - strcount, "|%d %d %ld", tmp->x, tmp->y, tmp->datai);
 		}
 	safe_tprintf_str(buff, bufc, buf);
 }

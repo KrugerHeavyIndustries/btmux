@@ -227,7 +227,7 @@ int could_doit(dbref player, dbref thing, int locknum)
 {
 	char *key;
 	dbref aowner;
-	int aflags, doit;
+	long aflags; int doit;
 
 	/*
 	 * no if nonplayer trys to get key 
@@ -286,7 +286,7 @@ int can_see(dbref player, dbref thing, int can_see_loc)
 static int pay_quota(dbref who, int cost)
 {
 	dbref aowner;
-	int quota, aflags;
+	int quota; long aflags;
 	char buf[20], *quota_str;
 
 	/*
@@ -368,7 +368,7 @@ int payfor(dbref who, int cost)
 void add_quota(dbref who, int payment)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char buf[20], *quota;
 
 	quota = atr_get(who, A_RQUOTA, &aowner, &aflags);
@@ -839,7 +839,7 @@ void handle_prog(DESC * d, char *message)
 	DESC *all;
 	char *cmd;
 	dbref aowner;
-	int aflags, i;
+	long aflags; int i;
 
 	/*
 	 * Allow the player to pipe a command while in interactive mode. 
@@ -932,7 +932,7 @@ void do_prog(dbref player, dbref cause, int key, char *name, char *command)
 {
 	DESC *d;
 	PROG *program;
-	int i, atr, aflags;
+	int i, atr; long aflags;
 	dbref doer, thing, aowner;
 	ATTR *ap;
 	char *attrib, *msg;
@@ -1481,7 +1481,7 @@ void did_it(dbref player, dbref thing, int what, const char *def, int owhat,
 {
 	char *d, *buff, *act, *charges, *bp, *str;
 	dbref loc, aowner;
-	int num, aflags;
+	int num; long aflags;
 
 	/*
 	 * message to player 
@@ -1575,7 +1575,7 @@ void do_verb(dbref player, dbref cause, int key, char *victim_str,
 			 char *args[], int nargs)
 {
 	dbref actor, victim, aowner;
-	int what, owhat, awhat, nxargs, restriction, aflags, i;
+	int what, owhat, awhat, nxargs, restriction, i; long aflags;
 	ATTR *ap;
 	const char *whatd, *owhatd;
 	char *xargs[10];

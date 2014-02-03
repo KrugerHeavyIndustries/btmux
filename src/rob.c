@@ -95,7 +95,7 @@ static void give_thing(dbref giver, dbref recipient, int key, char *what)
 static void give_money(dbref giver, dbref recipient, int key, int amount)
 {
 	dbref aowner;
-	int cost, aflags;
+	int cost; long aflags;
 	char *str;
 
 	/*

@@ -230,7 +230,7 @@ void auto_load_commands(FILE * file, AUTO * autopilot)
 	fread(&tmpb, 1, 1, file);
 	if(tmpb != AI_COMMAND_DLLIST_START) {
 		fprintf(stderr, "Unable to locate START for reading data"
-				" for AI #%d\n", autopilot->mynum);
+				" for AI #%ld\n", autopilot->mynum);
 		fflush(stderr);
 		exit(1);
 	}
@@ -257,7 +257,7 @@ void auto_load_commands(FILE * file, AUTO * autopilot)
 	fread(&tmpb, 1, 1, file);
 	if(tmpb != AI_COMMAND_DLLIST_END) {
 		fprintf(stderr, "Unable to locate END for reading data"
-				" for AI #%d\n", autopilot->mynum);
+				" for AI #%ld\n", autopilot->mynum);
 		fflush(stderr);
 		exit(1);
 	}
@@ -374,7 +374,7 @@ void auto_delcommand(dbref player, void *data, char *buffer)
 		if(!temp_command_node) {
 			snprintf(error_buf, MBUF_SIZE,
 					 "Internal AI Error: Trying to remove"
-					 " Command #%d from AI #%d but the command node doesn't exist\n",
+					 " Command #%d from AI #%ld but the command node doesn't exist\n",
 					 p, autopilot->mynum);
 			SendAI(error_buf);
 		}
@@ -401,7 +401,7 @@ void auto_delcommand(dbref player, void *data, char *buffer)
 
 				snprintf(error_buf, MBUF_SIZE,
 						 "Internal AI Error: Trying to remove"
-						 " the first command from AI #%d but the command node doesn't exist\n",
+						 " the first command from AI #%ld but the command node doesn't exist\n",
 						 autopilot->mynum);
 				SendAI(error_buf);
 
@@ -548,7 +548,7 @@ void auto_listcommands(dbref player, void *data, char *buffer)
 
 	addline();
 
-	snprintf(buf, MBUF_SIZE, "MyRef: #%d  MechRef: #%d  MapIndex: #%d  "
+	snprintf(buf, MBUF_SIZE, "MyRef: #%ld  MechRef: #%ld  MapIndex: #%d  "
 			 "FSpeed: %d %% (Flag:%d)", autopilot->mynum,
 			 autopilot->mymechnum, autopilot->mapindex, autopilot->speed,
 			 autopilot->flags);
@@ -745,7 +745,7 @@ void auto_goto_next_command(AUTO * autopilot, int time)
 
 	if(dllist_size(autopilot->commands) < 0) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
-				 " the first command from AI #%d but the command list is empty\n",
+				 " the first command from AI #%ld but the command list is empty\n",
 				 autopilot->mynum);
 		SendAI(error_buf);
 		return;
@@ -757,7 +757,7 @@ void auto_goto_next_command(AUTO * autopilot, int time)
 
 	if(!temp_command_node) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to remove"
-				 " the first command from AI #%d but the command node doesn't exist\n",
+				 " the first command from AI #%ld but the command node doesn't exist\n",
 				 autopilot->mynum);
 		SendAI(error_buf);
 		return;
@@ -784,7 +784,7 @@ char *auto_get_command_arg(AUTO * autopilot, int command_number,
 
 	if(command_number > dllist_size(autopilot->commands)) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
-				 "access Command #%d for AI #%d but it doesn't exist",
+				 "access Command #%d for AI #%ld but it doesn't exist",
 				 command_number, autopilot->mynum);
 		SendAI(error_buf);
 		return NULL;
@@ -792,7 +792,7 @@ char *auto_get_command_arg(AUTO * autopilot, int command_number,
 
 	if(arg_number >= AUTOPILOT_MAX_ARGS) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
-				 "access Arg #%d for AI #%d Command #%d but its greater"
+				 "access Arg #%d for AI #%ld Command #%d but its greater"
 				 " then AUTOPILOT_MAX_ARGS (%d)",
 				 arg_number, autopilot->mynum, command_number,
 				 AUTOPILOT_MAX_ARGS);
@@ -807,8 +807,8 @@ char *auto_get_command_arg(AUTO * autopilot, int command_number,
 
 	if(!temp_command_node->args[arg_number]) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
-				 "access Arg #%d for AI #%d Command #%d but it doesn't exist",
-				 autopilot->mynum, arg_number, command_number);
+				 "access Arg #%d for AI #%ld Command #%d but it doesn't exist",
+				 arg_number, autopilot->mynum, command_number);
 		SendAI(error_buf);
 		return NULL;
 	}
@@ -837,7 +837,7 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 
 	if(command_number <= 0) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
-				 "access a command (%d) for AI #%d that can't be on a list",
+				 "access a command (%d) for AI #%ld that can't be on a list",
 				 command_number, autopilot->mynum);
 		SendAI(error_buf);
 		return -1;
@@ -846,8 +846,8 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 	/* Make sure the command is on the list */
 	if(command_number > dllist_size(autopilot->commands)) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Trying to "
-				 "access Command #%d for AI #%d but it doesn't exist",
-				 autopilot->mynum, command_number);
+				 "access Command #%d for AI #%ld but it doesn't exist",
+				 command_number, autopilot->mynum);
 		SendAI(error_buf);
 		return -1;
 	}
@@ -862,7 +862,7 @@ int auto_get_command_enum(AUTO * autopilot, int command_number)
 	/* If its a bad enum value we have a problem */
 	if((command_enum >= AUTO_NUM_COMMANDS) || (command_enum < 0)) {
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error: Command ENUM for"
-				 " AI #%d Command Number #%d doesn't exist\n",
+				 " AI #%ld Command Number #%d doesn't exist\n",
 				 autopilot->mynum, command_number);
 		SendAI(error_buf);
 		return -1;

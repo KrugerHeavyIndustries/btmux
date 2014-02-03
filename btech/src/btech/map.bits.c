@@ -15,8 +15,8 @@
 #include "mech.h"
 #include "create.h"
 
-#define CHELO(a,b,c,d) if ((tmp=fread(a,b,c,d)) != c) { fprintf (stderr, "Error loading mapdynamic for #%d - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); }
-#define CHESA(a,b,c,d) if ((tmp=fwrite(a,b,c,d)) != c) { fprintf (stderr, "Error writing mapdynamic for #%d - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); }
+#define CHELO(a,b,c,d) if ((tmp=fread(a,b,c,d)) != c) { fprintf (stderr, "Error loading mapdynamic for #%ld - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); }
+#define CHESA(a,b,c,d) if ((tmp=fwrite(a,b,c,d)) != c) { fprintf (stderr, "Error writing mapdynamic for #%ld - couldn't find enough entries! (found: %d, should: %d)\n", map->mynum, tmp, c); fflush(stderr); exit(1); }
 
 #define realnum(x)          ((x) / 4 + ((x) % 4 ? 1 : 0))
 #define boffs(x)            (2 * ((x) % 4))
@@ -113,7 +113,7 @@ static unsigned char **grab_us_an_array(MAP * map)
 	if(!map->mapobj[TYPE_BITS]) {
 		Create(foo, unsigned char *, ys);
 
-		foob.datai = (int) ((void *) foo);
+		foob.datai = (long) ((void *) foo);
 		add_mapobj(map, &map->mapobj[TYPE_BITS], &foob, 0);
 	} else
 		foo = (unsigned char **) ((void *) map->mapobj[TYPE_BITS]->datai);

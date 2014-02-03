@@ -884,7 +884,7 @@ void process_cmdent(CMDENT * cmdp, char *switchp, dbref player, dbref cause,
 	char *buf1 = NULL, *buf2 = NULL, tchar = '\x00', *bp = NULL, *str = NULL, 
         *buff = NULL, *s = NULL, *j = NULL, *new = NULL;
 	char *args[MAX_ARG];
-	int nargs = 0, i = 0, fail = 0, interp = 0, key = 0, xkey = 0, aflags = 0;
+	int nargs = 0, i = 0, fail = 0, interp = 0, key = 0, xkey = 0; long aflags = 0;
 	int length = 0;
 	int hasswitch = 0;
 	dbref aowner = 0;
@@ -1212,7 +1212,7 @@ void process_command(dbref player, dbref cause, int interactive,
 {
 	char *p = NULL, *q = NULL, *arg = NULL, *lcbuf = NULL, *slashp = NULL, 
         *cmdsave = NULL, *bp  = NULL, *str = NULL;
-	int succ = 0, aflags = 0, i = 0;
+	long aflags = 0; int succ = 0, i = 0;
 	dbref exit = 0, aowner= 0;
 	CMDENT *cmdp = NULL;
 	char *macroout = NULL;

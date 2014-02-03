@@ -221,7 +221,7 @@ static void look_atrs1(dbref player, dbref thing, dbref othing,
 					   int check_exclude, int hash_insert)
 {
 	dbref aowner;
-	int ca, aflags;
+	int ca; long aflags;
 	ATTR *attr, *cattr;
 	char *as, *buf;
 
@@ -333,7 +333,7 @@ static void show_desc(dbref player, dbref loc, int key)
 {
 	char *got;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	if((key & LK_OBEYTERSE) && Terse(player))
 		did_it(player, loc, 0, NULL, A_ODESC, NULL, A_ADESC,
@@ -506,7 +506,7 @@ static void debug_examine(dbref player, dbref thing)
 {
 	dbref aowner;
 	char *buf;
-	int aflags, ca;
+	long aflags; int ca;
 	BOOLEXP *bool;
 	ATTR *attr;
 	char *as, *cp;
@@ -575,7 +575,7 @@ static void debug_examine(dbref player, dbref thing)
 
 static void exam_wildattrs(dbref player, dbref thing, int do_parent)
 {
-	int atr, aflags, got_any;
+	int atr, got_any; long aflags;
 	char *buf;
 	dbref aowner;
 	ATTR *ap;
@@ -644,7 +644,7 @@ void do_examine(dbref player, dbref cause, int key, char *name)
 	char savec;
 	char *temp, *buf, *buf2;
 	BOOLEXP *bool;
-	int control, aflags, do_parent;
+	int control, do_parent; long aflags;
 
 	/*
 	 * This command is pointless if the player can't hear. 
@@ -957,7 +957,7 @@ void do_entrances(dbref player, dbref cause, int key, char *name)
 {
 	dbref thing, i, j;
 	char *exit, *message;
-	int control_thing, count, low_bound, high_bound;
+	int control_thing, count; long low_bound, high_bound;
 	FWDLIST *fp;
 
 	parse_range(&name, &low_bound, &high_bound);
@@ -1055,7 +1055,7 @@ void do_entrances(dbref player, dbref cause, int key, char *name)
 static void sweep_check(dbref player, dbref what, int key, int is_loc)
 {
 	dbref aowner, parent;
-	int canhear, cancom, isplayer, ispuppet, isconnected, attr, aflags;
+	int canhear, cancom, isplayer, ispuppet, isconnected, attr; long aflags;
 	int is_parent, lev;
 	char *buf, *buf2, *bp, *as, *buff, *s;
 	ATTR *ap;
@@ -1263,7 +1263,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 	BOOLEXP *bool;
 	char *got, *thingname, *as, *ltext, *buff, *s;
 	dbref aowner, thing;
-	int val, aflags, ca, atr;
+	int val, ca, atr; long aflags;
 	ATTR *attr;
 	NAMETAB *np;
 	char new[LBUF_SIZE];

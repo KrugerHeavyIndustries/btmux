@@ -137,7 +137,7 @@ void mech_angeleccm(dbref player, MECH * mech, char *buffer)
 void MechSliteChangeEvent(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int wType = (int) e->data2;
+	long wType = (long) e->data2;
 
 	if(MechCritStatus(mech) & SLITE_DEST)
 		return;
@@ -624,7 +624,7 @@ static int mech_unjamammo_func(MECH * mech, dbref player, int index, int high)
 
 	DOCHECK0(UnJammingAmmo(mech), "You are already unjamming a weapon!");
 
-	MECHEVENT(mech, EVENT_UNJAM_AMMO, mech_unjam_ammo_event, 60, index);
+	MECHEVENT(mech, EVENT_UNJAM_AMMO, mech_unjam_ammo_event, 60, (long) index);
 	mech_printf(mech, MECHALL,
 				"You begin to shake the jammed ammo loose on weapon #%d",
 				index);
@@ -992,7 +992,7 @@ void mech_scharge(dbref player, void *data, char *buffer)
 static void mech_explode_event(MUXEVENT * e) {
 	MECH *mech = (MECH *) e->data;
 	MAP *map;
-	int extra = (int) e->data2;
+	long extra = (long) e->data2;
 	int i, j, k, damage;
 	int z;
 	int dam;
@@ -1046,7 +1046,7 @@ void mech_explode(dbref player, void *data, char *buffer)
 	char *args[3];
 	int i;
 	int ammoloc, ammocritnum;
-	int time = mudconf.btech_explode_time;
+	long time = (long) mudconf.btech_explode_time;
 	int ammo = 1;
 	int argc;
 	int override = 0;
@@ -1278,7 +1278,7 @@ int FindMainWeapon(MECH * mech, int (*callback) (MECH *, int, int, int, int))
 void changeStealthArmorEvent(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int wType = (int) e->data2;
+	long wType = (long) e->data2;
 
 	if(!Started(mech))
 		return;
@@ -1342,7 +1342,7 @@ void mech_stealtharmor(dbref player, MECH * mech, char *buffer)
 void changeNullSigSysEvent(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int wType = (int) e->data2;
+	long wType = (long) e->data2;
 
 	if(!Started(mech))
 		return;

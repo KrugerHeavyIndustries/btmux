@@ -19,15 +19,15 @@ struct search_type {
     int s_wizard;
     dbref s_owner;
     dbref s_rst_owner;
-    int s_rst_type;
+    long s_rst_type;
     FLAGSET s_fset;
     POWERSET s_pset;
     dbref s_parent;
     dbref s_zone;
     char *s_rst_name;
     char *s_rst_eval;
-    int low_bound;
-    int high_bound;
+    long low_bound;
+    long high_bound;
 };
 
 /* Stats structure, used by @stats and stats(). */

@@ -47,7 +47,7 @@ static char *unparse_object_quiet(dbref player, dbref loc)
 	case HOME:
 		return (char *) "-3";
 	default:
-		sprintf(buf, "(#%d)", loc);
+		sprintf(buf, "(#%ld)", loc);
 		return buf;
 	}
 }
@@ -152,7 +152,7 @@ static void unparse_boolexp1(dbref player, BOOLEXP * b, char outer_type,
 				break;
 			default:
 				buff = alloc_sbuf("unparse_boolexp1");
-				sprintf(buff, "#%d", b->thing);
+				sprintf(buff, "#%ld", b->thing);
 				safe_str(buff, boolexp_buf, &buftop);
 				free_sbuf(buff);
 			}
@@ -172,7 +172,7 @@ static void unparse_boolexp1(dbref player, BOOLEXP * b, char outer_type,
 				break;
 			default:
 				buff = alloc_sbuf("unparse_boolexp1");
-				sprintf(buff, "#%d", b->thing);
+				sprintf(buff, "#%ld", b->thing);
 				safe_str(buff, boolexp_buf, &buftop);
 				free_sbuf(buff);
 			}
@@ -191,7 +191,7 @@ static void unparse_boolexp1(dbref player, BOOLEXP * b, char outer_type,
 			safe_str((char *) b->sub1, boolexp_buf, &buftop);
 		} else if(b->thing > 0) {
 			tbuf = alloc_sbuf("unparse_boolexp1.atr_num");
-			sprintf(tbuf, "%d", b->thing);
+			sprintf(tbuf, "%ld", b->thing);
 			safe_str(tbuf, boolexp_buf, &buftop);
 			safe_chr(sep_ch, boolexp_buf, &buftop);
 			safe_str((char *) b->sub1, boolexp_buf, &buftop);

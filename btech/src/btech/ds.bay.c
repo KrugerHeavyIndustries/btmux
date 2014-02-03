@@ -85,7 +85,7 @@ int Find_DS_Bay_Dir(MECH * ds, int num)
 
 #define KLUDGE(fx,tx) ((((fx)%2)&&!((tx)%2)) ? -1 : 0)
 
-int Find_DS_Bay_In_MechHex(MECH * seer, MECH * ds, int *bayn)
+int Find_DS_Bay_In_MechHex(MECH * seer, MECH * ds, long *bayn)
 {
 	int i;
 	int t = DSBearMod(ds);
@@ -105,7 +105,7 @@ int Find_DS_Bay_In_MechHex(MECH * seer, MECH * ds, int *bayn)
 	return 0;
 }
 
-static int Find_Single_DS_In_MechHex(MECH * mech, int *ref, int *bayn)
+static int Find_Single_DS_In_MechHex(MECH * mech, long *ref, long *bayn)
 {
 	MAP *map = FindObjectsData(mech->mapindex);
 	int loop;
@@ -136,8 +136,8 @@ static int Find_Single_DS_In_MechHex(MECH * mech, int *ref, int *bayn)
 static void mech_enterbay_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data, *ds, *tmpm = NULL;
-	int ref = (int) e->data2;
-	int bayn;
+	long ref = (long) e->data2;
+	long bayn;
 	int x = 5, y = 5;
 	MAP *tmpmap;
 

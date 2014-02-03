@@ -39,7 +39,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg);
     auto_delcommand(a->mynum, a, "-1"); \
     if (a->target >= -1) { \
         if (AssignedTarget(a) && a->target != -1) { \
-            snprintf(buffer, SBUF_SIZE, "autogun target %d", a->target); \
+            snprintf(buffer, SBUF_SIZE, "autogun target %ld", a->target); \
         } else { \
             snprintf(buffer, SBUF_SIZE, "autogun on"); \
         } \
@@ -254,7 +254,7 @@ void auto_radio_command_dfollow(AUTO * autopilot, MECH * mech,
 
 	Clear(autopilot);
 
-	snprintf(buffer, SBUF_SIZE, "dumbfollow %d", targetref);
+	snprintf(buffer, SBUF_SIZE, "dumbfollow %ld", targetref);
 	auto_addcommand(autopilot->mynum, autopilot, buffer);
 	auto_engage(autopilot->mynum, autopilot, "");
 	snprintf(mesg, LBUF_SIZE, "following %s [dumbly] (%d degrees, %d away)",
@@ -324,7 +324,7 @@ void auto_radio_command_embark(AUTO * autopilot, MECH * mech,
 	}
 
 	Clear(autopilot);
-	snprintf(buffer, SBUF_SIZE, "embark %d", targetref);
+	snprintf(buffer, SBUF_SIZE, "embark %ld", targetref);
 	auto_addcommand(autopilot->mynum, autopilot, buffer);
 	auto_engage(autopilot->mynum, autopilot, "");
 	snprintf(mesg, LBUF_SIZE, "embarking %s", args[1]);
@@ -374,7 +374,7 @@ void auto_radio_command_follow(AUTO * autopilot, MECH * mech,
 
 	Clear(autopilot);
 
-	snprintf(buffer, SBUF_SIZE, "follow %d", targetref);
+	snprintf(buffer, SBUF_SIZE, "follow %ld", targetref);
 	auto_addcommand(autopilot->mynum, autopilot, buffer);
 	auto_engage(autopilot->mynum, autopilot, "");
 	snprintf(mesg, LBUF_SIZE, "following %s (%d degrees, %d away)", args[1],
@@ -624,7 +624,7 @@ void auto_radio_command_pickup(AUTO * autopilot, MECH * mech,
 
 	Clear(autopilot);
 
-	snprintf(buffer, SBUF_SIZE, "pickup %d", targetref);
+	snprintf(buffer, SBUF_SIZE, "pickup %ld", targetref);
 	auto_addcommand(autopilot->mynum, autopilot, buffer);
 	auto_engage(autopilot->mynum, autopilot, "");
 	snprintf(mesg, LBUF_SIZE, "picking up %s", args[1]);

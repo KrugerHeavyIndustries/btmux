@@ -150,7 +150,7 @@ static int add_mail_message(dbref player, char *message)
 	int number;
 
 	char *atrstr, *execstr, *msg, *bp, *str;
-	int aflags;
+	long aflags;
 	dbref aowner;
 
 	if(!strcasecmp(message, "clear")) {
@@ -986,7 +986,7 @@ static void send_mail(dbref player, dbref target, const char *tolist,
 
 	notify_printf(target, "MAIL: You have a new message from %s.",
 				  Name(player));
-	did_it(player, target, A_MAIL, NULL, (int) NULL, NULL, A_AMAIL, NULL,
+	did_it(player, target, A_MAIL, NULL, (long) NULL, NULL, A_AMAIL, NULL,
 		   NOTHING);
 	return;
 }
@@ -1589,7 +1589,7 @@ int load_mail(FILE * fp)
 
 static int get_folder_number(dbref player, char *name)
 {
-	int aflags;
+	long aflags;
 	dbref aowner;
 	char *atrstr;
 	char *str, *pat, *res, *p, *bp;
@@ -1630,7 +1630,7 @@ static char *get_folder_name(dbref player, int fld)
 	char *pat;
 	static char *old;
 	char *r, *atrstr;
-	int flags, len;
+	long flags; int len;
 
 	/*
 	 * Get the name of the folder, or "nameless" 
@@ -1667,7 +1667,7 @@ void add_folder_name(dbref player, int fld, char *name)
 {
 	char *old, *res, *r, *atrstr;
 	char *new, *pat, *str, *tbuf;
-	int aflags;
+	long aflags;
 
 	/*
 	 * Muck with the player's MAILFOLDERS attrib to add a string of the * 
@@ -1727,7 +1727,7 @@ static int player_folder(dbref player)
 	 * 
 	 * *  * *  * * set * it to 0 
 	 */
-	int flags, number;
+	long flags; int number;
 	char *atrstr;
 
 	atrstr = atr_pget(player, A_MAILCURF, &player, &flags);
@@ -2626,7 +2626,7 @@ void malias_write(FILE * fp)
 		fprintf(fp, "N:%s\n", m->name);
 		fprintf(fp, "D:%s\n", m->desc);
 		for(j = 0; j < m->numrecep; j++)
-			fprintf(fp, "%d\n", m->list[j]);
+			fprintf(fp, "%ld\n", m->list[j]);
 	}
 }
 
@@ -2765,7 +2765,7 @@ static char *make_numlist(dbref player, char *arg)
 				free_lbuf(numbuf);
 				return NULL;
 			}
-			sprintf(buf, "%d ", temp->from);
+			sprintf(buf, "%ld ", temp->from);
 			safe_str(buf, numbuf, &numbp);
 		} else if(*head == '*') {
 			m = get_malias(player, head);
@@ -2780,7 +2780,7 @@ static char *make_numlist(dbref player, char *arg)
 		} else {
 			target = lookup_player(player, head, 1);
 			if(target != NOTHING) {
-				sprintf(buf, "%d ", target);
+				sprintf(buf, "%ld ", target);
 				safe_str(buf, numbuf, &numbp);
 			} else {
 				notify_printf(player, "MAIL: '%s' does not exist.", head);
@@ -2944,7 +2944,7 @@ void do_prepend(dbref player, dbref cause, int key, char *text)
 {
 	char *oldmsg, *newmsg, *bp, *attr;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	if(!mudconf.have_mailer) {
 		wait_que(player, cause, 0, NOTHING, 0, text, (char **) NULL, 0,
@@ -2979,7 +2979,7 @@ void do_postpend(dbref player, dbref cause, int key, char *text)
 {
 	char *oldmsg, *newmsg, *bp, *attr;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	if(!mudconf.have_mailer) {
 		wait_que(player, cause, 0, NOTHING, 0, text, (char **) NULL, 0,
@@ -3017,7 +3017,7 @@ static void do_edit_msg(dbref player, char *from, char *to)
 {
 	char *result, *msg;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	if(Flags2(player) & PLAYER_MAILS) {
 		msg = atr_get(player, A_MAILMSG, &aowner, &aflags);
@@ -3036,7 +3036,7 @@ static void do_mail_proof(dbref player)
 	char *mailto, *names;
 	char *mailmsg, *msg, *bp, *str;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	mailto = atr_get(player, A_MAILTO, &aowner, &aflags);
 

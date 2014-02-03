@@ -238,7 +238,7 @@ void do_query(dbref player, dbref cause, int key, char *what, char *qry)
 void do_query_sub(dbref player, dbref cause, int key, char *what, char *qry)
 {
 	dbref thing, aowner;
-	int aflags, attr = -1;
+	long aflags; int attr = -1;
 	ATTR *ap;
 	char *obj;
 	char *rdelim = "|";
@@ -345,7 +345,7 @@ void do_toad(dbref player, dbref cause, int key, char *toad, char *newowner)
 {
 	dbref victim, recipient, loc, aowner;
 	char *buf;
-	int count, aflags;
+	int count; long aflags;
 
 	init_match(player, toad, TYPE_PLAYER);
 	match_neighbor();
@@ -488,7 +488,7 @@ void do_boot(dbref player, dbref cause, int key, char *name)
 		}
 		STARTLOG(LOG_WIZARD, "WIZ", "BOOT") {
 			buf = alloc_sbuf("do_boot.port");
-			sprintf(buf, "Port %d", victim);
+			sprintf(buf, "Port %ld", victim);
 			log_text(buf);
 			log_text((char *) " was @booted by ");
 			log_name(player);
@@ -612,7 +612,7 @@ static int count_quota(dbref player)
 static void mung_quotas(dbref player, int key, int value)
 {
 	dbref aowner;
-	int aq, rq, xq, aflags;
+	int aq, rq, xq; long aflags;
 	char *buff;
 
 	if(key & QUOTA_FIX) {
@@ -679,7 +679,7 @@ static void mung_quotas(dbref player, int key, int value)
 static void show_quota(dbref player, dbref victim)
 {
 	dbref aowner;
-	int aq, rq, aflags;
+	int aq, rq; long aflags;
 	char *buff;
 
 	buff = atr_get(victim, A_QUOTA, &aowner, &aflags);

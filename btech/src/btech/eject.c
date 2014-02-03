@@ -220,7 +220,7 @@ static void char_disembark(dbref player, MECH * mech)
 	dbref suit;
 	char *d;
 	MAP *mymap;
-	int initial_speed;
+	long initial_speed;
 
 	suit = create_object(tprintf("MechWarrior - %s", Name(player)));
 	silly_atr_set(suit, A_XTYPE, "MECH");
@@ -474,7 +474,7 @@ void mech_embark(dbref player, void *data, char *buffer)
 	char *args[4];
 	char fail_mesg[SBUF_SIZE];
 	char enter_lock[LBUF_SIZE];
-	int i, j;
+	long i, j;
 
 	if(player != GOD)
 		cch(MECH_USUAL);

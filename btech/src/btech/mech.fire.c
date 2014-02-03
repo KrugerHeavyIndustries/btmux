@@ -44,7 +44,7 @@ void inferno_burn(MECH * mech, int time)
 static void vehicle_burn_event(MUXEVENT * objEvent)
 {
 	MECH *objMech = (MECH *) objEvent->data;	/* get the mech */
-	int wLoc = (int) objEvent->data2;	/* and now the loc to damage */
+	long wLoc = (long) objEvent->data2;	/* and now the loc to damage */
 	int wDamRoll = Number(1, 6);	/* do 1d6 damage */
 	char strLocName[30];
 
@@ -81,8 +81,8 @@ static void vehicle_burn_event(MUXEVENT * objEvent)
 
 void vehicle_start_burn(MECH * objMech, MECH * objAttacker)
 {
-	int wIter;
-	int wDamage = 0;
+	long wIter;
+	long wDamage = 0;
 	char strLocName[30];
 
 	if(!objAttacker)

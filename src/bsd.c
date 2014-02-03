@@ -93,7 +93,7 @@ void desc_delhash(DESC * d)
 
     if(!hdesc) {
         snprintf(buffer, 4096,
-                 "desc_delhash: unable to find player(%d)'s descriptors from hashtable.\n",
+                 "desc_delhash: unable to find player(%ld)'s descriptors from hashtable.\n",
                  d->player);
         log_text(buffer);
         release_descriptor(d);
@@ -622,7 +622,7 @@ int process_input(DESC * d)
     char current;
 
     if(d->flags & DS_DEAD) { 
-        dprintk("Bailing on process_input %p %d %s %d", 
+        dprintk("Bailing on process_input %p %d %s %ld", 
         d, d->descriptor, (d->player?Name(d->player):""), d->player);
         return 0;
     }
@@ -637,7 +637,7 @@ int process_input(DESC * d)
         else if(errno == EAGAIN)
             return 1;
 		else {
-            dprintk("error %s (errno %d) read on fd %d descriptor %p %s(%d)\n",
+            dprintk("error %s (errno %d) read on fd %d descriptor %p %s(%ld)\n",
             strerror(errno), errno,
                 d->descriptor, d, (d->player?Name(d->player):""), d->player);
             shutdownsock(d, R_SOCKDIED);
@@ -728,7 +728,7 @@ void close_sockets(int emergency, char *message)
 			if(shutdown(d->descriptor, 2) < 0)
 				log_perror("NET", "FAIL", NULL, "shutdown");
 			dprintk("shutting down fd %d", d->descriptor);
-			dprintk("output evbuffer misalign: %d, totallen: %d, off: %d",
+			dprintk("output evbuffer misalign: %ld, totallen: %ld, off: %ld",
 					d->sock_buff->output->misalign,
 					d->sock_buff->output->totallen,
 					d->sock_buff->output->off);

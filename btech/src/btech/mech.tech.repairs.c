@@ -31,8 +31,8 @@ static void describe_repairs(MUXEVENT * e)
 {
 	int type = e->type;
 	MECH *mech = (MECH *) e->data;
-	int earg = ((int) e->data2) % PLAYERPOS;
-	dbref player = ((int) e->data2) / PLAYERPOS;
+	long earg = ((long) e->data2) % PLAYERPOS;
+	dbref player = ((long) e->data2) / PLAYERPOS;
 	int loc, pos, extra;
 	char buf[MBUF_SIZE];
 	char buf2[LBUF_SIZE];
@@ -42,7 +42,7 @@ static void describe_repairs(MUXEVENT * e)
 	sprintf(buf, "%s%s", ShortArmorSectionString(MechType(mech),
 												 MechMove(mech), loc % 8),
 			loc >= 8 ? "(R)" : "");
-	sprintf(buf2, "%-5d ", player);
+	sprintf(buf2, "%-5ld ", player);
 	sprintf(buf2 + strlen(buf2), "%-4d ",
 			game_lag_time((e->tick - muxevent_tick) / 60));
 	switch (type) {

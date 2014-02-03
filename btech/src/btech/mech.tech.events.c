@@ -34,7 +34,7 @@ static int completely_intact_int(MECH * mech)
 void muxevent_tickmech_removesection(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	char buf[MBUF_SIZE];
 	int loc, pos, extra;
 
@@ -72,7 +72,7 @@ void muxevent_tickmech_removesection(MUXEVENT * e)
 void muxevent_tickmech_removegun(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos, i, extra;
 	char buf[MBUF_SIZE];
 	int count = 0, nloc, ncrit, stype;
@@ -138,7 +138,7 @@ void muxevent_tickmech_removegun(MUXEVENT * e)
 void muxevent_tickmech_removepart(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos, extra;
 	char buf[MBUF_SIZE];
 
@@ -191,10 +191,10 @@ void muxevent_tickmech_removepart(MUXEVENT * e)
 void muxevent_tickmech_repairarmor(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
-	int loc = earg % 16;
-	int amount = (earg / 16) % 256;
-	int player = ((int) e->data2) / PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
+	long loc = earg % 16;
+	long amount = (earg / 16) % 256;
+	long player = ((long) e->data2) / PLAYERPOS;
 	char buf[MBUF_SIZE];
 
 	if(loc >= 8) {
@@ -247,10 +247,10 @@ void muxevent_tickmech_repairarmor(MUXEVENT * e)
 void muxevent_tickmech_repairinternal(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
-	int loc = earg % 16;
-	int amount = (earg / 16) % 256;
-	int player = ((int) e->data2) / PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
+	long loc = earg % 16;
+	long amount = (earg / 16) % 256;
+	long player = ((long) e->data2) / PLAYERPOS;
 	char buf[MBUF_SIZE];
 
 	SetSectInt(mech, loc, GetSectInt(mech, loc) + 1);
@@ -283,7 +283,7 @@ void muxevent_tickmech_repairinternal(MUXEVENT * e)
 void muxevent_tickmech_reattach(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	char buf[MBUF_SIZE];
 
 	/* Basically: Unset the limb destroyed, without doing a thing to
@@ -307,7 +307,7 @@ void muxevent_tickmech_reattach(MUXEVENT * e)
 void muxevent_tickmech_replacesuit(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	char buf[MBUF_SIZE];
 
 	ArmorStringFromIndex(earg, buf, MechType(mech), MechMove(mech));
@@ -325,7 +325,7 @@ void muxevent_tickmech_replacesuit(MUXEVENT * e)
 void muxevent_tickmech_reseal(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	char buf[MBUF_SIZE];
 
 	mech_ReSeal(mech, earg);
@@ -336,7 +336,7 @@ void muxevent_tickmech_reseal(MUXEVENT * e)
 void muxevent_tickmech_replacegun(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos, i, brand;
 	char buf[MBUF_SIZE];
 	int count = 0, nloc, ncrit, stype;
@@ -382,7 +382,7 @@ void muxevent_tickmech_replacegun(MUXEVENT * e)
 void muxevent_tickmech_repairgun(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos, i;
 	char buf[MBUF_SIZE];
 	int count = 0, nloc, ncrit, stype;
@@ -422,7 +422,7 @@ void muxevent_tickmech_repairgun(MUXEVENT * e)
 void muxevent_tickmech_repairenhcrit(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos;
 	char buf[MBUF_SIZE];
 	int wCritType, wWeapSize, wFirstCrit;
@@ -448,7 +448,7 @@ void muxevent_tickmech_repairenhcrit(MUXEVENT * e)
 void muxevent_tickmech_repairpart(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos;
 	char buf[MBUF_SIZE];
 
@@ -471,7 +471,7 @@ void muxevent_tickmech_repairpart(MUXEVENT * e)
 void muxevent_tickmech_reload(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int earg = (int) (e->data2) % PLAYERPOS;
+	long earg = (long) (e->data2) % PLAYERPOS;
 	int loc, pos, extra;
 	char buf[MBUF_SIZE];
 

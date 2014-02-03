@@ -318,7 +318,7 @@ void cque_dump_restart(FILE *f) {
 
 static int add_to(dbref player, int am, int attrnum)
 {
-	int num, aflags;
+	int num; long aflags;
 	dbref aowner;
 	char buff[20];
 	char *atr_gotten;
@@ -497,7 +497,7 @@ void do_halt(dbref player, dbref cause, int key, char *target)
 int nfy_que(dbref sem, int attr, int key, int count)
 {
 	BQUE *point, *trail, *next;
-	int num, aflags;
+	int num; long aflags;
 	dbref aowner;
 	char *str;
 
@@ -570,7 +570,7 @@ int nfy_que(dbref sem, int attr, int key, int count)
 void do_notify(dbref player, dbref cause, int key, char *what, char *count)
 {
 	dbref thing, aowner;
-	int loccount, attr = -1, aflags;
+	int loccount, attr = -1; long aflags;
 	ATTR *ap;
 	char *obj;
 
@@ -780,7 +780,7 @@ void do_wait(dbref player, dbref cause, int key, char *event, char *cmd,
 			 char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int howlong, num, attr, aflags;
+	int howlong, num, attr; long aflags;
 	char *what;
 	ATTR *ap;
 
@@ -907,7 +907,7 @@ void do_second(void)
 			add_to(point->sem, -1, point->attr);
 			point->sem = NOTHING;
             point->waittime = 0;
-			printk("promoting, %d/%s", point->player, point->comm);
+			printk("promoting, %ld/%s", point->player, point->comm);
 			cque_enqueue(point->player, point);
 		} else
 			next = (trail = point)->next;

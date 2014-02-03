@@ -248,7 +248,7 @@ void do_name(dbref player, dbref cause, int key, char *name, char *newname)
 void do_alias(dbref player, dbref cause, int key, char *name, char *alias)
 {
 	dbref thing, aowner;
-	int aflags;
+	long aflags;
 	ATTR *ap;
 	char *oldalias, *trimalias;
 
@@ -351,7 +351,7 @@ void do_pagelock(dbref player, dbref cause, int key, char *name, char *keytext)
 void do_lock(dbref player, dbref cause, int key, char *name, char *keytext)
 {
 	dbref thing, aowner;
-	int atr, aflags;
+	int atr; long aflags;
 	ATTR *ap;
 	struct boolexp *okey;
 
@@ -437,7 +437,7 @@ void do_pageunlock(dbref player, dbref cause, int key, char *name)
 void do_unlock(dbref player, dbref cause, int key, char *name)
 {
 	dbref thing, aowner;
-	int atr, aflags;
+	int atr; long aflags;
 	ATTR *ap;
 
 	if(parse_attrib(player, name, &thing, &atr)) {
@@ -531,7 +531,7 @@ void do_unlink(dbref player, dbref cause, int key, char *name)
 void do_chown(dbref player, dbref cause, int key, char *name, char *newown)
 {
 	dbref thing, owner, aowner;
-	int atr, aflags, do_it, cost, quota;
+	int atr, do_it, cost, quota; long aflags;
 	ATTR *ap;
 
 	if(parse_attrib(player, name, &thing, &atr)) {
@@ -691,7 +691,7 @@ void set_attr_internal(dbref player, dbref thing, int attrnum, char *attrtext,
 					   int key)
 {
 	dbref aowner;
-	int aflags, could_hear, have_xcode;
+	long aflags; int could_hear, have_xcode;
 	ATTR *attr;
 
 	attr = atr_num(attrnum);
@@ -718,7 +718,7 @@ void do_set(dbref player, dbref cause, int key, char *name, char *flag)
 {
 	dbref thing, thing2, aowner;
 	char *p, *buff;
-	int atr, atr2, aflags, clear, flagvalue, could_hear, have_xcode;
+	int atr, atr2, clear, flagvalue, could_hear, have_xcode; long aflags;
 	ATTR *attr, *attr2;
 
 	/*
@@ -949,7 +949,7 @@ void do_mvattr(dbref player, dbref cause, int key, char *what, char *args[],
 {
 	dbref thing, aowner, axowner;
 	ATTR *in_attr, *out_attr;
-	int i, anum, in_anum, aflags, axflags, no_delete;
+	int i, anum, in_anum, no_delete; long aflags, axflags;
 	char *astr;
 
 	/*
@@ -1052,7 +1052,7 @@ int parse_attrib(dbref player, char *str, dbref * thing, int *atr)
 	ATTR *attr;
 	char *buff;
 	dbref aowner;
-	int aflags;
+	long aflags;
 
 	if(!str)
 		return 0;
@@ -1092,7 +1092,7 @@ static void find_wild_attrs(dbref player, dbref thing, char *str,
 	ATTR *attr;
 	char *as;
 	dbref aowner;
-	int ca, ok, aflags;
+	int ca, ok; long aflags;
 
 	/*
 	 * Walk the attribute list of the object 
@@ -1329,7 +1329,7 @@ void do_edit(dbref player, dbref cause, int key, char *it, char *args[],
 			 int nargs)
 {
 	dbref thing, aowner;
-	int attr, got_one, aflags, doit;
+	int attr, got_one, doit; long aflags;
 	char *from, *to, *result, *returnstr, *atext;
 	ATTR *ap;
 
@@ -1420,7 +1420,7 @@ void do_edit(dbref player, dbref cause, int key, char *it, char *args[],
 void do_wipe(dbref player, dbref cause, int key, char *it)
 {
 	dbref thing, aowner;
-	int attr, got_one, aflags;
+	int attr, got_one; long aflags;
 	ATTR *ap;
 	char *atext;
 
@@ -1471,7 +1471,7 @@ void do_trigger(dbref player, dbref cause, int key, char *object,
 				char *argv[], int nargs)
 {
 	dbref thing, attrOwner;
-	int attrib, attrFlags;
+	int attrib; long attrFlags;
 	char objectName[MBUF_SIZE];
 	char attributeName[MBUF_SIZE];
 	ATTR *attribute;
@@ -1493,7 +1493,7 @@ void do_trigger(dbref player, dbref cause, int key, char *object,
 	attribute = atr_num(attrib);
 
 	if(!attribute) {
-		dprintk("braindamage, missing ATTR structure for dbref #%d, attr %d.", thing,
+		dprintk("braindamage, missing ATTR structure for dbref #%ld, attr %d.", thing,
 				attrib);
 	} else {
 		strncpy(attributeName, attribute->name, MBUF_SIZE-1);
@@ -1513,7 +1513,7 @@ void do_use(dbref player, dbref cause, int key, char *object)
 {
 	char *df_use, *df_ouse, *temp;
 	dbref thing, aowner;
-	int aflags, doit;
+	long aflags; int doit;
 
 	init_match(player, object, NOTYPE);
 	match_neighbor();

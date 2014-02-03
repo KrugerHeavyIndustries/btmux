@@ -316,7 +316,7 @@ void log_type_and_name(dbref thing)
 	char nbuf[16];
 
 	log_text(OBJTYP(thing));
-	sprintf(nbuf, " #%d(", thing);
+	sprintf(nbuf, " #%ld(", thing);
 	log_text(nbuf);
 	if(Good_obj(thing))
 		log_text(Name(thing));
@@ -329,7 +329,7 @@ void log_type_and_num(dbref thing)
 	char nbuf[16];
 
 	log_text(OBJTYP(thing));
-	sprintf(nbuf, " #%d", thing);
+	sprintf(nbuf, " #%ld", thing);
 	log_text(nbuf);
 	return;
 }

@@ -251,12 +251,12 @@ void muxevent_remove_type_data_data(int type, void *data, void *data2) {
 
 
 /* return the args of the event */
-void muxevent_get_type_data(int type, void *data, int *data2) {
+void muxevent_get_type_data(int type, void *data, long *data2) {
     MUXEVENT *e;
 
     LoopType(type, e)
         if (e->data == data)
-            *data2 = (int) e->data2;
+            *data2 = (long) e->data2;
 }
 
 /* All the counting / other kinds of 'useless' functions */
@@ -375,7 +375,7 @@ int muxevent_first_type_data(int type, void *data) {
     return last;
 }
 
-int muxevent_count_type_data_firstev(int type, void *data) {
+long muxevent_count_type_data_firstev(int type, void *data) {
     MUXEVENT *e;
 
     if (type > last_muxevent_type)
@@ -383,7 +383,7 @@ int muxevent_count_type_data_firstev(int type, void *data) {
     LoopType(type, e)
         if (e->data == data)
         {
-            return (int) (e->data2);
+            return (long) (e->data2);
         }
     return -1;
 }

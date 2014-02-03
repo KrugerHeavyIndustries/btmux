@@ -93,7 +93,7 @@ static HASHTAB short_hash, vlong_hash;
 
 void initialize_partname_tables()
 {
-	int i, j, c = 0, m, n;
+	long i; int j, c = 0, m, n;
 	char tmpbuf[MBUF_SIZE];
 	char *tmpc1, *tmpc2;
 
@@ -153,9 +153,9 @@ int find_matching_vlong_part(char *wc, int *ind, int *id, int *brand)
 	}
 	*tmpc2 = 0;
 	if((i = hashfind(tmpbuf, &vlong_hash))) {
-		if((p = short_sorted[((int) i) - 1])) {
+		if((p = short_sorted[((long) i) - 1])) {
 			if(ind)
-				*ind = ((int) i);
+				*ind = ((long) i);
 			UNPACK_PART(p->index, *id, *brand);
 			return 1;
 		}
@@ -189,8 +189,8 @@ int find_matching_short_part(char *wc, int *ind, int *id, int *brand)
 	}
 	*tmpc2 = 0;
 	if((i = hashfind(tmpbuf, &short_hash))) {
-		if((p = short_sorted[((int) i) - 1])) {
-			*ind = ((int) i);
+		if((p = short_sorted[((long) i) - 1])) {
+			*ind = ((long) i);
 			UNPACK_PART(p->index, *id, *brand);
 			return 1;
 		}

@@ -2161,14 +2161,14 @@ void auto_gun_event(AUTO *autopilot)
 
 				/* Add in autogun and follow and engage */
 				if(AssignedTarget(autopilot) && autopilot->target != -1) {
-					snprintf(buffer, LBUF_SIZE, "autogun target %d",
+					snprintf(buffer, LBUF_SIZE, "autogun target %ld",
 							 autopilot->target);
 				} else {
 					snprintf(buffer, LBUF_SIZE, "autogun on");
 				}
 
 				auto_addcommand(autopilot->mynum, autopilot, buffer);
-				snprintf(buffer, LBUF_SIZE, "chasetarget %d",
+				snprintf(buffer, LBUF_SIZE, "chasetarget %ld",
 						 autopilot->target);
 				auto_addcommand(autopilot->mynum, autopilot, buffer);
 				auto_engage(autopilot->mynum, autopilot, "");

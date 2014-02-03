@@ -1725,7 +1725,7 @@ static void mech_enter_event(MUXEVENT * e)
 	MECH *mech = (MECH *) e->data, *tmpm = NULL;
 	mapobj *mapo;
 	MAP *map = getMap(mech->mapindex), *newmap;
-	int target = (int) e->data2;
+	long target = (long) e->data2;
 	int x, y;
 	int obj_x, obj_y;
 
@@ -1857,5 +1857,5 @@ void mech_enterbase(dbref player, void *data, char *buffer)
 	/* XXX Check for other mechs in the hex possibly doing this as well (ick) */
 	HexLOSBroadcast(map, MechX(mech), MechY(mech),
 					"The doors at $h start to open..");
-	MECHEVENT(mech, EVENT_ENTER_HANGAR, mech_enter_event, 18, (int) target);
+	MECHEVENT(mech, EVENT_ENTER_HANGAR, mech_enter_event, 18, (long) target);
 }

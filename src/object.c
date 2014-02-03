@@ -573,7 +573,7 @@ void destroy_thing(dbref thing)
 void destroy_player(dbref victim)
 {
 	dbref aowner, player;
-	int count, aflags;
+	int count; long aflags;
 	char *buf;
 
 	/*
@@ -673,7 +673,7 @@ static void check_pennies(dbref thing, int limit, const char *qual)
 static void check_dead_refs(void)
 {
 	dbref targ, owner, i, j;
-	int aflags, dirty;
+	long aflags; int dirty;
 	char *str;
 	FWDLIST *fp;
 

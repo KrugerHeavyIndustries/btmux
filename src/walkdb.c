@@ -656,7 +656,7 @@ void search_perform(dbref player, dbref cause, SEARCH * parm)
 		if(parm->s_rst_eval != NULL) {
 			if(Typeof(thing) == TYPE_GARBAGE)
 				continue;
-			sprintf(buff, "#%d", thing);
+			sprintf(buff, "#%ld", thing);
 			buff2 = replace_string(BOUND_VAR, buff, parm->s_rst_eval);
 			result = bp = alloc_lbuf("search_perform");
 			str = buff2;

@@ -317,13 +317,13 @@ static int get_list(FILE * f, dbref i, int new_strings)
 			c = getc(f);
 			if(c != '\n') {
 				ungetc(c, f);
-				fprintf(stderr, "No line feed on object %d\n", i);
+				fprintf(stderr, "No line feed on object %ld\n", i);
 				return 1;
 			}
 			return 1;
 		default:
 			fprintf(stderr,
-					"Bad character '%c' when getting attributes on object %d\n",
+					"Bad character '%c' when getting attributes on object %ld\n",
 					c, i);
 			/*
 			 * We've found a bad spot.  I hope things aren't * *
@@ -389,14 +389,14 @@ static void putbool_subexp(FILE * f, BOOLEXP * b)
 		putc(')', f);
 		break;
 	case BOOLEXP_CONST:
-		fprintf(f, "%d", b->thing);
+		fprintf(f, "%ld", b->thing);
 		break;
 	case BOOLEXP_ATR:
 		va = atr_num(b->thing);
 		if(va) {
 			fprintf(f, "%s:%s", va->name, (char *) b->sub1);
 		} else {
-			fprintf(f, "%d:%s\n", b->thing, (char *) b->sub1);
+			fprintf(f, "%ld:%s\n", b->thing, (char *) b->sub1);
 		}
 		break;
 	case BOOLEXP_EVAL:
@@ -404,7 +404,7 @@ static void putbool_subexp(FILE * f, BOOLEXP * b)
 		if(va) {
 			fprintf(f, "%s/%s\n", va->name, (char *) b->sub1);
 		} else {
-			fprintf(f, "%d/%s\n", b->thing, (char *) b->sub1);
+			fprintf(f, "%ld/%s\n", b->thing, (char *) b->sub1);
 		}
 		break;
 	default:
@@ -489,7 +489,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 								 */
 				if(header_gotten) {
 					fprintf(stderr,
-							"\nDuplicate MUX version header entry at object %d, ignored.\n",
+							"\nDuplicate MUX version header entry at object %ld, ignored.\n",
 							i);
 					tstr = getstring_noalloc(f, 0);
 					break;
@@ -528,7 +528,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 								 */
 				if(size_gotten) {
 					fprintf(stderr,
-							"\nDuplicate size entry at object %d, ignored.\n",
+							"\nDuplicate size entry at object %ld, ignored.\n",
 							i);
 					tstr = getstring_noalloc(f, 0);
 				} else {
@@ -564,7 +564,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 								 */
 				if(nextattr_gotten) {
 					fprintf(stderr,
-							"\nDuplicate next free vattr entry at object %d, ignored.\n",
+							"\nDuplicate next free vattr entry at object %ld, ignored.\n",
 							i);
 					tstr = getstring_noalloc(f, 0);
 				} else {
@@ -574,7 +574,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 				break;
 			default:
 				fprintf(stderr,
-						"\nUnexpected character '%c' in MUX header near object #%d, ignored.\n",
+						"\nUnexpected character '%c' in MUX header near object #%ld, ignored.\n",
 						ch, i);
 				tstr = getstring_noalloc(f, 0);
 			}
@@ -719,7 +719,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 			if(read_attribs) {
 				if(!get_list(f, i, read_new_strings)) {
 					fprintf(stderr,
-							"\nError reading attrs for object #%d\n", i);
+							"\nError reading attrs for object #%ld\n", i);
 					return -1;
 				}
 			}
@@ -736,7 +736,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 								 */
 			tstr = getstring_noalloc(f, 0);
 			if(strcmp(tstr, "**END OF DUMP***")) {
-				fprintf(stderr, "\nBad EOF marker at object #%d\n", i);
+				fprintf(stderr, "\nBad EOF marker at object #%ld\n", i);
 				return -1;
 			} else {
 				/*
@@ -750,7 +750,7 @@ dbref db_read(FILE * f, int *db_format, int *db_version, int *db_flags)
 				return mudstate.db_top;
 			}
 		default:
-			fprintf(stderr, "\nIllegal character '%c' near object #%d\n",
+			fprintf(stderr, "\nIllegal character '%c' near object #%ld\n",
 					ch, i);
 			return -1;
 		}
@@ -764,7 +764,7 @@ static int db_write_object(FILE * f, dbref i, int db_format, int flags)
 	ATTR *a;
 	char *got, *as;
 	dbref aowner;
-	int ca, aflags, save, j;
+	int ca, save, j; long aflags;
 	BOOLEXP *tempbool;
 
 	if(!(flags & V_ATRNAME))
@@ -855,7 +855,7 @@ dbref db_write(FILE * f, int format, int version)
 		return -1;
 	}
 	i = mudstate.attr_next;
-	fprintf(f, "+X%d\n+S%d\n+N%d\n", flags, mudstate.db_top, i);
+	fprintf(f, "+X%d\n+S%d\n+N%ld\n", flags, mudstate.db_top, i);
 	fprintf(f, "-R%d\n", mudstate.record_players);
 
 	/*
@@ -872,7 +872,7 @@ dbref db_write(FILE * f, int format, int version)
 	DO_WHOLE_DB(i) {
 
 		if(!(Going(i))) {
-			fprintf(f, "!%d\n", i);
+			fprintf(f, "!%ld\n", i);
 			db_write_object(f, i, format, flags);
 		}
 	}

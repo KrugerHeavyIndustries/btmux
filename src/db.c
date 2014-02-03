@@ -492,7 +492,7 @@ static char *set_string(char **ptr, char *new)
 INLINE char *Name(dbref thing)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *buff;
 	static char *tbuff[MBUF_SIZE];
 	char buffer[MBUF_SIZE];
@@ -516,7 +516,7 @@ INLINE char *Name(dbref thing)
 INLINE char *PureName(dbref thing)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *buff;
 	static char *tbuff[LBUF_SIZE];
 	char new[LBUF_SIZE];
@@ -955,7 +955,7 @@ int mkattr(char *buff)
 int Commer(dbref thing)
 {
 	char *s, *as, c;
-	int attr, aflags;
+	int attr; long aflags;
 	dbref aowner;
 	ATTR *ap;
 
@@ -982,7 +982,7 @@ int Commer(dbref thing)
  * ---------------------------------------------------------------------------
  * * atr_encode: Encode an attribute string.
  */
-static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
+static char *atr_encode(char *iattr, dbref thing, dbref owner, long flags,
 						int atr, char *dest_buffer)
 {
 
@@ -1004,7 +1004,7 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
 	if(owner == NOTHING)
 		owner = Owner(thing);
     memset(dest_buffer, 0, LBUF_SIZE);
-    snprintf(dest_buffer, LBUF_SIZE - 1, "%c%d:%d:%s", ATR_INFO_CHAR, owner, flags, iattr);
+    snprintf(dest_buffer, LBUF_SIZE - 1, "%c%ld:%ld:%s", ATR_INFO_CHAR, owner, flags, iattr);
     return dest_buffer;
 }
 
@@ -1014,7 +1014,7 @@ static char *atr_encode(char *iattr, dbref thing, dbref owner, int flags,
  */
 
 static void atr_decode(char *iattr, char *oattr, dbref thing, dbref * owner,
-					   int *flags, int atr)
+					   long *flags, int atr)
 {
 	char *cp;
 	int neg;
@@ -1284,7 +1284,7 @@ void atr_add_raw(dbref thing, int atr, char *buff)
 	}
 }
 
-void atr_add(dbref thing, int atr, char *buff, dbref owner, int flags)
+void atr_add(dbref thing, int atr, char *buff, dbref owner, long flags)
 {
 	char *tbuff;
     char buffer[LBUF_SIZE];
@@ -1300,7 +1300,7 @@ void atr_add(dbref thing, int atr, char *buff, dbref owner, int flags)
 void atr_set_owner(dbref thing, int atr, dbref owner)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *buff;
 
 	buff = atr_get(thing, atr, &aowner, &aflags);
@@ -1311,7 +1311,7 @@ void atr_set_owner(dbref thing, int atr, dbref owner)
 void atr_set_flags(dbref thing, int atr, dbref flags)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *buff;
 
 	buff = atr_get(thing, atr, &aowner, &aflags);
@@ -1366,7 +1366,7 @@ char *atr_get_raw(dbref thing, int atr)
 	return NULL;
 }
 
-char *atr_get_str(char *s, dbref thing, int atr, dbref * owner, int *flags)
+char *atr_get_str(char *s, dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 
@@ -1383,7 +1383,7 @@ char *atr_get_str(char *s, dbref thing, int atr, dbref * owner, int *flags)
 	return s;
 }
 
-char *atr_get(dbref thing, int atr, dbref * owner, int *flags)
+char *atr_get(dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 
@@ -1391,7 +1391,7 @@ char *atr_get(dbref thing, int atr, dbref * owner, int *flags)
 	return atr_get_str(buff, thing, atr, owner, flags);
 }
 
-int atr_get_info(dbref thing, int atr, dbref * owner, int *flags)
+int atr_get_info(dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 
@@ -1405,7 +1405,7 @@ int atr_get_info(dbref thing, int atr, dbref * owner, int *flags)
 	return 1;
 }
 
-char *atr_pget_str(char *s, dbref thing, int atr, dbref * owner, int *flags)
+char *atr_pget_str(char *s, dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 	dbref parent;
@@ -1432,7 +1432,7 @@ char *atr_pget_str(char *s, dbref thing, int atr, dbref * owner, int *flags)
 	return s;
 }
 
-char *atr_pget(dbref thing, int atr, dbref * owner, int *flags)
+char *atr_pget(dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 
@@ -1440,7 +1440,7 @@ char *atr_pget(dbref thing, int atr, dbref * owner, int *flags)
 	return atr_pget_str(buff, thing, atr, owner, flags);
 }
 
-int atr_pget_info(dbref thing, int atr, dbref * owner, int *flags)
+int atr_pget_info(dbref thing, int atr, dbref * owner, long *flags)
 {
 	char *buff;
 	dbref parent;
@@ -1495,7 +1495,7 @@ void atr_collect(dbref thing)
 
 void atr_cpy(dbref player, dbref dest, dbref source)
 {
-	int attr, aflags;
+	int attr; long aflags;
 	dbref owner, aowner;
 	char *as, *buf;
 	ATTR *at;
@@ -1527,7 +1527,7 @@ void atr_cpy(dbref player, dbref dest, dbref source)
 
 void atr_chown(dbref obj)
 {
-	int attr, aflags;
+	int attr; long aflags;
 	dbref owner, aowner;
 	char *as, *buf;
 
@@ -1870,7 +1870,7 @@ dbref parse_dbref(const char *s)
 
 void putref(FILE * f, dbref ref)
 {
-	fprintf(f, "%d\n", ref);
+	fprintf(f, "%ld\n", ref);
 }
 
 void putstring(FILE * f, const char *s)

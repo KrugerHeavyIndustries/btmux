@@ -25,7 +25,7 @@
 
 char *silly_atr_get(int id, int flag)
 {
-	int i, j;
+	long i, j;
 	static char buf[LBUF_SIZE];
 
 	atr_get_str(buf, id, flag, &i, &j);

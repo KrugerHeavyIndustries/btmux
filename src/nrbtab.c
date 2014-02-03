@@ -35,7 +35,7 @@ void nhashreset(RBTAB * htab)
  * * hash data.
  */
 
-void *nhashfind(int val, RBTAB * htab)
+void *nhashfind(long val, RBTAB * htab)
 {
 	htab->checks++;
 	return rb_find(htab->tree, (void *) val);
@@ -46,7 +46,7 @@ void *nhashfind(int val, RBTAB * htab)
  * * hashadd: Add a new entry to a hash table.
  */
 
-int nhashadd(int val, void *hashdata, RBTAB * htab)
+int nhashadd(long val, void *hashdata, RBTAB * htab)
 {
 	if(rb_exists(htab->tree, (void *) val))
 		return (-1);
@@ -60,7 +60,7 @@ int nhashadd(int val, void *hashdata, RBTAB * htab)
  * * hashdelete: Remove an entry from a hash table.
  */
 
-void nhashdelete(int val, RBTAB * htab)
+void nhashdelete(long val, RBTAB * htab)
 {
 	rb_delete(htab->tree, (void *) val);
 	return;
@@ -83,7 +83,7 @@ void nhashflush(RBTAB * htab, int size)
  * * hashrepl: replace the data part of a hash entry.
  */
 
-int nhashrepl(int val, void *hashdata, RBTAB * htab)
+int nhashrepl(long val, void *hashdata, RBTAB * htab)
 {
 	struct int_dict_entry *ent;
 

@@ -220,7 +220,7 @@ void auto_cal_mapindex(MECH * mech)
 		   !Good_obj(MechAuto(mech)) ||
 		   Location(MechAuto(mech)) != mech->mynum) {
 			snprintf(error_buf, MBUF_SIZE,
-					 "Mech #%d thinks it has the Autopilot #%d on it"
+					 "Mech #%ld thinks it has the Autopilot #%d on it"
 					 " but FindObj breaks", mech->mynum, MechAuto(mech));
 			SendError(error_buf);
 			MechAuto(mech) = -1;
@@ -421,7 +421,7 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 		} else {
 
 			/* Invalid command */
-			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 					 " argument for autogun command", autopilot->mynum);
 			SendAI(error_buf);
 
@@ -436,7 +436,7 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 			if(Readnum(target_dbref, args[1])) {
 
 				/* Invalid command */
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " argument for autogun command", autopilot->mynum);
 				SendAI(error_buf);
 
@@ -452,7 +452,7 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 			/* Now see if its a mech */
 			if(!(target = getMech(target_dbref))) {
 
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " target for autogun command", autopilot->mynum);
 				SendAI(error_buf);
 
@@ -487,7 +487,7 @@ void auto_command_autogun(AUTO * autopilot, MECH * mech)
 		} else {
 
 			/* Invalid command */
-			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 					 " argument for autogun command", autopilot->mynum);
 			SendAI(error_buf);
 
@@ -534,7 +534,7 @@ void auto_command_pickup(AUTO * autopilot, MECH * mech)
 	argument = auto_get_command_arg(autopilot, 1, 1);
 	if(Readnum(target, argument)) {
 
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 				 " argument for pickup command", autopilot->mynum);
 		SendAI(error_buf);
 		free(argument);
@@ -545,7 +545,7 @@ void auto_command_pickup(AUTO * autopilot, MECH * mech)
 
 	/* Check the target */
 	if(!(tempmech = getMech(target))) {
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to pickup"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld unable to pickup"
 				 " unit #%d", autopilot->mynum, target);
 		SendAI(error_buf);
 		return;
@@ -582,7 +582,7 @@ void auto_command_speed(AUTO * autopilot)
 	argument = auto_get_command_arg(autopilot, 1, 1);
 	if(Readnum(speed, argument)) {
 
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 				 " argument for speed command", autopilot->mynum);
 		SendAI(error_buf);
 		free(argument);
@@ -594,7 +594,7 @@ void auto_command_speed(AUTO * autopilot)
 	/* Make sure its a valid speed value */
 	if(speed < 1 || speed > 100) {
 
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 				 " argument for speed command - out side of the range",
 				 autopilot->mynum);
 		SendAI(error_buf);
@@ -626,7 +626,7 @@ void auto_command_embark(AUTO * autopilot, MECH * mech)
 	argument = auto_get_command_arg(autopilot, 1, 1);
 	if(Readnum(target, argument)) {
 
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 				 " argument for embark command", autopilot->mynum);
 		SendAI(error_buf);
 		free(argument);
@@ -637,7 +637,7 @@ void auto_command_embark(AUTO * autopilot, MECH * mech)
 
 	/* Check the target */
 	if(!(tempmech = getMech(target))) {
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d unable to embark"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld unable to embark"
 				 " unit #%d", autopilot->mynum, target);
 		SendAI(error_buf);
 		return;
@@ -658,7 +658,7 @@ void auto_command_udisembark(MECH * mech)
 	char *buf;
 
 	buf = silly_atr_get(mech->mynum, A_PILOTNUM);
-	sscanf(buf, "#%d", &pil);
+	sscanf(buf, "#%ld", &pil);
 	mech_udisembark(pil, mech, "");
 
 }
@@ -1202,7 +1202,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto [dumbly] with AI #%d but AI is not on a valid"
+				 " goto [dumbly] with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -1245,7 +1245,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto [dumbly] with AI #%d but was unable to - bad"
+				 " goto [dumbly] with AI #%ld but was unable to - bad"
 				 " first argument - going to next command", autopilot->mynum);
 		SendAI(error_buf);
 		auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
@@ -1256,7 +1256,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 	if(Readnum(tx, argument)) {
 
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto [dumbly] with AI #%d but was unable to - bad"
+				 " goto [dumbly] with AI #%ld but was unable to - bad"
 				 " first argument '%s' - going to next command",
 				 autopilot->mynum, argument);
 		SendAI(error_buf);
@@ -1272,7 +1272,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto [dumbly] with AI #%d but was unable to - bad"
+				 " goto [dumbly] with AI #%ld but was unable to - bad"
 				 " second argument - going to next command",
 				 autopilot->mynum);
 		SendAI(error_buf);
@@ -1284,7 +1284,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 	if(Readnum(ty, argument)) {
 
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto [dumbly] with AI #%d but was unable to - bad"
+				 " goto [dumbly] with AI #%ld but was unable to - bad"
 				 " second argument '%s' - going to next command",
 				 autopilot->mynum, argument);
 		SendAI(error_buf);
@@ -1329,7 +1329,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 	float range;
 	int bearing;
 
-	int generate_path = (int) muxevent->data2;
+	long generate_path = (long) muxevent->data2;
 
 	char *argument;
 	astar_node *temp_astar_node;
@@ -1357,7 +1357,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " goto with AI #%d but AI is not on a valid"
+				 " goto with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -1375,7 +1375,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 		/* Run this command after startup */
 		AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event,
-				  AUTOPILOT_STARTUP_TICK, generate_path);
+				  (long) AUTOPILOT_STARTUP_TICK, generate_path);
 		return;
 	}
 
@@ -1388,7 +1388,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 		/* Ok lets run this command again */
 		AUTOEVENT(autopilot, EVENT_AUTOGOTO, auto_astar_goto_event,
-				  AUTOPILOT_NC_DELAY, generate_path);
+				  (long) AUTOPILOT_NC_DELAY, generate_path);
 		return;
 	}
 
@@ -1403,7 +1403,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 			/* Ok bad argument - means the command is messed up
 			 * so should go to next one */
 			snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-					 " generate an astar path for AI #%d to hex %d,%d but was"
+					 " generate an astar path for AI #%ld to hex %d,%d but was"
 					 " unable to - bad first argument - going to next command",
 					 autopilot->mynum, tx, ty);
 			SendAI(error_buf);
@@ -1415,7 +1415,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 		if(Readnum(tx, argument)) {
 
 			snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-					 " generate an astar path for AI #%d to hex %d,%d but was"
+					 " generate an astar path for AI #%ld to hex %d,%d but was"
 					 " unable to - bad first argument '%s' - going to next command",
 					 autopilot->mynum, tx, ty, argument);
 			SendAI(error_buf);
@@ -1432,7 +1432,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 			/* Ok bad argument - either means the command is messed up
 			 * so should go to next one */
 			snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-					 " generate an astar path for AI #%d to hex %d,%d but was"
+					 " generate an astar path for AI #%ld to hex %d,%d but was"
 					 " unable to - bad second argument - going to next command",
 					 autopilot->mynum, tx, ty);
 			SendAI(error_buf);
@@ -1444,7 +1444,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 		if(Readnum(ty, argument)) {
 
 			snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-					 " generate an astar path for AI #%d to hex %d,%d but was"
+					 " generate an astar path for AI #%ld to hex %d,%d but was"
 					 " unable to - bad second argument '%s' - going to next command",
 					 autopilot->mynum, tx, ty, argument);
 			SendAI(error_buf);
@@ -1460,7 +1460,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
             /* Bad location to go to */
             snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-                    " generate an astar path for AI #%d to bad hex"
+                    " generate an astar path for AI #%ld to bad hex"
                     " (%d, %d)", autopilot->mynum, tx, ty);
             SendAI(error_buf);
             auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
@@ -1472,7 +1472,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 			/* Couldn't find a path for some reason */
 			snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-					 " generate an astar path for AI #%d to hex %d,%d but was"
+					 " generate an astar path for AI #%ld to hex %d,%d but was"
 					 " unable to", autopilot->mynum, tx, ty);
 			SendAI(error_buf);
 
@@ -1490,7 +1490,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 		snprintf(error_buf, MBUF_SIZE,
 				 "Internal AI Error - Attempting to follow"
-				 " Astar path for AI #%d - but the path is not there",
+				 " Astar path for AI #%ld - but the path is not there",
 				 autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1508,7 +1508,7 @@ void auto_astar_goto_event(MUXEVENT * muxevent)
 
 		snprintf(error_buf, MBUF_SIZE,
 				 "Internal AI Error - Attemping to follow"
-				 " Astar path for AI #%d - but the current astar node does not"
+				 " Astar path for AI #%ld - but the current astar node does not"
 				 " exist", autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1583,7 +1583,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 	float fx, fy;
 	short x, y;
 	int bearing;
-	int destroy_path = (int) muxevent->data2;
+	long destroy_path = (long) muxevent->data2;
 
 	char *argument;
 	astar_node *temp_astar_node;
@@ -1617,7 +1617,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " follow with AI #%d but AI is not on a valid"
+				 " follow with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -1635,7 +1635,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		/* Run this command after startup */
 		AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
-				  AUTOPILOT_STARTUP_TICK, destroy_path);
+				  (long) AUTOPILOT_STARTUP_TICK, destroy_path);
 		return;
 	}
 
@@ -1648,7 +1648,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		/* Ok lets run this command again */
 		AUTOEVENT(autopilot, EVENT_AUTOFOLLOW, auto_astar_follow_event,
-				  AUTOPILOT_NC_DELAY, destroy_path);
+				  (long) AUTOPILOT_NC_DELAY, destroy_path);
 		return;
 	}
 
@@ -1659,7 +1659,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
-		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%d attempting"
+		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%ld attempting"
 				 " to follow target but was unable to - bad argument - going"
 				 " to next command", autopilot->mynum);
 		SendAI(error_buf);
@@ -1670,7 +1670,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 	/* See if its a valid number */
 	if(Readnum(target_dbref, argument)) {
 
-		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%d attempting"
+		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%ld attempting"
 				 " to follow target but was unable to - bad argument '%s' - going"
 				 " to next command", autopilot->mynum, argument);
 		SendAI(error_buf);
@@ -1685,7 +1685,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		/* Bad Target */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " follow unit #%d with AI #%d but its not a valid unit.",
+				 " follow unit #%ld with AI #%ld but its not a valid unit.",
 				 target_dbref, autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1698,7 +1698,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 	if(Destroyed(target) || (target->mapindex != mech->mapindex)) {
 
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " follow unit #%d with AI #%d but it is either dead or"
+				 " follow unit #%ld with AI #%ld but it is either dead or"
 				 " not on the same map.", target_dbref, autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1779,8 +1779,8 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 				/* Major failure - No path found */
 				snprintf(error_buf, MBUF_SIZE,
 						 "Internal AI Error - Attempting to"
-						 " generate an astar path for AI #%d to hex %d,%d to follow"
-						 " unit #%d, but was unable to.", autopilot->mynum, x,
+						 " generate an astar path for AI #%ld to hex %d,%d to follow"
+						 " unit #%ld, but was unable to.", autopilot->mynum, x,
 						 y, target_dbref);
 				SendAI(error_buf);
 
@@ -1804,8 +1804,8 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 				/* Couldn't find a path for some reason */
 				snprintf(error_buf, MBUF_SIZE,
 						 "Internal AI Error - Attempting to"
-						 " generate an astar path for AI #%d to hex %d,%d to follow"
-						 " unit #%d, but was unable to.", autopilot->mynum, x,
+						 " generate an astar path for AI #%ld to hex %d,%d to follow"
+						 " unit #%ld, but was unable to.", autopilot->mynum, x,
 						 y, target_dbref);
 				SendAI(error_buf);
 
@@ -1831,7 +1831,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		snprintf(error_buf, MBUF_SIZE,
 				 "Internal AI Error - Attempting to follow"
-				 " Astar path for AI #%d - but the path is not there",
+				 " Astar path for AI #%ld - but the path is not there",
 				 autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1851,7 +1851,7 @@ void auto_astar_follow_event(MUXEVENT * muxevent)
 
 		snprintf(error_buf, MBUF_SIZE,
 				 "Internal AI Error - Attemping to follow"
-				 " Astar path for AI #%d - but the current astar node does not"
+				 " Astar path for AI #%ld - but the current astar node does not"
 				 " exist", autopilot->mynum);
 		SendAI(error_buf);
 
@@ -1987,7 +1987,7 @@ void auto_dumbfollow_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " follow [dumbly] with AI #%d but AI is not on a valid"
+				 " follow [dumbly] with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -2029,7 +2029,7 @@ void auto_dumbfollow_event(MUXEVENT * muxevent)
 
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
-		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%d attempting"
+		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%ld attempting"
 				 " to follow target [dumbly] but was unable to - bad argument - going"
 				 " to next command", autopilot->mynum);
 		SendAI(error_buf);
@@ -2041,7 +2041,7 @@ void auto_dumbfollow_event(MUXEVENT * muxevent)
 	if(Readnum(target, argument)) {
 
 		/* Not proper number so skip command goto next */
-		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%d attempting"
+		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%ld attempting"
 				 " to follow target [dumbly] but was unable to - bad argument '%s' - going"
 				 " to next command", autopilot->mynum, argument);
 		SendAI(error_buf);
@@ -2056,7 +2056,7 @@ void auto_dumbfollow_event(MUXEVENT * muxevent)
 	if(!(leader = getMech(target)) || Destroyed(leader)) {
 
 		/* For some reason, leader is missing(?) */
-		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%d attempting"
+		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - AI #%ld attempting"
 				 " to follow target [dumbly] but was unable to - bad or dead target -"
 				 " going to next command", autopilot->mynum);
 		SendAI(error_buf);
@@ -2117,7 +2117,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 	MAP *map;
 
 	int dir;
-	int reset_mapindex = (int) muxevent->data2;
+	long reset_mapindex = (long) muxevent->data2;
 	char *argument;
 	char error_buf[MBUF_SIZE];
 
@@ -2141,7 +2141,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " leavebase with AI #%d but AI is not on a valid"
+				 " leavebase with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -2159,7 +2159,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 
 		/* Run this command after startup */
 		AUTOEVENT(autopilot, EVENT_AUTOLEAVE, auto_leave_event,
-				  AUTOPILOT_STARTUP_TICK, reset_mapindex);
+				  (long) AUTOPILOT_STARTUP_TICK, reset_mapindex);
 		return;
 	}
 
@@ -2172,7 +2172,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 
 		/* Ok lets run this command again */
 		AUTOEVENT(autopilot, EVENT_AUTOLEAVE, auto_leave_event,
-				  AUTOPILOT_NC_DELAY, reset_mapindex);
+				  (long) AUTOPILOT_NC_DELAY, reset_mapindex);
 		return;
 	}
 
@@ -2189,7 +2189,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " leavebase with AI #%d but was given bad argument"
+				 " leavebase with AI #%ld but was given bad argument"
 				 " defaulting to direction = 0", autopilot->mynum);
 		SendAI(error_buf);
 
@@ -2198,7 +2198,7 @@ void auto_leave_event(MUXEVENT * muxevent)
 	} else if(Readnum(dir, argument)) {
 
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " leavebase with AI #%d but was given bad argument '%s'"
+				 " leavebase with AI #%ld but was given bad argument '%s'"
 				 " defaulting to direction = 0", autopilot->mynum, argument);
 		SendAI(error_buf);
 
@@ -2235,7 +2235,7 @@ void auto_enter_event(MUXEVENT * muxevent)
 	MAP *map;
 	mapobj *map_object;
 	int num;
-	int reset_mapindex = (int) muxevent->data2;
+	long reset_mapindex = (long) muxevent->data2;
 
 	char *argument;
 	char dir[2];
@@ -2261,7 +2261,7 @@ void auto_enter_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " enterbase with AI #%d but AI is not on a valid"
+				 " enterbase with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -2283,7 +2283,7 @@ void auto_enter_event(MUXEVENT * muxevent)
 
 		/* Nothing in this hex */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " enterbase with AI #%d but there is nothing at %d, %d"
+				 " enterbase with AI #%ld but there is nothing at %d, %d"
 				 " to enter", autopilot->mynum, MechX(mech), MechY(mech));
 		SendAI(error_buf);
 		auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
@@ -2327,7 +2327,7 @@ void auto_enter_event(MUXEVENT * muxevent)
 		/* Ok bad argument - means the command is messed up
 		 * so should go to next one */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " enterbase with AI #%d but was given bad argument -"
+				 " enterbase with AI #%ld but was given bad argument -"
 				 " going to next command", autopilot->mynum);
 		SendAI(error_buf);
 		auto_goto_next_command(autopilot, AUTOPILOT_NC_DELAY);
@@ -2416,7 +2416,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 		} else {
 
 			/* Invalid command */
-			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 					 " argument for roam command", autopilot->mynum);
 			SendAI(error_buf);
 
@@ -2432,7 +2432,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 			/* Need to grab distance and start hex */
 			if(Readnum(anchor_hex_x, args[1])) {
 
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " argument (anchor_hex_x) for roam command",
 						 autopilot->mynum);
 				SendAI(error_buf);
@@ -2450,7 +2450,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 
 			if(Readnum(anchor_hex_y, args[2])) {
 
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " argument (anchor_hex_y) for roam command",
 						 autopilot->mynum);
 				SendAI(error_buf);
@@ -2469,7 +2469,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 			/* Need to grab distance and start hex */
 			if(Readnum(anchor_distance, args[3])) {
 
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " argument (anchor_distance) for roam command",
 						 autopilot->mynum);
 				SendAI(error_buf);
@@ -2493,7 +2493,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 				/* Bad Map */
 				snprintf(error_buf, MBUF_SIZE,
 						 "Internal AI Error - Attempting to"
-						 " roam with AI #%d but AI is not on a valid"
+						 " roam with AI #%ld but AI is not on a valid"
 						 " Map (#%d).", autopilot->mynum,
 						 autopilot->mapindex);
 				SendAI(error_buf);
@@ -2517,7 +2517,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 			   anchor_hex_y >= map->map_height ||
 			   anchor_distance > AUTO_ROAM_MAX_RADIUS) {
 
-				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+				snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 						 " argument (bad anchor hex or bad anchor distance)"
 						 " %d,%d : %d hexes for roam command",
 						 autopilot->mynum, anchor_hex_x, anchor_hex_y,
@@ -2548,7 +2548,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 		} else {
 
 			/* Invalid command */
-			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+			snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 					 " argument for roam command", autopilot->mynum);
 			SendAI(error_buf);
 
@@ -2559,7 +2559,7 @@ void auto_command_roam(AUTO * autopilot, MECH * mech)
 	} else {
 
 		/* Invalid command */
-		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%d given bad"
+		snprintf(error_buf, MBUF_SIZE, "AI Error - AI #%ld given bad"
 				 " argument for roam command", autopilot->mynum);
 		SendAI(error_buf);
 
@@ -2690,7 +2690,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 	float range;
 	int bearing;
 	int roam_hex_attempt;
-	int generate_path = (int) muxevent->data2;
+	long generate_path = (long) muxevent->data2;
 
 	astar_node *temp_astar_node;
 
@@ -2717,7 +2717,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 
 		/* Bad Map */
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attempting to"
-				 " roam with AI #%d but AI is not on a valid"
+				 " roam with AI #%ld but AI is not on a valid"
 				 " Map (#%d).", autopilot->mynum, autopilot->mapindex);
 		SendAI(error_buf);
 
@@ -2735,7 +2735,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 
 		/* Run this command after startup */
 		AUTOEVENT(autopilot, EVENT_AUTO_ROAM, auto_astar_roam_event,
-				  AUTOPILOT_STARTUP_TICK, generate_path);
+				  (long) AUTOPILOT_STARTUP_TICK, generate_path);
 		return;
 	}
 
@@ -2748,7 +2748,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 
 		/* Ok lets run this command again */
 		AUTOEVENT(autopilot, EVENT_AUTO_ROAM, auto_astar_roam_event,
-				  AUTOPILOT_NC_DELAY, generate_path);
+				  (long) AUTOPILOT_NC_DELAY, generate_path);
 		return;
 	}
 
@@ -2804,7 +2804,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 
 		snprintf(error_buf, MBUF_SIZE,
 				 "Internal AI Error - Attempting to roam"
-				 " Astar path for AI #%d - but the path is not there",
+				 " Astar path for AI #%ld - but the path is not there",
 				 autopilot->mynum);
 		SendAI(error_buf);
 
@@ -2823,7 +2823,7 @@ void auto_astar_roam_event(MUXEVENT * muxevent)
 	if(!(temp_astar_node)) {
 
 		snprintf(error_buf, MBUF_SIZE, "Internal AI Error - Attemping to roam"
-				 " Astar path for AI #%d - but the current astar node does not"
+				 " Astar path for AI #%ld - but the current astar node does not"
 				 " exist", autopilot->mynum);
 		SendAI(error_buf);
 

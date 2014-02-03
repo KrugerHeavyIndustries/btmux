@@ -141,7 +141,7 @@ void record_login(dbref player, int isgood, char *ldate, char *lhost,
 	LDATA login_info;
 	char *atrbuf;
 	dbref aowner;
-	int aflags, i;
+	long aflags; int i;
 
 	atrbuf = atr_get(player, A_LOGINDATA, &aowner, &aflags);
 	decrypt_logindata(atrbuf, &login_info);
@@ -198,7 +198,7 @@ void record_login(dbref player, int isgood, char *ldate, char *lhost,
 int check_pass(dbref player, const char *password)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *target;
 	char *hashed;
 
@@ -231,7 +231,7 @@ int check_pass(dbref player, const char *password)
 dbref connect_player(char *name, char *password, char *host, char *username)
 {
 	dbref player, aowner;
-	int aflags;
+	long aflags;
 	time_t tt;
 	char *time_str, *player_last, *allowance;
 
@@ -318,7 +318,7 @@ void do_password(dbref player, dbref cause, int key, char *oldpass,
 				 char *newpass)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *target;
 
 	target = atr_get(player, A_PASS, &aowner, &aflags);
@@ -348,7 +348,7 @@ void do_last(dbref player, dbref cause, int key, char *who)
 	dbref target, aowner;
 	LDATA login_info;
 	char *atrbuf;
-	int i, aflags;
+	int i; long aflags;
 
 	if(!who || !*who) {
 		target = Owner(player);
@@ -402,7 +402,7 @@ int add_player_name(dbref player, char *name)
 	for(tp = temp; *tp; tp++)
 		*tp = ToLower(*tp);
 
-	p = (int *) hashfind(temp, &mudstate.player_htab);
+	p = (long *) hashfind(temp, &mudstate.player_htab);
 	if(p) {
 
 		/*
@@ -455,7 +455,7 @@ int delete_player_name(dbref player, char *name)
 	for(tp = temp; *tp; tp++)
 		*tp = ToLower(*tp);
 
-	p = (int *) hashfind(temp, &mudstate.player_htab);
+	p = (long *) hashfind(temp, &mudstate.player_htab);
 	if(!p || (*p == NOTHING) || ((player != NOTHING) && (*p != player))) {
 		free_lbuf(temp);
 		return 0;
@@ -490,7 +490,7 @@ dbref lookup_player(dbref doer, char *name, int check_who)
 	*tp = '\0';
 	for(tp = temp; *tp; tp++)
 		*tp = ToLower(*tp);
-	p = (int *) hashfind(temp, &mudstate.player_htab);
+	p = (long *) hashfind(temp, &mudstate.player_htab);
 	free_lbuf(temp);
 	if(!p) {
 		if(check_who) {
@@ -510,7 +510,7 @@ dbref lookup_player(dbref doer, char *name, int check_who)
 void load_player_names(void)
 {
 	dbref i, j, aowner;
-	int aflags;
+	long aflags;
 	char *alias;
 
 	j = 0;

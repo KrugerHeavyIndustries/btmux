@@ -245,7 +245,7 @@ int cheated_last = 0;
 static void cheat_find_last(MUXEVENT * e)
 {
 	int ofs = e->tick - muxevent_tick;
-	int amount = (((int) e->data2) % PLAYERPOS) / 16 - 1;
+	long amount = (((long) e->data2) % PLAYERPOS) / 16 - 1;
 
 	switch (e->type) {
 	case EVENT_REPAIR_FIXI:

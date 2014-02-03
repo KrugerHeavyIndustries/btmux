@@ -124,7 +124,7 @@ typedef struct mapobj_struct {
     char type;
     int datac;
     short datas;
-    int datai;
+    long datai;
     struct mapobj_struct *next;
 } mapobj;
 

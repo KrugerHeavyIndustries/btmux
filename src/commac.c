@@ -100,7 +100,7 @@ void load_commac(FILE * fp)
 	fscanf(fp, "%d\n", &np);
 	for(i = 0; i < np; i++) {
 		c = create_new_commac();
-		fscanf(fp, "%d %d %d %d %d %d %d %d\n", &(c->who),
+		fscanf(fp, "%ld %d %d %d %d %d %d %d\n", &(c->who),
 			   &(c->numchannels), &(c->macros[0]), &(c->macros[1]),
 			   &c->macros[2], &(c->macros[3]), &(c->macros[4]), &(c->curmac));
 		c->maxchannels = c->numchannels;
@@ -190,7 +190,7 @@ void save_commac(FILE * fp)
 	for(i = 0; i < NUM_COMMAC; i++) {
 		c = commac_table[i];
 		while (c) {
-			fprintf(fp, "%d %d %d %d %d %d %d %d\n", c->who,
+			fprintf(fp, "%ld %d %d %d %d %d %d %d\n", c->who,
 					c->numchannels, c->macros[0], c->macros[1], c->macros[2],
 					c->macros[3], c->macros[4], c->curmac);
 			for(j = 0; j < c->numchannels; j++) {

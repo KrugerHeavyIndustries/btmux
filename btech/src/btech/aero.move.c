@@ -69,7 +69,7 @@ static void aero_takeoff_event(MUXEVENT * e)
 	MECH *mech = (MECH *) e->data;
 	MAP *map = getMap(mech->mapindex);
 	int i = -1;
-	int count = (int) e->data2;
+	long count = (long) e->data2;
 
 	if(IsDS(mech))
 		for(i = 0; i < NUM_LAND_TYPES; i++)
@@ -160,7 +160,7 @@ void aero_takeoff(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
 	MAP *map = getMap(mech->mapindex);
-	int i, j;
+	int i; long j;
 
 	for(i = 0; i < NUM_LAND_TYPES; i++)
 		if(MechType(mech) == land_data[i].type)

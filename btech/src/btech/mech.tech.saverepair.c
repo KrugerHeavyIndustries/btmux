@@ -27,7 +27,7 @@ static int ev_type;
 static void save_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int data = (int) e->data2;
+	long data = (long) e->data2;
 	int t;
 
 	t = e->tick - muxevent_tick;

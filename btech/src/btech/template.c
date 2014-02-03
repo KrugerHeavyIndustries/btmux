@@ -1792,7 +1792,7 @@ int save_template(dbref player, MECH * mech, char *reference, char *filename)
 	fprintf(fp, "Tons             { %d }\n", MechTons(mech));
 	if((d = strrchr(c, '\n')))
 		*d = 0;
-	fprintf(fp, "Comment          { Saved by: %s(#%d) at %s }\n",
+	fprintf(fp, "Comment          { Saved by: %s(#%ld) at %s }\n",
 			Name(player), player, c);
 #define SILLY_UTTERANCE(ran,cran,dran,name) \
   if ((!MechComputer(mech) && ran != dran) || \

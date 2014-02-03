@@ -155,7 +155,7 @@ void mech_standfail_event(MUXEVENT * e)
 void mech_fall_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int fallspeed = (int) e->data2;
+	long fallspeed = (long) e->data2;
 	int fallen_elev;
 
 	if(Started(mech) && fallspeed >= 0)
@@ -296,7 +296,7 @@ void mech_sideslip_event(MUXEVENT * e)
 void mech_lateral_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int latmode = (int) e->data2;
+	long latmode = (long) e->data2;
 
 	if(!mech || !Started(mech))
 		return;
@@ -473,7 +473,7 @@ void unstun_crew_event(MUXEVENT * e)
 void mech_unjam_ammo_event(MUXEVENT * objEvent)
 {
 	MECH *objMech = (MECH *) objEvent->data;	/* get the mech */
-	int wWeapNum = (int) objEvent->data2;	/* and now the weapon number */
+	long wWeapNum = (long) objEvent->data2;	/* and now the weapon number */
 	int wSect, wSlot, wWeapStatus, wWeapIdx;
 	int ammoLoc, ammoCrit,ammoLoc1, ammoCrit1;
 	int wRoll = 0;
@@ -568,7 +568,7 @@ void check_stagger_event(MUXEVENT * event)
 void mech_movemode_event(MUXEVENT * e)
 {
 	MECH *mech = (MECH *) e->data;
-	int i = (int) e->data2;
+	long i = (long) e->data2;
 	int dir = (i & MODE_ON ? 1 : i & MODE_OFF ? 0 : 0);
 
 	if(!mech || !Started(mech) || Destroyed(mech)) {

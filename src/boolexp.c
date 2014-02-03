@@ -25,7 +25,7 @@ static int check_attr(dbref player, dbref lockobj, ATTR * attr, char *key)
 {
     char *buff;
     dbref aowner;
-    int aflags, checkit;
+    long aflags; int checkit;
 
     buff = atr_pget(player, attr->number, &aowner, &aflags);
     checkit = 0;
@@ -48,7 +48,7 @@ static int check_attr(dbref player, dbref lockobj, ATTR * attr, char *key)
 int eval_boolexp(dbref player, dbref thing, dbref from, BOOLEXP * b)
 {
     dbref aowner, obj, source;
-    int aflags, c, checkit;
+    long aflags; int c, checkit;
     char *key, *buff, *buff2, *bp, *str;
     ATTR *a;
 

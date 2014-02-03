@@ -1077,7 +1077,7 @@ static void fun_get(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags;
+	int attrib, free_buffer; long aflags;
 	ATTR *attr;
 	char *atr_gotten;
 	struct boolexp *bool;
@@ -1129,7 +1129,7 @@ static void fun_xget(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags;
+	int attrib, free_buffer; long aflags;
 	ATTR *attr;
 	char *atr_gotten;
 	struct boolexp *bool;
@@ -1187,7 +1187,7 @@ static void fun_get_eval(char *buff, char **bufc, dbref player, dbref cause,
 						 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags, eval_it;
+	int attrib, free_buffer, eval_it; long aflags;
 	ATTR *attr;
 	char *atr_gotten, *str;
 	struct boolexp *bool;
@@ -1261,7 +1261,7 @@ static void fun_eval(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags, eval_it;
+	int attrib, free_buffer, eval_it; long aflags;
 	ATTR *attr;
 	char *atr_gotten, *str;
 	struct boolexp *bool;
@@ -1334,7 +1334,7 @@ static void do_ufun(char *buff, char **bufc, dbref player, dbref cause,
 					int is_local)
 {
 	dbref aowner, thing;
-	int aflags, anum, i;
+	long aflags; int anum, i;
 	ATTR *ap;
 	char *atext, *preserve[MAX_GLOBAL_REGS], *str;
 
@@ -1581,7 +1581,7 @@ static void fun_v(char *buff, char **bufc, dbref player, dbref cause,
 				  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner;
-	int aflags;
+	long aflags;
 	char *sbuf, *sbufc, *tbuf, *str;
 	ATTR *ap;
 
@@ -1828,7 +1828,7 @@ static void fun_owner(char *buff, char **bufc, dbref player, dbref cause,
 					  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref it, aowner;
-	int atr, aflags;
+	int atr; long aflags;
 
 	if(parse_attrib(player, fargs[0], &it, &atr)) {
 		if(atr == NOTHING) {
@@ -2746,9 +2746,9 @@ static void fun_lcon(char *buff, char **bufc, dbref player, dbref cause,
 		tbuf = alloc_sbuf("fun_lcon");
 		DOLIST(thing, Contents(it)) {
 			if(!first)
-				sprintf(tbuf, " #%d", thing);
+				sprintf(tbuf, " #%ld", thing);
 			else {
-				sprintf(tbuf, "#%d", thing);
+				sprintf(tbuf, "#%ld", thing);
 				first = 0;
 			}
 			safe_str(tbuf, buff, bufc);
@@ -2774,9 +2774,9 @@ static void fun_lplayers(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Contents(it)) {
 			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing)) {
 				if(!first) 
-					sprintf(tbuf, " #%d", thing);
+					sprintf(tbuf, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%d", thing);
+					sprintf(tbuf, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -2803,9 +2803,9 @@ static void fun_lvplayers(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Contents(it)) {
 			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing) && Connected(thing)) {
 				if(!first)
-					sprintf(tbuf, " #%d", thing);
+					sprintf(tbuf, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%d", thing);
+					sprintf(tbuf, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -2864,9 +2864,9 @@ static void fun_lexits(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Exits(parent)) {
 			if(exit_visible(thing, player, key)) {
 				if(!first)
-					sprintf(tbuf, " #%d", thing);
+					sprintf(tbuf, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%d", thing);
+					sprintf(tbuf, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -3409,7 +3409,7 @@ static void fun_lock(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref it, aowner;
-	int aflags;
+	long aflags;
 	char *tbuf;
 	ATTR *attr;
 	struct boolexp *bool;
@@ -3440,7 +3440,7 @@ static void fun_elock(char *buff, char **bufc, dbref player, dbref cause,
 					  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref it, victim, aowner;
-	int aflags;
+	long aflags;
 	char *tbuf;
 	ATTR *attr;
 	struct boolexp *bool;
@@ -3981,9 +3981,9 @@ static void fun_search(char *buff, char **bufc, dbref player, dbref cause,
 	nbuf = alloc_sbuf("fun_search");
 	for(thing = olist_first(); thing != NOTHING; thing = olist_next()) {
 		if(bp == *bufc)
-			sprintf(nbuf, "#%d", thing);
+			sprintf(nbuf, "#%ld", thing);
 		else
-			sprintf(nbuf, " #%d", thing);
+			sprintf(nbuf, " #%ld", thing);
 		safe_str(nbuf, buff, bufc);
 	}
 	free_sbuf(nbuf);
@@ -4273,7 +4273,7 @@ static void fun_fold(char *buff, char **bufc, dbref player, dbref cause,
 					 char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum;
+	long aflags; int anum;
 	ATTR *ap;
 	char *atext, *result, *curr, *bp, *str, *cp, *atextbuf, *clist[2],
 		*rstore, sep;
@@ -4386,7 +4386,7 @@ static void fun_filter(char *buff, char **bufc, dbref player, dbref cause,
 					   char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum, first;
+	long aflags; int anum, first;
 	ATTR *ap;
 	char *atext, *result, *curr, *objstring, *bp, *str, *cp, *atextbuf, sep;
 
@@ -4467,7 +4467,7 @@ static void fun_map(char *buff, char **bufc, dbref player, dbref cause,
 					char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref aowner, thing;
-	int aflags, anum, first;
+	long aflags; int anum, first;
 	ATTR *ap;
 	char *atext, *objstring, *str, *cp, *atextbuf, sep;
 
@@ -5508,7 +5508,7 @@ static void fun_pairs(char *buff, char **bufc, dbref player, dbref cause,
 					  char *fargs[], int nfargs, char *cargs[], int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags;
+	int attrib, free_buffer; long aflags;
 	ATTR *attr;
 	char *atr_gotten;
 	struct boolexp *bool;
@@ -5607,7 +5607,7 @@ static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause,
 						   int ncargs)
 {
 	dbref thing, aowner;
-	int attrib, free_buffer, aflags;
+	int attrib, free_buffer; long aflags;
 	ATTR *attr;
 	char *atr_gotten;
 	struct boolexp *bool;
@@ -6087,7 +6087,7 @@ void do_function(dbref player, dbref cause, int key, char *fname,
 	UFUN *ufp, *ufp2;
 	ATTR *ap;
 	char *np, *bp;
-	int atr, aflags;
+	int atr; long aflags;
 	dbref obj, aowner;
 
 	/*

@@ -168,9 +168,9 @@ void load_comsystem(FILE * fp)
 				ch->users[j] = user;
 
 				if(new) {
-					fscanf(fp, "%d %d\n", &(user->who), &(user->on));
+					fscanf(fp, "%ld %d\n", &(user->who), &(user->on));
 				} else {
-					fscanf(fp, "%d %d %d", &(user->who), &(dummy), &(dummy));
+					fscanf(fp, "%ld %d %d", &(user->who), &(dummy), &(dummy));
 					fscanf(fp, "%d\n", &(user->on));
 				}
 
@@ -232,7 +232,7 @@ void save_comsystem(FILE * fp)
 			user = ch->users[j];
 			if(!isPlayer(user->who) && !isRobot(user->who))
 				continue;
-			fprintf(fp, "%d %d\n", user->who, user->on);
+			fprintf(fp, "%ld %d\n", user->who, user->on);
 			if(strlen(user->title))
 				fprintf(fp, "t:%s\n", user->title);
 			else
@@ -1606,7 +1606,7 @@ void do_chanlist(dbref player, dbref cause, int key)
 {
 	dbref owner;
 	struct channel *ch;
-	int flags;
+	long flags;
 	char *temp;
 	char *buf;
 	char *atrstr;
@@ -1615,7 +1615,7 @@ void do_chanlist(dbref player, dbref cause, int key)
 		raw_notify(player, "Comsys disabled.");
 		return;
 	}
-	flags = (int) NULL;
+	flags = (long) NULL;
 
 	if(key & CLIST_FULL) {
 		do_listchannels(player);
@@ -1655,7 +1655,7 @@ void do_chanstatus(dbref player, dbref cause, int key, char *chan)
 {
 	dbref owner;
 	struct channel *ch;
-	int flags;
+	long flags;
 	char *temp;
 	char *buf;
 	char *atrstr;

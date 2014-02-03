@@ -452,7 +452,7 @@ public:
 	// This must return an TypedEntryRef by value, NOT by reference.
 	virtual const TypedEntryRef getEntry (const_reference value) {
 		// Look for an existing entry.
-		EntryPoolPtr pool_ptr = findEntry(value);
+		EntryPoolPtr pool_ptr = this->findEntry(value);
 		if (!pool_ptr) {
 			// Add a new interned entry.
 			pool_ptr = entry_pool->createObject(value);

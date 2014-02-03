@@ -152,7 +152,7 @@ char *ss_messages[] = {
 static void mech_ss_event(MUXEVENT * ev)
 {
 	MECH *mech = (MECH *) ev->data;
-	int i = (int) ev->data2;
+	long i = (long) ev->data2;
 
 	if(Uncon(mech))
 		return;
@@ -175,7 +175,7 @@ void sixth_sense_check(MECH * mech, MECH * target)
 	r = FaMechRange(mech, target);
 	d = (MechRTonsV(mech) - MechRTonsV(target)) / 1024;
 	MECHEVENT(target, EVENT_SS, mech_ss_event, Number(1, 3),
-			  ((3 * (SSDistMod(r))) + (SSTonMod(d))));
+			  (long) ((3 * (SSDistMod(r))) + (SSTonMod(d))));
 }
 
 void mech_settarget(dbref player, void *data, char *buffer)

@@ -24,7 +24,7 @@ void muxevent_remote_type_data(int type, void *data);
 void muxevent_remote_type_data2(int type, void *data);
 void muxevent_remote_type_data_data(int type, void *data, void *data2);
 int muxevent_type_data(int type, void *data);
-void muxevent_get_type_data(int type, void *data, int *data2);
+void muxevent_get_type_data(int type, void *data, long *data2);
 int muxevent_count_type(int type);
 int muxevent_count_type_data(int type, void *data);
 int muxevent_count_type_data2(int type, void *data);
@@ -35,6 +35,6 @@ void muxevent_gothru_type_data(int type, void *data, void (*func) (MUXEVENT *));
 void muxevent_gothru_type(int type, void (*func) (MUXEVENT *));
 int muxevent_last_type_data(int type, void *data);
 int muxevent_first_type_data(int type, void *data);
-int muxevent_count_type_data_firstev(int type, void *data);
+long muxevent_count_type_data_firstev(int type, void *data);
 
 #endif				/* _P_EVENT_H */
