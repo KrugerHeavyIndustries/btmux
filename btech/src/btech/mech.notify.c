@@ -77,6 +77,8 @@ const char *GetAmmoDesc_Model_Mode(int model, int mode)
 		return " ExtendedRange";
 	if(mode & ATM_HE_MODE)
 		return " HighExplosive";
+	if(mode & MML_LRM_MODE)
+		return " LRM";
 	return "";
 }
 
@@ -128,6 +130,8 @@ char GetWeaponAmmoModeLetter_Model_Mode(int model, int mode)
 		return 'R';
 	if(mode & ATM_HE_MODE)
 		return 'X';
+	if(mode & MML_LRM_MODE)
+		return '#';
 	return ' ';
 }
 

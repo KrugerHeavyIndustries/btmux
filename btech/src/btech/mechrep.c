@@ -1136,6 +1136,10 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 				MechSections(mech)[section].criticals[critical].ammomode |=
 					SWARM_MODE;
 				break;
+			case '#':
+				MechSections(mech)[section].criticals[critical].ammomode |=
+					MML_LRM_MODE;
+				break;
 			case '1':
 				MechSections(mech)[section].criticals[critical].ammomode |=
 					SWARM1_MODE;
@@ -1275,6 +1279,10 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 			case '+':
 				MechSections(mech)[index].criticals[subsect].firemode |=
 					HALFTON_MODE;
+				break;
+			case '#':
+				MechSections(mech)[index].criticals[subsect].ammomode |=
+					MML_LRM_MODE;
 				break;
 			case 'W':
 				MechSections(mech)[index].criticals[subsect].ammomode |=

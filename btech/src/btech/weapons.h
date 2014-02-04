@@ -345,7 +345,7 @@ struct weapon_struct MechWeapons[] = {
 /* IS MML Missiles */
     {"IS.MML-3", VRT_IS_MML3, TMISSILE, 2, 1, 0, 3, 6, 9, 0, -1, -1, -1, 
     	2, 33, 150, -1, IDF, 29, 45000, 4, 27000},
-/* MML is 30k for LRM Ammo (40/24/17/13), 27K for SRM (33/20/14/11 shots) */
+/* MML is 30k for LRM Ammo (40/24/17/13), 27K for SRM (33/20/14/11 shots) (1.2 * SRM ammo rounded up = LRM Ammo)  (LRM * .825 = SRM)*/
     {"IS.MML-5", VRT_IS_MML5, TMISSILE, 3, 1, 0, 3, 6, 9, 0, -1, -1, -1,
     	3, 20, 300, -1, IDF, 45, 75000, 6, 27000},
     {"IS.MML-7", VRT_IS_MML7, TMISSILE, 4, 1, 0, 3, 6, 9, 0, -1, -1, -1,
