@@ -1250,6 +1250,7 @@ int FindWeaponIndex(MECH * mech, int number)
 int FullAmmo(MECH * mech, int loc, int pos)
 {
 	int baseammo;
+	int overage;
 
 	baseammo = MechWeapons[Ammo2I(GetPartType(mech,loc,pos))].ammoperton;
 	if((GetPartAmmoMode(mech, loc, pos) & AC_AP_MODE) 
@@ -1260,6 +1261,16 @@ int FullAmmo(MECH * mech, int loc, int pos)
 	
 	if((GetPartAmmoMode(mech, loc, pos) & AC_CASELESS_MODE)) {
 		return baseammo << 1;
+	}
+
+	if((GetPartAmmoMode(mech, loc, pos) & MML_LRM_MODE)) {
+		baseammo = baseammo * 1200 ;
+		overage = baseammo % 1000 ;
+		if (overage > 499 )
+			baseammo = (baseammo / 1000) + 1;
+		else
+			baseammo = (baseammo / 1000);
+		return baseammo;
 	}
 	
 	return baseammo;
