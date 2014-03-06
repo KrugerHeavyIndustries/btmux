@@ -55,5 +55,5 @@
 #define A_AMECHDEST     247
 #define A_AMINETRIGGER  248
 #define A_AAEROLAND	249
-#define A_OODLAND	250	/* For when an OOD finishes */
+#define A_AOODLAND	250	/* For when an OOD finishes */
 #endif
