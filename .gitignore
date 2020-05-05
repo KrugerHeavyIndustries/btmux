@@ -1,0 +1,60 @@
+
+# /
+/autom4te.cache
+/config.status
+/config.log
+/libtool
+/autoconf.h
+/stamp-h1
+/Makefile
+/config.cache
+/game
+/game.*
+/buildnum.data
+
+# /btech/
+/btech/autom4te.cache
+/btech/config.status
+/btech/config.log
+/btech/config.cache
+/btech/libtool
+/btech/autoconf.h
+/btech/stamp-h1
+/btech/Makefile
+
+# /btech/btfi/
+/btech/btfi/Makefile
+/btech/btfi/.deps
+/btech/btfi/.libs
+/btech/btfi/saxtest
+/btech/btfi/vocabtest
+/btech/btfi/*.test
+
+# /btech/btpr/
+/btech/btpr/Makefile
+/btech/btpr/.deps
+/btech/btpr/.libs
+/btech/btpr/pqtest
+
+# /btech/src/
+/btech/src/Makefile
+/btech/src/.deps
+/btech/src/.libs
+
+# /btech/src/btech/
+/btech/src/btech/*.d
+/btech/src/btech/cscope.*
+
+# /event/
+/event/*.d
+
+# /misc/
+/misc/*.d
+
+# /src/
+/src/Makefile
+/src/.deps
+/src/.libs
+/src/version.h
+/src/netmux
+/src/mkindx
