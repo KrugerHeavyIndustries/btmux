@@ -17,6 +17,7 @@
 #include "alloc.h"
 #include "ansi.h"
 #include "p.comsys.h"
+#include "command.h"
 
 extern NAMETAB indiv_attraccess_nametab[];
 extern void lower_xp(dbref, int);

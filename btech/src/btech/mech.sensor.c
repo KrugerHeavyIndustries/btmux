@@ -83,7 +83,7 @@ int Sensor_CanSee(MECH * mech, MECH * target, int *flag, int arc,
 
 	/* Make sure we're okay */
 	if (!map || !mech )
-		return;
+		return 0;
 
 	if(!(*flag & MECHLOSFLAG_SEEC2))
 		return 0;

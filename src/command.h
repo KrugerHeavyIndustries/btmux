@@ -86,7 +86,7 @@ void do_list(dbref, dbref, int, char *);		/* List contents of internal tables */
 void do_list_file(dbref, dbref, int, char *);	/* List contents of message files */
 void do_lock(dbref, dbref, int, char *, char *);		/* Set a lock on an object */
 void do_pagelock(dbref, dbref, int, char *, char *); 		/* Sets a Pagelock */
-void do_pageunlock(dbref, dbref, int, char *, char *);		/* Removes a Pagelock */
+void do_pageunlock(dbref, dbref, int, char *);		/* Removes a Pagelock */
 void do_look(dbref, dbref, int, char *);		/* Look here or at something */
 void do_motd(dbref, dbref, int, char *);		/* Set/list MOTD messages */
 void do_move(dbref, dbref, int, char *);		/* Move about using exits */
