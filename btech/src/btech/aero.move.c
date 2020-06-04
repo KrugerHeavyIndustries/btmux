@@ -12,6 +12,7 @@
 
 #include <math.h>
 #include "muxevent.h"
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.sensor.h"
@@ -290,7 +291,7 @@ int ImproperLZ(MECH * mech, int x, int y)
 	improper_lz_status = 0;
 	improper_lz_height = Elevation(map, x, y);
 	visit_neighbor_hexes(map, x, y, ImproperLZ_callback);
-	
+
 	if(improper_lz_status != 6)
 		if(mudconf.btech_blzmapmode == 0)
 			return UNEVEN_TERRAIN;
@@ -415,7 +416,7 @@ void ds_BridgeHit(MECH * mech)
 
 void aero_UpdateHeading(MECH * mech)
 {
-	/* Heading things are done in speed now, odd as though it might 
+	/* Heading things are done in speed now, odd as though it might
 	   seem */
 	if(SpheroidDS(mech))
 		UpdateHeading(mech);
@@ -536,7 +537,7 @@ int FuelCheck(MECH * mech)
 		return 0;
 	if(fabs(MechSpeed(mech)) > MMaxSpeed(mech)) {
 		if(MechZ(mech) < ATMO_Z)
-			fuelcost = abs(MechSpeed(mech) / MMaxSpeed(mech));
+			fuelcost = (int)fabs(MechSpeed(mech) / MMaxSpeed(mech));
 	} else if(fabs(MechSpeed(mech)) < MP1 &&
 			  fabs(MechVerticalSpeed(mech)) < MP2)
 		if(Number(0, 1) == 0)

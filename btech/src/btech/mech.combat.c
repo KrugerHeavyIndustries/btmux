@@ -13,6 +13,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "map.h"
 #include "btmacros.h"
@@ -984,7 +985,7 @@ void FireWeapon(MECH * mech,
 		 */
 		SendAttacks(tprintf("#%i attacks #%i (weapon) (%i/%i)",
 							mech->mynum, target->mynum, baseToHit, roll));
-/*    
+/*
         SendXP(tprintf("#%i attacks #%i (weapon) (%i/%i)", mech->mynum,
             target->mynum, baseToHit, roll));
 */
@@ -1107,14 +1108,14 @@ void FireWeapon(MECH * mech,
 						MechWeapons[weapindx].damage, -1, 0, -1, 0,1);
 				decrement_ammunition(mech, weapindx, section, critical, ammoLoc, ammoCrit,
 						ammoLoc1, ammoCrit1, wGattlingShots);
-				
+
 
 			}
-			
+
 			return;
 		}
 	}
-	
+
 	/* Check for RFAC explosion/jams */
 	if(GetPartFireMode(mech, section, critical) & RFAC_MODE) {
 		if(roll == 2) {
@@ -1238,16 +1239,16 @@ void FireWeapon(MECH * mech,
 	 * Glancing_Blows = 0: NO Glancing. ROLL>=BTH=Normal
 	 * Glancing_Blows = 1: MaxTech Glancing. ROLL=BTH=Glance, ROLL>BTH=Normal
 	 * Glancing_Blows = 2: Exile Glancing. ROLL=BTH-1=Glance, ROLL>=BTH=Normal
-	 * We need to do a little handling here. The rest happens over it HitTarget 
+	 * We need to do a little handling here. The rest happens over it HitTarget
 	 */
 	RbaseToHit = baseToHit;
 	if(mudconf.btech_glancing_blows == 2)
 		RbaseToHit = baseToHit - 1; /* only time we modify it */
-	
+
 	if(!isarty) {
 /*		if(In_Character(mech->mynum)) {
 			if((roll < RbaseToHit) && (RbaseToHit < 13) && (RbaseToHit > 1))
-				rollstat.hitstats[RbaseToHit - 2][0]++; 
+				rollstat.hitstats[RbaseToHit - 2][0]++;
 			if((roll == RbaseToHit) && (mudconf.btech_glancing_blows) && (RbaseToHit < 13) && (RbaseToHit > 1))
 				rollstat.hitstats[RbaseToHit - 2][2]++;
 			if((roll >= RbaseToHit) && (!mudconf.btech_glancing_blows) && (RbaseToHit < 13) && (RbaseToHit > 1))
@@ -1259,7 +1260,7 @@ void FireWeapon(MECH * mech,
 			MechFireBroadcast(mech, ishex ? NULL : target, mapx, mapy,
 							  mech_map, &MechWeapons[weapindx].name[3],
 							  (roll >= RbaseToHit) && range_ok);
-		
+
 	}
 	/* Tell our target they were just shot at... */
 	if(target) {
@@ -1403,7 +1404,7 @@ void FireWeapon(MECH * mech,
 	/* Special for Heavy Gauss Rifles */
 	if((MechWeapons[weapindx].special & HVYGAUSS) &&
 	   (MechType(mech) == CLASS_MECH)) {
-		if(abs(MechSpeed(mech)) > 0.0) {
+		if(fabs(MechSpeed(mech)) > 0.0) {
 			mech_notify(mech, MECHALL,
 						"You realize that moving while firing this weapon may not be a good idea after all.");
 			if(MechTons(mech) <= 35)
@@ -1611,7 +1612,7 @@ void HitTarget(MECH * mech,
 			 * because we modified the bth in FireWeapon. Nothing to see here. move along
 			 */
 			MechLOSBroadcast(hitMech, "is nicked by a glancing blow!");
-			mech_notify(hitMech, MECHALL, 
+			mech_notify(hitMech, MECHALL,
 					"You are nicked by a glancing blow!");
 			wWeapDamage = (int ) (wWeapDamage +1) / 2 ;
 			if(wWeapDamage < 1 )

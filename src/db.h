@@ -217,7 +217,9 @@ extern dbref db_read(FILE *, int *, int *, int *);
 extern dbref db_write(FILE *, int, int);
 extern void destroy_thing(dbref);
 extern void destroy_exit(dbref);
+extern int load_restart_db_xdr(void);
 extern void load_restart_db(void);
+extern void dump_restart_db_xdr(void);
 extern void dump_database_internal(int);
 
 #define	DOLIST(thing,list) \

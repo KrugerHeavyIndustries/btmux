@@ -1,7 +1,7 @@
 
 /*
  * $Id: map.los.c,v 1.1.1.1 2005/01/11 21:18:08 kstevens Exp $
- * 
+ *
  * Author: Thomas Wouters <thomas@xs4all.net>
  *
  * Copyright (c) 2002 Thomas Wouters
@@ -9,6 +9,7 @@
  *
  */
 
+#include "glue.h"
 #include "mech.h"
 #include "btmacros.h"
 #include "mech.sensor.h"
@@ -195,13 +196,13 @@ static int MechSeesTerrain(MECH * mech, int sn)
  * current hex and the seeing 'mech. If we end up with a hex between
  * minangle and blockangle, we need to check if the sensor can see through
  * that many woods.
- 
+
  * Blocking entirely, because of water- or EM-effects, is done by setting
  * the minangle and blockangle to 1000, a value high enough to block los to
  * all following hexes. To determine whether a sensors sees through a hex,
  * fake losflags are passed to the regular sensor functions... hacks, and
  * logic-duplication (the worst kind) but they work for now.
- 
+
  * This is all proof-of-concept, based on Cord Awtry's ideas for
  * 'underground' maps. This should all be rewritten, together with the
  * sensor code, to have one general 'tracelos' function, which calls

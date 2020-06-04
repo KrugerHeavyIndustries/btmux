@@ -13,6 +13,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "autopilot.h"
@@ -660,8 +661,6 @@ static char *ccode(MECH * m, int i, int obs, int team)
 			if(team == obs_team_color[ii].team)
 				sprintf(buf, "%s", obs_team_color[ii].ccode);
 		}
-		if(buf == NULL)
-			sprintf(buf, "%s", obs_team_color[0].ccode);
 	}
 	return buf;
 }
@@ -1054,7 +1053,7 @@ void nonrecursive_commlink(int i)
 		}
 		if(iter_c++ == 100000) {
 /* Lets not spam MechErrors with this.. */
-/* 
+/*
 			SendError(tprintf
 					  ("#%d: Infinite loop in relay code (?) ; using backup recursive code (num_mechs:%d, maxdepth:%d, nowdepth:%d)",
 					   comm_mech[0]->mynum, comm_num_to_conn, maxdepth, dep));

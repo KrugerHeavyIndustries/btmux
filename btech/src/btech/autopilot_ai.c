@@ -6,7 +6,7 @@
  *
  *  Copyright (c) 1998 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
- *  Copyright (c) 2000-2002 Cord Awtry 
+ *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
  *
  * Created: Thu Mar 12 18:36:33 1998 fingon
@@ -20,6 +20,7 @@
 
 #include <math.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "autopilot.h"
 #include "p.autopilot_command.h"
@@ -1163,7 +1164,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 			/* Generate hexoffset for the child node */
 			hexoffset = HexOffSet(map_x2, map_y2);
 
-			/* Check to see if its in the closed list 
+			/* Check to see if its in the closed list
 			 * if so just ignore it */
 			if(CheckHexBit(closed_list_bitfield, hexoffset))
 				continue;
@@ -1196,23 +1197,23 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 			 * and multiply by 100 */
 			/*! \todo {Add in something for elevation cost} */
 
-			/* Get the end hex in real coords, using the old variables 
+			/* Get the end hex in real coords, using the old variables
 			 * to store the values */
 			MapCoordToRealCoord(end_x, end_y, &x1, &y1);
 
-			/* Re-using the x2 and y2 values we calc'd for the child hex 
+			/* Re-using the x2 and y2 values we calc'd for the child hex
 			 * to find the range between the child hex and end hex */
 			child_h_score = 100 * FindHexRange(x2, y2, x1, y1);
 
 			/* Lets attempt to avoid hexes that already have our friendlies in it (Stack Check) */
-			if(mechs_in_hex(map, map_x2, map_y2, 1, MechTeam(mech)) > 2) 
+			if(mechs_in_hex(map, map_x2, map_y2, 1, MechTeam(mech)) > 2)
 				child_g_score +=150;
 
 			/* Now add in some modifiers for terrain */
 			switch (GetTerrain(map, map_x2, map_y2)) {
 			case LIGHT_FOREST:
 
-				/* Don't bother trying to enter a light forest 
+				/* Don't bother trying to enter a light forest
 				 * hex unless we can */
 				if((MechType(mech) == CLASS_VEH_GROUND) &&
 				   (MechMove(mech) != MOVE_TRACK))
@@ -1272,7 +1273,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 														 (void *) hexoffset);
 
 				/* Now compare the 'g_scores' to determine shortest path */
-				/* If g_score is lower, this means better path 
+				/* If g_score is lower, this means better path
 				 * from the current parent node */
 				if(child_g_score < temp_astar_node->g_score) {
 
@@ -1308,7 +1309,7 @@ int auto_astar_generate_path(AUTO * autopilot, MECH * mech, short end_x,
 
 				} else {
 
-					/* Don't need to do anything so we can skip 
+					/* Don't need to do anything so we can skip
 					 * to the next node */
 					continue;
 

@@ -1,5 +1,5 @@
 /*
- * netcommon.c 
+ * netcommon.c
  */
 
 /*
@@ -352,7 +352,7 @@ void clearstrings(DESC * d)
  * * queue_write: Add text to the output queue for the indicated descriptor.
  */
 
-void queue_write(DESC * d, char *b, int n)
+void queue_write(DESC * d, const char *b, int n)
 {
 	int retval;
 	if(n <= 0)
@@ -370,7 +370,7 @@ void queue_string(DESC * d, const char *s)
 	strncpy(new, s, LBUF_SIZE-1);
 	new[LBUF_SIZE-1] = '\0';
 
-	if(!Ansi(d->player) && index(s, ESC_CHAR)) 
+	if(!Ansi(d->player) && index(s, ESC_CHAR))
 	        strip_ansi_r(new, s, strlen(s));
     queue_write(d, new, strlen(new));
 }
@@ -573,7 +573,7 @@ static void announce_connect(dbref player, DESC * d)
 	DESC_ITER_PLAYER(player, dtemp) num++;
 
 	/*
-	 * Reset vacation flag 
+	 * Reset vacation flag
 	 */
 	s_Flags2(player, Flags2(player) & ~VACATION);
 
@@ -631,7 +631,7 @@ static void announce_connect(dbref player, DESC * d)
 		}
 	}
 	/*
-	 * do the zone of the player's location's possible aconnect 
+	 * do the zone of the player's location's possible aconnect
 	 */
 	if(mudconf.have_zones && ((zone = Zone(loc)) != NOTHING)) {
 		switch (Typeof(zone)) {
@@ -645,8 +645,8 @@ static void announce_connect(dbref player, DESC * d)
 			break;
 		case TYPE_ROOM:
 			/*
-			 * check every object in the room for a connect * * * 
-			 * action 
+			 * check every object in the room for a connect * * *
+			 * action
 			 */
 			DOLIST(obj, Contents(zone)) {
 				buf = atr_pget(obj, A_ACONNECT, &aowner, &aflags);
@@ -742,7 +742,7 @@ void announce_disconnect(dbref player, DESC * d, const char *reason)
 		}
 		/*
 		 * do the zone of the player's location's possible * * *
-		 * adisconnect 
+		 * adisconnect
 		 */
 		if(mudconf.have_zones && ((zone = Zone(loc)) != NOTHING)) {
 			switch (Typeof(zone)) {
@@ -756,8 +756,8 @@ void announce_disconnect(dbref player, DESC * d, const char *reason)
 				break;
 			case TYPE_ROOM:
 				/*
-				 * check every object in the room for a * * * 
-				 * connect action 
+				 * check every object in the room for a * * *
+				 * connect action
 				 */
 				DOLIST(obj, Contents(zone)) {
 					atr_temp = atr_pget(obj, A_ADISCONNECT, &aowner, &aflags);
@@ -925,8 +925,8 @@ static void dump_users(DESC * e, char *match, int key)
 	if(!match || !*match)
 		match = NULL;
 
-	
-	
+
+
 	buf = alloc_mbuf("dump_users");
 	if(key == CMD_SESSION) {
 		queue_string(e, "                               ");
@@ -970,7 +970,7 @@ static void dump_users(DESC * e, char *match, int key)
 				continue;
 
 			/*
-			 * Get choice flags for wizards 
+			 * Get choice flags for wizards
 			 */
 
 			fp = flist;
@@ -1050,7 +1050,7 @@ static void dump_users(DESC * e, char *match, int key)
 	}
 	count = rcount;				/* previous mode was .. disgusting. */
 	/*
-	 * sometimes I like the ternary operator.... 
+	 * sometimes I like the ternary operator....
 	 */
 	if (ucount)
 		sprintf(buf, "%d Visible Player%slogged in, (%d %s hidden), %d record, %s maximum.\r\n", count,
@@ -1160,7 +1160,7 @@ void init_logout_cmdtab(void)
 	/*
 	 * Make the htab bigger than the number of entries so that we find
 	 * things on the first check.  Remember that the admin can add
-	 * aliases. 
+	 * aliases.
 	 */
 
 	hashinit(&mudstate.logout_cmd_htab, 3 * HASH_FACTOR);
@@ -1220,13 +1220,13 @@ static int check_connect(DESC * d, char *msg)
 	mudstate.debug_cmd = (char *) "< check_connect >";
 
 	/*
-	 * Hide the password length from SESSION 
+	 * Hide the password length from SESSION
 	 */
 
 	d->input_tot -= (strlen(msg) + 1);
 
 	/*
-	 * Crack the command apart 
+	 * Crack the command apart
 	 */
 
 	command = alloc_lbuf("check_conn.cmd");
@@ -1250,7 +1250,7 @@ static int check_connect(DESC * d, char *msg)
 			StringCopy(password, mudconf.guest_prefix);
 		}
 		/*
-		 * See if this connection would exceed the max #players 
+		 * See if this connection would exceed the max #players
 		 */
 
 		if(mudconf.max_players < 0) {
@@ -1265,7 +1265,7 @@ static int check_connect(DESC * d, char *msg)
 		if(player == NOTHING) {
 
 			/*
-			 * Not a player, or wrong password 
+			 * Not a player, or wrong password
 			 */
 
 			queue_string(d, connect_fail);
@@ -1287,15 +1287,15 @@ static int check_connect(DESC * d, char *msg)
 				return 0;
 			}
 		} else if(((mudconf.control_flags & CF_LOGIN) &&
-				   (nplayers < mudconf.max_players)) && ((mudconf.registeredonly == Registered(player)) || !mudconf.registeredonly)
+				   (nplayers < mudconf.max_players) && (mudconf.registeredonly == Registered(player))) || !mudconf.registeredonly
 				   || WizRoy(player) || God(player)) {
-		
+
 
 			if(!strncmp(command, "cd", 2) && (Wizard(player) || God(player)))
 				s_Flags(player, Flags(player) | DARK);
 
 			/*
-			 * Logins are enabled, or wiz or god and registered player if needed 
+			 * Logins are enabled, or wiz or god and registered player if needed
 			 */
 
 			STARTLOG(LOG_LOGIN, "CON", "LOGIN") {
@@ -1326,10 +1326,10 @@ static int check_connect(DESC * d, char *msg)
 			}
 
 			/*
-			 * Give the player the MOTD file and the settable * * 
-			 * 
+			 * Give the player the MOTD file and the settable * *
+			 *
 			 * * MOTD * message(s). Use raw notifies so the
-			 * player * * * doesn't * try to match on the text. 
+			 * player * * * doesn't * try to match on the text.
 			 */
 
 			if(Guest(player)) {
@@ -1370,7 +1370,7 @@ static int check_connect(DESC * d, char *msg)
 	} else if(!strncmp(command, "cr", 2)) {
 
 		/*
-		 * Enforce game down 
+		 * Enforce game down
 		 */
 
 		if(!(mudconf.control_flags & CF_LOGIN)) {
@@ -1389,7 +1389,7 @@ static int check_connect(DESC * d, char *msg)
 		}
 
 		/*
-		 * Enforce max #players 
+		 * Enforce max #players
 		 */
 
 		if(mudconf.max_players < 0) {
@@ -1402,7 +1402,7 @@ static int check_connect(DESC * d, char *msg)
 		if(nplayers > mudconf.max_players) {
 
 			/*
-			 * Too many players on, reject the attempt 
+			 * Too many players on, reject the attempt
 			 */
 
 			failconn("CRE", "Create", "Game Full", d, R_GAMEFULL, NOTHING,
@@ -1475,16 +1475,16 @@ int do_unauth_command(DESC *d, char *command) {
 
     while(*arg && !isspace(*arg)) arg++;
 
-    if(*arg) 
+    if(*arg)
         *arg++ = '\0';
 
     cp = (NAMETAB *) hashfind(command, &mudstate.logout_cmd_htab);
-    if(*arg) 
+    if(*arg)
         *--arg = ' ';
 
-    if(!cp) 
+    if(!cp)
         return check_connect(d, command);
-    
+
     d->command_count++;
     if(!(cp->flag & CMD_NOxFIX)) {
         if(d->output_prefix) {
@@ -1563,7 +1563,7 @@ int do_command(DESC * d, char *command)
 
 
 	/*
-	 * Split off the command from the arguments 
+	 * Split off the command from the arguments
 	 */
 
 	arg = command;
@@ -1596,11 +1596,11 @@ int do_command(DESC * d, char *command)
 
    // moved this here so hudinfo doesn't spank a user's idle time or commands - jf
    d->last_time = mudstate.now;
-   
+
     cp = (NAMETAB *) hashfind(command, &mudstate.logout_cmd_htab);
 
     if(*arg)
-        *--arg = ' ';	
+        *--arg = ' ';
     if(cp == NULL) {
         d->command_count++;
         if(d->output_prefix) {

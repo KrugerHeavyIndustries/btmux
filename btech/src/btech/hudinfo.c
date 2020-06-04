@@ -12,6 +12,7 @@
 #include "interface.h"
 
 #include "muxevent.h"
+#include "glue.h"
 #include "mech.h"
 #include "map.h"
 #include "map.los.h"
@@ -228,7 +229,7 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 //	else {
 //		strcpy(targetID, "-");
 //	}
-	
+
 
 	sprintf(response,
 			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s,%s",
@@ -239,8 +240,8 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 			(int) (10 * MechMinusHeat(mech)),
 			fuel, MechVerticalSpeed(mech), MechVerticalSpeed(mech),
 			rtc, btc, tstat, getStatusString(mech, 2), jumpx, jumpy,
-//			MechTarget(mech) != -1 ? targetID:"-"); 
-			"-");			
+//			MechTarget(mech) != -1 ? targetID:"-");
+			"-");
 
 	hudinfo_notify(d, msgclass, "R", response);
 }
@@ -1174,7 +1175,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 		hudinfo_notify(d, msgclass, "E", "Invalid arguments");
 		return;
 	}
-	
+
 	if( (cx < 0) || (cx > map->map_width) || (cy > map->map_height) || (cy < 0)) {
 		hudinfo_notify(d, msgclass, "E", "Out of range");
 		return;
@@ -1230,7 +1231,7 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 				*p = GetTerrain(map, x, y);
 				if(*p == ' ')
 					*p = '.';
-				*p++;
+				p++;
 			} else
 				*p++ = '?';
 
@@ -1250,7 +1251,7 @@ static char *hud_getmapflags(MAP * map)
 {
 	static char res[5];
 	char *p = res;
-	
+
 	if(map) {
 		if(map->flags & MAPFLAG_VACUUM)
 			*p++ = 'V';
@@ -1274,7 +1275,7 @@ static void hud_conditions(DESC * d, MECH * mech, char *msgclass, char *args)
 	MAP *map = getMap(mech->mapindex);
 	char res[200];
 	char lt;
-	
+
 	if(map)	{
 		switch (map->maplight) {
 		case 0:

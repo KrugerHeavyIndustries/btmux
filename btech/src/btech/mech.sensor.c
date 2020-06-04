@@ -7,6 +7,7 @@
  *       All rights reserved
  */
 
+#include "glue.h"
 #include "mech.h"
 #include "map.h"
 #define _MECH_SENSOR_C
@@ -246,7 +247,7 @@ int Sensor_Sees(MECH * mech, MECH * target, int f, int arc, float range,
 /* Main idea: If primary & secondary scanner differ,
    check both scanners for chance (with secondary at 1/2 chance).
    Also, if non-360degree scanners are used, check only forward arc for
-   them. 
+   them.
 
    If both same, multiply chance by 1.1
  */
@@ -511,7 +512,6 @@ void update_LOSinfo(dbref obj, MAP * map)
 			}
 	}
 	for(i = 1; i < map->first_free; i++) {
-		if(map->mechsOnMap[i] > 0);
 		mech = getMech(map->mechsOnMap[i]);
 		if(!mech)
 			continue;
@@ -532,7 +532,7 @@ void update_LOSinfo(dbref obj, MAP * map)
 				if(MechStatus2(mech) & SLITE_ON)
 					if(range < LITE_RANGE)
 						cause_lite(mech, target);
-/* for now, commenting out this if(Started... section 
+/* for now, commenting out this if(Started... section
  * it was causing problems with bap. so we update los a bit more often now
  */
 /*				if(Started(target))

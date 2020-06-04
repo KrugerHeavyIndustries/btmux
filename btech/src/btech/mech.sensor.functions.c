@@ -106,7 +106,7 @@ CSEEFUNC(electrom_csee, !(map->sensorflags & (1 << SENSOR_EM)) &&
 CSEEFUNC(seismic_csee,
 		 !(map->sensorflags & (1 << SENSOR_SE)) &&
 		 t && (!Jumping(m)) &&
-		 (mudconf.btech_seismic_see_stopped ? 1 : (abs(MechSpeed(t)) > MP1))
+		 (mudconf.btech_seismic_see_stopped ? 1 : (fabsf(MechSpeed(t)) > MP1))
 		 &&
 		 (((MechMove(m) != MOVE_VTOL)
 		   || ((MechMove(m) == MOVE_VTOL) && Landed(m)))
@@ -158,7 +158,7 @@ CSEEFUNC(blood_csee,
 #define WEIGHT_MODIFIER(a) (a > 65 ? -1 : a > 35 ? 0 : 1)
 
 /* If target's moving, +1 tohit */
-#define MOVE_MODIFIER(a) (abs(a) >= 10.75 ? 1 : 0)
+#define MOVE_MODIFIER(a) (fabsf(a) >= 10.75 ? 1 : 0)
 
 #define nwood_count(mech,a)  (MechLOSFlag_WoodCount(a) + \
                              ((MechElevation(mech) + 2) < MechZ(mech) ? 0 : \

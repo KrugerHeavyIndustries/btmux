@@ -7,6 +7,7 @@
 
 #include "config.h"
 
+#include "glue.h"
 #include "mech.h"
 #include "coolmenu.h"
 #include "mycool.h"
@@ -199,27 +200,6 @@ int susp_factor(MECH * mech)
 		return 140;
 	}
 	return 0;
-}
-
-extern int round_to_halfton(int weight)
-{
-	int over = weight % 512;
-	if(!over)
-		return weight;
-	if(over < 2)
-		return weight - over;
-	return weight + (512 - over);
-}
-
-extern int round_to_quarterton(int weight)
-{
-	int over = weight % 256;
-	if(!over)
-		return weight;
-	if (over < 2)
-		return weight - over;
-	
-	return weight + (256 - over);
 }
 
 int crit_weight(MECH * mech, int t)
@@ -421,12 +401,13 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 			"Engine (Light)" : "Engine", MechEngineSize(mech));
 	PLOC(CTORSO)
 		ADDENTRY(buf, engine_weight(mech));
-	PLOC(HEAD)
+	PLOC(HEAD) {
 		if(MechSpecials2(mech) & SMALLCOCKPIT_TECH) {
 			ADDENTRY("Cockpit (Small)", 2 * 1024);
 		} else {
 			ADDENTRY("Cockpit", 3 * 1024);
 		}
+	}
 	PLOC(CTORSO)
 		/* Store the base-line gyro weight */
 		gyro_calc = (MechEngineSize(mech) / 100.0);
@@ -469,7 +450,7 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
 			   MechSpecials(mech) & HARDA_TECH ? "Armor (Hardened)" :
 			   MechSpecials(mech) & FF_TECH ? "Armor (FF)" : "Armor", armor_o,
 			   round_to_halfton( armor * 1024 / (MechSpecials(mech) & HARDA_TECH ? 8 : 16) ));
-			   
+
 			  // ceil(armor /
 
 //					(8. * (MechSpecials(mech) & HARDA_TECH ? 2 : 1))) * 512);

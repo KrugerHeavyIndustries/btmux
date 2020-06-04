@@ -641,11 +641,13 @@ static char *crypt_code(char *code, char *text, int type)
 	char *p, *q, *r;
 
 	if(!text && !*text)
-		return ((char *) "");
+		return (char *) "";
+	if(!code || !*code)
+		return text;
 	StringCopy(codebuff, crunch_code(code));
-	if(!code || !*code || !codebuff || !*codebuff)
-		return (text);
-	StringCopy(textbuff, "");
+	if (!*codebuff)
+		return text;
+	textbuff[0] = '\0';
 
 	p = text;
 	q = codebuff;

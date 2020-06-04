@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "htab.h"
 #include "create.h"
@@ -17,7 +18,7 @@
 
 void list_hashstat(dbref player, const char *tab_name, HASHTAB * htab);
 
-/* Main idea: 
+/* Main idea:
    Keep 2 sorted tables, one of shortform -> index
    longform  -> index
    vlongform -> index

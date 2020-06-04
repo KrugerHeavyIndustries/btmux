@@ -1,10 +1,10 @@
 /*
- * mail.c 
+ * mail.c
  *
  * This code was taken from Kalkin's DarkZone code, which was
  * originally taken from PennMUSH 1.50 p10, and has been heavily modified
  * since being included in MUX.
- * 
+ *
  */
 
 #include "copyright.h"
@@ -68,7 +68,7 @@ int ma_top = 0;
 struct malias **malias;
 
 /*
- * Handling functions for the database of mail messages. 
+ * Handling functions for the database of mail messages.
  */
 
 /*
@@ -162,7 +162,7 @@ static int add_mail_message(dbref player, char *message)
 		mail_db_grow(1);
 	}
 	/*
-	 * Add an extra bit of protection here 
+	 * Add an extra bit of protection here
 	 */
 	while (mudstate.mail_list[mudstate.mail_freelist].message != NULL) {
 		make_mail_freelist();
@@ -191,7 +191,7 @@ static int add_mail_message(dbref player, char *message)
 }
 
 /*
- * add_mail_message_nosig - used for reading in old style messages from disk 
+ * add_mail_message_nosig - used for reading in old style messages from disk
  */
 
 static int add_mail_message_nosig(char *message)
@@ -219,7 +219,7 @@ static void new_mail_message(char *message, int number)
 }
 
 /*
- * add_count - increments the reference count for any particular message 
+ * add_count - increments the reference count for any particular message
  */
 
 static INLINE void add_count(int number)
@@ -265,7 +265,7 @@ INLINE char *get_mail_message(int number)
 /*-------------------------------------------------------------------------*
  *   User mail functions (these are called from game.c)
  *
- * do_mail - cases 
+ * do_mail - cases
  * do_mail_read - read messages
  * do_mail_list - list messages
  * do_mail_flags - tagging, untagging, clearing, unclearing of messages
@@ -279,7 +279,7 @@ INLINE char *get_mail_message(int number)
 extern char *upcasestr(char *);
 
 /*
- * Change or rename a folder 
+ * Change or rename a folder
  */
 void do_mail_change_folder(dbref player, char *fld, char *newname)
 {
@@ -288,7 +288,7 @@ void do_mail_change_folder(dbref player, char *fld, char *newname)
 
 	if(!fld || !*fld) {
 		/*
-		 * Check mail in all folders 
+		 * Check mail in all folders
 		 */
 		for(pfld = MAX_FOLDERS; pfld >= 0; pfld--)
 			check_mail(player, pfld, 1);
@@ -306,7 +306,7 @@ void do_mail_change_folder(dbref player, char *fld, char *newname)
 	}
 	if(newname && *newname) {
 		/*
-		 * We're changing a folder name here 
+		 * We're changing a folder name here
 		 */
 		if(strlen(newname) > FOLDER_NAME_LEN) {
 			notify(player, "MAIL: Folder name too long");
@@ -324,7 +324,7 @@ void do_mail_change_folder(dbref player, char *fld, char *newname)
 					  newname);
 	} else {
 		/*
-		 * Set a new folder 
+		 * Set a new folder
 		 */
 		set_player_folder(player, pfld);
 		notify_printf(player, "MAIL: Current folder set to %d [%s].",
@@ -410,14 +410,14 @@ static void do_mail_flags(dbref player, char *msglist, mail_flag flag,
 
 	if(!j) {
 		/*
-		 * ran off the end of the list without finding anything 
+		 * ran off the end of the list without finding anything
 		 */
 		notify(player, "MAIL: You don't have any matching messages!");
 	}
 }
 
 /*
- * Change a message's folder 
+ * Change a message's folder
  */
 
 void do_mail_file(dbref player, char *msglist, char *folder)
@@ -442,7 +442,7 @@ void do_mail_file(dbref player, char *msglist, char *folder)
 			if(mail_match(mp, ms, i)) {
 				j++;
 				mp->read &= M_FMASK;	/*
-										 * Clear the folder 
+										 * Clear the folder
 										 */
 				mp->read |= FolderBit(foldernum);
 				notify_printf(player, "MAIL: Msg %d filed in folder %d",
@@ -453,14 +453,14 @@ void do_mail_file(dbref player, char *msglist, char *folder)
 
 	if(!j) {
 		/*
-		 * ran off the end of the list without finding anything 
+		 * ran off the end of the list without finding anything
 		 */
 		notify(player, "MAIL: You don't have any matching messages!");
 	}
 }
 
 /*
- * print a mail message(s) 
+ * print a mail message(s)
  */
 
 void do_mail_read(dbref player, char *msglist)
@@ -483,7 +483,7 @@ void do_mail_read(dbref player, char *msglist)
 			i++;
 			if(mail_match(mp, ms, i)) {
 				/*
-				 * Read it 
+				 * Read it
 				 */
 				j++;
 				buff = alloc_lbuf("do_mail_read");
@@ -507,11 +507,11 @@ void do_mail_read(dbref player, char *msglist)
 				free_lbuf(buff);
 				if(Unread(mp))
 					mp->read |= M_ISREAD;	/*
-											 * mark * * * 
-											 * message as 
-											 * 
+											 * mark * * *
+											 * message as
+											 *
 											 * *  * *  *
-											 * * * read 
+											 * * * read
 											 */
 			}
 		}
@@ -519,7 +519,7 @@ void do_mail_read(dbref player, char *msglist)
 
 	if(!j) {
 		/*
-		 * ran off the end of the list without finding anything 
+		 * ran off the end of the list without finding anything
 		 */
 		notify(player, "MAIL: You don't have that many matching messages!");
 	}
@@ -580,7 +580,7 @@ void do_mail_retract(dbref player, char *name, char *msglist)
 
 	if(!j) {
 		/*
-		 * ran off the end of the list without finding anything 
+		 * ran off the end of the list without finding anything
 		 */
 		notify(player, "MAIL: No matching messages.");
 	}
@@ -609,7 +609,7 @@ void do_mail_review(dbref player, char *name, char *msglist)
 			if(mp->from == player) {
 				i++;
 				/*
-				 * list it 
+				 * list it
 				 */
 				notify_printf(player,
 							  "[%s] %-3d (%4d) From: %-*s Sub: %.25s",
@@ -634,7 +634,7 @@ void do_mail_review(dbref player, char *name, char *msglist)
 				i++;
 				if(mail_match(mp, ms, i)) {
 					/*
-					 * Read it 
+					 * Read it
 					 */
 					j++;
 					status = status_string(mp);
@@ -666,7 +666,7 @@ void do_mail_review(dbref player, char *name, char *msglist)
 		if(!j) {
 			/*
 			 * ran off the end of the list without finding * * *
-			 * anything 
+			 * anything
 			 */
 			notify(player,
 				   "MAIL: You don't have that many matching messages!");
@@ -697,7 +697,7 @@ void do_mail_list(dbref player, char *msglist, int sub)
 			i++;
 			if(mail_match(mp, ms, i)) {
 				/*
-				 * list it 
+				 * list it
 				 */
 
 				time = mail_list_time(mp->time);
@@ -738,10 +738,10 @@ static char *mail_list_time(const char *the_time)
 		return new;
 	}
 	/*
-	 * Format of the_time is: day mon dd hh:mm:ss yyyy 
+	 * Format of the_time is: day mon dd hh:mm:ss yyyy
 	 */
 	/*
-	 * Chop out :ss 
+	 * Chop out :ss
 	 */
 	for(i = 0; i < 16; i++) {
 		if(*p)
@@ -767,16 +767,16 @@ void do_mail_purge(dbref player)
 	struct mail *mp, *nextp;
 
 	/*
-	 * Go through player's mail, and remove anything marked cleared 
+	 * Go through player's mail, and remove anything marked cleared
 	 */
 	for(mp = (struct mail *) nhashfind((int) player, &mudstate.mail_htab);
 		mp; mp = nextp) {
 		if(Cleared(mp)) {
 			/*
-			 * Delete this one 
+			 * Delete this one
 			 */
 			/*
-			 * head and tail of the list are special 
+			 * head and tail of the list are special
 			 */
 			if(mp->prev == NULL)
 				nhashrepl((int) player, (int *) mp->next,
@@ -785,7 +785,7 @@ void do_mail_purge(dbref player)
 				mp->prev->next = NULL;
 
 			/*
-			 * relink the list 
+			 * relink the list
 			 */
 			if(mp->prev != NULL)
 				mp->prev->next = mp->next;
@@ -793,16 +793,16 @@ void do_mail_purge(dbref player)
 				mp->next->prev = mp->prev;
 
 			/*
-			 * save the pointer 
+			 * save the pointer
 			 */
 			nextp = mp->next;
 
 			/* Clear it. its the last message in the list */
-			if(mp->prev == NULL && mp->next == NULL) 
+			if(mp->prev == NULL && mp->next == NULL)
 				nhashdelete((int) player, &mudstate.mail_htab);
-				
+
 			/*
-			 * then wipe 
+			 * then wipe
 			 */
 			free((char *) mp->subject);
 			delete_mail_message(mp->number);
@@ -878,7 +878,7 @@ struct mail *mail_fetch(dbref player, int num)
 
 /*
  * returns count of read, unread, & cleared messages as rcount, ucount,
- * * ccount 
+ * * ccount
  */
 
 void count_mail(dbref player, int folder, int *rcount,
@@ -939,11 +939,11 @@ static void send_mail(dbref player, dbref target, const char *tolist,
 	tt = time(NULL);
 	StringCopy(tbuf1, ctime(&tt));
 	tbuf1[strlen(tbuf1) - 1] = '\0';	/*
-										 * whack the newline 
+										 * whack the newline
 										 */
 
 	/*
-	 * initialize the appropriate fields 
+	 * initialize the appropriate fields
 	 */
 	newp = (struct mail *) malloc(sizeof(struct mail));
 
@@ -957,11 +957,11 @@ static void send_mail(dbref player, dbref target, const char *tolist,
 	newp->time = (char *) strdup(tbuf1);
 	newp->subject = (char *) strdup(subject);
 	newp->read = flags & M_FMASK;	/*
-									 * Send to folder 0 
+									 * Send to folder 0
 									 */
 
 	/*
-	 * if this is the first message, it is the head and the tail 
+	 * if this is the first message, it is the head and the tail
 	 */
 	if(!nhashfind((int) target, &mudstate.mail_htab)) {
 		nhashadd((int) target, (int *) newp, &mudstate.mail_htab);
@@ -978,7 +978,7 @@ static void send_mail(dbref player, dbref target, const char *tolist,
 	}
 
 	/*
-	 * notify people 
+	 * notify people
 	 */
 	if(!silent)
 		notify_printf(player, "MAIL: You sent your message to %s.",
@@ -1002,7 +1002,7 @@ void do_mail_nuke(dbref player)
 		return;
 	}
 	/*
-	 * walk the list 
+	 * walk the list
 	 */
 	MAIL_ITER_SAFE(mp, thing, nextp) {
 		nextp = mp->next;
@@ -1059,10 +1059,10 @@ void do_mail_debug(dbref player, char *action, char *victim)
 			if(!Good_obj(mp->to) || (Typeof(mp->to) != TYPE_PLAYER)) {
 				notify_printf(player, "Fixing mail for #%d.", mp->to);
 				/*
-				 * Delete this one 
+				 * Delete this one
 				 */
 				/*
-				 * head and tail of the list are * special 
+				 * head and tail of the list are * special
 				 */
 				if(mp->prev == NULL)
 					nhashrepl((int) player, (int *) mp->next,
@@ -1070,18 +1070,18 @@ void do_mail_debug(dbref player, char *action, char *victim)
 				else if(mp->next == NULL)
 					mp->prev->next = NULL;
 				/*
-				 * relink the list 
+				 * relink the list
 				 */
 				if(mp->prev != NULL)
 					mp->prev->next = mp->next;
 				if(mp->next != NULL)
 					mp->next->prev = mp->prev;
 				/*
-				 * save the pointer 
+				 * save the pointer
 				 */
 				nextp = mp->next;
 				/*
-				 * then wipe 
+				 * then wipe
 				 */
 				free((char *) mp->subject);
 				delete_mail_message(mp->number);
@@ -1108,7 +1108,7 @@ void do_mail_stats(dbref player, char *name, int full)
 	fc = fr = fu = tc = tr = tu = cchars = fchars = tchars = count = 0;
 
 	/*
-	 * find player 
+	 * find player
 	 */
 
 	if((*name == '\0') || !name) {
@@ -1140,7 +1140,7 @@ void do_mail_stats(dbref player, char *name, int full)
 		return;
 	}
 	/*
-	 * this comand is computationally expensive 
+	 * this comand is computationally expensive
 	 */
 
 	if(!payfor(player, mudconf.searchcost)) {
@@ -1151,7 +1151,7 @@ void do_mail_stats(dbref player, char *name, int full)
 		return;
 	}
 	if(target == AMBIGUOUS) {	/*
-								 * stats for all 
+								 * stats for all
 								 */
 		if(full == 0) {
 			MAIL_ITER_ALL(mp, thing) {
@@ -1200,12 +1200,12 @@ void do_mail_stats(dbref player, char *name, int full)
 		}
 	}
 	/*
-	 * individual stats 
+	 * individual stats
 	 */
 
 	if(full == 0) {
 		/*
-		 * just count number of messages 
+		 * just count number of messages
 		 */
 		MAIL_ITER_ALL(mp, thing) {
 			if(mp->from == target)
@@ -1218,7 +1218,7 @@ void do_mail_stats(dbref player, char *name, int full)
 		return;
 	}
 	/*
-	 * more detailed message count 
+	 * more detailed message count
 	 */
 	MAIL_ITER_ALL(mp, thing) {
 		if(mp->from == target) {
@@ -1286,20 +1286,20 @@ void do_mail_stub(dbref player, char *arg1, char *arg2)
 			return;
 		}
 		/*
-		 * just the "@mail" command 
+		 * just the "@mail" command
 		 */
 		do_mail_list(player, arg1, 1);
 		return;
 	}
 	/*
-	 * purge a player's mailbox 
+	 * purge a player's mailbox
 	 */
 	if(!strcasecmp(arg1, "purge")) {
 		do_mail_purge(player);
 		return;
 	}
 	/*
-	 * clear message 
+	 * clear message
 	 */
 	if(!strcasecmp(arg1, "clear")) {
 		do_mail_clear(player, arg2);
@@ -1311,13 +1311,13 @@ void do_mail_stub(dbref player, char *arg1, char *arg2)
 	}
 	if(arg2 && *arg2) {
 		/*
-		 * Sending mail 
+		 * Sending mail
 		 */
 		do_expmail_start(player, arg1, arg2);
 		return;
 	} else {
 		/*
-		 * Must be reading or listing mail - no arg2 
+		 * Must be reading or listing mail - no arg2
 		 */
 		if(isdigit(*arg1) && !index(arg1, '-'))
 			do_mail_read(player, arg1);
@@ -1429,7 +1429,7 @@ int dump_mail(FILE * fp)
 	int count = 0, i;
 
 	/*
-	 * Write out version number 
+	 * Write out version number
 	 */
 	fprintf(fp, "+V5\n");
 	putref(fp, mudstate.mail_db_top);
@@ -1454,7 +1454,7 @@ int dump_mail(FILE * fp)
 	fprintf(fp, "*** END OF DUMP ***\n");
 
 	/*
-	 * Add the db of mail messages 
+	 * Add the db of mail messages
 	 */
 	for(i = 0; i < mudstate.mail_db_top; i++) {
 		if(mudstate.mail_list[i].count > 0) {
@@ -1484,7 +1484,7 @@ int load_mail(FILE * fp)
 	struct mail *mp, *mptr;
 
 	/*
-	 * Read the version number 
+	 * Read the version number
 	 */
 	fgets(nbuf1, sizeof(nbuf1), fp);
 
@@ -1509,7 +1509,7 @@ int load_mail(FILE * fp)
 		fgets(nbuf1, sizeof(nbuf1), fp);	/*
 											 * Toss away the * *
 											 * * number of
-											 * messages  *  * *  
+											 * messages  *  * *
 											 */
 	if(read_newdb) {
 		mail_top = getref(fp);
@@ -1617,7 +1617,7 @@ static int get_folder_number(dbref player, char *name)
 	p = res;
 	while (!isspace(*p))
 		p++;
-	p = '\0';
+	*p = '\0';
 	free_lbuf(atrstr);
 	free_lbuf(str);
 	free_lbuf(pat);
@@ -1633,7 +1633,7 @@ static char *get_folder_name(dbref player, int fld)
 	long flags; int len;
 
 	/*
-	 * Get the name of the folder, or "nameless" 
+	 * Get the name of the folder, or "nameless"
 	 */
 	pat = alloc_lbuf("get_folder_name");
 	sprintf(pat, "%d:", fld);
@@ -1670,10 +1670,10 @@ void add_folder_name(dbref player, int fld, char *name)
 	long aflags;
 
 	/*
-	 * Muck with the player's MAILFOLDERS attrib to add a string of the * 
-	 * 
+	 * Muck with the player's MAILFOLDERS attrib to add a string of the *
+	 *
 	 * *  * * form: number:name:number to it, replacing any such string
-	 * with a  *  * * * matching number. 
+	 * with a  *  * * * matching number.
 	 */
 
 	new = alloc_lbuf("add_folder_name.new");
@@ -1684,7 +1684,7 @@ void add_folder_name(dbref player, int fld, char *name)
 	sprintf(new, "%d:%s:%d ", fld, upcasestr(name), fld);
 	sprintf(pat, "%d:", fld);
 	/*
-	 * get the attrib and the old string, if any 
+	 * get the attrib and the old string, if any
 	 */
 	old = NULL;
 
@@ -1708,7 +1708,7 @@ void add_folder_name(dbref player, int fld, char *name)
 		*r = '\0';
 	}
 	/*
-	 * put the attrib back 
+	 * put the attrib back
 	 */
 	atr_add(player, A_MAILFOLDERS, res, player,
 			AF_MDARK | AF_WIZARD | AF_NOPROG | AF_LOCK);
@@ -1723,9 +1723,9 @@ void add_folder_name(dbref player, int fld, char *name)
 static int player_folder(dbref player)
 {
 	/*
-	 * Return the player's current folder number. If they don't have one, 
-	 * 
-	 * *  * *  * * set * it to 0 
+	 * Return the player's current folder number. If they don't have one,
+	 *
+	 * *  * *  * * set * it to 0
 	 */
 	long flags; int number;
 	char *atrstr;
@@ -1744,7 +1744,7 @@ static int player_folder(dbref player)
 void set_player_folder(dbref player, int fnum)
 {
 	/*
-	 * Set a player's folder to fnum 
+	 * Set a player's folder to fnum
 	 */
 	ATTR *a;
 	char *tbuf1;
@@ -1755,7 +1755,7 @@ void set_player_folder(dbref player, int fnum)
 	if(a)
 		atr_add(player, A_MAILCURF, tbuf1, GOD, a->flags);
 	else {						/*
-								 * Shouldn't happen, but... 
+								 * Shouldn't happen, but...
 								 */
 		atr_add(player, A_MAILCURF, tbuf1, GOD,
 				AF_ODARK | AF_WIZARD | AF_NOPROG | AF_LOCK);
@@ -1769,8 +1769,8 @@ static int parse_folder(dbref player, char *folder_string)
 
 	/*
 	 * Given a string, return a folder #, or -1 The string is just a * *
-	 * * number, * for now. Later, this will be where named folders are * 
-	 * *  * handled 
+	 * * number, * for now. Later, this will be where named folders are *
+	 * *  * handled
 	 */
 	if(!folder_string || !*folder_string)
 		return -1;
@@ -1782,7 +1782,7 @@ static int parse_folder(dbref player, char *folder_string)
 			return fnum;
 	}
 	/*
-	 * Handle named folders here 
+	 * Handle named folders here
 	 */
 	return get_folder_number(player, folder_string);
 }
@@ -1795,7 +1795,7 @@ static int mail_match(struct mail *mp, struct mail_selector ms, int num)
 	mail_flag mpflag;
 
 	/*
-	 * Does a piece of mail match the mail_selector? 
+	 * Does a piece of mail match the mail_selector?
 	 */
 	if(ms.low && num < ms.low)
 		return 0;
@@ -1808,15 +1808,15 @@ static int mail_match(struct mail *mp, struct mail_selector ms, int num)
 		return 0;
 	if(ms.days != -1) {
 		/*
-		 * Get the time now, subtract mp->time, and compare the * * * 
-		 * results with * ms.days (in manner of ms.day_comp) 
+		 * Get the time now, subtract mp->time, and compare the * * *
+		 * results with * ms.days (in manner of ms.day_comp)
 		 */
 		time(&now);
 		msgtm = (struct tm *) malloc(sizeof(struct tm));
 
 		if(!msgtm) {
 			/*
-			 * Ugly malloc failure 
+			 * Ugly malloc failure
 			 */
 			log_text("MAIL: Couldn't malloc struct tm!");
 			return 0;
@@ -1850,10 +1850,10 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 	 * Take a message list, and return the appropriate mail_selector * *
 	 * * setup. For * now, msglists are quite restricted. That'll change
 	 * * * * once all this is * working. Returns 0 if couldn't parse, and
-	 * * also * * notifys player of why. 
+	 * * also * * notifys player of why.
 	 */
 	/*
-	 * Initialize the mail selector - this matches all messages 
+	 * Initialize the mail selector - this matches all messages
 	 */
 	ms->low = 0;
 	ms->high = 0;
@@ -1862,16 +1862,16 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 	ms->days = -1;
 	ms->day_comp = 0;
 	/*
-	 * Now, parse the message list 
+	 * Now, parse the message list
 	 */
 	if(!msglist || !*msglist) {
 		/*
-		 * All messages 
+		 * All messages
 		 */
 		return 1;
 	}
 	/*
-	 * Don't mess with msglist itself 
+	 * Don't mess with msglist itself
 	 */
 	StringCopyTrunc(tbuf1, msglist, LBUF_SIZE - 1);
 	p = tbuf1;
@@ -1879,19 +1879,19 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 		p++;
 	if(!p || !*p) {
 		return 1;				/*
-								 * all messages 
+								 * all messages
 								 */
 	}
 	if(isdigit(*p)) {
 		/*
-		 * Message or range 
+		 * Message or range
 		 */
 		q = seek_char(p, '-');
 		if(*q) {
 			/*
-			 * We have a subrange, split it up and test to see if 
-			 * 
-			 * *  * *  * * it is valid 
+			 * We have a subrange, split it up and test to see if
+			 *
+			 * *  * *  * * it is valid
 			 */
 			*q++ = '\0';
 			ms->low = atoi(p);
@@ -1901,7 +1901,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			if(!q || !*q) {
 				/*
-				 * Unbounded range 
+				 * Unbounded range
 				 */
 				ms->high = 0;
 			} else {
@@ -1913,14 +1913,14 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 		} else {
 			/*
-			 * A single message 
+			 * A single message
 			 */
 			ms->low = ms->high = atoi(p);
 		}
 	} else {
 		switch (*p) {
 		case '-':				/*
-								 * Range with no start 
+								 * Range with no start
 								 */
 			p++;
 			if(!p || !*p) {
@@ -1934,7 +1934,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case '~':				/*
-								 * exact # of days old 
+								 * exact # of days old
 								 */
 			p++;
 			if(!p || !*p) {
@@ -1949,7 +1949,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case '<':				/*
-								 * less than # of days old 
+								 * less than # of days old
 								 */
 			p++;
 			if(!p || !*p) {
@@ -1964,7 +1964,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case '>':				/*
-								 * greater than # of days old 
+								 * greater than # of days old
 								 */
 			p++;
 			if(!p || !*p) {
@@ -1979,7 +1979,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case '#':				/*
-								 * From db# 
+								 * From db#
 								 */
 			p++;
 			if(!p || !*p) {
@@ -1993,7 +1993,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case '*':				/*
-								 * From player name 
+								 * From player name
 								 */
 			p++;
 			if(!p || !*p) {
@@ -2009,14 +2009,14 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 
 /*
  * case 'a':
- * case 'A':            all messages, all folders 
+ * case 'A':            all messages, all folders
  */
 			ms->flags = M_ALL;
 			break;				/*
-								 *  FIX THIS 
+								 *  FIX THIS
 								 */
 		case 'u':				/*
-								 * Urgent, Unread 
+								 * Urgent, Unread
 								 */
 		case 'U':
 			p++;
@@ -2026,19 +2026,19 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			switch (*p) {
 			case 'r':			/*
-								 * Urgent 
+								 * Urgent
 								 */
 			case 'R':
 				ms->flags = M_URGENT;
 				break;
 			case 'n':			/*
-								 * Unread 
+								 * Unread
 								 */
 			case 'N':
 				ms->flags = M_MSUNREAD;
 				break;
 			default:			/*
-								 * bad 
+								 * bad
 								 */
 				notify(player, "MAIL: Invalid message specification");
 				return 0;
@@ -2046,26 +2046,26 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		case 'r':				/*
-								 * read 
+								 * read
 								 */
 		case 'R':
 			ms->flags = M_ISREAD;
 			break;
 		case 'c':				/*
-								 * cleared 
+								 * cleared
 								 */
 		case 'C':
 			ms->flags = M_CLEARED;
 			break;
 		case 't':				/*
-								 * tagged 
+								 * tagged
 								 */
 		case 'T':
 			ms->flags = M_TAG;
 			break;
 		case 'm':
 		case 'M':				/*
-								 * Mass, me 
+								 * Mass, me
 								 */
 			p++;
 			if(!p || !*p) {
@@ -2088,7 +2088,7 @@ static int parse_msglist(char *msglist, struct mail_selector *ms,
 			}
 			break;
 		default:				/*
-								 * Bad news 
+								 * Bad news
 								 */
 			notify(player, "MAIL: Invalid message specification");
 			return 0;
@@ -2107,7 +2107,7 @@ void check_mail_expiration()
 	dbref thing;
 
 	/*
-	 * negative values for expirations never expire 
+	 * negative values for expirations never expire
 	 */
 	if(0 > mudconf.mail_expiration)
 		return;
@@ -2117,10 +2117,10 @@ void check_mail_expiration()
 			then = timelocal(&then_tm);
 			if(((now - then) > expire_secs) && !(M_Safe(mp))) {
 				/*
-				 * Delete this one 
+				 * Delete this one
 				 */
 				/*
-				 * head and tail of the list are special 
+				 * head and tail of the list are special
 				 */
 				if(mp->prev == NULL)
 					nhashrepl((int) mp->to, (int *) mp->next,
@@ -2128,18 +2128,18 @@ void check_mail_expiration()
 				else if(mp->next == NULL)
 					mp->prev->next = NULL;
 				/*
-				 * relink the list 
+				 * relink the list
 				 */
 				if(mp->prev != NULL)
 					mp->prev->next = mp->next;
 				if(mp->next != NULL)
 					mp->next->prev = mp->prev;
 				/*
-				 * save the pointer 
+				 * save the pointer
 				 */
 				nextp = mp->next;
 				/*
-				 * then wipe 
+				 * then wipe
 				 */
 				free((char *) mp->subject);
 				delete_mail_message(mp->number);
@@ -2156,7 +2156,7 @@ void check_mail_expiration()
 static char *status_chars(struct mail *mp)
 {
 	/*
-	 * Return a short description of message flags 
+	 * Return a short description of message flags
 	 */
 	static char res[10];
 	char *p;
@@ -2177,7 +2177,7 @@ static char *status_chars(struct mail *mp)
 static char *status_string(struct mail *mp)
 {
 	/*
-	 * Return a longer description of message flags 
+	 * Return a longer description of message flags
 	 */
 	char *tbuf1;
 
@@ -2206,27 +2206,27 @@ void check_mail(dbref player, int folder, int silent)
 {
 
 	/*
-	 * Check for new @mail 
+	 * Check for new @mail
 	 */
 	int rc;						/*
 
-								 * read messages 
+								 * read messages
 								 */
 	int uc;						/*
 
-								 * unread messages 
+								 * unread messages
 								 */
 	int cc;						/*
 
-								 * cleared messages 
+								 * cleared messages
 								 */
 	int gc;						/*
 
-								 * urgent messages 
+								 * urgent messages
 								 */
 
 	/*
-	 * just count messages 
+	 * just count messages
 	 */
 	count_mail(player, folder, &rc, &uc, &cc);
 	urgent_mail(player, folder, &gc);
@@ -2301,7 +2301,7 @@ void do_malias(dbref player, dbref cause, int key, char *arg1, char *arg2)
 		break;
 	case 7:
 		/*
-		 * empty 
+		 * empty
 		 */
 		break;
 	case 8:
@@ -2330,7 +2330,7 @@ void do_malias_send(dbref player, char *tolist, char *listto, char *subject,
 		return;
 	}
 	/*
-	 * Parse the player list 
+	 * Parse the player list
 	 */
 
 	for(k = 0; k < m->numrecep; k++) {
@@ -2341,8 +2341,8 @@ void do_malias_send(dbref player, char *tolist, char *listto, char *subject,
 					  silent);
 		} else
 			send_mail(GOD, GOD, listto, subject,	/*
-													 * Complain 
-													 * about it 
+													 * Complain
+													 * about it
 													 */
 					  add_mail_message(player,
 									   tprintf
@@ -2374,7 +2374,7 @@ struct malias *get_malias(dbref player, char *alias)
 			m = malias[i];
 			if((m->owner == player) || (m->owner == GOD)) {
 				if(!strcmp(mal, m->name))	/*
-											 * Found it! 
+											 * Found it!
 											 */
 					return m;
 			}
@@ -2426,7 +2426,7 @@ void do_malias_create(dbref player, char *alias, char *tolist)
 	i = 0;
 
 	/*
-	 * Parse the player list 
+	 * Parse the player list
 	 */
 	head = (char *) tolist;
 	while (head && *head && (i < (MALIAS_LEN - 1))) {
@@ -2449,7 +2449,7 @@ void do_malias_create(dbref player, char *alias, char *tolist)
 		spot = *tail;
 		*tail = '\0';
 		/*
-		 * Now locate a target 
+		 * Now locate a target
 		 */
 		if(!strcasecmp(head, "me"))
 			target = player;
@@ -2469,7 +2469,7 @@ void do_malias_create(dbref player, char *alias, char *tolist)
 			free_lbuf(buff);
 		}
 		/*
-		 * Get the next recip 
+		 * Get the next recip
 		 */
 		*tail = spot;
 		head = tail;
@@ -2485,7 +2485,7 @@ void do_malias_create(dbref player, char *alias, char *tolist)
 	StringCopy(malias[ma_top]->name, na);
 	malias[ma_top]->desc = (char *) malloc(strlen(na) + 1);
 	StringCopy(malias[ma_top]->desc, na);	/*
-											 * For now do this. 
+											 * For now do this.
 											 */
 	ma_top++;
 
@@ -2790,7 +2790,7 @@ static char *make_numlist(dbref player, char *arg)
 		}
 
 		/*
-		 * Get the next recip 
+		 * Get the next recip
 		 */
 		*tail = spot;
 		head = tail;
@@ -2899,7 +2899,7 @@ void mail_to_list(dbref player, char *list, char *subject, char *message,
 		}
 
 		/*
-		 * Get the next recip 
+		 * Get the next recip
 		 */
 		*tail = spot;
 		head = tail;
@@ -3080,7 +3080,7 @@ void do_malias_desc(dbref player, char *alias, char *desc)
 		return;
 	} else if((m->owner != GOD) || ExpMail(player)) {
 		free(m->desc);			/*
-								 * free it up 
+								 * free it up
 								 */
 		m->desc = (char *) malloc(sizeof(char *) * strlen(desc));
 

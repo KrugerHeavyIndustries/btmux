@@ -388,7 +388,7 @@ int char_gainxpbycode(dbref player, int code, int amount, int override)
 		return 0;
 	s = retrieve_stats(player, VALUES_SKILLS | VALUES_ATTRS);
 /* allow override of setting xp quickly. useful in chargen situations and only settable via that
- * Regular skill gains still check SK_XP and last used within 30s to keep from spamming 
+ * Regular skill gains still check SK_XP and last used within 30s to keep from spamming
  */
 	if(override == 0)
 		if(!((mudstate.now > (s->last_use[code] + 30)) ||
@@ -947,7 +947,7 @@ int handlemwconc(MECH * mech, int initial)
 				if(!Destroyed(mech))
 					DestroyMech(mech, mech, 0, KILL_TYPE_MWDAMAGE);
 
-				MechPilot(mech) = -1;	
+				MechPilot(mech) = -1;
 				MechSpeed(mech) = 0.;
 				MechDesiredSpeed(mech) = 0.;
 				return 0;
@@ -1332,7 +1332,7 @@ float getPilotBVMod(MECH * mech, int weapindx)
 	 * (that's <gun skill>+ <pilot skill>+)
 	 */
 
-	int zeroPilotBaseSkills[] =
+	float zeroPilotBaseSkills[] =
 		{ 2.05, 1.85, 1.65, 1.45, 1.25, 1.15, 1.05, .95 };
 
 	int myGSkill = FindPilotGunnery(mech, weapindx);
@@ -1380,7 +1380,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 	/* No XP for zero'd mechas */
 	for(i = 0; i < NUM_SECTIONS; i++)
 		j -= SectIsDestroyed(wounded, i);
-	
+
 	if( j < 1)
 		return;
 
@@ -1429,7 +1429,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 
 	if(mudconf.btech_xp_bthmod) {
 		if(!(bth >= 3 && bth <= 12)) {
-			if(mudconf.btech_noisy_xpgain) 
+			if(mudconf.btech_noisy_xpgain)
 				SendXP(tprintf("#%d in #%d 1 noxp #%d", pilot, attacker->mynum, wounded->mynum));
 			return;				/* sure hits aren't interesting */
 		}
@@ -1489,7 +1489,7 @@ void AccumulateGunXP(dbref pilot, MECH * attacker, MECH * wounded,
 
 	if(mudconf.btech_perunit_xpmod)
 		multiplier = multiplier * MechXPMod(attacker); /* Per unit XP Mod. Defaults to 1 anyways */
-	
+
 	/* Change the Cap to be variable depending on what a mux wants */
 
 	xp = BOUNDED(1, (int) (multiplier * damage / 100), mudconf.btech_xpgain_cap);
@@ -1675,32 +1675,32 @@ void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
 								char_values[targetcode].name, char_getvaluebycode(target, targetcode));
 				break;
 
-			case 1: 
+			case 1:
 				/* This is the + value of said skill
 				 * Also known as the ToHit Roll. This is not the 'Skill Level'
 				 * I.e. Setting someone's Gun-Bmech with this to 5 with a Physical Attribute of 7+
 				 * will give you Level 2 Gun-Bmech (5+) */
-				
-			
+
+
 				char_setvaluebycode(target, targetcode, 0)
 				targetvalue =
 					char_getskilltargetbycode(target, targetcode,
 											  0) - targetvalue;
 
-				/* Handle a wierd code race issue. target shouldn't be negative in this case anyways */			
+				/* Handle a wierd code race issue. target shouldn't be negative in this case anyways */
 				if (targetvalue >= 0) {
 					char_setvaluebycode(target,targetcode,targetvalue);
 				}
 				else {
 					char_setvaluebycode(target,targetcode,0);
 				}
-					
+
 				safe_tprintf_str(buff, bufc, "%s's %s set to %d", Name(target),
 							char_values[targetcode].name, targetvalue >=0 ? char_getvaluebycode(target, targetcode) : 0);
-		
+
 				break;
-			
-			case 3: 
+
+			case 3:
 				/* Set the XP Amount for this skill */
 				char_gainxpbycode(target, targetcode, targetvalue - char_getxpbycode(target, targetcode), 1);
 
@@ -1710,7 +1710,7 @@ void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
 						targetvalue);
 
 				break;
-			
+
 			default:
 				/* Any other flaggo value will addxp for the skill */
  				char_gainxpbycode(target, targetcode, targetvalue,1);
@@ -1723,7 +1723,7 @@ void fun_btsetcharvalue(char *buff, char **bufc, dbref player, dbref cause,
 
 				break;
 		}
-	
+
 }
 
 /* ----------------------------------------------------------------------
@@ -2041,7 +2041,7 @@ void debug_setxplevel(dbref player, void *data, char *buffer)
 			 char_getvaluecode(args[0])) < 0, "That isn't any charvalue!");
 	DOCHECK(char_values[code].type != CHAR_SKILL, "That isn't any skill!");
 	char_values[code].xpthreshold = xpt;
-    log_error(LOG_WIZARD, "WIZ", "CHANGE", "Exp threshold for %s changed to %d by #%d", 
+    log_error(LOG_WIZARD, "WIZ", "CHANGE", "Exp threshold for %s changed to %d by #%d",
 						 char_values[code].name, xpt, player);
 }
 

@@ -17,6 +17,7 @@
 /* Most of the BattleSheep(tm) code is here.. */
 
 #include <math.h>
+#include "glue.h"
 #include "mech.h"
 #include "autopilot.h"
 #include "spath.h"
@@ -49,7 +50,7 @@ void sendchannelstuff(MECH * mech, int freq, char *msg);
 #define BACMD(name) char * name (AUTO *autopilot, MECH *mech, char **args, int argc, int chn)
 #define ACMD(name) static BACMD(name)
 
-/* 
+/*
  * Master list of AI - radio commands
  */
 struct {
@@ -444,7 +445,7 @@ void auto_radio_command_heading(AUTO * autopilot, MECH * mech,
 	mech_heading(autopilot->mynum, mech, buffer);
 	strcpy(buffer, "0");
 	mech_speed(autopilot->mynum, mech, buffer);
-	snprintf(buffer, LBUF_SIZE, "stopped and heading changed to %d", heading);
+	snprintf(buffer, SBUF_SIZE, "stopped and heading changed to %d", heading);
 
 }
 
@@ -502,7 +503,7 @@ void auto_radio_command_hide(AUTO * autopilot, MECH * mech,
 }
 
 /*
- * Radio command to force AI to jump either on a target or 
+ * Radio command to force AI to jump either on a target or
  * in a given direction range
  */
 void auto_radio_command_jumpjet(AUTO * autopilot, MECH * mech,
@@ -513,7 +514,7 @@ void auto_radio_command_jumpjet(AUTO * autopilot, MECH * mech,
 	char buffer[SBUF_SIZE];
 	int bear, rng;
 
-	if(!abs(MechJumpSpeed(mech))) {
+	if(!(int)fabs(MechJumpSpeed(mech))) {
 		snprintf(mesg, LBUF_SIZE, "!I don't do hiphop and jump around");
 		return;
 	}

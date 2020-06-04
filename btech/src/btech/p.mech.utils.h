@@ -11,6 +11,9 @@ char *MechIDS(MECH * mech, int islower);
 char *MyToUpper(char *string);
 void MarkForLOSUpdate(MECH * mech);
 
+int round_to_halfton(int weight);
+int round_to_quarterton(int weight);
+
 /* Self-inflicted kill types. (But flood might be accidental/intentional.) */
 #define KILL_TYPE_SELF_DESTRUCT "SELF-DESTRUCT"
 #define KILL_TYPE_EJECT 	"EJECT"
@@ -131,7 +134,7 @@ void mech_FillPartAmmo(MECH * mech, int loc, int pos);
 int CountDestroyedLegs(MECH * objMech);
 int IsLegDestroyed(MECH * objMech, int wLoc);
 int IsMechLegLess(MECH * objMech);
-int FindFirstWeaponCrit(MECH * objMech, int wLoc, int wSlot, int wStartSlot, 
+int FindFirstWeaponCrit(MECH * objMech, int wLoc, int wSlot, int wStartSlot,
    int wCritType, int wMaxCrits);
 int checkAllSections(MECH * mech, int specialToFind);
 int checkSectionForSpecial(MECH * mech, int specialToFind, int wSec);

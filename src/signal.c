@@ -25,27 +25,13 @@ void signal_USR1(int, siginfo_t *, void *);
 void signal_SEGV(int, siginfo_t *, void *);
 void signal_BUS(int, siginfo_t *, void *);
 
-struct sigaction saTERM = {.sa_handler = NULL,.sa_sigaction = signal_TERM,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
-};
+struct sigaction saTERM = { .sa_sigaction = signal_TERM, .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
+struct sigaction saPIPE = { .sa_sigaction = signal_PIPE, .sa_flags = SA_SIGINFO };
+struct sigaction saUSR1 = { .sa_sigaction = signal_USR1, .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
+struct sigaction saSEGV = { .sa_sigaction = signal_SEGV, .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
+struct sigaction saBUS = { .sa_sigaction = signal_BUS, .sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART };
 
-struct sigaction saPIPE = {.sa_handler = NULL,.sa_sigaction = signal_PIPE,
-	.sa_flags = SA_SIGINFO
-};
-
-struct sigaction saUSR1 = {.sa_handler = NULL,.sa_sigaction = signal_USR1,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART 
-};
-
-struct sigaction saSEGV = {.sa_handler = NULL,.sa_sigaction = signal_SEGV,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
-};
-
-struct sigaction saBUS = {.sa_handler = NULL,.sa_sigaction = signal_BUS,
-	.sa_flags = SA_SIGINFO | SA_RESETHAND | SA_RESTART
-};
-
-stack_t sighandler_stack;  
+stack_t sighandler_stack;
 stack_t regular_stack;
 
 #define ALT_STACK_SIZE (0x40000)
@@ -58,7 +44,7 @@ void bind_signals()
 #ifdef HAVE_POSIX_MEMALIGN
     error_code = posix_memalign(&sighandler_stack.ss_sp, ALT_STACK_ALIGN,
             ALT_STACK_SIZE);
-#else 
+#else
     sighandler_stack.ss_sp = malloc(ALT_STACK_SIZE);
     if(sighandler_stack.ss_sp != 0) error_code = 0;
 #endif
@@ -67,18 +53,18 @@ void bind_signals()
         sighandler_stack.ss_flags = 0;
         memset(sighandler_stack.ss_sp, 0, ALT_STACK_SIZE);
         dperror(sigaltstack(&sighandler_stack, &regular_stack) <0);
-        dprintk("Current stack at 0x%lx with length 0x%lx and flags 0x%x", 
+        dprintk("Current stack at 0x%lx with length 0x%lx and flags 0x%x",
                 (unsigned long)regular_stack.ss_sp, regular_stack.ss_size, regular_stack.ss_flags);
-        dprintk("Signal stack at 0x%lx with length 0x%lx and flags 0x%x", 
+        dprintk("Signal stack at 0x%lx with length 0x%lx and flags 0x%x",
                 (unsigned long)sighandler_stack.ss_sp, sighandler_stack.ss_size, sighandler_stack.ss_flags);
         saSEGV.sa_flags |= SA_ONSTACK;
         saBUS.sa_flags |= SA_ONSTACK;
     } else {
         dprintk("posix_memalign failed with %s", strerror(error_code));
-        log_error(LOG_PROBLEMS, "SIG", "ERR", 
+        log_error(LOG_PROBLEMS, "SIG", "ERR",
                 "posix_memalign() failed with error %s, alternate stack not used.",
                 strerror(error_code));
-        log_error(LOG_PROBLEMS, "SIG", "ERR", 
+        log_error(LOG_PROBLEMS, "SIG", "ERR",
                 "running signal_handlers without sigaltstack() will corrupt your coredumps!");
         sighandler_stack.ss_sp = NULL;
     }

@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include \
 	-I$(top_srcdir)/btech/src/include -I$(top_srcdir)/btech/src/btech
 
 # TODO: Fiddle with the default compiler options.
-#CFLAGS = -Wall -Wno-unused
+AM_CFLAGS = -Werror -Wfatal-errors
 #ifdef DEBUG
 #CFLAGS += -g3
 #CPPFLAGS += -DDEBUG

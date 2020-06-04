@@ -18,7 +18,10 @@
 #include "p.mech.tech.h"
 #include "p.mech.consistency.h"
 #include "p.mech.tech.do.h"
+#include "p.mech.status.h"
+#include "p.econ.h"
 #include "p.bsuit.h"
+#include "p.btechstats.h"
 
 #define my_parsepart(loc,part) \
 switch (tech_parsepart(mech, buffer, loc, part,NULL)) \
@@ -344,7 +347,7 @@ TECHCOMMANDH(tech_removesection)
 TECHCOMMANDH(tech_replacegun)
 {
 	int brand = 0, ob = 0;
-        
+
 	int base, roll , rollmod, fixtime, base_fixtime, parttype, oparttype, fail_fixtime;
 
 	TECHCOMMANDB;
@@ -484,7 +487,7 @@ TECHCOMMANDH(tech_repairgun)
 		notify(player, "That gun isn't hurtin'!");
 		return;
 	}
-        
+
 	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	DOTECH_LOCPOS(REPAIR_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,
@@ -521,7 +524,7 @@ TECHCOMMANDH(tech_fixenhcrit)
 		notify(player, "That gun isn't damaged!");
 		return;
 	}
-        
+
 	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	DOTECH_LOCPOS(ENHCRIT_DIFFICULTY,
@@ -565,16 +568,16 @@ TECHCOMMANDH(tech_replacepart)
 
 /* little cheating here to get the proper part, since we aren't doing complex repairs */
 	oparttype=GetPartType(mech,loc,part);
-	parttype =   (IsActuator(oparttype) ? Cargo(S_ACTUATOR) : 
-	   (oparttype == Special(ENGINE) ? 
-	       ((MechSpecials(mech) & XL_TECH) ? Cargo(XL_ENGINE) : 
-	            (MechSpecials(mech) & ICE_TECH) ? Cargo(IC_ENGINE) : 
-		         (MechSpecials(mech) & XXL_TECH) ? Cargo(XXL_ENGINE) : 
-			      (MechSpecials(mech) & CE_TECH) ? Cargo(COMP_ENGINE) : 
-			           (MechSpecials(mech) & LE_TECH) ? Cargo(LIGHT_ENGINE) : oparttype) : 
+	parttype =   (IsActuator(oparttype) ? Cargo(S_ACTUATOR) :
+	   (oparttype == Special(ENGINE) ?
+	       ((MechSpecials(mech) & XL_TECH) ? Cargo(XL_ENGINE) :
+	            (MechSpecials(mech) & ICE_TECH) ? Cargo(IC_ENGINE) :
+		         (MechSpecials(mech) & XXL_TECH) ? Cargo(XXL_ENGINE) :
+			      (MechSpecials(mech) & CE_TECH) ? Cargo(COMP_ENGINE) :
+			           (MechSpecials(mech) & LE_TECH) ? Cargo(LIGHT_ENGINE) : oparttype) :
 				      (oparttype == Special(HEAT_SINK) && MechHasDHS(mech) ? Cargo(DOUBLE_HEAT_SINK) : oparttype)));
 
-	
+
 
 	DOCHECK(IsAmmo(GetPartType(mech,loc,part)) ? 0 : econ_find_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part)) < 1 ,
 			tprintf("Not enough units of %s in store.",part_name(parttype,GetPartBrand(mech,loc,part))));
@@ -619,7 +622,7 @@ TECHCOMMANDH(tech_replacepart)
 			fixtime = mudconf.btech_variable_techtime ? (base_fixtime * 10 ) / (1000 / (100 - (roll ? mudconf.btech_techtime_mod * roll : 0 ))) : base_fixtime;
 		if(base_fixtime - fixtime)
 			notify_printf(player,"Your skill manages to save %d minute%s", base_fixtime - fixtime, base_fixtime - fixtime == 1 ? "!" : "s!");
-		
+
 		econ_change_items(IsDS(mech) ? AeroBay(mech,0) : Location(mech->mynum), parttype,GetPartBrand(mech,loc,part),-1);
 		tech_addtechtime(player, fixtime);
 		muxevent_add(MAX(1, player_techtime(player)*TECH_TICK), 0, EVENT_REPAIR_REPL, muxevent_tickmech_repairpart, (void *) mech, (void *) (PACK_LOCPOS(loc,part) + player * PLAYERPOS));
@@ -659,7 +662,7 @@ TECHCOMMANDH(tech_repairpart)
 			"Someone's scrapping that section - no repairs are possible!");
         DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
-	
+
 
 
 
@@ -730,7 +733,7 @@ TECHCOMMANDH(tech_reload)
 		GetPartAmmoMode(mech, loc, part) |= t;
 	}
 	change = 0;
-        
+
 	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 
 	DOTECH_LOCPOS_VAL(RELOAD_DIFFICULTY, reload_fail, reload_succ,
@@ -805,7 +808,7 @@ TECHCOMMANDH(tech_fixarmor)
 	from = MIN(to, from);
 	DOCHECK(from == to, "The location doesn't need armor repair!");
 	change = to - from;
-	ochange = change;	
+	ochange = change;
 	DOCHECK(player_techtime(player) >= mudconf.btech_maxtechtime, "You're too tired to do that!");
 	DOTECH_LOC_VAL_S(FIXARMOR_DIFFICULTY, fixarmor_fail, fixarmor_succ,
 					 fixarmor_econ, &change, FIXARMOR_TIME * ochange, loc,

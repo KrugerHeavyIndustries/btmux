@@ -8,6 +8,7 @@
  *  Copyright (c) 1998-2000 Thomas Wouters
  */
 
+#include "glue.h"
 #include "mech.h"
 #include "p.mech.c3.misc.h"
 #include "p.mech.c3.h"

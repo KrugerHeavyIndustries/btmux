@@ -24,6 +24,7 @@
 #include "p.mech.hitloc.h"
 #include "p.mech.los.h"
 #include "p.mech.utils.h"
+#include "p.mech.update.h"
 
 extern dbref pilot_override;
 
@@ -80,8 +81,8 @@ void Missile_Hit(MECH * mech,
 			sprintf(buf, "%s%s", "missile", orig_num_missiles > 1 ? "s" : "");
 		else if(ammoMode & LBX_MODE)
 			sprintf(buf, "%s%s", "pellet", orig_num_missiles > 1 ? "s" : "");
-		else if((fireMode && ULTRA_MODE) || (fireMode && RFAC_MODE) ||
-				(fireMode && RAC_MODES))
+		else if((fireMode & ULTRA_MODE) || (fireMode & RFAC_MODE) ||
+				(fireMode & RAC_MODES))
 			sprintf(buf, "%s%s", "slug", orig_num_missiles > 1 ? "s" : "");
 		else
 			sprintf(buf, "%s", "damage");
@@ -176,12 +177,12 @@ int MissileHitIndex(MECH * mech,
 		wRollInc += -4;
 	if(wRollInc)
 		hit_roll = hit_roll + wRollInc;
-	/* Glancing, per max tech, if its lower than 2 on the hit table, we hit with one missile. 
+	/* Glancing, per max tech, if its lower than 2 on the hit table, we hit with one missile.
 	 * return -1 so we can test for this elsewhere
 	 */
 	if(glance && (hit_roll < 0))
 		return -1;
-	
+
 	wFinalRoll = MAX(MIN(hit_roll, 10), 0);
 
 	return wFinalRoll;
@@ -480,7 +481,7 @@ void SwarmHitTarget(MECH * mech,
  */
 
 /****************************************
- * START: AMS related functions 
+ * START: AMS related functions
  ****************************************/
 int AMSMissiles(MECH * mech,
 				MECH * hitMech,
@@ -553,5 +554,5 @@ int LocateAMSDefenses(MECH * target,
 }
 
 /****************************************
- * END: AMS related functions 
+ * END: AMS related functions
  ****************************************/

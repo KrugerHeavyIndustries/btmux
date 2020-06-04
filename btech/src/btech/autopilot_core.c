@@ -8,6 +8,8 @@
  *
  */
 
+
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "autopilot.h"
@@ -164,7 +166,7 @@ static command_node *auto_read_command_node(FILE * file)
 
 }
 
-/* 
+/*
  * Saves the current command list from the AI to
  * a file.  Called by SaveSpecialObjects from
  * glue.c
@@ -266,7 +268,7 @@ void auto_load_commands(FILE * file, AUTO * autopilot)
 
 }
 
-/* 
+/*
    The Autopilot command interface
 
    addcommand <name> [args]
@@ -450,7 +452,7 @@ void auto_addcommand(dbref player, void *data, char *buffer)
 {
 
 	AUTO *autopilot = (AUTO *) data;
-	char *args[AUTOPILOT_MAX_ARGS];	/* args[0] is the command the rest are 
+	char *args[AUTOPILOT_MAX_ARGS];	/* args[0] is the command the rest are
 									   args for the command */
 	char *command;				/* temp string to get the name of the command */
 	int argc;
@@ -772,7 +774,7 @@ void auto_goto_next_command(AUTO * autopilot, int time)
 
 /*
  * Get the argument for a given command position and argument number
- * Remember to free the string that this returns after use 
+ * Remember to free the string that this returns after use
  */
 char *auto_get_command_arg(AUTO * autopilot, int command_number,
 						   int arg_number)
@@ -967,7 +969,7 @@ extern unsigned int global_tick;
 void auto_heartbeat(AUTO *autopilot) {
     if(!autopilot->mymech) return;
     auto_sensor_event(autopilot);
-    if(autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)  
+    if(autopilot->weaplist == NULL || global_tick % AUTO_PROFILE_TICK == 0)
         auto_update_profile_event(autopilot);
     auto_gun_event(autopilot);
 }

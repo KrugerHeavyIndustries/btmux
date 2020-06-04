@@ -1,5 +1,8 @@
 ACLOCAL_AMFLAGS = -I m4
 
+AM_CFLAGS = -Werror -Wfatal-errors
+AM_CPPFLAGS = -Werror -Wfatal-errors
+
 if BTPR_MUX1
 endif
 

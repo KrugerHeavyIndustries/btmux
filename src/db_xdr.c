@@ -130,10 +130,10 @@ void mmdb_db_write(char *filename)
 	/* START COMMAC */
 	mmdb_write_uint32(mmdb, COMMAC_MAGIC);
 	mmdb_write_uint32(mmdb, COMMAC_VERSION);
-	
+
 	purge_commac();
 	np = 0;
-	
+
 	for(i = 0; i < NUM_COMMAC; i++) {
 		c = commac_table[i];
 		while (c) {
@@ -182,7 +182,7 @@ void mmdb_db_write(char *filename)
 			myfifo_trav_r_xdr(&ch->last_messages,mmdb,do_save_com_xdr);
 
 		player_users = 0;
-		for(j = 0; j < ch->num_users; j++) 
+		for(j = 0; j < ch->num_users; j++)
 			if(isPlayer(ch->users[j]->who) || isRobot(ch->users[j]->who))
 				player_users++;
 
@@ -300,7 +300,7 @@ int mmdb_db_read(char *filename)
 		}
 	}
 	load_player_names();
-	
+
 	magic = mmdb_read_uint32(mmdb);
 	dassert(magic == COMMAC_MAGIC);
 	version = mmdb_read_uint32(mmdb);
@@ -321,7 +321,7 @@ int mmdb_db_read(char *filename)
 		if(c->maxchannels > 0) {
 			c->alias = (char *) malloc(c->maxchannels * 6);
 			c->channels = (char **) malloc(sizeof(char *) * c->maxchannels);
-			
+
 			for(j = 0; j < c->numchannels; j++) {
 				len = mmdb_read_uint32(mmdb);
 				mmdb_read(mmdb, buffer, len);
@@ -330,7 +330,7 @@ int mmdb_db_read(char *filename)
 
 				len = mmdb_read_uint32(mmdb);
 				mmdb_read(mmdb, buffer, len);
-	
+
 				c->channels[j] = (char *) malloc(strlen(buffer) + 1);
 				StringCopy(c->channels[j],buffer);
 
@@ -351,14 +351,14 @@ int mmdb_db_read(char *filename)
 
 	for( i = 0; i < num_channels; i++) {
 		ch = (struct channel *) malloc(sizeof(struct channel));
-		
-	
+
+
 		len = mmdb_read_uint32(mmdb);
 		mmdb_read(mmdb,buffer,len);
 
 		strncpy(ch->name, buffer, len);
 		ch->on_users = NULL;
-		
+
 		hashadd(ch->name, (int *) ch, &mudstate.channel_htab);
 		ch->type = mmdb_read_uint32(mmdb);
 		ch->charge = mmdb_read_uint32(mmdb);
@@ -368,7 +368,7 @@ int mmdb_db_read(char *filename)
 		ch->chan_obj = mmdb_read_uint32(mmdb);
 		k = mmdb_read_uint32(mmdb);
 		ch->last_messages = NULL;
-		
+
 		if (k > 0) {
 			for(j = 0; j < k; j++) {
 				chmsg *c;
@@ -379,14 +379,14 @@ int mmdb_db_read(char *filename)
 				c->msg = strdup(buffer);
 				myfifo_push(&ch->last_messages, c);
 			}
-			
+
 		}
 		ch->num_users = mmdb_read_uint32(mmdb);
 		ch->max_users = ch->num_users;
 
 		if(ch->num_users > 0) {
 			ch->users = (struct comuser **) calloc(ch->max_users, sizeof(struct comuser *));
-			
+
 			for(j =0; j < ch->num_users; j++) {
 				user = (struct comuser *) malloc(sizeof(struct comuser));
 
@@ -416,7 +416,7 @@ int mmdb_db_read(char *filename)
 			sort_users(ch);
 		} else
 			ch->users = NULL;
-	}		
+	}
 
 
 	/* END COMSYS SECTION */
@@ -424,7 +424,7 @@ int mmdb_db_read(char *filename)
 	/* BEGIN MACRO SECTION */
 	nummacros = mmdb_read_uint32(mmdb);
 	maxmacros = nummacros;
-	
+
 	if(maxmacros > 0)
 		macros = (struct macros **) malloc(sizeof(struct macros *) * nummacros);
 	else

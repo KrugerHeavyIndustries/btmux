@@ -13,14 +13,17 @@
 /* Make statistics 'bout what we do.. whatever it is we _do_ */
 
 #define MECH_STAT_C
+#include <time.h>
+#include <assert.h>
+
+#include "mech.h"
 #include "mech.stat.h"
 #include "db.h"
 #include "externs.h"
+#include "p.glue.h"
 
 #include "macros.h"
 #include "mt19937ar.h"
-#include <time.h>
-#include <assert.h>
 
 stat_type rollstat;
 
@@ -63,7 +66,7 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 					  rollstat.rolls[i], f2, (int) optimalrolls, f1, chanceperc, 100.0 - chanceperc);
 	}
 	notify_printf(player, "Total rolls: %d", rollstat.totrolls);
-	
+
 /*	i = 0;
 
 	if(Wizard(player)) {
@@ -91,9 +94,9 @@ void do_show_stat(dbref player, dbref cause, int key, char *arg1, char *arg2)
 		hitavg    = ( (float) totalhitrolls[1] / (float) totalhitrolls[3]) * 100.0;
 		glanceavg = ( (float) totalhitrolls[2] / (float) totalhitrolls[3]) * 100.0;
 	}
-	notify_printf(player,"ALL  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d", 
+	notify_printf(player,"ALL  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d (%5.1f%%)  %8d",
 		totalhitrolls[0], missavg, totalhitrolls[1], hitavg, totalhitrolls[2], glanceavg, totalhitrolls[3]);
-	
+
 	}
 */
 }

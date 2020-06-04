@@ -13,6 +13,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "failures.h"
 #include "mech.events.h"
@@ -478,7 +479,7 @@ void move_mech(MECH * mech)
 			MechFZ(mech) += MechStartFZ(mech) * MOVE_MOD;
 			MechZ(mech) = MechFZ(mech) / ZSCALE;
 			MechFX(mech) += MechStartFX(mech) * MOVE_MOD;
-			MechFY(mech) += MechStartFY(mech) * MOVE_MOD;			
+			MechFY(mech) += MechStartFY(mech) * MOVE_MOD;
 
 			/*! \todo {Need to rewrite this for aerodyne DSes unless they're
 			 * set as large aeros which i'm not sure but either way its
@@ -662,7 +663,7 @@ void move_mech(MECH * mech)
 			NewHexEntered(mech, mech_map, newx, newy, last_z);
 
 		if(MechX(mech) == x && MechY(mech) == y) {
-// Removed MarkForLOSUpdate.. Moved to NewHexEntered to clear potential false positives. 
+// Removed MarkForLOSUpdate.. Moved to NewHexEntered to clear potential false positives.
 //			MarkForLOSUpdate(mech);
 			MechFloods(mech);
 			water_extinguish_inferno(mech);
@@ -724,7 +725,7 @@ void move_mech(MECH * mech)
 	 * position in relation to its target */
 	BSuitMirrorSwarmedTarget(mech_map, mech);
 
-	/* This is really for killing MechWarriors 
+	/* This is really for killing MechWarriors
 	 * actual heat code is checked with UpdateHeat */
 	fiery_death(mech);
 }
@@ -899,7 +900,7 @@ void UpdateHeading(MECH * mech)
 	if(normangle > SHO2FSIM(180)) {
 		AddRFacing(mech, offset);
 		if(MechFacing(mech) >= 360)
-			AddFacing(mech, -360);
+			SetRFacing(mech, MechFacing(mech) % 360);
 		normangle += offset;
 		if(normangle >= SHO2FSIM(360))
 			SetRFacing(mech, SHO2FSIM(MechDesiredFacing(mech)));
@@ -1047,7 +1048,7 @@ void UpdateSpeed(MECH * mech)
 				/* dif = 2 to 7 */
 				/* Hack to get turnmode tight to lower more speed */
 				if(GetTurnMode(mech))
-					tempspeed = (tempspeed * (10 - dif) / 10) - (MP1 * 0.4); 
+					tempspeed = (tempspeed * (10 - dif) / 10) - (MP1 * 0.4);
 				else
 					tempspeed = tempspeed * (10 - dif) / 10; /* Lower 20-80% */
 			}
@@ -1311,7 +1312,7 @@ void HandleOverheat(MECH * mech)
 			domino_space(mech, 2);
 		} else {
 			MechLOSBroadcast(mech, "stops in mid-motion!");
-			if((fabs(MechSpeed(mech) > MP1)) && !Fallen(mech) &&
+			if((fabs(MechSpeed(mech)) > MP1) && !Fallen(mech) &&
 			   (!MadePilotSkillRoll(mech, 3)))
 				MechFalls(mech, 0, 1);
 		}
@@ -1333,7 +1334,7 @@ static int EnableSomeHS(MECH * mech, int numsinks)
 		return 0;
 
 	MechDisabledHS(mech) -= numsinks;
-	MechMinusHeat(mech) += numsinks;	/* We dont check for water and 
+	MechMinusHeat(mech) += numsinks;	/* We dont check for water and
 										   such after enabling them, only the next tic. */
 #ifdef HEATCUTOFF_DEBUG
 	mech_printf(mech, MECHALL,
@@ -1356,7 +1357,7 @@ static int DisableSomeHS(MECH * mech, int numsinks)
 		return 0;
 
 	MechDisabledHS(mech) += numsinks;
-	MechMinusHeat(mech) -= numsinks;	/* Submerged heatsinks silently 
+	MechMinusHeat(mech) -= numsinks;	/* Submerged heatsinks silently
 										   still dissipate some heat */
 #ifdef HEATCUTOFF_DEBUG
 	mech_printf(mech, MECHALL,
@@ -1367,7 +1368,7 @@ static int DisableSomeHS(MECH * mech, int numsinks)
 	return numsinks;
 }
 
-/* Update the Unit's current heat values as well as 
+/* Update the Unit's current heat values as well as
  * send messages to the pilot based on heat level */
 void UpdateHeat(MECH * mech)
 {
@@ -1379,7 +1380,7 @@ void UpdateHeat(MECH * mech)
 	MAP *map;
 
 	// These guys don't get heat updates.
-	if(!MechHasHeat(mech)) 
+	if(!MechHasHeat(mech))
 		return;
 
 	inheat = MechHeat(mech);
@@ -1748,7 +1749,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MadePilotSkillRoll_NoXP(mech,
                             (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
 			   || (mudconf.btech_skidcliff &&
-                    MadePilotSkillRoll_NoXP(mech, 
+                    MadePilotSkillRoll_NoXP(mech,
                         SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
@@ -1961,7 +1962,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MadePilotSkillRoll_NoXP(mech,
                             (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
 			   || (mudconf.btech_skidcliff &&
-                    MadePilotSkillRoll_NoXP(mech, 
+                    MadePilotSkillRoll_NoXP(mech,
                         SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
@@ -2150,7 +2151,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MadePilotSkillRoll_NoXP(mech,
                             (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
 			   || (mudconf.btech_skidcliff &&
-                    MadePilotSkillRoll_NoXP(mech, 
+                    MadePilotSkillRoll_NoXP(mech,
                         SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
@@ -2397,7 +2398,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
                         MadePilotSkillRoll_NoXP(mech,
                             (int) (fabs((MechSpeed (mech)) + MP1) / MP1) / 3, 1))
 			   || (mudconf.btech_skidcliff &&
-                    MadePilotSkillRoll_NoXP(mech, 
+                    MadePilotSkillRoll_NoXP(mech,
                         SkidMod(fabs(MechSpeed(mech)) / MP1), 1))) {
 
 				mech_notify(mech, MECHALL,
@@ -2575,7 +2576,7 @@ void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
 
 	case MOVE_VTOL:
 	case MOVE_FLY:
-		
+
 		if((Landed(mech) && MechRTerrain(mech) != ROAD &&
 		   MechRTerrain(mech) != BRIDGE && MechRTerrain(mech) != GRASSLAND
 		   && MechRTerrain(mech) != BUILDING) ||
@@ -2714,7 +2715,7 @@ void MarkStaggerDamage(MECH * mech, int staggerLevel)
   }
 }
 
-// This method will clear any damage that has happened for staggerLevel * 20 
+// This method will clear any damage that has happened for staggerLevel * 20
 // If you are on staggerLevel = 1, this is 20-39 points of damage.
 void RemoveStaggerDamage(MECH * mech, int staggerLevel)
 {
@@ -2722,7 +2723,7 @@ void RemoveStaggerDamage(MECH * mech, int staggerLevel)
   struct damageNode *old;
   int remove = staggerLevel * 20;
   int sum = 0;
-  
+
   damage = (mech)->rd.staggerDamageList;
 
   while(sum < remove && damage != NULL) {
@@ -2796,7 +2797,7 @@ int CurrentCountedStaggerDamage(MECH * mech)
   time_t now = mudstate.now;
   int oneTurn = 60;
   struct damageNode *damage;
-  
+
   damage = (mech)->rd.staggerDamageList;
   while(damage != NULL) {
     if(now - damage->occuredAt <= oneTurn) {
@@ -2849,14 +2850,14 @@ void UpdatePilotSkillRolls(MECH * mech)
 {
 	int makeroll = 0, grav = 0;
 	float maxspeed;
-	
+
 	int temp_tick = muxevent_tick;
 
 	/* If for some reason, we get here and muxevent_tick is odd all the time.... */
 	if ((temp_tick & 1) != 0 )
 		temp_tick++;
-	
-	
+
+
 	if(((temp_tick % TURN) == 0) && !Fallen(mech) && !Jumping(mech) &&
 	   !OODing(mech))
 		/* do this once a turn (30 secs), only if mech is standing */

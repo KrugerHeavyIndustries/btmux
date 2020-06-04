@@ -162,8 +162,8 @@ void del_mapobj(MAP * map, mapobj * mapob, int type, int zap)
 			StopDec(mapob);
 	}
 	if(type == TYPE_BUILD) {
-		
-		if(tmap = getMap(mapob->obj)) {
+
+		if((tmap = getMap(mapob->obj))) {
 			del_mapobjst(tmap, TYPE_LEAVE);
 			tmap->onmap = 0;
 		}
@@ -500,7 +500,7 @@ static void fire_spreading_event(MUXEVENT * e)
 	new_fire_hex_y[3] = -1;
 	FindMyCoord(map, new_smoke_hex_x[0], new_smoke_hex_y[0], 0,
 				map->winddir, &new_smoke_hex_x[3], &new_smoke_hex_y[3]);
-	
+
 #define Spr(n,ch) \
   if(Roll() >= ch && Number(1,60) <= map->windspeed) \
     { \
@@ -748,7 +748,7 @@ void map_delobj(dbref player, void *data, char *buffer)
 	switch (mech_parseattributes(buffer, args, 3)) {
 	case 0:
 		notify(player,
-			   "Error: Invalid number of attributes to delobj command.");	
+			   "Error: Invalid number of attributes to delobj command.");
 		return;
 	case 1:
 		DOCHECK((tt = listmatch(map_types, args[0])) < 0, "Invalid type!");

@@ -5,8 +5,8 @@
  * Original author: unknown
  *
  * Copyright (c) 1996-2002 Markus Stenberg
- * Copyright (c) 1998-2002 Thomas Wouters 
- * Copyright (c) 2000-2002 Cord Awtry 
+ * Copyright (c) 1998-2002 Thomas Wouters
+ * Copyright (c) 2000-2002 Cord Awtry
  *
  * Last modified: Thu Jul  9 02:40:16 1998 fingon
  *
@@ -405,7 +405,7 @@ load_update1(void *key, void *data, int depth, void *arg)
 
 		if(!FlyingT(mech) && Started(mech) && Jumping(mech))
 			mech_Rsetxy(GOD, (void *) mech, tprintf("%d %d", MechX(mech),MechY(mech)));
-	
+
 		MechStatus(mech) &= ~(BLINDED | UNCONSCIOUS | JUMPING | TOWED);
 		MechSpecials2(mech) &=
 			~(ECM_ENABLED | ECM_DISTURBANCE | ECM_PROTECTED |
@@ -421,11 +421,19 @@ load_update1(void *key, void *data, int depth, void *arg)
 		// ClearStaggerDamage
 		mech->rd.staggerDamageList = NULL;
 		if(!(MechXPMod(mech)))
-			MechXPMod(mech) = 1;		
+			MechXPMod(mech) = 1;
 		for(i = 0; i < FREQS; i++)
 			if(mech->freq[i] < 0)
 				mech->freq[i] = 0;
 		break;
+	case GTYPE_DEBUG:
+	case GTYPE_MECHREP:
+	case GTYPE_AUTO:
+	case GTYPE_TURRET:
+	case GTYPE_UNUSED1:
+	default:
+    /* do nothing with these types */
+	break;
 	}
 	return 1;
 }
@@ -689,8 +697,8 @@ save_maps_func(void *key, void *data, int depth, void *arg)
 	return 1;
 }
 
-/* 
- * Save any extra info for the autopilots 
+/*
+ * Save any extra info for the autopilots
  *
  * Like their command lists
  * or the Astar path if there is one
@@ -923,15 +931,16 @@ UpdateSpecialObjects(void)
 void *
 NewSpecialObject(long id, int type)
 {
-	XCODE *xcode_obj;
-
-	long i;
+	XCODE *xcode_obj = NULL;
 
 	if(SpecialObjects[type].datasize) {
-		Create(xcode_obj, char, (i = SpecialObjects[type].datasize));
-
+		xcode_obj = (XCODE *)calloc(1, SpecialObjects[type].datasize);
+		if (!xcode_obj) {
+		  printf("Unable to calloc\n");
+		  exit(1);
+		}
 		xcode_obj->type = type;
-		xcode_obj->size = i;
+		xcode_obj->size = SpecialObjects[type].datasize;
 
 		if(SpecialObjects[type].allocfreefunc)
 			SpecialObjects[type].allocfreefunc(id, &xcode_obj, SPECIAL_ALLOC);
@@ -1589,9 +1598,9 @@ void mecha_notify_except(dbref loc, dbref player, dbref exception, char *msg)
 	}
 }
 
-/* 
+/*
    Basically, finish all the repairs etc in one fell swoop. That's the
-   best we can do for now, I'm afraid. 
+   best we can do for now, I'm afraid.
    */
 void ResetSpecialObjects()
 {
