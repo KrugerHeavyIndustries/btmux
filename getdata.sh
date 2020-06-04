@@ -1,7 +1,7 @@
 #! /bin/sh
 
 #
-# Downloads data files to the game directory, then optionally 
+# Downloads data files to the game directory, then optionally
 
 GITORG="https://github.com/KrugerHeavyIndustries"
 
@@ -12,28 +12,28 @@ set -e
 # Check for prototype game directory.
 if test ! -d game; then
 	echo "Downloading game directory from the git repository..."
-  mkdir -p game
+	mkdir -p game
 	curl -L "${GITORG}/btmux-game/tarball/master" | tar xv -C game --strip-component 1
 fi
 
 # Check for prototype maps directory.
 if test ! -d game/maps; then
 	echo "Downloading game/maps from the git repository..."
-  mkdir -p game/maps
+	mkdir -p game/maps
 	curl -L "${GITORG}/btmux-maps/tarball/master" | tar xv -C game/maps --strip-component 1
 fi
 
 # Check for prototype text directory.
 if test ! -d game/text; then
 	echo "Downloading game/text from the git repository..."
-  mkdir -p game/text
+	mkdir -p game/text
 	curl -L "${GITORG}/btmux-text/tarball/master" | tar xv -C game/text --strip-component 1
 fi
 
 # Check for prototype mechs directory.
 if test ! -d game/mechs; then
 	echo "Downloading game/mechs from the git repository..."
-  mkdir -p game/mechs
+	mkdir -p game/mechs
 	curl -L "${GITORG}/btmux-mechs/tarball/master" | tar xv -C game/mechs --strip-component 1
 fi
 
