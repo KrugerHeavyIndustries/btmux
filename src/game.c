@@ -1282,11 +1282,11 @@ int real_main(int argc, char *argv[])
 
 	mindb = 0;					/* Are we creating a new db? */
 	corrupt = 0;				/* Database isn't corrupted. */
-    memset(&mudstate, 0, sizeof(mudstate));
+  memset(&mudstate, 0, sizeof(mudstate));
 	time(&mudstate.start_time);
 	time(&mudstate.restart_time);
 	mudstate.executable_path = strdup(argv[0]);
-    mudstate.db_top = -1;
+  mudstate.db_top = -1;
 	tcache_init();
 	pcache_init();
 	cf_init();

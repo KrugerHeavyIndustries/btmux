@@ -2,9 +2,9 @@
 /* This is the code that runs the parts failures.
    Written by: Nim
    9-28-96
-   
+
    Parts copyright (c) 2000-2002 Thomas Wouters
-   
+
  */
 
 /*
@@ -22,6 +22,7 @@
 #include "failures.h"
 #include "mech.events.h"
 #include "p.mech.startup.h"
+#include "p.mech.update.h"
 
 extern int num_def_weapons;
 

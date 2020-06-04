@@ -14,6 +14,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "map.h"
 #include "mech.events.h"
@@ -28,6 +29,7 @@
 #include "p.btechstats.h"
 #include "p.template.h"
 #include "p.mech.bth.h"
+#include "p.mech.update.h"
 
 // Only allows arm physical attacks for CLASS_MECH.
 #define ARM_PHYS_CHECK(a) \
@@ -355,7 +357,7 @@ void mech_punch(dbref player, void *data, char *buffer)
 
 	// If the directive is true, use the pilot's piloting skill. If not, we
 	// use a constant BTH of 4.
-	if(mudconf.btech_phys_use_pskill) 
+	if(mudconf.btech_phys_use_pskill)
 	 	rtohit = ltohit = FindPilotPiloting(mech);
 
 
@@ -370,7 +372,7 @@ void mech_punch(dbref player, void *data, char *buffer)
 		return;
 
 	// For each arm we're using, check to make sure it's good to punch with
-	// and carry out the roll if it is. 
+	// and carry out the roll if it is.
 	if(punching & P_LEFT) {
 		if(punch_checkArm(mech, LARM))
 			PhysicalAttack(mech, 10, ltohit, PA_PUNCH, argc, args,
@@ -438,7 +440,7 @@ void mech_club(dbref player, void *data, char *buffer)
 			  "You have weapons recycling on your arms.");
 
 	PhysicalAttack(mech, 5,
-				   (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 1 
+				   (mudconf.btech_phys_use_pskill ? FindPilotPiloting(mech) - 1
                     : 4), PA_CLUB, argc,
 				   args, mech_map, RARM);
 }								// end mech_club()
@@ -466,7 +468,7 @@ int axe_checkArm(MECH * mech, int arm)
 					arm_used);
 		return 0;
 	}
-	// Fall through to success.    
+	// Fall through to success.
 	return 1;
 }								// end axe_checkArm()
 
@@ -534,7 +536,7 @@ int saw_checkArm(MECH * mech, int arm)
 					arm_used);
 		return 0;
 	}
-	// Fall through to success.    
+	// Fall through to success.
 	return 1;
 }								// end saw_checkArm()
 
@@ -606,7 +608,7 @@ void mech_claw(dbref player, void *data, char *buffer)
 
 	// If the directive is true, use the pilot's piloting skill. If not, we
 	// use a constant BTH of 4.
-	if(mudconf.btech_phys_use_pskill) 
+	if(mudconf.btech_phys_use_pskill)
 	 	rtohit = ltohit = FindPilotPiloting(mech);
 
 
@@ -621,7 +623,7 @@ void mech_claw(dbref player, void *data, char *buffer)
 		return;
 
 	// For each arm we're using, check to make sure it's good to punch with
-	// and carry out the roll if it is. 
+	// and carry out the roll if it is.
 	if(using & P_LEFT) {
 			PhysicalAttack(mech, 7, ltohit, PA_CLAW, argc, args,
 						   mech_map, LARM);
@@ -631,10 +633,10 @@ void mech_claw(dbref player, void *data, char *buffer)
 			PhysicalAttack(mech, 7, rtohit, PA_CLAW, argc, args,
 						   mech_map, RARM);
 	}
- 
+
         // We don't have a claw
 	DOCHECKMA(!using, "You do not have any claws! Try punching/clubbing instead!");
-		
+
 }								// end mech_claw()
 
 
@@ -1008,7 +1010,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	char location[20];
 	int ts = 0, iwa;
 	int RbaseToHit, glance = 0;
-	
+
 
 	/*
 	 * Common Checks
@@ -1025,9 +1027,9 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 			return;
 	}
 
-    /* BTH Adjustments for crits to limbs - seperate one for 
+    /* BTH Adjustments for crits to limbs - seperate one for
      * club because it checks for both limbs */
-    if ((AttackType == PA_PUNCH) || (AttackType == PA_KICK) || 
+    if ((AttackType == PA_PUNCH) || (AttackType == PA_KICK) ||
             (AttackType == PA_AXE) || (AttackType == PA_SWORD) ||
 	    (AttackType == PA_CLAW) ||
             (AttackType == PA_MACE) || (AttackType == PA_SAW)) {
@@ -1159,11 +1161,11 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 
 	DOCHECKMA(MapNoPhysicals(mech_map),"You cannot perform physical attacks here!");
 
-    DOCHECKMA(MechTeam(target) == MechTeam(mech) && 
+    DOCHECKMA(MechTeam(target) == MechTeam(mech) &&
             MechNoFriendlyFire(mech),
             "You can't attack a teammate with FFSafeties on!");
 
-    DOCHECKMA(MechTeam(target) == MechTeam(mech) && 
+    DOCHECKMA(MechTeam(target) == MechTeam(mech) &&
             MapNoFriendlyFire(mech_map),
             "Friendly Fire? I don't think so...");
 
@@ -1189,7 +1191,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	DOCHECKMA(AttackType == PA_TRIP && (Fallen(target) || Standing(target)),
 			  "Your target is already down!");
 
-	// We're attacking a ground/naval unit.    
+	// We're attacking a ground/naval unit.
 	if(MechMove(target) != MOVE_VTOL && MechMove(target) != MOVE_FLY) {
 
 		if((AttackType != PA_KICK && AttackType != PA_TRIP) &&
@@ -1201,8 +1203,8 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 				isTooLow = 1;
 
             /* Target is to low to punch */
-            if ((MechType(target) == CLASS_MECH) && 
-                    (MechZ(mech) > MechZ(target)) && 
+            if ((MechType(target) == CLASS_MECH) &&
+                    (MechZ(mech) > MechZ(target)) &&
                     (AttackType == PA_PUNCH)) {
                 isTooLow = 1;
             }
@@ -1273,7 +1275,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	/* Check weapon arc! */
 	/* Theoretically, physical attacks occur only to 'real' forward
 	   arc, not rottorsoed one, but we let it pass this time */
-	/* This is wrong according to BMR 
+	/* This is wrong according to BMR
 	 *
 	 * Which states that the Torso twist is taken into account
 	 * as well as punching/axing/swords can attack in their
@@ -1313,14 +1315,14 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 						  || swarmingUs,
 						  "Target is not in your forward or left side arc!");
 
-			}					// end 
+			}					// end
 
 		}						// end if/else() - club/punch arc check
 
 	}							// end if/else() - kick/punch arc check
 
 	/**
-     * Add in the movement modifiers 
+     * Add in the movement modifiers
      */
 
 	// If we have melee_specialist advantage, knock -1 off the BTH.
@@ -1368,7 +1370,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 
     // Terrain mods - Courtesy of RST
     // Heavy & Light are from Total Warfare and
-    // Smoke from MaxTech old BMR 
+    // Smoke from MaxTech old BMR
     // Check Smoke first since it can sit on top of other terrain
     // Might want to check for Fire also at some point?
     if (MechTerrain(target) == SMOKE) {
@@ -1409,7 +1411,7 @@ void PhysicalAttack(MECH * mech, int damageweight, int baseToHit,
 	if(AttackType == PA_PUNCH)
 		MechSections(mech)[sect].config &= ~AXED;
 
-	// Clubbing recycles both arms. 
+	// Clubbing recycles both arms.
 	if(AttackType == PA_CLUB)
 		SetRecycleLimb(mech, LARM, PHYSICAL_RECYCLE_TIME);
 
@@ -1582,7 +1584,7 @@ void PhysicalDamage(MECH * mech, MECH * target, int weightdmg,
                     if ((MechType(target) != CLASS_MECH) || (Fallen(target) &&
                                 (MechElevation(mech) == MechElevation (target)))) {
                         hitloc = FindTargetHitLoc(mech, target, &isrear, &iscritical);
-                    } else if (!Fallen(target) && 
+                    } else if (!Fallen(target) &&
                             (MechElevation(mech) > MechElevation(target))) {
                         hitloc = FindPunchLocation(target, hitgroup);
                     } else if (MechElevation(mech) == MechElevation(target)) {

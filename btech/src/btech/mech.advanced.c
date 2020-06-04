@@ -13,6 +13,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "coolmenu.h"
@@ -31,6 +32,7 @@
 #include "p.mech.enhanced.criticals.h"
 #include "p.mech.combat.misc.h"
 #include "mt19937ar.h"
+#include "p.map.conditions.h"
 
 #define SILLY_TOGGLE_MACRO(neededspecial,setstatus,msgon,msgoff,donthave) \
 if (MechSpecials(mech) & (neededspecial)) \
@@ -274,7 +276,7 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 		DOCHECK0(!FindArtemisForWeapon(mech, section, critical),
 				 "You do not have an Artemis system for that weapon.");
 		}
-		
+
 
 	weaptype = Weapon2I(GetPartType(mech, section, critical));
 
@@ -300,7 +302,7 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 									  critical) & ARTILLERY_MODES) &&
 					 !(GetPartAmmoMode(mech, section, critical) & temp_mode),
 					 "That weapon has already been set to fire special rounds!");
-           /* Fitz - Group RAC/INARC select: Handle clearing RAC and INARC modes first */ 
+           /* Fitz - Group RAC/INARC select: Handle clearing RAC and INARC modes first */
    		if ((temp_nspec == RAC) && !temp_mode) {
 			if (!(GetPartFireMode(mech, section, critical) & RAC_MODES)) {
 				mech_notify(mech, MECHALL, tprintf(temp_offmsg, index));
@@ -344,9 +346,9 @@ static int mech_toggle_mode_sub_func(MECH * mech, dbref player, int index,
 				GetPartAmmoMode(mech, section, critical) &= ~AMMO_MODES;
 				GetPartAmmoMode(mech, section, critical) |= temp_mode;
 			}
-	
+
 			mech_notify(mech, MECHALL, tprintf(temp_onmsg, index));
-	
+
 			return 0;
 			}
 		}if (temp_nspec != RAC) /* Keep RAC type weapons on this setting */
@@ -1783,13 +1785,13 @@ static struct mechpref_info {
 } mech_preferences[] = {
 	{ MECHPREF_PKILL, MECHPREF_FLAG_INVERTED, "MWSafety", "MechWarrior Safeties flipped"},
 	{ MECHPREF_SLWARN, 0			, "SLWarn", "The warning when lit by searchlight is now"},
-	{ MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall", "Suicidal jumps off cliffs toggled"}, 
-	{ MECHPREF_NOARMORWARN, MECHPREF_FLAG_INVERTED, "ArmorWarn", "Low-armor warnings turned"}, 
-	{ MECHPREF_NOAMMOWARN, MECHPREF_FLAG_INVERTED, "AmmoWarn", "Warning when running out of Ammunition switched"}, 
-	{ MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown", "Autocon on shutdown units turned"}, 
-	{ MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety", "Friendly Fire Safeties flipped"}, 
+	{ MECHPREF_AUTOFALL, MECHPREF_FLAG_NEGATIVE, "AutoFall", "Suicidal jumps off cliffs toggled"},
+	{ MECHPREF_NOARMORWARN, MECHPREF_FLAG_INVERTED, "ArmorWarn", "Low-armor warnings turned"},
+	{ MECHPREF_NOAMMOWARN, MECHPREF_FLAG_INVERTED, "AmmoWarn", "Warning when running out of Ammunition switched"},
+	{ MECHPREF_AUTOCON_SD, MECHPREF_FLAG_NEGATIVE, "AutoconShutdown", "Autocon on shutdown units turned"},
+	{ MECHPREF_NOFRIENDLYFIRE, 0, "FFSafety", "Friendly Fire Safeties flipped"},
 	{ MECHPREF_BTHDEBUG, MECHPREF_FLAG_NEGATIVE, "BTHDebug","BTH Debugging is now"}
-	
+
 	};
 #define NUM_MECHPREFERENCES (sizeof(mech_preferences) / sizeof(struct mechpref_info))
 

@@ -12,12 +12,14 @@
 #include "config.h"
 #include "externs.h"
 #include "db.h"
+#include "glue.h"
 #include "mech.h"
 #include "btmacros.h"
 #include "mech.events.h"
 #include "mech.sensor.h"
 #include "failures.h"
 #include "p.econ_cmds.h"
+#include "p.mech.tech.commands.h"
 #include "p.mech.update.h"
 #include "p.bsuit.h"
 #include "autopilot.h"
@@ -373,7 +375,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 			sprintf(msgbuf, "'s %s is covered in a large electrical discharge!", locname);
 			MechLOSBroadcast(wounded, msgbuf);
 		}
-                 
+
 		DestroyWeapon(wounded, hitloc, critType, wFirstCrit, wMaxCrits,
 					  wMaxCrits);
 
@@ -384,7 +386,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 		}
 /* Rule Reference: BMR Revised, Page 16-17 (Ammo Explosion=2 Bruise) */
 /* Rule Reference: Total Warfare, Page 41 (Ammo Explosion=2 Bruise) */
-	
+
 		if(MechType(wounded) != CLASS_BSUIT) {
 			mech_notify(wounded, MECHPILOT, "You take personal injury from the weapon's explosion!");
 
@@ -428,7 +430,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 						damage);
 
 			if(!Destroyed(wounded)) {
-				sprintf(msgbuf, " loses a launcher in a brilliant explosion!", locname);
+				sprintf(msgbuf, " loses a launcher in a brilliant explosion!");
 				MechLOSBroadcast(wounded, msgbuf);
 			}
 
@@ -1828,7 +1830,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				break;
 			}					// end switch() - Part Names
 		}						// end if()
-		
+
 		if(IsWeapon(critType)) {
 			mech_printf(wounded, MECHALL, "Part of your non-working %s has been hit!", &MechWeapons[Weapon2I(critType)].name[3]);
 		}
@@ -1867,7 +1869,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			mech_notify(wounded, MECHALL,
 						"Your cockpit is destroyed, your blood boils, and your body is fried! %cyYou're dead!%cn");
 			if(!Destroyed(wounded)) {
-				DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);		
+				DestroyMech(wounded, attacker, 0, KILL_TYPE_COCKPIT);
 			}
 
 			if(LOS && attacker)
@@ -1974,7 +1976,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			}
 			break;
 		case TARGETING_COMPUTER:
-			if(!MechCritStatus(wounded) & TC_DESTROYED) {
+			if(!(MechCritStatus(wounded) & TC_DESTROYED)) {
 				mech_notify(wounded, MECHALL,
 							"Your targeting computer is destroyed!");
 				MechCritStatus(wounded) |= TC_DESTROYED;
@@ -1983,7 +1985,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 		case GYRO:
 			/* Hardened Gyro's take one extra hit before damaged */
 			if(MechSpecials2(wounded) & HDGYRO_TECH)
-				if(!MechCritStatus2(wounded) & HDGYRO_DAMAGED) {
+				if(!(MechCritStatus2(wounded) & HDGYRO_DAMAGED)) {
 					sprintf(msgbuf, "emits a screech as its "
 							"hardened gyro buckles slightly!");
 					MechLOSBroadcast(wounded, msgbuf);
@@ -2104,7 +2106,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 					mech_notify(mech, MECHALL,"The hit causes your tow line to let go!");
 					MechLOSBroadcast(mech,"'s tow lines release and flap freely behind it!");
 					mech_dropoff(GOD, mech, "");
-				}		
+				}
 				NormalizeLocActuatorCrits(wounded, hitloc);
 			} else if(tLocIsLeg) {
 				mech_notify(wounded, MECHALL,

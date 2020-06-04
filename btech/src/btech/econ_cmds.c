@@ -17,6 +17,8 @@
  */
 
 #include <stdio.h>
+
+#include "glue.h"
 #include "mech.h"
 #include "coolmenu.h"
 #include "math.h"
@@ -259,7 +261,7 @@ static void stuff_change_sub(dbref player, char *buffer, dbref loc1,
 	argc = mech_parseattributes(buffer, args, 2);
 	DOCHECK(argc < 2, "Invalid number of arguments!");
 
-	/* 
+	/*
 	 * If we hit the max amount of parts addable at once, set quantity
 	 * to add to max.
 	 */

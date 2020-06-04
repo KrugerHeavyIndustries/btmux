@@ -1,5 +1,5 @@
 /*
- * macro.c - ported from BattleTech 3056 MUSE 
+ * macro.c - ported from BattleTech 3056 MUSE
  */
 
 #include "copyright.h"
@@ -78,10 +78,10 @@ int do_macro(dbref player, char *in, char **out)
 		free_lbuf(old);
 		return 2;				/*
 								 * return any value > 1, and command * * *
-								 * processing will 
+								 * processing will
 								 */
 	}							/*
-								 * continue 
+								 * continue
 								 */
 }
 
@@ -395,7 +395,7 @@ void do_chown_macro(dbref player, char *cmd)
 	free_lbuf(unparse);
 }
 
-extern void clear_macro_set(int set)
+void clear_macro_set(int set)
 {
 	struct macros *m;
 	struct commac *c;
@@ -588,7 +588,7 @@ char *do_process_macro(dbref player, char *in, char *s)
 	buff = alloc_lbuf("do_process_macro");
 	cmd = in + 1;
 	buff[0] = '\0';				/*
-								 * End the string 
+								 * End the string
 								 */
 	for(i = 0; i < 5; i++) {
 		if(GMac(c->macros[i])) {
@@ -774,7 +774,7 @@ int can_read_macros(dbref player, struct macros *m)
 		return m->status & MACRO_R;
 }
 
-#define TST(cmd,msg) if (cmd) { fprintf(stderr, msg); exit(1); }
+#define TST(cmd,msg) if (cmd) { fprintf(stderr, "%s", msg); exit(1); }
 
 void load_macros(FILE * fp)
 {

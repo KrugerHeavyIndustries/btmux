@@ -18,6 +18,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "p.map.obj.h"
 #include "p.mech.sensor.h"

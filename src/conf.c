@@ -155,7 +155,7 @@ void cf_init(void)
 	mudconf.btech_standcareful = 1;
 	mudconf.btech_maxtechtime = 600;
 	mudconf.btech_blzmapmode = 0;
-        mudconf.btech_extended_piloting = 1;
+    mudconf.btech_extended_piloting = 1;
 	mudconf.btech_extended_gunnery = 1;
 	mudconf.btech_xploss_for_mw = 1;
 	mudconf.btech_variable_techtime = 0;
@@ -169,7 +169,7 @@ void cf_init(void)
 #endif
 #ifdef HUDINFO_SUPPORT
 	mudconf.hudinfo_show_mapinfo = 0;
-	mudconf.hudinfo_enabled;
+	mudconf.hudinfo_enabled = 0;
 #endif
 	mudconf.registeredonly = 0;
 	mudconf.namechange_days = 60;
@@ -1181,7 +1181,7 @@ CONF conftable[] = {
 	{(char *) "btech_glancing_blows", cf_int, CA_GOD, &mudconf.btech_glancing_blows, 0},
 	{(char *) "btech_inferno_penalty",
 	 cf_int, CA_GOD, &mudconf.btech_inferno_penalty, 0},
-	{(char *) "btech_blzmapmode", 
+	{(char *) "btech_blzmapmode",
 	 cf_int, CA_GOD, &mudconf.btech_blzmapmode, 0},
 	{(char *) "btech_extended_piloting",
 	 cf_int, CA_GOD, &mudconf.btech_extended_piloting, 0},
@@ -1690,8 +1690,8 @@ int cf_set(char *cp, char *ap, dbref player)
             StringCopy(buff, ap);
 			i = tp->interpreter(tp->loc, ap, tp->extra, player, cp);
 			if(!mudstate.initializing) {
-                log_error(LOG_CONFIGMODS, "CFG", "UPDAT", 
-                "%s entered config directive: %s with args '%s'. Status: %s%s%s%s", 
+                log_error(LOG_CONFIGMODS, "CFG", "UPDAT",
+                "%s entered config directive: %s with args '%s'. Status: %s%s%s%s",
                 Name(player), cp, buff, (i==0?"Success":(i==1?"Partial success":(i==-1?"Failure":"Strange"))));
 
 			}

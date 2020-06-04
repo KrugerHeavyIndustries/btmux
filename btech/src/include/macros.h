@@ -51,7 +51,7 @@ if (a) { safe_tprintf_str(buff, bufc, b); return; }
 
 /* Dice-rolling function used everywhere converted to a macro */
 /* And now converted back to a function.  */
-extern inline long int Number(long int, long int);
+extern long int Number(long int, long int);
 
 #define skipws(name)     while (name && *name && isspace(*name)) name++
 #define readint(to,from) \

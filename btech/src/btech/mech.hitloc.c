@@ -7,6 +7,7 @@
  *       All rights reserved
  */
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.utils.h"
@@ -31,12 +32,12 @@ int FindPunchLocation(MECH *target, int hitGroup) {
                 switch (roll) {
                     case 1:
                     case 2:
-                        return LTORSO; 
+                        return LTORSO;
                     case 3:
                         return CTORSO;
                     case 4:
                         /* Front Left Leg */
-                        return LARM; 
+                        return LARM;
                     case 5:
                         /* Rear Left Leg */
                         return LLEG;
@@ -281,7 +282,7 @@ int ModifyHeadHit(int hitGroup, MECH *mech) {
 
         	MECHEVENT(mech, EVENT_CREWSTUN, mech_crewstun_event, MECHSTUN_TICK, 0);
 	    }
-	 
+
     return newloc;
 }
 
@@ -494,7 +495,7 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 		case BACK:
 			switch (roll) {
 			case 2:
-            SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindFasaHitLocation()",mech->mynum));			            
+            SendTAC(tprintf("%d's luck sucks. It got TACed. We're in FindFasaHitLocation()",mech->mynum));
 				*iscritical = 1;
 				return CTORSO;
 			case 3:
@@ -2184,7 +2185,7 @@ int FindHitLocation(MECH * mech, int hitGroup, int *iscritical, int *isrear)
 		if(MechSpecials(mech) & CRITPROOF_TECH)
 			return FindHitLocation_CritProof(mech, hitGroup, iscritical,
 											 isrear);
-		else if(mudconf.btech_fasacrit) 
+		else if(mudconf.btech_fasacrit)
    			return FindFasaHitLocation(mech, hitGroup, iscritical, isrear);
 		break;
 	}

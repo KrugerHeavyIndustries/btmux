@@ -13,6 +13,7 @@
 
 /* Ejection code */
 #include <math.h>
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.btechstats.h"
@@ -348,7 +349,7 @@ void mech_udisembark(dbref player, void *data, char *buffer)
 	DOCHECK(under_repairs,
 			"This 'Mech is still under repairs (see checkstatus for more info)");
 
-	DOCHECK(abs(MechSpeed(target)) > WalkingSpeed(MMaxSpeed(target)),
+	DOCHECK(fabs(MechSpeed(target)) > WalkingSpeed(MMaxSpeed(target)),
 			"You cannot leave while the carrier is moving faster than walk speed!");
 
 	/* Carry out the disembarking. */
@@ -509,7 +510,7 @@ void mech_embark(dbref player, void *data, char *buffer)
 
 			/* Trigger FAIL & AFAIL */
 			memset(fail_mesg, 0, sizeof(fail_mesg));
-			snprintf(fail_mesg, LBUF_SIZE,
+			snprintf(fail_mesg, SBUF_SIZE,
 					 "That unit's bay doors are locked.");
 
 			did_it(player, target->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
@@ -584,7 +585,7 @@ void mech_embark(dbref player, void *data, char *buffer)
 
 		/* Trigger FAIL & AFAIL */
 		memset(fail_mesg, 0, sizeof(fail_mesg));
-		snprintf(fail_mesg, LBUF_SIZE, "That unit's bay doors are locked.");
+		snprintf(fail_mesg, SBUF_SIZE, "That unit's bay doors are locked.");
 
 		did_it(player, target->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
 			   (char **) NULL, 0);
@@ -736,7 +737,7 @@ void autoeject(dbref player, MECH * mech, int tIsBSuit)
 	initialize_pc(player, m);
 	MechPilot(m) = player;
 	MechTeam(m) = MechTeam(mech);
-/* MUDCONF THIS LATER (and fix not copying digital) 
+/* MUDCONF THIS LATER (and fix not copying digital)
 #ifdef COPY_CHANS_ON_EJECT
 	memcpy(m->freq, mech->freq, FREQS * sizeof(m->freq[0]));
 	memcpy(m->freqmodes, mech->freqmodes, FREQS * sizeof(m->freqmodes[0]));

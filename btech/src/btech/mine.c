@@ -3,7 +3,7 @@
  *
  *  Copyright (c) 1996 Markus Stenberg
  *  Copyright (c) 1998-2002 Thomas Wouters
- *  Copyright (c) 2000-2002 Cord Awtry 
+ *  Copyright (c) 2000-2002 Cord Awtry
  *       All rights reserved
  */
 
@@ -11,7 +11,7 @@
    Different types of mines:
 
    1 = Standard round (infinite explosions, same damage, to everyone in hex)
-   2 = Inferno        (single explosion, adds heat instead) 
+   2 = Inferno        (single explosion, adds heat instead)
    3 = Command-detonated (single explosion, goes off when hears transmission
    on predefined freq - damages neighbor hexes 1/2)
    4 = Vibra          (single explosion, triggered by weight (setting):
@@ -23,6 +23,7 @@
 #include "copyright.h"
 #include "config.h"
 #include <math.h>
+#include "glue.h"
 #include "mech.h"
 #include "mine.h"
 #include "p.artillery.h"
@@ -36,14 +37,14 @@
  *
  * The Trigger mines are used to let the MUX
  * know if a unit has moved to a certain spot
- * 
+ *
  * The others are the explosive do damage kind */
 char *mine_type_names[] = {
 	"Standard",
 	"Inferno",
 	"Command",
 	"Vibra",
-	"Trigger",	
+	"Trigger",
 	NULL
 };
 
@@ -151,7 +152,7 @@ void make_mine_explode(MECH * mech, MAP * map, mapobj * o, int x, int y,
 		// Trigger the unit's AMECHDEST attribute.
 		if(mech->mynum > 0)
 		    did_it(mech->mynum, mech->mynum, 0, NULL, 0, NULL, A_AMINETRIGGER, (char **) NULL, 0);
-		
+
 		return;
 	case MINE_VIBRA:
 		unset_hex_mine(map, o->x, o->y);

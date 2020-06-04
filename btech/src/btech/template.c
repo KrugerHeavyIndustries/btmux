@@ -3,7 +3,7 @@
  *	All rights reserved
  */
 
-/* 
+/*
    Code to read and write mech and vehicle templates
    Created by Nim 9/16/96
 
@@ -27,6 +27,7 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "create.h"
 #include "mech.events.h"
@@ -37,6 +38,7 @@
 #include "p.mech.utils.h"
 #include "p.mech.partnames.h"
 #include "p.mech.consistency.h"
+#include "p.mech.update.h"
 #include "p.map.conditions.h"
 #include "p.aero.bomb.h"
 #include "p.mech.mechref_ident.h"
@@ -1202,7 +1204,7 @@ char *specials2[] = {
 	"XLGyro_Tech",
 	"HDGyro_Tech",
 	"CompactGyro_Tech",
-	"TargComp_Tech",	
+	"TargComp_Tech",
 	"SmallCockpit_Tech",
 	NULL
 };
@@ -1215,7 +1217,7 @@ char *specialsabrev2[] = {
 	"CART",
 	"WPRF",
 	"XLGYRO", "HDGYRO", "CGYRO",
-	"TCOMP", "SMCPIT", 
+	"TCOMP", "SMCPIT",
 	NULL
 };
 
@@ -2682,7 +2684,7 @@ int load_template(dbref player, MECH * mech, char *filename)
 	if(strlen(MechUnitTRO(mech)) == 0 ) {
 		tmpc = "Undefined";
 		strcpy(MechUnitTRO(mech), tmpc);
-	}		
+	}
 #define Set(a,b) \
 		if (!(a)) a = b
 	if(!(MechSpecials(mech) & ICE_TECH))
@@ -2974,7 +2976,7 @@ char *payloadlist_func(MECH * mech)
 				} /*end part is destroyed check */
 			}
 			/* End of is it Ammo if Statement */
-		
+
 		}						/* End of Crit Slot Loop */
 
 	}							/* End of Section Loop */
@@ -3007,7 +3009,7 @@ char *payloadlist_func(MECH * mech)
 	return buffer;
 }
 
-//Borrowed from payload_func 
+//Borrowed from payload_func
 char *partlist_func(MECH * mech)
 {
 	static char buffer[LBUF_SIZE];
@@ -3046,7 +3048,7 @@ char *partlist_func(MECH * mech)
 				continue;
 
 /*	Things we don't need */
-			if(IsAmmo(temp_crit)) 
+			if(IsAmmo(temp_crit))
 				continue;
 			if(IsWeapon(temp_crit))
 				continue;
@@ -3098,10 +3100,10 @@ char *partlist_func(MECH * mech)
 				sprintf(partlistbuff, "%s:%d", MechSpecials(mech) & LE_TECH ? "Light_Engine" :
 							MechSpecials(mech) & CE_TECH ? "Compact_Engine" :
 							MechSpecials(mech) & XXL_TECH ? "XXL_Engine" :
-							MechSpecials(mech) & XL_TECH ? "XL_Engine" : 
+							MechSpecials(mech) & XL_TECH ? "XL_Engine" :
 							MechSpecials(mech) & ICE_TECH ? "ICE_Engine" :"Engine",
 								partlist_count[put_loop]);
-			
+
 				/* If we are not at the end, then put a | as a spacer */
 				if(put_loop < (part_count - 1)) {
 				strncat(partlistbuff, "|", sizeof(buffer) - strlen(buffer) - 1);
@@ -3152,7 +3154,7 @@ char *partlist_func(MECH * mech)
 
 			break;
 			}
-		
+
 	} /* end printing loop */
 	if (act_count) {
 		sprintf(partlistbuff,"|Actuator:%d",act_count);

@@ -1,5 +1,5 @@
 /*
- i ib_rw.c 
+ i ib_rw.c
  */
 #include "copyright.h"
 #include "config.h"
@@ -46,7 +46,7 @@ struct mmdb_t *mmdb_open_read(char *filename)
         free(mmdb);
         return NULL;
     }
-    
+
 	mmdb->fd = fd;
 	mmdb->length = (statbuf.st_size + 0x3FF) & ~(0x3FF);
 	mmdb->base =
@@ -234,11 +234,11 @@ char *mmdb_read_string(struct mmdb_t *mmdb) {
     return tmp;
 }
 
-char mmdb_read_opaque(struct mmdb_t *mmdb, void *dest, int maxlength) {
+void mmdb_read_opaque(struct mmdb_t *mmdb, void *dest, int maxlength) {
     int length = mmdb_read_uint32(mmdb);
-    
+
 	if((mmdb->end - mmdb->ppos) < length)
-		return NULL;
+		return;
     if(length > maxlength) {
         memcpy(dest, mmdb->ppos, maxlength);
     } else {
@@ -247,5 +247,4 @@ char mmdb_read_opaque(struct mmdb_t *mmdb, void *dest, int maxlength) {
 	mmdb->ppos += length;
 	if(length & 3)
 		mmdb->ppos += 4 - (length & 3);
-	return dest;
 }

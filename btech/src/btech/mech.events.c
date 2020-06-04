@@ -9,6 +9,8 @@
  */
 
 #include <math.h>
+
+#include "glue.h"
 #include "mech.events.h"
 #include "mech.notify.h"
 #include "p.aero.move.h"
@@ -23,7 +25,7 @@
 #undef WEAPON_RECYCLE_DEBUG
 
 void mech_heartbeat(MECH *mech) {
-    UpdateRecycling(mech); 
+    UpdateRecycling(mech);
     if(mudconf.btech_newstagger >= 1 && MechType(mech) == CLASS_MECH) {
       // no sense checking if a fallen mech will fall down again, and let's not let jumping mechs stagger.
       if(!Fallen(mech) && !Jumping(mech)) {
@@ -31,7 +33,7 @@ void mech_heartbeat(MECH *mech) {
       }
       ClearStaggerDamage(mech);
     }
-    // Aeros need to check fuel while sitting and hovering 
+    // Aeros need to check fuel while sitting and hovering
     if(MechType(mech) == CLASS_AERO || MechType(mech) == CLASS_VTOL) {
     	if(!Landed(mech) && (fabs(MechSpeed(mech)) == 0) && (fabs(MechVerticalSpeed(mech)) == 0) )
  		FuelCheck(mech);
@@ -40,7 +42,7 @@ void mech_heartbeat(MECH *mech) {
     return;
 }
 
-void mech_staggercheck_heartbeat(MECH * mech) 
+void mech_staggercheck_heartbeat(MECH * mech)
 {
   time_t now = mudstate.now;
   int curStaggerDamage = 0;
@@ -61,8 +63,8 @@ void mech_staggercheck_heartbeat(MECH * mech)
       return;
     else {
       staggerLevel = curStaggerDamage / 20;
-      
-      // Dont need to remove stagger anymore, it clears on fall, 
+
+      // Dont need to remove stagger anymore, it clears on fall,
       // unless we're using mudconf.btech_newstagger = 2
       if(mudconf.btech_newstagger == 2)
 	RemoveStaggerDamage(mech,staggerLevel);
@@ -116,7 +118,7 @@ int calcNewStaggerBTHMod(MECH * mech, int staggerLevel)
     bthMod = 999;
   } else {
     bthMod = staggerLevel - 1;
- 
+
     if(MechTons(mech) <= 35)
       tonnageMod = 1;
     else if(MechTons(mech) <= 55)
@@ -130,7 +132,7 @@ int calcNewStaggerBTHMod(MECH * mech, int staggerLevel)
     if(mudconf.btech_newstaggertons)
       bthMod += tonnageMod;
   }
- 
+
   return bthMod;
 }
 
@@ -168,14 +170,14 @@ void mech_fall_event(MUXEVENT * e)
 	else
 		fallspeed += FALL_ACCEL;
 	MarkForLOSUpdate(mech);
-	if(MechsElevation(mech) > abs(fallspeed)) {
-		MechZ(mech) -= abs(fallspeed);
+	if(MechsElevation(mech) > labs(fallspeed)) {
+		MechZ(mech) -= labs(fallspeed);
 		MechFZ(mech) = MechZ(mech) * ZSCALE;
 		MECHEVENT(mech, EVENT_FALL, mech_fall_event, FALL_TICK, fallspeed);
 		return;
 	}
 	/* Time to hit da ground */
-	fallen_elev = factoral(abs(fallspeed));
+	fallen_elev = factoral(labs(fallspeed));
 	mech_notify(mech, MECHALL, "You hit the ground!");
 	MechLOSBroadcast(mech, "hits the ground!");
 	MechFalls(mech, fallen_elev, 0);
@@ -395,7 +397,7 @@ void aero_move_event(MUXEVENT * e)
 		/* Returns 1 only if we
 		   1) Ran out of fuel, and
 		   2) Were VTOL, and
-		   3) Crashed 
+		   3) Crashed
 		 */
 		if(FuelCheck(mech))
 			return;

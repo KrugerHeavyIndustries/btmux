@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "glue.h"
 #include "create.h"
 #include "mech.h"
 #include "autopilot.h"

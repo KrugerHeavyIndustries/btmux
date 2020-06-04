@@ -12,6 +12,7 @@
 #include "config.h"
 #include <math.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "muxevent.h"
@@ -53,7 +54,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 			"That target is not in your line of sight.");
 	DOCHECK(Fortified(target), "Your target is fortified and cannot be towed.");
 	DOCHECK(MechSpecials2(target) & CARRIER_TECH
-			&& !MechSpecials2(mech) & CARRIER_TECH,
+			&& !(MechSpecials2(mech) & CARRIER_TECH),
 			"You cannot handle the mass on that carrier.");
 	DOCHECK(CarryingClub(mech),
 			"You can't pickup while you're carrying a club!");
@@ -110,7 +111,7 @@ void mech_pickup(dbref player, void *data, char *buffer)
 /* Not on the same team, unit is !destroyed, don't allow.. Prevents picking up from heat shutdown, etc */
 /* Allow Team 0 (Administrative Team for Box Drops, etc) */
 	DOCHECK((MechTeam(mech) != MechTeam(target)) &&
-			(!Destroyed(target) && !Started(target) && MechTeam(target) != 0), 
+			(!Destroyed(target) && !Started(target) && MechTeam(target) != 0),
 			"You can't pick that up!");
 
 	if(Moving(target) && !Falling(target) && !OODing(target))

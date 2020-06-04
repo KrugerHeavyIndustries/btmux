@@ -1,5 +1,5 @@
 AM_CPPFLAGS = $(BTPR_INCLUDE) -I$(srcdir)/include -I$(srcdir)/btech \
-	-I$(top_srcdir)/btfi/include
+	-I$(top_srcdir)/btfi/include -Werror -Wfatal-errors
 
 if BTPR_MUX1
 BTPR_INCLUDE = -I$(top_srcdir)/../include -I$(top_srcdir)/../src

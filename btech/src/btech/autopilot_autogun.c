@@ -93,7 +93,7 @@ int SearchLightInRange(MECH * mech, MAP * map)
 					/* Slite on, arced, but LoS blocked */
 					return 4;
 
-			} else if(!MechStatus(target) & SLITE_ON &&
+			} else if(!(MechStatus(target) & SLITE_ON) &&
 					  InWeaponArc(target, MechFX(mech),
 								  MechFY(mech)) & FORWARDARC) {
 
@@ -111,7 +111,7 @@ int SearchLightInRange(MECH * mech, MAP * map)
 					return 6;
 			}
 
-			/* Slite is in range of you, but apparently not arced on you. 
+			/* Slite is in range of you, but apparently not arced on you.
 			 * Return tells wether on or off */
 			return (MechStatus(target) & SLITE_ON ? 1 : 2);
 		}
@@ -168,10 +168,10 @@ void auto_sensor_event(AUTO *autopilot)
 		dprintk("mynum is bad!");
 		return;
 	}
-			 
-	
+
+
 	MECH *mech = (MECH *) autopilot->mymech;
-	
+
 	/* Make sure its a MECH Xcode Object and the AI is
 	 * an AUTOPILOT Xcode Object */
         /* Basic checks */
@@ -183,7 +183,7 @@ void auto_sensor_event(AUTO *autopilot)
                 dprintk("ai is bad!");
                 return;
         }
-			
+
 	if(!IsMech(mech->mynum) || !IsAuto(autopilot->mynum))
 		return;
 
@@ -211,7 +211,7 @@ void auto_sensor_event(AUTO *autopilot)
 		Zombify(autopilot);
 		return;
 	}
-	
+
 	/* Get the target if there is one */
 	if(MechTarget(mech) > 0)
 		target = getMech(MechTarget(mech));
@@ -457,7 +457,7 @@ int auto_calc_weapon_score(int weapon_db_number, int range)
 
 	/* For the modifiers I assumed best was approx 550
 	 *
-	 * So for SR, chance of hitting is roughly 92% which is 506 rounded to 500 
+	 * So for SR, chance of hitting is roughly 92% which is 506 rounded to 500
 	 * For MR, its 72%, so 390 and LR its 41% its 225 */
 
 	/* Assume default values */
@@ -583,7 +583,7 @@ void auto_update_profile_event(AUTO *autopilot) {
 	if(Destroyed(mech)) {
 		return;
 	}
-    
+
 	/* Log Message */
 	print_autogun_log(autopilot, "Profiling Unit #%d", mech->mynum);
 
@@ -671,7 +671,7 @@ void auto_update_profile_event(AUTO *autopilot) {
 
 	}
 
-	/* Now build the profile array, basicly loop through 
+	/* Now build the profile array, basicly loop through
 	 * all the current avail weapons, get its max range,
 	 * then loop through ranges and for each range add it
 	 * to profile */
@@ -1232,7 +1232,7 @@ void auto_gun_event(AUTO *autopilot)
 						  autopilot->target);
 
 	}
-	
+
 	/* Primary target isn't in LOS. Let's re-run in 5s */
 	if(!(MechToMech_LOSFlag(map, mech, target) & MECHLOSFLAG_SEEN)) {
 		autopilot->target = -1;
@@ -1469,7 +1469,7 @@ void auto_gun_event(AUTO *autopilot)
 					rleg_bth = 99;
 				}
 
-				/* Now kick depending on which one would be better 
+				/* Now kick depending on which one would be better
 				 * to kick with */
 				if(rleg_bth <= lleg_bth) {
 					snprintf(buffer, LBUF_SIZE, "r %c%c",
@@ -1590,7 +1590,7 @@ void auto_gun_event(AUTO *autopilot)
 					rleg_bth = 99;
 				}
 
-				/* Now kick depending on which one would be better 
+				/* Now kick depending on which one would be better
 				 * to kick with */
 				if(rleg_bth <= lleg_bth) {
 					snprintf(buffer, LBUF_SIZE, "r %c%c",
@@ -1745,7 +1745,7 @@ void auto_gun_event(AUTO *autopilot)
 											  range_scores[(int) range]);
 				continue;
 			}
-			
+
 			/* No sense trying to fire Stinger missiles if the target isn't airborne/jumping */
 
 			if((GetPartAmmoMode(mech, temp_weapon_node->section, temp_weapon_node->critical) & STINGER_MODE) && target
@@ -1758,7 +1758,7 @@ void auto_gun_event(AUTO *autopilot)
 											range_scores[(int) range]);
 				continue;
 			}
-	
+
 
 			/* Check heat levels, since the heat isn't updated untill we're done
 			 * we have to manage the heat ourselves */
@@ -1873,7 +1873,7 @@ void auto_gun_event(AUTO *autopilot)
 
 					}
 
-					/* ELSE: Weapon is rear mounted so don't need to 
+					/* ELSE: Weapon is rear mounted so don't need to
 					 * do anything */
 
 				} else if(what_arc & LSIDEARC) {
@@ -2091,8 +2091,8 @@ void auto_gun_event(AUTO *autopilot)
 	/* Log It */
 	print_autogun_log(autopilot, "Autogun - End Weapon Attack Phase");
 
-	/* Setup chasetarg 
-	 * 
+	/* Setup chasetarg
+	 *
 	 * Since chasetarget uses follow but we don't want follow getting
 	 * messed up if its following a normal target.  We define our own
 	 * follow (basicly its follow but with the command name chasetarget */

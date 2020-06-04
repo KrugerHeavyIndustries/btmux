@@ -19,7 +19,7 @@ dllist *dllist_create_list()
         return NULL;
     }
 
-    memset(temp, 0, sizeof(temp));
+    memset(temp, 0, sizeof(dllist));
     temp->head = NULL;
     temp->tail = NULL;
     temp->size = 0;
@@ -290,7 +290,7 @@ dllist_node *dllist_head(dllist * dllist)
 /* Get Tail Node */
 dllist_node *dllist_tail(dllist * dllist)
 {
-    
+
     if (!dllist)
         return NULL;
 

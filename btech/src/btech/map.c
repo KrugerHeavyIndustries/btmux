@@ -4,7 +4,7 @@
  *
  * Last modified: Fri Dec 11 00:59:48 1998 fingon
  *
- * Original authors: 
+ * Original authors:
  *   4.8.93- rdm created
  *   6.16.93- jb modified, added hex_struct
  * Since that modified by:
@@ -256,7 +256,7 @@ int map_checkmapfile(MAP * map, char *mapname)
 
 	if(!fp) {
 	        my_close_file(fp, &filemode);
-		return -1; // Bad map file 
+		return -1; // Bad map file
 	}
 
 	if(fscanf(fp, "%d %d\n", &width, &height) != 2 || height < 1 ||
@@ -371,7 +371,7 @@ int map_load(MAP * map, char *mapname)
 	map->map_width = width;
 	if(!MapNoBridgify(map))
 		make_bridges(map);
-	sprintf(map->mapname, mapname);
+	strcpy(map->mapname, mapname);
 	my_close_file(fp, &filemode);
 	return 0;
 }
@@ -399,7 +399,7 @@ void map_loadmap(dbref player, void *data, char *buffer)
 	case -3:
 		notify(player, "#-1 Map invalid - Height not loaded properly");
 		return;
-	case 1: 
+	case 1:
 		map_load(map, args[0]);
 		break;
 	default:
@@ -435,7 +435,7 @@ void map_savemap(dbref player, void *data, char *buffer)
 	DOCHECK(mech_parseattributes(buffer, args, 1) != 1,
 			"Invalid number of arguments!");
 	if(strlen(args[0]) >= MAP_NAME_SIZE)
-		args[MAP_NAME_SIZE] = 0;
+		args[0][MAP_NAME_SIZE] = 0;
 	notify_printf(player, "Saving %s", args[0]);
 	sprintf(openfile, "%s/", MAP_PATH);
 	strcat(openfile, args[0]);

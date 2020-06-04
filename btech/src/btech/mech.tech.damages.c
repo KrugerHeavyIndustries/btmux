@@ -25,6 +25,7 @@
 #include "p.mech.tech.commands.h"
 #include "p.mech.status.h"
 #include "p.mech.build.h"
+#include "p.btechstats.h"
 
 /* 0 = type, 1 = loc, 2 = (pos/amnt), 3 = (val) */
 short damage_table[MAX_DAMAGES][3];
@@ -392,7 +393,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
-		case REPAIRP_T:	
+		case REPAIRP_T:
 			if(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))) < 5)
 				extra_hard = 0;
                         fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
@@ -400,7 +401,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
-		case REPAIRG:                
+		case REPAIRG:
 			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
 			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
                         sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
@@ -433,7 +434,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case RELOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
-					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
+					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "",
 					FullAmmo(mech, v1, v2) - GetPartData(mech, v1, v2) );
 			fix_time = RELOAD_TIME;
 			fix_bth = FindTechSkill(player, mech) + RELOAD_DIFFICULTY;
@@ -441,7 +442,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case UNLOAD:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
-					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "", 
+					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "",
 					GetPartData(mech, v1, v2));
 			fix_time = RELOAD_TIME;
 			fix_bth = FindTechSkill(player, mech) + REMOVES_DIFFICULTY;
@@ -450,16 +451,16 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case FIXARMOR_R:
 		case FIXINTERNAL:
 			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
-					damage_table[i][0] == FIXINTERNAL ? 
+					damage_table[i][0] == FIXINTERNAL ?
 					((MechSpecials(mech) & ES_TECH) ? " Endosteel" :
-					(MechSpecials(mech) & REINFI_TECH) ? " Reinforced" : 
+					(MechSpecials(mech) & REINFI_TECH) ? " Reinforced" :
 					(MechSpecials(mech) & COMPI_TECH) ? " Composite" :
 							            "" ) :
 				       ((MechSpecials(mech) & FF_TECH) ? " Ferrofibrous":
 				       (MechSpecials(mech) & HARDA_TECH) ? " Hardened" :
 				       (MechSpecials2(mech) & STEALTH_ARMOR_TECH) ? " Stealth" :
 				       (MechSpecials2(mech) & HVY_FF_ARMOR_TECH) ? " Heavy Ferrofibrous" :
-				       (MechSpecials2(mech) & LT_FF_ARMOR_TECH) ? " Light Ferrofibrous" : 
+				       (MechSpecials2(mech) & LT_FF_ARMOR_TECH) ? " Light Ferrofibrous" :
 				       (MechInfantrySpecials(mech) & CS_PURIFIER_STEALTH_TECH) ? " Purifier Stealth" : ""),
 					damage_table[i][2]);
 			fix_bth = FindTechSkill(player, mech) + (damage_table[i][0] == FIXINTERNAL ? FIXINTERNAL_DIFFICULTY : FIXARMOR_DIFFICULTY);
@@ -472,7 +473,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		} else {
 			sprintf(buf3, "%4d %4d", fix_time, fix_bth);
 		}
-		sprintf(buf2, "%%ch%s%3s %3d %9s %3s %s%%cn", j ? "%cg" : "%cy", j ? "(*)" :"",
+		sprintf(buf2, "%%ch%s%3s %3d %9s %3s %s%%cn%s", j ? "%cg" : "%cy", j ? "(*)" :"",
 				i + 1,
 				buf3,
 				ShortArmorSectionString(MechType(mech), MechMove(mech), v1),

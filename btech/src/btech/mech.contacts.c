@@ -264,7 +264,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 	int mechfound;
 	char weaponarc;
 	char *mech_name;
-	char see_what;
+	unsigned char see_what;
 	char *str;
 	char move_type[30];
 	char cStatus1, cStatus2, cStatus3, cStatus4, cStatus5;

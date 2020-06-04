@@ -1,5 +1,5 @@
 /*
- * log.c - logging routines 
+ * log.c - logging routines
  */
 
 #include "copyright.h"
@@ -58,7 +58,7 @@ char *strip_ansi_r(char *dest, const char *raw, size_t n)
 	while (p && *p && ((q - dest) < n)) {
 		if(*p == ESC_CHAR) {
 			/*
-			 * Start of ANSI code. Skip to end. 
+			 * Start of ANSI code. Skip to end.
 			 */
 			while (*p && !isalpha(*p))
 				p++;
@@ -74,17 +74,17 @@ char *strip_ansi_r(char *dest, const char *raw, size_t n)
 char *normal_to_white_r(char *dest, const char *raw, size_t n) {
     char *p = (char *) raw;
 	char *q = dest;
-    
+
 	while (p && *p && ((q - dest) < n)) {
 		if(*p == ESC_CHAR) {
 			/*
-			 * Start of ANSI code. 
+			 * Start of ANSI code.
 			 */
 			*q++ = *p++;		/*
-								 * ESC CHAR 
+								 * ESC CHAR
 								 */
 			*q++ = *p++;		/*
-								 * [ character. 
+								 * [ character.
 								 */
 			if(*p == '0') {
                 if((q - dest + 7) < n) {
@@ -115,7 +115,7 @@ int start_log(const char *primary, const char *secondary)
 	case 2:
 
 		/*
-		 * Format the timestamp 
+		 * Format the timestamp
 		 */
 
 		if((mudconf.log_info & LOGOPT_TIMESTAMP) != 0) {
@@ -129,7 +129,7 @@ int start_log(const char *primary, const char *secondary)
 		}
 
 		/*
-		 * Write the header to the log 
+		 * Write the header to the log
 		 */
 
 		if(secondary && *secondary)
@@ -139,7 +139,7 @@ int start_log(const char *primary, const char *secondary)
 			fprintf(stderr, "%s%s %-9s: ", mudstate.buffer,
 					mudconf.mud_name, primary);
 		/*
-		 * If a recursive call, log it and return indicating no log 
+		 * If a recursive call, log it and return indicating no log
 		 */
 
 		if(mudstate.logging == 1)
@@ -207,7 +207,7 @@ void log_error(int key, char *primary, char *secondary, char *format, ...)
 				tm.tm_hour, tm.tm_min, tm.tm_sec);
 	}
 
-	if(secondary && &secondary) {
+	if (secondary) {
 		fprintf(stderr, "%s%s %3s/%-5s: ", mudstate.buffer,
 				mudconf.mud_name, primary, secondary);
 	} else {

@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mine.h"
 #include "create.h"
@@ -269,7 +270,7 @@ void mech_navigate(dbref player, void *data, char *buffer)
 
 /* INDENT OFF */
 
-/* 
+/*
    0
    ___________                                     /``\][/""\][/""\
    /           \          HEX Location: 254, 122    \`1/``\""/``\""/
@@ -566,7 +567,7 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 					mechs[last_mech++] = oMech;
 			}
 		}
-		for(i = 0; i < (last_mech - 1); i++)	/* Bubble-sort the list 
+		for(i = 0; i < (last_mech - 1); i++)	/* Bubble-sort the list
 												 *  to y/x order */
 			for(loop = (i + 1); loop < last_mech; loop++) {
 				if(MechY(mechs[i]) > MechY(mechs[loop])) {
@@ -789,7 +790,7 @@ static void sketch_tac_map(char *buf, MAP * map, MECH * mech, int sx,
 	sketch_tac_row(pos, left_offset, hexrow[oddcol1], mapcols);
 
 	/*
-	 * Now draw the terrain and elevation. 
+	 * Now draw the terrain and elevation.
 	 */
 	pos = buf + top_offset * dispcols + left_offset;
 	wx = MIN(wx, map->map_width - sx);
@@ -956,7 +957,7 @@ static void sketch_tac_mechs(char *buf, MAP * map, MECH * player_mech,
 		}
 
 		/*
-		 * Check to see if the 'mech is on the tac map and 
+		 * Check to see if the 'mech is on the tac map and
 		 * that its in LOS of the player's 'mech.
 		 */
 		x = MechX(mech) - sx;
@@ -1067,7 +1068,7 @@ static void sketch_tac_cliffs(char *buf, MAP * map, int sx, int sy, int wx,
 			char c;
 
 			/*
-			 * Copy the elevation up to the top of the hex 
+			 * Copy the elevation up to the top of the hex
 			 * so we can draw a bottom hex edge on every hex.
 			 */
 			c = base[dispcols + 1];
@@ -1080,7 +1081,7 @@ static void sketch_tac_cliffs(char *buf, MAP * map, int sx, int sy, int wx,
 
 			/*
 			 * For each hex on the map check to see if each
-			 * of it's 240, 180, and 120 hex sides is a cliff. 
+			 * of it's 240, 180, and 120 hex sides is a cliff.
 			 * Don't check for cliffs between hexes that are on
 			 * the tac map and those that are off of it.
 			 */
@@ -1189,8 +1190,8 @@ sketch_tac_mines(char *buf, MAP *map, MECH *mech, int sx, int sy, int wx,
                                InLineOfSight_NB(mech,NULL, tx,ty,hex_range) ) {
                          /*     base[dispcols]=(o->datas/10) + '0'; */
                          /*     base[dispcols+1]=(o->datas%10) + '0'; */
-                              base[dispcols]='<'; 
-                              base[dispcols+1]='>'; 
+                              base[dispcols]='<';
+                              base[dispcols+1]='>';
 
                          }
                         }
@@ -1362,7 +1363,7 @@ static char **colourize_tac_map(char const *sketch, int dispcols,
  * freed with KillText().
  *
  * player   = dbref of player wanting map (mostly irrelevant)
- * mech     = mech player's in (or NULL, if on map) 
+ * mech     = mech player's in (or NULL, if on map)
  * map      = map obj itself
  * cx       = middle of the map (x)
  * cy       = middle of the map (y)
@@ -1415,7 +1416,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 	}
 
 	/*
-	 * Figure out the extent of the tac map to draw.  
+	 * Figure out the extent of the tac map to draw.
 	 */
 	wx = MIN(MAX_WIDTH, wx);
 	wy = MIN(MAX_HEIGHT, wy);
@@ -1528,7 +1529,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 						top_offset, left_offset, 2, docolour);
         } else if (labels & 128) {
                 if (mech != NULL) {
-                       sketch_tac_ownmech(sketch_buf, map, mech, sx, sy, wx, wy, 
+                       sketch_tac_ownmech(sketch_buf, map, mech, sx, sy, wx, wy,
 						dispcols, top_offset, left_offset);
                        sketch_tac_mines(sketch_buf, map, mech, sx, sy, wx, wy,
 						dispcols, top_offset, left_offset);
@@ -1551,7 +1552,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 		 */
 		if(oddcol1) {
 			/*
-			 * Don't need the last line in this case. 
+			 * Don't need the last line in this case.
 			 */
 			disprows--;
 		}
@@ -1598,7 +1599,7 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 	return lines;
 }
 
-/* Draws the map for the player when they use the 
+/* Draws the map for the player when they use the
  * TACTICAL [C | T | L] [<BEARING> <RANGE> | <TARGET-ID>]
  * command inside a unit */
 void mech_tacmap(dbref player, void *data, char *buffer)
@@ -1631,7 +1632,7 @@ void mech_tacmap(dbref player, void *data, char *buffer)
 							   mudconf.btech_mw_losmap))
 		dohexlos = 1;
 
-	/* Check to see which type of tactical to display 
+	/* Check to see which type of tactical to display
 	 * if they specified a particular one */
 	if(argc > 0 && isalpha((unsigned char) args[0][0])
 	   && args[0][1] == '\0') {
@@ -1845,7 +1846,7 @@ void mech_enterbase(dbref player, void *data, char *buffer)
 
 		/* Trigger FAIL & AFAIL */
 		memset(fail_mesg, 0, sizeof(fail_mesg));
-		snprintf(fail_mesg, LBUF_SIZE, "The hangar is locked.");
+		snprintf(fail_mesg, SBUF_SIZE, "The hangar is locked.");
 
 		did_it(player, newmap->mynum, A_FAIL, fail_mesg, 0, NULL, A_AFAIL,
 			   (char **) NULL, 0);

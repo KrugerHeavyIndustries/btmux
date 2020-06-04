@@ -1130,12 +1130,6 @@ Encoder::writeNonEmptyOctets_len_bit2(FI_PInt32 len)
 	assert(getBitOffset() == 1); // C.22.2
 	assert(len <= FI_PINT32_MAX);
 
-	if (len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
-	}
-
 	FI_Octet *w_buf;
 
 	if (len <= FI_UINT_TO_PINT(64)) {
@@ -1221,12 +1215,6 @@ Decoder::readNonEmptyOctets_len_bit2(FI_PInt32& len)
 		tmp_len += FI_UINT_TO_PINT(1);
 	}
 
-	if (tmp_len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
-	}
-
 	readBits(7);
 
 	len = tmp_len;
@@ -1240,12 +1228,6 @@ Encoder::writeNonEmptyOctets_len_bit5(FI_PInt32 len)
 {
 	assert(getBitOffset() == 4); // C.23.2
 	assert(len <= FI_PINT32_MAX);
-
-	if (len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
-	}
 
 	FI_Octet *w_buf;
 
@@ -1332,12 +1314,6 @@ Decoder::readNonEmptyOctets_len_bit5(FI_PInt32& len)
 		tmp_len += FI_UINT_TO_PINT(1);
 	}
 
-	if (tmp_len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
-	}
-
 	readBits(4);
 
 	len = tmp_len;
@@ -1351,12 +1327,6 @@ Encoder::writeNonEmptyOctets_len_bit7(FI_PInt32 len)
 {
 	assert(getBitOffset() == 6); // C.24.2
 	assert(len <= FI_PINT32_MAX);
-
-	if (len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
-	}
 
 	FI_Octet *w_buf;
 
@@ -1441,12 +1411,6 @@ Decoder::readNonEmptyOctets_len_bit7(FI_PInt32& len)
 		tmp_len = getBits() & FI_BITS(,,,,,,/*0*/,1);
 
 		tmp_len += FI_UINT_TO_PINT(1);
-	}
-
-	if (tmp_len > FI_UINT_TO_PINT(FI_LENGTH_MAX)) {
-		// Will overflow.
-		// FIXME: Implementation restriction.
-		throw UnsupportedOperationException ();
 	}
 
 	readBits(2);

@@ -15,6 +15,7 @@
 
 #include <math.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.bth.h"
@@ -321,7 +322,7 @@ int FindNormalBTH(MECH * mech,
 			BTHADD("Bsuitbonus", 1);
 
 		/* Let's see if we're targetting the head */
-		if(target && !IsMissile(weapindx) && MechAim(mech) == HEAD && 
+		if(target && !IsMissile(weapindx) && MechAim(mech) == HEAD &&
 			(MechType(target) == CLASS_MECH || MechType(target) == CLASS_MW)) {
 			if(Immobile(target))
 				BTHADD("HeadTarget", 7);
@@ -392,7 +393,7 @@ int FindNormalBTH(MECH * mech,
 /*		BTHADD("EvadingTarget", (FindPilotPiloting(target) >= 6 ? 1 :
 					 FindPilotPiloting(target) >= 4 ? 2 :
 					 FindPilotPiloting(target) >= 2 ? 3 : 4) +
-			(HasBoolAdvantage(MechPilot(target), "speed_demon") ? 1 : 0)); 
+			(HasBoolAdvantage(MechPilot(target), "speed_demon") ? 1 : 0));
 		} else if(MoveModeChange(target)) {
 			int i = MoveModeData(target);
 			if(i & MODE_SPRINT)
@@ -705,7 +706,7 @@ int AttackMovementMods(MECH * mech)
 // Lets just make this MechSpeed (the actual speed). Using DesiredSpeed is somewhat flawed
 
 	speed = MechSpeed(mech);
-	
+
 	if(mudconf.btech_fasaturn)
 		if(MechFacing(mech) != MechDesiredFacing(mech))
 			base++;

@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.events.h"
@@ -290,7 +291,7 @@ void mech_eta(dbref player, void *data, char *buffer)
 					"Range to hex (%d,%d) is %.1f.  ETA: Never, mech not moving.",
 					eta_x, eta_y, range);
 	else {
-		etamin = abs(range / (MechSpeed(mech) / KPH_PER_MP));
+		etamin = (int)fabs(range / (MechSpeed(mech) / KPH_PER_MP));
 		etahr = etamin / 60;
 		etamin = etamin % 60;
 		mech_printf(mech, MECHALL,
@@ -348,11 +349,11 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 											 (MechStatus2(mech) & SPRINTING
 											  ? 0.5 : 0.0));
 
-		if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) && (MechHeat(mech) >= 9.)) { 
+		if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) && (MechHeat(mech) >= 9.)) {
 			if((MechStatus2(mech) & SPRINTING)) {
 				if(mudconf.btech_tsm_sprint_bonus)
 					mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
-				
+
 			} else {
 				mspeed = ceil((rint((mspeed / 1.5) / MP1) + 1) * 1.5) * MP1;
 			}
@@ -380,7 +381,7 @@ float MechCargoMaxSpeed(MECH * mech, float mspeed)
 				if(MechSpecials(mech) & SALVAGE_TECH)
 					lugged = lugged / 2;
 				if((MechSpecials(mech) & TRIPLE_MYOMER_TECH) &&
-				   (MechHeat(mech) >= 9.) && mudconf.btech_tsm_tow_bonus) 
+				   (MechHeat(mech) >= 9.) && mudconf.btech_tsm_tow_bonus)
 					lugged = lugged / 2;
 
 				if(MechSpecials2(mech) & CARRIER_TECH)
@@ -580,7 +581,7 @@ void mech_stand(dbref player, void *data, char *buffer)
 			standcarefulmod = -2;
 		} else {
 			notify_printf(player, "Unknown argument! use 'stand check'%s",
-				   mudconf.btech_standcareful ? ", 'stand careful' or 'stand anyway'" 
+				   mudconf.btech_standcareful ? ", 'stand careful' or 'stand anyway'"
 				   			      : " or 'stand anyway'");
 			for(i = 0; i < 2; i++) {
 				if(args[i])
@@ -1056,7 +1057,7 @@ void mech_thrash(dbref player, void *data, char *buffer)
 #endif /* REALWEIGHT_DAMAGE */
 
 	/* Rules say tonnage/3, not tonnage/3 * limbs  Page 151, Total Warfare*/
-	
+
 
 	mech_notify(mech, MECHALL,
 				"You start to flail your arms and legs like a wild man!");
@@ -1355,7 +1356,7 @@ void mech_sprint(dbref player, void *data, char *buffer)
 					MOVE_QUAD ? 0 : SectIsDestroyed(mech, RLEG)
 					|| SectIsDestroyed(mech, LLEG)),
 				"That's kind of hard while limping.");
-	
+
 	DOCHECK(MechChargeTarget(mech) > 0, "You are currently charging a target and unable to start sprinting!");
 
 	d |= MODE_SPRINT | ((MechStatus2(mech) & SPRINTING) ? MODE_OFF : MODE_ON);
@@ -1386,7 +1387,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 
 	cch(MECH_USUALO);
 	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
-	DOCHECK(OODing(mech), "While falling out of the sky?");	
+	DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1409,7 +1410,7 @@ void mech_evade(dbref player, void *data, char *buffer)
 			"You cannot perform multiple movement modes!");
 	DOCHECK(MechSwarmTarget(mech) > 0, "You cannot evade while mounted!");
 	DOCHECK(MechChargeTarget(mech) > 0, "You cannot evade while charging!");
-	
+
 	if(MechType(mech) == CLASS_MECH)
 		DOCHECK(SectIsDestroyed(mech, RLEG) || SectIsDestroyed(mech, LLEG)
 				|| (MechMove(mech) !=
@@ -1445,7 +1446,7 @@ void mech_dodge(dbref player, void *data, char *buffer)
 
 	cch(MECH_USUALO);
 	DOCHECK(Fortified(mech), "Your fortified state prevents you from moving.");
-	DOCHECK(OODing(mech), "While falling out of the sky?");	
+	DOCHECK(OODing(mech), "While falling out of the sky?");
 	DOCHECK(MechMove(mech) == MOVE_NONE,
 			"This piece of equipment is stationary!");
 	DOCHECK(Standing(mech), "You are currently standing up and cannot move.");
@@ -1818,7 +1819,7 @@ void MechFalls(MECH * mech, int levels, int seemsg)
 
 	/* damage pilot */
 	MechCocoon(mech) = 0;
-	
+
 /* Rule Reference: BMR Revised, Page 16 ( Fall = Bruise if Pilot roll fails) */
 /* Rule Reference: Total Warfare, Page 41 ( Fall = Bruise if Pilot roll fails) */
 

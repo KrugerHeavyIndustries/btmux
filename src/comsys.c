@@ -1,5 +1,5 @@
 /*
- * comsys.c 
+ * comsys.c
  */
 
 #include <ctype.h>
@@ -27,15 +27,13 @@ static void do_show_com(chmsg *);
 static void do_comlast(dbref, struct channel *);
 static void do_comsend(struct channel *, char *);
 static void do_comprintf(struct channel *, char *, ...);
-extern void do_joinchannel(dbref, struct channel *);
 static void do_leavechannel(dbref, struct channel *);
 static void do_comwho(dbref, struct channel *);
 static void do_setnewtitle(dbref, struct channel *, char *);
-extern void sort_users(struct channel *);
 static int do_test_access(dbref, long, struct channel *);
 
 /*
- * This is the hash table for channel names 
+ * This is the hash table for channel names
  */
 
 void init_chantab(void)
@@ -394,7 +392,7 @@ static void do_comprintf(struct channel *ch, char *messfmt, ...)
 	myfifo_push(&ch->last_messages, c);
 }
 
-extern void do_joinchannel(dbref player, struct channel *ch)
+void do_joinchannel(dbref player, struct channel *ch)
 {
 	struct comuser *user;
 	int i;
@@ -407,7 +405,7 @@ extern void do_joinchannel(dbref player, struct channel *ch)
 			ch->max_users += 10;
 			ch->users = realloc(ch->users, sizeof(struct comuser *) *
 								ch->max_users);
-			memset(ch->users+(ch->num_users-1), 0, 
+			memset(ch->users+(ch->num_users-1), 0,
 				sizeof(struct comuser *)*(ch->max_users-ch->num_users));
 		}
 		user = (struct comuser *) malloc(sizeof(struct comuser));
@@ -980,7 +978,7 @@ void do_allcom(dbref player, dbref cause, int key, char *arg1)
 
 }
 
-extern void sort_users(struct channel *ch)
+void sort_users(struct channel *ch)
 {
 	int i;
 	int nu;
@@ -1325,7 +1323,7 @@ static int do_test_access(dbref player, long access, struct channel *chan)
 		flag_value *= CHANNEL_OBJ_MULT;
 	flag_value &= 0xFF;			/*
 								 * Mask out CHANNEL_PUBLIC and CHANNEL_LOUD
-								 * just to be paranoid. 
+								 * just to be paranoid.
 								 */
 
 	return (((long) chan->type & flag_value));
@@ -1533,7 +1531,7 @@ void do_chboot(dbref player, dbref cause, int key, char *channel,
 
 	/*
 	 * * I sure hope it's not going to be that *
-	 * *  * *  * *  * * long.  
+	 * *  * *  * *  * * long.
 	 */
 
 	if(!mudconf.have_comsys) {
@@ -1563,7 +1561,7 @@ void do_chboot(dbref player, dbref cause, int key, char *channel,
 		return;
 	}
 	/*
-	 * We should be in the clear now. :) 
+	 * We should be in the clear now. :)
 	 */
 	do_comprintf(ch, "[%s] %s boots %s off the channel.", ch->name,
                unparse_object_numonly(player), unparse_object_numonly(thing));

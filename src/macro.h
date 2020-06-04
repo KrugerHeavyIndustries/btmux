@@ -48,6 +48,7 @@ int can_read_macros();
 void do_sort_macro_set();
 void save_macros();
 void load_macros();
+void clear_macro_set();
 
 int do_macro();
 void do_add_macro();

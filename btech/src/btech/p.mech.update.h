@@ -34,10 +34,12 @@ int recycle_weaponry(MECH * mech);
 int SkidMod(float Speed);
 void NewHexEntered(MECH * mech, MAP * mech_map, float deltax, float deltay,
     int last_z);
+void MarkStaggerDamage(MECH * mech, int staggerLevel);
 void RemoveStaggerDamage(MECH * mech, int staggerLevel);
 void ClearAllStaggerDamage(MECH * mech);
 void ClearStaggerDamage(MECH * mech);
 int CurrentStaggerDamage(MECH * mech);
+int CurrentCountedStaggerDamage(MECH * mech);
 void CheckDamage(MECH * wounded);
 void UpdatePilotSkillRolls(MECH * mech);
 void updateAutoturnTurret(MECH * mech);

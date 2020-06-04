@@ -8,6 +8,7 @@
 *  Copyright (c) 1998-2000 Thomas Wouters
 */
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.bsuit.h"
@@ -278,9 +279,9 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 		return;
 	}
 	//global_kill_cheat = 1;
-	
+
 	// Destroy Contents Right Away
-	if(mudconf.btech_transported_unit_death) {	
+	if(mudconf.btech_transported_unit_death) {
 		SAFE_DOLIST(a,b,Contents(target->mynum))
 			if(IsMech(a) && In_Character(a)) {
 				ctarget = getMech(a);
@@ -295,7 +296,7 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 	else
 		ChannelEmitKill(target, target, reason);
 	if(mech) {
-		
+
 			if(mech != target) {
 				mech_notify(mech, MECHALL, "You destroyed the target!");
 				MechLOSBroadcasti(target, mech, "has been destroyed by %s!");
@@ -331,7 +332,7 @@ void DestroyMech(MECH * target, MECH * mech, int showboom, const char *reason)
 			}
 		}
 	}
-	
+
 	/* shut it down */
 	if(mech) {
 		DestroyAndDump(target);

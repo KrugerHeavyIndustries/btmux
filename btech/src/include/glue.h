@@ -323,7 +323,7 @@ CommandsStruct mechcommands[] = {
     {0, "LBX <weapnum>", "Sets weapon to and from LBX Mode.", mech_lbx},
     {0, "NARC <weapnum>", "Sets weapon to and from NARC Mode.", mech_narc},
     {0, "SGUIDED <weapnum>", "Sets weapon to and from Sguide Mode", mech_sguided},
-    {0, "STINGER <weaponum>", "Sets weapon to and from Stinger Mode.", 
+    {0, "STINGER <weaponum>", "Sets weapon to and from Stinger Mode.",
         mech_stinger},
     {0, "ATMRANGE <weapnum>", "Sets weapon to and from Extended Range Mode", mech_atmrange},
     {0, "ATMEXPLOSIVE <weapnum>", "Sets weapon to and from High Explosive Mode", mech_atmexplosive},
@@ -574,7 +574,7 @@ CommandsStruct mechcommands[] = {
     {1, "CLAW [R | L |B] [<TARGET-ID>]", "Claws a target", mech_claw},
     {1, "CLUB [<TARGET-ID>]", "Clubs a target with a tree", mech_club},
     {1, "MACE [<TARGET-ID>]", "Maces your target", mech_mace},
-    {1, "SAW [<TARGET-ID>]", "Saws a target with a Dual Saw", mech_saw},    
+    {1, "SAW [<TARGET-ID>]", "Saws a target with a Dual Saw", mech_saw},
     {1, "KICK [R | L] [<TARGET-ID>]", "Kicks a target", mech_kick},
     {1, "TRIP [R | L] [<TARGET-ID>]", "Trips a target mech", mech_trip},
     {1, "PUNCH [R | L | B] [<TARGET-ID>]", "Punches a target", mech_punch},
@@ -946,12 +946,6 @@ CommandsStruct sscommands[] = {
 #undef HEADER
 
 
-#endif
-
-/* Something about [new] Linux gcc is braindead.. I just don't know
-   what, but this allows the code to link [bleah] */
-#ifdef memcpy
-#undef memcpy
 #endif
 
 void send_channel(char *, const char *, ...);

@@ -9,6 +9,7 @@
  *  Copyright (c) 1998-2000 Thomas Wouters
  */
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "p.mech.ammodump.h"
@@ -258,7 +259,7 @@ int Dump_Decrease(MECH * mech, int loc, int pos, int *hm)
  * FASA rules state that if a mech takes a rear torso shot while dumping ammo,
  * all the dumping ammo explodes and goes to the armor of that location. That's
  * a bit harsh in RS as getting behind someone ain't that hard. So what we do is
- * if you're dumping ammo and take a rear torso shot, we, on a roll of 7 or less, 
+ * if you're dumping ammo and take a rear torso shot, we, on a roll of 7 or less,
  * call this BlowDumpingAmmo function. This function finds all the ammo you're dumping
  * and blows up ONE ROUND of one type, randomly. If you're dumping a lot and get hit
  * a few times (like from an LRM) you could get a bunch of little booms which

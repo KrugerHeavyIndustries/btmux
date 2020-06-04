@@ -14,6 +14,7 @@
 #include "p.mech.utils.h"
 #include "p.mech.pickup.h"
 #include "p.mech.tag.h"
+#include "p.mech.combat.misc.h"
 
 #define TMP_TERR '1'
 

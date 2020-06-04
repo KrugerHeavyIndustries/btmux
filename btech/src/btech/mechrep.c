@@ -16,6 +16,7 @@
 #define MECH_STAT_C				/* want to use the POSIX stat() call. */
 
 #include "externs.h"
+#include "glue.h"
 #include "mech.h"
 #include "mechrep.h"
 #include "create.h"
@@ -308,8 +309,8 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
  * in case and characters past the 14th to be ignored in mech references
  * when loading templates.  Templates can also be stored in any subdirectory
  * of the main template directory instead of in just one of list of hard
- * coded subdirectories.  
- * 
+ * coded subdirectories.
+ *
  * CACHE_MAXNAME sets the limit on how long a template filename can be.
  * Any template with a filename longer than this is ignored and not stored
  * in the cache.
@@ -318,7 +319,7 @@ void mechrep_Rsetmove(dbref player, void *data, char *buffer)
  * searching the cache.  This should be equal to the length of the
  * 'mech_type' (minus one for the terminating '\0' character) field of
  * MECH structure.
- * 
+ *
  */
 
 enum {
@@ -422,7 +423,7 @@ static int scan_template_dir(char const *dirname, char const *parent)
 
 /*
  * Scan all the template names in the mech template directory.  Only looks
- * in the mech template directory and it immediate subdirectories. 
+ * in the mech template directory and it immediate subdirectories.
  * It doesn't recursively look any further down the tree.
  */
 
@@ -646,11 +647,10 @@ int load_mechdata(MECH * mech, char *id)
 	char *filename;
 
 	filename = mechref_path(id);
-	TEMPLATE_GERR(filename == NULL, tprintf("No matching file for '%s'.",
-											id));
+	TEMPLATE_GERR(filename == NULL, "No matching file for '%s'.", id);
 	if(filename)
 		fp = fopen(filename, "r");
-	TEMPLATE_GERR(!fp, tprintf("Unable to open file %s (%s)!", filename, id));
+	TEMPLATE_GERR(!fp, "Unable to open file %s (%s)!", filename, id);
 	strncpy(MechType_Ref(mech), id, 25);
 	MechType_Ref(mech)[24] = '\0';
 	TEMPLATE_GERR(fscanf(fp, "%d %d %d %d %d %f %f %d\n", &i1, &i2, &i3,
@@ -835,21 +835,21 @@ void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 	    notify(player, "You must specify a template name!");
 	    return;
 	}
-	
+
 	// Anti-twink measure. Don't allow directory saving... yet
-	if(strstr(args[0], "/")) { 
+	if(strstr(args[0], "/")) {
 	    notify(player, "Invalid file name!");
 	    return;
 	}
-	    
+
 	notify_printf(player, "Saving %s", args[0]);
 	sprintf(openfile, "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
-	
+
 	// Just warn on overweight.
 	if(mech_weight_sub(GOD, mech, -1) > (MechTons(mech) * 1024))
 	    notify(player, "Warning: Template Overweight, see @weight.");
-	
+
 	// I/O or Permissions error.
 	if(save_template(player, mech, args[0], openfile) < 0) {
 	    notify(player, "Error saving the template file!");
@@ -867,19 +867,19 @@ void invalid_section(dbref player, MECH * mech)
 {
 	int mechtype = MechType(mech);
 	int movetype = MechMove(mech);
-	
+
 	notify(player, "Not a legal armor location, must be one of:");
-	
+
 	switch(mechtype) {
 		case CLASS_MW:
 		case CLASS_MECH:
 			notify(player, "HEAD (H), CTORSO (CT), LTORSO (LT), RTORSO (RT)");
-			
+
 			if (movetype == MOVE_QUAD)
 				notify(player, "LARM (LA), RARM (RA), LLEG (LL), RLEG (RL)");
 			else
 				notify(player, "FLLEG (FLL), FRLEG (FRL), RLLEG (RLL), RRLEG (RRL)");
-			
+
 			break;
 		case CLASS_VEH_NAVAL:
 		case CLASS_VEH_GROUND:
@@ -919,15 +919,15 @@ void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(!argc, "Invalid number of arguments!");
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
-	
+
 	if(index == -1) {
 		// Invalid section, emit error and valid choices for unit type.
 		invalid_section(player, mech);
 		return;
 	}
-	
+
 	argc--;
-	
+
 	if(argc) {
 		// One Argument Given.
 		temp = atoi(args[1]);
@@ -968,7 +968,7 @@ void mechrep_Rsetarmor(dbref player, void *data, char *buffer)
 	}
 }
 
-/* 
+/*
  * Handles the adding of weapons via the 'addweap' command in the form of:
  * addweap <weap> <loc> <crits> [<flags>]
  * Current Flags: O = OS, T = TC, R = Rear
@@ -995,7 +995,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 	DOCHECK(argc < 3, "Invalid number of arguments!")
 
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
-	
+
 	if(index == -1) {
 		// Invalid section entered. Emit error and valid sections.
 		invalid_section(player, mech);
@@ -1010,16 +1010,16 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 		return;
 	}
 
-	/* 
-	 * There are always 3 arguments that preceed flags. 
-	 * addweap <weap> <loc> <crit>, 0, 1, and 2 respectively in args[][]. 
-	 * By subtracting 3, we figure out how many of our arguments are actually 
+	/*
+	 * There are always 3 arguments that preceed flags.
+	 * addweap <weap> <loc> <crit>, 0, 1, and 2 respectively in args[][].
+	 * By subtracting 3, we figure out how many of our arguments are actually
 	 * flags.
 	 */
 	argstoiter = argc - 3;
 
 	/*
-	 * Now we take those additional flags and look for matches. argc is 
+	 * Now we take those additional flags and look for matches. argc is
 	 * decremented to keep track of how many of our arguments are crit
 	 * locations.
 	 */
@@ -1037,7 +1037,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
 			isoneshot = 1;
 		}
 
-		/* 
+		/*
 		 * If it's a letter, it's not a crit location. If a
 		 * player throws numbers in with the crit flags, then
 		 * they'll see error messages about crit counts. Need
@@ -1087,7 +1087,7 @@ void mechrep_Raddweap(dbref player, void *data, char *buffer)
                                 MechSpecials(mech) |= CL_ANTI_MISSILE_TECH;
                         else
                                 MechSpecials(mech) |= IS_ANTI_MISSILE_TECH;
-       
+
                 }
                 notify_printf(player, "Weapon added.");
         }
@@ -1106,7 +1106,7 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 	DOCHECK(argc <2, "MECHREP: Invalid Syntax. Try FireMode <Weapon#> <Mode>");
 
         weaptype = FindWeaponNumberOnMech_Advanced(mech, atoi(args[0]), &section, &critical, 0);
-	
+
 	if(weaptype < 0) {
 		notify(player, "Invalid Weapon #!");
 		return;
@@ -1116,14 +1116,14 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 		                notify(player, "That weapon doesn't require ammo!");
 				return;
 	}
-	
+
 	if(MechSections(mech)[section].criticals[critical].firemode & OS_MODE) {
 		notify(player,"Keeping One Shot Mode!");
 		MechSections(mech)[section].criticals[critical].ammomode = 0;
 	}
 	else
 	   if(!(MechSections(mech)[section].criticals[critical].firemode & HALFTON_MODE)) {
-	  
+
                         MechSections(mech)[section].criticals[critical].firemode = 0;
                         MechSections(mech)[section].criticals[critical].ammomode = 0;
 	}
@@ -1228,7 +1228,7 @@ void mechrep_Rfiremode(dbref player, void *data, char *buffer)
 				MechSections(mech)[section].criticals[critical].firemode = 0;
 			}
 
-		notify(player,"Firemode changed!");					
+		notify(player,"Firemode changed!");
 
 }
 /*
@@ -1246,21 +1246,21 @@ void mechrep_Rreload(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc <= 2, "Invalid number of arguments!");
 	weapindex = WeaponIndexFromString(args[0]);
-	
+
 	if(weapindex == -1) {
 		notify(player, "That is not a valid weapon!");
 		DumpWeapons(player);
 		return;
 	}
-	
+
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
-	
+
 	if(index == -1) {
 		// Invalid section entered. Emit error and valid sections.
 		invalid_section(player, mech);
 		return;
 	}
-	
+
 	subsect = atoi(args[2]);
 	subsect--;					/* from 1 based to 0 based */
 	DOCHECK(subsect < 0 ||
@@ -1424,7 +1424,7 @@ void mechrep_Rrestock(dbref player, void *data, char *buffer)
 void mechrep_Rrepair(dbref player, void *data, char *buffer)
 {
 	char *args[4];
-	int argc;	
+	int argc;
 	int index;
 	int temp=0;
 
@@ -1432,7 +1432,7 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc < 2, "Invalid number of arguments!");
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[0]);
-	
+
 	if(index == -1) {
 		// Invalid section entered. Emit error and valid sections.
 		invalid_section(player, mech);
@@ -1442,7 +1442,7 @@ void mechrep_Rrepair(dbref player, void *data, char *buffer)
 		temp = atoi(args[2]);
 		DOCHECK(temp < 0, "Illegal value for armor!");
 	}
-	
+
 	switch (args[1][0]) {
 	case 'A':
 	case 'a':
@@ -1508,7 +1508,7 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 	argc = mech_parseattributes(buffer, args, 4);
 	DOCHECK(argc <= 2, "Invalid number of arguments!");
 	itemcode = FindSpecialItemCodeFromString(args[0]);
-	
+
 	if(itemcode == -1)
 		if(strcasecmp(args[0], "empty")) {
 			notify(player, "That is not a valid special object!");
@@ -1516,7 +1516,7 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 			return;
 		}
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), args[1]);
-	
+
 	if(index == -1) {
 		// Invalid section entered. Emit error and valid sections.
 		invalid_section(player, mech);
@@ -1591,7 +1591,7 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 		MechSpecials2(mech) |= BLOODHOUND_PROBE_TECH;
 		notify(player, "Bloodhound Active Probe added to 'Mech.");
 		break;
-	case TARGETING_COMPUTER:	
+	case TARGETING_COMPUTER:
 		MechSpecials2(mech) |= TCOMP_TECH;
 		notify(player, "Targeting Computer added to 'Mech.");
 		break;
@@ -1599,7 +1599,7 @@ void mechrep_Raddspecial(dbref player, void *data, char *buffer)
 	case SPLIT_CRIT_RIGHT:
 		MechSections(mech)[index].criticals[subsect].data--;
 		break;
-	}	
+	}
 	ArmorStringFromIndex(index, location, MechType(mech), MechMove(mech));
 	notify_printf(player, "Critical slot %s (%d) filled.", location, subsect+1);
 }

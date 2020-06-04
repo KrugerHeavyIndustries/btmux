@@ -1,5 +1,5 @@
 /*
- * match.c -- Routines for parsing arguments 
+ * match.c -- Routines for parsing arguments
  */
 
 #include "copyright.h"
@@ -14,22 +14,22 @@
 #include "powers.h"
 
 #define	CON_LOCAL		0x01	/*
-								 * Match is near me 
+								 * Match is near me
 								 */
 #define	CON_TYPE		0x02	/*
-								 * Match is of requested type 
+								 * Match is of requested type
 								 */
 #define	CON_LOCK		0x04	/*
-								 * I pass the lock on match 
+								 * I pass the lock on match
 								 */
 #define	CON_COMPLETE		0x08	/*
-									 * Name given is the full name 
+									 * Name given is the full name
 									 */
 #define	CON_TOKEN		0x10	/*
-								 * Name is a special token 
+								 * Name is a special token
 								 */
 #define	CON_DBREF		0x20	/*
-								 * Name is a dbref 
+								 * Name is a dbref
 								 */
 
 static MSTATE md;
@@ -37,7 +37,7 @@ static MSTATE md;
 static void promote_match(dbref what, int confidence)
 {
 	/*
-	 * Check for type and locks, if requested 
+	 * Check for type and locks, if requested
 	 */
 
 	if(md.pref_type != NOTYPE) {
@@ -48,12 +48,12 @@ static void promote_match(dbref what, int confidence)
 		MSTATE save_md;
 
 		save_match_state(&save_md);
-		if(Good_obj(what) && could_doit(md.player, what, A_LOCK));
-		confidence |= CON_LOCK;
+		if(Good_obj(what) && could_doit(md.player, what, A_LOCK))
+			confidence |= CON_LOCK;
 		restore_match_state(&save_md);
 	}
 	/*
-	 * If nothing matched, take it 
+	 * If nothing matched, take it
 	 */
 
 	if(md.count == 0) {
@@ -63,14 +63,14 @@ static void promote_match(dbref what, int confidence)
 		return;
 	}
 	/*
-	 * If confidence is lower, ignore 
+	 * If confidence is lower, ignore
 	 */
 
 	if(confidence < md.confidence) {
 		return;
 	}
 	/*
-	 * If confidence is higher, replace 
+	 * If confidence is higher, replace
 	 */
 
 	if(confidence > md.confidence) {
@@ -80,7 +80,7 @@ static void promote_match(dbref what, int confidence)
 		return;
 	}
 	/*
-	 * Equal confidence, pick randomly 
+	 * Equal confidence, pick randomly
 	 */
 
 	if(random() % 2) {
@@ -105,7 +105,7 @@ static char *munge_space_for_match(char *name)
 	q = buffer;
 	while (isspace(*p))
 		p++;					/*
-								 * remove inital spaces 
+								 * remove inital spaces
 								 */
 	while (*p) {
 		while (*p && !isspace(*p))
@@ -115,9 +115,9 @@ static char *munge_space_for_match(char *name)
 			*q++ = ' ';
 	}
 	*q = '\0';					/*
-								 * remove terminal spaces and terminate * * * 
-								 * 
-								 * * string 
+								 * remove terminal spaces and terminate * * *
+								 *
+								 * * string
 								 */
 	return (buffer);
 }
@@ -144,7 +144,7 @@ void match_player(void)
 }
 
 /*
- * returns nnn if name = #nnn, else NOTHING 
+ * returns nnn if name = #nnn, else NOTHING
  */
 
 static dbref absolute_name(int need_pound)
@@ -240,10 +240,10 @@ static void match_list(dbref first, int local)
 			return;
 		}
 		/*
-		 * Warning: make sure there are no other calls to Name() in 
+		 * Warning: make sure there are no other calls to Name() in
 		 * promote_match or its called subroutines; they
 		 * would overwrite Name()'s static buffer which is
-		 * needed by string_match(). 
+		 * needed by string_match().
 		 */
 		namebuf = (char *) PureName(first);
 
@@ -420,7 +420,7 @@ dbref match_result(void)
 }
 
 /*
- * use this if you don't care about ambiguity 
+ * use this if you don't care about ambiguity
  */
 
 dbref last_match_result(void)

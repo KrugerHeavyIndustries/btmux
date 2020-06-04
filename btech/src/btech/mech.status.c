@@ -15,6 +15,7 @@
 #include <math.h>
 #include <sys/file.h>
 
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "failures.h"
@@ -472,7 +473,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				(int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
 				(int) (10. * MechMinusHeat(mech)));
 		notify(player, buff);
-		
+
 		if(MechLateral(mech))
 			notify_printf(player, "You are moving laterally %s",
 						  LateralDesc(mech));
@@ -553,7 +554,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 //			notify(player, "  ");
 	}
 	notify(player, "  ");
-	// Show our locked target info (hex or unit).	
+	// Show our locked target info (hex or unit).
 	DisplayTarget(player, mech);
 
 	if(MechCarrying(mech) > 0)
@@ -665,7 +666,7 @@ void mech_status(dbref player, void *data, char *buffer)
 	}
 
 	// Show our heat bar by itself.
-	if(!doinfo && doheat && MechHasHeat(mech)) { 
+	if(!doinfo && doheat && MechHasHeat(mech)) {
 		PrintHeatBar(player, mech);
 	}
 
@@ -783,7 +784,7 @@ char *pos_part_name(MECH * mech, int index, int loop)
 			"Heatsink");
 	}
 
-        if (t == Special(SPLIT_CRIT_RIGHT) || t == Special(SPLIT_CRIT_LEFT)) { 
+        if (t == Special(SPLIT_CRIT_RIGHT) || t == Special(SPLIT_CRIT_LEFT)) {
 	                newindex = ReverseSplitCritLoc(mech, index, loop);
 	                newloop = GetPartData(mech, index, loop);
 	                if (newindex >= 0) {
@@ -906,7 +907,7 @@ char *sectstatus_func(MECH * mech, char *arg)
 	index = ArmorSectionFromString(MechType(mech), MechMove(mech), arg);
 	if(index == -1)
 		return "#-1 INVALID SECTION";
-	
+
 	sprintf(buffer, "%d", SectIsFlooded(mech,index) ? -1 : !(SectIsDestroyed(mech,index)));
 
 	return buffer;
@@ -990,12 +991,12 @@ char *armorstatus_func(MECH * mech, char *arg)
 }
 
 /* weaponstatus_func. Returns a string containing:
-   
+
    <weapon number> | <weapon (long) name> | <number of crits> |
    	<part quality> | <weapon recycle time> | <recycle time left> |
    	<weapon type> | <weapon status>
    [ , <next weapon> ]
-   	
+
    Weapon number is the number of the weapon in this particular 'mech.
    Long weapon name is 'agra.mediumlaser' and such.
    Weapon type is as defined in mech.h:
@@ -1184,7 +1185,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 				if(wFireMode & WILL_JETTISON_MODE)
 					strcat(buffer, " (backpack)");
 
-			if (IsWeapon(type) && (wFireMode & REAR_MOUNT))	
+			if (IsWeapon(type) && (wFireMode & REAR_MOUNT))
 					strcat(buffer, " (R)");
 			if(!PartIsNonfunctional(mech, index, loop)) {
 				if(Special2I(type) == ARTEMIS_IV) {
@@ -1388,7 +1389,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 
 		if(MechSpecials2(mech) & BLOODHOUND_PROBE_TECH)
 			sprintf(tempbuff + strlen(tempbuff), " BloodhoundProbe");
-		
+
 //		if(MechSpecials(mech) & LIGHT_BAP_TECH)
 //			sprintf(tempbuff + strlen(tempbuff), " LightBAP");
 
@@ -1734,7 +1735,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
  *
  * @<loc><char> = Show <char> only if location number <loc> is intact
  *
- * !<loc1><loc2><char> = Show <char> only if location number <loc1> or <loc2> 
+ * !<loc1><loc2><char> = Show <char> only if location number <loc1> or <loc2>
  *                       is intact
  *
  * TODO: Use the same escape character for everything.  Or provide a way to
@@ -1835,7 +1836,7 @@ static const char *const assaultmechdesc =
 
 #else /* WEIGHTVARIABLE_STATUS */
 
-/* 
+/*
   Bipedal BattleMech:
          ( 9)                 (**)                  ( 9)
       /99|99|99\           /99|99|99\            /99|99|99\
@@ -1893,14 +1894,14 @@ static const char *const mwdesc =
   Naval vehicle
 
          FRONT                    INTERNAL
-         ./99\.                    ./99\. 
+         ./99\.                    ./99\.
         |'.--.`|                  |'.--.`|
         |`|99|'|                  |`|99|'|
-        |\`--'/|                  |\`--'/|  
-        |99><99|                  |99><99|  
-        |./||\.|                  |./||\.|  
-        || 99 ||                  || 99 ||  
-         `~~~~'                    `~~~~' 
+        |\`--'/|                  |\`--'/|
+        |99><99|                  |99><99|
+        |./||\.|                  |./||\.|
+        || 99 ||                  || 99 ||
+         `~~~~'                    `~~~~'
 */
 
 static const char *const shipdesc =
@@ -1920,7 +1921,7 @@ static const char *const shipdesc =
          ./\.                       ./\.
       ___|99|___                 ___|99|___
       ---|><|---                 ---|><|---
-        ||99||                     ||99|| 
+        ||99||                     ||99||
      __|99::99|__               __|99::99|__
      --_|'99`|_--               --_|'99`|_--
         `~~~~'                     `~~~~'
@@ -1940,13 +1941,13 @@ static const char *const foildesc =
   Submarine vehicle:
 
         FRONT                     INTERNAL
-         --                         --      
-       =|99|=                     =|99|=    
-       |\__/|                     |\__/|    
-      | |99| |                   | |99| |   
-      |99||99|                   |99||99|   
-       \|--|/                     \|--|/    
-       =|99|=                     =|99|=    
+         --                         --
+       =|99|=                     =|99|=
+       |\__/|                     |\__/|
+      | |99| |                   | |99| |
+      |99||99|                   |99||99|
+       \|--|/                     \|--|/
+       =|99|=                     =|99|=
 */
 
 static const char *const subdesc =
@@ -2005,14 +2006,14 @@ static const char *const spher_ds_desc =
 
 /*
   Aerodine Dropship
-       .--.     
-     ,`.99.'.   
-     |.|__|.|   
-    | | 99 | |  
-    | |:  :| |  
-   |'99|--|99`| 
-   |  .'99`.  | 
-   `|`_\~~/_`|' 
+       .--.
+     ,`.99.'.
+     |.|__|.|
+    | | 99 | |
+    | |:  :| |
+   |'99|--|99`|
+   |  .'99`.  |
+   `|`_\~~/_`|'
 */
 
 static const char *const aerod_ds_desc =
@@ -2068,15 +2069,15 @@ static const char *const veh_not_desc =
 /*
   VTOL
         FRONT                               INTERNAL
-     .   ..   .                            .   ..   .   
-     \\ `__` //                            \\ `__` //   
-      \\.99.//                              \\.99.//    
-     __\\  //__                            __\\  //__   
-    (99|(99)|99)                          (99|(99)|99)  
-    *--|// \\--*                          *--|// \\--*  
-       //99 \\                               //99 \\    
-      //\__/ \\                             //\__/ \\   
-      ~       ~                             ~       ~   
+     .   ..   .                            .   ..   .
+     \\ `__` //                            \\ `__` //
+      \\.99.//                              \\.99.//
+     __\\  //__                            __\\  //__
+    (99|(99)|99)                          (99|(99)|99)
+    *--|// \\--*                          *--|// \\--*
+       //99 \\                               //99 \\
+      //\__/ \\                             //\__/ \\
+      ~       ~                             ~       ~
 */
 
 
@@ -2092,7 +2093,7 @@ static const char *const vtoldesc =
     "7      @5/@5/@3\\@3_@3_@3/ @5\\@5\\                             @5/@5/@3\\@3_@3_@3/ @5\\@5\\   \n"
     "7      @5~       @5~                             @5~       @5~";
 
-/* 
+/*
  Battlesuit
 
  SQUAD STATUS
@@ -2318,7 +2319,7 @@ ArmorKeyInfo(dbref player, int line_key, int owner)
 static char *
 show_armor(MECH *mech, const int loc, const int flag, int width)
 {
-	/* XXX: color_string must be 6 chars or less.  */ 
+	/* XXX: color_string must be 6 chars or less.  */
 	static char fieldbuf[6 + 23 + 2 + 1];
 
 	char *fbp = fieldbuf;

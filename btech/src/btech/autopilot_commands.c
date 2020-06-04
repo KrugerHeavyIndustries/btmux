@@ -15,6 +15,7 @@
  */
 
 #include <math.h>
+#include "glue.h"
 #include "mech.h"
 #include "mech.events.h"
 #include "autopilot.h"
@@ -308,7 +309,7 @@ void auto_set_chasetarget_mode(AUTO * autopilot, int mode)
 
 	case AUTO_CHASETARGET_SAVE:
 
-		/* If we are chasing a target turn this off 
+		/* If we are chasing a target turn this off
 		 * but save it */
 		if(ChasingTarget(autopilot)) {
 
@@ -1076,7 +1077,7 @@ void auto_goto_event(MUXEVENT * e)
 	}
 	free(argument);
 
-	if(MechX(mech) == tx && MechY(mech) == ty && abs(MechSpeed(mech)) < 0.5) {
+	if(MechX(mech) == tx && MechY(mech) == ty && fabs(MechSpeed(mech)) < 0.5) {
 
 		/* We've reached this goal! Time for next one. */
 		ai_set_speed(mech, autopilot, 0);
@@ -1295,7 +1296,7 @@ void auto_dumbgoto_event(MUXEVENT * muxevent)
 	free(argument);
 
 	/* If we're at the target hex - stop */
-	if(MechX(mech) == tx && MechY(mech) == ty && abs(MechSpeed(mech)) < 0.5) {
+	if(MechX(mech) == tx && MechY(mech) == ty && fabs(MechSpeed(mech)) < 0.5) {
 
 		/* We've reached this goal! Time for next one. */
 		ai_set_speed(mech, autopilot, 0);

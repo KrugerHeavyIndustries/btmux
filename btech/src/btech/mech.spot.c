@@ -230,15 +230,15 @@ int FireSpot(dbref player,
 		DOCHECK0(InWater(target) && !(InWater(mech)),"You can't fire into water with that weapon from here.");
 
 		spotTerrain =
-			IsArtillery(weapontype) ? 2 : 1 + AddTerrainMod(spotter,
+			IsArtillery(weapontype) ? 2 : (1 + AddTerrainMod(spotter,
 															target,
 															mech_map,
 															spot_range,
 															0) +
-			AttackMovementMods(spotter) + (Locking(spotter)
+			AttackMovementMods(spotter) + ((Locking(spotter)
 										   && MechTargComp(spotter) !=
 										   TARGCOMP_MULTI)
-			? 2 : 0;
+			? 2 : 0));
 		DOCHECK1(IsArtillery(weapontype) &&
 				 target,
 				 "You can only target hexes with this kind of artillery.");
@@ -282,9 +282,9 @@ int FireSpot(dbref player,
 		FindRange(MechFX(mech), MechFY(mech), MechFZ(mech), enemyX, enemyY,
 				  enemyZ);
 	spotTerrain =
-		IsArtillery(weapontype) ? 2 : 1 + AttackMovementMods(spotter) +
-		(Locking(spotter) && MechTargComp(spotter) != TARGCOMP_MULTI)
-		? 2 : 0;
+		IsArtillery(weapontype) ? 2 : (1 + AttackMovementMods(spotter) +
+		((Locking(spotter) && MechTargComp(spotter) != TARGCOMP_MULTI)
+		? 2 : 0));
 	FireWeapon(mech, mech_map, target, 0, weapontype, weaponnum, section,
 			   critical, enemyX, enemyY, mapx, mapy, range, spotTerrain,
 			   sight, 2);

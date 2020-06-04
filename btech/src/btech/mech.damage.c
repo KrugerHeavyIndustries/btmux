@@ -28,7 +28,9 @@
 #include "p.mech.ood.h"
 #include "p.mech.utils.h"
 #include "p.mech.pickup.h"
+#include "p.mech.update.h"
 #include "p.pcombat.h"
+#include "p.mechrep.h"
 
 static char *MyColorStrings[] = {
 	"", "%ch%cg", "%ch%cy", "%cr"
@@ -130,7 +132,7 @@ int cause_armordamage(MECH * wounded,
 
 		/* Silly stuff */
 		/*
-		   SetSectArmor(wounded, hitloc, MAX(0, intDamage =  
+		   SetSectArmor(wounded, hitloc, MAX(0, intDamage =
 		   GetSectArmor(wounded, hitloc) - damage));
 		   intDamage = abs(intDamage);
 		 */
@@ -378,7 +380,7 @@ void DamageMech(MECH * wounded,
 /* Rare case something passes through. We're in WEAPONS_HOLD. Don't even allow it */
 	if( MechStatus2(attacker) & WEAPONS_HOLD) {
 		if(wounded != attacker)
-			mech_notify(attacker, MECHALL, 
+			mech_notify(attacker, MECHALL,
 						"You are currently in weapons hold!");
 	}
 
@@ -575,7 +577,7 @@ void DamageMech(MECH * wounded,
 				damage + (intDamage < 0 ? 0 : intDamage));
 
 	/* Only count initial damage. Transfer is just gonna do that, transfer, not damage again */
-	if (!was_transfer) {	
+	if (!was_transfer) {
 		if(attacker != wounded)
 			MechDamageInflicted(attacker) = MechDamageInflicted(attacker) + damage + (intDamage < 0 ? 0 : intDamage);
 		MechDamageTaken(wounded) = MechDamageTaken(wounded) + damage + (intDamage < 0 ? 0 : intDamage);
@@ -591,7 +593,7 @@ void DamageMech(MECH * wounded,
 						"%%cgDamage transfer.. %s%%c", notificationBuff);
 	}
 	if(MechType(wounded) == CLASS_MW && !was_transfer)
-		if(damage > 0) 
+		if(damage > 0)
 			if(!(damage =
 				 armor_effect(wounded, cause, hitloc, damage, intDamage)))
 				return;
@@ -605,7 +607,7 @@ void DamageMech(MECH * wounded,
 		  // So now that stagger isn't completely retarded, here's how it works
 		  // you take damage and every point of damage gets added to a linked list in the
 		  // mech struct's RS object (mech->rd). This damage is a linked list, and each node
-		  // contains the time of the damage, the amount, the attacker's dbref and a link to 
+		  // contains the time of the damage, the amount, the attacker's dbref and a link to
 		  // the next damage. if the node->next is NULL, you're at the end of the list.
 
 
@@ -794,7 +796,7 @@ void DamageMech(MECH * wounded,
 	if(wWeapIndx > 0) {
 		if(strstr(MechWeapons[wWeapIndx].name, "IS.PlasmaRifle")) {
 			if(MechType(wounded) == CLASS_MECH)
-				Plasma_Hit(attacker, wounded, LOS);	
+				Plasma_Hit(attacker, wounded, LOS);
 		}
 	}
 	/* Check to see if we blow up ammo that's dumping. */
@@ -928,7 +930,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 				   && (MechIsQuad(wounded))));
 	dbref wounded_pilot = MechPilot(wounded);
 	MECH *ttarget;
-	
+
 	/* Prevent the rare occurance of a section getting destroyed twice */
 	if(SectIsDestroyed(wounded, hitloc)) {
 		fprintf(stderr, "Double-desting section %d on mech #%ld\n",
@@ -954,7 +956,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 
 	/* uncycle the section <in the case of an arm/leg that was kicking getting blown */
 	SetRecycleLimb(wounded, hitloc, 0);
-	
+
 	/* drop off what we were carrying, since we really can't pick it up with one arm */
 	if((hitloc == RARM || hitloc == LARM)) {
 		if(MechCarrying(wounded) > 0) {
@@ -964,7 +966,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 			}
 		}
 	}
-		
+
 	/* Tell the attacker about it... */
 	if(attacker) {
 		ArmorStringFromIndex(hitloc, locname, MechType(wounded),
@@ -1031,15 +1033,17 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 		else if(hitloc == RTORSO)
 			DestroySection(wounded, attacker, LOS, RARM);
 		else if(hitloc == CTORSO || hitloc == HEAD) {
-			if(!Destroyed(wounded))
-				if(hitloc == HEAD)
+			if(!Destroyed(wounded)) {
+				if(hitloc == HEAD) {
 					if(MechAim(attacker) == HEAD) {
 						DestroyMech(wounded, attacker, 1, KILL_TYPE_HEAD_TARGET);
 					} else {
 						DestroyMech(wounded, attacker, 1, KILL_TYPE_BEHEADED);
 					}
-				else
+				} else {
 					DestroyMech(wounded, attacker, 1, KILL_TYPE_NORMAL);
+				}
+			}
 			/* If it's the head or a MW's CT, kill the contents if IC */
 			if(hitloc == HEAD || ((MechType(wounded) == CLASS_MW) &&
 								  (hitloc == CTORSO))) {
@@ -1210,7 +1214,7 @@ void mech_damage_section(dbref player, MECH * mech, char *buffer)
 		invalid_section(player, mech);
 		return;
 	}
-	
+
 	DOCHECK(Readnum(damage, args[1]), "Invalid damage (Arg 2) amount! (Must be a number!)");
 	DOCHECK(Readnum(isrear, args[2]), "Isrear value (Arg 3) Invalid! (1 or 0)");
 	DOCHECK(Readnum(iscritical, args[3]), "Iscritical value (Arg 4) Invalid! (1 or 0)");

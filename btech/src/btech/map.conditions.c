@@ -26,6 +26,7 @@
 #include "p.eject.h"
 #include "p.mech.sensor.h"
 #include "p.crit.h"
+#include "p.mech.ecm.h"
 
 void alter_conditions(MAP * map)
 {
@@ -246,7 +247,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 						}
 						//check_stackpole(wounded, attacker);
 
-						if(mudconf.btech_stackpole && 
+						if(mudconf.btech_stackpole &&
 								(MechBoomStart(wounded) + MAX_BOOM_TIME) >= muxevent_tick &&
 								Roll() >= BOOM_BTH && (Started(wounded) || Starting(wounded))) {
 
@@ -255,14 +256,14 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 									"releasing the fusion reaction!%cn");
 
 
-							reactor_explosion(wounded, attacker);	
+							reactor_explosion(wounded, attacker);
 						}
 
-						if((MechType(wounded) == CLASS_MECH) && 
-								(hitloc == LTORSO || hitloc == RTORSO) && (MechSpecials(wounded) && XL_TECH))
-						        DestroyMech(wounded, attacker, 1, 
-										(wounded == attacker) 
-										? KILL_TYPE_SELF_DESTRUCT 
+						if((MechType(wounded) == CLASS_MECH) &&
+								(hitloc == LTORSO || hitloc == RTORSO) && (MechSpecials(wounded) & XL_TECH))
+						        DestroyMech(wounded, attacker, 1,
+										(wounded == attacker)
+										? KILL_TYPE_SELF_DESTRUCT
 										: KILL_TYPE_XLENGINE);
 						else
 							DestroyMech(wounded, attacker, 1,
@@ -281,7 +282,7 @@ void DestroyParts(MECH * attacker, MECH * wounded, int hitloc, int breach,
 					}
 					break;
 				case TARGETING_COMPUTER:
-					if(!MechCritStatus(wounded) & TC_DESTROYED) {
+					if(!(MechCritStatus(wounded) & TC_DESTROYED)) {
 						if(attacker)
 							mech_notify(wounded, MECHALL,
 										"Your Targeting Computer is Destroyed");

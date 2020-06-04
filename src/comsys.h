@@ -53,6 +53,8 @@ int max_channels;
 
 /* some extern functions. */
 extern int In_IC_Loc(dbref player);
+extern void do_joinchannel(dbref, struct channel *);
+extern void sort_users(struct channel *);
 
 #define CHANNEL_JOIN		0x001
 #define CHANNEL_TRANSMIT	0x002

@@ -259,7 +259,7 @@ void mech_enterbay(dbref player, void *data, char *buffer)
 			"Speed difference's too large to enter!");
 	DOCHECK(MechZ(ds) != MechZ(mech),
 			"Get to same elevation before thinking about entering!");
-	DOCHECK(abs(MechVerticalSpeed(mech) - MechVerticalSpeed(ds)) > 10,
+	DOCHECK(fabs(MechVerticalSpeed(mech) - MechVerticalSpeed(ds)) > 10,
 			"Vertical speed difference is too great to enter safely!");
 	DOCHECK(MechType(mech) == CLASS_MECH && !MechIsQuad(mech) &&
 			(IsMechLegLess(mech)), "Without legs? Are you kidding?");
