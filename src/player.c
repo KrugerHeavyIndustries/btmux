@@ -1,6 +1,6 @@
 
 /*
- * player.c 
+ * player.c
  */
 
 #include "copyright.h"
@@ -17,10 +17,10 @@
 #include "command.h"
 
 #define	NUM_GOOD	4			/*
-								 * # of successful logins to save data for 
+								 * # of successful logins to save data for
 								 */
 #define NUM_BAD		3			/*
-								 * # of failed logins to save data for 
+								 * # of failed logins to save data for
 								 */
 
 typedef struct hostdtm HOSTDTM;
@@ -100,9 +100,9 @@ static void encrypt_logindata(char *atrbuf, LDATA * info)
 	int i;
 
 	/*
-	 * Make sure the SPRINTF call tracks NUM_GOOD and NUM_BAD for the * * 
-	 * 
-	 * *  * * number of host/dtm pairs of each type. 
+	 * Make sure the SPRINTF call tracks NUM_GOOD and NUM_BAD for the * *
+	 *
+	 * *  * * number of host/dtm pairs of each type.
 	 */
 
 	nullc = '\0';
@@ -212,7 +212,7 @@ int check_pass(dbref player, const char *password)
 
 	/*
 	 * This is needed to prevent entering the raw encrypted password from
-	 * working. Do it better if you like, but it's needed. 
+	 * working. Do it better if you like, but it's needed.
 	 *
 	 * Not really, you should just not really allow unencrypted passwords.
 	 * -Hag
@@ -250,7 +250,7 @@ dbref connect_player(char *name, char *password, char *host, char *username)
 	time_str[strlen(time_str) - 1] = '\0';
 
 	/*
-	 * compare to last connect see if player gets salary 
+	 * compare to last connect see if player gets salary
 	 */
 	player_last = atr_get(player, A_LAST, &aowner, &aflags);
 	if(strncmp(player_last, time_str, 10) != 0) {
@@ -276,7 +276,7 @@ dbref create_player(char *name, char *password, dbref creator, int isrobot,
 	char *pbuf;
 
 	/*
-	 * Make sure the password is OK.  Name is checked in create_obj 
+	 * Make sure the password is OK.  Name is checked in create_obj
 	 */
 
 	pbuf = trim_spaces(password);
@@ -285,7 +285,7 @@ dbref create_player(char *name, char *password, dbref creator, int isrobot,
 		return NOTHING;
 	}
 	/*
-	 * If so, go create him 
+	 * If so, go create him
 	 */
 
 	player = create_obj(creator, TYPE_PLAYER, name, isrobot);
@@ -294,7 +294,7 @@ dbref create_player(char *name, char *password, dbref creator, int isrobot,
 		return NOTHING;
 	}
 	/*
-	 * initialize everything 
+	 * initialize everything
 	 */
 	if(isguest) {
 		if(*mudconf.guests_channel)
@@ -393,7 +393,7 @@ int add_player_name(dbref player, char *name)
 	char *temp, *tp;
 
 	/*
-	 * Convert to all lowercase 
+	 * Convert to all lowercase
 	 */
 
 	tp = temp = alloc_lbuf("add_player_name");
@@ -409,7 +409,7 @@ int add_player_name(dbref player, char *name)
 		 * Entry found in the hashtable.  If a player, succeed if the
 		 * * * numbers match (already correctly in the hash table),
 		 * fail * * if they don't.  Fail if the name is a disallowed
-		 * name * * (value AMBIGUOUS). 
+		 * name * * (value AMBIGUOUS).
 		 */
 
 		if(*p == AMBIGUOUS) {
@@ -425,16 +425,16 @@ int add_player_name(dbref player, char *name)
 			}
 		}
 		/*
-		 * It's an alias (or an incorrect entry).  Clobber it 
+		 * It's an alias (or an incorrect entry).  Clobber it
 		 */
 		free(p);
-		p = (dbref *) malloc(sizeof(int));
+		p = (dbref *) malloc(sizeof(dbref));
 
 		*p = player;
 		stat = hashrepl(temp, p, &mudstate.player_htab);
 		free_lbuf(temp);
 	} else {
-		p = (dbref *) malloc(sizeof(int));
+		p = (dbref *) malloc(sizeof(dbref));
 
 		*p = player;
 		stat = hashadd(temp, p, &mudstate.player_htab);
@@ -539,7 +539,7 @@ void badname_add(char *bad_name)
 	BADNAME *bp;
 
 	/*
-	 * Make a new node and link it in at the top 
+	 * Make a new node and link it in at the top
 	 */
 
 	bp = (BADNAME *) XMALLOC(sizeof(BADNAME), "badname.struc");
@@ -554,7 +554,7 @@ void badname_remove(char *bad_name)
 	BADNAME *bp, *backp;
 
 	/*
-	 * Look for an exact match on the bad name and remove if found 
+	 * Look for an exact match on the bad name and remove if found
 	 */
 
 	backp = NULL;
@@ -576,10 +576,10 @@ int badname_check(char *bad_name)
 	BADNAME *bp;
 
 	/*
-	 * Walk the badname list, doing wildcard matching.  If we get a hit * 
-	 * 
+	 * Walk the badname list, doing wildcard matching.  If we get a hit *
+	 *
 	 * *  * *  * * then return false.  If no matches in the list, return
-	 * true.  
+	 * true.
 	 */
 
 	for(bp = mudstate.badname_head; bp; bp = bp->next) {
@@ -595,7 +595,7 @@ void badname_list(dbref player, const char *prefix)
 	char *buff, *bufp;
 
 	/*
-	 * Construct an lbuf with all the names separated by spaces 
+	 * Construct an lbuf with all the names separated by spaces
 	 */
 
 	buff = bufp = alloc_lbuf("badname_list");
@@ -607,7 +607,7 @@ void badname_list(dbref player, const char *prefix)
 	*bufp = '\0';
 
 	/*
-	 * Now display it 
+	 * Now display it
 	 */
 
 	notify(player, buff);
