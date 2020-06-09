@@ -352,7 +352,7 @@ protected:
 	// Convenience method for adding static entries.  A pointer to the
 	// allocated memory is returned, which the caller is responsible for
 	// deallocating when the table is no longer needed.  For the intended
-	// use of allocating static entries, a static auto_ptr is probably a
+	// use of allocating static entries, a static unique_ptr is probably a
 	// good way of handling it.
 	TypedEntry *addStaticEntry (FI_VocabIndex idx, const_reference value) {
 		if (findEntry(value)) {
@@ -366,7 +366,7 @@ protected:
 		pool_ptr.metadata() = entry;
 
 		if ((base_idx + vocabulary.size()) != idx
-		    || acquireIndex(entry) != idx) {  
+		    || acquireIndex(entry) != idx) {
 			throw AssertionFailureException ();
 		}
 

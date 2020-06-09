@@ -16,10 +16,9 @@
 #include "Value.hh"
 #include "Serializable.hh"
 
-// Use auto_ptr to avoid memory leak warnings from valgrind & friends.
-using std::auto_ptr;
+// Use unique_ptr to avoid memory leak warnings from valgrind & friends.
+using std::unique_ptr;
 
-
 namespace BTech {
 namespace FI {
 
@@ -49,7 +48,7 @@ DV_VocabTable::DV_VocabTable(bool read_only, FI_VocabIndex max_idx)
 	last_idx = -1;
 
 	// Add built-in values.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_0 (addStaticEntry (FI_VOCAB_INDEX_NULL, Value ()));
 }
 

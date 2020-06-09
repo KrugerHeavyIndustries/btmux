@@ -14,9 +14,9 @@
 #include "Exception.hh"
 #include "VocabSimple.hh"
 
-
-// Use auto_ptr to avoid memory leak warnings from valgrind & friends.
-using std::auto_ptr;
+
+// Use unique_ptr to avoid memory leak warnings from valgrind & friends.
+using std::unique_ptr;
 
 namespace BTech {
 namespace FI {
@@ -110,10 +110,10 @@ RA_VocabTable::RA_VocabTable(bool read_only, FI_VocabIndex max_idx)
 : DynamicTypedVocabTable<value_type> (true, max_idx)
 {
 	// Add built-in restricted alphabets.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_1 (addStaticEntry(FI_RA_NUMERIC, "0123456789-+.e "));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_2 (addStaticEntry(FI_RA_DATE_AND_TIME, "012345789-:TZ "));
 
 	// Up to 15 reserved for built-in (7.2.19).
@@ -160,34 +160,34 @@ EA_VocabTable::EA_VocabTable(bool read_only, FI_VocabIndex max_idx)
 : TypedVocabTable<value_type> (true, max_idx)
 {
 	// Add built-in encoding algorithms.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_1 (addStaticEntry(FI_EA_HEXADECIMAL, &fi_ea_hexadecimal));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_2 (addStaticEntry(FI_EA_BASE64, &fi_ea_base64));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_3 (addStaticEntry(FI_EA_SHORT, &fi_ea_short));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_4 (addStaticEntry(FI_EA_INT, &fi_ea_int));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_5 (addStaticEntry(FI_EA_LONG, &fi_ea_long));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_6 (addStaticEntry(FI_EA_BOOLEAN, &fi_ea_boolean));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_7 (addStaticEntry(FI_EA_FLOAT, &fi_ea_float));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_8 (addStaticEntry(FI_EA_DOUBLE, &fi_ea_double));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_9 (addStaticEntry(FI_EA_UUID, &fi_ea_uuid));
 
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_10 (addStaticEntry(FI_EA_CDATA, &fi_ea_cdata));
 
 	// Up to 31 reserved for built-in (7.2.20).
@@ -230,7 +230,7 @@ DS_VocabTable::DS_VocabTable(bool read_only, FI_VocabIndex max_idx)
 	last_idx = -1;
 
 	// Add built-in strings.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_0 (addStaticEntry(FI_VOCAB_INDEX_NULL, ""));
 }
 
@@ -263,7 +263,7 @@ PFX_DS_VocabTable::PFX_DS_VocabTable(bool read_only, FI_VocabIndex idx)
 : DS_VocabTable (0)
 {
 	// Add built-in prefix strings.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_1 (addStaticEntry(FI_PFX_XML, "xml"));
 }
 
@@ -290,7 +290,7 @@ NSN_DS_VocabTable::NSN_DS_VocabTable(bool read_only, FI_VocabIndex max_idx)
 : DS_VocabTable (0)
 {
 	// Add built-in namespace name strings.
-	static auto_ptr<Entry>
+	static unique_ptr<Entry>
 	entry_1 (addStaticEntry(FI_NSN_XML,
 	                        "http://www.w3.org/XML/1998/namespace"));
 }
