@@ -15,6 +15,8 @@
 
 #include "commac.h"
 
+struct commac *commac_table[NUM_COMMAC];
+
 extern void load_comsystem(FILE *);
 extern void load_macros(FILE *);
 extern void save_comsystem(FILE *);

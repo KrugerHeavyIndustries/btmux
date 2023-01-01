@@ -22,7 +22,7 @@ struct commac {
 
 #define NUM_COMMAC 500
 
-struct commac *commac_table[NUM_COMMAC];
+extern struct commac *commac_table[NUM_COMMAC];
 
 void load_commac();
 void save_commac();

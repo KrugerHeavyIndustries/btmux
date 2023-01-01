@@ -21,6 +21,9 @@
 #include "p.functions.h"
 #include "create.h"
 
+int num_channels;
+int max_channels;
+
 /* Static functions */
 static void do_save_com(chmsg *);
 static void do_show_com(chmsg *);

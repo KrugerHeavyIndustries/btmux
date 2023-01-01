@@ -48,8 +48,8 @@ typedef struct {
     char *msg;
 } chmsg;
 
-int num_channels;
-int max_channels;
+extern int num_channels;
+extern int max_channels;
 
 /* some extern functions. */
 extern int In_IC_Loc(dbref player);
