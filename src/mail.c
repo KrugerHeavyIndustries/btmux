@@ -1824,7 +1824,7 @@ static int mail_match(struct mail *mp, struct mail_selector ms, int num)
 		msgtimestr = alloc_lbuf("mail_match");
 		StringCopy(msgtimestr, mp->time);
 		if(do_convtime(msgtimestr, msgtm)) {
-			msgtime = timelocal(msgtm);
+			msgtime = mktime(msgtm);
 			free(msgtm);
 			diffdays = (now - msgtime) / 86400;
 			free_lbuf(msgtimestr);
@@ -2114,7 +2114,7 @@ void check_mail_expiration()
 
 	MAIL_ITER_SAFE(mp, thing, nextp) {
 		if(do_convtime((char *) mp->time, &then_tm)) {
-			then = timelocal(&then_tm);
+			then = mktime(&then_tm);
 			if(((now - then) > expire_secs) && !(M_Safe(mp))) {
 				/*
 				 * Delete this one

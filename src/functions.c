@@ -874,7 +874,7 @@ static void fun_convtime(char *buff, char **bufc, dbref player, dbref cause,
 
 	ttm = localtime(&mudstate.now);
 	if(do_convtime(fargs[0], ttm))
-		safe_tprintf_str(buff, bufc, "%d", timelocal(ttm));
+		safe_tprintf_str(buff, bufc, "%d", mktime(ttm));
 	else
 		safe_str("-1", buff, bufc);
 }
