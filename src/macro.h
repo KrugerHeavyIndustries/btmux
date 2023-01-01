@@ -37,9 +37,9 @@ struct macros {
     char **string;		/* at most a 4 letter alias                       */
 };
 
-int nummacros;
-int maxmacros;
-struct macros **macros;
+extern int nummacros;
+extern int maxmacros;
+extern struct macros **macros;
 
 struct macros *get_macro_set();
 int can_write_macros();
