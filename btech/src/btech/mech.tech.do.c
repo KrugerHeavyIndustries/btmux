@@ -319,10 +319,14 @@ TFUNC_LOCPOS(repair_econ)
 {
 	if(IsAmmo(GetPartType(mech, loc, part)))
 		return 0;
-	PARTCHECKTWO(mech, Cargo(S_ELECTRONIC), 0, PartIsDestroyed(mech, loc,
-															   part) ? 3 : 1,
-				 ProperInternal(mech), 0, PartIsDestroyed(mech, loc,
-														  part) ? 3 : 1);
+	int destroyed = PartIsDestroyed(mech, loc, part) ? 3 : 1;
+	PARTCHECKTWO(mech,
+		     Cargo(S_ELECTRONIC),
+		     0,
+		     destroyed,
+		     ProperInternal(mech),
+		     0,
+		     destroyed);
 	return 0;
 }
 
