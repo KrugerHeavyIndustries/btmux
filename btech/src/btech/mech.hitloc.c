@@ -1372,7 +1372,8 @@ int FindFasaHitLocation(MECH * mech, int hitGroup, int *iscritical,
 void DoMotiveSystemHit(MECH * mech, int wRollMod)
 {
 	int wRoll;
-	char strVhlTypeName[30];
+	const char MAX_LEN = 64;
+	char strVhlTypeName[64];
 
 	wRoll = Roll() + wRollMod;
 
@@ -1396,10 +1397,10 @@ void DoMotiveSystemHit(MECH * mech, int wRollMod)
 		wRoll += 4;
 		break;
 	case MOVE_SUB:
-		strcpy(strVhlTypeName, "submarine");
+		strncpy(strVhlTypeName, "submarine", MAX_LEN);
 		break;
 	default:
-		strcpy(strVhlTypeName, "weird unidentifiable toy (warn a wizard!)");
+		strncpy(strVhlTypeName, "weird unidentifiable toy (warn a wizard!)", MAX_LEN);
 		break;
 	}
 

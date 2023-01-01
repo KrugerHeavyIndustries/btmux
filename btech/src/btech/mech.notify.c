@@ -650,16 +650,16 @@ static char *ccode(MECH * m, int i, int obs, int team)
 			return buf;
 		};
 		if(t < 9) {
-			sprintf(buf, "%%c%c", radio_colorstr[t - 1]);
+			snprintf(buf, sizeof(buf), "%%c%c", radio_colorstr[t - 1]);
 			return buf;
 		}
-		sprintf(buf, "%%ch%%c%c", ToLower(radio_colorstr[t - 1]));
+		snprintf(buf, sizeof(buf), "%%ch%%c%c", ToLower(radio_colorstr[t - 1]));
 	} else {
 		if (team > 15)
 			team = team % 15;
 		for(ii = 0; ii < 15; ii++) {
 			if(team == obs_team_color[ii].team)
-				sprintf(buf, "%s", obs_team_color[ii].ccode);
+				snprintf(buf, sizeof(buf), "%s", obs_team_color[ii].ccode);
 		}
 	}
 	return buf;
