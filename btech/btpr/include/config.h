@@ -14,11 +14,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef STDC_HEADERS
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 
 #include "debug.h"
 
