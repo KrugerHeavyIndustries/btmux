@@ -1552,8 +1552,8 @@ void do_use(dbref player, dbref cause, int key, char *object)
 	if(doit) {
 		df_use = alloc_lbuf("do_use.use");
 		df_ouse = alloc_lbuf("do_use.ouse");
-		sprintf(df_use, "You use %s", Name(thing));
-		sprintf(df_ouse, "uses %s", Name(thing));
+		snprintf(df_use, LBUF_SIZE, "You use %s", Name(thing));
+		snprintf(df_ouse, LBUF_SIZE, "uses %s", Name(thing));
 		did_it(player, thing, A_USE, df_use, A_OUSE, df_ouse, A_AUSE,
 			   (char **) NULL, 0);
 		free_lbuf(df_use);

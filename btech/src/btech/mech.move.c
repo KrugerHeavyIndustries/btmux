@@ -956,7 +956,8 @@ void mech_speed(dbref player, void *data, char *buffer)
 void mech_vertical(dbref player, void *data, char *buffer)
 {
 	MECH *mech = (MECH *) data;
-	char *args[1], buff[50];
+	char *args[1];
+	char buff[50] = { 0 };
 	float newspeed, maxspeed;
 
 	cch(MECH_USUAL);
@@ -977,7 +978,7 @@ void mech_vertical(dbref player, void *data, char *buffer)
 		sqrt((float) maxspeed * maxspeed -
 			 MechDesiredSpeed(mech) * MechDesiredSpeed(mech));
 	if((newspeed > maxspeed) || (newspeed < -maxspeed)) {
-		sprintf(buff, "Max vertical speed is + %d KPH and - %d KPH",
+		snprintf(buff, sizeof(buff), "Max vertical speed is + %d KPH and - %d KPH",
 				(int) maxspeed, (int) maxspeed);
 		notify(player, buff);
 	} else {

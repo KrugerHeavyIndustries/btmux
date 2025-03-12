@@ -78,14 +78,14 @@ void Missile_Hit(MECH * mech,
 		strcpy(buf, "");
 
 		if(IsMissile(weapindx))
-			sprintf(buf, "%s%s", "missile", orig_num_missiles > 1 ? "s" : "");
+			snprintf(buf, SBUF_SIZE, "%s%s", "missile", orig_num_missiles > 1 ? "s" : "");
 		else if(ammoMode & LBX_MODE)
-			sprintf(buf, "%s%s", "pellet", orig_num_missiles > 1 ? "s" : "");
+			snprintf(buf, SBUF_SIZE, "%s%s", "pellet", orig_num_missiles > 1 ? "s" : "");
 		else if((fireMode & ULTRA_MODE) || (fireMode & RFAC_MODE) ||
 				(fireMode & RAC_MODES))
-			sprintf(buf, "%s%s", "slug", orig_num_missiles > 1 ? "s" : "");
+			snprintf(buf, SBUF_SIZE, "%s%s", "slug", orig_num_missiles > 1 ? "s" : "");
 		else
-			sprintf(buf, "%s", "damage");
+			snprintf(buf, SBUF_SIZE, "%s", "damage");
 
 		mech_printf(mech, MECHALL,
 					"%s %s %s absorbed by the trees!",

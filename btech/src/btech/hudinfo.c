@@ -184,40 +184,41 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 							  char *args)
 {
 	static char response[LBUF_SIZE];
-	char fuel[15];
-	char tstat[5];
-	char jumpx[8], jumpy[8];
+	char fuel[15] = { 0 };
+	char tstat[5] = { 0 };
+	char jumpx[8] = { 0 };
+       	char jumpy[8]=  { 0 };
 	int btc;
 	float rtc;
 	MECH *t;
 //	char *targetID = alloc_sbuf("targetID");;
-	char myID[LBUF_SIZE];
+	char myID[LBUF_SIZE] = { 0 };
 
 	if(FlyingT(mech) && !AeroFreeFuel(mech))
-		sprintf(fuel, "%d", AeroFuel(mech));
+		snprintf(fuel, sizeof(fuel), "%d", AeroFuel(mech));
 	else
-		strcpy(fuel, "-");
+		strncpy(fuel, "-", sizeof(fuel));
 
 	if(MechHasTurret(mech))
-		sprintf(tstat, "%d", AcceptableDegree(MechTurretFacing(mech)) - 180);
+		snprintf(tstat, sizeof(tstat), "%d", AcceptableDegree(MechTurretFacing(mech)) - 180);
 	else if((MechType(mech) == CLASS_MECH && !MechIsQuad(mech)) ||
 			MechType(mech) == CLASS_MW)
-		sprintf(tstat, "%d",
+		snprintf(tstat, sizeof(tstat), "%d",
 				MechStatus(mech) & TORSO_LEFT ? -60 : MechStatus(mech) &
 				TORSO_RIGHT ? 60 : 0);
 	else
 		strcpy(tstat, "-");
 
 	if(Jumping(mech)) {
-		snprintf(jumpx, 8, "%d", MechGoingX(mech));
-		snprintf(jumpy, 8, "%d", MechGoingY(mech));
+		snprintf(jumpx, sizeof(jumpx), "%d", MechGoingX(mech));
+		snprintf(jumpy, sizeof(jumpy), "%d", MechGoingY(mech));
 	} else {
 		strcpy(jumpx, "-");
 		strcpy(jumpy, "-");
 	};
 
 	FindRangeAndBearingToCenter(mech, &rtc, &btc);
-	snprintf(myID,LBUF_SIZE,"%c%c",MechID(mech)[0],MechID(mech)[1]);
+	snprintf(myID, LBUF_SIZE, "%c%c", MechID(mech)[0], MechID(mech)[1]);
 
 //	t = getMech(MechTarget(mech));
 //	if(Hardcode(MechTarget(mech))) {
@@ -231,7 +232,7 @@ static void hud_generalstatus(DESC * d, MECH * mech, char *msgclass,
 //	}
 
 
-	sprintf(response,
+	snprintf(response, LBUF_SIZE,
 			"%s,%d,%d,%d,%d,%d,%.2f,%.2f,%d,%d,%s,%.2f,%.2f,%.3f,%d,%s,%s,%s,%s,%s",
 			myID, MechX(mech), MechY(mech), MechZ(mech),
 			MechFacing(mech), MechDesiredFacing(mech),
@@ -271,7 +272,7 @@ static char *hud_getweaponstatus(MECH * mech, int sect, int crit, int data)
 	if(GetPartFireMode(mech, sect, crit) & IS_JETTISONED_MODE)
 		return "j";
 	if(data) {
-		sprintf(wstatus, "%d", data / WEAPON_TICK);
+		snprintf(wstatus, sizeof(wstatus), "%d", data / WEAPON_TICK);
 		return wstatus;
 	}
 	return "R";
@@ -402,7 +403,7 @@ static void hud_weapons(DESC * d, MECH * mech, char *msgclass, char *args)
 			continue;
 		for(i = 0; i < weapcount; i++) {
 			weapnum++;
-			sprintf(response, "%d,%d,%d,%s%s,%s,%s,%s",
+			snprintf(response, LBUF_SIZE, "%d,%d,%d,%s%s,%s,%s,%s",
 					weapnum,
 					weaparray[i],
 					GetPartBrand(mech, sect, critical[i]),
@@ -515,7 +516,7 @@ static void hud_weaponlist(DESC * d, MECH * mech, char *msgclass, char *args)
 	char firemodes[30] = "";
 	char ammomodes[20] = "";
 	char damagetype[10] = "";
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 	struct weapon_struct *w;
 
 	for(i = 0; i < num_def_weapons; i++) {
@@ -529,7 +530,7 @@ static void hud_weaponlist(DESC * d, MECH * mech, char *msgclass, char *args)
 			strcat(ammomodes, "-");
 
 		w = &MechWeapons[i];
-		sprintf(response,
+		snprintf(response, LBUF_SIZE,
 				"%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%s,%s,%s,%d", i,
 				w->name, w->min, w->shortrange, w->medrange, w->longrange,
 				w->min_water, w->shortrange_water, w->medrange_water,
@@ -553,15 +554,15 @@ static void hud_limbstatus(DESC * d, MECH * mech, char *msgclass, char *args)
 		for(; todo >= 0; todo--) {
 			char *sect = ShortArmorSectionString(MechType(mech),
 												 MechMove(mech), locs[todo]);
-			char status[10];
+			char status[10] = { 0 };
 
 			if(SectIsDestroyed(mech, locs[todo]))
 				strcpy(status, "*");
 			else if(MechSections(mech)[locs[todo]].recycle > 0)
-				sprintf(status, "%d",
+				snprintf(status, sizeof(status), "%d",
 						MechSections(mech)[locs[todo]].recycle / WEAPON_TICK);
 			else
-				strcpy(status, "R");
+				strncpy(status, "R", sizeof(status));
 
 			hudinfo_notify(d, msgclass, "L", tprintf("%s,%s", sect, status));
 		}
@@ -576,12 +577,12 @@ static void hud_ammostatus(DESC * d, MECH * mech, char *msgclass, char *args)
 	unsigned short maxamm[8 * MAX_WEAPS_SECTION];
 	unsigned int ammomode[8 * MAX_WEAPS_SECTION];
 	int i, ammonum;
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 
 	ammonum = FindAmmunition(mech, weapnums, curamm, maxamm, ammomode, 1);
 
 	for(i = 0; i < ammonum; i++) {
-		sprintf(response, "%d,%d,%s,%d,%d", i, weapnums[i],
+		snprintf(response, LBUF_SIZE, "%d,%d,%s,%d,%d", i, weapnums[i],
 				hud_getammomode(mech, ammomode[i]), curamm[i], maxamm[i]);
 		hudinfo_notify(d, msgclass, "L", response);
 	}
@@ -738,15 +739,15 @@ static char *hud_advtech(MECH * mech)
 static void hud_templateinfo(DESC * d, MECH * mech, char *msgclass,
 							 char *args)
 {
-	char response[LBUF_SIZE];
-	char fuel[20];
+	char response[LBUF_SIZE] = { 0 };
+	char fuel[20] = { 0 };
 
 	if(FlyingT(mech) && AeroFuelOrig(mech))
-		sprintf(fuel, "%d", AeroFuelOrig(mech));
+		snprintf(fuel, sizeof(fuel), "%d", AeroFuelOrig(mech));
 	else
-		strcpy(fuel, "-");
+		strncpy(fuel, "-", sizeof(fuel));
 
-	sprintf(response, "%c,%s,%s,%.3f,%.3f,%.3f,%.3f,%s,%d,%s",
+	snprintf(response, LBUF_SIZE, "%c,%s,%s,%.3f,%.3f,%.3f,%.3f,%s,%d,%s",
 			hud_typechar(mech), MechType_Ref(mech), MechType_Name(mech),
 			WalkingSpeed(MaxSettableSpeed(mech)), MaxSettableSpeed(mech),
 			-WalkingSpeed(MaxSettableSpeed(mech)),
@@ -758,12 +759,12 @@ static void hud_templateinfo(DESC * d, MECH * mech, char *msgclass,
 static void hud_templatearmor(DESC * d, MECH * mech, char *msgclass,
 							  char *args)
 {
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 	int sect;
 
 	for(sect = 0; sect < NUM_SECTIONS; sect++) {
 		if(GetSectOInt(mech, sect)) {
-			sprintf(response, "%s,%d,%d,%d",
+			snprintf(response, LBUF_SIZE, "%s,%d,%d,%d",
 					ShortArmorSectionString(MechType(mech), MechMove(mech),
 											sect), GetSectOArmor(mech, sect),
 					GetSectORArmor(mech, sect), GetSectOInt(mech, sect));
@@ -775,12 +776,12 @@ static void hud_templatearmor(DESC * d, MECH * mech, char *msgclass,
 
 static void hud_armorstatus(DESC * d, MECH * mech, char *msgclass, char *args)
 {
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 	int sect;
 
 	for(sect = 0; sect < NUM_SECTIONS; sect++) {
 		if(GetSectOInt(mech, sect)) {
-			sprintf(response, "%s,%d,%d,%d",
+			snprintf(response, LBUF_SIZE, "%s,%d,%d,%d",
 					ShortArmorSectionString(MechType(mech), MechMove(mech),
 											sect), GetSectArmor(mech, sect),
 					GetSectRArmor(mech, sect), GetSectInt(mech, sect));
@@ -858,9 +859,9 @@ static void hud_contacts(DESC * d, MECH * mech, char *msgclass, char *args)
 		weaponarc = InWeaponArc(mech, MechFX(other), MechFY(other));
 
 		if(Jumping(other))
-			sprintf(jumph, "%d", MechJumpHeading(other));
+			snprintf(jumph, sizeof(jumph), "%d", MechJumpHeading(other));
 		else
-			strcpy(jumph, "-");
+			strncpy(jumph, "-", sizeof(jumph));
 
 		FindRangeAndBearingToCenter(other, &rtc, &btc);
 
@@ -876,7 +877,7 @@ static void hud_contacts(DESC * d, MECH * mech, char *msgclass, char *args)
 		if(strlen(constat) == 0)
 			constat = "-";
 
-		sprintf(response,
+		snprintf(response, LBUF_SIZE,
 				"%s,%s,%s,%c,%s,%d,%d,%d,%.3f,%d,%.3f,%.3f,%d,%s,%.3f,%d,%d,%.0f,%s",
 				MechIDS(other, MechSeemsFriend(mech, other)),
 				hud_arcstring(weaponarc), hud_sensorstring(mech, losflag),
@@ -921,14 +922,14 @@ static char *building_status(MAP * map, int locked)
 static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 								  char *args)
 {
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 	MAP *map = getMap(mech->mapindex);
 	MAP *building_map;
 	char *building_name;
 	mapobj *building;
 	float fx, fy, range;
 	int z, losflag, locked, bearing, weaponarc;
-	char new[LBUF_SIZE];
+	char new[LBUF_SIZE] = { 0 };
 
 	if(!map) {
 		hudinfo_notify(d, msgclass, "E", "You are on no map");
@@ -972,7 +973,7 @@ static void hud_building_contacts(DESC * d, MECH * mech, char *msgclass,
 		if(!building_name || !*building_name)
 			building_name = "-";
 
-		sprintf(response, "%s,%s,%d,%d,%d,%f,%d,%d,%d,%s",
+		snprintf(response, LBUF_SIZE, "%s,%s,%d,%d,%d,%f,%d,%d,%d,%s",
 				hud_arcstring(weaponarc), building_name, building->x,
 				building->y, z, range, bearing, building_map->cf,
 				building_map->cfmax, building_status(building_map, locked));
@@ -1049,7 +1050,7 @@ static MECH *hud_scantarget(DESC * d, MECH * mech, char *msgclass, char *args)
 
 static void hud_armorscan(DESC * d, MECH * mech, char *msgclass, char *args)
 {
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };;
 	int sect;
 	MECH *targ;
 
@@ -1059,7 +1060,7 @@ static void hud_armorscan(DESC * d, MECH * mech, char *msgclass, char *args)
 
 	for(sect = 0; sect < NUM_SECTIONS; sect++) {
 		if(GetSectOInt(targ, sect)) {
-			sprintf(response, "%s,%c,%c,%c",
+			snprintf(response, LBUF_SIZE, "%s,%c,%c,%c",
 					ShortArmorSectionString(MechType(targ), MechMove(targ),
 											sect), hud_damagechar(targ, sect,
 																  1),
@@ -1086,7 +1087,7 @@ static void hud_weapscan(DESC * d, MECH * mech, char *msgclass, char *args)
 	unsigned char weaparray[MAX_WEAPS_SECTION];
 	unsigned char weapdata[MAX_WEAPS_SECTION];
 	int critical[MAX_WEAPS_SECTION];
-	char response[LBUF_SIZE];
+	char response[LBUF_SIZE] = { 0 };
 	MECH *targ;
 
 	targ = hud_scantarget(d, mech, msgclass, args);
@@ -1103,7 +1104,7 @@ static void hud_weapscan(DESC * d, MECH * mech, char *msgclass, char *args)
 			continue;
 		for(i = 0; i < weapcount; i++) {
 			weapnum++;
-			sprintf(response, "%d,%d,%s,%s", weapnum, weaparray[i],
+			snprintf(response, LBUF_SIZE, "%d,%d,%s,%s", weapnum, weaparray[i],
 					ShortArmorSectionString(MechType(targ), MechMove(targ),
 											sect), hud_getweapscanstatus(targ,
 																		 sect,
@@ -1122,7 +1123,8 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 {
 	MAP *map = getMap(mech->mapindex);
 	char *argv[5], result[LBUF_SIZE], *p;
-	char mapid[21], mapname[MBUF_SIZE];
+	char mapid[21] = { 0 };
+        char mapname[MBUF_SIZE] = { 0 };
 	int argc;
 	int height = 24;
 	short cx = MechX(mech), cy = MechY(mech);
@@ -1206,19 +1208,19 @@ static void hud_tactical(DESC * d, MECH * mech, char *msgclass, char *args)
 
 	if(!mudconf.hudinfo_show_mapinfo ||
 	   (mudconf.hudinfo_show_mapinfo == 1 && In_Character(map->mynum))) {
-		strcpy(mapid, "-1");
-		strcpy(mapname, "-1");
+		strncpy(mapid, "-1", sizeof(mapid));
+		strncpy(mapname, "-1", MBUF_SIZE);
 	} else {
-		sprintf(mapid, "%ld", map->mynum);
-		sprintf(mapname, "%s", map->mapname);
+		snprintf(mapid, sizeof(mapid), "%ld", map->mynum);
+		snprintf(mapname, MBUF_SIZE, "%s", map->mapname);
 	};
 
-	sprintf(result, "%d,%d,%d,%d,%s,%s,-1,%d,%d", sx, sy, ex - 1, ey - 1,
+	snprintf(result, LBUF_SIZE, "%d,%d,%d,%d,%s,%s,-1,%d,%d", sx, sy, ex - 1, ey - 1,
 			mapid, mapname, map->map_width, map->map_height);
 	hudinfo_notify(d, msgclass, "S", result);
 
 	for(y = sy; y < ey; y++) {
-		sprintf(result, "%d,", y);
+		snprintf(result, LBUF_SIZE, "%d,", y);
 		p = result + strlen(result);
 
 		for(x = sx; x < ex; x++) {
@@ -1273,7 +1275,7 @@ static char *hud_getmapflags(MAP * map)
 static void hud_conditions(DESC * d, MECH * mech, char *msgclass, char *args)
 {
 	MAP *map = getMap(mech->mapindex);
-	char res[200];
+	char res[200] = { 0 };
 	char lt;
 
 	if(map)	{
@@ -1299,10 +1301,10 @@ static void hud_conditions(DESC * d, MECH * mech, char *msgclass, char *args)
 		lt = '?';
 	}
 	if(map)
-		sprintf(res, "%c,%d,%d,%d,%s", lt, map->mapvis, map->grav,
+		snprintf(res, sizeof(res), "%c,%d,%d,%d,%s", lt, map->mapvis, map->grav,
 			map->temp, hud_getmapflags(map));
 	else
-		sprintf(res, "%c,%c,%c,%c,%c", lt, lt, lt, lt, lt);
+		snprintf(res, sizeof(res), "%c,%c,%c,%c,%c", lt, lt, lt, lt, lt);
 
 	hudinfo_notify(d, msgclass, "R", res);
 }

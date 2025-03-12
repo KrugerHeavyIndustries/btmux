@@ -34,113 +34,113 @@ static void describe_repairs(MUXEVENT * e)
 	long earg = ((long) e->data2) % PLAYERPOS;
 	dbref player = ((long) e->data2) / PLAYERPOS;
 	int loc, pos, extra;
-	char buf[MBUF_SIZE];
-	char buf2[LBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
+	char buf2[LBUF_SIZE] = { 0 };
 	int fail = (e->function == very_fake_func);
 
 	UNPACK_LOCPOS_E(earg, loc, pos, extra);
-	sprintf(buf, "%s%s", ShortArmorSectionString(MechType(mech),
+	snprintf(buf, sizeof(buf), "%s%s", ShortArmorSectionString(MechType(mech),
 												 MechMove(mech), loc % 8),
 			loc >= 8 ? "(R)" : "");
-	sprintf(buf2, "%-5ld ", player);
-	sprintf(buf2 + strlen(buf2), "%-4d ",
+	snprintf(buf2, sizeof(buf2), "%-5ld ", player);
+	snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%-4d ",
 			game_lag_time((e->tick - muxevent_tick) / 60));
 	switch (type) {
 	case EVENT_REPAIR_REPL:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Replacement of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Replacement of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_REPLG:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Replacement of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Replacement of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_REAT:
-		sprintf(buf2 + strlen(buf2), "%5s Reattachment", buf);
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s Reattachment", buf);
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_RELO:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d %sload of %s", buf, pos + 1,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d %sload of %s", buf, pos + 1,
 				extra ? "Un" : "Re", pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_FIX:
 		if(fail)
-			sprintf(buf2 + strlen(buf2), "%5s:%-2d Failed armor repair",
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Failed armor repair",
 					buf, 0);
 		else
-			sprintf(buf2 + strlen(buf2),
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2),
 					"%5s:%-2d Repair of armor - possibly next point", buf,
 					pos);
 		break;
 	case EVENT_REPAIR_FIXI:
 		if(fail)
-			sprintf(buf2 + strlen(buf2), "%5s:%-2d Failed internal repair",
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Failed internal repair", 
 					buf, 0);
 		else
-			sprintf(buf2 + strlen(buf2),
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2),
 					"%5s:%-2d Repair of internals - possibly next point", buf,
 					pos);
 		break;
 	case EVENT_REPAIR_SCRL:
-		sprintf(buf2 + strlen(buf2), "%5s Removal", buf);
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s Removal", buf);
 		break;
 	case EVENT_REPAIR_SCRP:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Scrapping of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Scrapping of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		break;
 	case EVENT_REPAIR_SCRG:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Scrapping of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Scrapping of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		break;
 	case EVENT_REPAIR_REPAG:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
 				pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_REPAP:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
 				pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_REPENHCRIT:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Repair of %s", buf, pos + 1,
 				pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_MOB:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Mounting of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Mounting of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_UMOB:
-		sprintf(buf2 + strlen(buf2), "%5s:%-2d Removing of %s", buf,
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s:%-2d Removing of %s", buf,
 				pos + 1, pos_part_name(mech, loc, pos));
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	case EVENT_REPAIR_REPSUIT:
-		sprintf(buf2 + strlen(buf2), "%5s Replacing suit", buf);
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s Replacing suit", buf);
 		if(fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 	// Added Reseal description
 	case EVENT_REPAIR_RESE:
-		sprintf(buf2 + strlen(buf2), "%5s Reseal", buf);
+		snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), "%5s Reseal", buf);
 		if (fail)
-			sprintf(buf2 + strlen(buf2), " (Failure)");
+			snprintf(buf2 + strlen(buf2), sizeof(buf2) - strlen(buf2), " (Failure)");
 		break;
 	}
 
-/*   sprintf(buf2+strlen(buf2), " - %s", */
+/*   snprintf(buf2+strlen(buf2), sizeof(buf2) - strlen(buf2), " - %s", */
 
 /*        get_uptime_to_string(e->tick - muxevent_tick)); */
 	vsi(buf2);

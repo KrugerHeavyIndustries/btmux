@@ -360,7 +360,7 @@ static int tmplcmp(void const *v1, void const *v2)
  */
 static int scan_template_dir(char const *dirname, char const *parent)
 {
-	char buf[1000];
+	char buf[1000] = { 0 };
 	int dirnamelen = strlen(dirname);
 	DIR *dir = opendir(dirname);
 
@@ -380,7 +380,7 @@ static int scan_template_dir(char const *dirname, char const *parent)
 			continue;
 		}
 
-		sprintf(buf, "%s/%s", dirname, ent->d_name);
+		snprintf(buf, sizeof(buf), "%s/%s", dirname, ent->d_name);
 		if(stat(buf, &sb) == -1) {
 			continue;
 		}
@@ -429,7 +429,7 @@ static int scan_template_dir(char const *dirname, char const *parent)
 
 static int scan_templates(char const *dir)
 {
-	char buf[1000];
+	char buf[1000] = { 0 };
 	struct tmpldir *p;
 
 	if(scan_template_dir(dir, NULL) == -1) {
@@ -438,7 +438,7 @@ static int scan_templates(char const *dir)
 
 	p = tmpldir_list;
 	while (p != NULL) {
-		sprintf(buf, "%s/%s", dir, p->name);
+		snprintf(buf, sizeof(buf), "%s/%s", dir, p->name);
 		scan_template_dir(buf, p->name);
 		p = p->next;
 	}
@@ -547,7 +547,7 @@ void clear_mech(MECH * mech, int flag)
 
 char *mechref_path(char *id)
 {
-	static char openfile[1024];
+	static char openfile[1024] = { 0 };
 	FILE *fp;
 	int i = 0;					/* this int has double use... ugly, but effective */
 
@@ -570,9 +570,9 @@ char *mechref_path(char *id)
 			return NULL;
 		}
 		if(ent->dir == NULL) {
-			sprintf(openfile, "%s/%s", MECH_PATH, ent->name);
+			snprintf(openfile, sizeof(openfile), "%s/%s", MECH_PATH, ent->name);
 		} else {
-			sprintf(openfile, "%s/%s/%s", MECH_PATH, ent->dir, ent->name);
+			snprintf(openfile, sizeof(openfile), "%s/%s/%s", MECH_PATH, ent->dir, ent->name);
 		}
 		if(access(openfile, R_OK) != 0) {
 			/* The file is missing (or unreadable)
@@ -591,10 +591,10 @@ char *mechref_path(char *id)
 	/*
 	 * Look up a template name the old way...
 	 */
-	sprintf(openfile, "%s/%s", MECH_PATH, id);
+	snprintf(openfile, sizeof(openfile), "%s/%s", MECH_PATH, id);
 	fp = fopen(openfile, "r");
 	for(i = 0; !fp && subdirs[i]; i++) {
-		sprintf(openfile, "%s/%s/%s", MECH_PATH, subdirs[i], id);
+		snprintf(openfile, sizeof(openfile), "%s/%s/%s", MECH_PATH, subdirs[i], id);
 		fp = fopen(openfile, "r");
 	}
 	if(fp) {
@@ -781,7 +781,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 {
 	char *args[1];
 	FILE *fp;
-	char openfile[512];
+	char openfile[512] = { 0 };
 	int i, j;
 
 	MECHREP_COMMON(1);
@@ -792,7 +792,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 			"You must specify a template name!");
 	DOCHECK(strstr(args[0], "/"), "Invalid file name!");
 	notify_printf(player, "Saving %s...", args[0]);
-	sprintf(openfile, "%s/", MECH_PATH);
+	snprintf(openfile, sizeof(openfile), "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
 	DOCHECK(!(fp =
 			  fopen(openfile, "w")),
@@ -824,7 +824,7 @@ void mechrep_Rsavetemp(dbref player, void *data, char *buffer)
 void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 {
 	char *args[1];
-	char openfile[512];
+	char openfile[512] = { 0 };
 
 	MECHREP_COMMON(1);
 
@@ -843,7 +843,7 @@ void mechrep_Rsavetemp2(dbref player, void *data, char *buffer)
 	}
 
 	notify_printf(player, "Saving %s", args[0]);
-	sprintf(openfile, "%s/", MECH_PATH);
+	snprintf(openfile, sizeof(openfile), "%s/", MECH_PATH);
 	strcat(openfile, args[0]);
 
 	// Just warn on overweight.

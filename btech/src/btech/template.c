@@ -1444,7 +1444,7 @@ extern int temp_brand_flag;
 
 static char *part_figure_out_name_sub(int i, int j)
 {
-	static char buf[MBUF_SIZE];
+	static char buf[MBUF_SIZE] = { 0 };
 	int isclan = 0;
 
 	if(!i)
@@ -1457,7 +1457,7 @@ static char *part_figure_out_name_sub(int i, int j)
 		if(MechWeapons[Ammo2WeaponI(i)].type != TBEAM &&
 		   MechWeapons[Ammo2WeaponI(i)].type != THAND &&
 		   !(MechWeapons[Ammo2WeaponI(i)].special & PCOMBAT)) {
-			sprintf(buf, "Ammo_%s", &MechWeapons[Ammo2WeaponI(i)].name[(j
+			snprintf(buf, sizeof(buf), "Ammo_%s", &MechWeapons[Ammo2WeaponI(i)].name[(j
 																		&&
 																		!isclan)
 																	   ? 3 :
@@ -1466,7 +1466,7 @@ static char *part_figure_out_name_sub(int i, int j)
 		}
 	} else if(!temp_brand_flag) {
 		if(IsBomb(i)) {
-			sprintf(buf, "Bomb_%s", bomb_name(Bomb2I(i)));
+			snprintf(buf, sizeof(buf), "Bomb_%s", bomb_name(Bomb2I(i)));
 			return buf;
 		} else if(IsSpecial(i) && i < I2Special(internal_count))
 			return internals[Special2I(i)];
@@ -1505,7 +1505,7 @@ char *my_shortform(char *buf)
 
 char *part_figure_out_shname(int i)
 {
-	char buf[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
 
 	if(!i)
 		return NULL;
@@ -1513,10 +1513,10 @@ char *part_figure_out_shname(int i)
 	if(IsWeapon(i) && i < I2Weapon(num_def_weapons)) {
 		strcpy(buf, &MechWeapons[Weapon2I(i)].name[CLCH(Weapon2I(i))]);
 	} else if(IsAmmo(i) && i < I2Ammo(num_def_weapons)) {
-		sprintf(buf, "Ammo_%s",
+		snprintf(buf, sizeof(buf), "Ammo_%s",
 				&MechWeapons[Ammo2WeaponI(i)].name[CLCH(Ammo2WeaponI(i))]);
 	} else if(IsBomb(i))
-		sprintf(buf, "Bomb_%s", bomb_name(Bomb2I(i)));
+		snprintf(buf, sizeof(buf), "Bomb_%s", bomb_name(Bomb2I(i)));
 	else if(IsSpecial(i) && i < I2Special(internal_count))
 		strcpy(buf, internals[Special2I(i)]);
 	if(IsCargo(i) && i < I2Cargo(cargo_count))
@@ -2775,14 +2775,14 @@ void DumpMechSpecialObjects(dbref player)
 
 static char *dumpweapon_fun(int i)
 {
-	static char buf[256];
+	static char buf[256] = { 0 };
 
 	buf[0] = 0;
 	if(!i)
-		sprintf(buf, WDUMP_MASKS);
+		snprintf(buf, sizeof(buf), WDUMP_MASKS);
 	else {
 		i--;
-		sprintf(buf, WDUMP_MASK, MechWeapons[i].name, MechWeapons[i].heat,
+		snprintf(buf, sizeof(buf), WDUMP_MASK, MechWeapons[i].name, MechWeapons[i].heat,
 				MechWeapons[i].damage, MechWeapons[i].min,
 				MechWeapons[i].shortrange, MechWeapons[i].medrange,
 				GunRange(i), MechWeapons[i].vrt, MechWeapons[i].criticals,
@@ -2892,7 +2892,7 @@ char *payloadlist_func(MECH * mech)
 	int temp_crit;
 
 	int count, weap_count, ammo_count, section_loop, weap_loop, put_loop;
-	char payloadbuff[120];
+	char payloadbuff[120] = { 0 };
 
 	short payload_items[8 * MAX_WEAPS_SECTION];
 	short payload_items_count[8 * MAX_WEAPS_SECTION];
@@ -2987,11 +2987,11 @@ char *payloadlist_func(MECH * mech)
 		/* If its a weapon use this method of printing it out
 		 * Else use the part method */
 		if(put_loop < weap_count) {
-			sprintf(payloadbuff, "%s:%d",
+			snprintf(payloadbuff, sizeof(payloadbuff), "%s:%d",
 					&MechWeapons[payload_items[put_loop]].name[0],
 					payload_items_count[put_loop]);
 		} else {
-			sprintf(payloadbuff, "%s:%d",
+			snprintf(payloadbuff, sizeof(payloadbuff), "%s:%d",
 					partname_func(payload_items[put_loop], 'V'),
 					payload_items_count[put_loop]);
 		}
@@ -3018,7 +3018,7 @@ char *partlist_func(MECH * mech)
 	int temp_crit;
 
 	int count, part_count, section_loop, put_loop, act_count;
-	char partlistbuff[120];
+	char partlistbuff[120] = { 0 };
 
 	short partlist_items[8 * MAX_WEAPS_SECTION];
 	short partlist_count[8 * MAX_WEAPS_SECTION];
@@ -3097,7 +3097,7 @@ char *partlist_func(MECH * mech)
 				act_count = act_count + partlist_count[put_loop];
 				break;
 			case ENGINE:
-				sprintf(partlistbuff, "%s:%d", MechSpecials(mech) & LE_TECH ? "Light_Engine" :
+				snprintf(partlistbuff, sizeof(partlistbuff), "%s:%d", MechSpecials(mech) & LE_TECH ? "Light_Engine" :
 							MechSpecials(mech) & CE_TECH ? "Compact_Engine" :
 							MechSpecials(mech) & XXL_TECH ? "XXL_Engine" :
 							MechSpecials(mech) & XL_TECH ? "XL_Engine" :
@@ -3113,7 +3113,7 @@ char *partlist_func(MECH * mech)
 				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
 				break;
 			case GYRO:
-				sprintf(partlistbuff, "%s:%d", MechSpecials2(mech) & XLGYRO_TECH ? "XL_Gyro" :
+				snprintf(partlistbuff, sizeof(partlistbuff), "%s:%d", MechSpecials2(mech) & XLGYRO_TECH ? "XL_Gyro" :
 							MechSpecials2(mech) & HDGYRO_TECH ? "HeavyDuty_Gyro" : "Gyro",
 								partlist_count[put_loop]);
 
@@ -3126,7 +3126,7 @@ char *partlist_func(MECH * mech)
 				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
 				break;
 			case HEAT_SINK:
-				sprintf(partlistbuff, "%s:%d", MechSpecials2(mech) & COMPACT_HS_TECH ? "Compact_HeatSink" :
+				snprintf(partlistbuff, sizeof(partlistbuff), "%s:%d", MechSpecials2(mech) & COMPACT_HS_TECH ? "Compact_HeatSink" :
 							MechSpecials(mech) & (DOUBLE_HEAT_TECH | CLAN_TECH) ? "Double_HeatSink" : "HeatSink",
 								partlist_count[put_loop]);
 
@@ -3139,7 +3139,7 @@ char *partlist_func(MECH * mech)
 				strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) - 1);
 				break;
 			default:
-				sprintf(partlistbuff, "%s:%d",
+				snprintf(partlistbuff, sizeof(partlistbuff), "%s:%d",
 					partname_func(partlist_items[put_loop], 'V')
 					,partlist_count[put_loop]);
 
@@ -3157,7 +3157,7 @@ char *partlist_func(MECH * mech)
 
 	} /* end printing loop */
 	if (act_count) {
-		sprintf(partlistbuff,"|Actuator:%d",act_count);
+		snprintf(partlistbuff, sizeof(partlistbuff), "|Actuator:%d",act_count);
 		strncat(buffer, partlistbuff, sizeof(buffer) - strlen(buffer) -1 );
 	}
 

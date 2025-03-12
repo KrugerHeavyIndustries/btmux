@@ -254,9 +254,9 @@ static void do_show_com(chmsg * d)
 	day = t->tm_mday;
 	t = localtime(&d->time);
 	if(day == t->tm_mday) {
-		sprintf(buf, "[%02d:%02d] %s", t->tm_hour, t->tm_min, d->msg);
+		snprintf(buf, sizeof(buf), "[%02d:%02d] %s", t->tm_hour, t->tm_min, d->msg);
 	} else
-		sprintf(buf, "[%02d.%02d / %02d:%02d] %s", t->tm_mon + 1,
+		snprintf(buf, sizeof(buf), "[%02d.%02d / %02d:%02d] %s", t->tm_mon + 1,
 				t->tm_mday, t->tm_hour, t->tm_min, d->msg);
 	notify(cheat_player, buf);
 }
@@ -1634,12 +1634,12 @@ void do_chanlist(dbref player, dbref cause, int key)
 
 			atrstr = atr_pget(ch->chan_obj, A_DESC, &owner, &flags);
 			if((ch->chan_obj == NOTHING) || !*atrstr)
-				sprintf(buf, "%s", "No description.");
+				snprintf(buf, MBUF_SIZE, "%s", "No description.");
 			else
-				sprintf(buf, "%-54.54s", atrstr);
+				snprintf(buf, MBUF_SIZE, "%-54.54s", atrstr);
 
 			free_lbuf(atrstr);
-			sprintf(temp, "%c%c %-13.13s %-15.15s %-45.45s",
+			snprintf(temp, MBUF_SIZE, "%c%c %-13.13s %-15.15s %-45.45s",
 					(ch->type & (CHANNEL_PUBLIC)) ? 'P' : '-',
 					(ch->type & (CHANNEL_LOUD)) ? 'L' : '-', ch->name,
 					Name(ch->charge_who), buf);
@@ -1726,9 +1726,9 @@ void do_chanstatus(dbref player, dbref cause, int key, char *chan)
 
 		atrstr = atr_pget(ch->chan_obj, A_DESC, &owner, &flags);
 		if((ch->chan_obj == NOTHING) || !*atrstr)
-			sprintf(buf, "%s", "No description.");
+			snprintf(buf, MBUF_SIZE, "%s", "No description.");
 		else
-			sprintf(buf, "%-54.54s", atrstr);
+			snprintf(buf, MBUF_SIZE, "%-54.54s", atrstr);
 
 		free_lbuf(atrstr);
 		snprintf(temp, MBUF_SIZE, "%c%c %-13.13s %-15.15s %-45.45s",

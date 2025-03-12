@@ -407,7 +407,7 @@ int fwdlist_rewrite(FWDLIST * fp, char *atext)
 		bp = atext;
 		for(i = 0; i < fp->count; i++) {
 			if(Good_obj(fp->data[i])) {
-				sprintf(tp, "#%d ", fp->data[i]);
+				snprintf(tp, SBUF_SIZE, "#%d ", fp->data[i]);
 				safe_str(tp, atext, &bp);
 			} else {
 				count--;

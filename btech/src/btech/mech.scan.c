@@ -315,7 +315,7 @@ void ShowTurretFacing(dbref player, int spaces, MECH * mech)
 {
 	int i;
 	int j;
-	char buff[MBUF_SIZE];
+	char buff[MBUF_SIZE] = { 0 };
 
 	if(GetSectInt(mech, TURRET) && !(MechType(mech) == CLASS_MECH ||
 									 MechType(mech) == CLASS_BSUIT
@@ -326,10 +326,10 @@ void ShowTurretFacing(dbref player, int spaces, MECH * mech)
 			i -= 360;
 		j = AcceptableDegree(MechTurretFacing(mech) + MechFacing(mech));
 		if(MechMove(mech) != MOVE_NONE)
-			sprintf(buff, "      Turret Facing: %d degrees%s", j,
+			snprintf(buff, sizeof(buff), "      Turret Facing: %d degrees%s", j,
 					i ? tprintf(" (%d offset from heading)", i) : "");
 		else
-			sprintf(buff, "      Turret Facing: %d degrees", j);
+			snprintf(buff, sizeof(buff), "      Turret Facing: %d degrees", j);
 		notify(player, buff);
 	}
 }
@@ -337,12 +337,12 @@ void ShowTurretFacing(dbref player, int spaces, MECH * mech)
 void PrintReport(dbref player, MECH * mech, MECH * tempMech, float range)
 {
 	int bearing;
-	char buff[100];
+	char buff[100] = { 0 };
 	int weaponarc;
 	char *mech_name;
 
 	mech_name = silly_atr_get(tempMech->mynum, A_MECHNAME);
-	sprintf(buff, "[%s]  %-25.25s Tonnage: %d", MechIDS(tempMech,
+	snprintf(buff, sizeof(buff), "[%s]  %-25.25s Tonnage: %d", MechIDS(tempMech,
 														MechSeemsFriend(mech,
 																		tempMech)),
 			mech_name, MechTons(tempMech));
@@ -350,16 +350,16 @@ void PrintReport(dbref player, MECH * mech, MECH * tempMech, float range)
 	bearing =
 		FindBearing(MechFX(mech), MechFY(mech), MechFX(tempMech),
 					MechFY(tempMech));
-	sprintf(buff, "      Range: %.1f hex\t\tBearing: %d degrees", range,
+	snprintf(buff, sizeof(buff), "      Range: %.1f hex\t\tBearing: %d degrees", range,
 			bearing);
 	notify(player, buff);
-	sprintf(buff, "      Speed: %.1f KPH\t\tHeading: %d degrees",
+	snprintf(buff, sizeof(buff), "      Speed: %.1f KPH\t\tHeading: %d degrees",
 			MechSpeed(tempMech), MechVFacing(tempMech));
 	notify(player, buff);
 	if(FlyingT(tempMech))
 		notify_printf(player, "      Vertical speed: %.1f KPH",
 					  MechVerticalSpeed(tempMech));
-	sprintf(buff, "      X, Y, Z: %3d, %3d, %3d\tHeat: %.0f deg C.",
+	snprintf(buff, sizeof(buff), "      X, Y, Z: %3d, %3d, %3d\tHeat: %.0f deg C.",
 			MechX(tempMech), MechY(tempMech), MechZ(tempMech),
 			10. * MechHeat(tempMech));
 	notify(player, buff);
@@ -474,8 +474,8 @@ void mech_bearing(dbref player, void *data, char *buffer)
 	int ix1, iy1;
 	float x1, y1, z1;
 	float temp;
-	char trash[20];
-	char buff[100];
+	char trash[20] = { 0 };
+	char buff[100] = { 0 };
 
 	x1 = y1 = -1;
 
@@ -513,7 +513,7 @@ void mech_bearing(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
-				sprintf(buff, "Bearing to  %d,%d is: ", ix1, iy1);
+				snprintf(buff, sizeof(buff), "Bearing to  %d,%d is: ", ix1, iy1);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 			}
 		} else if(argc == 4) {
@@ -529,7 +529,7 @@ void mech_bearing(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
-				sprintf(buff, "Bearing to %d,%d from %d,%d is: ", ix1, iy1,
+				snprintf(buff, sizeof(buff), "Bearing to %d,%d from %d,%d is: ", ix1, iy1,
 						ix0, iy0);
 				MapCoordToRealCoord(ix0, iy0, &x0, &y0);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
@@ -540,7 +540,7 @@ void mech_bearing(dbref player, void *data, char *buffer)
 		}
 		if(x1 != -1) {
 			temp = FindBearing(x0, y0, x1, y1);
-			sprintf(trash, "%.0f degrees.", temp);
+			snprintf(trash, sizeof(trash), "%.0f degrees.", temp);
 			strcat(buff, trash);
 			notify(player, buff);
 		}
@@ -602,7 +602,7 @@ void mech_range(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
-				sprintf(buff, "Range to  %d,%d is: ", ix1, iy1);
+				snprintf(buff, sizeof(buff), "Range to  %d,%d is: ", ix1, iy1);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				if(MapIsDark(mech_map))
 					z1 = ZSCALE * MechZ(mech);
@@ -623,7 +623,7 @@ void mech_range(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
-				sprintf(buff, "Range to %d,%d from %d,%d is: ", ix1, iy1,
+				snprintf(buff, sizeof(buff), "Range to %d,%d from %d,%d is: ", ix1, iy1,
 						ix0, iy0);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				MapCoordToRealCoord(ix0, iy0, &x0, &y0);
@@ -641,12 +641,12 @@ void mech_range(dbref player, void *data, char *buffer)
 		if(x1 != -1) {
 			temp = FindRange(x0, y0, z0, x1, y1, z1);
 			hr = FindHexRange(x0, y0, x1, y1);
-			sprintf(buf1, "%.1f", temp);
-			sprintf(buf2, "%.1f", hr);
+			snprintf(buf1, sizeof(buf1), "%.1f", temp);
+			snprintf(buf2, sizeof(buf2), "%.1f", hr);
 			if(strcmp(buf1, buf2))
-				sprintf(trash, "%s hexes (%s ground hexes).", buf1, buf2);
+				snprintf(trash, sizeof(trash), "%s hexes (%s ground hexes).", buf1, buf2);
 			else
-				sprintf(trash, "%s hexes.", buf1);
+				snprintf(trash, sizeof(trash), "%s hexes.", buf1);
 			strcat(buff, trash);
 			notify(player, buff);
 		}
@@ -706,7 +706,7 @@ void mech_vector(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
-				sprintf(buff, "Vector to  %d,%d is: ", ix1, iy1);
+				snprintf(buff, sizeof(buff), "Vector to  %d,%d is: ", ix1, iy1);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				z1 = ZSCALE * Elevation(mech_map, ix1, iy1);
 			}
@@ -720,7 +720,7 @@ void mech_vector(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1.;
 			} else {
-				sprintf(buff, "Vector to  %d,%d,%d is: ", ix1, iy1, iz1);
+				snprintf(buff, sizeof(buff), "Vector to  %d,%d,%d is: ", ix1, iy1, iz1);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				z1 = ZSCALE * iz1;
 			}
@@ -738,7 +738,7 @@ void mech_vector(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
-				sprintf(buff, "Vector to %d,%d from %d,%d is: ", ix1, iy1,
+				snprintf(buff, sizeof(buff), "Vector to %d,%d from %d,%d is: ", ix1, iy1,
 						ix0, iy0);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				MapCoordToRealCoord(ix0, iy0, &x0, &y0);
@@ -760,7 +760,7 @@ void mech_vector(dbref player, void *data, char *buffer)
 				notify(player, "Invalid map coordinates!");
 				x1 = y1 = -1;
 			} else {
-				sprintf(buff, "Vector to %d,%d,%d from %d,%d,%d is: ", ix1,
+				snprintf(buff, sizeof(buff), "Vector to %d,%d,%d from %d,%d,%d is: ", ix1,
 						iy1, iz1, ix0, iy0, iz0);
 				MapCoordToRealCoord(ix1, iy1, &x1, &y1);
 				MapCoordToRealCoord(ix0, iy0, &x0, &y0);
@@ -777,20 +777,20 @@ void mech_vector(dbref player, void *data, char *buffer)
 			/* range */
 			temp = FindRange(x0, y0, z0, x1, y1, z1);
 			hr = FindHexRange(x0, y0, x1, y1);
-			sprintf(buf1, "%.1f", temp);
-			sprintf(buf2, "%.1f", hr);
+			snprintf(buf1, sizeof(buf1), "%.1f", temp);
+			snprintf(buf2, sizeof(buf2), "%.1f", hr);
 			if(strcmp(buf1, buf2))
-				sprintf(trash, "%s hexes (%s ground hexes) and ", buf1, buf2);
+				snprintf(trash, sizeof(trash), "%s hexes (%s ground hexes) and ", buf1, buf2);
 			else
-				sprintf(trash, "%s hexes and ", buf1);
+				snprintf(trash, sizeof(trash), "%s hexes and ", buf1);
 			strcat(buff, trash);
 
 			/* bearing */
 			temp = FindBearing(x0, y0, x1, y1);
 			if(argc != 0 && argc != 3 && argc != 6)
-				sprintf(trash, "%.0f degrees.", temp);
+				snprintf(trash, sizeof(trash), "%.0f degrees.", temp);
 			else
-				sprintf(trash, "%.0f degrees mark %c%d.", temp,
+				snprintf(trash, sizeof(trash), "%.0f degrees mark %c%d.", temp,
 						(z1 > z0 ? '+' : z1 < z0 ? '-' : ' '),
 						FindZBearing(x0, y0, z0, x1, y1, z1));
 			strcat(buff, trash);
@@ -810,9 +810,9 @@ void PrintEnemyWeaponStatus(MECH * mech, dbref player)
 	int count;
 	int loop;
 	int ii;
-	char weapbuff[70];
-	char tempbuff[50];
-	char location[20];
+	char weapbuff[70] = { 0 };
+	char tempbuff[50] = { 0 };
+	char location[20] = { 0 };
 	int running_sum = 0;
 
 	recycle_weaponry(mech);
@@ -828,10 +828,10 @@ void PrintEnemyWeaponStatus(MECH * mech, dbref player)
 		if(count > 0) {
 			ArmorStringFromIndex(loop, tempbuff, MechType(mech),
 								 MechMove(mech));
-			sprintf(location, "%-14.14s", tempbuff);
+			snprintf(location, sizeof(location), "%-14.14s", tempbuff);
 
 			for(ii = 0; ii < count; ii++) {
-				sprintf(weapbuff, " %-18.18s [%2d]  ",
+				snprintf(weapbuff, sizeof(weapbuff), " %-18.18s [%2d]  ",
 						&MechWeapons[weaparray[ii]].name[3],
 						running_sum + ii);
 				strcat(weapbuff, location);

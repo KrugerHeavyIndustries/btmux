@@ -198,7 +198,7 @@ void fcache_read_dir(char *dir, FCACHE foo[], int *cnt, int max)
 {
 	DIR *d;
 	struct dirent *de;
-	char buf[LBUF_SIZE];
+	char buf[LBUF_SIZE] = { 0 };
 
 	bzero(&foo[0], sizeof(FCACHE) * max);
 	if(!(d = opendir(dir)))
@@ -210,7 +210,7 @@ void fcache_read_dir(char *dir, FCACHE foo[], int *cnt, int max)
 			continue;
 		if(!strstr(de->d_name, ".txt"))
 			continue;
-		sprintf(buf, "%s/%s", dir, de->d_name);
+		snprintf(buf, sizeof(buf), "%s/%s", dir, de->d_name);
 		fcache_read(&(foo[*cnt].fileblock), buf);
 		(*cnt)++;
 	}
@@ -287,7 +287,7 @@ void fcache_load(dbref player)
 	for(fp = fcache; fp->filename; fp++) {
 		i = fcache_read(&fp->fileblock, fp->filename);
 		if((player != NOTHING) && !Quiet(player)) {
-			sprintf(sbuf, "%d", i);
+			snprintf(sbuf, SBUF_SIZE, "%d", i);
 			if(fp == fcache)
 				safe_str((char *) "File sizes: ", buff, &bufc);
 			else

@@ -227,41 +227,41 @@ void mech_navigate(dbref player, void *data, char *buffer)
 	set_colorscheme(player);
 	maptext = MakeMapText(player, mech, mech_map, x, y, 5, 5, 4, dolos);
 
-	sprintf(mybuff[0],
+	snprintf(mybuff[0], MBUF_SIZE,
 			"              0                                          %.150s",
 			maptext[0]);
-	sprintf(mybuff[1],
+	snprintf(mybuff[1], MBUF_SIZE,
 			"         ___________                                     %.150s",
 			maptext[1]);
-	sprintf(mybuff[2],
+	snprintf(mybuff[2], MBUF_SIZE,
 			"        /           \\          Location:%4d,%4d, %3d   %.150s",
 			MechX(mech), MechY(mech), MechZ(mech), maptext[2]);
-	sprintf(mybuff[3],
+	snprintf(mybuff[3], MBUF_SIZE,
 			"  300  /             \\  60     Terrain: %14s   %.150s",
 			GetTerrainName(mech_map, MechX(mech), MechY(mech)), maptext[3]);
-	sprintf(mybuff[4],
+	snprintf(mybuff[4], MBUF_SIZE,
 			"      /               \\                                  %.150s",
 			maptext[4]);
-	sprintf(mybuff[5],
+	snprintf(mybuff[5], MBUF_SIZE,
 			"     /                 \\                                 %.150s",
 			maptext[5]);
-	sprintf(mybuff[6],
+	snprintf(mybuff[6], MBUF_SIZE,
 			"270 (                   )  90  Speed:           %6.1f   %.150s",
 			MechSpeed(mech), maptext[6]);
-	sprintf(mybuff[7],
+	snprintf(mybuff[7], MBUF_SIZE,
 			"     \\                 /       Vertical Speed:  %6.1f   %.150s",
 			MechVerticalSpeed(mech), maptext[7]);
-	sprintf(mybuff[8],
+	snprintf(mybuff[8], MBUF_SIZE,
 			"      \\               /        Heading:           %4d   %.150s",
 			MechFacing(mech), maptext[8]);
-	sprintf(mybuff[9],
+	snprintf(mybuff[9], MBUF_SIZE,
 			"  240  \\             /  120                              %.150s",
 			maptext[9]);
-	sprintf(mybuff[10],
+	snprintf(mybuff[10], MBUF_SIZE,
 			"        \\___________/                                    %.150s",
 			maptext[10]);
-	sprintf(mybuff[11], "                      ");
-	sprintf(mybuff[12], "             180");
+	snprintf(mybuff[11], MBUF_SIZE, "                      ");
+	snprintf(mybuff[12], MBUF_SIZE, "             180");
 
 	navigate_sketch_mechs(mech, mech_map, x, y, mybuff);
 	for(i = 0; i < NAVIGATE_LINES; i++)
@@ -371,8 +371,7 @@ static inline char TerrainColorChar(char terrain, int elev)
 
 static char *add_color(char newc, char *prevc, char c)
 {
-	static char buf[10];		/* won't be filled with more than 7 characters */
-	buf[0] = '\0';
+	static char buf[10] = { 0 };		/* won't be filled with more than 7 characters */
 
 	if(newc == *prevc) {
 		buf[0] = c;
@@ -387,21 +386,21 @@ static char *add_color(char newc, char *prevc, char c)
 		strcpy(buf, "%ch");
 
 	if(!newc)
-		sprintf(buf + strlen(buf), "%c", c);
+		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%c", c);
 	else
-		sprintf(buf + strlen(buf), "%%c%c%c", tolower(newc), c);
+		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%%c%c%c", tolower(newc), c);
 	*prevc = newc;
 	return buf;
 }
 
 static char *GetLRSMech(MECH * mech, MECH * other, int docolor, char *prevc)
 {
-	static char buf[2];			/* Won't be filled with more than 1 character */
+	static char buf[2] = { 0 };	/* Won't be filled with more than 1 character */
 	char c = GetLRSMechChar(mech, other);
 	char newc;
 
 	if(!docolor) {
-		sprintf(buf, "%c", c);
+		snprintf(buf, sizeof(buf), "%c", c);
 		return buf;
 	}
 
@@ -547,10 +546,10 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 
 	/* Display the top labels */
 	for(i = b_width; i <= e_width; i++) {
-		sprintf(trash1, "%3d", i);
-		sprintf(topbuff + strlen(topbuff), "%c", trash1[0]);
-		sprintf(midbuff + strlen(midbuff), "%c", trash1[1]);
-		sprintf(botbuff + strlen(botbuff), "%c", trash1[2]);
+		snprintf(trash1, sizeof(trash1), "%3d", i);
+		snprintf(topbuff + strlen(topbuff), sizeof(topbuff) - strlen(topbuff), "%c", trash1[0]);
+		snprintf(midbuff + strlen(midbuff), sizeof(midbuff) - strlen(midbuff), "%c", trash1[1]);
+		snprintf(botbuff + strlen(botbuff), sizeof(botbuff) - strlen(botbuff), "%c", trash1[2]);
 	}
 	notify(player, topbuff);
 	notify(player, midbuff);
@@ -590,27 +589,27 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 								 e_width - b_width, e_height - b_height);
 
 	for(loop = b_height; loop < e_height; loop++) {
-		sprintf(topbuff, "%3d ", loop);
+		snprintf(topbuff, sizeof(topbuff), "%3d ", loop);
 		strcpy(botbuff, "    ");
 		if(mode & LRS_MECHMODE)
 			while (mechs[last_mech] && MechY(mechs[last_mech]) < loop)
 				last_mech++;
 
 		for(i = b_width; i < e_width; i += 2) {
-			sprintf(topbuff + strlen(topbuff), oddcol ? "%s " : " %s",
+			snprintf(topbuff + strlen(topbuff), sizeof(topbuff) - strlen(topbuff), oddcol ? "%s " : " %s",
 					get_lrshexstr(mech, map, i + !oddcol, loop, &prevct,
 								  mode, mechs, last_mech, losmap));
 
-			sprintf(botbuff + strlen(botbuff), oddcol ? " %s" : "%s ",
+			snprintf(botbuff + strlen(botbuff), sizeof(botbuff) - strlen(botbuff), oddcol ? " %s" : "%s ",
 					get_lrshexstr(mech, map, i + oddcol, loop, &prevcb,
 								  mode, mechs, last_mech, losmap));
 		}
 		if(i == e_width && !oddcol) {
-			sprintf(botbuff + strlen(botbuff), "%s",
+			snprintf(botbuff + strlen(botbuff), sizeof(botbuff) - strlen(botbuff), "%s",
 					get_lrshexstr(mech, map, i, loop, &prevcb, mode,
 								  mechs, last_mech, losmap));
 		} else if(i == e_width) {
-			sprintf(topbuff + strlen(topbuff), "%s",
+			snprintf(topbuff + strlen(topbuff), sizeof(topbuff) - strlen(topbuff), "%s",
 					get_lrshexstr(mech, map, i, loop, &prevct, mode,
 								  mechs, last_mech, losmap));
 			strcat(botbuff, " ");
@@ -626,7 +625,7 @@ static void show_lrs_map(dbref player, MECH * mech, MAP * map, int x,
 				prevcb = 0;
 			}
 		}
-		sprintf(botbuff + strlen(botbuff), " %-3d", loop);
+		snprintf(botbuff + strlen(botbuff), sizeof(botbuff) - strlen(botbuff), " %-3d", loop);
 		notify(player, topbuff);
 		notify(player, botbuff);
 	}
@@ -1474,13 +1473,13 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 		int x;
 
 		for(x = 0; x < wx; x++) {
-			char scratch[4];
+			char scratch[4] = { 0 };
 			int label = sx + x;
 
 			if(label < 0 || label > 999) {
 				continue;
 			}
-			sprintf(scratch, "%3d", label);
+			snprintf(scratch, sizeof(scratch), "%3d", label);
 			base = sketch_buf + left_offset + 1 + x * 3;
 			base[0] = scratch[0];
 			base[1 * dispcols] = scratch[1];
@@ -1500,9 +1499,9 @@ char **MakeMapText(dbref player, MECH * mech, MAP * map, int cx, int cy,
 				continue;
 			}
 
-			sprintf(base, "%3d", label);
+			snprintf(base, sizeof(sketch_buf) - (top_offset + 1 + y * 2) * dispcols, "%3d", label);
 			base[3] = ' ';
-			sprintf(base + (dispcols - RIGHT_LABEL - 1), "%3d", label);
+			snprintf(base + (dispcols - RIGHT_LABEL - 1), sizeof(sketch_buf) - (dispcols - RIGHT_LABEL - 1), "%3d", label);
 		}
 	}
 

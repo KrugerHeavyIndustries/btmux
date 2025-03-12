@@ -121,7 +121,7 @@ int start_log(const char *primary, const char *secondary)
 		if((mudconf.log_info & LOGOPT_TIMESTAMP) != 0) {
 			time((time_t *) (&now));
 			tp = localtime((time_t *) (&now));
-			sprintf(mudstate.buffer, "%d%02d%02d.%02d%02d%02d ",
+			snprintf(mudstate.buffer, 256 /* TODO */, "%d%02d%02d.%02d%02d%02d ",
 					tp->tm_year + 1900, tp->tm_mon + 1, tp->tm_mday,
 					tp->tm_hour, tp->tm_min, tp->tm_sec);
 		} else {
@@ -316,7 +316,7 @@ void log_type_and_name(dbref thing)
 	char nbuf[16];
 
 	log_text(OBJTYP(thing));
-	sprintf(nbuf, " #%ld(", thing);
+	snprintf(nbuf, sizeof(nbuf), " #%ld(", thing);
 	log_text(nbuf);
 	if(Good_obj(thing))
 		log_text(Name(thing));
@@ -329,7 +329,7 @@ void log_type_and_num(dbref thing)
 	char nbuf[16];
 
 	log_text(OBJTYP(thing));
-	sprintf(nbuf, " #%ld", thing);
+	snprintf(nbuf, sizeof(nbuf), " #%ld", thing);
 	log_text(nbuf);
 	return;
 }

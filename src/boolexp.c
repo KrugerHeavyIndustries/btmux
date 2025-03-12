@@ -86,7 +86,7 @@ int eval_boolexp(dbref player, dbref thing, dbref from, BOOLEXP * b)
             STARTLOG(LOG_BUGS, "BUG", "LOCK") {
                 log_name_and_loc(player);
                 buff = alloc_mbuf("eval_boolexp.LOG.indir");
-                sprintf(buff, ": Lock had bad indirection (%c, type %d)",
+                snprintf(buff, MBUF_SIZE, ": Lock had bad indirection (%c, type %d)",
                         INDIR_TOKEN, b->sub1->type);
                 log_text(buff);
                 free_mbuf(buff);

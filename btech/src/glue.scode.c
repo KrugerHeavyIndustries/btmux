@@ -149,7 +149,7 @@ char *mechTechTimefunc(int mode, MECH * mech)
 	static char buf[MBUF_SIZE];
 	int n = figure_latest_tech_event(mech);
 
-	sprintf(buf, "%d", n);
+	snprintf(buf, MBUF_SIZE, "%d", n);
 	return buf;
 }
 
@@ -248,7 +248,7 @@ void apply_mechDamage(MECH * omech, char *buf)
 		do_magic(omech);
 }
 
-#define ADD(foo...) { if (count++) strcat(buf,","); sprintf(buf+strlen(buf), foo); }
+#define ADD(foo...) { if (count++) strncat(buf,",",1); snprintf(buf+strlen(buf), LBUF_SIZE-strlen(buf), foo); }
 
 char *mechDamagefunc(int mode, MECH * mech, char *arg)
 {
@@ -256,14 +256,13 @@ char *mechDamagefunc(int mode, MECH * mech, char *arg)
 	   A:LOC/num[,LOC/num[,LOC(R)/num]],I:LOC/num
 	   C:LOC/num,R:LOC/num(num),G:LOC/num(num) */
 	int i, j;
-	static char buf[LBUF_SIZE];
+	static char buf[LBUF_SIZE] = { 0 };
 	int count = 0;
 
 	if(mode) {
 		apply_mechDamage(mech, arg);
 		return "?";
 	};
-	buf[0] = 0;
 	for(i = 0; i < NUM_SECTIONS; i++)
 		if(GetSectOInt(mech, i)) {
 			if(GetSectArmor(mech, i) != GetSectOArmor(mech, i))
@@ -306,7 +305,7 @@ char *mechCentBearingfunc(int mode, MECH * mech, char *arg)
 	static char buf[SBUF_SIZE];
 
 	MapCoordToRealCoord(x, y, &fx, &fy);
-	sprintf(buf, "%d", FindBearing(MechFX(mech), MechFY(mech), fx, fy));
+	snprintf(buf, SBUF_SIZE, "%d", FindBearing(MechFX(mech), MechFY(mech), fx, fy));
 	return buf;
 }
 
@@ -318,7 +317,7 @@ char *mechCentDistfunc(int mode, MECH * mech, char *arg)
 	static char buf[SBUF_SIZE];
 
 	MapCoordToRealCoord(x, y, &fx, &fy);
-	sprintf(buf, "%.2f", FindHexRange(fx, fy, MechFX(mech), MechFY(mech)));
+	snprintf(buf, SBUF_SIZE, "%.2f", FindHexRange(fx, fy, MechFX(mech), MechFY(mech)));
 	return buf;
 }
 
@@ -556,7 +555,7 @@ void fun_zmechs(char *buff, char **bufc, dbref player, dbref cause,
 	                                if(len) {
         	                                static char smbuf[SBUF_SIZE];
 
-                	                        sprintf(smbuf, " #%ld", i);
+                	                        snprintf(smbuf, SBUF_SIZE, " #%ld", i);
                         	                if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                 	                safe_str(" #-1", buff, bufc);
                                         	        return;
@@ -645,36 +644,36 @@ static char *RetrieveValue(void *data, int i)
 	case TYPE_STRFUNC_BD:
 	case TYPE_STRFUNC:
 		tempfun = (void *) xcode_data[i].rel_addr;
-		sprintf(buf, "%s", (char *) tempfun(0, (MECH *) data));
+		snprintf(buf, LBUF_SIZE, "%s", (char *) tempfun(0, (MECH *) data));
 		break;
 	case TYPE_STRING:
-		sprintf(buf, "%s", (char *) bar);
+		snprintf(buf, LBUF_SIZE, "%s", (char *) bar);
 		break;
 	case TYPE_DBREF:
 	case TYPE_DBREF_RO:
-		sprintf(buf, "%ld", (dbref) * ((dbref *) bar));
+		snprintf(buf, LBUF_SIZE, "%ld", (dbref) * ((dbref *) bar));
 		break;
 	case TYPE_CHAR:
 	case TYPE_CHAR_RO:
-		sprintf(buf, "%d", (char) *((char *) bar));
+		snprintf(buf, LBUF_SIZE, "%d", (char) *((char *) bar));
 		break;
 	case TYPE_SHORT:
 	case TYPE_SHORT_RO:
-		sprintf(buf, "%d", (short) *((short *) bar));
+		snprintf(buf, LBUF_SIZE, "%d", (short) *((short *) bar));
 		break;
 	case TYPE_INT:
 	case TYPE_INT_RO:
-		sprintf(buf, "%d", (int) *((int *) bar));
+		snprintf(buf, LBUF_SIZE, "%d", (int) *((int *) bar));
 		break;
 	case TYPE_FLOAT:
 	case TYPE_FLOAT_RO:
-		sprintf(buf, "%.2f", (float) *((float *) bar));
+		snprintf(buf, LBUF_SIZE, "%.2f", (float) *((float *) bar));
 		break;
 	case TYPE_BV:
-		strcpy(buf, bv2text((int) *((int *) bar)));
+		strncpy(buf, bv2text((int) *((int *) bar)), LBUF_SIZE);
 		break;
 	case TYPE_CBV:
-		strcpy(buf, bv2text((int) *((char *) bar)));
+		strncpy(buf, bv2text((int) *((char *) bar)), LBUF_SIZE);
 		break;
 	}
 	return buf;
@@ -827,7 +826,7 @@ void list_xcodestuff(dbref player, void *data, char *buffer)
 					continue;
 			strcpy(lab, xcode_data[i].name);
 			lab[se_len / 3] = 0;
-			sprintf(mask, "%%-%ds%%%ds", se_len / 3, se_len * 2 / 3);
+			snprintf(mask, SBUF_SIZE,  "%%-%ds%%%ds", se_len / 3, se_len * 2 / 3);
 			sim(tprintf(mask, lab, RetrieveValue(data, i)), flag);
 		}
 	}
@@ -1712,7 +1711,7 @@ void fun_bttechtime(char *buff, char **bufc, dbref player, dbref cause,
 			strcpy(buf, "00:00.00");
 		} else {
 			old -= mudstate.now;
-			sprintf(buf, "%02ld:%02d.%02d", (long) (old / 3600),
+			snprintf(buf, MBUF_SIZE, "%02ld:%02d.%02d", (long) (old / 3600),
 					(int) ((old / 60) % 60), (int) (old % 60));
 		}
 	} else {
@@ -2722,6 +2721,6 @@ fun_btlag(char *buff, char **bufc, dbref player, dbref cause,
 {
 	char buf[256];
 
-	sprintf(buf, "%d", game_lag());
+	snprintf(buf, 256, "%d", game_lag());
 	safe_str(buf, buff, bufc);
 }

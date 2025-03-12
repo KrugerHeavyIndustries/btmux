@@ -78,7 +78,7 @@ static int create_brandname(int id, int b)
    { strcpy(buf2, c); \
      if (fl) \
      strcpy(buf3, my_shortform(brn)); \
-   sprintf(buf, "%s.%s", fl ? buf3 : brn, buf2); } \
+   snprintf(buf, sizeof(buf), "%s.%s", fl ? buf3 : brn, buf2); } \
   else \
     strcpy(buf, c); \
   p->val = strdup(buf)

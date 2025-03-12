@@ -91,7 +91,7 @@ char *make_guest(DESC * d)
 	 */
 
 	for(i = 0; i < mudconf.number_guests; i++) {
-		sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
+		snprintf(name, sizeof(name), "%s%d", mudconf.guest_prefix, i + 1);
 		p2 = lookup_player(GOD, name, 0);
 		if(p2 != NOTHING && !Connected(p2))
 			destroy_guest(p2);
@@ -102,7 +102,7 @@ char *make_guest(DESC * d)
 	 */
 
 	for(i = 0; i < mudconf.number_guests; i++) {
-		sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
+		snprintf(name, sizeof(name), "%s%d", mudconf.guest_prefix, i + 1);
 		player = lookup_player(GOD, name, 0);
 		if(player == NOTHING)
 			break;
@@ -113,7 +113,7 @@ char *make_guest(DESC * d)
 					 "GAME: All guest ID's are busy, please try again later.\n");
 		return NULL;
 	}
-	sprintf(name, "%s%d", mudconf.guest_prefix, i + 1);
+	snprintf(name, sizeof(name), "%s%d", mudconf.guest_prefix, i + 1);
 	player = create_guest(name, mudconf.guest_prefix);
 
 	if(player == NOTHING) {

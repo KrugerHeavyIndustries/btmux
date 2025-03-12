@@ -351,7 +351,7 @@ dbref create_obj(dbref player, int objtype, char *name, int cost)
 		atr_add_raw(obj, A_LAST, buff);
 
 		buff = alloc_sbuf("create_obj.quota");
-		sprintf(buff, "%d", quota);
+		snprintf(buff, SBUF_SIZE, "%d", quota);
 		atr_add_raw(obj, A_QUOTA, buff);
 		atr_add_raw(obj, A_RQUOTA, buff);
 		add_player_name(obj, Name(obj));

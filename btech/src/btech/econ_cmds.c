@@ -177,7 +177,7 @@ void list_matching(dbref player, char *header, dbref loc, char *buf)
 			ch = part_name_long(id, brand);
 #else
 			sw = GetPartWeight(id);
-			sprintf(tmpstr, "%s (%.1ft)", part_name_long(id, brand),
+			snprintf(tmpstr, LBUF_SIZE, "%s (%.1ft)", part_name_long(id, brand),
 					(sw * x) / 1024.0);
 			ch = tmpstr;
 #endif /* BT_PART_WEIGHTS */

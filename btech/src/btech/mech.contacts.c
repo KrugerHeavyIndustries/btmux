@@ -422,7 +422,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 			}
 
 			if(!IsUsingHUD) {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 				    "%s%c%c%c[%s]%c %-12.12s x:%3d y:%3d z:%3d r:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
 				    tempMech->mynum == MechTarget(mech) ? "%ch%cr" :
 				    !MechSeemsFriend(mech, tempMech) ? "%ch%cy" : "",
@@ -441,7 +441,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 						(tempMech->mynum == MechTarget(mech) ||
 						 !MechSeemsFriend(mech, tempMech)) ? "%c" : "");
 			} else {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"#HUDINFO:CON#%c,%c,%c,%c,%s,%c,%-12.12s,%3d,%3d,%3d,%4.1f,%3d,%4.1f,%3d,%c%c%c%c%c",
 						(tempMech->mynum == MechTarget(mech)) ? 'T' :
 						!MechSeemsFriend(mech, tempMech) ? 'E' : 'F',
@@ -460,22 +460,22 @@ void mech_contacts(dbref player, void *data, char *buffer)
 				(MechStatus(tempMech) & DESTROYED) ? 10000 : 0;
 			strcpy(bufflist[buffindex++], buff);
 		} else {
-			sprintf(buff, "[%s] %-17s  Tonnage: %d", MechIDS(tempMech,
+			snprintf(buff, sizeof(buff), "[%s] %-17s  Tonnage: %d", MechIDS(tempMech,
 															 MechSeemsFriend
 															 (mech,
 															  tempMech)),
 					mech_name, MechTons(tempMech));
 			notify(player, buff);
-			sprintf(buff, "      Range: %.1f hex\tBearing: %d degrees",
+			snprintf(buff, sizeof(buff), "      Range: %.1f hex\tBearing: %d degrees",
 					range, bearing);
 			notify(player, buff);
-			sprintf(buff, "      Speed: %.1f KPH\tHeading: %d degrees",
+			snprintf(buff, sizeof(buff), "      Speed: %.1f KPH\tHeading: %d degrees",
 					MechSpeed(tempMech), MechVFacing(tempMech));
 			notify(player, buff);
-			sprintf(buff, "      X, Y: %3d, %3d \tHeat: %.0f deg C.",
+			snprintf(buff, sizeof(buff), "      X, Y: %3d, %3d \tHeat: %.0f deg C.",
 					MechX(tempMech), MechY(tempMech), MechHeat(tempMech));
 			notify(player, buff);
-			sprintf(buff, "      Movement Type: %s", move_type);
+			snprintf(buff, sizeof(buff), "      Movement Type: %s", move_type);
 			notify(player, buff);
 			notify_printf(player, "      Mech is in %s Arc",
 						  GetArcID(mech, InWeaponArc(mech, MechFX(tempMech),
@@ -527,7 +527,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 			}
 
 			if(!IsUsingHUD) {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"%s%c%c%c %-23.23s x:%3d y:%3d z:%2d r:%4.1f b:%3d CF:%4d /%4d S:%c%c%s",
 						j ? "%ch%cy" : "",
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',
@@ -539,7 +539,7 @@ void mech_contacts(dbref player, void *data, char *buffer)
 						j ? 'x' : BuildIsCS(tmp_map) ? 'C' : ' ',
 						BuildIsHidden(tmp_map) ? 'H' : ' ', j ? "%c" : "");
 			} else {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"#HUDINFO:CON#%c,%c,%c,%c,%-21.21s,%3d,%3d,%3d,%4.1f,%3d,%4d,%4d,%c%c",
 						j ? 'E' : 'F',
 						(losflag & MECHLOSFLAG_SEESP) ? 'P' : ' ',

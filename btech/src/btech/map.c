@@ -243,7 +243,7 @@ static void make_bridges(MAP * map)
 
 int map_checkmapfile(MAP * map, char *mapname)
 {
-	char openfile[50];
+	char openfile[50] = { 0 };
 	FILE *fp;
         char row[MAPX * 2 + 3];
         int i  = 0, height, width, filemode;
@@ -251,7 +251,7 @@ int map_checkmapfile(MAP * map, char *mapname)
 
 	if(strlen(mapname) >= MAP_NAME_SIZE)
 		mapname[MAP_NAME_SIZE] = 0;
-	sprintf(openfile, "%s/%s", MAP_PATH, mapname);
+	snprintf(openfile, sizeof(openfile), "%s/%s", MAP_PATH, mapname);
 	fp = my_open_file(openfile, "r", &filemode);
 
 	if(!fp) {
@@ -289,7 +289,7 @@ int map_checkmapfile(MAP * map, char *mapname)
 
 int map_load(MAP * map, char *mapname)
 {
-	char openfile[50];
+	char openfile[50] = { 0 };
 	char terr, elev;
 	int i1, i2, i3;
 	FILE *fp;
@@ -298,7 +298,7 @@ int map_load(MAP * map, char *mapname)
 
 	if(strlen(mapname) >= MAP_NAME_SIZE)
 		mapname[MAP_NAME_SIZE] = 0;
-	sprintf(openfile, "%s/%s", MAP_PATH, mapname);
+	snprintf(openfile, sizeof(openfile), "%s/%s", MAP_PATH, mapname);
 	fp = my_open_file(openfile, "r", &filemode);
 	if(!fp) {
 		return -1; // Bad map file
@@ -371,7 +371,7 @@ int map_load(MAP * map, char *mapname)
 	map->map_width = width;
 	if(!MapNoBridgify(map))
 		make_bridges(map);
-	strcpy(map->mapname, mapname);
+	strncpy(map->mapname, mapname, MAP_NAME_SIZE);
 	my_close_file(fp, &filemode);
 	return 0;
 }
@@ -421,7 +421,7 @@ void map_savemap(dbref player, void *data, char *buffer)
 	MAP *map;
 	char *args[1];
 	FILE *fp;
-	char openfile[50];
+	char openfile[50] = { 0 };
 	int i, j;
 	char row[MAPX * 2 + 1];
 	char terrain;
@@ -437,7 +437,7 @@ void map_savemap(dbref player, void *data, char *buffer)
 	if(strlen(args[0]) >= MAP_NAME_SIZE)
 		args[0][MAP_NAME_SIZE] = 0;
 	notify_printf(player, "Saving %s", args[0]);
-	sprintf(openfile, "%s/", MAP_PATH);
+	snprintf(openfile, sizeof(openfile), "%s/", MAP_PATH);
 	strcat(openfile, args[0]);
 	DOCHECK(!(fp =
 			  my_open_file(openfile, "w", &filemode)),
@@ -627,7 +627,7 @@ void newfreemap(dbref key, void **data, int selector)
 		/* allocate default map space */
 		for(i = 0; i < NUM_MAPOBJTYPES; i++)
 			new->mapobj[i] = NULL;
-		sprintf(new->mapname, "%s", "Default Map");
+		snprintf(new->mapname, MAP_NAME_SIZE, "%s", "Default Map");
 		break;
 	case SPECIAL_FREE:
 		/* Seriously. We weren't clearing the map of mechas. Bad bad accounting!!! */

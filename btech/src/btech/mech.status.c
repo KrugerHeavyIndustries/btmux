@@ -53,15 +53,16 @@ void DisplayTarget(dbref player, MECH * mech)
 {
 	int arc;
 	MECH *tempMech = NULL;
-	char location[50];
-	char buff[100], buff1[100];
+	char location[50] = { 0 };
+	char buff[100] = { 0 };
+	char buff1[100] = { 0 };
 
 	if(MechTarget(mech) != -1) {
 		tempMech = getMech(MechTarget(mech));
 		if(tempMech) {
 			if(InLineOfSight(mech, tempMech, MechX(tempMech),
 							 MechY(tempMech), FaMechRange(mech, tempMech))) {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"Target: %s\t   Range: %.1f hexes   Bearing: %d deg\n",
 						GetMechToMechID(mech, tempMech), FaMechRange(mech,
 																	 tempMech),
@@ -79,10 +80,10 @@ void DisplayTarget(dbref player, MECH * mech)
 					ArmorStringFromIndex(MechAim(mech), location,
 										 MechType(tempMech),
 										 MechMove(tempMech));
-				sprintf(buff1, "\t   Aimed Shot Location: %s", location);
+				snprintf(buff1, sizeof(buff1), "\t   Aimed Shot Location: %s", location);
 				strcat(buff, buff1);
 			} else
-				sprintf(buff, "Target: NOT in line of sight!\n");
+				snprintf(buff, sizeof(buff), "Target: NOT in line of sight!\n");
 		}
 		notify(player, buff);
 	} else if(MechTargX(mech) != -1 && MechTargY(mech) != -1) {
@@ -129,9 +130,9 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 	MECH *tempMech = NULL;
 	MAP *map = FindObjectsData(mech->mapindex);
 	char buff[SBUF_SIZE];
-	char mech_name[100];
-	char mech_ref[100];
-	char move_type[50];
+	char mech_name[100] = { 0 };
+	char mech_ref[100] = { 0 };
+	char move_type[50] = { 0 };
 
 	strcpy(mech_name,
 		   usex ? MechType_Name(mech) : silly_atr_get(mech->mynum,
@@ -146,7 +147,7 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 		notify_printf(player, "MaxSpeed: %3d", (int) MMaxSpeed(mech));
 		break;
 	case CLASS_BSUIT:
-		sprintf(buff, "%s Name: %-18.18s  ID:[%s]   %s Reference: %s",
+		snprintf(buff, sizeof(buff), "%s Name: %-18.18s  ID:[%s]   %s Reference: %s",
 				GetBSuitName(mech), mech_name, MechIDS(mech, 0),
 				GetBSuitName(mech), mech_ref);
 		notify(player, buff);
@@ -157,23 +158,23 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 		if(MechPilot(mech) == -1)
 			notify(player, "Leader: NONE");
 		else {
-			sprintf(buff, "%s Leader Name: %-16.16s %s Leader injury: %d",
+			snprintf(buff, sizeof(buff), "%s Leader Name: %-16.16s %s Leader injury: %d",
 					GetBSuitName(mech), Name(MechPilot(mech)),
 					GetBSuitName(mech), MechPilotStatus(mech));
 			notify(player, buff);
 		}
 
-		sprintf(buff, "Max Suits: %d", MechMaxSuits(mech));
+		snprintf(buff, sizeof(buff), "Max Suits: %d", MechMaxSuits(mech));
 		notify(player, buff);
 
 		Mech_ShowFlags(player, mech, 0, 0);
 
 		if(Jumping(mech)) {
-			sprintf(buff, "JUMPING --> %3d,%3d", MechGoingX(mech),
+			snprintf(buff, sizeof(buff), "JUMPING --> %3d,%3d", MechGoingX(mech),
 					MechGoingY(mech));
 			if((MechStatus(mech) & DFA_ATTACK) && MechDFATarget(mech) != -1) {
 				tempMech = getMech(MechDFATarget(mech));
-				sprintf(buff + strlen(buff),
+				snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff),
 						"  Death From Above Target: %s",
 						GetMechToMechID(mech, tempMech));
 			}
@@ -181,7 +182,7 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 		}
 		break;
 	case CLASS_MECH:
-		sprintf(buff, "Mech Name: %-18.18s  ID:[%s]   Mech Reference: %s",
+		snprintf(buff, sizeof(buff), "Mech Name: %-18.18s  ID:[%s]   Mech Reference: %s",
 				mech_name, MechIDS(mech, 0), mech_ref);
 		notify(player, buff);
 		notify_printf(player,
@@ -192,7 +193,7 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 		if(MechPilot(mech) == -1)
 			notify(player, "Pilot: NONE");
 		else {
-			sprintf(buff, "Pilot Name: %-28.28s Pilot Injury: %d",
+			snprintf(buff, sizeof(buff), "Pilot Name: %-28.28s Pilot Injury: %d",
 					Name(MechPilot(mech)), MechPilotStatus(mech));
 			notify(player, buff);
 		}
@@ -201,17 +202,17 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 		   (MechChargeTarget(mech) != -1)) {
 			tempMech = getMech(MechChargeTarget(mech));
 			if(tempMech) {
-				sprintf(buff, "CHARGING --> %s", GetMechToMechID(mech,
+				snprintf(buff, sizeof(buff), "CHARGING --> %s", GetMechToMechID(mech,
 																 tempMech));
 				notify(player, buff);
 			}
 		}
 		if(Jumping(mech)) {
-			sprintf(buff, "JUMPING --> %3d,%3d", MechGoingX(mech),
+			snprintf(buff, sizeof(buff), "JUMPING --> %3d,%3d", MechGoingX(mech),
 					MechGoingY(mech));
 			if((MechStatus(mech) & DFA_ATTACK) && MechDFATarget(mech) != -1) {
 				tempMech = getMech(MechDFATarget(mech));
-				sprintf(buff + strlen(buff),
+				snprintf(buff + strlen(buff), sizeof(buff) - strlen(buff),
 						"  Death From Above Target: %s",
 						GetMechToMechID(mech, tempMech));
 			}
@@ -254,11 +255,11 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 			break;
 		}
 		if(MechMove(mech) != MOVE_NONE) {
-			sprintf(buff,
+			snprintf(buff, sizeof(buff),
 					"Vehicle Name: %-15.15s  ID:[%s]   Vehicle Reference: %s",
 					mech_name, MechIDS(mech, 0), mech_ref);
 			notify(player, buff);
-			sprintf(buff,
+			snprintf(buff, sizeof(buff),
 					"Tonnage:   %3d      %s: %3d       Movement Type: %s",
 					MechTons(mech),
 					is_aero(mech) ? "Max thrust" : "FlankSpeed",
@@ -268,12 +269,12 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 			if(MechPilot(mech) == -1)
 				notify(player, "Pilot: NONE");
 			else {
-				sprintf(buff, "Pilot Name: %-28.28s Pilot Injury: %d",
+				snprintf(buff, sizeof(buff), "Pilot Name: %-28.28s Pilot Injury: %d",
 						Name(MechPilot(mech)), MechPilotStatus(mech));
 				notify(player, buff);
 			}
 		} else {
-			sprintf(buff, "Name: %-15.15s  ID:[%s]   Reference: %s",
+			snprintf(buff, sizeof(buff), "Name: %-15.15s  ID:[%s]   Reference: %s",
 					mech_name, MechIDS(mech, 0), mech_ref);
 			notify(player, buff);
 		}
@@ -292,34 +293,34 @@ void PrintGenericStatus(dbref player, MECH * mech, int own, int usex)
 
 void PrintShortInfo(dbref player, MECH * mech)
 {
-	char buff[100];
-	char typespecific[50];
+	char buff[100] = { 0 };
+	char typespecific[50] = { 0 };
 
 	switch (MechType(mech)) {
 	case CLASS_VTOL:
-		sprintf(typespecific, " VSPD: %3.1f ", MechVerticalSpeed(mech));
+		snprintf(typespecific, sizeof(typespecific), " VSPD: %3.1f ", MechVerticalSpeed(mech));
 		break;
 	case CLASS_MECH:
-		sprintf(typespecific, " HT: %3d/%3d/%-3d ",
+		snprintf(typespecific, sizeof(typespecific), " HT: %3d/%3d/%-3d ",
 				(int) (10. * MechPlusHeat(mech)),
 				(int) (10. * MechActiveNumsinks(mech)), (int) (10. * MechMinusHeat(mech)));
 		break;
 	case CLASS_AERO:
 	case CLASS_DS:
 	case CLASS_SPHEROID_DS:
-		sprintf(typespecific, " VSPD: %3.1f  ANG: %2d  HT: %3d/%3d ",
+		snprintf(typespecific, sizeof(typespecific), " VSPD: %3.1f  ANG: %2d  HT: %3d/%3d ",
 				MechVerticalSpeed(mech), MechDesiredAngle(mech),
 				(int) (10 * MechPlusHeat(mech)),
 				(int) (10 * MechActiveNumsinks(mech)));
 		break;
 	case CLASS_VEH_NAVAL:
 		if(MechMove(mech) == MOVE_FOIL)
-			sprintf(typespecific, " VSPD: %3.1f ", MechVerticalSpeed(mech));
+			snprintf(typespecific, sizeof(typespecific), " VSPD: %3.1f ", MechVerticalSpeed(mech));
 		/* FALLTHROUGH */
 	case CLASS_VEH_GROUND:
 		/* XXX This won't work for subs with turrets.. are they possible ? */
 		if(GetSectOInt(mech, TURRET)) {
-			sprintf(typespecific, " TUR: %3d ",
+			snprintf(typespecific, sizeof(typespecific), " TUR: %3d ",
 					AcceptableDegree(MechTurretFacing(mech) +
 									 MechFacing(mech)));
 			break;
@@ -468,7 +469,7 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 				 (int) (MechSpeed(mech)), MechFacing(mech),
 				 MechActiveNumsinks(mech));
 		notify(player, buff);
-		sprintf(buff,
+		snprintf(buff, sizeof(buff),
 				"Des. Speed: %3d KPH  Des. Heading: %3d deg     Heat Dissipation: %3d deg C.",
 				(int) MechDesiredSpeed(mech), MechDesiredFacing(mech),
 				(int) (10. * MechMinusHeat(mech)));
@@ -494,21 +495,21 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 										 abs(MechDesiredAngle(mech))) : "");
 		notify(player, buff);
 		if(FlyingT(mech) || MechMove(mech) == MOVE_SUB) {
-			sprintf(buff,
+			snprintf(buff, sizeof(buff),
 					"Speed:      %%ch%%cg%3d%%cn KPH  Vertical Speed:      %%ch%%cg%3d%%cn KPH   Des. Speed %3d KPH",
 					(int) (MechSpeed(mech)), (int) (MechVerticalSpeed(mech)),
 					(int) (MechDesiredSpeed(mech)));
 			notify(player, buff);
 			f = MAX(0, AeroFuel(mech));
 			if(MechMove(mech) == MOVE_SUB) {
-				sprintf(buff, "Heading: %3d KPH  Des. Heading: %3d deg",
+				snprintf(buff, sizeof(buff), "Heading: %3d KPH  Des. Heading: %3d deg",
 						(int) MechFacing(mech), MechDesiredFacing(mech));
 			} else if(AeroFreeFuel(mech)) {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: Unlimited",
 						MechFacing(mech), MechDesiredFacing(mech));
 			} else {
-				sprintf(buff,
+				snprintf(buff, sizeof(buff),
 						"Heading:    %%ch%%cg%3d%%cn deg  Des. Heading:        %3d deg   Fuel: %d (%.2f %%)",
 						MechFacing(mech), MechDesiredFacing(mech), f,
 						100.0 * f / AeroFuelOrig(mech));
@@ -516,11 +517,11 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 
 			notify(player, buff);
 		} else if(MechMove(mech) != MOVE_NONE) {
-			sprintf(buff,
+			snprintf(buff, sizeof(buff),
 					"Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
 					(int) (MechSpeed(mech)), MechFacing(mech));
 			notify(player, buff);
-			sprintf(buff, "Des. Speed: %3d KPH  Des. Heading: %3d deg",
+			snprintf(buff, sizeof(buff), "Des. Speed: %3d KPH  Des. Heading: %3d deg",
 					(int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
 			notify(player, buff);
 
@@ -534,12 +535,12 @@ void PrintInfoStatus(dbref player, MECH * mech, int own)
 		break;
 	case CLASS_MW:
 	case CLASS_BSUIT:
-		sprintf(buff,
+		snprintf(buff, sizeof(buff),
 				"X, Y, Z:%3d,%3d,%3d  Speed:      %%ch%%cg%3d%%cn KPH  Heading:      %%ch%%cg%3d%%cn deg",
 				MechX(mech), MechY(mech), MechZ(mech),
 				(int) (MechSpeed(mech)), MechFacing(mech));
 		notify(player, buff);
-		sprintf(buff,
+		snprintf(buff, sizeof(buff),
 				"                     Des. Speed: %3d KPH  Des. Heading: %3d deg",
 				(int) MechDesiredSpeed(mech), MechDesiredFacing(mech));
 		notify(player, buff);
@@ -570,8 +571,8 @@ void mech_status(dbref player, void *data, char *buffer)
 	int doweap = 0, doinfo = 0, doarmor = 0, doshort = 0, doheat = 0, loop;
 	int i;
 	int usex = 0;
-	char buf[LBUF_SIZE];
-	char subbuff[256];
+	char buf[LBUF_SIZE] = { 0 };
+	char subbuff[256] = { 0 };
 
 	doweird = 0;
 	cch(MECH_USUALSM);
@@ -630,7 +631,7 @@ void mech_status(dbref player, void *data, char *buffer)
 
 	// Really weird status display.
 	if(doweird) {
-		sprintf(buf, "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
+		snprintf(buf, sizeof(buf), "%s %s %d %d/%d/%d %d ", MechType_Ref(mech),
 				MechType_Name(mech), MechTons(mech),
 				(int) (MechMaxSpeed(mech) / MP1) * 2 / 3,
 				(int) (MechMaxSpeed(mech) / MP1),
@@ -649,11 +650,11 @@ void mech_status(dbref player, void *data, char *buffer)
 			for(i = 0; i < NUM_SECTIONS; i++)
 				if(GetSectOArmor(mech, i)) {
 					if(GetSectORArmor(mech, i))
-						sprintf(buf + strlen(buf), "%d|%d|%d ",
+						snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%d|%d|%d ",
 								GetSectOArmor(mech, i), GetSectOInt(mech, i),
 								GetSectORArmor(mech, i));
 					else
-						sprintf(buf + strlen(buf), "%d|%d ",
+						snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%d|%d ",
 								GetSectOArmor(mech, i), GetSectOInt(mech, i));
 				}
 		}
@@ -824,23 +825,23 @@ static char *wspec_fun(int i)
 	static char buf[MBUF_SIZE];
 	int j;
 
-	buf[0] = 0;
+	buf[0] = '\0';
 	if(!i)
 		if(mudconf.btech_erange)
-			sprintf(buf, WSDUMP_MASKS_ER);
+			snprintf(buf, sizeof(buf), WSDUMP_MASKS_ER);
 		else
-			sprintf(buf, WSDUMP_MASKS_NOER);
+			snprintf(buf, sizeof(buf), WSDUMP_MASKS_NOER);
 	else {
 		i--;
 		j = wspec_weaps[i];
 		if(mudconf.btech_erange)
-			sprintf(buf, WSDUMP_MASK_ER, MechWeapons[j].name,
+			snprintf(buf, sizeof(buf), WSDUMP_MASK_ER, MechWeapons[j].name,
 					MechWeapons[j].heat, MechWeapons[j].damage,
 					MechWeapons[j].min, MechWeapons[j].shortrange,
 					MechWeapons[j].medrange, GunRange(j), EGunRange(j),
 					MechWeapons[j].vrt);
 		else
-			sprintf(buf, WSDUMP_MASK_NOER, MechWeapons[j].name,
+			snprintf(buf, sizeof(buf), WSDUMP_MASK_NOER, MechWeapons[j].name,
 					MechWeapons[j].heat, MechWeapons[j].damage,
 					MechWeapons[j].min, MechWeapons[j].shortrange,
 					MechWeapons[j].medrange, GunRange(j), MechWeapons[j].vrt);
@@ -898,7 +899,7 @@ char *sectstatus_func(MECH * mech, char *arg)
  * 1 = Section Exists
  * 0 = Section Destroyed
 */
-	static char buffer[MBUF_SIZE];
+	static char buffer[MBUF_SIZE] = { 0 };
 	int index;
 
 	if(!arg || !*arg)
@@ -908,14 +909,14 @@ char *sectstatus_func(MECH * mech, char *arg)
 	if(index == -1)
 		return "#-1 INVALID SECTION";
 
-	sprintf(buffer, "%d", SectIsFlooded(mech,index) ? -1 : !(SectIsDestroyed(mech,index)));
+	snprintf(buffer, sizeof(buffer), "%d", SectIsFlooded(mech,index) ? -1 : !(SectIsDestroyed(mech,index)));
 
 	return buffer;
 }
 
 char *critstatus_func(MECH * mech, char *arg)
 {
-	static char buffer[MBUF_SIZE];
+	static char buffer[MBUF_SIZE] = { 0 };
 	char *tmp;
 	int index, i, max_crits;
 	int type;
@@ -931,14 +932,14 @@ char *critstatus_func(MECH * mech, char *arg)
 	max_crits = CritsInLoc(mech, index);
 	for(i = 0; i < max_crits; i++) {
 		if(buffer[0])
-			sprintf(buffer, "%s,", buffer);
-		sprintf(buffer, "%s%d|", buffer, i + 1);
+			snprintf(buffer, sizeof(buffer), "%s,", buffer);
+		snprintf(buffer, sizeof(buffer), "%s%d|", buffer, i + 1);
 		type = GetPartType(mech, index, i);
 		if(IsAmmo(type))
 			type = FindAmmoType(mech, index, i);
 		tmp = get_parts_long_name(type, GetPartBrand(mech, index, i));
-		sprintf(buffer, "%s|%s", buffer, tmp ? tmp : "Empty");
-		sprintf(buffer, "%s|%d", buffer, (PartIsNonfunctional(mech, index,
+		snprintf(buffer, sizeof(buffer), "%s|%s", buffer, tmp ? tmp : "Empty");
+		snprintf(buffer, sizeof(buffer), "%s|%d", buffer, (PartIsNonfunctional(mech, index,
 															  i)
 										  && type != EMPTY && (!IsCrap(type)
 															   ||
@@ -946,7 +947,7 @@ char *critstatus_func(MECH * mech, char *arg)
 															   (mech,
 																index))) ? -1
 				: PartTempNuke(mech, index, i));
-		sprintf(buffer, "%s|%d", buffer,
+		snprintf(buffer, sizeof(buffer), "%s|%d", buffer,
 				IsWeapon(type) ? 1 : IsAmmo(type) ? 2 : IsActuator(type) ? 3 :
 				IsCargo(type) ? 4 : (IsCrap(type) || type == EMPTY) ? 5 : 0);
 	}
@@ -1013,7 +1014,7 @@ char *armorstatus_func(MECH * mech, char *arg)
 
 char *weaponstatus_func(MECH * mech, char *arg)
 {
-   static char buffer[MBUF_SIZE];
+   static char buffer[MBUF_SIZE] = { 0 };
    int count, sect, loopsect, i, type, totalcount = 0;
    unsigned char weaparray[MAX_WEAPS_SECTION];
    unsigned char weapdata[MAX_WEAPS_SECTION];
@@ -1034,9 +1035,9 @@ char *weaponstatus_func(MECH * mech, char *arg)
       count = FindWeapons(mech, loopsect, weaparray, weapdata, criticals);
       for(i = 0; i < count; i++, totalcount++) {
             if(buffer[0])
-               sprintf(buffer, "%s,", buffer);
+               snprintf(buffer, sizeof(buffer), "%s,", buffer);
                type = Weapon2I(GetPartType(mech, loopsect, criticals[i]));
-               sprintf(buffer, "%s%d|%s|%d|%d|%d|%d|%d|%d", buffer,
+               snprintf(buffer, sizeof(buffer), "%s%d|%s|%d|%d|%d|%d|%d|%d", buffer,
                   totalcount, get_parts_long_name(I2Weapon(type),
                   GetPartBrand(mech, loopsect, criticals[i])),
                   GetWeaponCrits(mech, type), GetPartBrand(mech, loopsect,
@@ -1145,7 +1146,7 @@ char *critslot_func(MECH * mech, char *buf_section, char *buf_critnum,
 void CriticalStatus(dbref player, MECH * mech, int index)
 {
 	int loop, i;
-	char buffer[LBUF_SIZE];
+	char buffer[LBUF_SIZE] = { 0 };
 	int type, data, wFireMode;
 	int max_crits = CritsInLoc(mech, index);
 	char **foo;
@@ -1156,7 +1157,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 
 	for(i = 0; i < max_crits; i++) {
 		loop = ((i % 2) ? (max_crits / 2) : 0) + i / 2;
-		sprintf(buffer, "%2d ", loop + 1);
+		snprintf(buffer, sizeof(buffer), "%2d ", loop + 1);
 		type = GetPartType(mech, index, loop);
 		data = GetPartData(mech, index, loop);
 		wFireMode = GetPartFireMode(mech, index, loop);
@@ -1169,7 +1170,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 																  loop)));
 			strcat(buffer, " Ammo");
 		        if(!PartIsNonfunctional(mech, index, loop)) {
-                                sprintf(trash, " [%3.3d/%3.3d]", data, FullAmmo(mech,index,loop));
+                                snprintf(trash, sizeof(trash), " [%3.3d/%3.3d]", data, FullAmmo(mech,index,loop));
                                 strcat(buffer, trash);
                         }
 
@@ -1191,7 +1192,7 @@ void CriticalStatus(dbref player, MECH * mech, int index)
 				if(Special2I(type) == ARTEMIS_IV) {
 					char trash[50];
 					if(data) {
-						sprintf(trash, " [Controls Slot %d]", data);
+						snprintf(trash, sizeof(trash), " [Controls Slot %d]", data);
 						strcat(buffer, trash);
 					}
 				}
@@ -1231,22 +1232,23 @@ char *evaluate_ammo_amount(int now, int max)
 
 void PrintWeaponStatus(MECH * mech, dbref player)
 {
-	unsigned char weaparray[MAX_WEAPS_SECTION];
-	unsigned char weapdata[MAX_WEAPS_SECTION];
-	int critical[MAX_WEAPS_SECTION];
-	unsigned char ammoweap[8 * MAX_WEAPS_SECTION];
-	unsigned short ammo[8 * MAX_WEAPS_SECTION];
-	unsigned short ammomax[8 * MAX_WEAPS_SECTION];
-	unsigned int modearray[8 * MAX_WEAPS_SECTION];
-	char tmpbuf[LBUF_SIZE];
+	unsigned char weaparray[MAX_WEAPS_SECTION] = { 0 };
+	unsigned char weapdata[MAX_WEAPS_SECTION] = { 0 };
+	int critical[MAX_WEAPS_SECTION] = { 0 };
+	unsigned char ammoweap[8 * MAX_WEAPS_SECTION] = { 0 };
+	unsigned short ammo[8 * MAX_WEAPS_SECTION] = { 0 };
+	unsigned short ammomax[8 * MAX_WEAPS_SECTION] = { 0 };
+	unsigned int modearray[8 * MAX_WEAPS_SECTION] = { 0 };
+	char tmpbuf[LBUF_SIZE] = { 0 };
 	int count, ammoweapcount;
 	int loop;
 	int ii, i = 0;
-	char weapname[80], *tmpc;
-	char weapbuff[120];
-	char tempbuff[160];
-	char location[80];
-	char astrAmmoSpacer[MBUF_SIZE]; /* mem is cheap. over allocate */
+	char weapname[80] = { 0 };
+	char *tmpc;
+	char weapbuff[120] = { 0 };
+	char tempbuff[160] = { 0 };
+	char location[80] = { 0 };
+	char astrAmmoSpacer[MBUF_SIZE] = { 0 }; /* mem is cheap. over allocate */
 	int running_sum = 0;
 	short ammo_mode;
 
@@ -1264,7 +1266,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		strcpy(tempbuff, "AdvTech: ");
 
 		if(MechSpecials(mech) & ECM_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "ECM(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "ECM(%s)  ",
 					(MechCritStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 					: ECMEnabled(mech) ? (ECMActive(mech) ? "%ch%cgECM%cn" :
 										  "%ch%crECM%cn") : ECCMEnabled(mech)
@@ -1273,7 +1275,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		}
 
 		if(MechSpecials2(mech) & ANGEL_ECM_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "AngelECM(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "AngelECM(%s)  ",
 					(!HasWorkingAngelECMSuite(mech)) ? "%ch%crXX%cn"
 					: AngelECMEnabled(mech) ? (AngelECMActive(mech) ?
 											   "%ch%cgECM%cn" :
@@ -1284,7 +1286,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		}
 
 		if(MechInfantrySpecials(mech) & FC_INFILTRATORII_STEALTH_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "PersonalECM(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "PersonalECM(%s)  ",
 					PerECMEnabled(mech) ? (PerECMActive(mech) ?
 										   "%ch%cgECM%cn" : "%ch%crECM%cn") :
 					PerECCMEnabled(mech) ? "%ch%cgECCM%cn" :
@@ -1293,48 +1295,48 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		}
 
 		if(MechSpecials2(mech) & STEALTH_ARMOR_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "SthArmor(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "SthArmor(%s)  ",
 					(MechCritStatus(mech) & ECM_DESTROYED) ? "%ch%crXX%cn"
 					: StealthArmorActive(mech) ? "%ch%cgOn%cn" : "%cgRdy%cn");
 		}
 
 		if(MechSpecials2(mech) & NULLSIGSYS_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "NullSigSys(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "NullSigSys(%s)  ",
 					NullSigSysDest(mech) ? "%ch%crXX%cn" :
 					NullSigSysActive(mech) ? "%ch%cgOn%cn" : "%cgRdy%cn");
 		}
 
 		if(MechSpecials(mech) & SLITE_TECH) {
-			sprintf(tempbuff + strlen(tempbuff), "SLITE(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "SLITE(%s)  ",
 					(MechCritStatus(mech) & SLITE_DEST) ? "%cr%chXX%cn"
 					: (MechStatus2(mech) & SLITE_ON) ? "%ch%cgOn%cn" :
 					"%cgOff%cn");
 		}
 
 		if(HasC3m(mech))
-			sprintf(tempbuff + strlen(tempbuff), "%sC3M%%cn  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "%sC3M%%cn  ",
 					C3Destroyed(mech) ? "%cr" :
 					AnyECMDisturbed(mech) ? "%cy" :
 					MechC3NetworkSize(mech) > 0 ? "%cg%ch" : "%cg");
 
 		if(HasC3s(mech))
-			sprintf(tempbuff + strlen(tempbuff), "%sC3S%%cn  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "%sC3S%%cn  ",
 					C3Destroyed(mech) ? "%cr" :
 					AnyECMDisturbed(mech) ? "%cy" :
 					MechC3NetworkSize(mech) > 0 ? "%cg%ch" : "%cg");
 
 		if(HasC3i(mech))
-			sprintf(tempbuff + strlen(tempbuff), "%sC3i%%cn  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "%sC3i%%cn  ",
 					C3iDestroyed(mech) ? "%cr" :
 					AnyECMDisturbed(mech) ? "%cy" :
 					MechC3iNetworkSize(mech) > 0 ? "%cg%ch" : "%cg");
 
 		if(MechSpecials(mech) & TRIPLE_MYOMER_TECH)
-			sprintf(tempbuff + strlen(tempbuff), "TSM(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "TSM(%s)  ",
 					((MechHeat(mech) >= 9.0) ? "%ch%cgOn%cn" : "%cgOff%cn"));
 
 		if(HasTAG(mech)) {
-			sprintf(tempbuff + strlen(tempbuff), "TAG(%s)  ",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "TAG(%s)  ",
 					isTAGDestroyed(mech) ? "%cr%chXX%cn" :
 					((getMech(TAGTarget(mech)) <= 0) ||
 					 (TaggedBy(getMech(TAGTarget(mech))) !=
@@ -1346,14 +1348,14 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		}
 
 		if(MechSpecials2(mech) & SUPERCHARGER_TECH)
-			sprintf(tempbuff + strlen(tempbuff), "SCHARGE: %s%d%%cn (%s)",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "SCHARGE: %s%d%%cn (%s)",
 					MechSChargeCounter(mech) >
 					3 ? "%ch%cr" : MechSChargeCounter(mech) >
 					0 ? "%ch%cy" : "%cg", MechSChargeCounter(mech),
 					MechStatus(mech) & SCHARGE_ENABLED ? "On" : "Off");
 
 		if(MechSpecials(mech) & MASC_TECH)
-			sprintf(tempbuff + strlen(tempbuff), "MASC: %s%d%%cn (%s)",
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "MASC: %s%d%%cn (%s)",
 					MechMASCCounter(mech) >
 					3 ? "%ch%cr" : MechMASCCounter(mech) >
 					0 ? "%ch%cy" : "%cg", MechMASCCounter(mech),
@@ -1366,7 +1368,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 	if(MechSpecials2(mech) & CARRIER_TECH) {
 		strcpy(tempbuff, "Carrier: ");
 
-		sprintf(tempbuff + strlen(tempbuff),
+		snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff),
 				"%d tons free, %d tons max unit size",
 				(CargoSpace(mech) / 100), CarMaxTon(mech));
 		notify(player, tempbuff);
@@ -1382,16 +1384,16 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		strcpy(tempbuff, "AdvSensors:");
 
 		if(MechSpecials(mech) & AA_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " Radar");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " Radar");
 
 		if(MechSpecials(mech) & BEAGLE_PROBE_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " BeagleProbe");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " BeagleProbe");
 
 		if(MechSpecials2(mech) & BLOODHOUND_PROBE_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " BloodhoundProbe");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " BloodhoundProbe");
 
 //		if(MechSpecials(mech) & LIGHT_BAP_TECH)
-//			sprintf(tempbuff + strlen(tempbuff), " LightBAP");
+//			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strleng(tempbuff), " LightBAP");
 
 		notify(player, tempbuff);
 		tempbuff[0] = 0;
@@ -1406,19 +1408,19 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		strcpy(tempbuff, "AdvItems:");
 
 		if(MechInfantrySpecials(mech) & CS_PURIFIER_STEALTH_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " PurifierStealth");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " PurifierStealth");
 
 		if(MechInfantrySpecials(mech) & DC_KAGE_STEALTH_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " KageStealth");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " KageStealth");
 
 		if(MechInfantrySpecials(mech) & FWL_ACHILEUS_STEALTH_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " AchileusStealth");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " AchileusStealth");
 
 		if(MechInfantrySpecials(mech) & FC_INFILTRATOR_STEALTH_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " InfiltratorStealth");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " InfiltratorStealth");
 
 		if(MechInfantrySpecials(mech) & FC_INFILTRATORII_STEALTH_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " InfiltratorIIStealth");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " InfiltratorIIStealth");
 
 		notify(player, tempbuff);
 		tempbuff[0] = 0;
@@ -1432,16 +1434,16 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		strcpy(tempbuff, "Special Actions:");
 
 		if(MechInfantrySpecials(mech) & INF_MOUNT_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " MountFriends");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " MountFriends");
 
 		if(MechInfantrySpecials(mech) & INF_SWARM_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " SwarmAttack");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " SwarmAttack");
 
 		if(MechInfantrySpecials(mech) & INF_ANTILEG_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " AntiLegAttack");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " AntiLegAttack");
 
 		if(MechInfantrySpecials(mech) & CAN_JETTISON_TECH)
-			sprintf(tempbuff + strlen(tempbuff), " BackPackJettison");
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), " BackPackJettison");
 
 		notify(player, tempbuff);
 		tempbuff[0] = 0;
@@ -1470,7 +1472,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
         + (MechSections(mech)[(a)].recycle%WEAPON_TICK)) : "%cgRdy%c")
 
 #define SHOW(part,loc) \
-		sprintf(tempbuff + strlen(tempbuff), "%s: %s ", part, loc)
+		snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff), "%s: %s ", part, loc)
 
 		SHOW(MechIsQuad(mech) ? "FLLEG" : "LARM", SHOWSECTSTAT(LARM));
 		SHOW(MechIsQuad(mech) ? "FRLEG" : "RARM", SHOWSECTSTAT(RARM));
@@ -1516,7 +1518,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 			if(GetSectInt(mech, i))
 				break;
 		if(i < NUM_BSUIT_MEMBERS) {
-			sprintf(tempbuff, "Team status (special attacks): %s",
+			snprintf(tempbuff, sizeof(tempbuff), "Team status (special attacks): %s",
 					SHOWSECTSTAT(i));
 			notify(player, tempbuff);
 		}
@@ -1527,7 +1529,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		*tempbuff = 0;
 
 		if(MechSections(mech)[FSIDE].recycle) {
-			sprintf(tempbuff + strlen(tempbuff),
+			snprintf(tempbuff + strlen(tempbuff), sizeof(tempbuff) - strlen(tempbuff),
 					"Vehicle status (charge): %s", SHOWSECTSTAT(FSIDE));
 		}
 
@@ -1551,7 +1553,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		if(count <= 0)
 			continue;
 		ArmorStringFromIndex(loop, tempbuff, MechType(mech), MechMove(mech));
-		sprintf(location, "%-14.14s", tempbuff);
+		snprintf(location, sizeof(location), "%-14.14s", tempbuff);
 		if(doweird) {
 			strcpy(location, tempbuff);
 			if((tmpc = strchr(location, ' ')))
@@ -1559,7 +1561,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 		}
 		for(ii = 0; ii < count; ii++) {
 			if(IsAMS(weaparray[ii]))
-				sprintf(weapbuff, " %-16.16s %c%c%c%c%c [%2d] ",
+				snprintf(weapbuff, sizeof(weapbuff), " %-16.16s %c%c%c%c%c [%2d] ",
 						&MechWeapons[weaparray[ii]].name[3],
 						' ',
 						(MechStatus(mech) & AMS_ENABLED) ? ' ' : 'O',
@@ -1572,7 +1574,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 				else
 					tmpbuf[0] = 0;
 				strcat(tmpbuf, &MechWeapons[weaparray[ii]].name[3]);
-				sprintf(weapbuff, " %-16.16s %c%c%c%c%c [%2d] ", tmpbuf,
+				snprintf(weapbuff, sizeof(weapbuff), " %-16.16s %c%c%c%c%c [%2d] ", tmpbuf,
 						(GetPartFireMode(mech, loop,
 										 critical[ii]) & REAR_MOUNT) ? 'R' :
 						' ',
@@ -1597,7 +1599,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 						? 'P' : ' ', running_sum + ii);
 			}
 			if(doweird)
-				sprintf(weirdbuf + strlen(weirdbuf), "%s|%s",
+				snprintf(weirdbuf + strlen(weirdbuf), sizeof(weirdbuf) - strlen(weirdbuf), "%s|%s",
 						&MechWeapons[weaparray[ii]].name[3], location);
 			strcat(weapbuff, location);
 
@@ -1643,22 +1645,22 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 																running_sum],
 													   modearray[ii +
 																 running_sum]);
-				sprintf(weapname, "%-16.16s %c",
+				snprintf(weapname, sizeof(weapname), "%-16.16s %c",
 						&MechWeapons[ammoweap[ii + running_sum]].name[3],
 						ammo_mode);
-				sprintf(tempbuff, "  %s%3d%s",
+				snprintf(tempbuff, sizeof(tempbuff), "  %s%3d%s",
 						evaluate_ammo_amount(ammo[ii + running_sum],
 											 ammomax[ii + running_sum]),
 						ammo[ii + running_sum], "%cn");
 				strcat(weapname, tempbuff);
 				if(doweird) {
 					if(ammo_mode && ammo_mode != ' ')
-						sprintf(weirdbuf + strlen(weirdbuf), "|%s|%d|%c ",
+						snprintf(weirdbuf + strlen(weirdbuf), sizeof(weirdbuf) - strlen(weirdbuf), "|%s|%d|%c ",
 								&MechWeapons[ammoweap[ii +
 													  running_sum]].name[3],
 								ammo[ii + running_sum], ammo_mode);
 					else
-						sprintf(weirdbuf + strlen(weirdbuf), "|%s|%d ",
+						snprintf(weirdbuf + strlen(weirdbuf), sizeof(weirdbuf) - strlen(weirdbuf), "|%s|%d ",
 								&MechWeapons[ammoweap[ii +
 													  running_sum]].name[3],
 								ammo[ii + running_sum]);
@@ -1666,7 +1668,7 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 			} else {
 				if(doweird)
 					strcat(weirdbuf, " ");
-				sprintf(weapname, "   ");
+				snprintf(weapname, sizeof(weapname), "   ");
 			}
 			strcat(weapbuff, weapname);
 			if(!doweird)
@@ -1682,9 +1684,9 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 			ammo_mode =
 				GetWeaponAmmoModeLetter_Model_Mode(ammoweap[running_sum],
 												   modearray[running_sum]);
-			sprintf(weapname, "%-16.16s %c",
+			snprintf(weapname, sizeof(weapname), "%-16.16s %c",
 					&MechWeapons[ammoweap[running_sum]].name[3], ammo_mode);
-			sprintf(tempbuff, "  %s%3d%s",
+			snprintf(tempbuff, sizeof(tempbuff), "  %s%3d%s",
 					evaluate_ammo_amount(ammo[running_sum],
 										 ammomax[running_sum]),
 					ammo[running_sum], "%cn");
@@ -1696,10 +1698,10 @@ void PrintWeaponStatus(MECH * mech, dbref player)
 			/*
 			   if (doweird) {
 			   if (ammo_mode && ammo_mode != ' ')
-			   sprintf(weirdbuf + strlen(weirdbuf), "|%s|%d|%c ",
+			   snprintf(weirdbuf + strlen(weirdbuf), sizeof(wierdbuf) - strlen(wierdbuf), "|%s|%d|%c ",
 			   &MechWeapons[ammoweap[running_sum]].name[3], ammo[running_sum], ammo_mode);
 			   else
-			   sprintf(weirdbuf + strlen(weirdbuf), "|%s|%d ",
+			   snprintf(weirdbuf + strlen(weirdbuf), sizeof(wierdbuf) - strlen(wierdbuf), "|%s|%d ",
 			   &MechWeapons[ammoweap[running_sum]].name[3], ammo[running_sum]);
 			   }
 			 */
@@ -2255,7 +2257,7 @@ PrintArmorDamageString(const int armor_level, int armor_value,
 		/* XXX: Return values aren't standardized until C99.  */
 		armor_len = strlen(armor_buf);
 
-		/* Fixed width.  Some sprintf()s have a $*d extension that we
+		/* Fixed width.  Some snprintf()s have a $*d extension that we
 		 * aren't going to use.  */
 		asp = armor_string;
 
@@ -2303,7 +2305,7 @@ ArmorKeyInfo(dbref player, int line_key, int owner)
 	} else {
 		/* Line 2-6 = armor level symbols.  */
 		/* XXX: Probably safe from buffer overflows.  */
-		sprintf(str, "%s%c%c %%c", armordamcolorstr[6 - line_key],
+		snprintf(str, sizeof(str), "%s%c%c %%c", armordamcolorstr[6 - line_key],
 		        armordamltrstr[6 - line_key],
 		        armordamltrstr[6 - line_key]);
 	}
@@ -2349,8 +2351,8 @@ show_armor(MECH *mech, const int loc, const int flag, int width)
 		                                      flag, width);
 	}
 
-	/* XXX: sprintf() should be safe here.  Emphasis on "should".  */
-	sprintf(fieldbuf, "%s%s%%c", color_string, armor_string);
+	/* XXX: snprintf() should be safe here.  Emphasis on "should".  */
+	snprintf(fieldbuf, sizeof(fieldbuf), "%s%s%%c", color_string, armor_string);
 
 	return fieldbuf;
 }

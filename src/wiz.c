@@ -401,9 +401,9 @@ void do_toad(dbref player, dbref cause, int key, char *toad, char *newowner)
 
 	loc = Location(victim);
 	buf = alloc_mbuf("do_toad");
-	sprintf(buf, "%s has been turned into a slimy toad!", Name(victim));
+	snprintf(buf, MBUF_SIZE, "%s has been turned into a slimy toad!", Name(victim));
 	notify_except2(loc, player, victim, player, buf);
-	sprintf(buf, "You toaded %s! (%d objects @chowned)", Name(victim),
+	snprintf(buf, MBUF_SIZE, "You toaded %s! (%d objects @chowned)", Name(victim),
 			count + 1);
 	notify_quiet(player, buf);
 
@@ -412,7 +412,7 @@ void do_toad(dbref player, dbref cause, int key, char *toad, char *newowner)
 	 */
 
 	delete_player_name(victim, Name(victim));
-	sprintf(buf, "a slimy toad named %s", Name(victim));
+	snprintf(buf, MBUF_SIZE, "a slimy toad named %s", Name(victim));
 	s_Name(victim, buf);
 	free_mbuf(buf);
 
@@ -464,7 +464,7 @@ void do_newpassword(dbref player, dbref cause, int key, char *name,
 	s_Pass(victim, crypt((const char *) password, "XX"));
 	buf = alloc_lbuf("do_newpassword");
 	notify_quiet(player, "Password changed.");
-	sprintf(buf, "Your password has been changed by %s.", Name(player));
+	snprintf(buf, LBUF_SIZE, "Your password has been changed by %s.", Name(player));
 	notify_quiet(victim, buf);
 	free_lbuf(buf);
 }
@@ -488,7 +488,7 @@ void do_boot(dbref player, dbref cause, int key, char *name)
 		}
 		STARTLOG(LOG_WIZARD, "WIZ", "BOOT") {
 			buf = alloc_sbuf("do_boot.port");
-			sprintf(buf, "Port %ld", victim);
+			snprintf(buf, SBUF_SIZE, "Port %ld", victim);
 			log_text(buf);
 			log_text((char *) " was @booted by ");
 			log_name(player);

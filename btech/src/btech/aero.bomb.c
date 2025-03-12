@@ -128,7 +128,7 @@ void bomb_aim(MECH * mech, dbref player)
 	short x, y;
 
 	t = calc_dest(mech, &x, &y);
-	sprintf(toi, "%.1f second%s", t, (t >= 2.0 || t < 1.0) ? "" : "s");
+	snprintf(toi, LBUF_SIZE, "%.1f second%s", t, (t >= 2.0 || t < 1.0) ? "" : "s");
 	mech_printf(mech, MECHALL,
 				"Estimated bomb flight time %s, estimated landing hex %d,%d.",
 				toi, x, y);

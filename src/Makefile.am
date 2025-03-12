@@ -1,9 +1,9 @@
 # FIXME: We should eliminate the need to include btech/src/btech somehow.
 AM_CPPFLAGS = -I$(top_srcdir)/include \
-	-I$(top_srcdir)/btech/src/include -I$(top_srcdir)/btech/src/btech
+	-I$(top_srcdir)/btech/src/include -I$(top_srcdir)/btech/src/btech -fsanitize=address
 
 # TODO: Fiddle with the default compiler options.
-AM_CFLAGS = -Werror -Wfatal-errors
+AM_CFLAGS = -Werror -Wfatal-errors -fsanitize=address
 #ifdef DEBUG
 #CFLAGS += -g3
 #CPPFLAGS += -DDEBUG

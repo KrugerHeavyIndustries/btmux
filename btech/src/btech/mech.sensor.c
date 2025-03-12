@@ -289,9 +289,9 @@ char *my_dump_flag(int i)
 	for(j = 0; j < 32; j++)
 		if(i & (1 << j)) {
 			if(buf[0] == 0)
-				sprintf(buf, "%d", j);
+				snprintf(buf, sizeof(buf), "%d", j);
 			else
-				sprintf(buf + strlen(buf), ",%d", j);
+				snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), ",%d", j);
 		}
 	return buf;
 }
@@ -338,7 +338,7 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 	float x1, y1;
 	int sc, sl, st;
 	int f = *fl;
-	char buf[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
 
 	if(!Started(mech))
 		return;
@@ -372,11 +372,11 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 				else
 					buf[0] = 0;
 				if(st & AUTOCON_SHORT)
-					sprintf(buf + strlen(buf), "Lost: %s, %s arc.",
+					snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "Lost: %s, %s arc.",
 							GetMechToMechID_base(mech, target, wlf),
 							GetArcID(mech, arc));
 				else
-					sprintf(buf,
+					snprintf(buf, sizeof(buf),
 							"You have lost %s from your scanners. It was last in your %s arc.",
 							GetMechToMechID_base(mech, target, wlf),
 							GetArcID(mech, arc));
@@ -391,7 +391,7 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 				LoseLock(mech);
 			}
 #ifdef SENSOR_DEBUG
-			sprintf(buf, "Notice: #%d lost #%d (Sensor: %d, Flag: %s)",
+			snprintf(buf, strlen(buf), "Notice: #%d lost #%d (Sensor: %d, Flag: %s)",
 					mech->mynum, target->mynum,
 					(f & (MECHLOSFLAG_SEESP | MECHLOSFLAG_SEESS)),
 					my_dump_flag(f));
@@ -433,11 +433,11 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 				else
 					buf[0] = 0;
 				if(st & AUTOCON_SHORT)
-					sprintf(buf + strlen(buf), "Seen: %s, %s arc.",
+					snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "Seen: %s, %s arc.",
 							GetMechToMechID(mech, target), GetArcID(mech,
 																	arc));
 				else
-					sprintf(buf + strlen(buf),
+					snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
 							"You notice %s in your %s arc.",
 							GetMechToMechID(mech, target), GetArcID(mech,
 																	arc));
@@ -448,7 +448,7 @@ void Sensor_DoWeSeeNow(MECH * mech, unsigned short *fl, float range, int x,
 			if(MechTeam(mech) != MechTeam(target))
 				StopHiding(target);
 #ifdef SENSOR_DEBUG
-			sprintf(buf, "Notice: #%d saw #%d (Sensor: %d, Flag: %s C:%d)",
+			snprintf(buf, sizeof(buf), "Notice: #%d saw #%d (Sensor: %d, Flag: %s C:%d)",
 					mech->mynum, target->mynum,
 					(f & (MECHLOSFLAG_SEESP | MECHLOSFLAG_SEESS)),
 					my_dump_flag(f), seeanew);
@@ -575,15 +575,15 @@ void update_LOSinfo(dbref obj, MAP * map)
 		map->mechflags[i] = 0;
 }
 
-void add_sensor_info(char *buf, MECH * mech, int sn, int verbose)
+void add_sensor_info(char *buf, int size, MECH * mech, int sn, int verbose)
 {
 	if(!verbose)
-		sprintf(buf + strlen(buf), "(R:%s)", sensors[sn].range_desc);
+		snprintf(buf + strlen(buf), size - strlen(buf), "(R:%s)", sensors[sn].range_desc);
 	else {
-		sprintf(buf + strlen(buf), "\n\tRange:      %s\n\tBlocked by: %s",
+		snprintf(buf + strlen(buf), size - strlen(buf), "\n\tRange:      %s\n\tBlocked by: %s",
 				sensors[sn].range_desc, sensors[sn].block_desc);
 		if(sensors[sn].special_desc)
-			sprintf(buf + strlen(buf), "\n\tNotes:      %s",
+			snprintf(buf + strlen(buf), size - strlen(buf), "\n\tNotes:      %s",
 					sensors[sn].special_desc);
 	}
 }
@@ -596,16 +596,16 @@ static char *sensor_mode_name(MECH * mech, int sn, int full, int verbose)
 		return "None";
 
 	if(sensors[sn].fullvision) {
-		sprintf(buf, "%s ", sensors[sn].sensorname);
-		add_sensor_info(buf, mech, sn, verbose);
+		snprintf(buf, sizeof(buf), "%s ", sensors[sn].sensorname);
+		add_sensor_info(buf, sizeof(buf), mech, sn, verbose);
 	} else {
 		if(full || Sees360(mech))
-			sprintf(buf, "%s in 360 degree scanning mode ",
+			snprintf(buf, sizeof(buf), "%s in 360 degree scanning mode ",
 					sensors[sn].sensorname);
 		else
-			sprintf(buf, "%s in 120 degree scanning mode (Forward arc) ",
+			snprintf(buf, sizeof(buf), "%s in 120 degree scanning mode (Forward arc) ",
 					sensors[sn].sensorname);
-		add_sensor_info(buf, mech, sn, verbose);
+		add_sensor_info(buf, sizeof(buf), mech, sn, verbose);
 	}
 	return buf;
 }

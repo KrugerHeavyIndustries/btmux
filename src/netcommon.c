@@ -484,10 +484,10 @@ static const char *time_format_1(time_t dt)
 
 	delta = gmtime(&dt);
 	if(delta->tm_yday > 0) {
-		sprintf(buf, "%dd %02d:%02d", delta->tm_yday, delta->tm_hour,
+		snprintf(buf, sizeof(buf), "%dd %02d:%02d", delta->tm_yday, delta->tm_hour,
 				delta->tm_min);
 	} else {
-		sprintf(buf, "%02d:%02d", delta->tm_hour, delta->tm_min);
+		snprintf(buf, sizeof(buf), "%02d:%02d", delta->tm_hour, delta->tm_min);
 	}
 	return buf;
 }
@@ -502,13 +502,13 @@ static const char *time_format_2(time_t dt)
 
 	delta = gmtime(&dt);
 	if(delta->tm_yday > 0) {
-		sprintf(buf, "%dd", delta->tm_yday);
+		snprintf(buf, sizeof(buf), "%dd", delta->tm_yday);
 	} else if(delta->tm_hour > 0) {
-		sprintf(buf, "%dh", delta->tm_hour);
+		snprintf(buf, sizeof(buf), "%dh", delta->tm_hour);
 	} else if(delta->tm_min > 0) {
-		sprintf(buf, "%dm", delta->tm_min);
+		snprintf(buf, sizeof(buf), "%dm", delta->tm_min);
 	} else {
-		sprintf(buf, "%ds", delta->tm_sec);
+		snprintf(buf, sizeof(buf), "%ds", delta->tm_sec);
 	}
 	return buf;
 }
@@ -578,7 +578,7 @@ static void announce_connect(dbref player, DESC * d)
 	s_Flags2(player, Flags2(player) & ~VACATION);
 
 	if(num < 2) {
-		sprintf(buf, "%s has connected.", Name(player));
+		snprintf(buf, LBUF_SIZE, "%s has connected.", Name(player));
 
 		if(mudconf.have_comsys)
 			do_comconnect(player, d);
@@ -591,7 +591,7 @@ static void announce_connect(dbref player, DESC * d)
 						  Name(player), 0, 0, 0, 0, 0);
 		}
 	} else {
-		sprintf(buf, "%s has reconnected.", Name(player));
+		snprintf(buf, LBUF_SIZE, "%s has reconnected.", Name(player));
 		raw_broadcast(MONITOR, (char *) "GAME: %s has reconnected.",
 					  Name(player), 0, 0, 0, 0, 0);
 	}
@@ -697,7 +697,7 @@ void announce_disconnect(dbref player, DESC * d, const char *reason)
 	if(num < 2) {
 		buf = alloc_mbuf("announce_disconnect.only");
 
-		sprintf(buf, "%s has disconnected.", Name(player));
+		snprintf(buf, MBUF_SIZE, "%s has disconnected.", Name(player));
 		key = MSG_INV;
 		if((loc != NOTHING) && !(Dark(player) && Wizard(player)))
 			key |= (MSG_NBR | MSG_NBR_EXITS | MSG_LOC | MSG_FWDLIST);
@@ -783,7 +783,7 @@ void announce_disconnect(dbref player, DESC * d, const char *reason)
 			s_Flags(player, Flags(player) | DARK);
 	} else {
 		buf = alloc_mbuf("announce_disconnect.partial");
-		sprintf(buf, "%s has partially disconnected.", Name(player));
+		snprintf(buf, MBUF_SIZE, "%s has partially disconnected.", Name(player));
 		key = MSG_INV;
 		if((loc != NOTHING) && !(Dark(player) && Wizard(player)))
 			key |= (MSG_NBR | MSG_NBR_EXITS | MSG_LOC | MSG_FWDLIST);
@@ -1008,7 +1008,7 @@ static void dump_users(DESC * e, char *match, int key)
 
 			if((e->flags & DS_CONNECTED) && Wizard_Who(e->player) &&
 			   (key == CMD_WHO)) {
-				sprintf(buf, "%-16s%10s %5s%-3s#%6ld %7d %-25s\r\n",
+				snprintf(buf, MBUF_SIZE, "%-16s%10s %5s%-3s#%6ld %7d %-25s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2(mudstate.now - d->last_time), flist,
@@ -1017,7 +1017,7 @@ static void dump_users(DESC * e, char *match, int key)
 									   '\0') ? tprintf("%s@%s", d->username,
 													   d->addr) : d->addr)));
 			} else if(key == CMD_SESSION) {
-				sprintf(buf, "%-16s%10s %5s%5d%5d%6d%10d%6d%6d%10d\r\n",
+				snprintf(buf, MBUF_SIZE, "%-16s%10s %5s%5d%5d%6d%10d%6d%6d%10d\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
@@ -1027,7 +1027,7 @@ static void dump_users(DESC * e, char *match, int key)
 						d->input_tot, d->output_size, d->output_lost,
 						d->output_tot);
 			} else if(Wizard_Who(e->player)) {
-				sprintf(buf, "%-16s%10s %5s%-3s%s%s\r\n",
+				snprintf(buf, MBUF_SIZE, "%-16s%10s %5s%-3s%s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
@@ -1035,7 +1035,7 @@ static void dump_users(DESC * e, char *match, int key)
 														 d->last_time) : 0),
 						flist, d->doing, ANSI_NORMAL);
 			} else {
-				sprintf(buf, "%-16s%10s %5s  %s%s\r\n",
+				snprintf(buf, MBUF_SIZE, "%-16s%10s %5s  %s%s\r\n",
 						trimmed_name(d->player),
 						time_format_1(mudstate.now - d->connected_at),
 						time_format_2((mudstate.now - d->last_time) >
@@ -1053,13 +1053,13 @@ static void dump_users(DESC * e, char *match, int key)
 	 * sometimes I like the ternary operator....
 	 */
 	if (ucount)
-		sprintf(buf, "%d Visible Player%slogged in, (%d %s hidden), %d record, %s maximum.\r\n", count,
+		snprintf(buf, MBUF_SIZE, "%d Visible Player%slogged in, (%d %s hidden), %d record, %s maximum.\r\n", count,
 			(count == 1) ? " " : "s ", ucount, (ucount == 1) ? "is" : "are", mudstate.record_players,
 			(mudconf.max_players == -1) ? "no" : tprintf("%d",
 														 mudconf.
 														 max_players));
 	else
-		sprintf(buf, "%d Player%slogged in, %d record, %s maximum.\r\n", count,
+		snprintf(buf, MBUF_SIZE, "%d Player%slogged in, %d record, %s maximum.\r\n", count,
 			(count == 1) ? " " : "s ", mudstate.record_players,
 			(mudconf.max_players == -1) ? "no" : tprintf("%d", mudconf.max_players));
 
@@ -1177,7 +1177,7 @@ static void failconn(const char *logcode, const char *logtype,
 
 	STARTLOG(LOG_LOGIN | LOG_SECURITY, logcode, "RJCT") {
 		buff = alloc_mbuf("failconn.LOG");
-		sprintf(buff, "[%d/%s] %s rejected to ", d->descriptor, d->addr,
+		snprintf(buff, MBUF_SIZE, "[%d/%s] %s rejected to ", d->descriptor, d->addr,
 				logtype);
 		log_text(buff);
 		free_mbuf(buff);
@@ -1272,7 +1272,7 @@ static int check_connect(DESC * d, char *msg)
 			STARTLOG(LOG_LOGIN | LOG_SECURITY, "CON", "BAD") {
 				buff = alloc_lbuf("check_conn.LOG.bad");
 				user[3800] = '\0';
-				sprintf(buff, "[%d/%s] Failed connect to '%s'",
+				snprintf(buff, LBUF_SIZE, "[%d/%s] Failed connect to '%s'",
 						d->descriptor, d->addr, user);
 				log_text(buff);
 				free_lbuf(buff);
@@ -1300,7 +1300,7 @@ static int check_connect(DESC * d, char *msg)
 
 			STARTLOG(LOG_LOGIN, "CON", "LOGIN") {
 				buff = alloc_mbuf("check_conn.LOG.login");
-				sprintf(buff, "[%d/%s] Connected to ", d->descriptor,
+				snprintf(buff, MBUF_SIZE, "[%d/%s] Connected to ", d->descriptor,
 						d->addr);
 				log_text(buff);
 				log_name_and_loc(player);
@@ -1418,7 +1418,7 @@ static int check_connect(DESC * d, char *msg)
 				queue_string(d, create_fail);
 				STARTLOG(LOG_SECURITY | LOG_PCREATES, "CON", "BAD") {
 					buff = alloc_mbuf("check_conn.LOG.badcrea");
-					sprintf(buff, "[%d/%s] Create of '%s' failed",
+					snprintf(buff, MBUF_SIZE, "[%d/%s] Create of '%s' failed",
 							d->descriptor, d->addr, user);
 					log_text(buff);
 					free_mbuf(buff);
@@ -1427,7 +1427,7 @@ static int check_connect(DESC * d, char *msg)
 			} else {
 				STARTLOG(LOG_LOGIN | LOG_PCREATES, "CON", "CREA") {
 					buff = alloc_mbuf("check_conn.LOG.create");
-					sprintf(buff, "[%d/%s] Created ", d->descriptor, d->addr);
+					snprintf(buff, MBUF_SIZE, "[%d/%s] Created ", d->descriptor, d->addr);
 					log_text(buff);
 					log_name(player);
 					free_mbuf(buff);
@@ -1448,7 +1448,7 @@ static int check_connect(DESC * d, char *msg)
 		STARTLOG(LOG_LOGIN | LOG_SECURITY, "CON", "BAD") {
 			buff = alloc_mbuf("check_conn.LOG.bad");
 			msg[150] = '\0';
-			sprintf(buff, "[%d/%s] Failed connect: '%s'", d->descriptor,
+			snprintf(buff, MBUF_SIZE, "[%d/%s] Failed connect: '%s'", d->descriptor,
 					d->addr, msg);
 			log_text(buff);
 			free_mbuf(buff);
@@ -1727,13 +1727,13 @@ static void list_sites(dbref player, SITE * site_list, const char *header_txt,
 
 	buff = alloc_mbuf("list_sites.buff");
 	buff1 = alloc_sbuf("list_sites.addr");
-	sprintf(buff, "----- %s -----", header_txt);
+	snprintf(buff, MBUF_SIZE, "----- %s -----", header_txt);
 	notify(player, buff);
 	notify(player, "Address              Mask                 Status");
 	for(this = site_list; this; this = this->next) {
 		str = (char *) stat_string(stat_type, this->flag);
 		StringCopy(buff1, inet_ntoa(this->mask));
-		sprintf(buff, "%-20s %-20s %s", inet_ntoa(this->address), buff1, str);
+		snprintf(buff, MBUF_SIZE, "%-20s %-20s %s", inet_ntoa(this->address), buff1, str);
 		notify(player, buff);
 	}
 	free_mbuf(buff);

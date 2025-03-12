@@ -901,7 +901,7 @@ static void mech_scharge_event(MUXEVENT * e)
 	int j, count = 0;
 	int maxspeed, newmaxspeed = 0;
 	int critType;
-	char msgbuf[MBUF_SIZE];
+	char msgbuf[MBUF_SIZE] = { 0 };
 
 	if(!Started(mech))
 		return;
@@ -941,7 +941,7 @@ static void mech_scharge_event(MUXEVENT * e)
 			   !PartIsDestroyed(mech, CTORSO, j)) {
 				DestroyPart(mech, CTORSO, j);
 				if(!Destroyed(mech) && Started(mech)) {
-					sprintf(msgbuf, "'s center torso spews black smoke!");
+					snprintf(msgbuf, MBUF_SIZE, "'s center torso spews black smoke!");
 					MechLOSBroadcast(mech, msgbuf);
 				}
 				if(MechEngineHeat(mech) < 10) {
@@ -959,7 +959,7 @@ static void mech_scharge_event(MUXEVENT * e)
 	}
 
 	if((MechType(mech) == CLASS_VTOL) || (MechType(mech) == CLASS_VEH_GROUND)) {
-		sprintf(msgbuf, " coughs thick black smoke from its exhaust.");
+		snprintf(msgbuf, MBUF_SIZE, " coughs thick black smoke from its exhaust.");
 		MechLOSBroadcast(mech, msgbuf);
 		maxspeed = MechMaxSpeed(mech);
 		newmaxspeed = (maxspeed * .5);
@@ -1823,7 +1823,7 @@ static char *display_mechpref(int i)
 			state = "%ch%cgON%cn";
 	}
 
-	sprintf(buf, "        %-40s%s", info.name, state);
+	snprintf(buf, sizeof(buf), "        %-40s%s", info.name, state);
 	return buf;
 }
 

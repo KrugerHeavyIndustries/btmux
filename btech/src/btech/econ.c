@@ -47,19 +47,19 @@ static void remove_entry(char *alku, char *entry)
 	}
 }
 
-static void add_entry(char *to, char *data)
+static void add_entry(char *to, int siz, char *data)
 {
 	if(*to)
-		sprintf(to + strlen(to), ",[%s]", data);
+		snprintf(to + strlen(to), siz - strlen(to), ",[%s]", data);
 	else
-		sprintf(to, "[%s]", data);
+		snprintf(to, siz, "[%s]", data);
 }
 
 static char *find_entry(char *s, int i, int b)
 {
 	char buf[MBUF_SIZE];
 
-	sprintf(buf, "[%d,%d,", i, b);
+	snprintf(buf, MBUF_SIZE, "[%d,%d,", i, b);
 	return strstr(s, buf);
 }
 
@@ -75,6 +75,7 @@ void econ_change_items(dbref d, int id, int brand, int num)
 	if(brand)
 		if(get_parts_short_name(id, brand) == get_parts_short_name(id, 0))
 			brand = 0;
+	/* t is buf of LBUF_SIZE */
 	t = silly_atr_get(d, A_ECONPARTS);
 	if((u = find_entry(t, id, brand))) {
 		if(sscanf(u, "[%d,%d,%d]", &i1, &i2, &i3) == 3)
@@ -88,7 +89,7 @@ void econ_change_items(dbref d, int id, int brand, int num)
 		return;
 	}
 	if(!(IsActuator(id)))
-		add_entry(t, tprintf("%d,%d,%d", id, brand, base));
+		add_entry(t, LBUF_SIZE, tprintf("%d,%d,%d", id, brand, base));
 	silly_atr_set(d, A_ECONPARTS, t);
 	if(IsActuator(id))
 		econ_change_items(d, Cargo(S_ACTUATOR), brand, base);

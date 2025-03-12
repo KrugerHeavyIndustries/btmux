@@ -1636,7 +1636,7 @@ static char *get_folder_name(dbref player, int fld)
 	 * Get the name of the folder, or "nameless"
 	 */
 	pat = alloc_lbuf("get_folder_name");
-	sprintf(pat, "%d:", fld);
+	snprintf(pat, LBUF_SIZE, "%d:", fld);
 	old = NULL;
 	atrstr = atr_get(player, A_MAILFOLDERS, &player, &flags);
 	if(!*atrstr) {
@@ -1681,8 +1681,8 @@ void add_folder_name(dbref player, int fld, char *name)
 	str = alloc_lbuf("add_folder_name.str");
 	tbuf = alloc_lbuf("add_folder_name.tbuf");
 
-	sprintf(new, "%d:%s:%d ", fld, upcasestr(name), fld);
-	sprintf(pat, "%d:", fld);
+	snprintf(new, LBUF_SIZE, "%d:%s:%d ", fld, upcasestr(name), fld);
+	snprintf(pat, LBUF_SIZE, "%d:", fld);
 	/*
 	 * get the attrib and the old string, if any
 	 */
@@ -1750,7 +1750,7 @@ void set_player_folder(dbref player, int fnum)
 	char *tbuf1;
 
 	tbuf1 = alloc_lbuf("set_player_folder");
-	sprintf(tbuf1, "%d", fnum);
+	snprintf(tbuf1, LBUF_SIZE, "%d", fnum);
 	a = (ATTR *) atr_num(A_MAILCURF);
 	if(a)
 		atr_add(player, A_MAILCURF, tbuf1, GOD, a->flags);
@@ -2765,7 +2765,7 @@ static char *make_numlist(dbref player, char *arg)
 				free_lbuf(numbuf);
 				return NULL;
 			}
-			sprintf(buf, "%ld ", temp->from);
+			snprintf(buf, sizeof(buf), "%ld ", temp->from);
 			safe_str(buf, numbuf, &numbp);
 		} else if(*head == '*') {
 			m = get_malias(player, head);
@@ -2780,7 +2780,7 @@ static char *make_numlist(dbref player, char *arg)
 		} else {
 			target = lookup_player(player, head, 1);
 			if(target != NOTHING) {
-				sprintf(buf, "%ld ", target);
+				snprintf(buf, sizeof(buf), "%ld ", target);
 				safe_str(buf, numbuf, &numbp);
 			} else {
 				notify_printf(player, "MAIL: '%s' does not exist.", head);

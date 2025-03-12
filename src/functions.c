@@ -659,7 +659,7 @@ static void fun_digittime(char *buff, char **bufc, dbref player, dbref cause,
 						  int ncargs)
 {
 	register struct tm *delta;
-	static char buf[64];
+	static char buf[64] = { 0 };
 	time_t dt;
 
 	dt = atol(fargs[0]);
@@ -669,10 +669,10 @@ static void fun_digittime(char *buff, char **bufc, dbref player, dbref cause,
 
 	delta = gmtime(&dt);
 	if(delta->tm_yday > 0) {
-		sprintf(buf, "%dd %02d:%02d", delta->tm_yday, delta->tm_hour,
+		snprintf(buf, sizeof(buf), "%dd %02d:%02d", delta->tm_yday, delta->tm_hour,
 				delta->tm_min);
 	} else {
-		sprintf(buf, "%02d:%02d", delta->tm_hour, delta->tm_min);
+		snprintf(buf, sizeof(buf), "%02d:%02d", delta->tm_hour, delta->tm_min);
 	}
 
 	safe_tprintf_str(buff, bufc, buf);
@@ -929,10 +929,10 @@ char *get_uptime_to_string(int uptime)
 		if(units[ut]) {
 			uc--;
 			if(units[ut] > 1)
-				sprintf(buf + strlen(buf), "%d %ss", units[ut],
+				snprintf(buf + strlen(buf), SBUF_SIZE - strlen(buf), "%d %ss", units[ut],
 						uptime_unit_table[ut].name);
 			else
-				sprintf(buf + strlen(buf), "%d %s", units[ut],
+				snprintf(buf + strlen(buf), SBUF_SIZE - strlen(buf), "%d %s", units[ut],
 						uptime_unit_table[ut].name);
 			if(uc > 1)
 				strcat(buf, ", ");
@@ -973,10 +973,10 @@ char *get_uptime_to_short_string(int uptime)
 		if(units[ut]) {
 			uc--;
 			if(units[ut] > 1)
-				sprintf(buf + strlen(buf), "%d%s", units[ut],
+				snprintf(buf + strlen(buf), SBUF_SIZE - strlen(buf), "%d%s", units[ut],
 						uptime_unit_table[ut].sname);
 			else
-				sprintf(buf + strlen(buf), "%d%s", units[ut],
+				snprintf(buf + strlen(buf), SBUF_SIZE - strlen(buf), "%d%s", units[ut],
 						uptime_unit_table[ut].sname);
 			if(uc > 0)
 				strcat(buf, " ");
@@ -2388,7 +2388,7 @@ static void fun_round(char *buff, char **bufc, dbref player, dbref cause,
 	}
 	safe_tprintf_str(buff, bufc, (char *) fstr, atof(fargs[0]));
 
-	/* Handle bogus result of "-0" from sprintf.  Yay, cclib. */
+	/* Handle bogus result of "-0" from snprintf.  Yay, cclib. */
 
 	if(!strcmp(oldp, "-0")) {
 		*oldp = '0';
@@ -2746,9 +2746,9 @@ static void fun_lcon(char *buff, char **bufc, dbref player, dbref cause,
 		tbuf = alloc_sbuf("fun_lcon");
 		DOLIST(thing, Contents(it)) {
 			if(!first)
-				sprintf(tbuf, " #%ld", thing);
+				snprintf(tbuf, SBUF_SIZE, " #%ld", thing);
 			else {
-				sprintf(tbuf, "#%ld", thing);
+				snprintf(tbuf, SBUF_SIZE, "#%ld", thing);
 				first = 0;
 			}
 			safe_str(tbuf, buff, bufc);
@@ -2774,9 +2774,9 @@ static void fun_lplayers(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Contents(it)) {
 			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing)) {
 				if(!first) 
-					sprintf(tbuf, " #%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -2803,9 +2803,9 @@ static void fun_lvplayers(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Contents(it)) {
 			if(Typeof(thing) == TYPE_PLAYER && !Dark(thing) && Connected(thing)) {
 				if(!first)
-					sprintf(tbuf, " #%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -2864,9 +2864,9 @@ static void fun_lexits(char *buff, char **bufc, dbref player, dbref cause,
 		DOLIST(thing, Exits(parent)) {
 			if(exit_visible(thing, player, key)) {
 				if(!first)
-					sprintf(tbuf, " #%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, " #%ld", thing);
 				else {
-					sprintf(tbuf, "#%ld", thing);
+					snprintf(tbuf, SBUF_SIZE, "#%ld", thing);
 					first = 0;
 				}
 				safe_str(tbuf, buff, bufc);
@@ -3630,7 +3630,7 @@ static void fun_lnum(char *buff, char **bufc, dbref player, dbref cause,
 	if(limit > 0 && llimit >= 0 && llimit < limit) {
 		for(ctr = llimit; ctr < limit && !over; ctr++) {
 			{
-				sprintf(tbuff, "%s%d", ctr != llimit ? " " : "", ctr);
+				snprintf(tbuff, sizeof(tbuff), "%s%d", ctr != llimit ? " " : "", ctr);
 				over = safe_str(tbuff, buff, bufc);
 			}
 		}
@@ -3981,9 +3981,9 @@ static void fun_search(char *buff, char **bufc, dbref player, dbref cause,
 	nbuf = alloc_sbuf("fun_search");
 	for(thing = olist_first(); thing != NOTHING; thing = olist_next()) {
 		if(bp == *bufc)
-			sprintf(nbuf, "#%ld", thing);
+			snprintf(nbuf, SBUF_SIZE, "#%ld", thing);
 		else
-			sprintf(nbuf, " #%ld", thing);
+			snprintf(nbuf, SBUF_SIZE, " #%ld", thing);
 		safe_str(nbuf, buff, bufc);
 	}
 	free_sbuf(nbuf);
@@ -5692,7 +5692,7 @@ static void fun_colorpairs(char *buff, char **bufc, dbref player, dbref cause,
 				strncat(tmp_string, ANSI_NORMAL, LBUF_SIZE);
 				break;
 			default:
-				sprintf(tmp_piece, "%c", *tmp_char);
+				snprintf(tmp_piece, sizeof(tmp_piece), "%c", *tmp_char);
 				strncat(tmp_string, tmp_piece, LBUF_SIZE);
 				break;
 			}

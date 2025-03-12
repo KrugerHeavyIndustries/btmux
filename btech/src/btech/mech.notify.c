@@ -669,7 +669,7 @@ void mech_set_channelmode(dbref player, void *data, char *buffer)
 {
 	int chn = -1, nm = 0, i;
 	MECH *mech = (MECH *) data;
-	char buf[SBUF_SIZE];
+	char buf[SBUF_SIZE] = { 0 };
 
 	skipws(buffer);
 	DOCHECK(!*buffer, "Invalid input!");
@@ -750,7 +750,7 @@ void mech_set_channelmode(dbref player, void *data, char *buffer)
 	if(!i)
 		buf[i++] = '-';
 	if(nm / FREQ_REST) {
-		sprintf(buf + i, "/color:%c", radio_colorstr[nm / FREQ_REST - 1]);
+		snprintf(buf + i, sizeof(buf) - i, "/color:%c", radio_colorstr[nm / FREQ_REST - 1]);
 		i = strlen(buf);
 	}
 	buf[i] = 0;
@@ -1457,7 +1457,7 @@ void MechLOSBroadcast(MECH * mech, char *message)
 			if((tempMech = getMech(mech_map->mechsOnMap[i])))
 				if(InLineOfSight(tempMech, mech, MechX(mech), MechY(mech),
 								 FlMechRange(mech_map, tempMech, mech))) {
-					sprintf(buf, "%s%s%s", GetMechToMechID(tempMech, mech),
+					snprintf(buf, sizeof(buf), "%s%s%s", GetMechToMechID(tempMech, mech),
 							*message != '\'' ? " " : "", message);
 					mech_notify(tempMech, MECHSTARTED, buf);
 				}
@@ -1512,7 +1512,7 @@ void HexLOSBroadcast(MAP * mech_map, int x, int y, char *message)
 									   y == MechY(tempMech))
 										strcpy(d, "your hex");
 									else
-										sprintf(d, "%d,%d", x, y);
+										snprintf(d, sizeof(tbuf) - (tbuf - d), "%d,%d", x, y);
 									while (*d)
 										d++;
 								} else {
@@ -1521,7 +1521,7 @@ void HexLOSBroadcast(MAP * mech_map, int x, int y, char *message)
 									   y == MechY(tempMech))
 										strcpy(d, "%ch%crYOUR HEX%cn");
 									else
-										sprintf(d, "%%ch%%cy%d,%d%%cn", x, y);
+										snprintf(d, sizeof(tbuf) - (tbuf - d), "%%ch%%cy%d,%d%%cn", x, y);
 									while (*d)
 										d++;
 								}
@@ -1564,10 +1564,10 @@ void MechLOSBroadcasti(MECH * mech, MECH * target, char *message)
 															 tempMech,
 															 target));
 				if(a || b) {
-					sprintf(oddbuff, message, b ? GetMechToMechID(tempMech,
+					snprintf(oddbuff, sizeof(oddbuff), message, b ? GetMechToMechID(tempMech,
 																  target) :
 							"someone");
-					sprintf(oddbuff2, "%s%s%s",
+					snprintf(oddbuff2, sizeof(oddbuff2), "%s%s%s",
 							a ? GetMechToMechID(tempMech, mech) : "Someone",
 							*oddbuff != '\'' ? " " : "", oddbuff);
 					mech_notify(tempMech, MECHSTARTED, oddbuff2);
@@ -1639,7 +1639,7 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 				if(!attacker && !defender)
 					continue;
 				if(defender)
-					sprintf(buff, "%s", GetMechToMechID(tempMech, target));
+					snprintf(buff, sizeof(buff), "%s", GetMechToMechID(tempMech, target));
 				if(attacker) {
 					if(defender)
 						mech_printf(tempMech, MECHSTARTED,
@@ -1662,7 +1662,7 @@ void MechFireBroadcast(MECH * mech, MECH * target, int x, int y,
 		mapy = y;
 		MapCoordToRealCoord(x, y, &fx, &fy);
 		fz = ZSCALE * Elevation(mech_map, x, y);
-		sprintf(buff, "hex %d %d!", mapx, mapy);
+		snprintf(buff, sizeof(buff), "hex %d %d!", mapx, mapy);
 		for(loop = 0; loop < mech_map->first_free; loop++)
 			if(mech_map->mechsOnMap[loop] != mech->mynum &&
 			   mech_map->mechsOnMap[loop] != -1) {

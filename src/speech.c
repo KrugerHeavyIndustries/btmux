@@ -182,7 +182,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "SHOUT") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.shout");
-			sprintf(buf2, " shouts: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " shouts: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -213,7 +213,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "BCAST") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.wizshout");
-			sprintf(buf2, " broadcasts: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " broadcasts: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -247,7 +247,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "ASHOUT") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.adminshout");
-			sprintf(buf2, " yells: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " yells: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -261,7 +261,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "SHOUT") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.wallpose");
-			sprintf(buf2, " WALLposes: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " WALLposes: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -276,7 +276,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "BCAST") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.wizpose");
-			sprintf(buf2, " WIZposes: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " WIZposes: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -291,7 +291,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "SHOUT") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.wallemit");
-			sprintf(buf2, " WALLemits: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " WALLemits: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -306,7 +306,7 @@ void do_say(dbref player, dbref cause, int key, char *message)
 		STARTLOG(LOG_SHOUTS, "WIZ", "BCAST") {
 			log_name(player);
 			buf2 = alloc_lbuf("do_say.LOG.wizemit");
-			sprintf(buf2, " WIZemit: '%s'", message);
+			snprintf(buf2, LBUF_SIZE, " WIZemit: '%s'", message);
 			log_text(buf2);
 			free_lbuf(buf2);
 			ENDLOG;
@@ -474,7 +474,7 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 
 	atr_get_str(alias, player, A_ALIAS, &aowner, &aflags);
 	if(*alias)
-		sprintf(aladd, " (%s)", alias);
+		snprintf(aladd, sizeof(aladd), " (%s)", alias);
 	else
 		aladd[0] = 0;
 

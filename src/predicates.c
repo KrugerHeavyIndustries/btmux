@@ -285,7 +285,7 @@ static int pay_quota(dbref who, int cost)
 	/*
 	 * dock the quota 
 	 */
-	sprintf(buf, "%d", quota);
+	snprintf(buf, sizeof(buf), "%d", quota);
 	atr_add_raw(Owner(who), A_RQUOTA, buf);
 
 	return 1;
@@ -343,7 +343,7 @@ void add_quota(dbref who, int payment)
 	char buf[20], *quota;
 
 	quota = atr_get(who, A_RQUOTA, &aowner, &aflags);
-	sprintf(buf, "%d", atoi(quota) + payment);
+	snprintf(buf, sizeof(buf), "%d", atoi(quota) + payment);
 	free_lbuf(quota);
 	atr_add_raw(who, A_RQUOTA, buf);
 }
@@ -1517,7 +1517,7 @@ void did_it(dbref player, dbref thing, int what, const char *def, int owhat,
 				num = atoi(charges);
 				if(num > 0) {
 					buff = alloc_sbuf("did_it.charges");
-					sprintf(buff, "%d", num - 1);
+					snprintf(buff, SBUF_SIZE, "%d", num - 1);
 					atr_add_raw(thing, A_CHARGES, buff);
 					free_sbuf(buff);
 				} else if(*(buff =
