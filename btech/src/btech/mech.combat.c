@@ -789,9 +789,9 @@ void FireWeapon(MECH * mech,
 	int isarty = (IsArtillery(weapindx));
 	int range_ok = 1;
 	int wGattlingShots = 0;		/* If we're a gattling MG, then we need to figure out how many shots */
-	char buf[SBUF_SIZE];
-	char buf3[SBUF_SIZE];
-	char buf2[LBUF_SIZE];
+	char buf[SBUF_SIZE] = { 0 };
+	char buf3[SBUF_SIZE] = { 0 };
+	char buf2[LBUF_SIZE] = { 0 };;
 	int wRACHeat = 0;
 	int wHGRPSkillMod = 0;
 	int tIsSwarmAttack = 0;
@@ -890,9 +890,8 @@ void FireWeapon(MECH * mech,
 		else
 			roll = Roll();
 	}
-	buf[0] = 0;
 	if(LOS)
-		sprintf(buf, "Roll: %d ", roll);
+		snprintf(buf, sizeof(buf), "Roll: %d ", roll);
 
 			/****************************************
             * END: Calc BTH and Roll
@@ -908,7 +907,7 @@ void FireWeapon(MECH * mech,
 		   MechAimType(mech) == MechType(target) && !IsMissile(weapindx)) {
 			ArmorStringFromIndex(MechAim(mech), buf3, MechType(target),
 								 MechMove(target));
-			sprintf(buf2, "'s %s", buf3);
+			snprintf(buf2, sizeof(buf2), "'s %s", buf3);
 		}
 
 		if(sight) {

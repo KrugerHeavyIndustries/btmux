@@ -1275,7 +1275,7 @@ void do_decomp(dbref player, dbref cause, int key, char *name, char *qual)
 		buff = alloc_mbuf("do_decomp.attr_name");
 		thingname = alloc_lbuf("do_decomp");
 		if(key & DECOMP_DBREF) {
-			sprintf(thingname, "%d", (int) thing);
+			snprintf(thingname, LBUF_SIZE, "%d", (int) thing);
 		} else {
 			StringCopy(thingname, Name(thing));
 		}

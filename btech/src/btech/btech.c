@@ -48,14 +48,14 @@ void do_show(dbref player, dbref cause, int key, char *arg1, char *arg2)
 		"[char_]skills", "[char_]advantages", "[char_]attributes",
 		"xcodevalues [scode]", NULL
 	};
-	char buf[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
 
 	DOCHECK(!IsHCO(player), "You aren't cleared to know this stuff yet!");
 
 	if(!arg1 || !*arg1) {
 		strcpy(buf, "Valid arguments:");
 		for(i = 0; cmds_help[i]; i++)
-			sprintf(buf + strlen(buf), "%c %s", i > 0 ? ',' : ' ',
+			snprintf(buf + strlen(buf), MBUF_SIZE - strlen(buf), "%c %s", i > 0 ? ',' : ' ',
 					cmds_help[i]);
 		notify(player, buf);
 		return;

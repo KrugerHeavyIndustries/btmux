@@ -1256,7 +1256,7 @@ void process_command(dbref player, dbref cause, int interactive,
 		STARTLOG(LOG_SUSPECTCMDS | LOG_ALLCOMMANDS, "CMD", "SUS") {
 			log_name_and_loc(player);
 			lcbuf = alloc_lbuf("process_command.LOG.allcmds");
-			sprintf(lcbuf, " entered: '%s'", command);
+			snprintf(lcbuf, LBUF_SIZE, " entered: '%s'", command);
 			log_text(lcbuf);
 			free_lbuf(lcbuf);
 			ENDLOG;
@@ -1267,7 +1267,7 @@ void process_command(dbref player, dbref cause, int interactive,
 		STARTLOG(LOG_ALLCOMMANDS, "CMD", "ALL") {
 			log_name_and_loc(player);
 			lcbuf = alloc_lbuf("process_command.LOG.allcmds");
-			sprintf(lcbuf, " entered: '%s'", command);
+			snprintf(lcbuf, LBUF_SIZE, " entered: '%s'", command);
 			log_text(lcbuf);
 			free_lbuf(lcbuf);
 			ENDLOG;
@@ -1690,7 +1690,7 @@ static void list_ntab_flags(player, ntab, flaglist)
 	buff = alloc_sbuf("list_attraccess");
 	for(np = ntab; np->name; np++) {
 		if(check_access(player, np->perm)) {
-			sprintf(buff, "%s:", np->name);
+			snprintf(buff, sizeof(buff), "%s:", np->name);
 			listset_nametab(player, flaglist, np->flag, buff, 1);
 		}
 	}
@@ -1735,7 +1735,7 @@ static void list_cmdaccess(dbref player)
 	for(cmdp = command_table; cmdp->cmdname; cmdp++) {
 		if(check_access(player, cmdp->perms)) {
 			if(!(cmdp->perms & CF_DARK)) {
-				sprintf(buff, "%s:", cmdp->cmdname);
+				snprintf(buff, SBUF_SIZE, "%s:", cmdp->cmdname);
 				listset_nametab(player, access_nametab, cmdp->perms, buff, 1);
 			}
 		}
@@ -1754,7 +1754,7 @@ static void list_cmdaccess(dbref player)
 		if(!check_access(player, cmdp->perms))
 			continue;
 		if(!(cmdp->perms & CF_DARK)) {
-			sprintf(buff, "%s:", cmdp->cmdname);
+			snprintf(buff, SBUF_SIZE, "%s:", cmdp->cmdname);
 			listset_nametab(player, access_nametab, cmdp->perms, buff, 1);
 		}
 	}
@@ -1776,7 +1776,7 @@ static void list_cmdswitches(dbref player)
 		if(cmdp->switches) {
 			if(check_access(player, cmdp->perms)) {
 				if(!(cmdp->perms & CF_DARK)) {
-					sprintf(buff, "%s:", cmdp->cmdname);
+					snprintf(buff, SBUF_SIZE, "%s:", cmdp->cmdname);
 					display_nametab(player, cmdp->switches, buff, 0);
 				}
 			}
@@ -1827,7 +1827,7 @@ static void list_attraccess(player)
 	buff = alloc_sbuf("list_attraccess");
 	for(ap = attr; ap->name; ap++) {
 		if(Read_attr(player, player, ap, player, 0)) {
-			sprintf(buff, "%s:", ap->name);
+			snprintf(buff, SBUF_SIZE, "%s:", ap->name);
 			listset_nametab(player, attraccess_nametab, ap->flags, buff, 1);
 		}
 	}
@@ -2038,7 +2038,7 @@ static void list_df_flags(dbref player)
 		decode_flags(player, (mudconf.robot_flags.word1 | TYPE_PLAYER),
 					 mudconf.robot_flags.word2, mudconf.robot_flags.word3);
 	buff = alloc_lbuf("list_df_flags");
-	sprintf(buff,
+	snprintf(buff, LBUF_SIZE,
 			"Default flags: Players...%s Rooms...%s Exits...%s Things...%s Robots...%s",
 			playerb, roomb, exitb, thingb, robotb);
 	raw_notify(player, buff);
@@ -2064,17 +2064,17 @@ static void list_costs(dbref player)
 	buff = alloc_mbuf("list_costs");
 	*buff = '\0';
 	if(mudconf.quotas)
-		sprintf(buff, " and %d quota", mudconf.room_quota);
+		snprintf(buff, MBUF_SIZE, " and %d quota", mudconf.room_quota);
 	notify_printf(player, "Digging a room costs %d %s%s.",
 				  mudconf.digcost, coin_name(mudconf.digcost), buff);
 	if(mudconf.quotas)
-		sprintf(buff, " and %d quota", mudconf.exit_quota);
+		snprintf(buff, MBUF_SIZE, " and %d quota", mudconf.exit_quota);
 	notify_printf(player, "Opening a new exit costs %d %s%s.",
 				  mudconf.opencost, coin_name(mudconf.opencost), buff);
 	notify_printf(player, "Linking an exit, home, or dropto costs %d %s.",
 				  mudconf.linkcost, coin_name(mudconf.linkcost));
 	if(mudconf.quotas)
-		sprintf(buff, " and %d quota", mudconf.thing_quota);
+		snprintf(buff, MBUF_SIZE, " and %d quota", mudconf.thing_quota);
 	if(mudconf.createmin == mudconf.createmax)
 		raw_notify(player, tprintf("Creating a new thing costs %d %s%s.",
 								   mudconf.createmin,
@@ -2086,7 +2086,7 @@ static void list_costs(dbref player)
 					mudconf.createmin, mudconf.createmax, mudconf.many_coins,
 					buff));
 	if(mudconf.quotas)
-		sprintf(buff, " and %d quota", mudconf.player_quota);
+		snprintf(buff, MBUF_SIZE, " and %d quota", mudconf.player_quota);
 	notify_printf(player, "Creating a robot costs %d %s%s.",
 				  mudconf.robotcost, coin_name(mudconf.robotcost), buff);
 	if(mudconf.killmin == mudconf.killmax) {
@@ -2121,23 +2121,23 @@ static void list_costs(dbref player)
 				   "The deposit is refunded when the command is run or canceled.");
 	}
 	if(mudconf.sacfactor == 0)
-		sprintf(buff, "%d", mudconf.sacadjust);
+		snprintf(buff, MBUF_SIZE, "%d", mudconf.sacadjust);
 	else if(mudconf.sacfactor == 1) {
 		if(mudconf.sacadjust < 0)
-			sprintf(buff, "<create cost> - %d", -mudconf.sacadjust);
+			snprintf(buff, MBUF_SIZE, "<create cost> - %d", -mudconf.sacadjust);
 		else if(mudconf.sacadjust > 0)
-			sprintf(buff, "<create cost> + %d", mudconf.sacadjust);
+			snprintf(buff, MBUF_SIZE, "<create cost> + %d", mudconf.sacadjust);
 		else
-			sprintf(buff, "<create cost>");
+			snprintf(buff, MBUF_SIZE, "<create cost>");
 	} else {
 		if(mudconf.sacadjust < 0)
-			sprintf(buff, "(<create cost> / %d) - %d", mudconf.sacfactor,
+			snprintf(buff, MBUF_SIZE, "(<create cost> / %d) - %d", mudconf.sacfactor,
 					-mudconf.sacadjust);
 		else if(mudconf.sacadjust > 0)
-			sprintf(buff, "(<create cost> / %d) + %d", mudconf.sacfactor,
+			snprintf(buff, MBUF_SIZE, "(<create cost> / %d) + %d", mudconf.sacfactor,
 					mudconf.sacadjust);
 		else
-			sprintf(buff, "<create cost> / %d", mudconf.sacfactor);
+			snprintf(buff, MBUF_SIZE, "<create cost> / %d", mudconf.sacfactor);
 	}
 	raw_notify(player, tprintf("The value of an object is %s.", buff));
 	if(mudconf.clone_copy_cost)
@@ -2290,7 +2290,7 @@ static void list_options(dbref player)
 				   ("There may be at most %d players logged in at once.",
 					mudconf.max_players));
 	if(mudconf.quotas)
-		sprintf(buff, " and %d quota", mudconf.start_quota);
+		snprintf(buff, MBUF_SIZE, " and %d quota", mudconf.start_quota);
 	else
 		*buff = '\0';
 	raw_notify(player,
@@ -2311,37 +2311,37 @@ static void list_options(dbref player)
 	raw_notify(player, tprintf("The head of the object freelist is #%d.",
 							   mudstate.freelist));
 
-	sprintf(buff, "Intervals: Dump...%d  Clean...%d  Idlecheck...%d",
+	snprintf(buff, MBUF_SIZE, "Intervals: Dump...%d  Clean...%d  Idlecheck...%d",
 			mudconf.dump_interval, mudconf.check_interval,
 			mudconf.idle_interval);
 	raw_notify(player, buff);
 
-	sprintf(buff, "Timers: Dump...%ld  Clean...%ld  Idlecheck...%ld",
+	snprintf(buff, MBUF_SIZE, "Timers: Dump...%ld  Clean...%ld  Idlecheck...%ld",
 			(long) mudstate.dump_counter - now,
 			(long) mudstate.check_counter - now,
 			(long) mudstate.idle_counter - now);
 	raw_notify(player, buff);
 
-	sprintf(buff, "Timeouts: Idle...%d  Connect...%d  Tries...%d",
+	snprintf(buff, MBUF_SIZE, "Timeouts: Idle...%d  Connect...%d  Tries...%d",
 			mudconf.idle_timeout, mudconf.conn_timeout, mudconf.retry_limit);
 	raw_notify(player, buff);
 
-	sprintf(buff,
+	snprintf(buff, MBUF_SIZE,
 			"Scheduling: Timeslice...%d  Max_Quota...%d  Increment...%d",
 			mudconf.timeslice, mudconf.cmd_quota_max, mudconf.cmd_quota_incr);
 	raw_notify(player, buff);
 
-	sprintf(buff, "Spaces...%s  Savefiles...%s",
+	snprintf(buff, MBUF_SIZE, "Spaces...%s  Savefiles...%s",
 			ed[mudconf.space_compress], ed[mudconf.compress_db]);
 	raw_notify(player, buff);
 
-	sprintf(buff,
+	snprintf(buff, MBUF_SIZE,
 			"New characters: Room...#%d  Home...#%d  DefaultHome...#%d  Quota...%d",
 			mudconf.start_room, mudconf.start_home, mudconf.default_home,
 			mudconf.start_quota);
 	raw_notify(player, buff);
 
-	sprintf(buff,
+	snprintf(buff, MBUF_SIZE,
 			"Misc: GuestChar...#%d  IdleQueueChunk...%d  ActiveQueueChunk...%d  Master_room...#%d",
 			mudconf.guest_char, mudconf.queue_chunk, mudconf.active_q_chunk,
 			mudconf.master_room);
@@ -2364,7 +2364,7 @@ static void list_vattrs(dbref player)
 	raw_notify(player, "--- User-Defined Attributes ---");
 	for(va = vattr_first(), na = 0; va; va = vattr_next(va), na++) {
 		if(!(va->flags & AF_DELETED)) {
-			sprintf(buff, "%s(%d):", va->name, va->number);
+			snprintf(buff, LBUF_SIZE, "%s(%d):", va->name, va->number);
 			listset_nametab(player, attraccess_nametab, va->flags, buff, 1);
 		}
 	}

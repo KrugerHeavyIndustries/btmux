@@ -176,7 +176,7 @@ void sendNetworkMessage(dbref player, MECH * mech, char *msg, int tIsC3)
 	int i;
 	MECH *otherMech;
 	const char *c = GetMechID(mech);
-	char buf[LBUF_SIZE];
+	char buf[LBUF_SIZE] = { 0 };
 	int networkSize;
 	dbref myNetwork[C3_NETWORK_SIZE];
 
@@ -191,11 +191,11 @@ void sendNetworkMessage(dbref player, MECH * mech, char *msg, int tIsC3)
 		if(!Good_obj(otherMech->mynum))
 			continue;
 
-		sprintf(buf, "%%ch%s/%s: %s%%cn", (tIsC3 ? "C3" : "C3i"), c, msg);
+		snprintf(buf, LBUF_SIZE, "%%ch%s/%s: %s%%cn", (tIsC3 ? "C3" : "C3i"), c, msg);
 		mech_notify(otherMech, MECHALL, buf);
 	}
 
-	sprintf(buf, "%%ch%s/You: %s%%cn", (tIsC3 ? "C3" : "C3i"), msg);
+	snprintf(buf, LBUF_SIZE, "%%ch%s/You: %s%%cn", (tIsC3 ? "C3" : "C3i"), msg);
 	mech_notify(mech, MECHALL, buf);
 }
 
@@ -311,7 +311,7 @@ void showNetworkTargets(dbref player, MECH * mech, int tIsC3)
 		}
 
 		/* Now, build the string */
-		sprintf(buff,
+		snprintf(buff, sizeof(buff),
 				"%s%c%c%c[%s]%c %-11.11s x:%3d y:%3d z:%3d r:%4.1f c:%4.1f b:%3d s:%5.1f h:%3d S:%c%c%c%c%c%s",
 				otherMech->mynum == MechTarget(mech) ? "%ch%cr" :
 				(tShowStatusInfo &&
@@ -386,7 +386,7 @@ void showNetworkData(dbref player, MECH * mech, int tIsC3)
 
 		mech_name = silly_atr_get(otherMech->mynum, A_MECHNAME);
 
-		sprintf(buff,
+		snprintf(buff, sizeof(buff),
 				"%%ch%%cy[%s]%c %-12.12s x:%3d y:%3d z:%3d r:%4.1f b:%3d s:%5.1f h:%3d a: %3d i: %3d%%cn",
 				MechIDS(otherMech, 1), move_type[0], mech_name,
 				MechX(otherMech), MechY(otherMech), MechZ(otherMech), range,

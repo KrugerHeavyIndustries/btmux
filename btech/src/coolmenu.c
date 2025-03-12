@@ -63,11 +63,11 @@ void display_line(char **c, int *len, coolmenu * m)
 	char *ch = *c;
 	int i;
 
-	sprintf(ch, "%%cb");
+	snprintf(ch, *len, "%%cb");
 	ch += strlen(ch);
 	for(i = 0; i < *len; i++)
 		*(ch++) = '-';
-	sprintf(ch, "%%c");
+	snprintf(ch, *len, "%%c");
 	ch += strlen(ch);
 	*len = 0;
 	*c = ch;
@@ -111,11 +111,11 @@ void display_string(char **c, int *len, coolmenu * m)
 		for(i = 0; i < p; i++)
 			(*c)[i] = ' ';
 		*c += p;
-		sprintf(*c, "%%ch%%cb");
+		snprintf(*c, *len, "%%ch%%cb");
 		*c += strlen(*c);
 		strncpy(*c, m->text, (e - p) + 1);
 		*c += (e - p);
-		sprintf(*c, "%%c");
+		snprintf(*c, *len, "%%c");
 		*c += strlen(*c);
 		**c = 0;
 		*len -= e;
@@ -129,13 +129,13 @@ void display_string(char **c, int *len, coolmenu * m)
 	}
 }
 
-void display_toggle_end(char **c, coolmenu * m)
+void display_toggle_end(char **c, int maxlen, coolmenu * m)
 {
 	if(m->value)
-		sprintf(*c, " %s<%%cbX%%c%%ch>%%c",
+		snprintf(*c, maxlen, " %s<%%cbX%%c%%ch>%%c",
 				!(m->flags & CM_NO_HILITE) ? "%ch" : "");
 	else
-		sprintf(*c, " < >");
+		snprintf(*c, maxlen, " < >");
 	*c += strlen(*c);
 }
 
@@ -155,21 +155,21 @@ char *stringified_value(int v)
 
 		if(!foo[i])
 			i--;
-		sprintf(buf, "%d%c", BOUNDED(0, v, 999), foo[i]);
+		snprintf(buf, 5, "%d%c", BOUNDED(0, v, 999), foo[i]);
 	} else
-		sprintf(buf, "%d", BOUNDED(0, v, 999));
+		snprintf(buf, 5,  "%d", BOUNDED(0, v, 999));
 	return buf;
 }
 
-void display_number_end(char **c, coolmenu * m)
+void display_number_end(char **c, int maxlen, coolmenu * m)
 {
 	if(m->value >= 0) {
-		sprintf(*c, " %%cg%s%4s%%c", (m->value > 0 &&
+		snprintf(*c, maxlen, " %%cg%s%4s%%c", (m->value > 0 &&
 									  !(m->
 										flags & CM_NO_HILITE)) ? "%ch" : "",
 				stringified_value(m->value));
 	} else
-		sprintf(*c, " ____");
+		snprintf(*c, maxlen, " ____");
 	*c += strlen(*c);
 }
 
@@ -185,7 +185,7 @@ char *display_entry(char *ch, int maxlen, coolmenu * c)
 		else
 			maxlen -= 4;
 		t = ((c->flags & (CM_TOGGLE | CM_NUMBER)) && c->value);
-		sprintf(ch, "%s[%c]%s ", (t &&
+		snprintf(ch, maxlen, "%s[%c]%s ", (t &&
 								  !(c->
 									flags & CM_NO_HILITE)) ? "%ch%cr" : "%cr",
 				t ? (c->letter + 'A' - 'a') : c->letter, "%c");
@@ -199,7 +199,7 @@ char *display_entry(char *ch, int maxlen, coolmenu * c)
 		j = 1;
 	}
 	if(t && !(c->flags & (CM_NO_HILITE))) {
-		sprintf(ch, "%%ch");
+		snprintf(ch, maxlen, "%%ch");
 		ch += strlen(ch);
 	}
 	if(c->flags & CM_LINE)
@@ -207,7 +207,7 @@ char *display_entry(char *ch, int maxlen, coolmenu * c)
 	else
 		display_string(&ch, &maxlen, c);
 	if(t && !(c->flags & (CM_NO_HILITE))) {
-		sprintf(ch, "%%c");
+		snprintf(ch, maxlen, "%%c");
 		ch += strlen(ch);
 	}
 	if(maxlen > 0 && !(c->flags & CM_NOCUT)) {
@@ -216,9 +216,9 @@ char *display_entry(char *ch, int maxlen, coolmenu * c)
 	}
 	if(j) {
 		if(c->flags & CM_TOGGLE)
-			display_toggle_end(&ch, c);
+			display_toggle_end(&ch, maxlen, c);
 		else if(c->flags & CM_NUMBER)
-			display_number_end(&ch, c);
+			display_number_end(&ch, maxlen, c);
 		*(ch++) = ' ';
 	}
 	*ch = 0;

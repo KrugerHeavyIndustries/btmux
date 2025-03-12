@@ -181,7 +181,7 @@ static int present_count;
 static char *listtic_fun(int i)
 {
 	int j, k, l, section, critical;
-	static char buf[MBUF_SIZE];
+	static char buf[MBUF_SIZE] = { 0 };
 	int count = 0;
 	MECH *mech = present_mech;
 	int rtar;
@@ -202,7 +202,7 @@ static char *listtic_fun(int i)
 					j = MAX_WEAPONS_PER_MECH;
 					continue;
 				}
-				sprintf(buf, "#%2d %3s %-16s %s", j,
+				snprintf(buf, sizeof(buf), "#%2d %3s %-16s %s", j,
 						ShortArmorSectionString(MechType(mech),
 												MechMove(mech), section),
 						&MechWeapons[Weapon2I

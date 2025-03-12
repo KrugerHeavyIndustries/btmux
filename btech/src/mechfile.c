@@ -43,12 +43,12 @@ FILE *my_open_file(char *name, char *mode, int *openway)
 		*openway = 0;
 		return f;
 	}
-	sprintf(buf, "%s.gz", name);
+	snprintf(buf, 512, "%s.gz", name);
 	if((f = fopen(buf, mode)))
 		fclose(f);
 	else
 		return NULL;
-	sprintf(buf2, "nice gzip -dc < %s", buf);
+	snprintf(buf2, 512, "nice gzip -dc < %s", buf);
 
 /*   dup2(2, 1); */
 	if((f = popen(buf2, mode))) {

@@ -436,12 +436,12 @@ void mech_weaponstatus(dbref player, MECH * mech, char *buffer)
 	int wWeapsInSec = 0;
 	int wcWeaps = 0;
 	int wDamagedSlots = 0;
-	unsigned char weaparray[MAX_WEAPS_SECTION];
-	unsigned char weapdata[MAX_WEAPS_SECTION];
-	int critical[MAX_WEAPS_SECTION];
-	char tempbuff[160];
-	char strLocation[80];
-	char weapbuff[120];
+	unsigned char weaparray[MAX_WEAPS_SECTION] = { 0 };
+	unsigned char weapdata[MAX_WEAPS_SECTION] = { 0 };
+	int critical[MAX_WEAPS_SECTION] = { 0 };
+	char tempbuff[160] = { 0 };
+	char strLocation[80] = { 0 };
+	char weapbuff[120] = { 0  };
 
 	cch(MECH_USUALSP);
 
@@ -459,10 +459,10 @@ void mech_weaponstatus(dbref player, MECH * mech, char *buffer)
 
 		ArmorStringFromIndex(secIter, tempbuff, MechType(mech),
 							 MechMove(mech));
-		sprintf(strLocation, "%-18.18s", tempbuff);
+		snprintf(strLocation, sizeof(strLocation), "%-18.18s", tempbuff);
 
 		for(weapIter = 0; weapIter < wWeapsInSec; weapIter++) {
-			sprintf(weapbuff, "[%2d] %-29.29s || ", wcWeaps++,
+			snprintf(weapbuff, sizeof(weapbuff), "[%2d] %-29.29s || ", wcWeaps++,
 					&MechWeapons[weaparray[weapIter]].name[3]);
 
 			strcat(weapbuff, strLocation);

@@ -103,7 +103,7 @@ int tech_weapon_roll(dbref player, MECH * mech, int diff)
 
 void tech_status(dbref player, time_t dat)
 {
-	char buf[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
 	char *olds;
 	int un;
 
@@ -120,14 +120,14 @@ void tech_status(dbref player, time_t dat)
 		notify(player, "You have no jobs pending!");
 	else {
 		un = (dat - mudstate.now) / TECH_TICK;
-		sprintf(buf, "You have %d %s%s of repairs pending", un, TECH_UNIT,
+		snprintf(buf, sizeof(buf), "You have %d %s%s of repairs pending", un, TECH_UNIT,
 				un != 1 ? "s" : "");
 		if(un >= mudconf.btech_maxtechtime)
-			sprintf(buf + strlen(buf),
+			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
 					" and you're too tired to do more efficiently.");
 		else {
 			un = mudconf.btech_maxtechtime - un;
-			sprintf(buf + strlen(buf),
+			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
 					" and you're ready to do at least %d more %s%s of work.",
 					un, TECH_UNIT, un == 1 ? "" : "s");
 		}

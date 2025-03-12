@@ -460,7 +460,7 @@ void cf_log_notfound(dbref player, char *cmd, const char *thingname,
             thingname, thing);
 	} else {
 		buff = alloc_lbuf("cf_log_notfound");
-		sprintf(buff, "%s %s not found", thingname, thing);
+		snprintf(buff, LBUF_SIZE, "%s %s not found", thingname, thing);
 		notify(player, buff);
 		free_lbuf(buff);
 	}
@@ -1766,7 +1766,7 @@ void list_cf_access(dbref player)
 	buff = alloc_mbuf("list_cf_access");
 	for(tp = conftable; tp->pname; tp++) {
 		if(God(player) || check_access(player, tp->flags)) {
-			sprintf(buff, "%s:", tp->pname);
+			snprintf(buff, MBUF_SIZE, "%s:", tp->pname);
 			listset_nametab(player, access_nametab, tp->flags, buff, 1);
 		}
 	}

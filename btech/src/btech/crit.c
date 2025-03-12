@@ -342,7 +342,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 	int wAmmoSection, wAmmoCritSlot;
 	int damage, loop;
 	char locname[30];
-	char msgbuf[MBUF_SIZE];
+	char msgbuf[MBUF_SIZE] = { 0 };
 
 	ArmorStringFromIndex(hitloc, locname, MechType(wounded),
 						 MechMove(wounded));
@@ -372,7 +372,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 					MechWeapons[Weapon2I(critType)].explosiondamage);
 
 		if(!Destroyed(wounded)) {
-			sprintf(msgbuf, "'s %s is covered in a large electrical discharge!", locname);
+			snprintf(msgbuf, MBUF_SIZE, "'s %s is covered in a large electrical discharge!", locname);
 			MechLOSBroadcast(wounded, msgbuf);
 		}
 
@@ -430,7 +430,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 						damage);
 
 			if(!Destroyed(wounded)) {
-				sprintf(msgbuf, " loses a launcher in a brilliant explosion!");
+				snprintf(msgbuf, MBUF_SIZE, " loses a launcher in a brilliant explosion!");
 				MechLOSBroadcast(wounded, msgbuf);
 			}
 
@@ -461,7 +461,7 @@ int handleWeaponCrit(MECH * attacker, MECH * wounded, int hitloc,
 						MechWeapons[Weapon2I(critType)].damage);
 
 			if(!Destroyed(wounded)) {
-				sprintf(msgbuf,
+				snprintf(msgbuf, MBUF_SIZE,
 						"'s %s is engulfed in a brilliant blue flame!",
 						locname);
 				MechLOSBroadcast(wounded, msgbuf);
@@ -1923,13 +1923,13 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				MechRealNumsinks(wounded)--;
 			mech_notify(wounded, MECHALL, "You lost a heat sink!");
 			if(!Destroyed(wounded)) {
-				sprintf(msgbuf, "'s %s is covered in a green mist!", locname);
+				snprintf(msgbuf, MBUF_SIZE, "'s %s is covered in a green mist!", locname);
 				MechLOSBroadcast(wounded, msgbuf);
 			}
 			break;
 		case JUMP_JET:
 			if(!Destroyed(wounded) && Started(wounded)) {
-				sprintf(msgbuf,
+				snprintf(msgbuf, MBUF_SIZE,
 						"'s %s flares as superheated plasma spews out!",
 						locname);
 				MechLOSBroadcast(wounded, msgbuf);
@@ -1955,7 +1955,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			break;
 		case ENGINE:
 			if(!Destroyed(wounded) && Started(wounded)) {
-				sprintf(msgbuf, "'s %s spews black smoke!", locname);
+				snprintf(msgbuf, MBUF_SIZE, "'s %s spews black smoke!", locname);
 				MechLOSBroadcast(wounded, msgbuf);
 			}
 			if(MechEngineHeat(wounded) < 10) {
@@ -1986,7 +1986,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 			/* Hardened Gyro's take one extra hit before damaged */
 			if(MechSpecials2(wounded) & HDGYRO_TECH)
 				if(!(MechCritStatus2(wounded) & HDGYRO_DAMAGED)) {
-					sprintf(msgbuf, "emits a screech as its "
+					snprintf(msgbuf, MBUF_SIZE, "emits a screech as its "
 							"hardened gyro buckles slightly!");
 					MechLOSBroadcast(wounded, msgbuf);
 					MechCritStatus2(wounded) |= HDGYRO_DAMAGED;
@@ -1997,7 +1997,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 
 			if(!(MechCritStatus(wounded) & GYRO_DAMAGED)) {
 				if(!Destroyed(wounded) && Started(wounded)) {
-					sprintf(msgbuf, "emits a loud screech as "
+					snprintf(msgbuf, MBUF_SIZE, "emits a loud screech as "
 							"its gyro buckles under the impact!");
 					MechLOSBroadcast(wounded, msgbuf);
 				}
@@ -2056,7 +2056,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 				NormalizeLocActuatorCrits(wounded, hitloc);
 			} else if(tLocIsLeg) {
 				if(!Destroyed(wounded) && Started(wounded)) {
-					sprintf(msgbuf, "'s hip locks into place!");
+					snprintf(msgbuf, MBUF_SIZE, "'s hip locks into place!");
 					MechLOSBroadcast(wounded, msgbuf);
 				}
 
@@ -2114,7 +2114,7 @@ int HandleMechCrit(MECH * wounded, MECH * attacker, int LOS, int hitloc,
 
 				if(OkayCritSectS(hitloc, 0, SHOULDER_OR_HIP)) {	/* don't need to bother with crits if we already have a hip crit here */
 					if(!Destroyed(wounded) && Started(wounded)) {
-						sprintf(msgbuf, "'s %s twists in an odd way!",
+						snprintf(msgbuf, MBUF_SIZE, "'s %s twists in an odd way!",
 								locname);
 						MechLOSBroadcast(wounded, msgbuf);
 					}

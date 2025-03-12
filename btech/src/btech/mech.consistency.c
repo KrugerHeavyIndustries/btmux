@@ -394,7 +394,7 @@ int mech_weight_sub_mech(dbref player, MECH * mech, int interactive)
     if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("      %6.2f", (float) (weight) / 1024.0));}; total += weight; }
 #define ADDENTRY_C(text,count,weight) \
     if (weight) { if (interactive>0) { addmenu(text);addmenu(tprintf("%5d %6.2f", count, (float) (weight) / 1024.0)); }; total += weight; }
-	sprintf(buf, "%-12s(%d rating)",
+	snprintf(buf, sizeof(buf), "%-12s(%d rating)",
 			MechSpecials(mech) & XL_TECH ? "Engine (XL)" : MechSpecials(mech)
 			& XXL_TECH ? "Engine (XXL)" : MechSpecials(mech) & CE_TECH ?
 			"Engine (Compact)" : MechSpecials(mech) & LE_TECH ?
@@ -553,7 +553,7 @@ int mech_weight_sub_veh(dbref player, MECH * mech, int interactive)
 	cl = MechSpecials(mech) & CLAN_TECH;
 	es = susp_factor(mech);
 	if(es)
-		sprintf(buf, "%-12s(%d->%d eff/wt rat)",
+		snprintf(buf, sizeof(buf), "%-12s(%d->%d eff/wt rat)",
 				MechSpecials(mech) & LE_TECH ? "Engine (Light)" :
 				MechSpecials(mech) & CE_TECH ? "Engine (Compact)" :
 				MechSpecials(mech) & XXL_TECH ? "Engine (XXL)" :
@@ -562,7 +562,7 @@ int mech_weight_sub_veh(dbref player, MECH * mech, int interactive)
 				MechEngineSize(mech),
 				MechEngineSize(mech) - susp_factor(mech));
 	else
-		sprintf(buf, "%-12s(%d rating)",
+		snprintf(buf, sizeof(buf), "%-12s(%d rating)",
 				MechSpecials(mech) & LE_TECH ? "Engine (Light)" :
 				MechSpecials(mech) & CE_TECH ? "Engine (Compact)" :
 				MechSpecials(mech) & XXL_TECH ? "Engine (XXL)" :

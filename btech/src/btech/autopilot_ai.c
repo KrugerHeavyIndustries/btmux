@@ -117,7 +117,7 @@ char *AI_Info(MECH * m, AUTO * a)
 {
 	static char buf[MBUF_SIZE];
 
-	sprintf(buf, "Unit#%ld on #%ld [A#%ld]:", m->mynum, m->mapindex, a->mynum);
+	snprintf(buf, MBUF_SIZE, "Unit#%ld on #%ld [A#%ld]:", m->mynum, m->mapindex, a->mynum);
 	return buf;
 }
 
@@ -726,7 +726,7 @@ void ai_stop(MECH * mech, AUTO * a)
 	char buf[128];
 
 	if(MechDesiredSpeed(mech) > 0.1) {
-		strcpy(buf, "stop");
+		strncpy(buf, "stop", 128);
 		mech_speed(a->mynum, mech, buf);
 	}
 }
@@ -749,7 +749,7 @@ void ai_set_speed(MECH * mech, AUTO * a, int s)
 	ms = MMaxSpeed(mech);
 	ms = ms * s / 100.0;
 	if(MechDesiredSpeed(mech) != ms) {
-		sprintf(buf, "%f", ms);
+		snprintf(buf, SBUF_SIZE, "%f", ms);
 		mech_speed(a->mynum, mech, buf);
 	}
 }
@@ -766,7 +766,7 @@ void ai_set_speed(MECH * mech, AUTO * a, float spd)
 	newspeed = FBOUNDED(0, spd, ((MMaxSpeed(mech) * a->speed) / 100.0));
 
 	if(MechDesiredSpeed(mech) != newspeed) {
-		sprintf(buf, "%f", newspeed);
+		snprintf(buf, SBUF_SIZE, "%f", newspeed);
 		mech_speed(a->mynum, mech, buf);
 	}
 }
@@ -777,7 +777,7 @@ void ai_set_heading(MECH * mech, AUTO * a, int dir)
 
 	if(dir == MechDesiredFacing(mech))
 		return;
-	sprintf(buf, "%d", dir);
+	snprintf(buf, 128, "%d", dir);
 	mech_heading(a->mynum, mech, buf);
 }
 

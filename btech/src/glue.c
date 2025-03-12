@@ -732,7 +732,7 @@ void ChangeSpecialObjects(int i)
 }
 
 #ifdef BT_ADVANCED_ECON
-static void save_econdb(char *target, int i)
+static void save_econdb(char *target, int maxlen, int i)
 {
 	FILE *f;
 	extern unsigned long long int specialcost[SPECIALCOST_SIZE];
@@ -744,13 +744,13 @@ static void save_econdb(char *target, int i)
 
 	switch (i) {
 	case DUMP_KILLED:
-		sprintf(target, "%s.KILLED", mudconf.econ_db);
+		snprintf(target, maxlen, "%s.KILLED", mudconf.econ_db);
 		break;
 	case DUMP_CRASHED:
-		sprintf(target, "%s.CRASHED", mudconf.econ_db);
+		snprintf(target, maxlen, "%s.CRASHED", mudconf.econ_db);
 		break;
 	default:					/* RESTART / normal */
-		sprintf(target, "%s.tmp", mudconf.econ_db);
+		snprintf(target, maxlen, "%s.tmp", mudconf.econ_db);
 		break;
 	}
 	f = fopen(target, "w");
@@ -830,13 +830,13 @@ SaveSpecialObjects(int i)
 
 	switch (i) {
 	case DUMP_KILLED:
-		sprintf(target, "%s.KILLED", mudconf.hcode_db);
+		snprintf(target, LBUF_SIZE, "%s.KILLED", mudconf.hcode_db);
 		break;
 	case DUMP_CRASHED:
-		sprintf(target, "%s.CRASHED", mudconf.hcode_db);
+		snprintf(target, LBUF_SIZE, "%s.CRASHED", mudconf.hcode_db);
 		break;
 	default:					/* RESTART / normal */
-		sprintf(target, "%s.tmp", mudconf.hcode_db);
+		snprintf(target, LBUF_SIZE, "%s.tmp", mudconf.hcode_db);
 		break;
 	}
 
@@ -883,7 +883,7 @@ SaveSpecialObjects(int i)
 	SendDB("Hcode saved.");
 
 #ifdef BT_ADVANCED_ECON
-	save_econdb(target, i);
+	save_econdb(target, LBUF_SIZE, i);
 #endif
 }
 
@@ -1172,11 +1172,11 @@ help_color_initialize(const char *from, char *to)
 		/*      from[i]=0; */
 		strncpy(buf, from, i);
 		buf[i] = 0;
-		sprintf(to, "%s%s%s %s", "%ch%cb", buf, "%cn", &from[i + 1]);
+		snprintf(to, LBUF_SIZE, "%s%s%s %s", "%ch%cb", buf, "%cn", &from[i + 1]);
 
 		/*      from[i]=' '; */
 	} else
-		sprintf(to, "%s%s%s", "%cc", from, "%cn");
+		snprintf(to, LBUF_SIZE, "%s%s%s", "%cc", from, "%cn");
 
 }
 

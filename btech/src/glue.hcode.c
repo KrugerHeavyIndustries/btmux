@@ -208,7 +208,7 @@ int silly_parseattributes(char *buffer, char **args, int max)
 	if(args[max - 1] && args[max - 1][0]) {
 		strcpy(foobuff, args[max - 1]);
 		while ((parsed = strtok(NULL, " \t")))
-			sprintf(foobuff + strlen(foobuff), " %s", parsed);
+			snprintf(foobuff + strlen(foobuff), max, " %s", parsed);
 		args[max - 1] = foobuff;
 	}
 	return num_args;

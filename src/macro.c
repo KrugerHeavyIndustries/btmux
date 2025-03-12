@@ -286,7 +286,7 @@ void do_gex_macro(dbref player, char *s)
 	if(m && can_read_macros(player, m)) {
 		notify_printf(player, "Macro Definitions for %s", m->desc);
 		for(i = 0; i < m->nummacros; i++) {
-			sprintf(buffer, "  %-5.5s: %s", m->alias + i * 5, m->string[i]);
+			snprintf(buffer, sizeof(buffer), "  %-5.5s: %s", m->alias + i * 5, m->string[i]);
 			notify(player, buffer);
 		}
 	} else
@@ -359,7 +359,7 @@ void do_ex_macro(dbref player, char *s)
 	if(m) {
 		notify_printf(player, "Macro Definitions for %s", m->desc);
 		for(i = 0; i < m->nummacros; i++) {
-			sprintf(buffer, "  %-5.5s: %s", m->alias + i * 5, m->string[i]);
+			snprintf(buffer, sizeof(buffer), "  %-5.5s: %s", m->alias + i * 5, m->string[i]);
 			notify(player, buffer);
 		}
 	} else
@@ -518,7 +518,7 @@ void do_def_macro(dbref player, char *cmd)
 		j < m->nummacros && (strcasecmp(alias, m->alias + j * 5) > 0); j++);
 	if(j < m->nummacros && !strcasecmp(alias, m->alias + j * 5)) {
 		notify(player, "MACRO: That alias is already defined in this set.");
-		sprintf(buffer, "%-4.4s:%s", m->alias + j * 5, m->string[j]);
+		snprintf(buffer, sizeof(buffer), "%-4.4s:%s", m->alias + j * 5, m->string[j]);
 		notify(player, buffer);
 		return;
 	}
@@ -546,7 +546,7 @@ void do_def_macro(dbref player, char *cmd)
 	StringCopy(m->alias + where * 5, alias);
 	m->string[where] = (char *) malloc(strlen(s) + 1);
 	StringCopy(m->string[where], s);
-	sprintf(buffer, "MACRO: Macro %s:%s defined.", alias, s);
+	snprintf(buffer, sizeof(buffer), "MACRO: Macro %s:%s defined.", alias, s);
 	notify(player, buffer);
 }
 

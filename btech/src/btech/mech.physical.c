@@ -2665,25 +2665,25 @@ void ChargeMech(MECH * mech, MECH * target)
 int checkGrabClubLocation(MECH * mech, int section, int emit)
 {
 	int tCanGrab = 1;
-	char buf[100];
-	char location[20];
+	char buf[100] = { 0 };
+	char location[20] = { 0 };
 
 	ArmorStringFromIndex(section, location, MechType(mech), MechMove(mech));
 
 	if(SectIsDestroyed(mech, section)) {
-		sprintf(buf, "Your %s is destroyed.", location);
+		snprintf(buf, sizeof(buf), "Your %s is destroyed.", location);
 		tCanGrab = 0;
 	} else if(!OkayCritSectS(section, 3, HAND_OR_FOOT_ACTUATOR)) {
-		sprintf(buf, "Your %s's hand actuator is destroyed or missing.",
+		snprintf(buf, sizeof(buf), "Your %s's hand actuator is destroyed or missing.",
 				location);
 		tCanGrab = 0;
 	} else if(!OkayCritSectS(section, 0, SHOULDER_OR_HIP)) {
-		sprintf(buf,
+		snprintf(buf, sizeof(buf),
 				"Your %s's shoulder actuator is destroyed or missing.",
 				location);
 		tCanGrab = 0;
 	} else if(SectHasBusyWeap(mech, section)) {
-		sprintf(buf, "Your %s is still recovering from it's last attack.",
+		snprintf(buf, sizeof(buf), "Your %s is still recovering from it's last attack.",
 				location);
 		tCanGrab = 0;
 	}
