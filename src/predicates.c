@@ -26,54 +26,25 @@ extern char *vsprintf(char *, char *, va_list);
 
 #endif
 
-#ifdef STDC_HEADERS
 char *tprintf(const char *format, ...)
-#else
-char *tprintf(va_alist)
-	 va_dcl
-#endif
 {
 	static char buff[LBUF_SIZE];
 	va_list ap;
 
-#ifdef STDC_HEADERS
 	va_start(ap, format);
-#else
-	const char *format;
-
-	va_start(ap);
-	format = va_arg(ap, char *);
-
-#endif
 	vsnprintf(buff, LBUF_SIZE, format, ap);
 	va_end(ap);
 	buff[LBUF_SIZE - 1] = '\0';
 	return buff;
 }
 
-#ifdef STDC_HEADERS
 void safe_tprintf_str(char *str, char **bp, const char *format, ...)
-#else
-void safe_tprintf_str(va_alist)
-	 va_dcl
-#endif
 {
 	static char buff[LBUF_SIZE];
 	va_list ap;
 
-#ifdef STDC_HEADERS
 	va_start(ap, format);
-#else
-	char *str;
-	char **bp;
-	const char *format;
 
-	va_start(ap);
-	str = va_arg(ap, char *);
-	bp = va_arg(ap, char **);
-	format = va_arg(ap, char *);
-
-#endif
 	/*
 	 * Sigh, don't we wish _all_ vsprintf's returned int... 
 	 */

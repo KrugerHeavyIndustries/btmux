@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <string.h>
@@ -19,13 +19,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
-
-#ifdef STDC_HEADERS
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
-
 
 #include <sys/socket.h>
 #include <netinet/in.h>

@@ -2,14 +2,14 @@
 # Autoconf options #
 ####################
 
-AC_PREREQ([2.50])
+AC_PREREQ([2.71])
 
-AC_INIT([BattleTech MUX], [0.7.6])
+AC_INIT([BattleTech MUX],[0.7.6])
 AC_CONFIG_AUX_DIR([confutil])
 AC_PREFIX_DEFAULT([`pwd`/game.run])
 
 AM_INIT_AUTOMAKE([1.9])
-AM_CONFIG_HEADER([autoconf.h])
+AC_CONFIG_HEADERS([autoconf.h])
 
 
 #########################
@@ -206,7 +206,7 @@ AC_ARG_ENABLE([rename-help],
 
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_LIBTOOL
+LT_INIT
 
 AC_PROG_AWK
 
@@ -225,7 +225,6 @@ AC_CHECK_LIB(event, event_init, [],
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([arpa/inet.h errno.h fcntl.h limits.h memory.h netdb.h netinet/in.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h time.h unistd.h stdint.h])
 AC_CHECK_HEADER(event.h, [],
@@ -239,7 +238,6 @@ AC_C_CONST
 AC_C_INLINE
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_CHECK_TYPES([ptrdiff_t])
@@ -252,7 +250,6 @@ AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_FUNC_SELECT_ARGTYPES
-AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero dup2 floor getdtablesize gethostbyaddr gethostbyname getrusage gettimeofday inet_ntoa isascii localtime memmove memset mktime pow regcomp rint select socket sqrt srandom stpcpy strcasecmp strchr strcspn strdup strerror strncasecmp strndup strnlen strrchr strlcpy strlcat strstr strtol timelocal tzset sigaction posix_memalign])

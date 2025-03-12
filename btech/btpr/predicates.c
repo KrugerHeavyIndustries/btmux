@@ -68,24 +68,12 @@ did_it(dbref player, dbref thing,
 
 
 char *
-#ifdef STDC_HEADERS
 tprintf(const char *format, ...)
-#else /* undef STDC_HEADERS */
-tprintf(va_alist)
-	va_dcl
-#endif /* undef STDC_HEADERS */
 {
 	static char buff[LBUF_SIZE];
 	va_list ap;
 
-#ifdef STDC_HEADERS
 	va_start(ap, format);
-#else /* undef STDC_HEADERS */
-	const char format;
-
-	va_start(ap);
-	format = va_arg(ap, char *);
-#endif /* undef STDC_HEADERS */
 
 	vsnprintf(buff, LBUF_SIZE, format, ap);
 	va_end(ap);
@@ -95,28 +83,12 @@ tprintf(va_alist)
 }
 
 void
-#ifdef STDC_HEADERS
 safe_tprintf_str(char *str, char **bp, const char *format, ...)
-#else /* undef STDC_HEADERS */
-safe_tprintf_str(va_alist)
-	va_dcl
-#endif /* undef STDC_HEADERS */
 {
 	static char buff[LBUF_SIZE];
 	va_list ap;
 
-#ifdef STDC_HEADERS
 	va_start(ap, format);
-#else /* undef STDC_HEADERS */
-	char *str;
-	char **bp;
-	const char *format;
-
-	va_start(ap);
-	str = va_arg(ap, char *);
-	bp = va_arg(ap, char **);
-	format = va_arg(ap, char *);
-#endif /* undef STDC_HEADERS */
 
 	/*
 	 * Sigh, don't we wish _all_ vsprintf's returned int...
