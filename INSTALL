@@ -19,12 +19,16 @@ ________________________________________
  * crypt (libcrypt/lcrypt)
  * libevent (http://www.monkey.org/~provos/libevent/)
  * libdbi (If SQL support is enabled)
- * autoconf
- * Subversion (If you didn't download a complete packaged BTMux)
+ * autoconf 2.71 or higher
 
  S2: COMPILING AND RUNNING THE SOURCE
  ------------------------------------
- To compile the Battletech MUX source, 'cd' into your root BTMux dir and type
+ To compile the Battletech MUX source, 'cd' into your root BTMux dir and type:
+
+ 'autoreconf --install --force'
+
+ Once this has setup the build environment, you can issue:
+
  './configure'.
 
  NOTE: If you'd like to change the default configuration values, issue a
@@ -117,7 +121,3 @@ ________________________________________
  For more information on the support available to you, check out the
  SUPPORT file included in your root BTMux directory. This lists
  all of the resources available.
-
-
-
-
