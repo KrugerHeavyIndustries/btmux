@@ -723,7 +723,7 @@ void ai_run_speed(MECH * mech, AUTO * a)
 
 void ai_stop(MECH * mech, AUTO * a)
 {
-	char buf[128];
+	char buf[128] = { 0 };
 
 	if(MechDesiredSpeed(mech) > 0.1) {
 		strncpy(buf, "stop", 128);
@@ -757,7 +757,7 @@ void ai_set_speed(MECH * mech, AUTO * a, int s)
 
 void ai_set_speed(MECH * mech, AUTO * a, float spd)
 {
-	char buf[SBUF_SIZE];
+	char buf[SBUF_SIZE] = { 0 };
 	float newspeed;
 
 	if(!mech || !a)
@@ -773,7 +773,7 @@ void ai_set_speed(MECH * mech, AUTO * a, float spd)
 
 void ai_set_heading(MECH * mech, AUTO * a, int dir)
 {
-	char buf[128];
+	char buf[128] = { 0 };
 
 	if(dir == MechDesiredFacing(mech))
 		return;
