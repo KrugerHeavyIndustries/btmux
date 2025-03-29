@@ -753,9 +753,9 @@ char *unparse_object_numonly(dbref target)
 	} else if(target == HOME) {
 		StringCopy(buf, "*HOME*");
 	} else if(!Good_obj(target)) {
-		sprintf(buf, "*ILLEGAL*(#%ld)", target);
+		snprintf(buf, LBUF_SIZE, "*ILLEGAL*(#%ld)", target);
 	} else {
-		sprintf(buf, "%s(#%ld)", Name(target), target);
+		snprintf(buf, LBUF_SIZE, "%s(#%ld)", Name(target), target);
 	}
 	return buf;
 }								/* end unparse_object_numonly() */
@@ -774,7 +774,7 @@ char *unparse_object(dbref player, dbref target, int obey_myopic)
 	} else if(target == HOME) {
 		StringCopy(buf, "*HOME*");
 	} else if(!Good_obj(target)) {
-		sprintf(buf, "*ILLEGAL*(#%ld)", target);
+		snprintf(buf, LBUF_SIZE, "*ILLEGAL*(#%ld)", target);
 	} else {
 		if(obey_myopic)
 			exam = MyopicExam(player, target);
@@ -788,7 +788,7 @@ char *unparse_object(dbref player, dbref target, int obey_myopic)
 			 * show everything 
 			 */
 			fp = unparse_flags(player, target);
-			sprintf(buf, "%s(#%ld%s%s)", Name(target), target,
+			snprintf(buf, LBUF_SIZE, "%s(#%ld%s%s)", Name(target), target,
 					*fp ? ":" : "", fp);
 			free_sbuf(fp);
 		} else {

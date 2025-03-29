@@ -446,7 +446,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 			tbuff = alloc_sbuf("notify_checked.nospoof");
 			safe_chr('[', msg_ns, &mp);
 			safe_str(Name(sender), msg_ns, &mp);
-			sprintf(tbuff, "(#%ld)", sender);
+			snprintf(tbuff, SBUF_SIZE, "(#%ld)", sender);
 			safe_str(tbuff, msg_ns, &mp);
 
 			if(sender != Owner(sender)) {
@@ -455,7 +455,7 @@ void notify_checked(dbref target, dbref sender, const char *msg, int key)
 				safe_chr('}', msg_ns, &mp);
 			}
 			if(sender != mudstate.curr_enactor) {
-				sprintf(tbuff, "<-(#%ld)", mudstate.curr_enactor);
+				snprintf(tbuff, SBUF_SIZE, "<-(#%ld)", mudstate.curr_enactor);
 				safe_str(tbuff, msg_ns, &mp);
 			}
 			safe_str((char *) "] ", msg_ns, &mp);
@@ -905,7 +905,7 @@ void dump_database_internal(int dump_type)
 		return;
 	}
 	if(dump_type == DUMP_KILLED) {
-		sprintf(tmpfile, "%s.KILLED", mudconf.indb);
+		snprintf(tmpfile, sizeof(tmpfile), "%s.KILLED", mudconf.indb);
 		f = fopen(tmpfile, "w");
 		if(f != NULL) {
 			/* Write a flatfile */
@@ -926,17 +926,17 @@ void dump_database_internal(int dump_type)
 		return;
 	}
 
-	sprintf(prevfile, "%s.prev", mudconf.outdb);
-	sprintf(tmpfile, "%s.#%d#", mudconf.outdb, mudstate.epoch - 1);
+	snprintf(prevfile, sizeof(prevfile), "%s.prev", mudconf.outdb);
+	snprintf(tmpfile, sizeof(tmpfile), "%s.#%d#", mudconf.outdb, mudstate.epoch - 1);
 	unlink(tmpfile);			/*
 								 * nuke our predecessor 
 								 */
-	sprintf(tmpfile, "%s.#%d#", mudconf.outdb, mudstate.epoch);
+	snprintf(tmpfile, sizeof(tmpfile), "%s.#%d#", mudconf.outdb, mudstate.epoch);
 
 	if(mudconf.compress_db) {
-		sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch - 1);
+		snprintf(tmpfile, sizeof(tmpfile), "%s.#%d#.gz", mudconf.outdb, mudstate.epoch - 1);
 		unlink(tmpfile);
-		sprintf(tmpfile, "%s.#%d#.gz", mudconf.outdb, mudstate.epoch);
+		snprintf(tmpfile, sizeof(tmpfile), "%s.#%d#.gz", mudconf.outdb, mudstate.epoch);
 		StringCopy(outfn, mudconf.outdb);
 		strcat(outfn, ".gz");
 		f = popen(tprintf("%s > %s", mudconf.compress, tmpfile), "w");
@@ -983,7 +983,7 @@ void dump_database(void)
 	mudstate.epoch++;
 	mudstate.dumping = 1;
 	buff = alloc_mbuf("dump_database");
-	sprintf(buff, "%s.#%d#", mudconf.outdb, mudstate.epoch);
+	snprintf(buff, MBUF_SIZE, "%s.#%d#", mudconf.outdb, mudstate.epoch);
 	STARTLOG(LOG_DBSAVES, "DMP", "DUMP") {
 		log_text((char *) "Dumping: ");
 		log_text(buff);
@@ -1011,7 +1011,7 @@ void fork_and_dump(int key)
 	mudstate.epoch++;
 	mudstate.dumping = 1;
 	buff = alloc_mbuf("fork_and_dump");
-	sprintf(buff, "%s.#%d#", mudconf.outdb, mudstate.epoch);
+	snprintf(buff, MBUF_SIZE, "%s.#%d#", mudconf.outdb, mudstate.epoch);
    
     log_error(LOG_DBSAVES, "DMP", "CHKPT", "Saving database: %s", buff);
     

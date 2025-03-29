@@ -320,14 +320,14 @@ static int add_to(dbref player, int am, int attrnum)
 {
 	int num; long aflags;
 	dbref aowner;
-	char buff[20];
+	char buff[20] = { 0 };
 	char *atr_gotten;
 
 	num = atoi(atr_gotten = atr_get(player, attrnum, &aowner, &aflags));
 	free_lbuf(atr_gotten);
 	num += am;
 	if(num)
-		sprintf(buff, "%d", num);
+		snprintf(buff, sizeof(buff), "%d", num);
 	else
 		*buff = '\0';
 	atr_add_raw(player, attrnum, buff);

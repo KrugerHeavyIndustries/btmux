@@ -70,9 +70,9 @@ void load_comsys_and_macros(char *filename)
 void save_comsys_and_macros(char *filename)
 {
 	FILE *fp;
-	char buffer[500];
+	char buffer[500] = { 0 };
 
-	sprintf(buffer, "%s.#", filename);
+	snprintf(buffer, sizeof(buffer), "%s.#", filename);
 	if(!(fp = fopen(buffer, "w"))) {
 		fprintf(stderr, "Unable to open %s for writing.\n", buffer);
 		return;

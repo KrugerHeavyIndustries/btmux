@@ -80,9 +80,9 @@ int find_entrance(MAP * map, char dir, int *x, int *y)
 
 char *structure_name(mapobj * mapo)
 {
-	static char buf[MBUF_SIZE];
+	static char buf[MBUF_SIZE] = { 0 };
 
-	sprintf(buf, "the %s", Name(mapo->obj));
+	snprintf(buf, MBUF_SIZE, "the %s", Name(mapo->obj));
 	return buf;
 }
 

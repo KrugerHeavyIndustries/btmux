@@ -119,7 +119,7 @@ static void encrypt_logindata(char *atrbuf, LDATA * info)
 			info->bad[i].dtm = &nullc;
 	}
 	bp = alloc_lbuf("encrypt_logindata");
-	sprintf(bp, "#%d;%s;%s;%s;%s;%s;%s;%s;%s;%d;%d;%s;%s;%s;%s;%s;%s;",
+	snprintf(bp, LBUF_SIZE, "#%d;%s;%s;%s;%s;%s;%s;%s;%s;%d;%d;%s;%s;%s;%s;%s;%s;",
 			info->tot_good, info->good[0].host, info->good[0].dtm,
 			info->good[1].host, info->good[1].dtm, info->good[2].host,
 			info->good[2].dtm, info->good[3].host, info->good[3].dtm,

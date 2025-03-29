@@ -154,7 +154,7 @@ void list_charvaluestuff(dbref player, int flag)
 {
 	int found = 0, ok, type;
 	int i;
-	char buf[80];
+	char buf[80] = { 0 };
 
 	if(flag == -1)
 		notify(player, "List of charvalues available:");
@@ -171,7 +171,7 @@ void list_charvaluestuff(dbref player, int flag)
 		else if(type == flag)
 			ok = 1;
 		if(ok) {
-			sprintf(buf + strlen(buf), "%-23s ", char_values[i].name);
+			snprintf(buf + strlen(buf), 80 - strlen(buf), "%-23s ", char_values[i].name);
 			if(!((++found) % 3)) {
 				notify(player, buf);
 				strcpy(buf, " ");
@@ -1946,11 +1946,10 @@ static void generic_retrieve_stuff(dbref player, PSTATS * s, int attr)
 
 static void generic_store_stuff(dbref player, PSTATS * s, int attr, int flag)
 {
-	char buf[LBUF_SIZE];
+	char buf[LBUF_SIZE] = { 0 };
 	int i;
 	char *c;
 
-	buf[0] = 0;
 	c = buf;
 	for(i = 0; i < NUM_CHARVALUES; i++) {
 		if(!s->values[i] && !s->xp[i])
@@ -1961,10 +1960,10 @@ static void generic_store_stuff(dbref player, PSTATS * s, int attr, int flag)
 		} else if(i != 5 && char_values[i].type != CHAR_ADVANTAGE)
 			continue;
 		if(s->xp[i])
-			sprintf(c, "%s:%d,%d,%d/", char_values_short[i], s->values[i],
+			snprintf(c, buf - c, "%s:%d,%d,%d/", char_values_short[i], s->values[i],
 					s->xp[i], (int) s->last_use[i]);
 		else
-			sprintf(c, "%s:%d/", char_values_short[i], s->values[i]);
+			snprintf(c, buf - c, "%s:%d/", char_values_short[i], s->values[i]);
 		while (*(++c));
 	}
 	if(*buf)

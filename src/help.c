@@ -53,7 +53,7 @@ int helpindex_read(HASHTAB * htab, char *filename)
 	if((fp = fopen(filename, "r")) == NULL) {
 		STARTLOG(LOG_PROBLEMS, "HLP", "RINDX") {
 			p = alloc_lbuf("helpindex_read.LOG");
-			sprintf(p, "Can't open %s for reading.", filename);
+			snprintf(p, LBUF_SIZE,  "Can't open %s for reading.", filename);
 			log_text(p);
 			free_lbuf(p);
 			ENDLOG;
@@ -184,7 +184,7 @@ void help_write(dbref player, char *topic, HASHTAB * htab, char *filename,
 		notify(player, "Sorry, that function is temporarily unavailable.");
 		STARTLOG(LOG_PROBLEMS, "HLP", "OPEN") {
 			line = alloc_lbuf("help_write.LOG.open");
-			sprintf(line, "Can't open %s for reading.", filename);
+			snprintf(line, LBUF_SIZE, "Can't open %s for reading.", filename);
 			log_text(line);
 			free_lbuf(line);
 			ENDLOG;
@@ -195,7 +195,7 @@ void help_write(dbref player, char *topic, HASHTAB * htab, char *filename,
 		notify(player, "Sorry, that function is temporarily unavailable.");
 		STARTLOG(LOG_PROBLEMS, "HLP", "SEEK") {
 			line = alloc_lbuf("help_write.LOG.seek");
-			sprintf(line, "Seek error in file %s.", filename);
+			snprintf(line, LBUF_SIZE, "Seek error in file %s.", filename);
 			log_text(line);
 			free_lbuf(line);
 			ENDLOG;
@@ -268,7 +268,7 @@ void do_help(dbref player, dbref cause, int key, char *message)
 	default:
 		STARTLOG(LOG_BUGS, "BUG", "HELP") {
 			buf = alloc_mbuf("do_help.LOG");
-			sprintf(buf, "Unknown help file number: %d", key);
+			snprintf(buf, MBUF_SIZE, "Unknown help file number: %d", key);
 			log_text(buf);
 			free_mbuf(buf);
 			ENDLOG;

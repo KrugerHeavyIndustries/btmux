@@ -288,7 +288,7 @@ int cause_internaldamage(MECH * wounded,
 					/* Limb blown off */
 					mech_notify(wounded, MECHALL, "%ch%cyCRITICAL HIT!!%c");
 					if(!Destroyed(wounded)) {
-						sprintf(msgbuf,
+						snprintf(msgbuf, sizeof(msgbuf),
 								"'s %s is blown off in a shower of sparks and smoke!",
 								locname);
 						MechLOSBroadcast(wounded, msgbuf);
@@ -567,12 +567,12 @@ void DamageMech(MECH * wounded,
 	if(hitloc != -1) {
 		ArmorStringFromIndex(hitloc, locationBuff, MechType(wounded),
 							 MechMove(wounded));
-		sprintf(notificationBuff,
+		snprintf(notificationBuff, sizeof(notificationBuff),
 				"for %d points of damage in the %s %s",
 				damage + (intDamage < 0 ? 0 : intDamage), locationBuff,
 				rearMessage);
 	} else
-		sprintf(notificationBuff,
+		snprintf(notificationBuff, sizeof(notificationBuff),
 				"for %d points of damage in the structure.",
 				damage + (intDamage < 0 ? 0 : intDamage));
 
@@ -921,8 +921,8 @@ void DestroyHeatSink(MECH * mech, int hitloc)
 
 void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 {
-	char locname[30];
-	char msgbuf[MBUF_SIZE];
+	char locname[30] = { 0 };
+	char msgbuf[MBUF_SIZE] = { 0 };
 	int i, j;
 	int tKillMech;
 	int tIsLeg = ((hitloc == RLEG || hitloc == LLEG) ||
@@ -974,7 +974,7 @@ void DestroySection(MECH * wounded, MECH * attacker, int LOS, int hitloc)
 		if(LOS >= 0)
 			mech_printf(wounded, MECHALL,
 						"Your %s has been destroyed!", locname);
-		sprintf(msgbuf, "'s %s has been destroyed!", locname);
+		snprintf(msgbuf, sizeof(msgbuf), "'s %s has been destroyed!", locname);
 		MechLOSBroadcast(wounded, msgbuf);
 	}
 

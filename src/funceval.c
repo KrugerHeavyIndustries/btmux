@@ -127,7 +127,7 @@ void fun_cwho(char *buff, char **bufc, dbref player, dbref cause,
 		/*      if (Connected(user->who)) */
 		{
 			if(len) {
-				sprintf(smbuf, " #%ld", user->who);
+				snprintf(smbuf, sizeof(smbuf), " #%ld", user->who);
 				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 					safe_str(" #-1", buff, bufc);
 					return;
@@ -693,7 +693,7 @@ void fun_zwho(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%ld", i);
+					snprintf(smbuf, sizeof(smbuf), " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -726,7 +726,7 @@ void fun_zrooms(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%ld", i);
+                                        snprintf(smbuf, sizeof(smbuf), " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -758,7 +758,7 @@ void fun_zexits(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%ld", i);
+                                        snprintf(smbuf, sizeof(smbuf), " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -790,7 +790,7 @@ void fun_zobjects(char *buff, char **bufc, dbref player, dbref cause,
                                 if(len) {
                                         static char smbuf[SBUF_SIZE];
 
-                                        sprintf(smbuf, " #%ld", i);
+                                        snprintf(smbuf, SBUF_SIZE, " #%ld", i);
                                         if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
                                                 safe_str(" #-1", buff, bufc);
                                                 return;
@@ -825,7 +825,7 @@ void fun_zplayers(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%ld", i);
+					snprintf(smbuf, sizeof(smbuf), " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -859,7 +859,7 @@ void fun_inzone(char *buff, char **bufc, dbref player, dbref cause,
 				if(len) {
 					static char smbuf[SBUF_SIZE];
 
-					sprintf(smbuf, " #%ld", i);
+					snprintf(smbuf, SBUF_SIZE, " #%ld", i);
 					if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 						safe_str(" #-1", buff, bufc);
 						return;
@@ -892,7 +892,7 @@ void fun_children(char *buff, char **bufc, dbref player, dbref cause,
 			if(len) {
 				static char smbuf[SBUF_SIZE];
 
-				sprintf(smbuf, " #%ld", i);
+				snprintf(smbuf, sizeof(smbuf), " #%ld", i);
 				if((strlen(smbuf) + len) > (LBUF_SIZE - SBUF_SIZE)) {
 					safe_str(" #-1", buff, bufc);
 					return;
@@ -2270,7 +2270,7 @@ void fun_matchall(char *buff, char **bufc, dbref player, dbref cause,
 	do {
 		r = split_token(&s, sep);
 		if(quick_wild(fargs[1], r)) {
-			sprintf(tbuf, "%d", wcount);
+			snprintf(tbuf, sizeof(tbuf), "%d", wcount);
 			if(old != *bufc)
 				safe_chr(' ', buff, bufc);
 			safe_str(tbuf, buff, bufc);
@@ -2702,7 +2702,7 @@ void fun_vadd(char *buff, char **bufc, dbref player, dbref cause,
 	 * add it
 	 */
 	for(i = 0; i < n; i++) {
-		sprintf(vres[i], "%f", atof(v1[i]) + atof(v2[i]));
+		snprintf(vres[i], LBUF_SIZE, "%f", atof(v1[i]) + atof(v2[i]));
 		v1[i] = (char *) vres[i];
 	}
 
@@ -2740,7 +2740,7 @@ void fun_vsub(char *buff, char **bufc, dbref player, dbref cause,
 	 * sub it
 	 */
 	for(i = 0; i < n; i++) {
-		sprintf(vres[i], "%f", atof(v1[i]) - atof(v2[i]));
+		snprintf(vres[i], LBUF_SIZE, "%f", atof(v1[i]) - atof(v2[i]));
 		v1[i] = (char *) vres[i];
 	}
 
@@ -2783,14 +2783,14 @@ void fun_vmul(char *buff, char **bufc, dbref player, dbref cause,
 	if(n == 1) {
 		scalar = atof(v1[0]);
 		for(i = 0; i < m; i++) {
-			sprintf(vres[i], "%f", atof(v2[i]) * scalar);
+			snprintf(vres[i], LBUF_SIZE, "%f", atof(v2[i]) * scalar);
 			v1[i] = (char *) vres[i];
 		}
 		n = m;
 	} else if(m == 1) {
 		scalar = atof(v2[0]);
 		for(i = 0; i < n; i++) {
-			sprintf(vres[i], "%f", atof(v1[i]) * scalar);
+			snprintf(vres[i], LBUF_SIZE, "%f", atof(v1[i]) * scalar);
 			v1[i] = (char *) vres[i];
 		}
 	} else {
@@ -2883,7 +2883,7 @@ void fun_vunit(char *buff, char **bufc, dbref player, dbref cause,
 		return;
 	}
 	for(i = 0; i < n; i++) {
-		sprintf(vres[i], "%f", atof(v1[i]) / sqrt(res));
+		snprintf(vres[i], LBUF_SIZE, "%f", atof(v1[i]) / sqrt(res));
 		v1[i] = (char *) vres[i];
 	}
 
@@ -3155,7 +3155,7 @@ void fun_lparent(char *buff, char **bufc, dbref player, dbref cause,
 {
 	dbref it;
 	dbref par;
-	char tbuf1[20];
+	char tbuf1[20] = { 0 };
 
 	it = match_thing(player, fargs[0]);
 	if(!Good_obj(it)) {
@@ -3165,12 +3165,12 @@ void fun_lparent(char *buff, char **bufc, dbref player, dbref cause,
 		safe_str("#-1 PERMISSION DENIED", buff, bufc);
 		return;
 	}
-	sprintf(tbuf1, "#%ld", it);
+	snprintf(tbuf1, sizeof(tbuf1), "#%ld", it);
 	safe_str(tbuf1, buff, bufc);
 	par = Parent(it);
 
 	while (Good_obj(par) && Examinable(player, it)) {
-		sprintf(tbuf1, " #%ld", par);
+		snprintf(tbuf1, sizeof(tbuf1), " #%ld", par);
 		safe_str(tbuf1, buff, bufc);
 		it = par;
 		par = Parent(par);

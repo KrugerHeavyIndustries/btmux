@@ -264,7 +264,7 @@ int is_under_repair(MECH * mech, int i)
 char *damages_func(MECH * mech)
 {
 /* Give this a 32k buffer instead of 16k. Temporary fix. Think of something more intelligent to make this work better */
-	static char buffer[LBUF_SIZE*2];
+	static char buffer[LBUF_SIZE*2] = { 0 };
 	int i;
 
 	if(unit_is_fixable(mech))
@@ -279,8 +279,8 @@ char *damages_func(MECH * mech)
 		/* Ok... i think we want: */
 		/* repairnum|location|typenum|data|fixing? */
 		if(i)
-			sprintf(buffer, "%s,", buffer);
-		sprintf(buffer, "%s%d|%s|%d|", buffer, i + 1,
+			snprintf(buffer, sizeof(buffer), "%s,", buffer);
+		snprintf(buffer, sizeof(buffer), "%s%d|%s|%d|", buffer, i + 1,
 				ShortArmorSectionString(MechType(mech), MechMove(mech),
 										damage_table[i][1]),
 				(int) damage_table[i][0]);
@@ -297,13 +297,13 @@ char *damages_func(MECH * mech)
 		case ENHCRIT_AMMOM:
 		case SCRAPP:
 		case SCRAPG:
-			sprintf(buffer, "%s%s", buffer, pos_part_name(mech,
+			snprintf(buffer, sizeof(buffer), "%s%s", buffer, pos_part_name(mech,
 														  damage_table[i][1],
 														  damage_table[i]
 														  [2]));
 			break;
 		case RELOAD:
-			sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
+			snprintf(buffer, sizeof(buffer), "%s%s:%d", buffer, pos_part_name(mech,
 															 damage_table[i]
 															 [1],
 															 damage_table[i]
@@ -316,7 +316,7 @@ char *damages_func(MECH * mech)
 															   [2]));
 			break;
 		case UNLOAD:
-			sprintf(buffer, "%s%s:%d", buffer, pos_part_name(mech,
+			snprintf(buffer, sizeof(buffer), "%s%s:%d", buffer, pos_part_name(mech,
 															 damage_table[i]
 															 [1],
 															 damage_table[i]
@@ -327,12 +327,12 @@ char *damages_func(MECH * mech)
 		case FIXARMOR:
 		case FIXARMOR_R:
 		case FIXINTERNAL:
-			sprintf(buffer, "%s%d", buffer, damage_table[i][2]);
+			snprintf(buffer, sizeof(buffer), "%s%d", buffer, damage_table[i][2]);
 			break;
 		default:
-			sprintf(buffer, "%s-", buffer);
+			snprintf(buffer, sizeof(buffer), "%s-", buffer);
 		}
-		sprintf(buffer, "%s|%d", buffer, is_under_repair(mech, i));
+		snprintf(buffer, sizeof(buffer), "%s|%d", buffer, is_under_repair(mech, i));
 	}
 	return buffer;
 }
@@ -342,9 +342,9 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 	MECH *mech = data;
 	coolmenu *c = NULL;
 	int i, j, v1, v2;
-	char buf[MBUF_SIZE];
-	char buf2[MBUF_SIZE];
-	char buf3[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
+	char buf2[MBUF_SIZE] = { 0 };
+	char buf3[MBUF_SIZE] = { 0 };
 	int isds;
 	int fix_time = 0;
 	int fix_bth = 0;
@@ -390,7 +390,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case REPAIRP:
 			fix_bth = FindTechSkill(player, mech) + REPLACE_DIFFICULTY + PARTTYPE_DIFFICULTY(GetPartType(mech, v1, v2));
 			fix_time = REPLACEPART_TIME;
-                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                        snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRP_T:
@@ -398,13 +398,13 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 				extra_hard = 0;
                         fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2)) + extra_hard;
 			fix_time = REPAIRGUN_TIME;
-                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                        snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case REPAIRG:
 			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REPLACE_DIFFICULTY + WEAPTYPE_DIFFICULTY(GetPartType(mech,v1,v2));
 			fix_time = REPLACEGUN_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
-                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                        snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
                                         pos_part_name(mech, v1, v2));
                         break;
 		case ENHCRIT_MISC:
@@ -416,23 +416,23 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case ENHCRIT_AMMOM:
                         fix_bth = char_getskilltarget(player, "technician-weapons", 0) + ENHCRIT_DIFFICULTY;
 			fix_time = REPAIRENHCRIT_TIME;
-                        sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+                        snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
                         break;
 		case SCRAPP:
 			fix_bth = FindTechSkill(player, mech) + REMOVEP_DIFFICULTY;
 			fix_time = REMOVEP_TIME;
-			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+			snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
 			break;
 		case SCRAPG:
 			fix_bth = char_getskilltarget(player, "technician-weapons", 0) + REMOVEG_DIFFICULTY;
 			fix_time = REMOVEG_TIME * ClanMod(GetWeaponCrits(mech, Weapon2I(GetPartType(mech, v1, v2))));
-			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+			snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2));
 			break;
 		case RELOAD:
-			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+			snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "",
 					FullAmmo(mech, v1, v2) - GetPartData(mech, v1, v2) );
@@ -440,7 +440,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 			fix_bth = FindTechSkill(player, mech) + RELOAD_DIFFICULTY;
 			break;
 		case UNLOAD:
-			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+			snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					pos_part_name(mech, v1, v2), GetPartAmmoMode(mech,v1,v2) ?
 					GetAmmoDesc_Model_Mode(Ammo2WeaponI(GetPartType(mech,v1,v2)),GetPartAmmoMode(mech,v1,v2)) : "",
 					GetPartData(mech, v1, v2));
@@ -450,7 +450,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		case FIXARMOR:
 		case FIXARMOR_R:
 		case FIXINTERNAL:
-			sprintf(buf, repair_need_msgs[(int) damage_table[i][0]],
+			snprintf(buf, sizeof(buf), repair_need_msgs[(int) damage_table[i][0]],
 					damage_table[i][0] == FIXINTERNAL ?
 					((MechSpecials(mech) & ES_TECH) ? " Endosteel" :
 					(MechSpecials(mech) & REINFI_TECH) ? " Reinforced" :
@@ -469,11 +469,11 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 		}
 		j = is_under_repair(mech, i);
 		if(j) {
-			sprintf(buf3, "%4s %4s", "N/A", "N/A");
+			snprintf(buf3, sizeof(buf3), "%4s %4s", "N/A", "N/A");
 		} else {
-			sprintf(buf3, "%4d %4d", fix_time, fix_bth);
+			snprintf(buf3, sizeof(buf3), "%4d %4d", fix_time, fix_bth);
 		}
-		sprintf(buf2, "%%ch%s%3s %3d %9s %3s %s%%cn%s", j ? "%cg" : "%cy", j ? "(*)" :"",
+		snprintf(buf2, sizeof(buf2), "%%ch%s%3s %3d %9s %3s %s%%cn%s", j ? "%cg" : "%cy", j ? "(*)" :"",
 				i + 1,
 				buf3,
 				ShortArmorSectionString(MechType(mech), MechMove(mech), v1),
@@ -490,7 +490,7 @@ void show_mechs_damage(dbref player, void *data, char *buffer)
 
 static void fix_entry(dbref player, MECH * mech, int n)
 {
-	char buf[MBUF_SIZE];
+	char buf[MBUF_SIZE] = { 0 };
 	char *c;
 
 	/* whee */
@@ -499,7 +499,7 @@ static void fix_entry(dbref player, MECH * mech, int n)
 								damage_table[n][1]);
 	switch (damage_table[n][0]) {
 	case REPAIRP_T:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_repairgun(player, mech, buf);
 		break;
 	case ENHCRIT_MISC:
@@ -509,59 +509,59 @@ static void fix_entry(dbref player, MECH * mech, int n)
 	case ENHCRIT_AMMOB:
 	case ENHCRIT_RANGING:
 	case ENHCRIT_AMMOM:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_fixenhcrit(player, mech, buf);
 		break;
 	case REPAIRG:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_replacegun(player, mech, buf);
 		break;
 	case REPAIRP:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_replacepart(player, mech, buf);
 		break;
 	case RELOAD:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_reload(player, mech, buf);
 		break;
 	case REATTACH:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_reattach(player, mech, buf);
 		break;
 	case RESEAL:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_reseal(player, mech, buf);
 		break;
 	case FIXARMOR:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_fixarmor(player, mech, buf);
 		break;
 	case FIXARMOR_R:
-		sprintf(buf, "%s r", c);
+		snprintf(buf, sizeof(buf), "%s r", c);
 		tech_fixarmor(player, mech, buf);
 		break;
 	case FIXINTERNAL:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_fixinternal(player, mech, buf);
 		break;
 	case DETACH:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_removesection(player, mech, buf);
 		break;
 	case SCRAPP:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_removepart(player, mech, buf);
 		break;
 	case SCRAPG:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_removegun(player, mech, buf);
 		break;
 	case UNLOAD:
-		sprintf(buf, "%s %d", c, damage_table[n][2] + 1);
+		snprintf(buf, sizeof(buf), "%s %d", c, damage_table[n][2] + 1);
 		tech_unload(player, mech, buf);
 		break;
 	case REPLACESUIT:
-		sprintf(buf, "%s", c);
+		snprintf(buf, sizeof(buf), "%s", c);
 		tech_replacesuit(player, mech, buf);
 		break;
 	}

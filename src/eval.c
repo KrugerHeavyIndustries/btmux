@@ -738,7 +738,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 								 * Invoker DB number 
 								 */
 				tbuf = alloc_sbuf("exec.invoker");
-				sprintf(tbuf, "#%ld", cause);
+				snprintf(tbuf, SBUF_SIZE, "#%ld", cause);
 				safe_str(tbuf, buff, bufc);
 				free_sbuf(tbuf);
 				break;
@@ -746,7 +746,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 								 * Executor DB number 
 								 */
 				tbuf = alloc_sbuf("exec.executor");
-				sprintf(tbuf, "#%ld", player);
+				snprintf(tbuf, SBUF_SIZE, "#%ld", player);
 				safe_str(tbuf, buff, bufc);
 				free_sbuf(tbuf);
 				break;
@@ -762,7 +762,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 			case 'l':
 				if(!(eval & EV_NO_LOCATION)) {
 					tbuf = alloc_sbuf("exec.exloc");
-					sprintf(tbuf, "#%ld", where_is(cause));
+					snprintf(tbuf, SBUF_SIZE, "#%ld", where_is(cause));
 					safe_str(tbuf, buff, bufc);
 					free_sbuf(tbuf);
 				}
@@ -989,7 +989,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 			} else {
 				*bufc = oldp;
 				tstr = alloc_sbuf("exec.funcargs");
-				sprintf(tstr, "%d", fp->nargs);
+				snprintf(tstr, SBUF_SIZE, "%d", fp->nargs);
 				safe_str((char *) "#-1 FUNCTION (", buff, bufc);
 				safe_str((char *) fp->name, buff, bufc);
 				safe_str((char *) ") EXPECTS ", buff, bufc);
@@ -1060,7 +1060,7 @@ void exec(char *buff, char **bufc, int tflags, dbref player, dbref cause,
 			tcache_finish(player);
 		if(is_top && (save_count > 0)) {
 			tbuf = alloc_mbuf("exec.trace_diag");
-			sprintf(tbuf, "%d lines of trace output discarded.", save_count);
+			snprintf(tbuf, MBUF_SIZE, "%d lines of trace output discarded.", save_count);
 			notify(player, tbuf);
 			free_mbuf(tbuf);
 		}

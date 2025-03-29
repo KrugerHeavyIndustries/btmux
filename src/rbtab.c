@@ -176,7 +176,7 @@ char *hashinfo(const char *tab_name, RBTAB * htab)
 	char *buff;
 
 	buff = alloc_mbuf("hashinfo");
-	sprintf(buff, "%-15s %8d", tab_name, rb_size(htab->tree));
+	snprintf(buff, MBUF_SIZE, "%-15s %8d", tab_name, rb_size(htab->tree));
 	return buff;
 }
 

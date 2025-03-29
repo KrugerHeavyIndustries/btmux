@@ -656,7 +656,7 @@ void search_perform(dbref player, dbref cause, SEARCH * parm)
 		if(parm->s_rst_eval != NULL) {
 			if(Typeof(thing) == TYPE_GARBAGE)
 				continue;
-			sprintf(buff, "#%ld", thing);
+			snprintf(buff, SBUF_SIZE, "#%ld", thing);
 			buff2 = replace_string(BOUND_VAR, buff, parm->s_rst_eval);
 			result = bp = alloc_lbuf("search_perform");
 			str = buff2;
@@ -850,7 +850,7 @@ void do_search(dbref player, dbref cause, int key, char *arg)
 	if(destitute) {
 		notify(player, "Nothing found.");
 	} else {
-		sprintf(outbuf,
+		snprintf(outbuf, LBUF_SIZE,
 				"\nFound:  Rooms...%d  Exits...%d  Objects...%d  Players...%d  Garbage...%d",
 				rcount, ecount, tcount, pcount, gcount);
 		notify(player, outbuf);

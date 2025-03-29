@@ -87,11 +87,11 @@ static void pcache_save(PCACHE * pp)
 	if(pp->cflags & PF_DEAD)
 		return;
 	if(pp->cflags & PF_MONEY_CH) {
-		sprintf(tbuf, "%d", pp->money);
+		snprintf(tbuf, sizeof(tbuf), "%d", pp->money);
 		atr_add_raw(pp->player, A_MONEY, tbuf);
 	}
 	if(pp->cflags & PF_QMAX_CH) {
-		sprintf(tbuf, "%d", pp->qmax);
+		snprintf(tbuf, sizeof(tbuf), "%d", pp->qmax);
 		atr_add_raw(pp->player, A_QUEUEMAX, tbuf);
 	}
 	pp->cflags &= ~(PF_MONEY_CH | PF_QMAX_CH);
@@ -226,6 +226,6 @@ void s_Pennies(dbref obj, int howfew)
 			pp->cflags |= PF_MONEY_CH;
 		}
 	}
-	sprintf(tbuf, "%d", howfew);
+	snprintf(tbuf, sizeof(tbuf), "%d", howfew);
 	atr_add_raw(obj, A_MONEY, tbuf);
 }

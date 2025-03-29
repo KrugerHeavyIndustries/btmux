@@ -618,8 +618,8 @@ if (fp) fclose(fp); return -1; }
 
 #define TEMPLATE_GERR(a,b...) \
 if (a) { \
-char foobarbuf[512]; \
-sprintf(foobarbuf, b); \
+char foobarbuf[512] = { 0 }; \
+snprintf(foobarbuf, sizeof(foobarbuf), b); \
 SendError(foobarbuf); \
 if (fp) fclose(fp); return -1; }
 #else

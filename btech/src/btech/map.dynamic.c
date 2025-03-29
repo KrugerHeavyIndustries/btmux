@@ -196,7 +196,7 @@ void eliminate_empties(MAP * map)
 	int i;
 	int j;
 	int count, oldcount;
-	char tempbuf[SBUF_SIZE];
+	char tempbuf[SBUF_SIZE] = { 0 };
 
 	if(!map)
 		return;
@@ -219,7 +219,7 @@ void eliminate_empties(MAP * map)
 	ReCreate(map->mechflags, char, count);
 
 	map->first_free = count;
-	sprintf(tempbuf, "%ld", map->mynum);
+	snprintf(tempbuf, SBUF_SIZE, "%ld", map->mynum);
 	mech_Rfixstuff(GOD, NULL, tempbuf);
 }
 
