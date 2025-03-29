@@ -731,10 +731,9 @@ void close_sockets(int emergency, char *message)
 			if(shutdown(d->descriptor, 2) < 0)
 				log_perror("NET", "FAIL", NULL, "shutdown");
 			dprintk("shutting down fd %d", d->descriptor);
-			dprintk("output evbuffer misalign: %ld, totallen: %ld, off: %ld",
-					d->sock_buff->output->misalign,
-					d->sock_buff->output->totallen,
-					d->sock_buff->output->off);
+			dprintk("output evbuffer contiguous space: %ld, totallen: %ld",
+					evbuffer_get_contiguous_space(d->sock_buff->output),
+					evbuffer_get_length(d->sock_buff->output));
 			fsync(d->descriptor);
 			if(d->outstanding_dnschild_query)
 				dnschild_kill(d->outstanding_dnschild_query);
