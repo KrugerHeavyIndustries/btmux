@@ -565,9 +565,9 @@ void do_page(dbref player, dbref cause, int key, char *tname, char *message)
 
 			safe_str(tprintf("%d ", target), buf2, &bp2);
 			safe_str(tprintf("%s, ", Name(target)), buf1, &bp);
+			*(bp - 2) = '\0';
 			count++;
 		}
-		*(bp - 2) = '\0';
 	}
 
 	if(count == 0) {
