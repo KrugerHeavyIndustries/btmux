@@ -750,7 +750,7 @@ int rb_walk(rbtree bt, int how,
 {
     rbtree_node *last, *node;
     int depth = 0;
-    if(!bt->head)
+    if(!bt || !bt->head)
         return 1;
     last = NULL;
     node = bt->head;

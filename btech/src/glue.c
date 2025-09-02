@@ -828,6 +828,14 @@ SaveSpecialObjects(int i)
 	int xcode_version = XCODE_MAGIC;
 	char target[LBUF_SIZE];
 
+	if (!xcode_tree) {
+		/* no xcode_tree means we did not actually load any "special objects"
+		 * so lets us just early exit here. This is expected when working with
+		 * a new or empty database
+		 */
+		return;
+	}
+
 	switch (i) {
 	case DUMP_KILLED:
 		snprintf(target, LBUF_SIZE, "%s.KILLED", mudconf.hcode_db);
